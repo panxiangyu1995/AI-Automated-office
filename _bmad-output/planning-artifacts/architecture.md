@@ -1,9 +1,9 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 workflowType: 'architecture'
-lastStep: 9
+lastStep: 10
 status: 'complete'
-completedAt: '2026-03-10'
+completedAt: '2026-03-11'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/agent/README.md
@@ -23,10 +23,11 @@ inputDocuments:
   - _bmad-output/errorshandl/network-errors.md
   - _bmad-output/errorshandl/session-errors.md
   - _bmad-output/errorshandl/error-formatting.md
+  - _bmad-output/planning-artifacts/clawhub-compatibility-design.md
 workflowType: 'architecture'
 project_name: 'AI-Automated-office'
 user_name: 'PAN'
-date: '2026-03-10'
+date: '2026-03-11'
 ---
 
 # Architecture Decision Document
@@ -38,7 +39,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-项目共定义110个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统）和8个业务插件（人事管理、财务OCR、数据看板、销售自动化、售后工单、知识库RAG、仓库管理、标书制定）。核心架构围绕AI Agent能力展开，包括工具调用、MCP服务接入、会话管理、记忆管理和子代理协作。
+项目共定义439个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统、统一消息系统）和8个业务部门模块（人事管理、财务OCR、数据看板、销售自动化、售后工单、知识库RAG、仓库管理、标书制定）。核心架构围绕AI Agent能力展开，包括工具调用、MCP服务接入、会话管理、记忆管理、子代理协作、跨部门协作、三层记忆架构和ClawHub生态兼容性。
 
 **Non-Functional Requirements:**
 - 性能：本地操作<100ms，云端<3s，空闲内存<500MB
@@ -102,6 +103,10 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-018 | 字段级权限采用后台动态配置 | 架构讨论 2026-03-10 |
 | ADR-019 | 敏感操作确认采用聊天界面内弹出方式 | 架构讨论 2026-03-10 |
 | ADR-020 | MCP工具优先级：内置工具优先，MCP工具Post-MVP实现 | 架构讨论 2026-03-10 |
+| ADR-021 | 统一消息系统采用参与者模型（human/agent/system/group） | 架构讨论 2026-03-11 |
+| ADR-022 | 黑名单匹配采用简单通配符模式（支持精确、前缀、后缀、包含、分组匹配） | 架构讨论 2026-03-11 |
+| ADR-023 | Agent可观测性数据存储采用本地SQLite，管理员可见范围为租户级 | 架构讨论 2026-03-11 |
+| ADR-024 | 断点续传支持从任意中断位置恢复，数据持久化到本地SQLite | 架构讨论 2026-03-11 |
 
 ### Recommended Architecture
 
@@ -786,11 +791,1918 @@ pub enum TerminationReason {
 }
 ```
 
+### 断点续传与批量操作恢复
+
+**设计原则：**
+- 所有长时间任务支持断点保存
+- 批量操作支持从中断位置恢复
+- 网络中断后自动重连续传
+
+**断点数据结构：**
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Checkpoint {
+    pub task_id: String,
+    pub session_id: String,
+    pub current_step: usize,
+    pub total_steps: usize,
+    pub completed_items: Vec<CompletedItem>,
+    pub pending_items: Vec<PendingItem>,
+    pub context: SessionContext,
+    pub created_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompletedItem {
+    pub item_id: String,
+    pub tool_call: ToolCall,
+    pub result: Value,
+    pub completed_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PendingItem {
+    pub item_id: String,
+    pub tool_name: String,
+    pub parameters: Value,
+    pub dependencies: Vec<String>,  // 依赖的已完成项
+}
+```
+
+**恢复流程：**
+```
+任务中断
+    │
+    ├─► 自动保存断点
+    │        │
+    │        └─► 存储到本地SQLite
+    │
+    └─► 用户选择恢复
+             │
+             ├─► 加载断点数据
+             │
+             ├─► 展示已完成/待完成列表
+             │
+             ├─► 用户选择：
+             │        ├─► [从断点继续] → 执行pending_items
+             │        ├─► [重新开始] → 清除断点，重头执行
+             │        └─► [取消任务] → 清除断点
+             │
+             └─► 继续执行
+```
+
+**Rust实现：**
+```rust
+pub struct CheckpointManager {
+    db: Arc<Database>,
+}
+
+impl CheckpointManager {
+    /// 保存断点
+    pub async fn save_checkpoint(&self, checkpoint: &Checkpoint) -> Result<(), Error> {
+        self.db.insert_checkpoint(checkpoint).await
+    }
+    
+    /// 加载断点
+    pub async fn load_checkpoint(&self, task_id: &str) -> Result<Option<Checkpoint>, Error> {
+        self.db.get_checkpoint(task_id).await
+    }
+    
+    /// 恢复执行
+    pub async fn resume_from_checkpoint(&self, task_id: &str) -> Result<Vec<Value>, Error> {
+        let checkpoint = self.load_checkpoint(task_id).await?
+            .ok_or(Error::CheckpointNotFound)?;
+        
+        let mut results = Vec::new();
+        for pending in &checkpoint.pending_items {
+            // 检查依赖是否满足
+            if self.check_dependencies(&pending.dependencies, &checkpoint.completed_items) {
+                let result = self.execute_item(pending).await?;
+                results.push(result);
+            }
+        }
+        
+        // 清理已完成的断点
+        self.db.delete_checkpoint(task_id).await?;
+        Ok(results)
+    }
+}
+```
+
+## 操作黑名单机制架构
+
+> **设计理念：** 黑名单机制采用分级设计，用户可自主设置个人级黑名单，AI可辅助推荐黑名单规则，管理员可设置企业级黑名单。用于控制AI行为边界，防止逾越雷池。
+
+### 分级架构
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    黑名单分级架构                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  优先级：企业级 > 部门级 > 个人级                                │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  🏢 企业级黑名单（管理员设置，全员生效）                  │   │
+│  │  • 批量删除员工数据                                      │   │
+│  │  • 导出全部客户信息                                      │   │
+│  │  • 修改系统配置                                          │   │
+│  │  不可被下级覆盖                                          │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  🏛️ 部门级黑名单（部门主管设置，本部门生效）              │   │
+│  │  销售部: • 导出客户联系方式                              │   │
+│  │  财务部: • 批量修改应付金额                              │   │
+│  │  不可被个人覆盖                                          │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  👤 个人级黑名单（用户自主设置，仅本人生效）              │   │
+│  │  • 自动发送邮件（担心误发）                              │   │
+│  │  • 修改已审批的报价单                                    │   │
+│  │  用户可自主管理                                          │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 匹配规则设计
+
+**采用简单通配符模式：**
+
+| 匹配模式 | 语法 | 示例 | 说明 |
+|---------|------|------|------|
+| 精确匹配 | `tool_name` | `sales_contract_sign` | 只匹配这一个工具 |
+| 前缀通配 | `prefix_*` | `hr_salary_*` | 匹配所有以prefix开头的工具 |
+| 后缀通配 | `*_suffix` | `*_delete` | 匹配所有以suffix结尾的工具 |
+| 包含通配 | `*keyword*` | `*export*` | 匹配所有包含keyword的工具 |
+| 分组匹配 | `@group:name` | `@group:filesystem` | 匹配指定分组的所有工具 |
+
+**匹配优先级：**
+```
+精确匹配 > 分组匹配 > 前缀通配 > 后缀通配 > 包含通配
+```
+
+**Rust实现：**
+```rust
+pub struct BlacklistMatcher {
+    patterns: Vec<BlacklistPattern>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BlacklistPattern {
+    pub pattern: String,
+    pub level: BlacklistLevel,
+    pub reason: String,
+    pub created_by: String,
+    pub created_at: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Ord, PartialOrd)]
+pub enum BlacklistLevel {
+    Personal = 1,
+    Department = 2,
+    Enterprise = 3,
+}
+
+impl BlacklistMatcher {
+    /// 检查工具是否在黑名单中
+    pub fn check(&self, tool_name: &str, context: &MatchContext) -> Result<(), BlacklistBlock> {
+        let mut matched_patterns: Vec<&BlacklistPattern> = self.patterns.iter()
+            .filter(|p| self.match_pattern(&p.pattern, tool_name))
+            .filter(|p| self.is_applicable(p, context))
+            .collect();
+        
+        // 按优先级排序（企业级 > 部门级 > 个人级）
+        matched_patterns.sort_by(|a, b| b.level.cmp(&a.level));
+        
+        if let Some(blocked) = matched_patterns.first() {
+            return Err(BlacklistBlock {
+                tool_name: tool_name.to_string(),
+                pattern: blocked.pattern.clone(),
+                reason: blocked.reason.clone(),
+                level: blocked.level.clone(),
+            });
+        }
+        
+        Ok(())
+    }
+    
+    /// 匹配模式
+    fn match_pattern(&self, pattern: &str, tool_name: &str) -> bool {
+        // 分组匹配
+        if pattern.starts_with("@group:") {
+            let group = &pattern[7..];
+            return self.tool_belongs_to_group(tool_name, group);
+        }
+        
+        // 精确匹配
+        if !pattern.contains('*') {
+            return pattern == tool_name;
+        }
+        
+        // 通配符匹配
+        let regex_pattern = pattern
+            .replace(".", "\\.")
+            .replace("*", ".*");
+        let re = Regex::new(&format!("^{}$", regex_pattern)).unwrap();
+        re.is_match(tool_name)
+    }
+    
+    /// 检查规则是否适用于当前上下文
+    fn is_applicable(&self, pattern: &BlacklistPattern, context: &MatchContext) -> bool {
+        match pattern.level {
+            BlacklistLevel::Enterprise => true,
+            BlacklistLevel::Department => {
+                pattern.created_by.starts_with("dept:") && 
+                context.user_department == pattern.created_by[5..]
+            },
+            BlacklistLevel::Personal => {
+                pattern.created_by == context.user_id
+            },
+        }
+    }
+}
+```
+
+### AI辅助推荐机制
+
+```rust
+pub struct BlacklistRecommender {
+    db: Arc<Database>,
+}
+
+impl BlacklistRecommender {
+    /// 分析用户行为，推荐黑名单规则
+    pub async fn analyze_and_recommend(&self, user_id: &str) -> Result<Vec<BlacklistRecommendation>, Error> {
+        // 获取用户最近的工具调用历史
+        let history = self.db.get_tool_call_history(user_id, Duration::days(30)).await?;
+        
+        // 分析取消/回退行为
+        let cancelled_calls = history.iter()
+            .filter(|h| h.status == CallStatus::Cancelled)
+            .group_by(|h| h.tool_name.clone());
+        
+        let mut recommendations = Vec::new();
+        
+        for (tool_name, calls) in &cancelled_calls {
+            if calls.count() >= 3 {
+                // 同一工具取消3次以上，推荐加入黑名单
+                recommendations.push(BlacklistRecommendation {
+                    pattern: tool_name.to_string(),
+                    reason: format!("您最近{}次取消了此操作", calls.count()),
+                    confidence: 0.8,
+                });
+            }
+        }
+        
+        Ok(recommendations)
+    }
+}
+```
+
+### 配置存储
+
+```yaml
+# 黑名单配置存储结构
+blacklists:
+  enterprise:
+    - pattern: "@group:filesystem"
+      reason: "安全策略：禁止AI操作文件系统"
+      created_by: "admin"
+      created_at: 1709875200
+    - pattern: "*_delete"
+      reason: "安全策略：禁止删除数据"
+      created_by: "admin"
+      created_at: 1709875200
+      
+  departments:
+    sales:
+      - pattern: "customer_export"
+        reason: "防止客户信息泄露"
+        created_by: "dept_manager_sales"
+        created_at: 1709875200
+        
+  personal:
+    user_001:
+      - pattern: "*_email_send"
+        reason: "担心误发邮件"
+        created_by: "user_001"
+        created_at: 1709875200
+```
+
+## Agent可观测性架构
+
+> **设计理念：** 提供全面的Agent运行状态监控和数据统计，帮助用户了解Token消耗、任务执行效率，帮助管理员优化系统配置。
+
+### 观测维度
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    可观测性维度                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  📊 Token监控                                                   │
+│     • 输入/输出/总计Token统计                                   │
+│     • 按会话、按日、按月统计                                    │
+│     • 按模型提供商分类                                          │
+│                                                                 │
+│  📊 工具性能                                                    │
+│     • 成功率、失败率、平均耗时                                  │
+│     • 按工具类型、按部门统计                                    │
+│     • 错误原因分布                                              │
+│                                                                 │
+│  📊 任务指标                                                    │
+│     • 任务成功率、平均完成时间                                  │
+│     • 循环检测触发次数                                          │
+│     • 断点恢复统计                                              │
+│                                                                 │
+│  📊 使用统计                                                    │
+│     • 用户活跃度                                                │
+│     • 部门使用趋势                                              │
+│     • 用户满意度评分                                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 数据模型
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenUsage {
+    pub session_id: String,
+    pub user_id: String,
+    pub tenant_id: String,
+    pub model_provider: String,
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub total_tokens: u64,
+    pub cost_usd: Option<f64>,
+    pub created_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolCallMetric {
+    pub id: String,
+    pub session_id: String,
+    pub user_id: String,
+    pub tenant_id: String,
+    pub tool_name: String,
+    pub department: String,
+    pub status: CallStatus,
+    pub duration_ms: u64,
+    pub error_message: Option<String>,
+    pub created_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskMetric {
+    pub id: String,
+    pub session_id: String,
+    pub user_id: String,
+    pub tenant_id: String,
+    pub task_type: String,
+    pub status: TaskStatus,
+    pub total_steps: u32,
+    pub completed_steps: u32,
+    pub total_duration_ms: u64,
+    pub loop_detected: bool,
+    pub checkpoint_used: bool,
+    pub user_rating: Option<u8>,
+    pub created_at: i64,
+    pub completed_at: Option<i64>,
+}
+```
+
+### 存储架构
+
+**本地SQLite存储：**
+```sql
+CREATE TABLE token_usage (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    tenant_id TEXT NOT NULL,
+    model_provider TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    total_tokens INTEGER NOT NULL,
+    cost_usd REAL,
+    created_at INTEGER NOT NULL,
+    
+    INDEX idx_user_date (user_id, created_at),
+    INDEX idx_tenant_date (tenant_id, created_at)
+);
+
+CREATE TABLE tool_call_metrics (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    tenant_id TEXT NOT NULL,
+    tool_name TEXT NOT NULL,
+    department TEXT,
+    status TEXT NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    error_message TEXT,
+    created_at INTEGER NOT NULL,
+    
+    INDEX idx_tool_stats (tool_name, status, created_at),
+    INDEX idx_user_tools (user_id, created_at)
+);
+
+CREATE TABLE task_metrics (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    tenant_id TEXT NOT NULL,
+    task_type TEXT,
+    status TEXT NOT NULL,
+    total_steps INTEGER,
+    completed_steps INTEGER,
+    total_duration_ms INTEGER,
+    loop_detected INTEGER DEFAULT 0,
+    checkpoint_used INTEGER DEFAULT 0,
+    user_rating INTEGER,
+    created_at INTEGER NOT NULL,
+    completed_at INTEGER,
+    
+    INDEX idx_tenant_stats (tenant_id, status, created_at)
+);
+```
+
+### 统计服务
+
+```rust
+pub struct MetricsService {
+    db: Arc<Database>,
+}
+
+impl MetricsService {
+    /// 记录Token使用
+    pub async fn record_token_usage(&self, usage: &TokenUsage) -> Result<(), Error> {
+        self.db.insert_token_usage(usage).await
+    }
+    
+    /// 获取用户Token统计
+    pub async fn get_user_token_stats(&self, user_id: &str, period: TimePeriod) -> Result<TokenStats, Error> {
+        self.db.aggregate_token_usage(user_id, period).await
+    }
+    
+    /// 获取租户级统计（管理员可见）
+    pub async fn get_tenant_stats(&self, tenant_id: &str, period: TimePeriod) -> Result<TenantStats, Error> {
+        let token_stats = self.db.aggregate_tenant_tokens(tenant_id, period).await?;
+        let tool_stats = self.db.aggregate_tenant_tool_calls(tenant_id, period).await?;
+        let task_stats = self.db.aggregate_tenant_tasks(tenant_id, period).await?;
+        
+        Ok(TenantStats {
+            token: token_stats,
+            tools: tool_stats,
+            tasks: task_stats,
+        })
+    }
+    
+    /// 导出报告
+    pub async fn export_report(&self, user_id: &str, format: ReportFormat, period: TimePeriod) -> Result<Vec<u8>, Error> {
+        let stats = self.get_user_token_stats(user_id, period).await?;
+        
+        match format {
+            ReportFormat::CSV => self.generate_csv_report(&stats),
+            ReportFormat::PDF => self.generate_pdf_report(&stats),
+        }
+    }
+}
+```
+
+### 管理员仪表板数据
+
+```rust
+#[derive(Debug, Serialize)]
+pub struct TenantStats {
+    pub token: TokenAggregate,
+    pub tools: ToolAggregate,
+    pub tasks: TaskAggregate,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TokenAggregate {
+    pub total_input: u64,
+    pub total_output: u64,
+    pub total_cost: f64,
+    pub by_provider: HashMap<String, u64>,
+    pub by_department: HashMap<String, u64>,
+    pub daily_trend: Vec<DailyCount>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ToolAggregate {
+    pub total_calls: u64,
+    pub success_rate: f64,
+    pub avg_duration_ms: f64,
+    pub top_tools: Vec<ToolRank>,
+    pub error_distribution: HashMap<String, u64>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TaskAggregate {
+    pub total_tasks: u64,
+    pub success_rate: f64,
+    pub avg_duration_ms: f64,
+    pub loop_detection_count: u64,
+    pub checkpoint_recovery_count: u64,
+    pub avg_user_rating: Option<f64>,
+}
+```
+
+## 部门模块系统架构
+
+> **核心定义：** 部门模块 = UI界面 + 业务功能 + AI Agent调用接口（Tools/Skills/MCP）
+> 每个部门模块不仅是用户可见的UI功能界面，同时集成了可供AI Agent调用的标准化接口。
+
+### 架构设计
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    部门模块标准架构                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │                    AI Agent (平台主Agent)                │  │
+│   └─────────────────────────┬───────────────────────────────┘  │
+│                             │ 调用                              │
+│                             ▼                                   │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │              部门模块标准化接口层                         │  │
+│   │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │  │
+│   │  │ Tools接口   │ │ Skills接口  │ │ MCP接口     │       │  │
+│   │  │ (功能调用)  │ │ (技能封装)  │ │ (外部服务)  │       │  │
+│   │  └─────────────┘ └─────────────┘ └─────────────┘       │  │
+│   └─────────────────────────┬───────────────────────────────┘  │
+│                             │                                   │
+│              ┌──────────────┼──────────────┐                   │
+│              │              │              │                   │
+│              ▼              ▼              ▼                   │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │                    部门模块实例                          │  │
+│   │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐       │  │
+│   │  │ 人事部  │ │ 销售部  │ │ 财务部  │ │ 仓储部  │ ...    │  │
+│   │  │ 模块    │ │ 模块    │ │ 模块    │ │ 模块    │       │  │
+│   │  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘       │  │
+│   │       │           │           │           │             │  │
+│   │       ▼           ▼           ▼           ▼             │  │
+│   │  ┌─────────────────────────────────────────────────┐   │  │
+│   │  │              部门模块UI界面                      │   │  │
+│   │  │  - 功能操作界面                                  │   │  │
+│   │  │  - 数据展示界面                                  │   │  │
+│   │  │  - 报表/看板界面                                 │   │  │
+│   │  └─────────────────────────────────────────────────┘   │  │
+│   └─────────────────────────────────────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 接口类型定义
+
+| 接口类型 | 用途 | 示例 | 特点 |
+|---------|------|------|------|
+| **Tools** | 单一功能调用 | 创建订单、查询库存、添加员工 | 原子操作，返回结构化结果 |
+| **Skills** | 复杂技能封装 | AI生成报价单、OCR识别合同、生成审批流程 | 多步骤组合，含AI推理 |
+| **MCP** | 外部服务接入 | 第三方API、数据库连接、邮件服务 | 外部系统对接 |
+
+### 部门模块清单规范
+
+```yaml
+# 部门模块清单示例 (module-manifest.yaml)
+module:
+  id: sales
+  name: 销售部
+  version: 1.0.0
+  type: core  # core=内置, extension=可安装
+  dependencies:
+    - hr        # 依赖人事部
+    - warehouse # 依赖仓储部
+
+# UI界面定义
+ui:
+  routes:
+    - path: /sales
+      component: SalesDashboard
+    - path: /sales/orders
+      component: OrderList
+    - path: /sales/quotes
+      component: QuoteEditor
+  menu:
+    - title: 销售管理
+      icon: sales
+      children:
+        - 报价单管理
+        - 订单管理
+        - 客户管理
+
+# AI Agent调用接口
+tools:
+  - name: sales_create_quote
+    description: 创建报价单
+    parameters:
+      customer_id: string
+      products: array
+    returns: quote_id, quote_url
+    sensitive: false
+    
+  - name: sales_order_create
+    description: 创建销售订单
+    parameters:
+      quote_id: string
+    returns: order_id
+    sensitive: false
+
+  - name: sales_contract_sign
+    description: 签订合同
+    parameters:
+      contract_id: string
+    returns: signed_url
+    sensitive: true  # 敏感操作，需确认
+    
+skills:
+  - name: sales_generate_quote_ai
+    description: AI生成报价单
+    input: customer_requirements (自然语言)
+    output: quote_draft
+    
+mcp:
+  - name: sales_external_api
+    description: 第三方销售平台接入
+    protocol: mcp
+    config:
+      endpoints: [...]
+
+# 公开工具配置（跨部门协作）
+public_tools:
+  - sales_order_create      # 允许其他部门调用
+  - sales_get_quote         # 允许其他部门查询报价单
+```
+
+### 工具调用可见性设计
+
+**设计原则：**
+- **透明性**：所有用户都能看到AI调用了哪些工具、怎么调用的
+- **可追溯**：调用记录可回溯查看
+- **可干预**：用户可手动重试、纠偏、调整
+
+**工具调用面板位置：**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ AI对话区域                                                   │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 用户: 帮我创建一个报价单给客户A                          │ │
+│ │                                                         │ │
+│ │ AI: 好的，我正在为您创建报价单...                        │ │
+│ │     [调用工具: sales_create_quote]                       │ │
+│ └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│ 🔧 工具调用面板 (AI对话区域下方)                              │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ ▶ 正在调用: sales_create_quote                          │ │
+│ │   类型: Tool                                            │ │
+│ │   参数: {customer_id: "A001", products: [...]}          │ │
+│ │   状态: ⏳ 执行中...                                     │ │
+│ │                                                         │ │
+│ │ ✅ 已完成: customer_get_info                            │ │
+│ │   耗时: 0.8s                                            │ │
+│ │   结果: 客户A - XX科技有限公司                           │ │
+│ │   [查看详情]                                            │ │
+│ └─────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│ 💬 继续对话...                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**工具状态显示：**
+
+| 状态 | 图标 | 说明 | 用户操作 |
+|-----|------|------|---------|
+| 执行中 | ⏳ | 工具正在调用 | 等待/取消 |
+| 成功 | ✅ | 调用成功，返回结果 | 查看详情 |
+| 失败 | ❌ | 调用失败 | 重试/手动/跳过 |
+| 警告 | ⚠️ | 部分成功或有风险 | 查看/确认 |
+| 离线 | 🔴 | 服务不可用 | 检查连接/手动 |
+
+### 工具状态监控
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ 🔌 工具状态面板                                             │
+├────────────────────────────────────────────────────────────┤
+│ 部门模块        Tools    Skills    MCP     握手状态        │
+├────────────────────────────────────────────────────────────┤
+│ 人事部          🟢 5个   🟢 2个    —       🟢 正常         │
+│ 销售部          🟢 8个   🟡 1个    🟢 1个  🟢 正常         │
+│ 财务部          🟢 6个   🟢 3个    —       🟢 正常         │
+│ 仓储部          🟡 4个   —         🔴 1个  🟡 部分可用     │
+│ 扩展:售后部     🟢 3个   🟢 1个    —       🟢 正常         │
+│ 扩展:招投标部   🟢 2个   🟢 1个    —       🟢 正常         │
+├────────────────────────────────────────────────────────────┤
+│ 🟢 正常  🟡 部分可用  🔴 异常  ⚫ 未安装                    │
+│                                                            │
+│ [刷新状态] [查看详情] [诊断工具]                            │
+└────────────────────────────────────────────────────────────┘
+```
+
+## ClawHub生态兼容性架构
+
+> **背景与目标：** 本项目灵感来源于 OpenClaw，旨在为企业提供 AI 赋能的 ERP 系统。在实际部署中发现，OpenClaw 更适合技术用户，而企业需要面向全员（包括非技术人员）的解决方案。
+
+### 核心诉求
+
+- 保持企业级 ERP 系统的定位
+- 兼容 ClawHub 丰富的生态资源
+- 降低企业用户使用门槛
+- 提供企业级安全保障
+
+### 设计目标
+
+| 目标 | 说明 |
+|------|------|
+| **生态兼容** | 支持 ClawHub 的 Skills、Plugins、SOULs 等资源 |
+| **安全增强** | 针对企业场景增强安全审计和权限控制 |
+| **平滑迁移** | 支持现有 ClawHub 资源的直接使用或适配转换 |
+| **扩展能力** | 支持企业自建私有市场和管理 |
+| **用户友好** | 提供图形化界面，降低非技术用户使用门槛 |
+
+### 兼容策略分层模型
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         兼容策略分层模型                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Level 1: 直接兼容                                                      │
+│  ├── Skills（SKILL.md格式）→ 通过适配层直接加载                         │
+│  └── SOULs（SOUL.md格式）→ 作为Agent人设模板导入                        │
+│                                                                         │
+│  Level 2: 适配转换                                                      │
+│  ├── Plugins（OpenClaw插件）→ 转换为部门模块组件                        │
+│  └── Hooks → 转换为企业事件触发器                                       │
+│                                                                         │
+│  Level 3: 生态集成                                                      │
+│  ├── ClawHub市场 → 作为外部资源市场接入                                 │
+│  ├── 私有市场 → 企业自建市场，支持ClawHub格式                           │
+│  └── 混合市场 → 同时支持内部和外部资源                                  │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 资源类型矩阵
+
+| 资源类型 | 格式 | 用途 | 兼容优先级 | 说明 |
+|---------|------|------|-----------|------|
+| **Skill** | SKILL.md + 文件 | 定义Agent可执行的技能 | P0 | 直接兼容，通过适配层加载 |
+| **Plugin** | TypeScript模块 | 扩展功能 | P1 | 适配转换为部门模块组件 |
+| **SOUL** | SOUL.md | 定义Agent人设/个性 | P0 | 作为Agent人设模板导入 |
+| **Hook** | TypeScript | 事件触发器 | P2 | 转换为企业事件处理器 |
+
+### 兼容性架构设计
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    AI-Automated-office 兼容架构                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    部门模块层 (Department Modules)                │   │
+│  │  人事部 │ 销售部 │ 财务部 │ 仓储部 │ 审批中心 │ ...             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                    │
+│                                    │ 工具调用                           │
+│  ┌─────────────────────────────────┴───────────────────────────────┐   │
+│  │                    统一工具层 (Unified Tool Layer)               │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │   │
+│  │  │ 内置工具    │ │ 适配工具    │ │ MCP工具     │              │   │
+│  │  │ (Native)   │ │ (Adapted)  │ │ (External) │              │   │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                    │
+│                                    │                                    │
+│  ┌─────────────────────────────────┴───────────────────────────────┐   │
+│  │                    兼容适配层 (Compatibility Layer)              │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │   │
+│  │  │ Skill适配器│ │ Plugin适配器│ │ SOUL适配器 │              │   │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘              │   │
+│  │  ┌─────────────┐ ┌─────────────┐                              │   │
+│  │  │ Hook适配器 │ │ 安全审计器 │                              │   │
+│  │  └─────────────┘ └─────────────┘                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                    │
+│                                    │ 资源加载                           │
+│  ┌─────────────────────────────────┴───────────────────────────────┐   │
+│  │                    资源管理层 (Resource Management)              │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐              │   │
+│  │  │ 本地资源库 │ │ 私有市场   │ │ ClawHub市场 │              │   │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Skill适配层设计
+
+Skill 是 ClawHub 生态中最核心的资源类型，采用 SKILL.md 格式定义 Agent 可执行的技能。
+
+**Skill 解析流程：**
+1. 解析 YAML frontmatter 获取元数据
+2. 提取 Description、Triggers、Tools、Examples 等章节
+3. 转换为内部工具格式
+4. 注册到统一工具层
+
+**Skill 工具映射：**
+- Skill 中的 Tools → 内部工具 (InternalTool)
+- Skill 中的 Triggers → 触发器规则 (InternalTrigger)
+- Skill 执行代理 → SkillExecutor
+
+### Plugin适配层设计
+
+OpenClaw 插件是 TypeScript 模块，需要适配转换为部门模块组件。
+
+**Plugin 组件映射：**
+
+| OpenClaw Plugin Type | AI-Automated-office Component |
+|---------------------|------------------------------|
+| Agent Tool | 部门工具 (Department Tool) |
+| Channel Plugin | 消息通道适配器 |
+| Provider Plugin | LLM提供商适配器 |
+| CLI Command | 桌面端命令/菜单项 |
+| Background Service | 后台任务服务 |
+| Hook | 事件处理器 |
+| HTTP Route | API端点 |
+
+**安全隔离：**
+- Plugin 在沙箱环境中执行
+- 文件系统访问需白名单授权
+- 网络访问需白名单授权
+- 执行超时和内存限制
+
+### SOUL适配层设计
+
+SOUL.md 用于定义 Agent 的人设（Persona），可直接作为 Agent 人设模板导入。
+
+**SOUL 内容映射：**
+- Identity → 系统提示词身份部分
+- Personality → 系统提示词性格部分
+- Expertise → 系统提示词专业领域
+- Communication Style → 系统提示词沟通风格
+- Boundaries → 系统提示词边界约束
+
+### 安全机制设计
+
+**资源安全验证流程：**
+1. **来源验证** - 检查来源是否可信（ClawHub官方/私有市场/本地）
+2. **签名验证** - 验证资源签名（如果有）
+3. **静态分析** - 检测敏感API调用、可疑模式
+4. **沙箱测试** - 在隔离环境中运行测试
+5. **审计记录** - 记录资源加载和执行日志
+
+**企业级安全增强：**
+- 资源加载前强制安全扫描
+- 敏感操作需管理员审批
+- 执行日志完整记录
+- 支持资源黑白名单
+
+### 市场集成设计
+
+**三层市场架构：**
+
+| 层级 | 说明 | 特点 |
+|-----|------|------|
+| **本地资源库** | 本地导入的Skill/Plugin/SOUL | 完全离线可用 |
+| **私有市场** | 企业自建市场 | 支持ClawHub格式，租户隔离 |
+| **ClawHub市场** | ClawHub官方市场 | 外部资源市场接入 |
+
+**资源安装流程：**
+1. 用户从市场浏览/搜索资源
+2. 系统进行安全验证
+3. 适配层转换资源格式
+4. 安装到本地资源库
+5. 注册到统一工具层
+
+### ClawHub兼容性功能需求（FR700系列）
+
+**Skill兼容（FR700-710）**
+
+| 编号 | 需求 | 说明 |
+|-----|------|------|
+| FR700 | 系统可以解析SKILL.md格式的技能文件 | Skill解析 |
+| FR701 | 系统可以将Skill中的Tools转换为内部工具 | 工具转换 |
+| FR702 | 系统可以将Skill中的Triggers转换为触发器规则 | 触发器转换 |
+| FR703 | 用户可以从本地导入Skill文件 | 本地导入 |
+| FR704 | 用户可以从私有市场安装Skill | 私有市场 |
+| FR705 | 用户可以从ClawHub市场安装Skill | 官方市场 |
+| FR706 | Skill执行时自动记录审计日志 | 审计日志 |
+| FR707 | Skill执行支持超时和重试机制 | 执行控制 |
+| FR708 | 用户可以查看已安装Skill的状态和版本 | 状态监控 |
+| FR709 | 用户可以卸载已安装的Skill | 卸载管理 |
+| FR710 | 系统支持Skill版本更新检查和升级 | 版本管理 |
+
+**Plugin兼容（FR711-720）**
+
+| 编号 | 需求 | 说明 |
+|-----|------|------|
+| FR711 | 系统可以解析OpenClaw Plugin模块 | Plugin解析 |
+| FR712 | 系统可以将Plugin工具转换为部门模块组件 | 组件转换 |
+| FR713 | Plugin在沙箱环境中执行，限制文件系统和网络访问 | 安全隔离 |
+| FR714 | 管理员可以配置Plugin的访问白名单 | 白名单配置 |
+| FR715 | Plugin执行超时自动终止 | 超时控制 |
+| FR716 | 用户可以查看Plugin执行日志 | 日志查看 |
+| FR717 | 用户可以启用/禁用已安装的Plugin | 启用禁用 |
+| FR718 | Plugin加载前进行安全扫描 | 安全扫描 |
+| FR719 | Plugin调用需要用户确认（可配置） | 调用确认 |
+| FR720 | 系统支持Plugin依赖管理 | 依赖管理 |
+
+**SOUL兼容（FR721-728）**
+
+| 编号 | 需求 | 说明 |
+|-----|------|------|
+| FR721 | 系统可以解析SOUL.md格式的人设文件 | SOUL解析 |
+| FR722 | 系统可以将SOUL转换为Agent人设模板 | 人设转换 |
+| FR723 | 用户可以从市场安装SOUL模板 | 市场安装 |
+| FR724 | 用户可以选择SOUL模板作为Agent人设 | 人设选择 |
+| FR725 | 用户可以自定义修改已安装的SOUL | 自定义修改 |
+| FR726 | SOUL模板支持多语言 | 多语言支持 |
+| FR727 | 用户可以创建和分享自己的SOUL模板 | 模板分享 |
+| FR728 | 系统预置常用SOUL模板 | 预置模板 |
+
+**市场集成（FR730-745）**
+
+| 编号 | 需求 | 说明 |
+|-----|------|------|
+| FR730 | 用户可以浏览ClawHub官方市场的资源 | 官方市场浏览 |
+| FR731 | 用户可以在市场搜索资源（按名称/标签/类型） | 资源搜索 |
+| FR732 | 用户可以查看资源的详情、评分、评论 | 资源详情 |
+| FR733 | 管理员可以配置企业私有市场 | 私有市场配置 |
+| FR734 | 私有市场支持ClawHub格式资源 | 格式兼容 |
+| FR735 | 私有市场资源与官方市场资源隔离存储 | 数据隔离 |
+| FR736 | 管理员可以审核私有市场资源 | 资源审核 |
+| FR737 | 用户可以上传资源到私有市场 | 资源上传 |
+| FR738 | 系统支持资源的自动更新检查 | 自动更新 |
+| FR739 | 用户可以配置资源更新策略（自动/手动） | 更新策略 |
+| FR740 | 管理员可以设置市场访问权限 | 访问权限 |
+| FR741 | 系统记录资源安装、更新、卸载日志 | 操作日志 |
+| FR742 | 用户可以对已安装资源进行评分和评论 | 评分评论 |
+| FR743 | 系统支持资源依赖自动解析和安装 | 依赖安装 |
+| FR744 | 离线状态下仍可使用已安装的资源 | 离线支持 |
+| FR745 | 管理员可以配置资源安全扫描策略 | 安全策略 |
+
+**安全与审计（FR746-755）**
+
+| 编号 | 需求 | 说明 |
+|-----|------|------|
+| FR746 | 资源加载前进行来源验证 | 来源验证 |
+| FR747 | 资源签名验证（如有） | 签名验证 |
+| FR748 | 资源静态分析检测可疑代码 | 静态分析 |
+| FR749 | Plugin执行时限制系统调用权限 | 权限限制 |
+| FR750 | 敏感资源安装需管理员审批 | 安装审批 |
+| FR751 | 所有资源执行记录审计日志 | 执行审计 |
+| FR752 | 审计日志保留180天 | 日志保留 |
+| FR753 | 管理员可以配置资源黑白名单 | 黑白名单 |
+| FR754 | 异常资源执行自动告警 | 异常告警 |
+| FR755 | 支持资源一键回滚到安全版本 | 版本回滚 |
+
+## 三层记忆层架构
+
+> **架构说明：** 记忆层采用三层架构设计，分别服务于不同范围的数据存储和检索需求。
+
+### 分层设计
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       记忆层分层架构                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │              L3: 图记忆层 (Graph Memory)                      │   │
+│  │              实体关系图谱、知识推理                            │   │
+│  │              范围：租户级别（Post-MVP）                        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                              ▲                                      │
+│                              │ 实体关联                              │
+│  ┌───────────────────────────┴─────────────────────────────────┐   │
+│  │              L2: 企业知识库层 (RAG)                           │   │
+│  │              高质量知识存储、混合检索                          │   │
+│  │              范围：租户级别，全员可访问                        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                              ▲                                      │
+│                              │ 知识引用                              │
+│  ┌───────────────────────────┴─────────────────────────────────┐   │
+│  │              L1: 个人记忆层 (Personal Memory)                 │   │
+│  │              会话记忆、用户偏好、错题集                        │   │
+│  │              范围：用户级别，仅本人可访问                      │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 层级职责对比
+
+| 层级 | 名称 | 数据归属 | 访问范围 | 存储内容 | 优先级 |
+|------|------|---------|---------|---------|--------|
+| **L1** | 个人记忆层 | 用户 | 仅本人 | 会话历史、偏好、错题集 | P0 |
+| **L2** | 企业知识库 | 租户 | 租户全员 | 文档、FAQ、流程规范 | P0 |
+| **L3** | 图记忆层 | 租户 | 租户全员 | 实体关系、知识图谱 | P2 |
+
+### L1 个人记忆层
+
+#### 数据结构
+
+```rust
+pub struct PersonalMemory {
+    pub user_id: String,
+    pub tenant_id: String,
+    
+    // 会话记忆
+    pub session_memories: Vec<SessionMemory>,
+    
+    // 用户偏好
+    pub preferences: Vec<UserPreference>,
+    
+    // 错题集
+    pub corrections: Vec<CorrectionRecord>,
+}
+
+pub struct SessionMemory {
+    pub session_id: String,
+    pub messages: Vec<Message>,
+    pub context_summary: Option<String>,
+    pub created_at: i64,
+    pub expires_at: Option<i64>,
+}
+
+pub struct UserPreference {
+    pub key: String,
+    pub value: String,
+    pub category: String,  // quote, contract, approval, etc.
+    pub created_at: i64,
+}
+
+pub struct CorrectionRecord {
+    pub id: String,
+    pub scenario: String,
+    pub error_description: String,
+    pub correction: String,
+    pub rule_extracted: String,
+    pub applied_count: i32,
+    pub created_at: i64,
+}
+```
+
+#### 记忆智能更新
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    记忆智能更新机制                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  用户对话 ──→ LLM分析 ──→ 决策操作类型                          │
+│                              │                                  │
+│              ┌───────────────┼───────────────┐                 │
+│              │               │               │                 │
+│              ▼               ▼               ▼                 │
+│           ADD           UPDATE          DELETE                 │
+│        新增记忆        更新已有        删除过期                 │
+│              │               │               │                 │
+│              └───────────────┼───────────────┘                 │
+│                              │                                  │
+│                              ▼                                  │
+│                       持久化存储                                │
+│                     (SQLite + 向量DB)                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### L2 企业知识库层
+
+#### 架构设计
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    企业知识库架构                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  文档上传 ──→ 文档解析 ──→ 智能分段 ──→ 向量嵌入                │
+│                                    │                            │
+│                                    ▼                            │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              向量数据库 (Qdrant)                         │   │
+│  │  Collection: knowledge_{tenant_id}                      │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                    │                            │
+│                                    ▼                            │
+│  用户查询 ──→ 混合检索 ──→ RRF融合 ──→ 返回结果                │
+│               │                                                   │
+│               ├── 向量语义检索                                   │
+│               └── BM25关键词检索                                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 混合检索实现
+
+```rust
+pub struct HybridSearchEngine {
+    vector_store: QdrantClient,
+    bm25_index: BM25Index,
+    vector_weight: f32,  // 默认 0.6
+    bm25_weight: f32,    // 默认 0.4
+}
+
+impl HybridSearchEngine {
+    pub async fn search(&self, query: &str, top_k: usize) -> Vec<SearchResult> {
+        // 1. 向量检索
+        let vector_results = self.vector_search(query, top_k * 2).await;
+        
+        // 2. BM25检索
+        let bm25_results = self.bm25_search(query, top_k * 2);
+        
+        // 3. RRF融合
+        self.reciprocal_rank_fusion(vector_results, bm25_results, top_k)
+    }
+    
+    fn reciprocal_rank_fusion(
+        &self,
+        vector_results: Vec<SearchResult>,
+        bm25_results: Vec<SearchResult>,
+        k: usize,
+    ) -> Vec<SearchResult> {
+        let mut scores: HashMap<String, f32> = HashMap::new();
+        let constant = 60.0;  // RRF常数
+        
+        // 向量结果打分
+        for (rank, result) in vector_results.iter().enumerate() {
+            let score = 1.0 / (constant + rank as f32 + 1.0);
+            *scores.entry(result.id.clone()).or_insert(0.0) += score * self.vector_weight;
+        }
+        
+        // BM25结果打分
+        for (rank, result) in bm25_results.iter().enumerate() {
+            let score = 1.0 / (constant + rank as f32 + 1.0);
+            *scores.entry(result.id.clone()).or_insert(0.0) += score * self.bm25_weight;
+        }
+        
+        // 排序返回Top-K
+        let mut results: Vec<_> = scores.into_iter().collect();
+        results.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        results.truncate(k);
+        
+        results.into_iter().map(|(id, score)| {
+            SearchResult { id, score, .. }
+        }).collect()
+    }
+}
+```
+
+### 存储架构
+
+```
+{app_data}/
+├── tenants/
+│   └── {tenant_id}/
+│       ├── personal_memory/
+│       │   ├── qdrant/           # Qdrant本地向量存储
+│       │   │   └── collections/
+│       │   │       ├── sessions/   # 会话记忆
+│       │   │       ├── preferences/# 用户偏好
+│       │   │       └── corrections/# 错题集
+│       │   └── memory.db         # SQLite历史记录
+│       │
+│       ├── knowledge/            # 企业知识库
+│       │   ├── qdrant/
+│       │   └── knowledge.db
+│       │
+│       └── graph/                # 图记忆(Post-MVP)
+│           └── neo4j/
+```
+
+## 错题集架构
+
+> **设计理念：** 当用户修改AI输出时，系统检测差异并提示用户确认是否记录规则。AI从用户解释中提取结构化规则，存储到错题集，后续自动应用。
+
+### 工作流程
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    错题集记录与应用流程                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Phase 1: 检测纠偏                                                      │
+│  AI生成输出 ──→ 用户修改 ──→ 检测差异 ──→ 弹出确认对话框              │
+│                                              [确认] [取消]              │
+│                                                                         │
+│  Phase 2: 提取规则                                                      │
+│  用户对话解释 ──→ LLM提取结构化规则 ──→ 生成CorrectionRecord           │
+│                                                                         │
+│  Phase 3: 存储规则                                                      │
+│  CorrectionRecord ──→ 向量数据库 ──→ SQLite持久化                      │
+│                                                                         │
+│  Phase 4: 应用规则                                                      │
+│  新请求 ──→ 向量搜索相关规则 ──→ 注入SystemPrompt ──→ AI生成正确结果   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 数据模型
+
+```rust
+pub struct CorrectionRecord {
+    pub id: String,
+    pub user_id: String,
+    pub tenant_id: String,
+    
+    // 场景信息
+    pub scenario: String,           // 场景标识（如 quote_amount_calculation）
+    pub scenario_display: String,   // 场景显示名（如 报价单金额计算）
+    
+    // 错误与纠正
+    pub error_description: String,  // 错误描述
+    pub correction: String,         // 纠正规则
+    pub rule_extracted: String,     // LLM提取的结构化规则
+    
+    // 原始上下文
+    pub original_context: String,   // 原始对话上下文
+    pub original_output: String,    // AI原始输出
+    pub corrected_output: String,   // 用户纠正后的输出
+    
+    // 效果追踪
+    pub applied_count: i32,         // 应用次数
+    pub effectiveness_score: f32,   // 效果评分
+    
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+```
+
+### 规则应用机制
+
+```rust
+impl CorrectionManager {
+    pub async fn get_applicable_rules(
+        &self,
+        context: &str,
+        scenario: &str,
+    ) -> Vec<CorrectionRecord> {
+        // 1. 向量搜索相似场景的规则
+        let similar_rules = self.vector_search(context, scenario, 5).await;
+        
+        // 2. 按效果评分排序
+        let mut rules = similar_rules;
+        rules.sort_by(|a, b| b.effectiveness_score.partial_cmp(&a.effectiveness_score).unwrap());
+        
+        rules
+    }
+    
+    pub fn inject_rules_to_prompt(
+        &self,
+        system_prompt: &mut String,
+        rules: &[CorrectionRecord],
+    ) {
+        if rules.is_empty() {
+            return;
+        }
+        
+        let rules_text = rules.iter()
+            .map(|r| format!("- {}: {}", r.scenario_display, r.rule_extracted))
+            .collect::<Vec<_>>()
+            .join("\n");
+        
+        system_prompt.push_str(&format!(r#"
+
+## 用户偏好规则（请严格遵守）
+
+{}
+"#, rules_text));
+    }
+}
+```
+
+### 右键菜单交互
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 报价单金额：¥125,000.00  ← [选中此文本]                      │
+│                        ┌──────────────┐                      │
+│                        │ 📝 编辑      │                      │
+│                        │ 💬 与AI对话  │ ← 右键菜单           │
+│                        │ 🔄 重新生成  │                      │
+│                        │ 📌 添加到偏好│                      │
+│                        │ ❌ 标记为错误│                      │
+│                        └──────────────┘                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 跨部门协作架构
+
+> **设计原则：** 每个部门的Agent只能调用本部门的内部工具，但可以调用其他部门暴露的公开工具。协作支持用户手动触发和Agent自动编排两种模式。
+
+### 协作架构
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    跨部门协作架构                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              主 Agent (用户会话)                         │   │
+│  └─────────────────────────┬───────────────────────────────┘   │
+│                            │                                    │
+│                            ▼                                    │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              协作编排器 (Orchestrator)                   │   │
+│  │  • 分析跨部门依赖                                       │   │
+│  │  • 生成执行计划                                         │   │
+│  │  • 协调多部门Agent                                      │   │
+│  │  • 汇总执行结果                                         │   │
+│  └─────────────────────────┬───────────────────────────────┘   │
+│                            │                                    │
+│         ┌──────────────────┼──────────────────┐                │
+│         │                  │                  │                │
+│         ▼                  ▼                  ▼                │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
+│  │  销售Agent  │    │  仓储Agent  │    │  财务Agent  │        │
+│  │             │    │             │    │             │        │
+│  │ 内部工具    │    │ 内部工具    │    │ 内部工具    │        │
+│  │ warehouse_* │    │ sales_*     │    │ sales_*     │        │
+│  │ (公开工具)  │    │ (公开工具)  │    │ (公开工具)  │        │
+│  └─────────────┘    └─────────────┘    └─────────────┘        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 协作流程
+
+```
+用户请求: "帮我处理这个销售订单，完成发货并记账"
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 1: 意图分析                                             │
+│ 识别涉及部门：销售部、仓储部、财务部                         │
+└─────────────────────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 2: 依赖分析                                             │
+│ 销售订单 → 仓储发货 → 财务记账                               │
+│ (顺序依赖)                                                   │
+└─────────────────────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 3: 生成执行计划                                         │
+│                                                             │
+│ 步骤1 [销售部] 创建订单                                      │
+│        工具: sales_order_create                             │
+│        参数: {customer: "客户A", products: [...]}           │
+│                                                             │
+│ 步骤2 [仓储部] 确认库存并发货                                 │
+│        工具: warehouse_ship (公开工具)                       │
+│        参数: {order_id: "待生成", address: "..."}            │
+│                                                             │
+│ 步骤3 [财务部] 生成应收账款                                   │
+│        工具: finance_receivable_add (公开工具)               │
+│        参数: {order_id: "待生成", amount: "..."}             │
+└─────────────────────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 4: 用户确认                                             │
+│ 弹出确认卡片，用户可修改计划                                  │
+│ [确认执行] [修改计划] [取消]                                  │
+└─────────────────────────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 5: 执行并汇总结果                                       │
+│ 依次调用各部门Agent，返回执行结果                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 公开工具配置
+
+```yaml
+# 销售部公开工具配置
+public_tools:
+  - name: sales_order_create
+    description: 创建销售订单
+    allowed_callers:
+      - warehouse  # 仓储部可调用
+      - finance    # 财务部可调用
+      
+  - name: sales_get_quote
+    description: 获取报价单信息
+    allowed_callers:
+      - finance    # 财务部可调用（用于记账）
+      
+  - name: sales_get_contract
+    description: 获取合同信息
+    allowed_callers:
+      - finance    # 财务部可调用
+```
+
+### Rust实现结构
+
+```rust
+pub struct CollaborationOrchestrator {
+    agent_registry: AgentRegistry,
+    tool_registry: ToolRegistry,
+}
+
+impl CollaborationOrchestrator {
+    pub async fn analyze_and_plan(
+        &self,
+        request: &str,
+        context: &SessionContext,
+    ) -> Result<CollaborationPlan, Error> {
+        // 1. 分析涉及的部门
+        let departments = self.analyze_departments(request, context).await?;
+        
+        // 2. 分析依赖关系
+        let dependencies = self.analyze_dependencies(&departments).await?;
+        
+        // 3. 生成执行计划
+        let plan = self.generate_plan(&departments, &dependencies)?;
+        
+        Ok(plan)
+    }
+    
+    pub async fn execute_plan(
+        &self,
+        plan: &CollaborationPlan,
+        context: &SessionContext,
+    ) -> Result<Vec<StepResult>, Error> {
+        let mut results = Vec::new();
+        
+        for step in &plan.steps {
+            // 检查权限
+            self.check_permission(&step, context)?;
+            
+            // 调用对应部门Agent
+            let result = self.call_department_agent(&step, context).await?;
+            results.push(result);
+        }
+        
+        Ok(results)
+    }
+}
+
+pub struct CollaborationPlan {
+    pub steps: Vec<CollaborationStep>,
+    pub estimated_time: Duration,
+}
+
+pub struct CollaborationStep {
+    pub department: String,
+    pub tool: String,
+    pub parameters: Value,
+    pub dependencies: Vec<usize>,  // 依赖的步骤索引
+}
+```
+
+## 统一消息系统架构
+
+> **设计理念：** 将**人**和**Agent**都作为消息参与者（Participant），统一处理消息交互。支持人与人、Agent与Agent、人与Agent三种通信场景，实现企业内部全流程协作。
+
+### 参与者模型设计
+
+**参与者ID格式：**
+```
+human:{userId}       // 人类员工
+agent:{ownerUserId}  // AI助手（归属于某员工）
+system:{serviceName} // 系统服务
+group:{groupId}      // 群组
+```
+
+**Rust数据结构：**
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ParticipantType {
+    Human,
+    Agent,
+    System,
+    Group,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Participant {
+    pub id: String,
+    pub participant_type: ParticipantType,
+    pub display_name: String,
+    pub avatar_url: Option<String>,
+    pub department: Option<String>,
+    pub owner_user_id: Option<String>,  // Agent归属员工
+    pub online_status: OnlineStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OnlineStatus {
+    Online,
+    Offline,
+    Busy,
+    Away,
+}
+
+impl Participant {
+    pub fn parse_id(id: &str) -> Result<(ParticipantType, String), Error> {
+        let parts: Vec<&str> = id.splitn(2, ':').collect();
+        if parts.len() != 2 {
+            return Err(Error::InvalidParticipantId);
+        }
+        
+        let ptype = match parts[0] {
+            "human" => ParticipantType::Human,
+            "agent" => ParticipantType::Agent,
+            "system" => ParticipantType::System,
+            "group" => ParticipantType::Group,
+            _ => return Err(Error::InvalidParticipantId),
+        };
+        
+        Ok((ptype, parts[1].to_string()))
+    }
+}
+```
+
+### 消息类型定义
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum MessageContent {
+    Text { content: String },
+    Voice { 
+        audio_url: String, 
+        duration_seconds: u32,
+        transcript: Option<String>,  // 自动转文字
+    },
+    Image { 
+        url: String, 
+        thumbnail_url: Option<String>,
+        width: Option<u32>,
+        height: Option<u32>,
+    },
+    File { 
+        url: String, 
+        filename: String,
+        size_bytes: u64,
+        mime_type: String,
+    },
+    WorkCard { card: WorkCard },
+    SystemNotification { 
+        title: String,
+        body: String,
+        action_url: Option<String>,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkCard {
+    pub card_type: WorkCardType,
+    pub title: String,
+    pub description: String,
+    pub status: Option<String>,
+    pub actions: Vec<CardAction>,
+    pub metadata: HashMap<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum WorkCardType {
+    Task,
+    Approval,
+    Report,
+    Order,
+    Notification,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CardAction {
+    pub label: String,
+    pub action: String,
+    pub style: Option<ActionStyle>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ActionStyle {
+    Primary,
+    Secondary,
+    Danger,
+}
+```
+
+### 消息流转架构
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         统一消息系统架构                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                        消息路由层                                 │   │
+│   │  • 参与者解析（human/agent/system/group）                        │   │
+│   │  • 权限校验（谁可以给谁发消息）                                   │   │
+│   │  • 消息类型处理                                                   │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│                                    ▼                                    │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                        消息存储层                                 │   │
+│   │  • 本地SQLite（消息记录、会话列表）                               │   │
+│   │  • 云端同步（实时推送、离线存储）                                 │   │
+│   │  • 消息索引（全文检索、时间排序）                                 │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                    │                                    │
+│                                    ▼                                    │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                        消息推送层                                 │   │
+│   │  • WebSocket实时推送                                             │   │
+│   │  • 桌面通知（系统托盘）                                           │   │
+│   │  • 离线推送（上线后同步）                                         │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 三种通信场景
+
+| 场景 | 参与者 | 路由规则 | 消息示例 |
+|------|--------|---------|---------|
+| **人↔人** | human:A → human:B | 直接投递 | "这个报价单帮我看看" |
+| **Agent↔Agent** | agent:A → agent:B | 需双方员工确认 | "订单XXX需要发货" |
+| **人↔Agent** | human:A → agent:B | 间接沟通 | "帮我问一下仓储部库存" |
+
+**Agent消息发送流程：**
+```
+Agent生成消息
+     │
+     ├─► 检查敏感度（是否需要员工确认）
+     │        │
+     │        ├─► 敏感消息 → 弹出确认卡片
+     │        │                 │
+     │        │                 ├─► 确认 → 发送
+     │        │                 └─► 取消 → 不发送
+     │        │
+     │        └─► 普通消息 → 直接发送
+     │
+     └─► 发送消息（带Agent标识）
+              │
+              └─► 记录发送日志（员工可见）
+```
+
+### 群聊协作架构
+
+**核心设计：**
+- 员工入群 → Agent自动跟随入群（员工可设置关闭）
+- Agent角色 → 静默监听 + 选择性补充发言
+- Agent不主导对话，只在需要时补充信息
+
+**Agent发言触发场景：**
+| 场景 | 触发条件 | Agent行为 |
+|------|---------|----------|
+| 被@提及 | `@Agent` 或 `@员工` | 代为回答问题 |
+| 工作提醒 | 相关任务状态变化 | "订单已发货，物流单号XXX" |
+| 数据补充 | 员工发言涉及数据 | 自动附上数据卡片 |
+| 进度汇报 | 员工让Agent汇报 | 输出结构化进度报告 |
+| 协作接力 | 上游任务完成 | 通知下游相关人员 |
+
+**Rust实现：**
+```rust
+pub struct GroupChatManager {
+    db: Arc<Database>,
+    message_router: Arc<MessageRouter>,
+}
+
+impl GroupChatManager {
+    /// 员工入群，Agent自动跟随
+    pub async fn add_member(&self, group_id: &str, user_id: &str) -> Result<(), Error> {
+        // 1. 添加员工到群组
+        self.db.add_group_member(group_id, user_id, MemberRole::Member).await?;
+        
+        // 2. 检查员工是否允许Agent自动跟随
+        let user_settings = self.db.get_user_message_settings(user_id).await?;
+        if user_settings.agent_auto_follow_group {
+            // 3. Agent跟随入群
+            let agent_id = format!("agent:{}", user_id);
+            self.db.add_group_member(group_id, &agent_id, MemberRole::Agent).await?;
+        }
+        
+        Ok(())
+    }
+    
+    /// 处理群消息
+    pub async fn handle_group_message(&self, msg: &Message) -> Result<(), Error> {
+        // 1. 存储消息
+        self.db.save_message(msg).await?;
+        
+        // 2. 通知所有群成员
+        for member in self.db.get_group_members(&msg.group_id).await? {
+            if member.member_type == MemberType::Agent {
+                // 3. 检查Agent是否需要发言
+                self.check_agent_response(&member.id, msg).await?;
+            }
+        }
+        
+        Ok(())
+    }
+    
+    /// 检查Agent是否需要响应
+    async fn check_agent_response(&self, agent_id: &str, msg: &Message) -> Result<(), Error> {
+        let owner_id = Participant::parse_id(agent_id)?.1;
+        
+        // 检查触发条件
+        let should_respond = self.check_trigger_conditions(agent_id, msg).await?;
+        
+        if should_respond {
+            // 生成Agent响应
+            let response = self.generate_agent_response(agent_id, msg).await?;
+            self.send_group_message(&msg.group_id, &response).await?;
+        }
+        
+        Ok(())
+    }
+}
+```
+
+### 员工通讯录设计
+
+**数据结构：**
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmployeeContact {
+    pub user_id: String,
+    pub name: String,
+    pub department: String,
+    pub position: String,
+    pub phone: Option<String>,
+    pub email: Option<String>,
+    pub employee_id: String,
+    pub work_location: Option<String>,
+    pub avatar_url: Option<String>,
+    pub online_status: OnlineStatus,
+    pub visibility_settings: ContactVisibility,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContactVisibility {
+    pub phone_visible_to: VisibilityScope,
+    pub email_visible_to: VisibilityScope,
+    pub work_location_visible_to: VisibilityScope,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum VisibilityScope {
+    Everyone,
+    Department,
+    Managers,
+    Self,
+}
+```
+
+**通讯录服务：**
+```rust
+pub struct ContactService {
+    db: Arc<Database>,
+}
+
+impl ContactService {
+    /// 获取组织架构树
+    pub async fn get_organization_tree(&self, tenant_id: &str) -> Result<OrgTree, Error> {
+        // 返回按部门分层的员工列表
+    }
+    
+    /// 搜索员工
+    pub async fn search_employees(&self, query: &str, filters: ContactFilters) -> Result<Vec<EmployeeContact>, Error> {
+        // 支持姓名/部门/职位/工号搜索
+    }
+    
+    /// 获取员工名片（应用可见性设置）
+    pub async fn get_employee_card(&self, viewer_id: &str, target_id: &str) -> Result<EmployeeCard, Error> {
+        let contact = self.db.get_employee_contact(target_id).await?;
+        let visibility = &contact.visibility_settings;
+        
+        // 根据可见性设置过滤敏感字段
+        Ok(EmployeeCard {
+            user_id: contact.user_id.clone(),
+            name: contact.name.clone(),
+            department: contact.department.clone(),
+            position: contact.position.clone(),
+            phone: self.apply_visibility(&contact.phone, &visibility.phone_visible_to, viewer_id, target_id),
+            email: self.apply_visibility(&contact.email, &visibility.email_visible_to, viewer_id, target_id),
+            // ...
+        })
+    }
+    
+    /// 快捷操作
+    pub async fn quick_action(&self, action: QuickAction, target_id: &str) -> Result<(), Error> {
+        match action {
+            QuickAction::SendMessage => { /* 打开私聊 */ },
+            QuickAction::TalkToAgent => { /* 与Agent对话 */ },
+            QuickAction::InviteToGroup { group_id } => { /* 邀请入群 */ },
+        }
+        Ok(())
+    }
+}
+```
+
+### 消息存储架构
+
+```
+{app_data}/
+├── tenants/
+│   └── {tenant_id}/
+│       ├── messages/
+│       │   ├── messages.db      # SQLite消息记录
+│       │   ├── conversations/   # 会话列表
+│       │   └── attachments/     # 附件缓存
+│       └── contacts/
+│           └── contacts.db      # 通讯录缓存
+```
+
+**消息表设计：**
+```sql
+CREATE TABLE messages (
+    id TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL,
+    sender_id TEXT NOT NULL,
+    sender_type TEXT NOT NULL,  -- human/agent/system
+    receiver_id TEXT NOT NULL,
+    content TEXT NOT NULL,       -- JSON
+    status TEXT DEFAULT 'sent',  -- sent/delivered/read
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER,
+    deleted_at INTEGER,
+    
+    INDEX idx_conversation (conversation_id, created_at DESC),
+    INDEX idx_sender (sender_id),
+    INDEX idx_receiver (receiver_id)
+);
+
+CREATE TABLE conversations (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,          -- private/group
+    participants TEXT NOT NULL,  -- JSON array
+    last_message_id TEXT,
+    unread_count INTEGER DEFAULT 0,
+    updated_at INTEGER NOT NULL
+);
+```
+
+### WebSocket实时推送
+
+```rust
+pub struct MessageWebSocket {
+    connections: Arc<RwLock<HashMap<String, WebSocketConnection>>>,
+    message_queue: Arc<MessageQueue>,
+}
+
+impl MessageWebSocket {
+    /// 推送消息给指定参与者
+    pub async fn push_message(&self, participant_id: &str, msg: &Message) -> Result<(), Error> {
+        if let Some(conn) = self.connections.read().await.get(participant_id) {
+            conn.send(msg).await?;
+        } else {
+            // 离线存储，上线后推送
+            self.message_queue.enqueue(participant_id, msg).await?;
+        }
+        Ok(())
+    }
+    
+    /// 用户上线，推送离线消息
+    pub async fn on_user_online(&self, user_id: &str) -> Result<(), Error> {
+        let messages = self.message_queue.dequeue_all(user_id).await?;
+        for msg in messages {
+            self.push_message(user_id, &msg).await?;
+        }
+        Ok(())
+    }
+}
+```
+
+### 消息权限控制
+
+| 权限项 | 说明 | 实现位置 |
+|-------|------|---------|
+| 谁可以给Agent发消息 | 白名单机制 | MessageRouter.check_permission |
+| Agent可以给谁发消息 | 所属员工确认 | AgentMessageService.confirm_and_send |
+| 群组可见性 | 公开/私密群组 | GroupChatManager.check_access |
+| 通讯录字段可见性 | 按角色/部门控制 | ContactService.get_employee_card |
+
 ## Starter Template Evaluation
 
 ### Primary Technology Domain
 
-基于PRD需求分析，项目属于 **Desktop App + AI Agent平台** 类型。
+基于PRD需求分析，项目属于 **AI赋能的ERP系统** 类型。
+
+**核心定位：**
+- 桌面端应用（Tauri + Rust）
+- AI Agent框架（自研，参考OpenClaw）
+- 部门化架构（核心部门内置 + 扩展部门可安装）
+- 企业级ERP能力（跨部门数据联动、统一数据中台）
 
 ### Technology Stack Decisions
 
@@ -2104,37 +4016,70 @@ ws_endpoint = "wss://ws.example.com"
 
 ### Requirements Coverage Validation ✅
 
-**功能需求覆盖:**
+**功能需求覆盖（共439个）:**
 
-| FR类别 | 架构支持 | 状态 |
-|--------|---------|------|
-| 桌面端UI | Tauri + React + shadcn/ui | ✅ |
-| AI Agent核心 | Agent Core Layer (Rust) | ✅ |
-| 插件系统 | Plugin Layer + Manager | ✅ |
-| 权限系统 | Auth模块 + RBAC | ✅ |
-| 多租户 | 数据库级隔离 | ✅ |
-| 数据同步 | Sync Engine + WebSocket | ✅ |
-| 8个业务插件 | Plugin目录结构 + 插件API | ✅ |
+| FR类别 | 需求编号范围 | 数量 | 架构支持 | 状态 |
+|--------|-------------|------|---------|------|
+| 桌面端UI与系统交互 | FR1-FR8 | 8 | Tauri + React + shadcn/ui | ✅ |
+| AI Agent核心能力 | FR9-FR19 | 11 | Agent Core Layer (Rust) | ✅ |
+| 部门模块系统 | FR20-FR26 | 7 | Plugin Layer + Manager | ✅ |
+| 用户与权限管理 | FR27-FR33 | 7 | Auth模块 + RBAC | ✅ |
+| 多租户管理 | FR34-FR37 | 4 | 数据库级隔离 | ✅ |
+| 数据同步与存储 | FR38-FR43 | 6 | Sync Engine + WebSocket | ✅ |
+| **统一消息系统** | FR44-FR48, FR59-FR68, FR90-FR98, FR600-FR662 | 99 | Message Router + WebSocket | ✅ |
+| 工具调用可见性 | FR69-FR80 | 12 | Tool Panel + 状态监控 | ✅ |
+| AI纠偏反馈学习 | FR81-FR89 | 9 | 错题集架构 | ✅ |
+| 新手引导与帮助 | FR87-FR89 | 3 | 引导系统 | ✅ |
+| 核心部门功能 | FR99-FR209 | 62 | Plugin目录结构 + 插件API | ✅ |
+| 扩展部门功能 | FR220-FR244 | 13 | Plugin Layer | ✅ |
+| 知识库RAG | FR250-FR254 | 5 | 记忆层架构 | ✅ |
+| 记忆层功能 | FR260-FR334 | 75 | 三层记忆架构 | ✅ |
+| **AI Agent核心功能** | FR400-FR505 | 62 | Agent Core Layer | ✅ |
+| **ClawHub生态兼容性** | FR700-FR755 | 56 | 兼容适配层 | ✅ |
+| **总计** | | **439** | | ✅ |
 
 **非功能需求覆盖:**
 
-| NFR | 架构支持 | 状态 |
-|-----|---------|------|
-| 本地操作<100ms | Tauri IPC + 本地SQLite | ✅ |
-| 云端<3s | RESTful API + WebSocket | ✅ |
-| 内存<500MB | Rust后端 + 轻量前端 | ⚠️ 实现验证 |
-| TLS 1.3 | 传输加密 | ✅ |
-| AES-256 | 存储加密 | ✅ |
-| 多租户隔离 | 数据库级隔离 | ✅ |
-| 可用性>99.5% | 部署策略 | ⚠️ 运维保障 |
+| NFR类别 | 需求编号 | 架构支持 | 状态 |
+|---------|---------|---------|------|
+| **性能需求** | | | |
+| 本地操作<100ms | NFR1 | Tauri IPC + 本地SQLite | ✅ |
+| 云端<3s | NFR2 | RESTful API + WebSocket | ✅ |
+| AI对话首字<2s | NFR3 | LLM Adapter优化 | ✅ |
+| OCR<5s/页 | NFR4 | PaddleOCR本地服务 | ✅ |
+| 内存<500MB | NFR5 | Rust后端 + 轻量前端 | ⚠️ 实现验证 |
+| **Agent性能指标** | | | |
+| 记忆向量检索<200ms | NFR8-1 | Qdrant本地嵌入式 | ✅ |
+| 知识库混合检索<500ms | NFR8-2 | 向量+BM25融合 | ✅ |
+| 错题集规则注入<50ms | NFR8-3 | 内存缓存+异步加载 | ✅ |
+| Agent循环检测<10ms | NFR8-5 | 实时检测算法 | ✅ |
+| 敏感操作确认<100ms | NFR8-7 | 前端弹出组件 | ✅ |
+| **安全需求** | | | |
+| TLS 1.3传输加密 | NFR9 | 传输加密 | ✅ |
+| AES-256存储加密 | NFR10 | 存储加密 | ✅ |
+| 个人记忆数据隔离 | NFR16-1 | 用户级隔离 | ✅ |
+| 错题集数据隔离 | NFR16-3 | 用户ID隔离 | ✅ |
+| **可靠性需求** | | | |
+| 系统可用性>99.5% | NFR17 | 部署策略 | ⚠️ 运维保障 |
+| Agent任务成功率>95% | NFR23-1 | 重试+断点恢复 | ✅ |
+| 循环检测准确率>99% | NFR23-2 | 多模式检测 | ✅ |
+| 敏感操作拦截率100% | NFR23-5 | 黑名单+敏感配置 | ✅ |
+| **可扩展性需求** | | | |
+| 单租户≥500用户 | NFR24 | 架构设计 | ✅ |
+| 系统≥100租户 | NFR25 | 多租户架构 | ✅ |
+| 个人记忆≥10万条 | NFR28-1 | Qdrant分片 | ✅ |
+| 错题集≥1000条 | NFR28-2 | SQLite+向量 | ✅ |
 
 **关键能力补充:**
 
 | 能力 | 方案 | 状态 |
 |------|------|------|
 | OCR识别 | PaddleOCR本地服务 | ✅ 已确定 |
-| 向量存储 | 4种方案可选 | ✅ 已确定 |
+| 向量存储 | Qdrant（本地嵌入式/云端） | ✅ 已确定 |
 | 文件存储 | 本地 + 云端OSS | ✅ 已确定 |
+| 消息推送 | WebSocket + 离线队列 | ✅ 已确定 |
+| 黑名单机制 | 三级架构 + 通配符匹配 | ✅ 已确定 |
+| 可观测性 | 本地SQLite + 租户级统计 | ✅ 已确定 |
 
 ### Implementation Readiness Validation ✅
 
