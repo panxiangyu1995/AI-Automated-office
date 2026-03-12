@@ -962,6 +962,13 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 | **FR810-FR820** | **Epic 21** | **MCP服务管理** |
 | **FR825-FR832** | **Epic 21** | **MCP工具Approve策略** |
 | **FR835-FR840** | **Epic 21** | **Skill配置管理** |
+| **FR850-FR860** | **Epic 21** | **系统提示词管理** |
+| **FR865-FR875** | **Epic 21** | **Rules规则管理** |
+| **FR880-FR888** | **Epic 21** | **提示词调试功能** |
+| **FR890-FR900** | **Epic 21** | **Sub-Agent管理** |
+| **FR905-FR912** | **Epic 21** | **Sub-Agent角色配置** |
+| **FR915-FR925** | **Epic 21** | **Sub-Agent工具权限** |
+| **FR930-FR938** | **Epic 21** | **Sub-Agent调用机制** |
 
 ## Epic List
 
@@ -998,8 +1005,8 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 **FRs covered:** FR400-FR424, NFR8-5至NFR8-12
 
 **Epic 21: LLM提供商与MCP配置管理**
-用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，确保Agent应用的核心能力可配置、可控制、可审计。
-**FRs covered:** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840
+用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，管理提示词和规则，创建和配置Sub-Agent，确保Agent应用的核心能力可配置、可控制、可审计。
+**FRs covered:** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR860, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR912, FR915-FR925, FR930-FR938
 
 ### Phase 3: 企业级能力层
 
@@ -4430,12 +4437,306 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 ---
 
+### Story 21.10: 系统提示词查看与编辑
+
+**As a** 用户,
+**I want** 查看和编辑Agent的系统提示词,
+**So that** 调整Agent的行为和输出风格。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入提示词配置页面
+**When** 查看当前提示词
+**Then** 显示完整的系统提示词内容
+**And** 显示可用的变量占位符列表
+
+**Given** 用户编辑提示词
+**When** 修改提示词内容
+**Then** 支持变量占位符（{{user_name}}、{{department}}等）
+**And** 可保存为新模板
+**And** 可恢复默认提示词
+
+---
+
+### Story 21.11: 提示词模板管理
+
+**As a** 用户,
+**I want** 创建和管理提示词模板,
+**So that** 为不同场景快速切换提示词。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入模板管理页面
+**When** 查看模板列表
+**Then** 显示系统预置模板和用户自定义模板
+**And** 可创建、编辑、删除自定义模板
+
+**Given** 模板已选择
+**When** 应用模板
+**Then** 提示词立即更新
+**And** 可为不同部门设置不同默认模板
+
+---
+
+### Story 21.12: 提示词变量预览
+
+**As a** 用户,
+**I want** 预览提示词变量替换后的完整内容,
+**So that** 验证提示词配置正确。
+
+**Acceptance Criteria:**
+
+**Given** 提示词包含变量占位符
+**When** 点击预览按钮
+**Then** 显示变量替换后的完整提示词
+**And** 显示当前会话的变量值
+**And** 可复制完整内容
+
+**Given** 用户查看Token统计
+**When** 提示词已编辑
+**Then** 显示预估Token数量
+**And** 显示预估成本
+
+---
+
+### Story 21.13: 提示词版本管理
+
+**As a** 用户,
+**I want** 查看提示词变更历史并支持回滚,
+**So that** 可以恢复到之前的版本。
+
+**Acceptance Criteria:**
+
+**Given** 提示词有变更历史
+**When** 查看版本历史
+**Then** 显示每次变更的时间和内容差异
+**And** 可对比任意两个版本
+
+**Given** 用户选择历史版本
+**When** 点击回滚
+**Then** 提示词恢复到该版本
+**And** 记录回滚操作日志
+
+---
+
+### Story 21.14: Rules规则列表管理
+
+**As a** 用户,
+**I want** 查看和管理Agent的行为规则列表,
+**So that** 控制Agent的行为约束。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入规则管理页面
+**When** 查看规则列表
+**Then** 按分组展示规则（安全规则、行为规则、格式规则等）
+**And** 显示每条规则的启用状态和优先级
+
+**Given** 规则已显示
+**When** 切换规则启用状态
+**Then** 状态立即生效
+**And** 可拖拽调整规则优先级
+
+---
+
+### Story 21.15: 自定义规则添加
+
+**As a** 用户,
+**I want** 添加自定义规则,
+**So that** 满足特定的业务需求。
+
+**Acceptance Criteria:**
+
+**Given** 用户点击添加规则
+**When** 创建新规则
+**Then** 输入规则名称和描述
+**And** 设置规则内容和触发条件
+**And** 设置规则优先级
+
+**Given** 规则已创建
+**When** 设置触发条件
+**Then** 支持"当涉及XX时"的条件格式
+**And** 支持组合条件
+
+---
+
+### Story 21.16: 提示词调试模式
+
+**As a** 用户,
+**I want** 在调试模式下测试提示词效果,
+**So that** 验证提示词修改是否达到预期。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入调试模式
+**When** 输入测试消息
+**Then** 显示Agent响应
+**And** 显示触发的规则列表
+**And** 显示提示词对决策的影响
+
+**Given** 调试模式下
+**When** 临时修改提示词
+**Then** 可测试修改效果
+**And** 可选择保存或放弃修改
+
+---
+
+### Story 21.17: Sub-Agent创建与管理
+
+**As a** 用户,
+**I want** 创建和管理多个Sub-Agent,
+**So that** 为不同业务场景配置专业化的子代理。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入Sub-Agent管理页面
+**When** 创建新Sub-Agent
+**Then** 输入名称、描述、图标
+**And** 设置调用优先级
+**And** 可从模板快速创建
+
+**Given** Sub-Agent已创建
+**When** 管理Sub-Agent列表
+**Then** 可启用/禁用/删除/复制
+**And** 显示每个Sub-Agent的状态和调用次数
+
+---
+
+### Story 21.18: Sub-Agent角色提示词配置
+
+**As a** 用户,
+**I want** 为Sub-Agent配置独立的角色提示词,
+**So that** 每个子代理有专业的角色定义。
+
+**Acceptance Criteria:**
+
+**Given** 编辑Sub-Agent配置
+**When** 设置角色提示词
+**Then** 可输入独立的系统提示词
+**And** 支持变量占位符
+**And** 可预览提示词效果
+
+**Given** 配置调用描述
+**When** 设置供主Agent参考的描述
+**Then** 输入子代理能力描述
+**And** 设置触发关键词
+**And** 设置触发条件表达式
+
+---
+
+### Story 21.19: Sub-Agent工具绑定
+
+**As a** 用户,
+**I want** 为Sub-Agent绑定可用的MCP工具和Skills,
+**So that** 限制子代理可使用的工具范围。
+
+**Acceptance Criteria:**
+
+**Given** Sub-Agent配置页面
+**When** 选择可用工具
+**Then** 从已配置的MCP工具列表中勾选
+**And** 可选择绑定的Skills
+**And** 显示工具描述便于选择
+
+**Given** 工具已绑定
+**When** 设置独立Approve策略
+**Then** 可为该Sub-Agent设置工具的确认策略
+**And** 策略仅对该Sub-Agent生效
+
+---
+
+### Story 21.20: Sub-Agent权限配置
+
+**As a** 用户,
+**I want** 为Sub-Agent配置数据访问权限,
+**So that** 控制子代理可访问的数据范围。
+
+**Acceptance Criteria:**
+
+**Given** Sub-Agent配置页面
+**When** 设置数据权限
+**Then** 可选择可访问的部门数据
+**And** 可选择可访问的知识库
+**And** 可设置操作黑名单
+
+**Given** 权限已配置
+**When** Sub-Agent被调用
+**Then** 执行操作时继承用户权限
+**And** 受限数据不可访问
+
+---
+
+### Story 21.21: Sub-Agent模型配置
+
+**As a** 用户,
+**I want** 为Sub-Agent选择独立的LLM模型,
+**So that** 不同子代理可使用最适合的模型。
+
+**Acceptance Criteria:**
+
+**Given** Sub-Agent配置页面
+**When** 设置模型配置
+**Then** 可选择LLM提供商和模型
+**And** 可设置temperature等生成参数
+**And** 可为不同Sub-Agent选择不同模型
+
+**Given** 模型已配置
+**When** Sub-Agent执行任务
+**Then** 使用配置的模型处理请求
+**And** 记录模型调用日志
+
+---
+
+### Story 21.22: Sub-Agent调用路由
+
+**As a** 主Agent,
+**I want** 根据触发条件自动选择合适的Sub-Agent,
+**So that** 专业任务由专业子代理处理。
+
+**Acceptance Criteria:**
+
+**Given** 用户发送消息
+**When** 主Agent分析消息内容
+**Then** 匹配Sub-Agent触发关键词
+**And** 计算匹配度
+**And** 推荐合适的Sub-Agent
+
+**Given** 匹配到多个Sub-Agent
+**When** 显示推荐列表
+**Then** 用户可选择使用哪个
+**Or** 主Agent自动选择最高匹配度
+**And** 可手动指定使用某个Sub-Agent
+
+---
+
+### Story 21.23: Sub-Agent执行监控
+
+**As a** 用户,
+**I want** 查看Sub-Agent的执行状态和历史,
+**So that** 了解子代理的工作情况。
+
+**Acceptance Criteria:**
+
+**Given** Sub-Agent正在执行
+**When** 查看执行状态
+**Then** 显示当前执行的步骤
+**And** 显示已调用的工具
+**And** 显示预计剩余时间
+
+**Given** 执行完成
+**When** 查看执行历史
+**Then** 显示调用链路
+**And** 显示执行时间和资源消耗
+**And** 支持重新执行
+
+---
+
 ### Epic 21 Summary
 
 | 指标 | 数量 |
 |------|------|
-| **Story总数** | 9 |
-| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840 |
+| **Story总数** | 23 |
+| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR860, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR912, FR915-FR925, FR930-FR938 |
 
 ---
 
@@ -4446,16 +4747,16 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 | Phase | Epic数量 | Story总数 |
 |-------|---------|----------|
 | Phase 1: 基础设施层 | 3 | 25 |
-| Phase 2: AI Agent核心层 | 5 | 46 |
+| Phase 2: AI Agent核心层 | 5 | 60 |
 | Phase 3: 企业级能力层 | 3 | 20 |
 | Phase 4: 统一消息系统 | 1 | 10 |
 | Phase 5: 核心部门模块 | 6 | 54 |
 | Phase 6: 扩展部门模块 | 3 | 15 |
-| **总计** | **21** | **170** |
+| **总计** | **21** | **184** |
 
 ### FR覆盖率
 
-- **总FR数量：** 491个
+- **总FR数量：** 561个
 - **已覆盖FR：** 全部覆盖
 - **覆盖率：** 100%
 
@@ -4472,6 +4773,13 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 > - MCP服务管理（FR810-FR820）：添加/配置/连接MCP服务
 > - MCP工具Approve策略（FR825-FR832）：控制工具执行确认机制
 > - Skill配置管理（FR835-FR840）：管理已安装Skill的启用和配置
+> - **系统提示词管理（FR850-FR860）：查看/编辑/模板管理/版本控制**
+> - **Rules规则管理（FR865-FR875）：规则列表/自定义规则/优先级管理**
+> - **提示词调试功能（FR880-FR888）：预览/测试/Token统计/效果评估**
+> - **Sub-Agent管理（FR890-FR900）：创建/编辑/删除/启用/禁用/模板管理**
+> - **Sub-Agent角色配置（FR905-FR912）：角色提示词/调用描述/触发条件/模型选择**
+> - **Sub-Agent工具权限（FR915-FR925）：工具绑定/Skills绑定/数据权限/知识库权限**
+> - **Sub-Agent调用机制（FR930-FR938）：自动路由/手动选择/调用追踪/执行监控**
 
 ---
 
