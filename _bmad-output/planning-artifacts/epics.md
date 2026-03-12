@@ -958,6 +958,10 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 | FR400-FR424 | Epic 7 | 感知与决策层 |
 | FR430-FR455, FR460-FR498, FR500-FR505 | Epic 5 | 工具系统与调用机制 |
 | FR700-FR755 | Epic 10 | ClawHub生态兼容 |
+| **FR800-FR809** | **Epic 21** | **LLM提供商管理** |
+| **FR810-FR820** | **Epic 21** | **MCP服务管理** |
+| **FR825-FR832** | **Epic 21** | **MCP工具Approve策略** |
+| **FR835-FR840** | **Epic 21** | **Skill配置管理** |
 
 ## Epic List
 
@@ -992,6 +996,10 @@ AI可以记忆用户偏好和上下文，支持三层记忆架构（个人记忆
 **Epic 7: 感知与决策层**
 AI可以理解用户自然语言请求、处理多模态输入、分解任务、选择工具、检测循环并优雅终止。
 **FRs covered:** FR400-FR424, NFR8-5至NFR8-12
+
+**Epic 21: LLM提供商与MCP配置管理**
+用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，确保Agent应用的核心能力可配置、可控制、可审计。
+**FRs covered:** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840
 
 ### Phase 3: 企业级能力层
 
@@ -4215,6 +4223,222 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 ---
 
+## Epic 21: LLM提供商与MCP配置管理
+
+**Epic目标：** 用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，确保Agent应用的核心能力可配置、可控制、可审计。
+
+**覆盖需求：** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840
+
+**Phase:** Phase 2 - AI Agent核心层
+
+---
+
+### Story 21.1: LLM提供商添加与配置
+
+**As a** 用户,
+**I want** 添加和配置LLM提供商,
+**So that** 可以使用不同的AI模型服务。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入LLM配置页面
+**When** 添加新提供商
+**Then** 可以选择预置模板（百炼、智谱、DeepSeek等）
+**Or** 自定义输入API端点和名称
+**And** API Key加密存储，不明文显示
+
+**Given** 提供商已配置
+**When** 点击测试连接
+**Then** 发送测试请求验证配置
+**And** 显示连接结果和可用模型列表
+
+---
+
+### Story 21.2: LLM提供商默认设置
+
+**As a** 用户,
+**I want** 设置默认使用的提供商和模型,
+**So that** 新会话自动使用我偏好的模型。
+
+**Acceptance Criteria:**
+
+**Given** 多个提供商已配置
+**When** 设置默认提供商
+**Then** 可设置全局默认
+**Or** 为当前会话设置临时默认
+**And** 新会话自动使用默认提供商
+
+**Given** 提供商已选择
+**When** 查看模型配置
+**Then** 可为每个模型设置参数（temperature、max_tokens等）
+**And** 配置保存后生效
+
+---
+
+### Story 21.3: MCP服务添加与配置
+
+**As a** 用户,
+**I want** 添加和配置MCP服务,
+**So that** Agent可以调用MCP提供的工具能力。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入MCP配置页面
+**When** 添加新MCP服务
+**Then** 输入服务名称
+**And** 配置启动命令和参数
+**And** 配置环境变量（如API Key）
+
+**Given** MCP服务已配置
+**When** 点击测试连接
+**Then** 尝试启动服务并连接
+**And** 显示连接状态和错误信息
+
+---
+
+### Story 21.4: MCP服务连接管理
+
+**As a** 用户,
+**I want** 查看和管理MCP服务的连接状态,
+**So that** 确保服务正常运行。
+
+**Acceptance Criteria:**
+
+**Given** MCP服务已配置
+**When** 查看服务列表
+**Then** 显示每个服务的连接状态（在线/离线/错误）
+**And** 显示错误信息（如有）
+**And** 可重启或断开服务
+
+**Given** 服务连接断开
+**When** 系统检测到断开
+**Then** 自动尝试重连
+**And** 显示重连状态
+**And** 重连失败时通知用户
+
+---
+
+### Story 21.5: MCP工具发现与管理
+
+**As a** 用户,
+**I want** 查看MCP服务提供的工具并管理启用状态,
+**So that** 控制Agent可以调用哪些工具。
+
+**Acceptance Criteria:**
+
+**Given** MCP服务已连接
+**When** 查看工具列表
+**Then** 显示服务提供的所有工具
+**And** 显示工具名称和描述
+**And** 显示当前启用/禁用状态
+
+**Given** 工具列表已显示
+**When** 切换工具启用状态
+**Then** 启用的工具可被Agent调用
+**And** 禁用的工具不会出现在Agent工具列表中
+**And** 状态立即生效
+
+---
+
+### Story 21.6: MCP工具Approve策略配置
+
+**As a** 用户,
+**I want** 为每个MCP工具设置approve策略,
+**So that** 控制工具执行前是否需要用户确认。
+
+**Acceptance Criteria:**
+
+**Given** 工具列表已显示
+**When** 设置工具approve策略
+**Then** 可选择三种策略：
+  - ⚡ 自动：工具调用时自动执行
+  - ✋ 需确认：调用前弹出确认卡片
+  - 🚫 禁止：工具被禁用
+
+**Given** 工具设置为"需确认"
+**When** Agent调用该工具
+**Then** 弹出确认卡片显示工具名称、参数
+**And** 用户可选择确认执行、修改参数、或取消
+
+**Given** 管理员设置企业默认策略
+**When** 新用户加入
+**Then** 继承企业默认策略
+**And** 用户可自定义调整
+
+---
+
+### Story 21.7: MCP工具批量配置
+
+**As a** 用户,
+**I want** 批量配置多个工具的approve策略,
+**So that** 快速完成工具配置。
+
+**Acceptance Criteria:**
+
+**Given** 工具列表已显示
+**When** 选择多个工具
+**Then** 可批量设置approve策略
+**And** 可按服务筛选工具
+**And** 可按当前策略筛选工具
+
+**Given** AI检测到敏感工具
+**When** 显示推荐配置
+**Then** 推荐高风险工具设置为"需确认"或"禁止"
+**And** 用户可一键采纳推荐
+
+---
+
+### Story 21.8: 工具执行日志与审计
+
+**As a** 用户,
+**I want** 查看工具执行日志,
+**So that** 调试问题并审计工具使用。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入日志页面
+**When** 查看执行日志
+**Then** 显示工具名称、调用时间、参数、结果
+**And** 显示approve决策（自动/用户确认/禁止）
+**And** 支持按时间、工具、状态筛选
+
+**Given** 日志记录存在
+**When** 导出日志
+**Then** 支持导出为JSON或CSV格式
+**And** 日志保留180天
+
+---
+
+### Story 21.9: Skill配置管理
+
+**As a** 用户,
+**I want** 查看和管理已安装的Skill,
+**So that** 控制Skill的启用状态和配置。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入Skill管理页面
+**When** 查看Skill列表
+**Then** 显示已安装的Skill名称、描述、状态
+**And** 可启用/禁用每个Skill
+**And** 可查看Skill提供的工具和触发器
+
+**Given** Skill已选择
+**When** 配置Skill参数
+**Then** 显示Skill可配置选项
+**And** 保存配置后生效
+
+---
+
+### Epic 21 Summary
+
+| 指标 | 数量 |
+|------|------|
+| **Story总数** | 9 |
+| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840 |
+
+---
+
 ## 总结
 
 ### Epic统计
@@ -4222,16 +4446,16 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 | Phase | Epic数量 | Story总数 |
 |-------|---------|----------|
 | Phase 1: 基础设施层 | 3 | 25 |
-| Phase 2: AI Agent核心层 | 4 | 37 |
+| Phase 2: AI Agent核心层 | 5 | 46 |
 | Phase 3: 企业级能力层 | 3 | 20 |
 | Phase 4: 统一消息系统 | 1 | 10 |
 | Phase 5: 核心部门模块 | 6 | 54 |
 | Phase 6: 扩展部门模块 | 3 | 15 |
-| **总计** | **20** | **161** |
+| **总计** | **21** | **170** |
 
 ### FR覆盖率
 
-- **总FR数量：** 439个
+- **总FR数量：** 491个
 - **已覆盖FR：** 全部覆盖
 - **覆盖率：** 100%
 
@@ -4240,6 +4464,14 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 - **总NFR数量：** 73个
 - **已覆盖NFR：** 全部覆盖
 - **覆盖率：** 100%
+
+### 新增需求说明
+
+> **Epic 21: LLM提供商与MCP配置管理** - 新增于实施就绪检查过程中，用于覆盖Agent应用核心能力配置需求：
+> - LLM提供商管理（FR800-FR809）：添加/配置/测试LLM提供商
+> - MCP服务管理（FR810-FR820）：添加/配置/连接MCP服务
+> - MCP工具Approve策略（FR825-FR832）：控制工具执行确认机制
+> - Skill配置管理（FR835-FR840）：管理已安装Skill的启用和配置
 
 ---
 
