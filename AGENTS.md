@@ -1,16 +1,23 @@
-# 匿名社区 - Claude AI 工作指南
+# AI-Automated-office - Claude AI 工作指南
 
 ## 项目概述
 
-**匿名社区** 是一个企业内部匿名发声平台，服务于约80名员工。核心价值在于「真匿名」——技术层面的身份隔离，让员工敢于说真话，无需担心身份暴露带来的职业风险。
+**AI-Automated-office** 是一款**AI赋能的ERP系统**，采用部门化架构设计。核心价值在于：
+
+- 每个部门都有专属 AI 助手
+- 跨部门数据自动联动
+- 统一数据中台，打破数据孤岛
+- 企业只需开通对应部门模块即可
 
 **产品定位：**
-- 真匿名机制 - 系统不记录IP与账号的关联
-- 邀请码注册 - 防止外部人员混入
-- 行为风控 - 防止恶意刷号
-- 内容治理 - 敏感词过滤 + 举报机制
+- 核心部门（内置不可卸载）：人事部、审批中心、销售部、财务部、仓储部、管理层
+- 扩展部门（按需安装）：售后服务、招投标、市场宣传
+- 平台能力：AI Agent 框架、部门权限系统、统一消息系统、知识库 RAG
 
-**技术栈：** React 18 + TypeScript + NestJS + TypeORM + SQL Server 2019 + Socket.io
+**差异化核心：**
+> *"钉钉/飞书给企业一堆工具，企业自己拼凑流程；我们给企业一个 AI 赋能的 ERP，看企业有哪些部门，就提供哪些部门的 AI 能力。"*
+
+**技术栈：** Tauri + Rust (桌面端) + React + TypeScript (前端) + Shadcn/ui + Tailwind CSS + 云端服务
 
 ---
 
@@ -22,10 +29,11 @@
 📄 **位置：** `_bmad-output/planning-artifacts/prd.md`
 
 **内容要点：**
-- 77条功能需求（FR1-FR79）
-- 30条非功能需求（NFR1-NFR30）
-- 用户旅程定义（4个核心旅程）
-- MVP范围定义
+- 439条功能需求（FR1-FR439）
+- 覆盖8个业务部门模块：人事管理、财务OCR、数据看板、销售自动化、售后工单、知识库RAG、仓库管理、标书制定
+- 核心平台能力：桌面端UI、AI Agent框架、插件系统、权限系统、统一消息系统
+- 用户旅程定义（8个核心旅程）
+- MVP范围：桌面端 + AI Agent核心框架 + 6个核心部门模块 + 部门权限系统 + 公告消息通知
 - 验收标准
 
 **约束力：**
@@ -37,30 +45,32 @@
 📄 **位置：** `_bmad-output/planning-artifacts/architecture.md`
 
 **内容要点：**
-- 技术栈选型（Vite + React 18 + NestJS + TypeORM + SQL Server 2019）
-- 前后端项目结构
-- 认证方案：JWT + Refresh Token
-- 权限控制：RBAC 三级角色
-- 匿名保护机制：IP-账号隔离
-- 命名约定、API设计规范
+- 技术栈选型：Tauri + Rust (桌面端) + React + TypeScript (前端) + Shadcn/ui + Tailwind CSS
+- 分层微内核架构：Presentation Layer → Agent Core Layer → Plugin Layer → Data Layer → Cloud Layer
+- LLM接入：适配器模式（OpenAI兼容格式），支持百炼、智谱AI、Minimax、DeepSeek等
+- 工具系统：混合模式（Core Tools + MCP Tools + Plugin Tools）
+- 记忆系统：三层架构（个人记忆 + 企业知识库 + 图记忆）
+- 命名约定：`{plugin}_{entity}_{action}` 格式
+- 本地优先存储：SQLite + 增量同步 + 智能冲突解决
+- 多租户：数据库级隔离
 
 **约束力：**
 - ❌ 不得更换技术栈核心组件
 - ❌ 不得违背模块边界
-- ❌ 不得绕过匿名保护设计
+- ❌ 不得绕过安全设计（TLS 1.3、AES-256加密）
 - ✅ 具体实现方案可在架构框架内优化
 
 ### 3️⃣ UX设计规范 - 体验铁律
 📄 **位置：** `_bmad-output/planning-artifacts/ux-design-specification.md`
 
 **内容要点：**
-- 设计方向：简洁专业型
-- 组件库：Ant Design 5.x
-- 颜色系统：蓝色系品牌色 (#1890ff)
-- 图标库：Font Awesome
-- 表情库：emoji-mart
-- 自定义组件：PostCard, CommentItem, NotificationItem, AnonymousBadge, SecurityConfirm, OnboardingGuide, RichTextEditor
-- 明暗主题支持
+- 设计方向：VSCode风格四栏布局（活动栏 + 侧边栏 + 工作区 + AI对话面板）
+- 组件库：Shadcn/ui（可复制、可修改）
+- 样式方案：Tailwind CSS
+- 颜色系统：深蓝色系品牌色 (#1E3A5F)
+- 图标库：Lucide React
+- 核心交互：和AI说话就能完成任务（透明 + 可控）
+- 体验原则：AI即入口、透明可控、零学习成本、即时价值、插件化扩展
 
 **约束力：**
 - ❌ 不得违背颜色系统和状态色定义
@@ -72,7 +82,7 @@
 📄 **位置：** `_bmad-output/planning-artifacts/epics.md`
 
 **内容要点：**
-- 9个 Epic 定义
+- 多个 Epic 定义
 - 详细的用户故事（Story）拆分
 - 需求覆盖映射表（FR/NFR/ARCH/UX）
 - 验收标准（Acceptance Criteria）
@@ -80,15 +90,13 @@
 **Epic 列表：**
 | Epic | 名称 | Stories |
 |:----:|------|:-------:|
-| 1 | 项目初始化与认证基础 | 9 个故事 |
-| 2 | 版块与内容浏览 | 9 个故事 |
-| 3 | 帖子创作与编辑 | 9 个故事 |
-| 4 | 互动功能 | 6 个故事 |
-| 5 | 实时通知系统 | 7 个故事 |
-| 6 | 内容治理与审核 | 10 个故事 |
-| 7 | 管理后台 - 版块与邀请码 | 5 个故事 |
-| 8 | 管理后台 - 用户、内容与系统 | 8 个故事 |
-| 9 | 用户申诉与行为风控 | 4 个故事 |
+| 1 | 桌面端UI与系统交互 | 多个故事 |
+| 2 | AI Agent核心能力 | 多个故事 |
+| 3 | 部门模块系统 | 多个故事 |
+| 4 | 用户与权限管理 | 多个故事 |
+| 5 | 多租户管理 | 多个故事 |
+| 6 | 数据同步与存储 | 多个故事 |
+| ... | ... | ... |
 
 **约束力：**
 - ❌ 不得实现 Epic 之外的功能
@@ -222,7 +230,7 @@ Selection criteria (in order of priority):
 - Read the task description and steps carefully
 - Implement the functionality to satisfy all steps
 - Follow existing code patterns and conventions
-- **使用 Element Plus 组件和 Element Plus Icons**
+- **使用 Shadcn/ui 组件和 Lucide React 图标**
 
 ### Step 5: Test Thoroughly
 
@@ -358,30 +366,62 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
 ## 📁 Project Structure
 
 ```
-/
-├── AGENTS.md                              # Agent 工作指南
-├── CLAUDE.md                              # 本文件 - Claude AI 配置
-├── task.json                              # 任务定义
-├── progress.txt                           # 进度日志
-├── init.sh                                # 初始化脚本
+ai-automated-office/
+├── 📁 配置文件
+│   ├── package.json                       # 前端依赖配置
+│   ├── pnpm-lock.yaml                     # pnpm锁定文件
+│   ├── tsconfig.json                      # TypeScript配置
+│   ├── vite.config.ts                     # Vite构建配置
+│   ├── tailwind.config.js                 # Tailwind配置
+│   ├── components.json                    # shadcn/ui配置
+│   └── .env.example                       # 环境变量示例
 │
-├── _bmad-output/                          # 规划文档输出目录
+├── 📁 前端源码 (src/)
+│   ├── main.tsx                           # 应用入口
+│   ├── App.tsx                            # 根组件
+│   ├── components/                        # UI组件
+│   │   ├── ui/                            # shadcn/ui基础组件
+│   │   ├── common/                        # 业务通用组件
+│   │   └── plugin/                        # 插件相关组件
+│   ├── features/                          # 功能模块
+│   │   ├── agent/                         # Agent核心功能
+│   │   ├── auth/                          # 认证功能
+│   │   ├── plugin/                        # 插件系统
+│   │   └── settings/                      # 设置功能
+│   ├── hooks/                             # 全局Hooks
+│   ├── stores/                            # Zustand状态管理
+│   ├── lib/                               # 工具和服务
+│   ├── types/                             # 全局类型
+│   └── styles/                            # 全局样式
+│
+├── 📁 Tauri/Rust后端 (src-tauri/)
+│   ├── Cargo.toml                         # Rust依赖配置
+│   ├── tauri.conf.json                    # Tauri配置
+│   └── src/
+│       ├── main.rs                        # Rust入口
+│       ├── agent/                         # Agent核心
+│       │   ├── llm/                       # LLM适配器
+│       │   ├── tools/                     # 工具系统
+│       │   ├── memory/                    # 记忆管理
+│       │   └── session/                   # 会话管理
+│       ├── plugins/                       # 插件系统
+│       ├── sync/                          # 数据同步
+│       ├── storage/                       # 本地存储
+│       ├── auth/                          # 认证授权
+│       └── commands/                       # Tauri命令
+│
+├── 📁 规划文档 (_bmad-output/)
 │   └── planning-artifacts/
 │       ├── prd.md                         # 🔒 PRD 文档（产品铁律）
-│       ├── architecture.md                # 🔒 架构文档（技术铁律）
-│       ├── ux-design-specification.md     # 🔒 UX设计规范（体验铁律）
-│       └── epics.md                       # 🔒 Epic 文档（实现铁律）
+│       ├── architecture.md                 # 🔒 架构文档（技术铁律）
+│       ├── ux-design-specification.md      # 🔒 UX设计规范（体验铁律）
+│       └── epics.md                        # 🔒 Epic 文档（实现铁律）
 │
-├── openspec/                              # OpenSpec 变更管理
-│   └── changes/
-│       └── xianyu-mvp-epics/              # MVP Epic 定义
-│           ├── specs/                     # 各功能模块规格
-│           └── tasks.md
+├── 📁 OpenSpec 变更管理
+│   └── openspec/
+│       └── changes/                       # 变更目录
 │
-└── hello-nextjs/                          # 应用代码目录
-    ├── src/                               # 源代码
-    ├── src-tauri/                         # Tauri 后端
-    └── python-backend/                    # Python FastAPI 后端
+└── 📁 mem0/                              # 记忆系统（外部依赖）
 ```
 
 ---
@@ -389,45 +429,57 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
 ## 💻 Commands
 
 ```bash
-# 初始化项目
-./init.sh
+# 前端开发 (React + TypeScript + Vite)
+npm install           # 安装依赖
+npm run dev           # 启动开发服务器
+npm run build         # 生产构建
+npm run lint          # 代码检查
+npm run preview       # 预览构建结果
 
-# 前端开发
-cd hello-nextjs
-npm run dev          # 启动开发服务器
-npm run build        # 生产构建
-npm run lint         # 代码检查
-
-# Tauri 开发
-npm run tauri dev    # 启动 Tauri 开发模式
+# Tauri 开发 (Rust 桌面端)
+npm run tauri dev     # 启动 Tauri 开发模式
 npm run tauri build  # 构建桌面应用
+npm run tauri build -- --debug  # 调试构建
 
-# Python 后端
-cd python-backend
-python -m uvicorn main:app --reload
+# 开发环境配置
+cp .env.example .env  # 复制环境变量模板
+# 配置以下变量：
+# - VITE_API_URL: 云端API地址
+# - VITE_WS_URL: WebSocket地址
 ```
 
 ---
 
 ## 📝 Coding Conventions
 
-### TypeScript/Vue 规范
+### TypeScript/React 规范
 - TypeScript strict mode
-- Composition API + `<script setup>`
-- 组件命名：PascalCase
-- 文件命名：kebab-case
+- 使用 Shadcn/ui 组件库（基于 Radix UI）
+- 组件命名：PascalCase（如 `ChatPanel.tsx`）
+- 文件命名：kebab-case（如 `use-chat.ts`）
+- Hooks 命名：`use{Feature}.ts` 格式
 
 ### 样式规范
-- 使用 Element Plus 组件库
-- 遵循 UX 设计规范的颜色系统
-- 使用 CSS 变量（设计 Token）
-- **禁止使用 emoji 作为图标**，使用 Element Plus Icons
+- 使用 Tailwind CSS 进行样式开发
+- 遵循 UX 设计规范的颜色系统（#1E3A5F 主色）
+- 使用 shadcn/ui 设计令牌系统
+- **图标统一使用 Lucide React**，禁止使用 emoji
+
+### Rust/Tauri 规范
+- 遵循 Rust 官方代码风格
+- 使用 `cargo fmt` 格式化代码
+- 使用 `cargo clippy` 进行代码检查
+- 模块划分清晰，遵循微内核架构
+
+### 工具命名规范
+- 工具命名采用 `{plugin}_{entity}_{action}` 格式
+- 示例：`hr_employee_create`、`finance_invoice_process`
 
 ### 数据库规范
 - 遵循 PRD 数据字典定义
-- 使用 SQLite + 加密存储敏感数据
+- 使用 SQLite 本地存储 + 云端同步
 - 表名：snake_case
-- 字段名：snake_case
+- 敏感数据使用 AES-256 加密存储
 
 ---
 
@@ -442,7 +494,9 @@ python -m uvicorn main:app --reload
 7. **One commit per task** - 所有更改（代码、progress.txt、task.json）必须在同一个 commit 中提交
 8. **Never remove tasks** - Only flip `passes: false` to `true`
 9. **Stop if blocked** - 需要人工介入时，不要提交，输出阻塞信息并停止
-10. **无 emoji** - 图标统一使用 Element Plus Icons
+10. **无 emoji** - 图标统一使用 Lucide React
+11. **AI Agent 优先** - 核心交互是对话驱动，优先考虑自然语言交互场景
+12. **本地优先** - 数据存储采用本地优先 + 增量同步策略
 
 ---
 
@@ -450,13 +504,15 @@ python -m uvicorn main:app --reload
 
 **新会话启动清单：**
 
-1. [ ] 阅读本 CLAUDE.md 文件
+1. [ ] 阅读本 AGENTS.md 文件
 2. [ ] 阅读 PRD 文档（`_bmad-output/planning-artifacts/prd.md`）
 3. [ ] 阅读架构文档（`_bmad-output/planning-artifacts/architecture.md`）
 4. [ ] 阅读 UX 设计规范（`_bmad-output/planning-artifacts/ux-design-specification.md`）
 5. [ ] 阅读 Epic 文档（`_bmad-output/planning-artifacts/epics.md`）
 6. [ ] 查看 task.json 选择任务
-7. [ ] 开始工作！
+7. [ ] 安装依赖：`npm install`
+8. [ ] 启动开发：`npm run dev`
+9. [ ] 开始工作！
 
 ---
 
@@ -496,12 +552,12 @@ python -m uvicorn main:app --reload
 │  8. 执行铁律合规检查                                         │
 │     → PRD + 架构 + UX + Epic 四方约束                        │
 │     ↓                                                       │
-│  9. 按照OpenSpec 变更文档设计实现功能代码                                  │
+│  9. 按照OpenSpec 变更文档设计实现功能代码                      │
 │     ↓                                                       │
 │  10. 执行测试验证                                            │
-│     → lint / build / playwright mcp浏览器测试                              │
+│     → lint / build / playwright mcp浏览器测试                │
 │     ↓                                                       │
-│  11. 更新 progress.txt/标记tasks.md为已完成                                      │
+│  11. 更新 progress.txt/标记tasks.md为已完成                   │
 │     ↓                                                       │
 │  12. 更新 task.json (passes: true)                           │
 │     ↓                                                       │
