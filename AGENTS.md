@@ -363,65 +363,278 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
 
 ---
 
-## 📁 Project Structure
+## 完整项目目录结构
 
 ```
 ai-automated-office/
 ├── 📁 配置文件
-│   ├── package.json                       # 前端依赖配置
-│   ├── pnpm-lock.yaml                     # pnpm锁定文件
-│   ├── tsconfig.json                      # TypeScript配置
-│   ├── vite.config.ts                     # Vite构建配置
-│   ├── tailwind.config.js                 # Tailwind配置
-│   ├── components.json                    # shadcn/ui配置
-│   └── .env.example                       # 环境变量示例
+│   ├── package.json                    # 前端依赖配置
+│   ├── pnpm-lock.yaml                  # pnpm锁定文件
+│   ├── tsconfig.json                   # TypeScript配置
+│   ├── tsconfig.node.json              # Node环境TS配置
+│   ├── vite.config.ts                  # Vite构建配置
+│   ├── tailwind.config.js              # Tailwind配置
+│   ├── postcss.config.js               # PostCSS配置
+│   ├── .env.example                    # 环境变量示例
+│   ├── .gitignore                      # Git忽略配置
+│   ├── .eslintrc.cjs                   # ESLint配置
+│   ├── .prettierrc                     # Prettier配置
+│   ├── components.json                 # shadcn/ui配置
+│   └── README.md                       # 项目说明
+│
+├── 📁 GitHub配置
+│   └── .github/
+│       ├── workflows/
+│       │   ├── ci.yml                  # CI工作流
+│       │   ├── release.yml             # 发布工作流
+│       │   └── test.yml                # 测试工作流
+│       ├── ISSUE_TEMPLATE/
+│       │   ├── bug_report.md
+│       │   └── feature_request.md
+│       └── dependabot.yml              # Dependabot配置
 │
 ├── 📁 前端源码 (src/)
-│   ├── main.tsx                           # 应用入口
-│   ├── App.tsx                            # 根组件
-│   ├── components/                        # UI组件
-│   │   ├── ui/                            # shadcn/ui基础组件
-│   │   ├── common/                        # 业务通用组件
-│   │   └── plugin/                        # 插件相关组件
-│   ├── features/                          # 功能模块
-│   │   ├── agent/                         # Agent核心功能
-│   │   ├── auth/                          # 认证功能
-│   │   ├── plugin/                        # 插件系统
-│   │   └── settings/                      # 设置功能
-│   ├── hooks/                             # 全局Hooks
-│   ├── stores/                            # Zustand状态管理
-│   ├── lib/                               # 工具和服务
-│   ├── types/                             # 全局类型
-│   └── styles/                            # 全局样式
+│   ├── main.tsx                        # 应用入口
+│   ├── App.tsx                         # 根组件
+│   ├── vite-env.d.ts                   # Vite类型声明
+│   │
+│   ├── components/                     # UI组件
+│   │   ├── ui/                         # shadcn/ui基础组件
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   ├── toast.tsx
+│   │   │   └── ...
+│   │   ├── common/                     # 业务通用组件
+│   │   │   ├── AppLayout.tsx           # 应用布局
+│   │   │   ├── Sidebar.tsx             # 侧边栏
+│   │   │   ├── Header.tsx              # 头部导航
+│   │   │   ├── LoadingSpinner.tsx      # 加载动画
+│   │   │   ├── ErrorBoundary.tsx       # 错误边界
+│   │   │   └── EmptyState.tsx          # 空状态
+│   │   └── plugin/                     # 插件相关组件
+│   │       ├── PluginCard.tsx          # 插件卡片
+│   │       ├── PluginPanel.tsx         # 插件面板
+│   │       └── PluginSettings.tsx      # 插件设置
+│   │
+│   ├── features/                       # 功能模块
+│   │   ├── agent/                      # Agent核心功能
+│   │   │   ├── components/
+│   │   │   │   ├── ChatPanel.tsx       # 对话面板
+│   │   │   │   ├── MessageList.tsx     # 消息列表
+│   │   │   │   ├── MessageInput.tsx    # 消息输入
+│   │   │   │   └── ToolCallDisplay.tsx # 工具调用展示
+│   │   │   ├── hooks/
+│   │   │   │   ├── useChat.ts          # 对话Hook
+│   │   │   │   └── useAgent.ts         # Agent Hook
+│   │   │   └── types/
+│   │   │       └── agent.types.ts      # Agent类型
+│   │   │
+│   │   ├── auth/                       # 认证功能
+│   │   │   ├── components/
+│   │   │   │   ├── LoginForm.tsx       # 登录表单
+│   │   │   │   └── UserInfo.tsx        # 用户信息
+│   │   │   ├── hooks/
+│   │   │   │   └── useAuth.ts          # 认证Hook
+│   │   │   └── types/
+│   │   │       └── auth.types.ts       # 认证类型
+│   │   │
+│   │   ├── plugin/                     # 插件系统
+│   │   │   ├── components/
+│   │   │   │   ├── PluginManager.tsx   # 插件管理器
+│   │   │   │   └── PluginMarket.tsx    # 插件市场
+│   │   │   ├── hooks/
+│   │   │   │   └── usePlugin.ts        # 插件Hook
+│   │   │   └── types/
+│   │   │       └── plugin.types.ts     # 插件类型
+│   │   │
+│   │   └── settings/                   # 设置功能
+│   │       ├── components/
+│   │       │   ├── SettingsPanel.tsx   # 设置面板
+│   │       │   ├── ModelConfig.tsx     # 模型配置
+│   │       │   └── ApiKeyManager.tsx   # API密钥管理
+│   │       └── types/
+│   │           └── settings.types.ts
+│   │
+│   ├── hooks/                          # 全局Hooks
+│   │   ├── useTauri.ts                 # Tauri IPC封装
+│   │   ├── useEventBus.ts              # 事件总线Hook
+│   │   └── useLocalStorage.ts          # 本地存储Hook
+│   │
+│   ├── stores/                         # Zustand状态
+│   │   ├── uiStore.ts                  # UI状态(主题、面板)
+│   │   ├── appStore.ts                 # 应用状态(用户、会话)
+│   │   ├── cacheStore.ts               # 缓存状态(临时数据)
+│   │   └── pluginStore.ts              # 插件状态
+│   │
+│   ├── lib/                            # 工具和服务
+│   │   ├── api.ts                      # 云端API客户端
+│   │   ├── tauri.ts                    # Tauri命令封装
+│   │   ├── utils.ts                    # 工具函数
+│   │   ├── constants.ts                # 常量定义
+│   │   ├── logger.ts                   # 日志工具
+│   │   └── validators.ts               # 验证工具
+│   │
+│   ├── types/                          # 全局类型
+│   │   ├── global.d.ts                 # 全局类型声明
+│   │   ├── api.types.ts                # API响应类型
+│   │   └── models.types.ts             # 数据模型类型
+│   │
+│   └── styles/                         # 全局样式
+│       ├── globals.css                 # 全局CSS
+│       └── themes/                     # 主题文件
+│           ├── light.css
+│           └── dark.css
 │
 ├── 📁 Tauri/Rust后端 (src-tauri/)
-│   ├── Cargo.toml                         # Rust依赖配置
-│   ├── tauri.conf.json                    # Tauri配置
+│   ├── Cargo.toml                      # Rust依赖配置
+│   ├── Cargo.lock                      # Rust锁定文件
+│   ├── tauri.conf.json                 # Tauri配置
+│   ├── build.rs                        # 构建脚本
+│   │
 │   └── src/
-│       ├── main.rs                        # Rust入口
-│       ├── agent/                         # Agent核心
-│       │   ├── llm/                       # LLM适配器
-│       │   ├── tools/                     # 工具系统
-│       │   ├── memory/                    # 记忆管理
-│       │   └── session/                   # 会话管理
-│       ├── plugins/                       # 插件系统
-│       ├── sync/                          # 数据同步
-│       ├── storage/                       # 本地存储
-│       ├── auth/                          # 认证授权
-│       └── commands/                       # Tauri命令
+│       ├── main.rs                     # Rust入口
+│       ├── lib.rs                      # 库入口
+│       │
+│       ├── agent/                      # Agent核心
+│       │   ├── mod.rs
+│       │   ├── llm/                    # LLM适配器
+│       │   │   ├── mod.rs
+│       │   │   ├── provider.rs         # Provider trait
+│       │   │   ├── openai.rs           # OpenAI适配器
+│       │   │   ├── zhipu.rs            # 智谱适配器
+│       │   │   ├── dashscope.rs        # 百炼适配器
+│       │   │   └── deepseek.rs         # DeepSeek适配器
+│       │   │
+│       │   ├── tools/                  # 工具系统
+│       │   │   ├── mod.rs
+│       │   │   ├── registry.rs         # 工具注册表
+│       │   │   ├── executor.rs         # 工具执行器
+│       │   │   ├── core/               # 核心工具
+│       │   │   │   ├── mod.rs
+│       │   │   │   ├── fs.rs           # 文件系统工具
+│       │   │   │   ├── shell.rs        # Shell工具
+│       │   │   │   └── http.rs         # HTTP工具
+│       │   │   └── mcp/                # MCP工具
+│       │   │       ├── mod.rs
+│       │   │       ├── client.rs       # MCP客户端
+│       │   │       └── handler.rs      # MCP处理器
+│       │   │
+│       │   ├── memory/                 # 记忆管理
+│       │   │   ├── mod.rs
+│       │   │   ├── store.rs            # 记忆存储
+│       │   │   ├── compressor.rs       # 上下文压缩
+│       │   │   └── embeddings.rs       # 向量嵌入
+│       │   │
+│       │   └── session/                # 会话管理
+│       │       ├── mod.rs
+│       │       ├── manager.rs          # 会话管理器
+│       │       └── history.rs          # 历史记录
+│       │
+│       ├── plugins/                    # 插件系统
+│       │   ├── mod.rs
+│       │   ├── manager.rs              # 插件管理器
+│       │   ├── registry.rs             # 插件注册表
+│       │   ├── loader.rs               # 插件加载器
+│       │   └── dependency.rs           # 依赖管理
+│       │
+│       ├── sync/                       # 数据同步
+│       │   ├── mod.rs
+│       │   ├── engine.rs               # 同步引擎
+│       │   ├── conflict.rs             # 冲突解决
+│       │   └── delta.rs                # 增量同步
+│       │
+│       ├── storage/                    # 本地存储
+│       │   ├── mod.rs
+│       │   ├── sqlite.rs               # SQLite操作
+│       │   └── encryption.rs           # 加密存储
+│       │
+│       ├── auth/                       # 认证授权
+│       │   ├── mod.rs
+│       │   ├── user.rs                 # 用户管理
+│       │   ├── permission.rs           # 权限管理
+│       │   └── tenant.rs               # 租户管理
+│       │
+│       ├── commands/                   # Tauri命令
+│       │   ├── mod.rs
+│       │   ├── agent.rs                # Agent命令
+│       │   ├── plugin.rs               # 插件命令
+│       │   ├── storage.rs              # 存储命令
+│       │   └── system.rs               # 系统命令
+│       │
+│       └── utils/                      # 工具函数
+│           ├── mod.rs
+│           ├── logger.rs               # 日志工具
+│           └── error.rs                # 错误处理
 │
-├── 📁 规划文档 (_bmad-output/)
-│   └── planning-artifacts/
-│       ├── prd.md                         # 🔒 PRD 文档（产品铁律）
-│       ├── architecture.md                 # 🔒 架构文档（技术铁律）
-│       ├── ux-design-specification.md      # 🔒 UX设计规范（体验铁律）
-│       └── epics.md                        # 🔒 Epic 文档（实现铁律）
+├── 📁 业务插件 (plugins/)
+│   ├── hr/                             # 人事管理插件 (P0)
+│   │   ├── package.json
+│   │   ├── index.ts                    # 插件入口
+│   │   ├── manifest.json               # 插件清单
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── types/
+│   │   └── backend/
+│   │
+│   ├── finance/                        # 财务OCR插件 (P1)
+│   ├── knowledge/                      # 知识库RAG插件 (P1)
+│   ├── warehouse/                      # 仓库管理插件 (P2)
+│   ├── sales/                          # 销售自动化插件 (P1)
+│   ├── service/                        # 售后工单插件 (P1)
+│   ├── tender/                         # 标书制定插件 (P2)
+│   └── dashboard/                      # 数据看板插件 (P1)
 │
-├── 📁 OpenSpec 变更管理
-│   └── openspec/
-│       └── changes/                       # 变更目录
+├── 📁 测试 (tests/)
+│   ├── unit/                           # 单元测试
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── lib/
+│   ├── integration/                    # 集成测试
+│   │   ├── agent/
+│   │   ├── plugins/
+│   │   └── sync/
+│   └── e2e/                            # E2E测试
+│       ├── auth.spec.ts
+│       ├── chat.spec.ts
+│       └── plugin.spec.ts
 │
-└── 📁 mem0/                              # 记忆系统（外部依赖）
+├── 📁 云端后端 (cloud-server/)
+│   ├── go.mod                          # Go模块配置
+│   ├── go.sum                          # Go依赖锁定
+│   ├── main.go                         # Go入口
+│   ├── config/                         # 配置
+│   │   └── config.yaml
+│   ├── api/                            # API路由
+│   │   ├── auth.go
+│   │   ├── tenant.go
+│   │   └── sync.go
+│   ├── models/                         # 数据模型
+│   ├── services/                       # 业务服务
+│   ├── middleware/                     # 中间件
+│   └── docker-compose.yml
+│
+├── 📁 配置与日志
+│   ├── config/                         # 配置文件(TOML)
+│   │   ├── app.toml                    # 应用配置
+│   │   ├── database.toml               # 数据库配置
+│   │   └── logging.toml                # 日志配置
+│   └── logs/                           # 日志目录
+│       ├── app.log                     # 应用日志
+│       ├── error.log                   # 错误日志
+│       └── performance.log             # 性能日志
+│
+└── 📁 静态资源 (assets/)
+    ├── icons/                          # 应用图标
+    │   ├── icon.ico                    # Windows图标
+    │   ├── icon.icns                   # macOS图标
+    │   └── icon.png                    # Linux图标
+    └── images/                         # 图片资源
+        └── splash.png                  # 启动画面
 ```
 
 ---

@@ -161,7 +161,7 @@ Epic X, Story X.Y: [Story标题]
 ```
 /xianyu-task epic 1
 ```
-只生成 Epic 1（项目基础设施与核心框架）的 9 个 Story。
+只生成 Epic 1（项目基础设施与核心框架）的 所有Story。
 
 ### 生成单个 Story
 
@@ -179,7 +179,7 @@ Epic X, Story X.Y: [Story标题]
 
 **Epic 顺序**
 
-批量生成按以下顺序执行（考虑依赖关系）：
+批量生成按以下顺序执行（考虑依赖关系，仅作为参考）：
 
 1. Epic 1: 项目基础设施与核心框架 (Story 1.1 → 1.9)
 2. Epic 2: 账号管理 (Story 2.1 → 2.5)
@@ -229,5 +229,4 @@ Epic X, Story X.Y: [Story标题]
 | 命令 | 用途 |
 |------|------|
 | `/opsx:apply` | 实现 OpenSpec 变更 |
-| `/opsx:verify` | 验证实现是否匹配变更 |
 | `/opsx:archive` | 归档已完成的变更 |

@@ -39,7 +39,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-项目共定义439个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统、统一消息系统）和8个业务部门模块（人事管理、财务OCR、数据看板、销售自动化、售后工单、知识库RAG、仓库管理、标书制定）。核心架构围绕AI Agent能力展开，包括工具调用、MCP服务接入、会话管理、记忆管理、子代理协作、跨部门协作、三层记忆架构和ClawHub生态兼容性。
+项目共定义439个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统、知识库RAG、统一消息系统）和8个业务部门模块（人事管理、财务OCR、数据看板、销售自动化、售后工单、仓库管理、标书制定）。核心架构围绕AI Agent能力展开，包括工具调用、MCP服务接入、会话管理、记忆管理、子代理协作、跨部门协作、三层记忆架构和ClawHub生态兼容性。
 
 **Non-Functional Requirements:**
 - 性能：本地操作<100ms，云端<3s，空闲内存<500MB
@@ -107,6 +107,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-022 | 黑名单匹配采用简单通配符模式（支持精确、前缀、后缀、包含、分组匹配） | 架构讨论 2026-03-11 |
 | ADR-023 | Agent可观测性数据存储采用本地SQLite，管理员可见范围为租户级 | 架构讨论 2026-03-11 |
 | ADR-024 | 断点续传支持从任意中断位置恢复，数据持久化到本地SQLite | 架构讨论 2026-03-11 |
+| ADR-025 | 工具系统采用通用工具架构：每部门最多5个核心工具（query/aggregate/mutate/action/export），参数化设计避免工具爆炸 | Party Mode讨论 2026-03-13 |
 
 ### Recommended Architecture
 
@@ -432,6 +433,215 @@ url = "http://localhost:8080/mcp"
 - db_query             # 数据库_查询 (核心工具)
 ```
 
+#### 通用工具架构设计 (ADR-025)
+
+**背景：** 随着业务场景增多，如果每个场景都创建专用工具，系统将面临"工具爆炸"问题（预估150-200+工具），导致AI工具选择准确率下降、系统复杂度急剧上升。
+
+**决策：** 采用"通用工具 + 参数化"设计，每个部门模块最多提供5个核心工具。
+
+**工具类型定义：**
+
+| 工具类型 | 命名格式 | 用途 | 说明 |
+|---------|---------|------|------|
+| **通用查询** | `{dept}_query` | 数据查询 | 支持多实体、灵活过滤、字段选择 |
+| **统计聚合** | `{dept}_aggregate` | 统计汇总 | 支持sum/count/avg/max/min、分组聚合 |
+| **数据变更** | `{dept}_mutate` | 增删改 | create/update/delete操作 |
+| **业务操作** | `{dept}_action` | 特殊业务 | 审批、发货、入库等业务逻辑 |
+| **数据导出** | `{dept}_export` | 导出报表 | Excel/PDF/CSV导出 |
+
+**通用查询工具接口：**
+
+```typescript
+// 工具名: {department}_query
+// 示例: sales_query, hr_query, finance_query
+
+interface UniversalQueryParams {
+  // 实体类型（必填）
+  entity: string;  
+  // sales: contract | order | customer | quote
+  // hr: employee | department | attendance | position
+  // finance: invoice | expense | payment | ledger
+  // approval: request | workflow | template
+  
+  // 过滤条件（可选）
+  filters?: {
+    dateRange?: { start: Date; end: Date };
+    status?: string | string[];
+    ownerId?: string;           // 归属人（销售、审批人等）
+    departmentId?: string;
+    custom?: Record<string, any>; // 扩展条件
+  };
+  
+  // 返回字段（可选，默认返回核心字段）
+  fields?: string[];
+  
+  // 分页
+  page?: number;
+  pageSize?: number;
+  
+  // 排序
+  orderBy?: { field: string; direction: 'asc' | 'desc' };
+}
+
+interface UniversalQueryResult {
+  entity: string;
+  total: number;
+  items: Record<string, any>[];
+}
+```
+
+**通用聚合工具接口：**
+
+```typescript
+// 工具名: {department}_aggregate
+// 示例: sales_aggregate, hr_aggregate, finance_aggregate
+
+interface UniversalAggregateParams {
+  // 实体类型
+  entity: string;
+  
+  // 过滤条件
+  filters?: UniversalQueryParams['filters'];
+  
+  // 聚合配置
+  aggregations: {
+    metric: 'sum' | 'count' | 'avg' | 'max' | 'min';
+    field: string;           // 聚合字段
+    alias?: string;          // 别名
+  }[];
+  
+  // 分组
+  groupBy?: string | string[];
+}
+
+interface UniversalAggregateResult {
+  entity: string;
+  groups?: {
+    key: string | Record<string, any>;
+    metrics: Record<string, number>;
+  }[];
+  total?: Record<string, number>;
+}
+```
+
+**数据变更工具接口：**
+
+```typescript
+// 工具名: {department}_mutate
+// 示例: sales_mutate, hr_mutate, finance_mutate
+
+interface UniversalMutateParams {
+  // 操作类型
+  action: 'create' | 'update' | 'delete';
+  
+  // 实体类型
+  entity: string;
+  
+  // 数据（create/update时必填）
+  data?: Record<string, any>;
+  
+  // 条件（update/delete时必填）
+  where?: { id: string } | { ids: string[] };
+}
+
+interface UniversalMutateResult {
+  success: boolean;
+  affected?: number;
+  id?: string;
+}
+```
+
+**工具描述规范（帮助AI正确选择）：**
+
+```typescript
+const TOOL_DESCRIPTIONS = {
+  // 通用查询工具
+  "{dept}_query": `
+    查询{部门名称}数据（{支持的实体列表}）
+    适用场景：获取具体记录列表、查看详情、筛选数据
+    参数：entity(必填), filters, fields, page, orderBy
+    
+    示例用法：
+    - "今天签了哪些合同？" → entity: "contract", filters: { dateRange: "今天", status: "signed" }
+    - "王明的客户有哪些？" → entity: "customer", filters: { ownerId: "王明ID" }
+  `,
+  
+  // 统计聚合工具
+  "{dept}_aggregate": `
+    统计聚合{部门名称}数据
+    适用场景：计算总和、平均值、计数、按条件分组统计
+    参数：entity(必填), filters, aggregations(必填), groupBy
+    
+    示例用法：
+    - "今天合同总额多少？" → entity: "contract", aggregations: [{ metric: "sum", field: "amount" }]
+    - "按销售统计合同金额" → entity: "contract", aggregations: [...], groupBy: "salesName"
+  `,
+  
+  // 数据变更工具
+  "{dept}_mutate": `
+    变更{部门名称}数据（创建、更新、删除）
+    适用场景：新增记录、修改数据、删除记录
+    参数：action(必填), entity(必填), data, where
+    
+    注意：敏感操作会触发用户确认
+  `
+};
+```
+
+**工具数量对比：**
+
+| 部门 | 专用工具数（旧方案） | 通用工具数（新方案） | 减少比例 |
+|------|---------------------|---------------------|---------|
+| 销售部 | 30+ | 4 (query/aggregate/mutate/action) | 87% |
+| 财务部 | 25+ | 4 | 84% |
+| 人事部 | 20+ | 4 | 80% |
+| 审批中心 | 20+ | 4 | 80% |
+| 仓储部 | 15+ | 4 | 73% |
+| 管理层 | 30+ | 3 (query/aggregate/export) | 90% |
+| **总计** | **150+** | **~25** | **83%** |
+
+**AI工具选择流程：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    AI工具选择流程                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  用户问题："今天签了哪些合同？总额多少？"                   │
+│                                                             │
+│  Step 1: 意图识别                                           │
+│  ├── 部门：销售部 (sales)                                   │
+│  ├── 实体：合同 (contract)                                  │
+│  ├── 操作：查询 + 聚合                                      │
+│  └── 条件：时间=今天                                        │
+│                                                             │
+│  Step 2: 工具选择                                           │
+│  ├── 部门 → sales_*                                        │
+│  ├── 操作类型：                                             │
+│  │   ├── 纯查询 → sales_query                              │
+│  │   ├── 聚合统计 → sales_aggregate                        │
+│  │   └── 混合 → 先query后aggregate                         │
+│                                                             │
+│  Step 3: 参数构建                                           │
+│  └── AI根据意图自动填充参数                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**部门工具清单：**
+
+| 部门 | query | aggregate | mutate | action | export |
+|------|:-----:|:---------:|:------:|:------:|:------:|
+| 人事部 (hr) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 销售部 (sales) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 财务部 (finance) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 仓储部 (warehouse) | ✅ | ✅ | ✅ | ✅ | - |
+| 审批中心 (approval) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 管理层 (management) | ✅ | ✅ | - | - | ✅ |
+| 售后服务 (afterSales) | ✅ | ✅ | ✅ | ✅ | - |
+| 招投标 (bidding) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 市场宣传 (marketing) | ✅ | ✅ | ✅ | - | ✅ |
+
 #### 工具策略管道：
 
 ```
@@ -668,40 +878,817 @@ const defaultSensitiveOperations: SensitiveOperationConfig[] = [
 │  │   ├── file_write     # 写入文件                             │
 │  │   ├── file_edit      # 编辑文件                             │
 │  │   ├── dir_list       # 列出目录                             │
-│  │   ├── file_search    # 搜索文件                             │
+│  │   ├── pattern_search # 模式搜索（基于 ripgrep）             │
+│  │   ├── bash_execute   # Bash 命令执行（沙箱隔离）            │
+│  │   ├── web_search     # Web 搜索                             │
+│  │   ├── web_fetch      # Web 内容获取                         │
 │  │   ├── sys_time       # 系统时间                             │
 │  │   └── http_request   # HTTP请求                             │
 │  │                                                              │
-│  ├── 知识库工具层 (RAG Tools)                                   │
-│  │   ├── knowledge_search   # 检索知识                         │
-│  │   ├── knowledge_add      # 添加知识                         │
-│  │   ├── knowledge_update   # 更新知识                         │
-│  │   ├── knowledge_delete   # 删除知识（敏感）                 │
-│  │   └── knowledge_list     # 知识库列表                       │
+│  ├── 平台知识库工具层 (Platform Knowledge)                     │
+│  │   ├── knowledge_query   # 知识检索（平台能力）              │
+│  │   │   # 支持多知识库配置，不同 Agent 可绑定不同知识库       │
+│  │   │   # 所有知识库类型均可查询                             │
+│  │   │                                                        │
+│  │   └── knowledge_mutate  # 知识变更（AI可上传更新）          │
+│  │       # AI 可根据用户需求自动整理并上传知识                 │
+│  │       # 审核机制确保知识质量：                              │
+│  │       # - 全局知识库：需要管理员审核                        │
+│  │       # - 部门知识库：需要部门负责人审核                    │
+│  │       # - 个人知识库：无需审核，直接生效                    │
+│  │       # 支持重复检测和智能合并                              │
 │  │                                                              │
-│  ├── 云端数据工具层                                             │
-│  │   ├── db_query    # 查询数据                                │
-│  │   ├── db_insert   # 插入数据                                │
-│  │   ├── db_update   # 更新数据（敏感）                        │
-│  │   ├── db_delete   # 删除数据（敏感）                        │
-│  │   └── api_call    # 业务API调用                             │
+│  ├── 平台数据工具层 (Platform Database)                         │
+│  │   └── db_query    # 查询数据（只读暴露）                    │
+│  │       # 白名单表限制，仅允许查询非敏感表                    │
+│  │       # 自动注入租户隔离条件                                │
+│  │       # 敏感字段脱敏（手机号、身份证、密码等）              │
+│  │       # 完整审计日志 + 调用频率限制                         │
+│  │       # 所有写操作必须通过业务插件工具执行                  │
 │  │                                                              │
-│  └── 插件业务工具层                                             │
-│      ├── hr_employee_list     # 员工列表                       │
-│      ├── hr_employee_get      # 员工详情                       │
-│      ├── hr_employee_create   # 创建员工                       │
-│      ├── hr_employee_update   # 更新员工                       │
-│      ├── hr_employee_delete   # 删除员工（敏感）               │
-│      ├── hr_attendance_query  # 考勤查询                       │
-│      ├── hr_leave_apply       # 请假申请                       │
-│      ├── hr_leave_approve     # 请假审批（敏感）               │
-│      ├── hr_salary_query      # 薪资查询（敏感）               │
-│      └── ...其他插件工具                                       │
+│  └── 插件业务工具层（通用工具架构）                            │
+│      ├── hr_query      # 人事查询（员工/部门/考勤）            │
+│      ├── hr_aggregate  # 人事统计聚合                          │
+│      ├── hr_mutate     # 人事数据变更                          │
+│      ├── hr_action     # 人事业务操作（审批/入职/离职）        │
+│      ├── hr_export     # 人事数据导出                          │
+│      ├── sales_query   # 销售查询（合同/订单/客户）            │
+│      ├── sales_aggregate # 销售统计聚合                        │
+│      ├── sales_mutate  # 销售数据变更                          │
+│      ├── sales_action  # 销售业务操作                          │
+│      ├── sales_export  # 销售数据导出                          │
+│      └── ...其他插件（遵循相同架构）                           │
 │                                                                 │
 │  Phase 2: Post-MVP 扩展                                         │
 │  └── MCP外部工具：通过MCP协议接入第三方服务                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
+```
+
+#### 平台工具层详细设计
+
+> 平台工具是跨插件的核心能力，所有插件可调用，但权限由平台统一管理
+
+##### 1. 知识库检索工具 (knowledge_query)
+
+**设计理念：** 知识库作为平台能力，支持多知识库配置，不同 Agent 可绑定不同知识库。
+
+```typescript
+// 工具定义
+{
+  name: "knowledge_query",
+  description: `检索企业知识库内容。
+
+适用场景：
+- 查询公司政策、流程规范
+- 搜索产品文档、技术资料
+- 检索历史案例、经验沉淀
+
+知识库范围：
+- global: 全局知识库（全员可访问）
+- department: 部门知识库（部门成员可访问）
+- personal: 个人知识库（仅本人可访问）
+
+注意：
+- AI 无创建知识库权限，仅查询权限
+- 管理员通过设置界面配置知识库
+- 知识库与 Agent 绑定关系由用户配置`,
+  parameters: {
+    type: "object",
+    properties: {
+      knowledge_base_id: {
+        type: "string",
+        description: "知识库ID（可选，不填则搜索所有可访问的知识库）"
+      },
+      query: {
+        type: "string",
+        description: "搜索内容"
+      },
+      scope: {
+        type: "string",
+        enum: ["global", "department", "personal", "all"],
+        description: "知识库范围",
+        default: "all"
+      },
+      filters: {
+        type: "object",
+        properties: {
+          type: { type: "string", description: "文档类型" },
+          tags: { type: "array", items: { type: "string" }, description: "标签" },
+          dateRange: {
+            type: "object",
+            properties: {
+              start: { type: "string", format: "date" },
+              end: { type: "string", format: "date" }
+            }
+          }
+        }
+      },
+      topK: {
+        type: "number",
+        description: "返回数量",
+        default: 5
+      },
+      threshold: {
+        type: "number",
+        description: "相似度阈值",
+        default: 0.7
+      }
+    },
+    required: ["query"]
+  }
+}
+
+// 返回结果
+interface KnowledgeQueryResult {
+  knowledge_base_id: string;
+  knowledge_base_name: string;
+  total: number;
+  items: {
+    id: string;
+    content: string;
+    source: string;
+    score: number;
+    metadata: Record<string, any>;
+  }[];
+}
+```
+
+**多知识库配置设计：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              多知识库配置架构                                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  知识库管理（设置界面）                                      │
+│  ├── 创建知识库（管理员权限）                               │
+│  ├── 配置知识库内容（上传文档、设置标签）                   │
+│  ├── 设置访问权限（全员/部门/角色）                         │
+│  ├── 配置审核人（企业/部门知识库）                          │
+│  └── 绑定到 Agent（选择可访问的 Agent）                     │
+│                                                             │
+│  Agent 知识库绑定                                           │
+│  ├── 主 Agent：可访问所有授权的知识库                       │
+│  └── Sub-Agent：可配置独立的知识库范围                      │
+│                                                             │
+│  AI 权限与审核机制                                          │
+│  ├── AI 可查询所有授权的知识库                              │
+│  ├── AI 可根据用户需求上传更新知识                          │
+│  ├── 全局知识库：需管理员审核                               │
+│  ├── 部门知识库：需部门负责人审核                           │
+│  └── 个人知识库：无需审核，直接生效                         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+##### 2. 知识库变更工具 (knowledge_mutate)
+
+**设计理念：** AI 可根据用户需求智能整理并上传知识，通过审核机制确保知识质量。
+
+```typescript
+// 工具定义
+{
+  name: "knowledge_mutate",
+  description: `变更知识库内容（创建/更新/删除）。
+
+适用场景：
+- 用户要求保存维修经验到知识库
+- 用户要求更新产品资料
+- 用户要求删除过期的知识条目
+
+知识库类型与审核：
+- 全局知识库：提交后需管理员审核
+- 部门知识库：提交后需部门负责人审核
+- 个人知识库：无需审核，直接生效
+
+质量保障：
+- 系统自动检测重复内容
+- 低质量内容会被标记
+- 审核人可驳回并附原因`,
+  parameters: {
+    type: "object",
+    properties: {
+      action: {
+        type: "string",
+        enum: ["create", "update", "delete"],
+        description: "操作类型"
+      },
+      knowledge_base_id: {
+        type: "string",
+        description: "知识库ID"
+      },
+      data: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "知识标题" },
+          content: { type: "string", description: "知识内容" },
+          tags: { type: "array", items: { type: "string" }, description: "标签" },
+          source: { type: "string", description: "来源（如：工单#123）" }
+        },
+        description: "知识数据（create/update时必填）"
+      },
+      where: {
+        type: "object",
+        properties: {
+          id: { type: "string", description: "知识条目ID" }
+        },
+        description: "条件（update/delete时必填）"
+      }
+    },
+    required: ["action", "knowledge_base_id"]
+  }
+}
+
+// 返回结果
+interface KnowledgeMutateResult {
+  success: boolean;
+  action: string;
+  knowledge_base_id: string;
+  knowledge_base_name: string;
+  status: "pending_review" | "published" | "rejected";
+  id?: string;
+  message?: string;
+  reviewer?: string;  // 审核人（如果需要审核）
+}
+```
+
+**审核流程设计：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              知识库审核流程                                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  AI 提交知识                                                │
+│      │                                                      │
+│      ▼                                                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │           知识库类型判断                              │   │
+│  └─────────────────────────────────────────────────────┘   │
+│      │                                                      │
+│      ├── 个人知识库 ──────────────────────────────────→ 直接发布
+│      │                                                      │
+│      ├── 全局/部门知识库                                    │
+│      │       │                                              │
+│      │       ▼                                              │
+│      │   ┌─────────────────────────────────────────────┐   │
+│      │   │         质量检测                              │   │
+│      │   │  - 重复检测：与现有知识相似度 > 90%？        │   │
+│      │   │  - 内容完整性：标题/内容是否完整？           │   │
+│      │   │  - 格式规范性：是否包含必要字段？            │   │
+│      │   └─────────────────────────────────────────────┘   │
+│      │       │                                              │
+│      │       ├── 检测通过 ──→ 提交审核                     │
+│      │       │                   │                          │
+│      │       │                   ▼                          │
+│      │       │              通知审核人                      │
+│      │       │                   │                          │
+│      │       │                   ▼                          │
+│      │       │              ┌─────────────┐                 │
+│      │       │              │ 审核人审批  │                 │
+│      │       │              └─────────────┘                 │
+│      │       │                   │                          │
+│      │       │                   ├── 通过 ──→ 发布知识     │
+│      │       │                   └── 驳回 ──→ 通知AI/用户   │
+│      │       │                                              │
+│      │       └── 检测失败 ──→ 返回AI修改建议               │
+│      │                                                      │
+│  状态流转：                                                 │
+│  [待提交] → [待审核] → [已发布] / [已驳回]                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**审核人配置：**
+
+| 知识库类型 | 默认审核人 | 可配置 |
+|-----------|-----------|--------|
+| 全局知识库 | 租户管理员 | 支持指定多个审核人 |
+| 部门知识库 | 部门负责人 | 支持指定部门内审核人 |
+| 个人知识库 | 无需审核 | - |
+
+##### 3. 云端数据查询工具 (db_query)
+
+**设计理念：** 云端数据工具只读暴露，通过白名单限制访问范围，所有写操作必须通过业务插件工具执行。
+
+```typescript
+// 工具定义
+{
+  name: "db_query",
+  description: `查询云端数据库（只读）。
+
+适用场景：
+- 跨插件数据关联查询
+- 临时数据分析需求
+- 系统配置查询
+
+限制：
+- 仅允许查询白名单中的表
+- 敏感字段自动脱敏
+- 自动注入租户隔离条件
+- 完整审计日志
+
+注意：
+- 优先使用业务插件工具（如 sales_query, hr_query）
+- 本工具仅用于无对应业务插件的场景`,
+  parameters: {
+    type: "object",
+    properties: {
+      table: {
+        type: "string",
+        description: "表名（必须在白名单中）"
+      },
+      filters: {
+        type: "object",
+        description: "查询条件"
+      },
+      fields: {
+        type: "array",
+        items: { type: "string" },
+        description: "返回字段"
+      },
+      page: { type: "number", default: 1 },
+      pageSize: { type: "number", default: 20 }
+    },
+    required: ["table"]
+  }
+}
+
+// 返回结果
+interface DBQueryResult {
+  table: string;
+  total: number;
+  page: number;
+  pageSize: number;
+  items: Record<string, any>[];
+}
+```
+
+**白名单配置设计：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              db_query 白名单配置                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  默认白名单表：                                              │
+│  ├── system_config      # 系统配置                          │
+│  ├── departments        # 部门列表                          │
+│  ├── roles              # 角色列表                          │
+│  ├── permissions        # 权限列表                          │
+│  ├── audit_logs         # 审计日志                          │
+│  └── ... 其他非敏感表                                       │
+│                                                             │
+│  黑名单表（禁止查询）：                                      │
+│  ├── users              # 用户敏感信息                      │
+│  ├── passwords          # 密码表                            │
+│  ├── api_keys           # API密钥                           │
+│  └── ... 其他敏感表                                         │
+│                                                             │
+│  敏感字段脱敏规则：                                          │
+│  ├── phone: 显示前3后4位，中间 ****                         │
+│  ├── id_card: 显示前6后4位，中间 ****                       │
+│  ├── password: 完全隐藏                                     │
+│  ├── bank_account: 显示前4后4位                             │
+│  └── email: 显示前3字符，@后完整显示                        │
+│                                                             │
+│  配置入口：设置 → 安全配置 → 数据访问白名单                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**安全控制机制：**
+
+| 控制项 | 实现方式 |
+|--------|---------|
+| 白名单限制 | 仅允许查询白名单中的表 |
+| 租户隔离 | 自动注入 tenant_id 条件 |
+| 敏感字段脱敏 | 配置化脱敏规则 |
+| 审计日志 | 记录所有查询操作 |
+| 频率限制 | 每分钟最多 60 次查询 |
+| 写操作禁止 | db_query 仅支持 SELECT |
+
+##### 3. 工具描述规范与调试要求
+
+**工具描述模板：**
+
+```typescript
+const TOOL_DESCRIPTION_TEMPLATE = `
+  {工具功能概述}
+  
+  适用场景：
+  - {场景1}
+  - {场景2}
+  
+  参数说明：
+  - {param1}: {说明} ({是否必填})
+  
+  示例用法：
+  - "{用户问题}" → {参数示例}
+`;
+```
+
+**调试迭代要求：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              工具描述调试迭代流程                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Phase 1: 初始定义                                          │
+│  └── 基于业务需求定义工具描述                               │
+│                                                             │
+│  Phase 2: 集成测试                                          │
+│  ├── 记录 AI 工具选择错误                                   │
+│  ├── 记录参数构建错误                                       │
+│  └── 记录用户纠正行为                                       │
+│                                                             │
+│  Phase 3: 分析优化                                          │
+│  ├── 统计工具选择准确率                                     │
+│  ├── 分析常见错误模式                                       │
+│  └── 优化工具描述和示例                                     │
+│                                                             │
+│  Phase 4: 验证发布                                          │
+│  ├── A/B 测试新描述效果                                     │
+│  └── 发布优化后的工具描述                                   │
+│                                                             │
+│  迭代周期：每 2 周复盘一次工具描述效果                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### 基础工具层详细设计
+
+> 基于 Anthropic、Vercel、Firecrawl 等最佳实践设计
+
+##### 1. Bash 命令执行工具 (bash_execute)
+
+**设计理念：** LLM 在训练时已大量接触 Unix/Bash 命令，这是"原生能力"而非"附加技能"。
+
+```typescript
+// 工具定义
+{
+  name: "bash_execute",
+  description: `在沙箱环境中执行 Bash/Shell 命令。
+  
+适用场景：
+- 文件系统操作（复制、移动、删除）
+- 系统信息查询
+- 开发工具调用（git, npm, cargo 等）
+- 数据处理管道
+
+注意事项：
+- 命令在隔离的沙箱环境中执行
+- 敏感操作（删除、修改）需要用户确认
+- 输出超过限制时会自动截断`,
+  parameters: {
+    type: "object",
+    properties: {
+      command: {
+        type: "string",
+        description: "要执行的 Bash 命令"
+      },
+      timeout: {
+        type: "number",
+        description: "超时时间（秒），默认 120",
+        default: 120
+      },
+      working_dir: {
+        type: "string",
+        description: "工作目录，默认为项目根目录"
+      },
+      env: {
+        type: "object",
+        description: "环境变量"
+      }
+    },
+    required: ["command"]
+  }
+}
+
+// 返回结果
+interface BashResult {
+  stdout: string;      // 标准输出
+  stderr: string;      // 标准错误
+  exit_code: number;   // 退出码
+  interrupted: boolean; // 是否被超时中断
+  truncated: boolean;   // 输出是否被截断
+}
+```
+
+**安全控制设计：**
+
+| 控制项 | 实现方式 |
+|--------|---------|
+| 沙箱隔离 | 限制工作目录范围，禁止访问系统敏感路径 |
+| 命令白名单 | 允许的命令列表：ls, cat, grep, find, git, npm, cargo 等 |
+| 命令黑名单 | 禁止的命令：rm -rf /, sudo, chmod 777 等 |
+| 路径限制 | 仅允许访问项目目录和临时目录 |
+| 超时控制 | 默认 120 秒，可配置 |
+| 输出截断 | 限制 25000 tokens，超出则截断并提示 |
+
+**错误处理：**
+```rust
+// Rust 实现
+pub enum BashError {
+    CommandNotAllowed(String),    // 命令不在白名单
+    PathNotAllowed(String),       // 路径不在允许范围
+    Timeout(u64),                 // 执行超时
+    ExecutionFailed(String),      // 执行失败
+    OutputTooLarge(usize),        // 输出过大
+}
+
+impl BashError {
+    fn to_helpful_message(&self) -> String {
+        match self {
+            BashError::CommandNotAllowed(cmd) => 
+                format!("命令 '{}' 不在允许列表中。请使用基础命令如 ls, cat, grep, find 等。", cmd),
+            BashError::Timeout(secs) => 
+                format!("命令执行超时（{}秒）。请尝试拆分任务或使用更具体的参数。", secs),
+            // ...
+        }
+    }
+}
+```
+
+##### 2. Web 搜索工具 (web_search)
+
+**设计理念：** 让 Agent 获取实时信息，突破训练数据的时间限制。
+
+```typescript
+// 工具定义
+{
+  name: "web_search",
+  description: `搜索互联网获取实时信息。
+
+适用场景：
+- 查询最新新闻和事件
+- 搜索技术文档和教程
+- 查找产品信息和价格
+- 研究竞争对手
+
+参数说明：
+- query: 搜索关键词，应精确描述需求
+- num: 返回结果数量，默认 10
+- date_range: 时间范围过滤（可选）`,
+  parameters: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "搜索查询词，使用具体关键词而非模糊描述"
+      },
+      num: {
+        type: "number",
+        description: "返回结果数量，默认 10",
+        default: 10
+      },
+      date_range: {
+        type: "string",
+        enum: ["day", "week", "month", "year", "all"],
+        description: "时间范围过滤",
+        default: "all"
+      },
+      search_type: {
+        type: "string",
+        enum: ["web", "news", "images", "scholar"],
+        description: "搜索类型",
+        default: "web"
+      }
+    },
+    required: ["query"]
+  }
+}
+
+// 返回结果
+interface WebSearchResult {
+  query: string;
+  total: number;
+  results: Array<{
+    title: string;
+    snippet: string;      // 摘要
+    url: string;
+    date?: string;        // 发布日期
+    source?: string;      // 来源
+  }>;
+}
+```
+
+**最佳实践：**
+- 使用精确的搜索关键词（"React 19 new features" 而非 "React"）
+- 返回结构化结果而非原始 HTML
+- 支持日期过滤获取最新信息
+
+##### 3. Web Fetch 工具 (web_fetch)
+
+**设计理念：** 将网页内容转换为 LLM 友好格式，避免处理复杂 HTML。
+
+```typescript
+// 工具定义
+{
+  name: "web_fetch",
+  description: `获取网页内容并转换为结构化格式。
+
+适用场景：
+- 阅读文章和博客
+- 获取文档页面内容
+- 提取产品信息
+- 分析网页结构
+
+转换规则：
+- HTML 自动转换为 Markdown
+- 移除导航栏、广告等无关内容
+- 支持结构化数据提取`,
+  parameters: {
+    type: "object",
+    properties: {
+      url: {
+        type: "string",
+        description: "要获取的网页 URL（必须以 http:// 或 https:// 开头）"
+      },
+      prompt: {
+        type: "string",
+        description: "提取指令，指导如何处理内容（如：'提取文章主要内容'）"
+      },
+      format: {
+        type: "string",
+        enum: ["markdown", "text", "json"],
+        description: "返回格式",
+        default: "markdown"
+      },
+      selector: {
+        type: "string",
+        description: "CSS 选择器，提取特定区域内容"
+      },
+      max_length: {
+        type: "number",
+        description: "最大内容长度（字符），默认 50000",
+        default: 50000
+      }
+    },
+    required: ["url"]
+  }
+}
+
+// 返回结果
+interface WebFetchResult {
+  url: string;
+  title: string;
+  content: string;       // 转换后的内容
+  format: string;        // 返回格式
+  links?: string[];      // 页面中的链接（可选）
+  metadata?: {           // 元数据（可选）
+    author?: string;
+    publishDate?: string;
+    wordCount?: number;
+  };
+}
+```
+
+**错误处理：**
+```typescript
+// 友好的错误提示
+const ERROR_MESSAGES = {
+  INVALID_URL: "URL 格式无效。请使用完整的 URL，如 'https://example.com/path'",
+  TIMEOUT: "页面加载超时。请检查 URL 是否正确，或稍后重试。",
+  NOT_FOUND: "页面不存在（404）。请确认 URL 是否正确。",
+  BLOCKED: "页面访问被拒绝。可能是防爬虫机制，请尝试其他来源。",
+  TOO_LARGE: "页面内容过大，已截断。如需完整内容，请使用 selector 参数提取特定区域。"
+};
+```
+
+##### 4. Pattern 搜索工具 (pattern_search)
+
+**设计理念：** 基于 ripgrep 的高性能代码/文本搜索，比传统 grep 快 10-100 倍。
+
+```typescript
+// 工具定义
+{
+  name: "pattern_search",
+  description: `在文件中搜索匹配的文本模式（基于 ripgrep）。
+
+适用场景：
+- 搜索代码中的函数定义、变量引用
+- 查找日志中的特定模式
+- 搜索配置文件内容
+- 批量查找文本
+
+性能优势：
+- 比 grep 快 10-100 倍
+- 自动尊重 .gitignore
+- 支持正则表达式`,
+  parameters: {
+    type: "object",
+    properties: {
+      pattern: {
+        type: "string",
+        description: "搜索模式（支持正则表达式）"
+      },
+      path: {
+        type: "string",
+        description: "搜索路径，默认当前工作目录"
+      },
+      include: {
+        type: "string",
+        description: "文件过滤模式（如 '*.ts', '*.{js,ts}'）"
+      },
+      case_sensitive: {
+        type: "boolean",
+        description: "是否区分大小写",
+        default: false
+      },
+      context: {
+        type: "number",
+        description: "显示匹配行上下文行数",
+        default: 0
+      },
+      fixed_strings: {
+        type: "boolean",
+        description: "将 pattern 视为字面字符串而非正则",
+        default: false
+      },
+      max_results: {
+        type: "number",
+        description: "最大结果数量",
+        default: 100
+      }
+    },
+    required: ["pattern"]
+  }
+}
+
+// 返回结果
+interface PatternSearchResult {
+  pattern: string;
+  total_matches: number;
+  files_searched: number;
+  matches: Array<{
+    file: string;
+    line: number;
+    column: number;
+    content: string;
+    context_before?: string[];
+    context_after?: string[];
+  }>;
+  truncated: boolean;
+}
+```
+
+**使用示例：**
+```typescript
+// 搜索函数定义
+pattern_search({ pattern: "function\\s+\\w+User", include: "*.ts" })
+
+// 搜索 import 语句
+pattern_search({ pattern: "import.*from.*react", include: "*.{ts,tsx}" })
+
+// 搜索 TODO 注释（显示上下文）
+pattern_search({ pattern: "TODO|FIXME", context: 2 })
+
+// 精确匹配字符串
+pattern_search({ pattern: "getUserById", fixed_strings: true })
+```
+
+##### 基础工具层设计原则
+
+**基于行业最佳实践总结：**
+
+| 原则 | 说明 | 来源 |
+|------|------|------|
+| **原子性** | 每个工具只做一件事，不可再分解 | Anthropic |
+| **明确边界** | 工具之间功能不重叠，命名空间清晰 | Anthropic |
+| **有意义返回** | 返回语义化信息而非技术标识符 | Anthropic |
+| **Token 效率** | 输出截断、分页、精简返回 | Anthropic |
+| **原生能力优先** | Bash/grep 等是 LLM 原生技能 | Vercel |
+| **沙箱隔离** | 敏感操作隔离执行，权限最小化 | 行业标准 |
+| **友好错误** | 错误信息指导如何修正，而非报错码 | Firecrawl |
+
+**工具描述编写规范：**
+```typescript
+// 好的工具描述示例
+{
+  name: "pattern_search",
+  description: `在文件中搜索匹配的文本模式。
+  
+适用场景：
+- 搜索代码中的函数定义、变量引用
+- 查找配置文件中的特定值
+- 搜索日志中的错误模式
+
+注意事项：
+- 支持正则表达式，特殊字符需转义
+- 使用 include 参数限制文件类型可提升性能
+- 结果过多时会截断，请使用更精确的模式`
+}
+
+// 不好的工具描述示例
+{
+  name: "pattern_search",
+  description: "搜索文件"  // 过于简单，AI 无法正确使用
+}
 ```
 
 #### 工具动态选择架构（大量工具场景）
@@ -743,14 +1730,428 @@ const defaultSensitiveOperations: SensitiveOperationConfig[] = [
 **工具组定义：**
 ```typescript
 const TOOL_GROUPS = {
-  filesystem: ["file_read", "file_write", "file_edit", "file_search", "dir_list"],
-  knowledge: ["knowledge_search", "knowledge_add", "knowledge_update", "knowledge_delete", "knowledge_list"],
-  database: ["db_query", "db_insert", "db_update", "db_delete"],
-  hr: ["hr_employee_list", "hr_employee_get", "hr_employee_create", "hr_employee_update", "hr_employee_delete", "hr_attendance_query", "hr_leave_apply", "hr_leave_approve", "hr_salary_query"],
-  finance: ["finance_invoice_ocr", "finance_expense_submit", "finance_report_query"],
-  sales: ["sales_lead_create", "sales_lead_update", "sales_opportunity_list"],
-  // ...其他插件工具组
+  // 基础工具组
+  filesystem: ["file_read", "file_write", "file_edit", "dir_list"],
+  shell: ["bash_execute", "pattern_search"],
+  web: ["web_search", "web_fetch", "http_request"],
+  system: ["sys_time"],
+  
+  // 平台知识库工具组（平台能力，所有插件可调用）
+  // AI 可查询和上传更新，企业/部门知识库需审核，个人知识库无需审核
+  knowledge: ["knowledge_query", "knowledge_mutate"],
+  
+  // 平台数据工具组（只读暴露，白名单限制）
+  // 所有写操作必须通过业务插件工具执行
+  database: ["db_query"],
+  
+  // 业务插件工具组（遵循 plugin-dev-spec/03-tools-spec.md 规范）
+  // 每个插件最多 5 个核心工具：query / aggregate / mutate / action / export
+  hr: ["hr_query", "hr_aggregate", "hr_mutate", "hr_action", "hr_export"],
+  sales: ["sales_query", "sales_aggregate", "sales_mutate", "sales_action", "sales_export"],
+  finance: ["finance_query", "finance_aggregate", "finance_mutate", "finance_action", "finance_export"],
+  warehouse: ["warehouse_query", "warehouse_aggregate", "warehouse_mutate", "warehouse_action"],
+  approval: ["approval_query", "approval_aggregate", "approval_mutate", "approval_action", "approval_export"],
+  // ...其他插件工具组（遵循相同架构）
 };
+```
+
+#### 插件业务工具设计规范
+
+> **重要**：所有业务插件工具设计必须遵循 [`plugin-dev-spec/03-tools-spec.md`](../plugin-dev-spec/03-tools-spec.md) 规范
+
+**核心设计原则（ADR-025）：**
+
+采用**通用工具 + 参数化**设计，避免"工具爆炸"问题：
+
+```
+❌ 错误模式：每个场景一个专用工具
+hr_employee_list, hr_employee_get, hr_employee_create, hr_attendance_query, ...
+
+✅ 正确模式：通用工具 + 灵活参数
+hr_query(entity: "employee", filters: {...})
+hr_query(entity: "attendance", filters: {...})
+```
+
+**每个插件的核心工具：**
+
+| 工具类型 | 命名格式 | 用途 | 示例 |
+|---------|---------|------|------|
+| **query** | `{plugin}_query` | 通用数据查询 | `hr_query(entity: "employee")` |
+| **aggregate** | `{plugin}_aggregate` | 统计聚合 | `sales_aggregate(entity: "contract", aggregations: [...])` |
+| **mutate** | `{plugin}_mutate` | 数据变更 | `finance_mutate(action: "create", entity: "invoice")` |
+| **action** | `{plugin}_action` | 业务操作 | `sales_action(action: "approve", entity: "contract")` |
+| **export** | `{plugin}_export` | 数据导出 | `hr_export(entity: "employee", format: "excel")` |
+
+**工具数量对比：**
+
+| 部门 | 专用工具数（旧方案） | 通用工具数（新方案） | 减少 |
+|------|---------------------|---------------------|------|
+| 销售部 | 30+ | 5 | 83% |
+| 财务部 | 25+ | 5 | 80% |
+| 人事部 | 20+ | 5 | 75% |
+| **总计** | **150+** | **~25** | **83%** |
+
+**详细接口定义请参考：**
+- [`plugin-dev-spec/03-tools-spec.md`](../plugin-dev-spec/03-tools-spec.md) - 工具层完整规范
+- [`plugin-dev-spec/09-examples.md`](../plugin-dev-spec/09-examples.md) - 完整实现示例
+
+#### 插件能力三层架构
+
+> Tools 只是插件能力的第一层，复杂功能通过 Skills 和 MCP 扩展
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    插件能力三层架构                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Layer 1: Tools (原子操作) - 每插件最多 5 个                 │
+│  ├── query      通用查询（覆盖所有实体类型）                 │
+│  ├── aggregate  统计聚合（sum/count/avg/max/min）           │
+│  ├── mutate     数据变更（create/update/delete）            │
+│  ├── action     业务操作（审批/发货/入职等）                 │
+│  └── export     数据导出（Excel/PDF/CSV）                   │
+│      ↓ 覆盖 90% 常规场景                                    │
+│                                                             │
+│  Layer 2: Skills (复杂技能) - 按需添加                      │
+│  ├── AI生成合同      多工具组合 + LLM 生成                  │
+│  ├── 智能报价        查询历史 + AI 分析 + 自动计算          │
+│  ├── 批量入职        多次 mutate + 数据验证                 │
+│  ├── 月度报告生成    aggregate + LLM 总结 + export          │
+│  └── ... 自定义复杂流程                                     │
+│      ↓ 处理需要多步骤、AI 辅助的复杂场景                    │
+│                                                             │
+│  Layer 3: MCP (外部服务) - 按需集成                         │
+│  ├── 钉钉机器人      消息推送、审批回调                     │
+│  ├── 企业微信        通知、通讯录同步                       │
+│  ├── 闲鱼API         商品管理、订单同步                     │
+│  └── ... 其他第三方服务                                     │
+│      ↓ 扩展外部系统能力                                     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Skills 层设计规范
+
+> Skills 是多个工具的组合，用于实现需要多步骤、AI 辅助的复杂业务场景
+
+##### Skill 定义接口
+
+```typescript
+// skills/{skill-id}.ts
+import { defineSkill } from '@office/plugin-sdk';
+
+interface SkillDefinition {
+  id: string;                    // Skill 标识
+  name: string;                  // 显示名称
+  description: string;           // 功能描述
+  trigger: 'natural-language' | 'manual' | 'event';
+  
+  // 依赖的工具
+  tools: string[];
+  
+  // 使用示例（帮助 AI 理解何时使用）
+  examples: string[];
+  
+  // 执行流程
+  execute: (context: SkillContext) => Promise<SkillResult>;
+}
+
+interface SkillContext {
+  userMessage: string;           // 用户原始消息
+  intent: Record<string, any>;   // 解析后的意图
+  
+  // 调用工具
+  callTool: (name: string, params: any) => Promise<any>;
+  
+  // LLM 辅助
+  llm: {
+    analyze: (text: string, options: any) => Promise<any>;
+    generate: (options: any) => Promise<string>;
+  };
+  
+  // 事件发布
+  emitEvent: (event: string, data: any) => void;
+  
+  // 用户交互
+  askUser: (question: string) => Promise<string>;
+}
+```
+
+##### Skill 实现示例：AI生成合同
+
+```typescript
+// skills/generate-contract.ts
+import { defineSkill } from '@office/plugin-sdk';
+
+export default defineSkill({
+  id: 'generate-contract',
+  name: 'AI生成合同',
+  description: '根据客户信息和报价单自动生成合同初稿',
+  trigger: 'natural-language',
+  
+  // 依赖的工具
+  tools: ['sales_query', 'sales_mutate'],
+  
+  // 使用示例
+  examples: [
+    '帮我给XX公司生成一份采购合同',
+    '根据报价单Q2024001生成合同',
+    '为张三的客户创建销售合同'
+  ],
+  
+  // 执行流程
+  execute: async (context: SkillContext) => {
+    const { userMessage, callTool, llm } = context;
+    
+    // Step 1: 解析用户意图
+    const intent = await llm.analyze(userMessage, {
+      task: 'extract_contract_requirements',
+      schema: {
+        customerName: 'string?',
+        quoteId: 'string?',
+        requirements: 'string?'
+      }
+    });
+    
+    // Step 2: 查询客户信息
+    const customer = await callTool('sales_query', {
+      entity: 'customer',
+      filters: { keyword: intent.customerName }
+    });
+    
+    if (!customer.items.length) {
+      return {
+        success: false,
+        message: `未找到客户"${intent.customerName}"，请确认客户名称`
+      };
+    }
+    
+    // Step 3: 查询报价单（如有）
+    let quote = null;
+    if (intent.quoteId) {
+      quote = await callTool('sales_query', {
+        entity: 'quote',
+        filters: { id: intent.quoteId }
+      });
+    }
+    
+    // Step 4: AI 生成合同内容
+    const contractContent = await llm.generate({
+      template: 'sales/contract_template',
+      variables: {
+        customer: customer.items[0],
+        quote: quote?.items[0],
+        requirements: intent.requirements,
+        currentDate: new Date().toISOString().split('T')[0]
+      }
+    });
+    
+    // Step 5: 创建合同草稿
+    const result = await callTool('sales_mutate', {
+      action: 'create',
+      entity: 'contract',
+      data: {
+        ...contractContent,
+        status: 'draft',
+        source: 'ai_generated'
+      }
+    });
+    
+    // Step 6: 发布事件
+    context.emitEvent('sales:contract:generated', {
+      contractId: result.id,
+      customerId: customer.items[0].id
+    });
+    
+    return {
+      success: true,
+      message: '合同已生成，请查看并确认',
+      contractId: result.id,
+      preview: contractContent.summary
+    };
+  }
+});
+```
+
+##### Skill 注册
+
+```typescript
+// skills/index.ts
+import generateContract from './generate-contract';
+import generateQuote from './generate-quote';
+import batchOnboard from './batch-onboard';
+import monthlyReport from './monthly-report';
+
+export const skills = [
+  generateContract,
+  generateQuote,
+  batchOnboard,
+  monthlyReport
+];
+```
+
+##### 内置 Skills 列表
+
+| 插件 | Skill ID | 功能 | 依赖工具 |
+|------|----------|------|---------|
+| sales | `generate-contract` | AI生成合同 | query, mutate |
+| sales | `generate-quote` | 智能报价 | query, aggregate, mutate |
+| hr | `batch-onboard` | 批量入职 | mutate |
+| hr | `monthly-report` | 月度人事报告 | aggregate, export |
+| finance | `invoice-ocr` | 发票识别入库 | action, mutate |
+| warehouse | `inventory-alert` | 库存预警分析 | aggregate, action |
+
+#### MCP 层设计规范
+
+> MCP (Model Context Protocol) 用于接入外部第三方服务
+
+##### MCP 服务定义
+
+```typescript
+// mcp/xianyu-adapter.ts
+import { defineMCPService } from '@office/plugin-sdk';
+
+export default defineMCPService({
+  id: 'xianyu-adapter',
+  name: '闲鱼平台接入',
+  protocol: 'mcp',
+  version: '2024-11-05',
+  
+  // 连接配置
+  config: {
+    endpoints: ['message', 'order', 'product'],
+    authType: 'oauth2',
+    scopes: ['read', 'write']
+  },
+  
+  // 环境变量
+  envVars: ['XIANYU_APP_ID', 'XIANYU_APP_SECRET'],
+  
+  // 健康检查
+  healthCheck: {
+    interval: 60000,  // 1分钟
+    timeout: 5000
+  },
+  
+  // MCP 工具定义
+  tools: [
+    {
+      name: 'xianyu_send_message',
+      description: '发送闲鱼消息给买家',
+      parameters: {
+        type: 'object',
+        properties: {
+          orderId: { type: 'string', description: '订单ID' },
+          message: { type: 'string', description: '消息内容' }
+        },
+        required: ['orderId', 'message']
+      },
+      handler: async (params, context) => {
+        return await context.mcpClient.call('xianyu', 'sendMessage', params);
+      }
+    },
+    {
+      name: 'xianyu_get_orders',
+      description: '获取闲鱼订单列表',
+      parameters: {
+        type: 'object',
+        properties: {
+          status: { 
+            type: 'string', 
+            enum: ['pending', 'paid', 'shipped', 'completed'],
+            description: '订单状态'
+          },
+          page: { type: 'number', default: 1 },
+          pageSize: { type: 'number', default: 20 }
+        }
+      },
+      handler: async (params, context) => {
+        return await context.mcpClient.call('xianyu', 'getOrders', params);
+      }
+    }
+  ],
+  
+  // 事件订阅
+  events: {
+    'order.created': async (data, context) => {
+      // 订单创建时同步到本地
+      await context.callTool('sales_mutate', {
+        action: 'create',
+        entity: 'order',
+        data: { ...data, source: 'xianyu' }
+      });
+    },
+    'message.received': async (data, context) => {
+      // 消息接收时触发通知
+      context.emitEvent('xianyu:message', data);
+    }
+  }
+});
+```
+
+##### MCP 配置文件
+
+```toml
+# config/mcp.toml
+[[mcp_servers]]
+name = "xianyu"
+transport = "http"
+url = "https://mcp.xianyu.com/v1"
+auth_type = "oauth2"
+env_vars = ["XIANYU_APP_ID", "XIANYU_APP_SECRET"]
+
+[[mcp_servers]]
+name = "dingtalk"
+transport = "http"
+url = "https://mcp.dingtalk.com/v1"
+auth_type = "appkey"
+env_vars = ["DINGTALK_APP_KEY", "DINGTALK_APP_SECRET"]
+
+[[mcp_servers]]
+name = "filesystem"
+transport = "stdio"
+command = "mcp-filesystem"
+args = ["/path/to/workspace"]
+```
+
+##### 内置 MCP 服务列表
+
+| MCP 服务 | 功能 | 用途 |
+|---------|------|------|
+| `dingtalk` | 钉钉集成 | 消息推送、审批回调、通讯录同步 |
+| `wecom` | 企业微信集成 | 通知、客户管理 |
+| `xianyu` | 闲鱼平台 | 商品管理、订单同步 |
+| `filesystem` | 文件系统 | 本地文件操作 |
+| `database` | 数据库 | 通用数据库操作 |
+
+#### 能力扩展决策指南
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    如何选择扩展方式                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  问题：需要新增一个功能                                     │
+│                                                             │
+│  Step 1: 是否是原子操作？                                   │
+│  ├── 是 → 使用现有 Tools + 参数实现                         │
+│  │         例：查询员工 → hr_query(entity: "employee")      │
+│  │                                                          │
+│  └── 否（需要多步骤）→ 进入 Step 2                          │
+│                                                             │
+│  Step 2: 是否需要 AI 辅助或多工具组合？                     │
+│  ├── 是 → 创建 Skill                                        │
+│  │         例：AI生成合同 → generate-contract Skill         │
+│  │                                                          │
+│  └── 否（外部系统）→ 进入 Step 3                            │
+│                                                             │
+│  Step 3: 是否需要接入第三方服务？                           │
+│  ├── 是 → 创建 MCP 服务                                     │
+│  │         例：闲鱼订单同步 → xianyu MCP                    │
+│  │                                                          │
+│  └── 否 → 重新评估是否可以用现有能力实现                    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### 错误处理机制
@@ -2823,6 +4224,111 @@ pnpm tauri dev
 | 日志监控 | ELK Stack | 8.x | 完全控制、功能全面 |
 | 数据库 | PostgreSQL | 16.x | 开源、功能强大、社区活跃 |
 
+### Development & Debugging
+
+**前端调试方案：**
+
+| 工具 | 用途 | 说明 |
+|------|------|------|
+| Chrome DevTools | 前端调试 | F12 打开，Console/Network/Sources 全可用 |
+| React DevTools | 组件调试 | 组件树、Props、State 查看 |
+| Tauri DevTools | IPC 调试 | 查看 IPC 调用、Rust 端日志 |
+
+**开发模式命令：**
+```bash
+npm run tauri dev  # 前端 + Rust 后端同时启动，DevTools 完全可用
+```
+
+**后端日志方案：**
+
+| 决策项 | 选择 | 说明 |
+|--------|------|------|
+| 日志框架 | tracing + tracing-subscriber | Rust 标准日志生态 |
+| 日志输出 | 控制台 + 文件双写 | 开发时看控制台，生产看文件 |
+| 日志轮转 | 按天轮转 | 防止日志文件过大 |
+| 日志级别 | INFO (生产) / DEBUG (开发) | 通过环境变量控制 |
+
+**日志配置实现：**
+
+```toml
+# Cargo.toml
+[dependencies]
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+tracing-appender = "0.2"
+```
+
+```rust
+// main.rs
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_appender::rolling::{RollingFileAppender, Rotation};
+
+fn init_logging() {
+    let log_dir = dirs::data_local_dir()
+        .unwrap()
+        .join("AI-Automated-Office")
+        .join("logs");
+
+    let file_appender = RollingFileAppender::new(
+        Rotation::DAILY,
+        log_dir,
+        "app.log"
+    );
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())  // 控制台
+        .with(tracing_subscriber::fmt::layer()
+            .with_writer(file_appender)
+            .with_ansi(false))  // 文件
+        .init();
+}
+```
+
+**日志文件位置：**
+
+| 平台 | 路径 |
+|------|------|
+| Windows | `C:\Users\{用户名}\AppData\Local\AI-Automated-Office\logs\app.log` |
+| macOS | `~/Library/Application Support/AI-Automated-Office/logs/app.log` |
+
+**调试工作流：**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    调试架构                                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  前端 (Chrome DevTools)                                     │
+│  ├── Console: 前端日志、IPC 调用结果                         │
+│  ├── Network: 云端 API 请求                                 │
+│  ├── Sources: React 代码断点                                │
+│  └── React DevTools: 组件树、状态                           │
+│                                                             │
+│  后端 (日志文件)                                             │
+│  ├── logs/app.log: Rust 后端全量日志                        │
+│  ├── 包含: IPC 调用、工具执行、错误堆栈                      │
+│  └── 可用 VSCode 或 tail -f 查看                            │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**可选：内置日志查看器**
+
+应用内开发工具面板，通过 IPC 读取日志文件：
+
+```rust
+#[tauri::command]
+fn read_log_file(lines: usize) -> Result<String, String> {
+    let log_path = dirs::data_local_dir()
+        .unwrap()
+        .join("AI-Automated-Office")
+        .join("logs")
+        .join("app.log");
+    // 读取最后 N 行
+    Ok(read_last_lines(&log_path, lines))
+}
+```
+
 ### Decision Impact Analysis
 
 **Implementation Sequence:**
@@ -3751,23 +5257,114 @@ ai-automated-office/
 │           ├── logger.rs               # 日志工具
 │           └── error.rs                # 错误处理
 │
-├── 📁 业务插件 (plugins/)
-│   ├── hr/                             # 人事管理插件 (P0)
-│   │   ├── package.json
-│   │   ├── index.ts                    # 插件入口
-│   │   ├── manifest.json               # 插件清单
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── types/
-│   │   └── backend/
+├── 📁 业务插件 (plugins/)               # 遵循插件开发规范 (plugin-dev-spec)
 │   │
-│   ├── finance/                        # 财务OCR插件 (P1)
-│   ├── knowledge/                      # 知识库RAG插件 (P1)
-│   ├── warehouse/                      # 仓库管理插件 (P2)
-│   ├── sales/                          # 销售自动化插件 (P1)
-│   ├── service/                        # 售后工单插件 (P1)
-│   ├── tender/                         # 标书制定插件 (P2)
-│   └── dashboard/                      # 数据看板插件 (P1)
+│   ├── hr/                             # 人事管理插件 (核心模块)
+│   │   ├── plugin.json                 # 【必需】插件清单 (Manifest)
+│   │   │
+│   │   ├── ui/                         # UI层
+│   │   │   ├── index.tsx               # UI入口
+│   │   │   ├── routes/                 # 路由组件
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   ├── Employees.tsx
+│   │   │   │   └── Departments.tsx
+│   │   │   ├── components/             # 共享组件
+│   │   │   └── sidebar/                # 侧边栏配置
+│   │   │
+│   │   ├── tools/                      # 工具层 (遵循ADR-025通用工具架构)
+│   │   │   ├── index.ts                # 工具注册入口
+│   │   │   ├── query.ts                # hr_query: 通用查询
+│   │   │   ├── aggregate.ts            # hr_aggregate: 统计聚合
+│   │   │   ├── mutate.ts               # hr_mutate: 数据变更
+│   │   │   ├── action.ts               # hr_action: 业务操作
+│   │   │   └── export.ts               # hr_export: 数据导出
+│   │   │
+│   │   ├── skills/                     # Skills层 (可选)
+│   │   │   └── generate-report.ts      # AI生成人事报告
+│   │   │
+│   │   ├── data/                       # 数据层
+│   │   │   ├── models/                 # 数据模型
+│   │   │   │   ├── employee.ts
+│   │   │   │   └── department.ts
+│   │   │   ├── migrations/             # 数据库迁移
+│   │   │   │   └── 001_init.sql
+│   │   │   └── repositories/           # 数据访问层
+│   │   │
+│   │   ├── services/                   # 业务层
+│   │   │   └── employee.service.ts
+│   │   │
+│   │   ├── handlers/                   # 事件处理
+│   │   │   └── approval.handler.ts
+│   │   │
+│   │   ├── permissions/                # 权限定义
+│   │   │   └── index.ts                # 角色和权限矩阵
+│   │   │
+│   │   └── tests/                      # 测试
+│   │       └── tools.test.ts
+│   │
+│   ├── sales/                          # 销售管理插件 (核心模块)
+│   │   ├── plugin.json
+│   │   ├── ui/
+│   │   │   ├── routes/
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   ├── Contracts.tsx
+│   │   │   │   ├── Orders.tsx
+│   │   │   │   └── Customers.tsx
+│   │   │   └── components/
+│   │   ├── tools/                      # query/aggregate/mutate/action/export
+│   │   ├── skills/
+│   │   │   ├── generate-contract.ts    # AI生成合同
+│   │   │   └── generate-quote.ts       # AI生成报价单
+│   │   ├── data/
+│   │   │   └── models/
+│   │   │       ├── contract.ts
+│   │   │       ├── order.ts
+│   │   │       └── customer.ts
+│   │   ├── services/
+│   │   └── permissions/
+│   │
+│   ├── approval/                       # 审批中心插件 (核心模块)
+│   │   ├── plugin.json
+│   │   ├── ui/
+│   │   ├── tools/
+│   │   ├── data/
+│   │   │   └── models/
+│   │   │       ├── template.ts         # 审批模板
+│   │   │       ├── workflow.ts         # 审批流程
+│   │   │       └── instance.ts         # 审批实例
+│   │   └── permissions/
+│   │
+│   ├── finance/                        # 财务管理插件 (核心模块)
+│   │   ├── plugin.json
+│   │   ├── ui/
+│   │   ├── tools/
+│   │   ├── skills/
+│   │   │   └── ocr-invoice.ts          # OCR识别发票
+│   │   └── data/
+│   │
+│   ├── warehouse/                      # 仓储管理插件 (核心模块)
+│   │   ├── plugin.json
+│   │   ├── ui/
+│   │   ├── tools/
+│   │   └── data/
+│   │
+│   ├── after-sales/                    # 售后服务插件 (扩展模块)
+│   │   ├── plugin.json
+│   │   ├── dependencies: [sales]       # 依赖销售插件
+│   │   ├── ui/
+│   │   ├── tools/
+│   │   └── data/
+│   │       └── models/
+│   │           └── ticket.ts           # 售后工单
+│   │
+│   ├── bidding/                        # 招投标插件 (扩展模块)
+│   │   └── plugin.json
+│   │
+│   ├── marketing/                      # 市场宣传插件 (扩展模块)
+│   │   └── plugin.json
+│   │
+│   └── dashboard/                      # 数据看板插件 (扩展模块)
+│       └── plugin.json
 │
 ├── 📁 测试 (tests/)
 │   ├── unit/                           # 单元测试
@@ -3818,6 +5415,8 @@ ai-automated-office/
 ```
 
 ### 架构边界定义
+
+> **📋 插件开发规范**：详细的插件开发指南请参考 [_bmad-output/plugin-dev-spec/](../../plugin-dev-spec/) 目录，包含完整的插件清单规范、UI层规范、工具层规范、数据层规范、业务层规范、权限层规范、生命周期规范、质量规范和示例。
 
 **API边界：**
 
