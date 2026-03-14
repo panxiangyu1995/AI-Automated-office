@@ -1,42 +1,423 @@
-import { Bell, Settings, User } from 'lucide-react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { open } from '@tauri-apps/plugin-shell'
+import {
+  Bot,
+  Edit3,
+  Eye,
+  FileText,
+  HelpCircle,
+  LayoutTemplate,
+  PanelBottom,
+  PanelLeft,
+  PanelRight,
+  Puzzle,
+  Wrench,
+} from 'lucide-react'
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from '../ui/menubar'
+import { Button } from '../ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { useUIStore } from '../../stores/uiStore'
 
 interface TopBarProps {
-  department?: string
-  userName?: string
+  visible: boolean
+  onToggle: () => void
+  onOpenLayoutDialog?: () => void
 }
 
-export function TopBar({ department = '首页', userName }: TopBarProps) {
+export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
+  const { 
+    sidebarCollapsed, 
+    chatPanelCollapsed, 
+    bottomPanelCollapsed,
+    toggleSidebar, 
+    toggleChatPanel,
+    toggleBottomPanel,
+  } = useUIStore()
+
+  if (!visible) return null
+
+  const handleMenuAction = (label: string, handler?: () => void | Promise<void>) => {
+    return (event?: Event) => {
+      event?.preventDefault()
+      console.log(`[TopBar] ${label}`)
+      if (handler) {
+        Promise.resolve(handler()).catch((error) => {
+          console.error(`[TopBar] ${label} failed:`, error)
+        })
+      }
+    }
+  }
+
+  const handleExit = async () => {
+    const window = getCurrentWindow()
+    await window.close()
+  }
+
+  const handleOpenDocs = async () => {
+    await open('https://docs.ai-automated-office.com')
+  }
+
+  const handleOpenLayoutDialog = () => {
+    console.log('[TopBar] Layout dialog requested')
+    onOpenLayoutDialog?.()
+  }
+
   return (
-    <header
-      className="h-10 px-4 flex items-center justify-between flex-shrink-0"
-      style={{ backgroundColor: '#1E3A5F' }}
-    >
-      {/* 左侧标题 */}
-      <h1 className="text-white font-bold text-sm">
-        AI-Automated-Office - {department}
-      </h1>
-      
-      {/* 右侧操作区 */}
-      <div className="flex items-center gap-4">
-        <button 
-          className="text-white hover:opacity-80 transition-opacity"
-          aria-label="通知"
-        >
-          <Bell size={16} />
-        </button>
-        <button 
-          className="text-white hover:opacity-80 transition-opacity"
-          aria-label="设置"
-        >
-          <Settings size={16} />
-        </button>
-        {userName && (
-          <div className="flex items-center gap-2 text-white text-sm">
-            <User size={16} />
-            <span>{userName}</span>
-          </div>
-        )}
+    <header className="h-8 bg-[#1E3A5F] border-b border-[#152A45] flex items-center justify-between px-2 select-none">
+      <div className="flex items-center">
+        <div className="flex items-center gap-2 mr-6">
+          <span className="text-white font-bold text-sm">Realline</span>
+        </div>
+        <Menubar className="border-none bg-transparent">
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              文件
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('File: New')}>
+                <FileText size={14} className="mr-2" />
+                新建
+                <MenubarShortcut>⌘N</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('File: Open')}>
+                <FileText size={14} className="mr-2" />
+                打开...
+                <MenubarShortcut>⌘O</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('File: Save')}>
+                <FileText size={14} className="mr-2" />
+                保存
+                <MenubarShortcut>⌘S</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('File: Save As')}>
+                <FileText size={14} className="mr-2" />
+                另存为...
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('File: Import')}>
+                <FileText size={14} className="mr-2" />
+                导入...
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('File: Export')}>
+                <FileText size={14} className="mr-2" />
+                导出...
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('File: Print')}>
+                <FileText size={14} className="mr-2" />
+                打印...
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem
+                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                onSelect={handleMenuAction('File: Exit', handleExit)}
+              >
+                <FileText size={14} className="mr-2" />
+                退出
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              编辑
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Edit: Undo')}>
+                <Edit3 size={14} className="mr-2" />
+                撤销
+                <MenubarShortcut>⌘Z</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Edit: Redo')}>
+                <Edit3 size={14} className="mr-2" />
+                重做
+                <MenubarShortcut>⌘⇧Z</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('Edit: Cut')}>
+                <Edit3 size={14} className="mr-2" />
+                剪切
+                <MenubarShortcut>⌘X</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Edit: Copy')}>
+                <Edit3 size={14} className="mr-2" />
+                复制
+                <MenubarShortcut>⌘C</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Edit: Paste')}>
+                <Edit3 size={14} className="mr-2" />
+                粘贴
+                <MenubarShortcut>⌘V</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('Edit: Find')}>
+                <Edit3 size={14} className="mr-2" />
+                查找...
+                <MenubarShortcut>⌘F</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Edit: Replace')}>
+                <Edit3 size={14} className="mr-2" />
+                替换...
+                <MenubarShortcut>⌘H</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('Edit: Select All')}>
+                <Edit3 size={14} className="mr-2" />
+                全选
+                <MenubarShortcut>⌘A</MenubarShortcut>
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              视图
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('View: Toggle Menu Bar', onToggle)}>
+                <Eye size={14} className="mr-2" />
+                切换菜单栏
+                <MenubarShortcut>⌘⇧M</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('View: Activity Bar')}>
+                <Eye size={14} className="mr-2" />
+                活动栏
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('View: Sidebar')}>
+                <Eye size={14} className="mr-2" />
+                侧边栏
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('View: AI Chat Panel')}>
+                <Eye size={14} className="mr-2" />
+                AI 对话面板
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('View: Full Screen')}>
+                <Eye size={14} className="mr-2" />
+                全屏
+                <MenubarShortcut>F11</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('View: Zoom In')}>
+                <Eye size={14} className="mr-2" />
+                放大
+                <MenubarShortcut>⌘+</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('View: Zoom Out')}>
+                <Eye size={14} className="mr-2" />
+                缩小
+                <MenubarShortcut>⌘-</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('View: Reset Zoom')}>
+                <Eye size={14} className="mr-2" />
+                重置缩放
+                <MenubarShortcut>⌘0</MenubarShortcut>
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              助手
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Agent: New Chat')}>
+                <Bot size={14} className="mr-2" />
+                新对话
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Agent: Chat History')}>
+                <Bot size={14} className="mr-2" />
+                历史记录...
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('Agent: Model Settings')}>
+                <Bot size={14} className="mr-2" />
+                模型设置...
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Agent: API Key Management')}>
+                <Bot size={14} className="mr-2" />
+                API 密钥管理...
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              插件
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Market')}>
+                <Puzzle size={14} className="mr-2" />
+                插件市场...
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Installed Plugins')}>
+                <Puzzle size={14} className="mr-2" />
+                已安装插件...
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Settings')}>
+                <Puzzle size={14} className="mr-2" />
+                插件设置...
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              工具
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Tools: Data Sync')}>
+                <Wrench size={14} className="mr-2" />
+                数据同步
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Tools: System Logs')}>
+                <Wrench size={14} className="mr-2" />
+                系统日志...
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Tools: Performance Monitor')}>
+                <Wrench size={14} className="mr-2" />
+                性能监控...
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              帮助
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Help: Documentation', handleOpenDocs)}>
+                <HelpCircle size={14} className="mr-2" />
+                文档
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Help: Keyboard Shortcuts')}>
+                <HelpCircle size={14} className="mr-2" />
+                快捷键列表...
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('Help: About')}>
+                <HelpCircle size={14} className="mr-2" />
+                关于...
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
       </div>
+
+      <LayoutControlButtons
+        sidebarCollapsed={sidebarCollapsed}
+        chatPanelCollapsed={chatPanelCollapsed}
+        bottomPanelCollapsed={bottomPanelCollapsed}
+        toggleSidebar={toggleSidebar}
+        toggleChatPanel={toggleChatPanel}
+        toggleBottomPanel={toggleBottomPanel}
+        onOpenLayoutDialog={handleOpenLayoutDialog}
+      />
     </header>
+  )
+}
+
+interface LayoutControlButtonsProps {
+  sidebarCollapsed: boolean
+  chatPanelCollapsed: boolean
+  bottomPanelCollapsed: boolean
+  toggleSidebar: () => void
+  toggleChatPanel: () => void
+  toggleBottomPanel: () => void
+  onOpenLayoutDialog?: () => void
+}
+
+function LayoutControlButtons({
+  sidebarCollapsed,
+  chatPanelCollapsed,
+  bottomPanelCollapsed,
+  toggleSidebar,
+  toggleChatPanel,
+  toggleBottomPanel,
+  onOpenLayoutDialog,
+}: LayoutControlButtonsProps) {
+  return (
+    <div className="flex items-center gap-1">
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-white hover:bg-[#2A4A73]"
+                onClick={onOpenLayoutDialog}
+              >
+                <LayoutTemplate size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>自定义布局</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-6 w-6 text-white hover:bg-[#2A4A73] ${
+                  !sidebarCollapsed ? 'bg-[#3A5A83]' : ''
+                }`}
+                onClick={toggleSidebar}
+              >
+                <PanelLeft size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>切换左侧栏 (Ctrl+B)</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-6 w-6 text-white hover:bg-[#2A4A73] ${
+                  !chatPanelCollapsed ? 'bg-[#3A5A83]' : ''
+                }`}
+                onClick={toggleChatPanel}
+              >
+                <PanelRight size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>切换辅助侧栏 (Ctrl+Shift+I)</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-6 w-6 text-white hover:bg-[#2A4A73] ${
+                  !bottomPanelCollapsed ? 'bg-[#3A5A83]' : ''
+                }`}
+                onClick={toggleBottomPanel}
+              >
+                <PanelBottom size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>切换面板</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
+    </div>
   )
 }

@@ -108,6 +108,15 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-023 | Agent可观测性数据存储采用本地SQLite，管理员可见范围为租户级 | 架构讨论 2026-03-11 |
 | ADR-024 | 断点续传支持从任意中断位置恢复，数据持久化到本地SQLite | 架构讨论 2026-03-11 |
 | ADR-025 | 工具系统采用通用工具架构：每部门最多5个核心工具（query/aggregate/mutate/action/export），参数化设计避免工具爆炸 | Party Mode讨论 2026-03-13 |
+| ADR-026 | 检查点系统采用Git作为后端存储，支持文件版本管理和回滚 | Party Mode讨论 2026-03-14 |
+| ADR-027 | 检查点触发时机：每次用户发送消息前自动创建 | Party Mode讨论 2026-03-14 |
+| ADR-028 | 检查点回滚范围支持两种模式：仅恢复对话、恢复对话和文件内容 | Party Mode讨论 2026-03-14 |
+| ADR-029 | Git工具集成采用内置PortableGit方案，首次启动时自动安装 | Party Mode讨论 2026-03-14 |
+| ADR-030 | 检查点元数据存储在SQLite，文件变更通过Git管理 | Party Mode讨论 2026-03-14 |
+| ADR-031 | 上下文压缩采用混合策略：摘要 + 滑动窗口 + 关键事实提取 | Party Mode讨论 2026-03-14 |
+| ADR-032 | 压缩触发阈值为上下文窗口的80%（可配置） | Party Mode讨论 2026-03-14 |
+| ADR-033 | 压缩过程对用户透明，仅在完成后显示简洁通知 | Party Mode讨论 2026-03-14 |
+| ADR-034 | 关键事实自动提取到L1个人记忆层持久保存 | Party Mode讨论 2026-03-14 |
 
 ### Recommended Architecture
 
@@ -384,6 +393,554 @@ url = "http://localhost:8080/mcp"
 - 可选Docker沙箱隔离
 - 容器镜像配置
 - 资源限制（CPU/内存）
+
+### 检查点系统设计 (ADR-026至ADR-030)
+
+> **设计目标：** 为用户提供"时间旅行"能力，可以回滚到任意历史节点，或从历史节点编辑输入重新尝试不同路径。
+
+#### 架构决策摘要
+
+| 决策ID | 决策内容 |
+|--------|---------|
+| ADR-026 | 检查点系统采用Git作为后端存储，支持文件版本管理和回滚 |
+| ADR-027 | 检查点触发时机：每次用户发送消息前自动创建 |
+| ADR-028 | 检查点回滚范围支持两种模式：仅恢复对话、恢复对话和文件内容 |
+| ADR-029 | Git工具集成采用内置PortableGit方案，首次启动时自动安装 |
+| ADR-030 | 检查点元数据存储在SQLite，文件变更通过Git管理 |
+
+#### 检查点系统架构
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    检查点系统架构                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    Checkpoint Manager                        │   │
+│  │  - create_checkpoint()  创建检查点                           │   │
+│  │  - list_checkpoints()   列出检查点                           │   │
+│  │  - restore_checkpoint() 恢复检查点                           │   │
+│  │  - branch_checkpoint()  分支检查点                           │   │
+│  │  - delete_checkpoint()  删除检查点                           │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                              │                                      │
+│              ┌───────────────┼───────────────┐                      │
+│              │               │               │                      │
+│              ▼               ▼               ▼                      │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐           │
+│  │ Session State │  │  Git Backend  │  │  Meta Store   │           │
+│  │   Manager     │  │  (PortableGit)│  │   (SQLite)    │           │
+│  └───────────────┘  └───────────────┘  └───────────────┘           │
+│         │                  │                   │                    │
+│         ▼                  ▼                   ▼                    │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐           │
+│  │ 对话上下文    │  │ 文件版本控制  │  │ 检查点元数据  │           │
+│  │ 消息列表     │  │ Git提交记录   │  │ ID、时间戳    │           │
+│  │ AI记忆状态   │  │ 文件差异      │  │ 用户输入预览  │           │
+│  └───────────────┘  └───────────────┘  └───────────────┘           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Git集成方案 (ADR-029)
+
+**PortableGit 集成设计：**
+
+```
+应用目录结构：
+AI-Automated-office/
+├── resources/
+│   └── portable-git/          # 内置PortableGit (~50MB)
+│       ├── cmd/
+│       │   └── git.exe
+│       └── ...
+│
+用户数据目录：
+%LOCALAPPDATA%\AI-Automated-office\
+├── tools/
+│   └── git/                   # 解压后的PortableGit
+│       ├── cmd/
+│       │   └── git.exe
+│       └── ...
+├── checkpoints/               # 检查点存储
+│   ├── metadata.db           # SQLite元数据库
+│   └── repos/                # Git仓库
+│       └── {workspace-id}/
+│           └── .git/
+└── workspaces/               # 用户工作空间
+    └── {workspace-id}/
+```
+
+**Git初始化流程：**
+
+```
+应用启动
+     │
+     ├─► 检测系统Git
+     │        │
+     │        ├─► 已安装 → 使用系统Git
+     │        │
+     │        └─► 未安装 → 检测内置PortableGit
+     │                         │
+     │                         ├─► 已解压 → 使用PortableGit
+     │                         │
+     │                         └─► 未解压 → 解压到用户目录
+     │                                        │
+     │                                        └─► 使用PortableGit
+     │
+     └─► 初始化工作空间Git仓库
+              │
+              └─► git init {workspace-path}
+```
+
+**Git调用接口（Rust实现）：**
+
+```rust
+pub struct GitBackend {
+    git_path: PathBuf,           // Git可执行文件路径
+    workspace_path: PathBuf,     // 工作空间路径
+}
+
+impl GitBackend {
+    /// 创建Git提交（创建检查点时调用）
+    pub async fn commit(
+        &self,
+        checkpoint_id: &str,
+        message: &str,
+    ) -> Result<String, GitError> {
+        // git add -A
+        // git commit -m "checkpoint: {checkpoint_id} - {message}"
+        // 返回提交hash
+    }
+    
+    /// 恢复到指定提交（恢复检查点时调用）
+    pub async fn restore(
+        &self,
+        commit_hash: &str,
+        mode: RestoreMode,
+    ) -> Result<(), GitError> {
+        match mode {
+            RestoreMode::Soft => {
+                // git reset --soft {commit_hash}
+                // 保留工作区变更
+            }
+            RestoreMode::Hard => {
+                // git reset --hard {commit_hash}
+                // 恢复到检查点时的文件状态
+            }
+        }
+    }
+    
+    /// 获取文件差异
+    pub async fn diff(
+        &self,
+        from_commit: &str,
+        to_commit: Option<&str>,
+    ) -> Result<Vec<FileDiff>, GitError> {
+        // git diff {from_commit} {to_commit}
+    }
+}
+```
+
+#### 检查点数据结构
+
+**检查点元数据（SQLite存储）：**
+
+```sql
+CREATE TABLE checkpoints (
+    id TEXT PRIMARY KEY,              -- 检查点ID: cp-{timestamp}-{seq}
+    session_id TEXT NOT NULL,         -- 会话ID
+    created_at DATETIME NOT NULL,     -- 创建时间
+    user_input_preview TEXT,          -- 用户输入预览（前50字）
+    user_input_full TEXT,             -- 用户输入完整内容
+    conversation_turn INTEGER,        -- 对话轮次
+    message_ids TEXT,                 -- 消息ID列表(JSON)
+    git_commit_hash TEXT,             -- Git提交哈希
+    git_commit_message TEXT,          -- Git提交信息
+    artifacts TEXT,                   -- 文件变更列表(JSON)
+    is_important BOOLEAN DEFAULT 0,   -- 用户标记为重要
+    is_active BOOLEAN DEFAULT 1,      -- 是否为当前活动分支
+    branch_id TEXT,                   -- 分支ID（用于编辑重试）
+    parent_checkpoint_id TEXT,        -- 父检查点ID（分支场景）
+    created_by TEXT NOT NULL,         -- 创建用户
+    tenant_id TEXT NOT NULL,          -- 租户ID
+    
+    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    FOREIGN KEY (parent_checkpoint_id) REFERENCES checkpoints(id)
+);
+
+CREATE INDEX idx_checkpoints_session ON checkpoints(session_id);
+CREATE INDEX idx_checkpoints_created ON checkpoints(created_at);
+CREATE INDEX idx_checkpoints_tenant ON checkpoints(tenant_id);
+```
+
+**检查点JSON结构：**
+
+```typescript
+interface Checkpoint {
+  id: string;                    // cp-20260314-001
+  sessionId: string;             // session-abc123
+  createdAt: string;             // ISO 8601
+  userInputPreview: string;      // "帮我润色这段文字..."
+  userInputFull: string;         // 完整用户输入
+  conversationTurn: number;      // 5
+  messageIds: string[];          // ["msg-1", "msg-2", ...]
+  gitCommit: {
+    hash: string;                // a1b2c3d
+    message: string;             // "checkpoint: cp-20260314-001 - 帮我润色..."
+  };
+  artifacts: {
+    path: string;                // /documents/draft.md
+    changeType: 'created' | 'modified' | 'deleted';
+  }[];
+  isImportant: boolean;
+  isActive: boolean;
+  branchId?: string;             // 分支ID
+  parentCheckpointId?: string;   // 父检查点
+}
+```
+
+#### 检查点生命周期
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    检查点生命周期                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  用户发送消息                                                        │
+│       │                                                             │
+│       ▼                                                             │
+│  ┌─────────────────┐                                                │
+│  │ 创建检查点      │ ◄── 自动触发 (ADR-027)                          │
+│  │ - 保存会话状态  │                                                │
+│  │ - Git提交文件   │                                                │
+│  │ - 写入元数据    │                                                │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ▼                                                         │
+│  ┌─────────────────┐                                                │
+│  │ 显示检查点标记  │ ◄── 对话界面可视化                              │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ├────────────────────┬────────────────────┐               │
+│           │                    │                    │               │
+│           ▼                    ▼                    ▼               │
+│  ┌─────────────┐       ┌─────────────┐       ┌─────────────┐        │
+│  │ 继续对话    │       │ 回滚检查点  │       │ 编辑重试    │        │
+│  │ (无操作)   │       │ (ADR-028)   │       │ (分支模式)  │        │
+│  └─────────────┘       └──────┬──────┘       └──────┬──────┘        │
+│                               │                     │               │
+│                               ▼                     ▼               │
+│                        ┌─────────────┐       ┌─────────────┐        │
+│                        │ 选择回滚范围│       │ 编辑输入    │        │
+│                        │ 仅对话/全部│       │ 重新发送    │        │
+│                        └──────┬──────┘       └──────┬──────┘        │
+│                               │                     │               │
+│                               ▼                     ▼               │
+│                        ┌─────────────┐       ┌─────────────┐        │
+│                        │ 执行回滚    │       │ 创建分支    │        │
+│                        │ 恢复状态    │       │ 新时间线    │        │
+│                        └─────────────┘       └─────────────┘        │
+│                                                                     │
+│  自动清理（后台任务）                                                 │
+│       │                                                             │
+│       ▼                                                             │
+│  ┌─────────────────┐                                                │
+│  │ 清理过期检查点  │ ◄── 30天（可配置）                              │
+│  │ 保留重要标记    │                                                │
+│  └─────────────────┘                                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 回滚机制设计 (ADR-028)
+
+**两种回滚模式：**
+
+| 模式 | 操作 | 说明 |
+|------|------|------|
+| **仅恢复对话** | 对话回滚 + 文件不变 | AI重新开始，用户手动处理文件 |
+| **恢复对话和文件** | 对话回滚 + Git hard reset | 完全恢复到检查点状态 |
+
+**回滚API设计：**
+
+```rust
+pub enum RestoreMode {
+    ConversationOnly,      // 仅恢复对话
+    ConversationAndFiles,  // 恢复对话和文件
+}
+
+impl CheckpointManager {
+    pub async fn restore(
+        &self,
+        checkpoint_id: &str,
+        mode: RestoreMode,
+    ) -> Result<RestoreResult, CheckpointError> {
+        // 1. 获取检查点元数据
+        let checkpoint = self.metadata_store.get(checkpoint_id).await?;
+        
+        // 2. 恢复会话状态
+        self.session_manager.restore(
+            checkpoint.session_id,
+            checkpoint.message_ids,
+        ).await?;
+        
+        // 3. 恢复文件（如果需要）
+        if let RestoreMode::ConversationAndFiles = mode {
+            self.git_backend.restore(
+                &checkpoint.git_commit_hash,
+                GitRestoreMode::Hard,
+            ).await?;
+        }
+        
+        // 4. 更新活动状态
+        self.metadata_store.set_active(checkpoint_id).await?;
+        
+        // 5. 记录审计日志
+        self.audit_log.log_restore(checkpoint_id, mode).await?;
+        
+        Ok(RestoreResult { checkpoint, mode })
+    }
+}
+```
+
+#### 编辑重试功能（分支模式）
+
+**设计原理：** 用户可以从历史检查点编辑输入并重新发送，创建一条新的对话分支。
+
+```
+原始对话:
+├── cp-001: "帮我润色这段文字..."
+│   └── AI: 好的，润色完成...
+├── cp-002: "再加一点正式感"
+│   └── AI: 已修改...
+└── cp-003: "这个版本可以了"
+
+编辑重试后:
+├── cp-001: "帮我润色这段文字..."
+│   ├── 原分支: cp-002 → cp-003 (已归档)
+│   └── 新分支: cp-001-b1 (编辑重试)
+│       └── 用户输入: "帮我润色这段文字，保持亲切语气"
+│           └── AI: 好的，以亲切语气润色...
+```
+
+**分支检查点ID格式：**
+
+```
+原始检查点: cp-20260314-001
+分支检查点: cp-20260314-001-b1
+分支的分支: cp-20260314-001-b1-b1
+```
+
+#### 性能考虑
+
+| 指标 | 要求 | 实现方式 |
+|------|------|---------|
+| **检查点创建延迟** | < 500ms | 异步Git提交，先写入元数据 |
+| **检查点列表加载** | < 100ms | SQLite索引，分页查询 |
+| **回滚操作延迟** | < 2s | Git操作优化，增量恢复 |
+| **存储空间** | 按需清理 | 自动清理30天前的检查点 |
+
+#### 安全考虑
+
+| 安全点 | 措施 |
+|--------|------|
+| **Git仓库隔离** | 每个工作空间独立Git仓库 |
+| **敏感文件排除** | .gitignore排除敏感目录 |
+| **权限控制** | 检查点按租户和用户隔离 |
+| **审计日志** | 所有检查点操作记录日志 |
+
+### 上下文压缩系统设计 (ADR-031至ADR-034)
+
+> **设计目标：** 在有限的上下文窗口下，自动压缩对话历史，保留关键信息，确保长对话不会因超出Token限制而中断。
+
+#### 架构决策摘要
+
+| 决策ID | 决策内容 |
+|--------|---------|
+| ADR-031 | 上下文压缩采用混合策略：摘要 + 滑动窗口 + 关键事实提取 |
+| ADR-032 | 压缩触发阈值为上下文窗口的80%（可配置） |
+| ADR-033 | 压缩过程对用户透明，仅在完成后显示简洁通知 |
+| ADR-034 | 关键事实自动提取到L1个人记忆层持久保存 |
+
+#### 压缩策略设计 (ADR-031)
+
+**混合策略架构：**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    上下文压缩混合策略                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    当前上下文窗口                            │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │   │
+│  │  │ 系统提示词  │ │ 压缩摘要   │ │ 最近N轮对话 │           │   │
+│  │  │ (固定)     │ │ (动态)     │ │ (完整)     │           │   │
+│  │  │ ~500 tokens│ │ ~800 tokens│ │ ~3000 tokens│           │   │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘           │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                              ▲                                      │
+│                              │                                      │
+│  ┌───────────────────────────┴─────────────────────────────────┐   │
+│  │                    后端存储                                  │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │   │
+│  │  │ 摘要历史    │ │ 关键事实    │ │ 原始对话    │           │   │
+│  │  │ (SQLite)   │ │ (L1记忆层) │ │ (可选存档) │           │   │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘           │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**压缩触发机制 (ADR-032)：**
+
+| 触发条件 | 阈值 | 动作 |
+|---------|------|------|
+| **Token占用** | > 80%（可配置） | 自动触发压缩 |
+| **轮次限制** | > 20轮 | 可选触发 |
+
+#### 压缩流程
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    上下文压缩流程                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Token检测 > 阈值(80%)                                              │
+│       │                                                             │
+│       ▼                                                             │
+│  ┌─────────────────┐                                                │
+│  │ 1. 分析对话历史 │                                                │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ▼                                                         │
+│  ┌─────────────────┐                                                │
+│  │ 2. 提取关键事实 │ ──→ 存入L1个人记忆层 (ADR-034)                 │
+│  │   · 用户约束    │                                                │
+│  │   · 业务决策    │                                                │
+│  │   · 实体信息    │                                                │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ▼                                                         │
+│  ┌─────────────────┐                                                │
+│  │ 3. 生成结构化摘要│                                               │
+│  │   · 摘要文本    │                                                │
+│  │   · 关键实体    │                                                │
+│  │   · 决策记录    │                                                │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ▼                                                         │
+│  ┌─────────────────┐                                                │
+│  │ 4. 保留最近N轮  │  (默认10轮)                                    │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ▼                                                         │
+│  ┌─────────────────┐                                                │
+│  │ 5. 存储摘要     │ ──→ SQLite                                    │
+│  └────────┬────────┘                                                │
+│           │                                                         │
+│           ▼                                                         │
+│  ┌─────────────────┐                                                │
+│  │ 6. 通知用户     │ ──→ 简洁系统消息 (ADR-033)                     │
+│  └─────────────────┘                                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 数据结构设计
+
+**摘要存储结构（SQLite）：**
+
+```sql
+CREATE TABLE context_summaries (
+    id TEXT PRIMARY KEY,              -- 摘要ID
+    session_id TEXT NOT NULL,         -- 会话ID
+    created_at DATETIME NOT NULL,     -- 创建时间
+    covered_turns_start INTEGER,      -- 覆盖起始轮次
+    covered_turns_end INTEGER,        -- 覆盖结束轮次
+    summary_text TEXT,                -- 摘要文本
+    key_entities TEXT,                -- 关键实体(JSON)
+    decisions TEXT,                   -- 决策记录(JSON)
+    tokens_saved INTEGER,             -- 节省的Token数
+    tenant_id TEXT NOT NULL,          -- 租户ID
+    user_id TEXT NOT NULL,            -- 用户ID
+    
+    FOREIGN KEY (session_id) REFERENCES sessions(id)
+);
+
+CREATE INDEX idx_summaries_session ON context_summaries(session_id);
+CREATE INDEX idx_summaries_created ON context_summaries(created_at);
+```
+
+**摘要JSON结构：**
+
+```typescript
+interface ContextSummary {
+  id: string;
+  sessionId: string;
+  createdAt: string;
+  coveredTurns: { start: number; end: number };
+  summaryText: string;
+  keyEntities: Record<string, string>;  // { "客户": "A公司", "预算": "10万" }
+  decisions: string[];                   // ["使用美元计价", "初版折扣10%"]
+  tokensSaved: number;
+}
+```
+
+#### Rust 实现接口
+
+```rust
+pub struct ContextCompressor {
+    threshold: f32,           // 压缩阈值 (默认 0.8)
+    keep_recent_turns: usize, // 保留最近N轮 (默认 10)
+    max_tokens: usize,        // 最大Token数
+}
+
+impl ContextCompressor {
+    /// 检查是否需要压缩
+    pub fn should_compress(&self, current_tokens: usize) -> bool {
+        current_tokens as f32 / self.max_tokens as f32 > self.threshold
+    }
+    
+    /// 执行压缩
+    pub async fn compress(
+        &self,
+        messages: Vec<Message>,
+        session_id: &str,
+    ) -> Result<CompressResult, CompressError> {
+        // 1. 提取关键事实
+        let facts = self.extract_key_facts(&messages).await?;
+        
+        // 2. 存入L1记忆层
+        self.memory_store.store_facts(&facts).await?;
+        
+        // 3. 生成摘要
+        let summary = self.generate_summary(&messages).await?;
+        
+        // 4. 保留最近N轮
+        let recent = messages.iter().rev().take(self.keep_recent_turns).rev().cloned().collect();
+        
+        // 5. 存储摘要
+        self.summary_store.save(&summary).await?;
+        
+        Ok(CompressResult {
+            summary,
+            recent_messages: recent,
+            tokens_saved: messages.len() - recent.len(),
+        })
+    }
+}
+```
+
+#### 性能指标
+
+| 指标 | 要求 |
+|------|------|
+| **压缩延迟** | < 2秒 |
+| **Token节省率** | 目标 50-80% |
+| **关键事实提取准确率** | > 90% |
+| **摘要存储** | 每条约 500-1000 tokens |
 
 ### 工具系统设计
 

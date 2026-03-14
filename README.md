@@ -81,6 +81,21 @@ ai-automated-office/
 └── openspec/               # OpenSpec 变更管理
 ```
 
+## 组件说明
+
+- TopBar：顶部菜单栏与布局控制按钮
+- ActivityBar：左侧活动栏入口
+- Sidebar：可折叠侧边栏
+- Workbench：主工作区内容容器
+- AiChatPanel：AI 对话辅助侧栏
+- StatusBar：底部状态栏
+
+## 快捷键
+
+- Ctrl+Shift+M / Cmd+Shift+M：切换顶部菜单栏
+- Ctrl+B / Cmd+B：切换左侧栏
+- Ctrl+Shift+I / Cmd+Shift+I：切换 AI Chat Panel
+
 ## 环境变量
 
 复制 `.env.example` 为 `.env.local` 并配置：

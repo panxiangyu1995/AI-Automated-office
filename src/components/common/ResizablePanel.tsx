@@ -5,7 +5,7 @@ interface ResizablePanelProps {
   minWidth: number
   maxWidth: number
   onWidthChange: (width: number) => void
-  direction?: 'left' | 'right'
+  direction?: 'left' | 'right' | 'top' | 'bottom'
   collapsed?: boolean
   children: ReactNode
   className?: string
@@ -22,29 +22,36 @@ export function ResizablePanel({
   className = '',
 }: ResizablePanelProps) {
   const isResizing = useRef(false)
-  const startX = useRef(0)
-  const startWidth = useRef(0)
+  const startPos = useRef(0)
+  const startSize = useRef(0)
+
+  const isVertical = direction === 'top' || direction === 'bottom'
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     isResizing.current = true
-    startX.current = e.clientX
-    startWidth.current = width
-    document.body.style.cursor = 'col-resize'
+    startPos.current = isVertical ? e.clientY : e.clientX
+    startSize.current = width
+    document.body.style.cursor = isVertical ? 'row-resize' : 'col-resize'
     document.body.style.userSelect = 'none'
-  }, [width])
+  }, [width, isVertical])
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing.current) return
     
-    const deltaX = e.clientX - startX.current
-    const newWidth = direction === 'right'
-      ? startWidth.current - deltaX
-      : startWidth.current + deltaX
+    const currentPos = isVertical ? e.clientY : e.clientX
+    const delta = currentPos - startPos.current
     
-    const clampedWidth = Math.min(maxWidth, Math.max(minWidth, newWidth))
-    onWidthChange(clampedWidth)
-  }, [direction, minWidth, maxWidth, onWidthChange])
+    let newSize = startSize.current
+    if (direction === 'right' || direction === 'bottom') {
+      newSize += delta
+    } else {
+      newSize -= delta
+    }
+    
+    const clampedSize = Math.min(maxWidth, Math.max(minWidth, newSize))
+    onWidthChange(clampedSize)
+  }, [direction, minWidth, maxWidth, onWidthChange, isVertical])
 
   const handleMouseUp = useCallback(() => {
     isResizing.current = false
@@ -64,26 +71,46 @@ export function ResizablePanel({
 
   if (collapsed) {
     return (
-      <div className={className} style={{ width: 0, overflow: 'hidden' }}>
+      <div 
+        className={className} 
+        style={{ 
+          [isVertical ? 'height' : 'width']: 0, 
+          overflow: 'hidden' 
+        }} 
+      >
         {children}
       </div>
     )
   }
 
+  const style = {
+    [isVertical ? 'height' : 'width']: `${width}px`,
+    flexShrink: 0
+  }
+
   return (
     <div 
       className={`relative ${className}`}
-      style={{ width: `${width}px`, flexShrink: 0 }}
+      style={style}
     >
       {children}
       {/* 拖拽手柄 */}
       <div
-        className={`absolute top-0 w-1 h-full cursor-col-resize group ${
-          direction === 'right' ? 'left-0' : 'right-0'
+        className={`absolute z-10 ${
+          isVertical 
+            ? 'left-0 w-full h-1 cursor-row-resize' 
+            : 'top-0 w-1 h-full cursor-col-resize'
+        } group ${
+          direction === 'right' ? 'right-0 translate-x-1/2' : 
+          direction === 'left' ? 'left-0 -translate-x-1/2' :
+          direction === 'bottom' ? 'bottom-0 translate-y-1/2' : 
+          'top-0 -translate-y-1/2'
         }`}
         onMouseDown={handleMouseDown}
       >
-        <div className="w-px h-full bg-transparent group-hover:bg-primary/50 transition-colors" />
+        <div className={`bg-transparent group-hover:bg-primary/50 transition-colors ${
+          isVertical ? 'w-full h-px' : 'w-px h-full'
+        }`} />
       </div>
     </div>
   )

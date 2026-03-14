@@ -26,12 +26,21 @@ interface UIState {
   
   // 活动栏状态
   activeActivityItem: ActivityBarItem
+
+  topBarVisible: boolean
+
+  // 底部面板状态
+  bottomPanelHeight: number
+  bottomPanelCollapsed: boolean
   
   // 操作方法
   setSidebarWidth: (width: number) => void
   setChatPanelWidth: (width: number) => void
+  setBottomPanelHeight: (height: number) => void
   toggleSidebar: () => void
   toggleChatPanel: () => void
+  toggleBottomPanel: () => void
+  toggleTopBar: () => void
   openQuickSearch: () => void
   closeQuickSearch: () => void
   toggleQuickSearch: () => void
@@ -46,12 +55,16 @@ export const useUIStore = create<UIState>()(
       sidebarCollapsed: false,
       chatPanelWidth: 400,
       chatPanelCollapsed: false,
+      bottomPanelHeight: 200,
+      bottomPanelCollapsed: true,
       quickSearchOpen: false,
       activeActivityItem: 'dashboard',
+      topBarVisible: true,
       
       // 操作方法
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       setChatPanelWidth: (width) => set({ chatPanelWidth: width }),
+      setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
       toggleSidebar: () => {
         const current = get().sidebarCollapsed
         console.log('[uiStore] toggleSidebar:', current, '->', !current)
@@ -61,6 +74,16 @@ export const useUIStore = create<UIState>()(
         const current = get().chatPanelCollapsed
         console.log('[uiStore] toggleChatPanel:', current, '->', !current)
         set({ chatPanelCollapsed: !current })
+      },
+      toggleBottomPanel: () => {
+        const current = get().bottomPanelCollapsed
+        console.log('[uiStore] toggleBottomPanel:', current, '->', !current)
+        set({ bottomPanelCollapsed: !current })
+      },
+      toggleTopBar: () => {
+        const current = get().topBarVisible
+        console.log('[uiStore] toggleTopBar:', current, '->', !current)
+        set({ topBarVisible: !current })
       },
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
@@ -77,7 +100,10 @@ export const useUIStore = create<UIState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         chatPanelWidth: state.chatPanelWidth,
         chatPanelCollapsed: state.chatPanelCollapsed,
+        bottomPanelHeight: state.bottomPanelHeight,
+        bottomPanelCollapsed: state.bottomPanelCollapsed,
         activeActivityItem: state.activeActivityItem,
+        topBarVisible: state.topBarVisible,
       }),
     }
   )

@@ -5,22 +5,11 @@ import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
 import { Workbench } from './Workbench'
 import { AiChatPanel } from './AiChatPanel'
+import { BottomPanel } from './BottomPanel'
 import { StatusBar } from './StatusBar'
+import { LayoutSettingsDialog } from './LayoutSettingsDialog'
 import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
 import { Search, CornerDownLeft, ArrowUp, ArrowDown } from 'lucide-react'
-
-// 部门名称映射
-const departmentNames: Record<string, string> = {
-  dashboard: '首页',
-  hr: '人事部',
-  finance: '财务部',
-  sales: '销售部',
-  approval: '审批中心',
-  service: '售后服务',
-  warehouse: '仓储部',
-  knowledge: '知识库',
-  settings: '系统设置',
-}
 
 type SearchResult = {
   id: string
@@ -33,13 +22,14 @@ const searchResults: SearchResult[] = []
 
 export function AppLayout() {
   const { 
-    activeActivityItem, 
     sidebarCollapsed,
+    topBarVisible,
     quickSearchOpen,
     openQuickSearch,
     closeQuickSearch,
+    toggleTopBar,
   } = useUIStore()
-  const departmentName = departmentNames[activeActivityItem] || '首页'
+  const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
@@ -63,10 +53,28 @@ export function AppLayout() {
     }
   }, [quickSearchOpen])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'm') {
+        event.preventDefault()
+        toggleTopBar()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [toggleTopBar])
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* 顶部工具栏 - 必须 */}
-      <TopBar department={departmentName} />
+      <TopBar 
+        visible={topBarVisible} 
+        onToggle={toggleTopBar}
+        onOpenLayoutDialog={() => setLayoutDialogOpen(true)}
+      />
 
       {/* 主内容区 */}
       <div className="flex-1 flex overflow-hidden">
@@ -76,8 +84,14 @@ export function AppLayout() {
         {/* 侧边栏 */}
         {!sidebarCollapsed && <Sidebar />}
 
-        {/* 工作区 */}
-        <Workbench />
+        {/* 中间区域：工作区 + 底部面板 */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* 工作区 */}
+          <Workbench className="flex-1" />
+          
+          {/* 底部面板 */}
+          <BottomPanel />
+        </div>
 
         {/* AI 对话面板 */}
         <AiChatPanel />
@@ -85,6 +99,12 @@ export function AppLayout() {
 
       {/* 状态栏 */}
       <StatusBar />
+
+      {/* 布局设置对话框 */}
+      <LayoutSettingsDialog 
+        open={layoutDialogOpen} 
+        onOpenChange={setLayoutDialogOpen} 
+      />
 
       {/* 快速搜索浮层 */}
       {quickSearchOpen && (

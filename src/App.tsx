@@ -3,10 +3,13 @@ import { useAppStore } from './stores/appStore'
 import { AppLayout } from './components/common'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { listen } from '@tauri-apps/api/event'
+import { Alert, AlertDescription, AlertTitle } from './components/ui/alert'
+import { Button } from './components/ui/button'
 
 function App() {
   const { setInitialized } = useAppStore()
   const [loading, setLoading] = useState(true)
+  const [showTopBarHint, setShowTopBarHint] = useState(false)
 
   // 注册全局快捷键监听器
   useGlobalShortcuts()
@@ -57,6 +60,18 @@ function App() {
     initApp()
   }, [setInitialized])
 
+  useEffect(() => {
+    const dismissed = localStorage.getItem('topbar-hint-dismissed')
+    if (!dismissed) {
+      setShowTopBarHint(true)
+    }
+  }, [])
+
+  const handleDismissTopBarHint = () => {
+    localStorage.setItem('topbar-hint-dismissed', 'true')
+    setShowTopBarHint(false)
+  }
+
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -68,7 +83,26 @@ function App() {
     )
   }
 
-  return <AppLayout />
+  return (
+    <>
+      {showTopBarHint && (
+        <div className="fixed left-1/2 top-4 z-50 w-[520px] -translate-x-1/2">
+          <Alert className="border-slate-200 bg-white shadow-lg">
+            <AlertTitle className="text-slate-900">欢迎使用顶部菜单栏</AlertTitle>
+            <AlertDescription className="mt-2 text-slate-600">
+              <div>快捷键提示：Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，Ctrl+Shift+I 切换 AI Chat Panel。</div>
+              <div className="mt-3 flex justify-end">
+                <Button size="sm" onClick={handleDismissTopBarHint}>
+                  知道了
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+      <AppLayout />
+    </>
+  )
 }
 
 export default App

@@ -400,22 +400,23 @@ ai-automated-office/
 │   │
 │   ├── components/                     # UI组件
 │   │   ├── ui/                         # shadcn/ui基础组件
+│   │   │   ├── alert.tsx
 │   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── dialog.tsx
-│   │   │   ├── input.tsx
-│   │   │   ├── select.tsx
-│   │   │   ├── table.tsx
-│   │   │   ├── tabs.tsx
-│   │   │   ├── toast.tsx
+│   │   │   ├── menubar.tsx
+│   │   │   ├── tooltip.tsx
 │   │   │   └── ...
+│   │   ├── layout/                     # 布局入口
+│   │   │   ├── AppLayout.tsx           # 布局入口导出
+│   │   │   └── TopBar.tsx              # 顶部菜单栏导出
 │   │   ├── common/                     # 业务通用组件
 │   │   │   ├── AppLayout.tsx           # 应用布局
+│   │   │   ├── TopBar.tsx              # 顶部菜单栏
+│   │   │   ├── ActivityBar.tsx         # 活动栏
 │   │   │   ├── Sidebar.tsx             # 侧边栏
-│   │   │   ├── Header.tsx              # 头部导航
-│   │   │   ├── LoadingSpinner.tsx      # 加载动画
-│   │   │   ├── ErrorBoundary.tsx       # 错误边界
-│   │   │   └── EmptyState.tsx          # 空状态
+│   │   │   ├── Workbench.tsx           # 工作区
+│   │   │   ├── AiChatPanel.tsx         # AI 对话面板
+│   │   │   ├── StatusBar.tsx           # 状态栏
+│   │   │   └── ResizablePanel.tsx      # 可调节面板
 │   │   └── plugin/                     # 插件相关组件
 │   │       ├── PluginCard.tsx          # 插件卡片
 │   │       ├── PluginPanel.tsx         # 插件面板
