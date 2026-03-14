@@ -19,7 +19,19 @@ pub fn run() {
             utils::logger::init_logger();
             
             // 获取主窗口
-            let _window = app.get_webview_window("main").expect("无法获取主窗口");
+            let window = app.get_webview_window("main").expect("无法获取主窗口");
+            
+            // 监听窗口关闭事件，实现最小化到托盘
+            let window_clone = window.clone();
+            window.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    // 阻止默认关闭行为
+                    api.prevent_close();
+                    // 隐藏窗口而不是退出
+                    let _ = window_clone.hide();
+                    tracing::info!("窗口已最小化到托盘");
+                }
+            });
             
             // 初始化系统托盘
             tray::setup_tray(app.handle()).expect("无法初始化系统托盘");

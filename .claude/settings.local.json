@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "WebFetch(domain:pencil.evolus.vn)"
+      "WebFetch(domain:pencil.evolus.vn)",
+      "Bash(cd:*)"
     ]
   }
 }

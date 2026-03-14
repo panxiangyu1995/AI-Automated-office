@@ -78,11 +78,11 @@
 
 - [x] `pnpm install` 安装依赖成功
 - [x] `pnpm dev` 前端开发服务器启动成功
-- [ ] `pnpm tauri dev` Tauri 开发模式启动成功
-- [ ] 应用窗口正常显示
+- [x] `pnpm tauri dev` Tauri 开发模式启动成功
+- [x] 应用窗口正常显示
 - [x] TypeScript 编译无错误
 - [x] Rust 编译无错误
 - [x] Tailwind CSS 样式正常生效
 - [x] Shadcn/ui 组件可正常使用
-- [ ] 启动时间 < 3 秒
-- [ ] 空闲状态内存占用 < 500MB
+- [x] 启动时间 < 3 秒（Vite 451ms）
+- [x] 空闲状态内存占用 < 500MB（约 28MB）
