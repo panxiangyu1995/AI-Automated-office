@@ -70,9 +70,39 @@
 
 ---
 
+### 任务 4: 类VSCode四栏布局 (Story 1.4)
+
+**铁律合规检查：**
+- PRD 合规：FR2
+- 架构合规：ADR-001（Tauri + React架构）
+- UX 合规：UX-01（VSCode风格布局）, UX-02（四栏布局）, UX-03（可调整面板）, UX-04（Shadcn/ui）
+
+**完成内容：**
+- 创建布局组件结构 (src/components/layout/)
+- 实现活动栏组件 (ActivityBar.tsx) - 左侧垂直活动栏，支持图标切换
+- 实现侧边栏组件 (Sidebar.tsx) - 可折叠的侧边导航栏
+- 实现工作区组件 (Workspace.tsx) - 主工作区域
+- 实现 AI 对话面板组件 (ChatPanel.tsx) - 右侧AI助手对话区域
+- 实现状态栏组件 (StatusBar.tsx) - 底部状态信息栏
+- 实现面板拖拽调整 - 使用 ResizablePanel 组件
+- 创建布局状态管理 (src/stores/uiStore.ts) - Zustand状态管理
+- 实现布局持久化 - 保存用户面板尺寸配置
+- 集成到应用 (src/App.tsx) - 完整的四栏布局
+
+**测试结果：**
+- ✅ TypeScript 编译无错误
+- ✅ ESLint 检查通过
+- ✅ 前端构建成功
+- ✅ 布局在浏览器中正确渲染
+
+**备注：**
+已完成所有10个步骤，实现完整的类VSCode四栏布局界面，支持面板拖拽调整和配置持久化
+
+---
+
 ## 待办事项
 
-- [ ] 任务 4: 类VSCode四栏布局
+- [x] 任务 4: 类VSCode四栏布局
 - [ ] 任务 5: 面板布局自定义
 - [ ] 任务 6: 用户登录功能
 - [ ] 任务 7: 离线模式支持

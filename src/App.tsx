@@ -1,9 +1,43 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from './stores/appStore'
+import { AppLayout } from './components/common'
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { listen } from '@tauri-apps/api/event'
 
 function App() {
-  const { initialized, setInitialized } = useAppStore()
+  const { setInitialized } = useAppStore()
   const [loading, setLoading] = useState(true)
+
+  // 注册全局快捷键监听器
+  useGlobalShortcuts()
+
+  // 直接在 App 中监听 Tauri 事件进行测试
+  useEffect(() => {
+    console.log('[App] 开始设置 Tauri 事件监听...')
+    
+    const setupListeners = async () => {
+      const unlisten1 = await listen('open-ai-chat', (event) => {
+        console.log('[App] 收到 open-ai-chat 事件:', event)
+      })
+      
+      const unlisten2 = await listen('open-quick-search', (event) => {
+        console.log('[App] 收到 open-quick-search 事件:', event)
+      })
+      
+      console.log('[App] Tauri 事件监听设置完成')
+      
+      return () => {
+        unlisten1()
+        unlisten2()
+      }
+    }
+    
+    const cleanup = setupListeners()
+    
+    return () => {
+      cleanup.then(fn => fn())
+    }
+  }, [])
 
   useEffect(() => {
     // 初始化应用
@@ -34,26 +68,7 @@ function App() {
     )
   }
 
-  return (
-    <div className="flex h-screen w-screen flex-col bg-background text-foreground">
-      <header className="flex h-14 items-center justify-between border-b px-4">
-        <h1 className="text-lg font-semibold">AI-Automated-office</h1>
-        <div className="text-sm text-muted-foreground">
-          {initialized ? '已就绪' : '未初始化'}
-        </div>
-      </header>
-      <main className="flex-1 overflow-auto p-4">
-        <div className="flex h-full flex-col items-center justify-center gap-4">
-          <h2 className="text-2xl font-bold text-brand-800">
-            欢迎使用 AI-Automated-office
-          </h2>
-          <p className="text-muted-foreground">
-            AI 赋能的企业 ERP 系统
-          </p>
-        </div>
-      </main>
-    </div>
-  )
+  return <AppLayout />
 }
 
 export default App

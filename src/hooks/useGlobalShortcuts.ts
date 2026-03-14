@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -44,21 +44,34 @@ export function useGlobalShortcuts() {
 
   // 监听快捷键事件
   useEffect(() => {
-    const unlistenOpenAiChat = listen('open-ai-chat', () => {
-      console.log('AI 对话快捷键触发')
-      // 触发 AI 对话面板打开
-      window.dispatchEvent(new CustomEvent('shortcut:open-ai-chat'))
-    })
+    let unlistenOpenAiChat: (() => void) | null = null
+    let unlistenQuickSearch: (() => void) | null = null
 
-    const unlistenQuickSearch = listen('open-quick-search', () => {
-      console.log('快速搜索快捷键触发')
-      // 触发快速搜索
-      window.dispatchEvent(new CustomEvent('shortcut:open-quick-search'))
+    // 使用 async/await 正确处理 Promise
+    const setupListeners = async () => {
+      console.log('[useGlobalShortcuts] 开始设置事件监听器...')
+      
+      unlistenOpenAiChat = await listen('open-ai-chat', () => {
+        console.log('[useGlobalShortcuts] 收到 open-ai-chat 事件，派发 window 事件')
+        window.dispatchEvent(new CustomEvent('shortcut:open-ai-chat'))
+      })
+
+      unlistenQuickSearch = await listen('open-quick-search', () => {
+        console.log('[useGlobalShortcuts] 收到 open-quick-search 事件，派发 window 事件')
+        window.dispatchEvent(new CustomEvent('shortcut:open-quick-search'))
+      })
+      
+      console.log('[useGlobalShortcuts] 事件监听器设置完成')
+    }
+
+    setupListeners().catch((err) => {
+      console.error('[useGlobalShortcuts] 设置事件监听器失败:', err)
     })
 
     return () => {
-      unlistenOpenAiChat.then((fn) => fn())
-      unlistenQuickSearch.then((fn) => fn())
+      console.log('[useGlobalShortcuts] 清理事件监听器')
+      if (unlistenOpenAiChat) unlistenOpenAiChat()
+      if (unlistenQuickSearch) unlistenQuickSearch()
     }
   }, [])
 
@@ -111,16 +124,35 @@ export function useGlobalShortcuts() {
 
 /**
  * 快捷键监听 Hook
+ * 
+ * 使用 useRef 避免闭包问题
  */
 export function useShortcutListener(
   event: 'open-ai-chat' | 'open-quick-search',
   callback: () => void
 ) {
+  // 使用 useRef 保存最新的 callback，避免闭包捕获旧值
+  const savedCallback = useRef(callback)
+  
+  // 每次渲染时更新 ref
   useEffect(() => {
-    const handler = () => callback()
+    savedCallback.current = callback
+  }, [callback])
+
+  useEffect(() => {
+    console.log(`[useShortcutListener] 设置 window 事件监听: shortcut:${event}`)
+    
+    const handler = () => {
+      console.log(`[useShortcutListener] 收到 window 事件: shortcut:${event}`)
+      // 调用最新的 callback
+      savedCallback.current()
+    }
+    
     window.addEventListener(`shortcut:${event}`, handler)
+    
     return () => {
+      console.log(`[useShortcutListener] 清理 window 事件监听: shortcut:${event}`)
       window.removeEventListener(`shortcut:${event}`, handler)
     }
-  }, [event, callback])
+  }, [event])
 }

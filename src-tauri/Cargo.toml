@@ -33,3 +33,7 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
+
+[dev-dependencies]
+# 用于单元测试
+tokio-test = "0.4"
