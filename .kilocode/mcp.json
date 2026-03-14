@@ -1,12 +1,1 @@
-{
-  "mcpServers": {
-    "pencil": {
-      "command": "C:/Users/Administrator/.vscode/extensions/highagency.pencildev-0.6.30/out/mcp-server-windows-x64.exe",
-      "args": [
-        "--app",
-        "visual_studio_code"
-      ],
-      "env": {}
-    }
-  }
-}
+{"mcpServers":{}}

@@ -23,7 +23,7 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 
 ### Functional Requirements
 
-#### 桌面端UI与系统交互 (FR1-FR8)
+#### 桌面端UI与系统交互 (FR1-FR15)
 
 | 编号 | 需求 |
 |-----|------|
@@ -35,6 +35,21 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 | FR6 | 用户可以调用本地硬件设备（扫描仪、打印机等） |
 | FR7 | 用户可以接收软件更新提醒并手动更新 |
 | FR8 | 用户可以在后台运行时保持应用活动状态 |
+| FR8-1 | 应用顶部提供可切换的菜单栏（TopBar），包含 File、Edit、View、Agent、Plugins、Tools、Help 菜单 |
+| FR8-2 | 用户可以通过快捷键（Ctrl+Shift+M / Cmd+Shift+M）切换菜单栏的显示/隐藏状态 |
+| FR8-3 | 系统会记住用户的菜单栏显示偏好 |
+| FR8-4 | File 菜单提供文件操作功能：新建、打开、保存、另存为、导入/导出、打印、退出 |
+| FR8-5 | Edit 菜单提供编辑功能：撤销/重做、剪切/复制/粘贴、查找/替换、全选 |
+| FR8-6 | View 菜单提供视图控制功能：切换菜单栏、显示/隐藏活动栏、显示/隐藏侧边栏、显示/隐藏 AI 面板、全屏模式、放大/缩小 |
+| FR8-7 | Agent 菜单提供 AI 核心功能：新对话、历史记录、模型设置、API 密钥管理 |
+| FR8-8 | Plugins 菜单提供插件管理功能：插件市场、已安装插件、插件设置 |
+| FR8-9 | Tools 菜单提供开发者工具：数据同步、系统日志、性能监控 |
+| FR8-10 | Help 菜单提供帮助与关于：文档、快捷键、关于 |
+| FR8-11 | TopBar 右侧提供 4 个布局控制按钮，与 VSCode 对齐（自定义布局、切换左侧栏、切换面板、切换辅助侧栏）|
+| FR8-12 | 自定义布局按钮打开布局自定义对话框 |
+| FR8-13 | 切换左侧栏按钮显示/隐藏左侧 Sidebar（快捷键 Ctrl+B）|
+| FR8-14 | 切换面板按钮显示/隐藏底部面板（当前禁用，快捷键 Ctrl+J，预留未来扩展）|
+| FR8-15 | 切换辅助侧栏按钮显示/隐藏右侧 AI Chat Panel（快捷键 Ctrl+Shift+I）|
 
 #### AI Agent核心能力 (FR9-FR19)
 
@@ -1024,7 +1039,7 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 
 | FR编号 | 对应Epic | 简要描述 |
 |--------|---------|---------|
-| FR1-FR8 | Epic 1 | 桌面端框架与核心UI |
+| FR1-FR15 | Epic 1 | 桌面端框架与核心UI（含 TopBar 菜单栏 FR8-1 至 FR8-15）|
 | FR9-FR19 | Epic 4 | AI Agent框架核心 |
 | FR14-1至FR14-12, FR260-FR334 | Epic 6 | 记忆层系统 |
 | FR20-FR26 | Epic 8 | 部门模块系统与市场 |
@@ -1065,8 +1080,8 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 ### Phase 1: 基础设施层
 
 **Epic 1: 桌面端框架与核心UI**
-用户可以启动应用、登录系统、使用类VSCode风格的界面布局，获得即时价值的数据看板预览。
-**FRs covered:** FR1-FR8, NFR1, NFR5-NFR6, NFR36-NFR38
+用户可以启动应用、登录系统、使用类VSCode风格的界面布局（含可切换菜单栏和布局控制按钮），获得即时价值的数据看板预览。
+**FRs covered:** FR1-FR15（含 FR8-1 至 FR8-15 TopBar 菜单栏）, NFR1, NFR5-NFR6, NFR36-NFR38
 
 **Epic 2: 用户认证与部门权限系统**
 用户可以使用账号密码登录，管理员可以管理用户、部门架构，系统支持部门级权限模型（基础权限+部门权限+审批权限）。
@@ -1166,9 +1181,9 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 ## Epic 1: 桌面端框架与核心UI
 
-**Epic目标：** 用户可以启动应用、登录系统、使用类VSCode风格的界面布局，获得即时价值的数据看板预览。
+**Epic目标：** 用户可以启动应用、登录系统、使用类VSCode风格的界面布局（含可切换菜单栏和布局控制按钮），获得即时价值的数据看板预览。
 
-**覆盖需求：** FR1-FR8, NFR1, NFR5-NFR6, NFR36-NFR38
+**覆盖需求：** FR1-FR15, NFR1, NFR5-NFR6, NFR36-NFR38
 
 **Phase:** Phase 1 - 基础设施层
 
@@ -1247,7 +1262,8 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 **Given** 用户登录成功
 **When** 进入主界面
-**Then** 显示四栏布局：
+**Then** 显示完整布局：
+- **顶部菜单栏（TopBar，可切换）**：32px 高度，包含 File、Edit、View、Agent、Plugins、Tools、Help 七个主菜单，右侧 4 个布局控制按钮（自定义布局、切换左侧栏、切换面板、切换辅助侧栏）
 - 活动栏（最左侧，48px固定）
 - 侧边栏（200-280px，可折叠）
 - 工作区（自适应）
@@ -1255,6 +1271,9 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 **And** 每个面板可以拖拽调整大小
 **And** 面板折叠/展开动画流畅
+**And** TopBar 可以通过 Ctrl+Shift+M 快捷键切换显示/隐藏
+**And** 右侧布局控制按钮可以切换对应面板，状态同步高亮
+**And** 所有布局状态持久化到本地
 
 ---
 
@@ -1371,8 +1390,25 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 | 指标 | 数量 |
 |------|------|
 | **Story总数** | 9 |
-| **覆盖FR** | FR1-FR8 |
+| **覆盖FR** | FR1-FR15（包含 FR8-1 至 FR8-15 TopBar 菜单栏相关需求） |
 | **覆盖NFR** | NFR1, NFR5-NFR6, NFR36-NFR38 |
+
+**TopBar 菜单栏需求明细：**
+- FR8-1: 应用顶部提供可切换的菜单栏（TopBar），包含 7 个主菜单
+- FR8-2: 快捷键切换菜单栏显示/隐藏
+- FR8-3: 记住用户的菜单栏显示偏好
+- FR8-4: File 菜单提供文件操作功能
+- FR8-5: Edit 菜单提供编辑功能
+- FR8-6: View 菜单提供视图控制功能
+- FR8-7: Agent 菜单提供 AI 核心功能
+- FR8-8: Plugins 菜单提供插件管理功能
+- FR8-9: Tools 菜单提供开发者工具
+- FR8-10: Help 菜单提供帮助与关于
+- FR8-11: TopBar 右侧提供 4 个布局控制按钮，与 VSCode 对齐
+- FR8-12: 自定义布局按钮打开布局自定义对话框
+- FR8-13: 切换左侧栏按钮显示/隐藏左侧 Sidebar
+- FR8-14: 切换面板按钮显示/隐藏底部面板（当前禁用，预留）
+- FR8-15: 切换辅助侧栏按钮显示/隐藏右侧 AI Chat Panel
 
 ---
 

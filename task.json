@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-13",
+  "lastUpdated": "2026-03-14",
   "tasks": [
     {
       "id": 1,
@@ -26,7 +26,7 @@
       "arch_covered": ["ADR-001", "ADR-002"],
       "ux_covered": ["UX-01", "UX-04"],
       "dependencies": [],
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -50,7 +50,7 @@
       "arch_covered": ["ADR-001"],
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.1"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -74,7 +74,7 @@
       "arch_covered": ["ADR-001"],
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.1", "Story 1.2"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,

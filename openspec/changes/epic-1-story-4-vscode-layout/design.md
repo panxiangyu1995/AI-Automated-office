@@ -6,7 +6,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         Header (可选)                        │
+│                      TopBar (必须)                           │
+│                    高度: 40px, 背景色: #1E3A5F              │
 ├────┬─────────────┬────────────────────────┬─────────────────┤
 │    │             │                        │                 │
 │ A  │   Sidebar   │      Workbench        │   AI Chat Panel │
@@ -30,6 +31,7 @@
 ```typescript
 // src/components/common/AppLayout.tsx
 import { useState, useCallback } from 'react'
+import { TopBar } from './TopBar'
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
 import { Workbench } from './Workbench'
@@ -41,17 +43,20 @@ export function AppLayout() {
   const [chatPanelWidth, setChatPanelWidth] = useState(400)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [chatPanelCollapsed, setChatPanelCollapsed] = useState(false)
-  
+
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
+    <div className="h-screen flex flex-col" style={{ backgroundColor: '#F8FAFC' }}>
+      {/* 顶部工具栏 - 必须 */}
+      <TopBar />
+
       {/* 主内容区 */}
       <div className="flex-1 flex overflow-hidden">
         {/* 活动栏 */}
-        <ActivityBar 
+        <ActivityBar
           activeItem={activeItem}
           onItemClick={setActiveItem}
         />
-        
+
         {/* 侧边栏 */}
         <Sidebar
           width={sidebarWidth}
@@ -59,10 +64,10 @@ export function AppLayout() {
           onWidthChange={setSidebarWidth}
           onCollapse={setSidebarCollapsed}
         />
-        
+
         {/* 工作区 */}
         <Workbench className="flex-1" />
-        
+
         {/* AI 对话面板 */}
         <AiChatPanel
           width={chatPanelWidth}
@@ -71,7 +76,7 @@ export function AppLayout() {
           onCollapse={setChatPanelCollapsed}
         />
       </div>
-      
+
       {/* 状态栏 */}
       <StatusBar />
     </div>
@@ -134,6 +139,51 @@ export function ResizablePanel({
 
 ## 组件设计
 
+### 顶部工具栏 (TopBar)
+- **必须** - 显示系统标识和当前部门信息
+- 固定高度 40px
+- 背景色: `#1E3A5F` (品牌主色)
+- 内容:
+  - 左侧: "AI-Automated-Office - {部门名称}"
+  - 右侧: 用户信息、通知、设置等入口
+
+```typescript
+// src/components/common/TopBar.tsx
+import { Bell, Settings, User } from 'lucide-react'
+
+interface TopBarProps {
+  department?: string
+  userName?: string
+}
+
+export function TopBar({ department = '财务管理', userName }: TopBarProps) {
+  return (
+    <header
+      className="h-10 px-4 flex items-center justify-between"
+      style={{ backgroundColor: '#1E3A5F' }}
+    >
+      <h1 className="text-white font-bold text-sm">
+        AI-Automated-Office - {department}
+      </h1>
+      <div className="flex items-center gap-4">
+        <button className="text-white hover:opacity-80">
+          <Bell size={16} />
+        </button>
+        <button className="text-white hover:opacity-80">
+          <Settings size={16} />
+        </button>
+        {userName && (
+          <div className="flex items-center gap-2 text-white text-sm">
+            <User size={16} />
+            <span>{userName}</span>
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
+```
+
 ### 活动栏 (ActivityBar)
 - 固定宽度 48px
 - 图标按钮列表
@@ -156,13 +206,50 @@ export function ResizablePanel({
 
 ## 样式规范
 
-### Tailwind 类名
+### 颜色系统（对齐 UX 规范）
+
+| 区域 | 颜色属性 | 精确色值 | Tailwind 配置建议 |
+|------|----------|----------|-------------------|
+| 顶部工具栏 | 背景色 | `#1E3A5F` | 品牌主色 |
+| 活动栏 | 背景色 | `#1E293B` | 自定义 `bg-sidebar` |
+| 活动栏图标 | 激活状态 | `#FFFFFF` | - |
+| 活动栏图标 | 默认状态 | `#94A3B8` | `text-slate-400` |
+| 侧边栏 | 背景色 | `#1E293B` | 自定义 `bg-sidebar` |
+| 工作区 | 背景色 | `#F8FAFC` | `bg-slate-50` |
+| AI 面板 | 背景色 | `#FFFFFF` | `bg-white` |
+| 边框 | 分隔线 | `#E2E8F0` | `border-slate-200` |
+
+### Tailwind 配置更新
+
+```javascript
+// tailwind.config.js
+export default {
+  theme: {
+    extend: {
+      colors: {
+        // 品牌主色（顶部工具栏）
+        brand: {
+          DEFAULT: '#1E3A5F',
+        },
+        // 侧边栏背景色（活动栏 + 侧边栏）
+        sidebar: '#1E293B',
+      },
+    },
+  },
+}
+```
+
+### 组件样式类名
+
 ```css
+/* 顶部工具栏 - 必须 */
+.topbar: h-10 px-4 flex items-center justify-between bg-brand text-white
+
 /* 活动栏 */
-.activity-bar: w-12 bg-slate-800
+.activity-bar: w-12 bg-sidebar text-slate-400
 
 /* 侧边栏 */
-.sidebar: bg-slate-900
+.sidebar: bg-sidebar border-r border-slate-700
 
 /* 工作区 */
 .workbench: bg-slate-50
