@@ -21,6 +21,8 @@ interface UIState {
   // AI 对话面板状态
   chatPanelWidth: number
   chatPanelCollapsed: boolean
+
+  quickSearchOpen: boolean
   
   // 活动栏状态
   activeActivityItem: ActivityBarItem
@@ -30,6 +32,9 @@ interface UIState {
   setChatPanelWidth: (width: number) => void
   toggleSidebar: () => void
   toggleChatPanel: () => void
+  openQuickSearch: () => void
+  closeQuickSearch: () => void
+  toggleQuickSearch: () => void
   setActiveActivityItem: (item: ActivityBarItem) => void
 }
 
@@ -41,6 +46,7 @@ export const useUIStore = create<UIState>()(
       sidebarCollapsed: false,
       chatPanelWidth: 400,
       chatPanelCollapsed: false,
+      quickSearchOpen: false,
       activeActivityItem: 'dashboard',
       
       // 操作方法
@@ -55,6 +61,12 @@ export const useUIStore = create<UIState>()(
         const current = get().chatPanelCollapsed
         console.log('[uiStore] toggleChatPanel:', current, '->', !current)
         set({ chatPanelCollapsed: !current })
+      },
+      openQuickSearch: () => set({ quickSearchOpen: true }),
+      closeQuickSearch: () => set({ quickSearchOpen: false }),
+      toggleQuickSearch: () => {
+        const current = get().quickSearchOpen
+        set({ quickSearchOpen: !current })
       },
       setActiveActivityItem: (item) => set({ activeActivityItem: item }),
     }),

@@ -46,6 +46,7 @@ export function useGlobalShortcuts() {
   useEffect(() => {
     let unlistenOpenAiChat: (() => void) | null = null
     let unlistenQuickSearch: (() => void) | null = null
+    let cancelled = false
 
     // 使用 async/await 正确处理 Promise
     const setupListeners = async () => {
@@ -55,11 +56,19 @@ export function useGlobalShortcuts() {
         console.log('[useGlobalShortcuts] 收到 open-ai-chat 事件，派发 window 事件')
         window.dispatchEvent(new CustomEvent('shortcut:open-ai-chat'))
       })
+      if (cancelled && unlistenOpenAiChat) {
+        unlistenOpenAiChat()
+        unlistenOpenAiChat = null
+      }
 
       unlistenQuickSearch = await listen('open-quick-search', () => {
         console.log('[useGlobalShortcuts] 收到 open-quick-search 事件，派发 window 事件')
         window.dispatchEvent(new CustomEvent('shortcut:open-quick-search'))
       })
+      if (cancelled && unlistenQuickSearch) {
+        unlistenQuickSearch()
+        unlistenQuickSearch = null
+      }
       
       console.log('[useGlobalShortcuts] 事件监听器设置完成')
     }
@@ -69,6 +78,7 @@ export function useGlobalShortcuts() {
     })
 
     return () => {
+      cancelled = true
       console.log('[useGlobalShortcuts] 清理事件监听器')
       if (unlistenOpenAiChat) unlistenOpenAiChat()
       if (unlistenQuickSearch) unlistenQuickSearch()

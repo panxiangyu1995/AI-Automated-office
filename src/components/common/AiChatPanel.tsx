@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { Send } from 'lucide-react'
 import { ResizablePanel } from './ResizablePanel'
 import { useUIStore } from '../../stores/uiStore'
-import { listen } from '@tauri-apps/api/event'
+import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
 
 interface AiChatPanelProps {
   children?: ReactNode
@@ -31,27 +31,13 @@ export function AiChatPanel({ children }: AiChatPanelProps) {
 
   // 使用 ref 保存最新的 toggleChatPanel 函数
   const toggleChatPanelRef = useRef(toggleChatPanel)
-  toggleChatPanelRef.current = toggleChatPanel
-
-  // 直接监听 Tauri 事件
   useEffect(() => {
-    let unlisten: (() => void) | null = null
-    
-    const setupListener = async () => {
-      unlisten = await listen('open-ai-chat', () => {
-        console.log('[AiChatPanel] 收到 Tauri 事件 open-ai-chat')
-        // 使用 ref 调用最新的函数
-        toggleChatPanelRef.current()
-        console.log('[AiChatPanel] toggleChatPanel 已调用')
-      })
-    }
-    
-    setupListener().catch(console.error)
-    
-    return () => {
-      if (unlisten) unlisten()
-    }
-  }, []) // 空依赖数组，只在组件挂载时设置一次
+    toggleChatPanelRef.current = toggleChatPanel
+  }, [toggleChatPanel])
+
+  useShortcutListener('open-ai-chat', () => {
+    toggleChatPanelRef.current()
+  })
   
   const [inputValue, setInputValue] = useState('')
 
