@@ -51,6 +51,8 @@ So that 可以根据自己的使用习惯调整界面。
 | chatPanelWidth | number | 400 |
 | sidebarCollapsed | boolean | false |
 | chatPanelCollapsed | boolean | false |
+| bottomPanelHeight | number | 200 |
+| bottomPanelCollapsed | boolean | true |
 
 ## 性能要求
 

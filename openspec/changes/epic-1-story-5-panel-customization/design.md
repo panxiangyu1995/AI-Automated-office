@@ -7,20 +7,24 @@
 ```typescript
 // src/stores/uiStore.ts
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 
 interface LayoutConfig {
   sidebarWidth: number
   chatPanelWidth: number
   sidebarCollapsed: boolean
   chatPanelCollapsed: boolean
+  bottomPanelHeight: number
+  bottomPanelCollapsed: boolean
 }
 
 interface UIState extends LayoutConfig {
   setSidebarWidth: (width: number) => void
   setChatPanelWidth: (width: number) => void
+  setBottomPanelHeight: (height: number) => void
   toggleSidebar: () => void
   toggleChatPanel: () => void
+  toggleBottomPanel: () => void
   resetLayout: () => void
 }
 
@@ -29,6 +33,8 @@ const defaultLayout: LayoutConfig = {
   chatPanelWidth: 400,
   sidebarCollapsed: false,
   chatPanelCollapsed: false,
+  bottomPanelHeight: 200,
+  bottomPanelCollapsed: true,
 }
 
 export const useUIStore = create<UIState>()(
@@ -37,18 +43,22 @@ export const useUIStore = create<UIState>()(
       ...defaultLayout,
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       setChatPanelWidth: (width) => set({ chatPanelWidth: width }),
+      setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       toggleChatPanel: () => set((s) => ({ chatPanelCollapsed: !s.chatPanelCollapsed })),
+      toggleBottomPanel: () => set((s) => ({ bottomPanelCollapsed: !s.bottomPanelCollapsed })),
       resetLayout: () => set(defaultLayout),
     }),
     {
       name: 'ui-layout',
-      storage: createJSONStorage(() => localStorage),
+      storage: createDebouncedStorage(localStorage, 100),
       partialize: (state) => ({
         sidebarWidth: state.sidebarWidth,
         chatPanelWidth: state.chatPanelWidth,
         sidebarCollapsed: state.sidebarCollapsed,
         chatPanelCollapsed: state.chatPanelCollapsed,
+        bottomPanelHeight: state.bottomPanelHeight,
+        bottomPanelCollapsed: state.bottomPanelCollapsed,
       }),
     }
   )
@@ -65,53 +75,64 @@ interface ResizablePanelProps {
   width: number
   minWidth: number
   maxWidth: number
-  direction: 'left' | 'right'
+  direction?: 'left' | 'right' | 'top' | 'bottom'
   onWidthChange: (width: number) => void
-  onResizeStart?: () => void
-  onResizeEnd?: () => void
+  collapsed?: boolean
   children: React.ReactNode
+  className?: string
 }
 
 export function ResizablePanel({
   width,
   minWidth,
   maxWidth,
-  direction,
+  direction = 'right',
   onWidthChange,
-  onResizeStart,
-  onResizeEnd,
+  collapsed = false,
   children,
+  className = '',
 }: ResizablePanelProps) {
   const isResizing = useRef(false)
-  const startX = useRef(0)
-  const startWidth = useRef(0)
+  const startPos = useRef(0)
+  const startSize = useRef(0)
+  const frameRef = useRef<number | null>(null)
+  const pendingSize = useRef(width)
+  const [activeSize, setActiveSize] = useState(width)
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     isResizing.current = true
-    startX.current = e.clientX
-    startWidth.current = width
-    onResizeStart?.()
-    document.body.style.cursor = 'col-resize'
+    startPos.current = isVertical ? e.clientY : e.clientX
+    startSize.current = width
+    setActiveSize(width)
+    document.body.style.cursor = isVertical ? 'row-resize' : 'col-resize'
     document.body.style.userSelect = 'none'
-  }, [width, onResizeStart])
+  }, [width, isVertical])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing.current) return
       
-      const delta = direction === 'right' 
-        ? startX.current - e.clientX 
-        : e.clientX - startX.current
-      const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth.current + delta))
-      
-      onWidthChange(newWidth)
+      const currentPos = isVertical ? e.clientY : e.clientX
+      const delta = currentPos - startPos.current
+      const nextSize = direction === 'right' || direction === 'bottom'
+        ? startSize.current + delta
+        : startSize.current - delta
+      const clampedSize = Math.min(maxWidth, Math.max(minWidth, nextSize))
+      pendingSize.current = clampedSize
+
+      if (frameRef.current === null) {
+        frameRef.current = requestAnimationFrame(() => {
+          frameRef.current = null
+          setActiveSize(pendingSize.current)
+          onWidthChange(pendingSize.current)
+        })
+      }
     }
 
     const handleMouseUp = () => {
       if (isResizing.current) {
         isResizing.current = false
-        onResizeEnd?.()
         document.body.style.cursor = ''
         document.body.style.userSelect = ''
       }
@@ -123,23 +144,36 @@ export function ResizablePanel({
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current)
+      }
     }
-  }, [minWidth, maxWidth, direction, onWidthChange, onResizeEnd])
+  }, [minWidth, maxWidth, direction, onWidthChange, isVertical])
 
   return (
-    <div style={{ width }} className="relative h-full">
+    <div className={`relative ${className}`} style={style}>
       {children}
-      {direction === 'right' && (
-        <div
-          className="absolute top-0 left-0 w-1 h-full bg-transparent hover:bg-blue-500 cursor-col-resize transition-colors"
-          onMouseDown={handleMouseDown}
-        />
-      )}
-      {direction === 'left' && (
-        <div
-          className="absolute top-0 right-0 w-1 h-full bg-transparent hover:bg-blue-500 cursor-col-resize transition-colors"
-          onMouseDown={handleMouseDown}
-        />
+      <div
+        className={`absolute z-10 ${
+          isVertical 
+            ? 'left-0 w-full h-1 cursor-row-resize' 
+            : 'top-0 w-1 h-full cursor-col-resize'
+        } ${
+          direction === 'right' ? 'right-0 translate-x-1/2' : 
+          direction === 'left' ? 'left-0 -translate-x-1/2' :
+          direction === 'bottom' ? 'bottom-0 translate-y-1/2' : 
+          'top-0 -translate-y-1/2'
+        }`}
+        onMouseDown={handleMouseDown}
+      >
+        <div className={`bg-transparent group-hover:bg-primary/50 transition-colors ${
+          isVertical ? 'w-full h-px' : 'w-px h-full'
+        }`} />
+      </div>
+      {isResizing.current && (
+        <div className="absolute right-3 top-3 rounded bg-slate-900/80 px-2 py-1 text-xs text-white">
+          {Math.round(activeSize)}px
+        </div>
       )}
     </div>
   )
@@ -149,22 +183,19 @@ export function ResizablePanel({
 ### 重置布局功能
 
 ```typescript
-// src/features/settings/components/LayoutSettings.tsx
+// src/components/common/LayoutSettingsDialog.tsx
 import { useUIStore } from '@/stores/uiStore'
 
-export function LayoutSettings() {
+export function LayoutSettingsDialog() {
   const { resetLayout } = useUIStore()
   
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-semibold mb-4">布局设置</h3>
-      <button
-        onClick={resetLayout}
-        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded"
-      >
-        重置为默认布局
-      </button>
-    </div>
+    <Button
+      variant="outline"
+      onClick={resetLayout}
+    >
+      重置为默认布局
+    </Button>
   )
 }
 ```

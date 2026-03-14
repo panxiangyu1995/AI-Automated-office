@@ -3,26 +3,31 @@
 ## 任务列表
 
 ### 任务 1: 完善布局状态管理
-- **描述**: 完善 UI Store 的布局状态和持久化
+- [x] 完成
+- **描述**: 完善 UI Store 的布局状态和持久化（包含底部面板）
 - **文件**: `src/stores/uiStore.ts`
 - **验收**: 布局状态可持久化
 
 ### 任务 2: 优化 ResizablePanel
+- [x] 完成
 - **描述**: 完善 ResizablePanel 组件的拖拽逻辑
 - **文件**: `src/components/common/ResizablePanel.tsx`
 - **验收**: 拖拽流畅
 
 ### 任务 3: 添加布局重置功能
+- [x] 完成
 - **描述**: 添加重置为默认布局功能
 - **文件**: `src/stores/uiStore.ts`
 - **验收**: 可重置布局
 
 ### 任务 4: 创建布局设置组件
-- **描述**: 创建布局设置 UI
-- **文件**: `src/features/settings/components/LayoutSettings.tsx`
+- [x] 完成
+- **描述**: 在布局设置对话框中提供重置入口
+- **文件**: `src/components/common/LayoutSettingsDialog.tsx`
 - **验收**: 可在设置中重置布局
 
 ### 任务 5: 防抖保存优化
+- [x] 完成
 - **描述**: 使用防抖避免频繁保存布局配置
 - **文件**: `src/stores/uiStore.ts`
 - **验收**: 拖拽时不频繁保存

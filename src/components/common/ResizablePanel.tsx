@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, type ReactNode } from 'react'
+import { useCallback, useRef, useEffect, useState, type ReactNode } from 'react'
 
 interface ResizablePanelProps {
   width: number
@@ -24,6 +24,10 @@ export function ResizablePanel({
   const isResizing = useRef(false)
   const startPos = useRef(0)
   const startSize = useRef(0)
+  const frameRef = useRef<number | null>(null)
+  const pendingSize = useRef(width)
+  const [activeSize, setActiveSize] = useState(width)
+  const [isDragging, setIsDragging] = useState(false)
 
   const isVertical = direction === 'top' || direction === 'bottom'
 
@@ -32,6 +36,9 @@ export function ResizablePanel({
     isResizing.current = true
     startPos.current = isVertical ? e.clientY : e.clientX
     startSize.current = width
+    pendingSize.current = width
+    setActiveSize(width)
+    setIsDragging(true)
     document.body.style.cursor = isVertical ? 'row-resize' : 'col-resize'
     document.body.style.userSelect = 'none'
   }, [width, isVertical])
@@ -50,14 +57,29 @@ export function ResizablePanel({
     }
     
     const clampedSize = Math.min(maxWidth, Math.max(minWidth, newSize))
-    onWidthChange(clampedSize)
+    pendingSize.current = clampedSize
+
+    if (frameRef.current === null) {
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null
+        setActiveSize(pendingSize.current)
+        onWidthChange(pendingSize.current)
+      })
+    }
   }, [direction, minWidth, maxWidth, onWidthChange, isVertical])
 
   const handleMouseUp = useCallback(() => {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current)
+      frameRef.current = null
+      setActiveSize(pendingSize.current)
+      onWidthChange(pendingSize.current)
+    }
     isResizing.current = false
+    setIsDragging(false)
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
-  }, [])
+  }, [onWidthChange])
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove)
@@ -66,6 +88,9 @@ export function ResizablePanel({
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current)
+      }
     }
   }, [handleMouseMove, handleMouseUp])
 
@@ -112,6 +137,11 @@ export function ResizablePanel({
           isVertical ? 'w-full h-px' : 'w-px h-full'
         }`} />
       </div>
+      {isDragging && (
+        <div className="absolute right-3 top-3 rounded bg-slate-900/80 px-2 py-1 text-xs text-white">
+          {Math.round(activeSize)}px
+        </div>
+      )}
     </div>
   )
 }

@@ -7,6 +7,7 @@ import {
 } from '../ui/dialog'
 import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
+import { Button } from '../ui/button'
 import { useUIStore } from '../../stores/uiStore'
 
 interface LayoutSettingsDialogProps {
@@ -24,6 +25,7 @@ export function LayoutSettingsDialog({ open, onOpenChange }: LayoutSettingsDialo
     toggleChatPanel,
     toggleBottomPanel,
     toggleTopBar,
+    resetLayout,
   } = useUIStore()
 
   return (
@@ -80,6 +82,11 @@ export function LayoutSettingsDialog({ open, onOpenChange }: LayoutSettingsDialo
               onCheckedChange={toggleChatPanel}
             />
           </div>
+        </div>
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={resetLayout}>
+            重置为默认布局
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

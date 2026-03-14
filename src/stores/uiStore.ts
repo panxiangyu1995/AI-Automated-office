@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 // 活动栏项目类型
 export type ActivityBarItem = 
@@ -41,25 +41,67 @@ interface UIState {
   toggleChatPanel: () => void
   toggleBottomPanel: () => void
   toggleTopBar: () => void
+  resetLayout: () => void
   openQuickSearch: () => void
   closeQuickSearch: () => void
   toggleQuickSearch: () => void
   setActiveActivityItem: (item: ActivityBarItem) => void
 }
 
+type PersistedUIState = Pick<
+  UIState,
+  | 'sidebarWidth'
+  | 'sidebarCollapsed'
+  | 'chatPanelWidth'
+  | 'chatPanelCollapsed'
+  | 'bottomPanelHeight'
+  | 'bottomPanelCollapsed'
+  | 'activeActivityItem'
+  | 'topBarVisible'
+>
+
+const defaultLayout = {
+  sidebarWidth: 240,
+  sidebarCollapsed: false,
+  chatPanelWidth: 400,
+  chatPanelCollapsed: false,
+  bottomPanelHeight: 200,
+  bottomPanelCollapsed: true,
+  topBarVisible: true,
+}
+
+const createDebouncedStorage = (storage: Storage, delay: number) => {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  let pendingKey: string | null = null
+  let pendingValue: string | null = null
+
+  return {
+    getItem: (name: string) => storage.getItem(name),
+    setItem: (name: string, value: string) => {
+      pendingKey = name
+      pendingValue = value
+      if (timeout) {
+        clearTimeout(timeout)
+      }
+      timeout = setTimeout(() => {
+        if (pendingKey !== null && pendingValue !== null) {
+          storage.setItem(pendingKey, pendingValue)
+        }
+        pendingKey = null
+        pendingValue = null
+      }, delay)
+    },
+    removeItem: (name: string) => storage.removeItem(name),
+  }
+}
+
 export const useUIStore = create<UIState>()(
-  persist(
+  persist<UIState, [], [], PersistedUIState>(
     (set, get) => ({
       // 默认值 - 对齐 pencil-new.pen 设计
-      sidebarWidth: 240,
-      sidebarCollapsed: false,
-      chatPanelWidth: 400,
-      chatPanelCollapsed: false,
-      bottomPanelHeight: 200,
-      bottomPanelCollapsed: true,
+      ...defaultLayout,
       quickSearchOpen: false,
       activeActivityItem: 'dashboard',
-      topBarVisible: true,
       
       // 操作方法
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
@@ -85,6 +127,7 @@ export const useUIStore = create<UIState>()(
         console.log('[uiStore] toggleTopBar:', current, '->', !current)
         set({ topBarVisible: !current })
       },
+      resetLayout: () => set({ ...defaultLayout }),
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
       toggleQuickSearch: () => {
@@ -95,6 +138,7 @@ export const useUIStore = create<UIState>()(
     }),
     {
       name: 'ui-layout',
+      storage: createJSONStorage(() => createDebouncedStorage(localStorage, 100)),
       partialize: (state) => ({
         sidebarWidth: state.sidebarWidth,
         sidebarCollapsed: state.sidebarCollapsed,
