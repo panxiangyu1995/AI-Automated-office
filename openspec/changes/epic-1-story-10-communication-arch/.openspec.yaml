@@ -1,0 +1,64 @@
+change:
+  name: epic-1-story-10-communication-arch
+  title: 前后端通信架构
+  status: pending
+  created: 2026-03-15
+  updated: 2026-03-15
+
+epic:
+  id: 1
+  name: 基础设施与桌面端框架
+  phase: Phase 1.2 - 核心基础设施
+
+story:
+  id: 1.10
+  title: 前后端通信架构
+  as_a: 开发者
+  i_want: 建立前后端通信架构
+  so_that: Tauri桌面端可以与云端服务通信
+
+requirements:
+  frs:
+    - FR9   # AI对话 - 通信基础
+    - FR44  # 消息通知 - 实时推送
+    - FR46  # 任务通知 - 状态同步
+  nfrs:
+    - NFR9   # TLS加密
+    - NFR17  # 可用性
+  arch:
+    - ADR-004  # 通信架构
+  ux: []
+
+dependencies:
+  - story: "1.6"  # Go后端初始化
+  - story: "1.8"  # SQLite初始化
+
+dependents:
+  - epic-1-story-11-user-login
+  - epic-1-story-12-offline-mode
+
+files:
+  created:
+    - src/lib/api/client.ts
+    - src/lib/api/types.ts
+    - src/lib/api/interceptors.ts
+    - src/lib/websocket/client.ts
+    - src/hooks/useNetworkStatus.ts
+    - src/hooks/useApi.ts
+    - src-tauri/src/http/mod.rs
+    - src-tauri/src/http/client.rs
+    - src-tauri/src/http/commands.rs
+    - src-tauri/src/sync/offline_queue.rs
+    - src-tauri/src/network/status.rs
+  modified: []
+  deleted: []
+
+acceptance_criteria:
+  - REST API客户端封装
+  - WebSocket实时通信
+  - 请求/响应拦截器
+  - 离线请求队列
+  - 网络状态监控
+
+risk_level: medium
+estimated_effort: medium

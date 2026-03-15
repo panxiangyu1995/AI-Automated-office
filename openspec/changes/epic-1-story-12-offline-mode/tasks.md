@@ -1,4 +1,6 @@
-# Tasks: 离线模式支持
+# Tasks: 离线模式支持 (Story 1.12)
+
+> **依赖**: Story 1.8 (SQLite), Story 1.10 (通信架构), Story 1.11 (用户登录)
 
 ## 任务列表
 

@@ -1,4 +1,6 @@
-# Tasks: 用户登录功能
+# Tasks: 用户登录功能 (Story 1.11)
+
+> **依赖**: Story 1.6 (Go后端), Story 1.7 (PostgreSQL), Story 1.10 (通信架构)
 
 ## 任务列表
 

@@ -1,0 +1,63 @@
+change:
+  name: epic-1-story-8-sqlite-init
+  title: SQLite本地存储初始化
+  status: pending
+  created: 2026-03-15
+  updated: 2026-03-15
+
+epic:
+  id: 1
+  name: 基础设施与桌面端框架
+  phase: Phase 1.2 - 核心基础设施
+
+story:
+  id: 1.8
+  title: SQLite本地存储初始化
+  as_a: 开发者
+  i_want: 初始化本地SQLite数据库
+  so_that: 支持离线模式、会话管理、记忆存储
+
+requirements:
+  frs:
+    - FR5   # 离线模式
+    - FR38  # 数据同步 - 本地存储
+    - FR39  # 同步状态
+    - FR42  # 冲突解决
+  nfrs:
+    - NFR5   # 内存占用
+    - NFR10  # 数据加密
+  arch:
+    - ADR-003  # 本地优先存储
+    - ADR-024  # 数据库设计
+    - ADR-030  # 检查点系统
+  ux: []
+
+dependencies:
+  - story: null  # 无前置依赖，可与1.6并行
+
+dependents:
+  - epic-1-story-9-vector-db-init
+  - epic-1-story-12-offline-mode
+
+files:
+  created:
+    - src-tauri/src/storage/mod.rs
+    - src-tauri/src/storage/sqlite.rs
+    - src-tauri/src/storage/migrations/mod.rs
+    - src-tauri/src/storage/migrations/v1_initial.rs
+    - src-tauri/src/storage/session_store.rs
+    - src-tauri/src/storage/message_store.rs
+    - src-tauri/src/storage/sync_queue.rs
+    - src-tauri/src/storage/memory_store.rs
+    - src-tauri/src/storage/checkpoint_store.rs
+  modified: []
+  deleted: []
+
+acceptance_criteria:
+  - SQLite数据库在用户目录创建
+  - 核心表结构创建完成
+  - 数据库版本迁移支持
+  - 租户数据隔离
+
+risk_level: low
+estimated_effort: medium
