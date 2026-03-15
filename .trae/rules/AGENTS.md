@@ -400,23 +400,22 @@ ai-automated-office/
 │   │
 │   ├── components/                     # UI组件
 │   │   ├── ui/                         # shadcn/ui基础组件
-│   │   │   ├── alert.tsx
 │   │   │   ├── button.tsx
-│   │   │   ├── menubar.tsx
-│   │   │   ├── tooltip.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   ├── toast.tsx
 │   │   │   └── ...
-│   │   ├── layout/                     # 布局入口
-│   │   │   ├── AppLayout.tsx           # 布局入口导出
-│   │   │   └── TopBar.tsx              # 顶部菜单栏导出
 │   │   ├── common/                     # 业务通用组件
 │   │   │   ├── AppLayout.tsx           # 应用布局
-│   │   │   ├── TopBar.tsx              # 顶部菜单栏
-│   │   │   ├── ActivityBar.tsx         # 活动栏
 │   │   │   ├── Sidebar.tsx             # 侧边栏
-│   │   │   ├── Workbench.tsx           # 工作区
-│   │   │   ├── AiChatPanel.tsx         # AI 对话面板
-│   │   │   ├── StatusBar.tsx           # 状态栏
-│   │   │   └── ResizablePanel.tsx      # 可调节面板
+│   │   │   ├── Header.tsx              # 头部导航
+│   │   │   ├── LoadingSpinner.tsx      # 加载动画
+│   │   │   ├── ErrorBoundary.tsx       # 错误边界
+│   │   │   └── EmptyState.tsx          # 空状态
 │   │   └── plugin/                     # 插件相关组件
 │   │       ├── PluginCard.tsx          # 插件卡片
 │   │       ├── PluginPanel.tsx         # 插件面板
@@ -711,7 +710,8 @@ cp .env.example .env  # 复制环境变量模板
 10. **无 emoji** - 图标统一使用 Lucide React
 11. **AI Agent 优先** - 核心交互是对话驱动，优先考虑自然语言交互场景
 12. **本地优先** - 数据存储采用本地优先 + 增量同步策略
-13. **UI占位不适用模拟数据** - 前端 UI 占位符不使用模拟数据，如有需要仅展示功能描述
+
+---
 
 ## 🚀 快速启动清单
 
