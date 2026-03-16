@@ -9,6 +9,7 @@ export interface ShortcutConfig {
   showApp: string
   openAiChat: string
   quickSearch: string
+  openSettings: string
 }
 
 /**
@@ -18,6 +19,7 @@ const DEFAULT_SHORTCUTS: ShortcutConfig = {
   showApp: 'Ctrl+Shift+A',
   openAiChat: 'Ctrl+Shift+D',
   quickSearch: 'Ctrl+Shift+F',
+  openSettings: 'CmdOrCtrl+,',
 }
 
 /**
@@ -46,6 +48,7 @@ export function useGlobalShortcuts() {
   useEffect(() => {
     let unlistenOpenAiChat: (() => void) | null = null
     let unlistenQuickSearch: (() => void) | null = null
+    let unlistenOpenSettings: (() => void) | null = null
     let cancelled = false
 
     // 使用 async/await 正确处理 Promise
@@ -69,6 +72,15 @@ export function useGlobalShortcuts() {
         unlistenQuickSearch()
         unlistenQuickSearch = null
       }
+
+      unlistenOpenSettings = await listen('open-settings', () => {
+        console.log('[useGlobalShortcuts] 收到 open-settings 事件，派发 window 事件')
+        window.dispatchEvent(new CustomEvent('shortcut:open-settings'))
+      })
+      if (cancelled && unlistenOpenSettings) {
+        unlistenOpenSettings()
+        unlistenOpenSettings = null
+      }
       
       console.log('[useGlobalShortcuts] 事件监听器设置完成')
     }
@@ -82,6 +94,7 @@ export function useGlobalShortcuts() {
       console.log('[useGlobalShortcuts] 清理事件监听器')
       if (unlistenOpenAiChat) unlistenOpenAiChat()
       if (unlistenQuickSearch) unlistenQuickSearch()
+      if (unlistenOpenSettings) unlistenOpenSettings()
     }
   }, [])
 
@@ -100,7 +113,14 @@ export function useGlobalShortcuts() {
 
         // 更新快捷键
         await invoke('update_shortcut', {
-          action: key === 'showApp' ? 'show_app' : key === 'openAiChat' ? 'open_ai_chat' : 'quick_search',
+          action:
+            key === 'showApp'
+              ? 'show_app'
+              : key === 'openAiChat'
+                ? 'open_ai_chat'
+                : key === 'openSettings'
+                  ? 'open_settings'
+                  : 'quick_search',
           newShortcut: value,
         })
 
@@ -138,7 +158,7 @@ export function useGlobalShortcuts() {
  * 使用 useRef 避免闭包问题
  */
 export function useShortcutListener(
-  event: 'open-ai-chat' | 'open-quick-search',
+  event: 'open-ai-chat' | 'open-quick-search' | 'open-settings',
   callback: () => void
 ) {
   // 使用 useRef 保存最新的 callback，避免闭包捕获旧值

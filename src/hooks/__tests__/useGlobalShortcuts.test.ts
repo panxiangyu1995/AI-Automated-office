@@ -48,6 +48,7 @@ describe('useGlobalShortcuts', () => {
         showApp: 'Ctrl+Shift+A',
         openAiChat: 'Ctrl+Shift+D',
         quickSearch: 'Ctrl+Shift+F',
+        openSettings: 'CmdOrCtrl+,',
       })
     })
   })
@@ -60,6 +61,7 @@ describe('useGlobalShortcuts', () => {
         showApp: 'Ctrl+Shift+B',
         openAiChat: 'Ctrl+Shift+E',
         quickSearch: 'Ctrl+Shift+G',
+        openSettings: 'CmdOrCtrl+.',
       }
 
       act(() => {
@@ -80,6 +82,7 @@ describe('useGlobalShortcuts', () => {
         showApp: 'Ctrl+Shift+X',
         openAiChat: 'Ctrl+Shift+Y',
         quickSearch: 'Ctrl+Shift+Z',
+        openSettings: 'CmdOrCtrl+/',
       }
 
       localStorage.setItem('shortcuts', JSON.stringify(savedShortcuts))
@@ -98,6 +101,7 @@ describe('useGlobalShortcuts', () => {
         showApp: 'Ctrl+Shift+A',
         openAiChat: 'Ctrl+Shift+D',
         quickSearch: 'Ctrl+Shift+F',
+        openSettings: 'CmdOrCtrl+,',
       })
     })
   })
@@ -169,6 +173,15 @@ describe('useGlobalShortcuts', () => {
         action: 'quick_search',
         newShortcut: 'Ctrl+Shift+G',
       })
+
+      // 测试 openSettings -> open_settings
+      await act(async () => {
+        await result.current.updateShortcut('openSettings', 'CmdOrCtrl+.')
+      })
+      expect(mockInvoke).toHaveBeenCalledWith('update_shortcut', {
+        action: 'open_settings',
+        newShortcut: 'CmdOrCtrl+.',
+      })
     })
   })
 
@@ -222,6 +235,15 @@ describe('useGlobalShortcuts', () => {
 
       expect(mockListen).toHaveBeenCalledWith(
         'open-quick-search',
+        expect.any(Function)
+      )
+    })
+
+    it('应该在挂载时监听 open-settings 事件', () => {
+      renderHook(() => useGlobalShortcuts())
+
+      expect(mockListen).toHaveBeenCalledWith(
+        'open-settings',
         expect.any(Function)
       )
     })

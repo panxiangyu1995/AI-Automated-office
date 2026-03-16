@@ -28,6 +28,7 @@ export function AppLayout() {
     openQuickSearch,
     closeQuickSearch,
     toggleTopBar,
+    setActiveActivityItem,
   } = useUIStore()
   const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -42,6 +43,10 @@ export function AppLayout() {
 
   useShortcutListener('open-quick-search', () => {
     openQuickSearch()
+  })
+
+  useShortcutListener('open-settings', () => {
+    setActiveActivityItem('settings')
   })
 
   useEffect(() => {

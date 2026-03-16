@@ -17,6 +17,7 @@ pub fn update_shortcut(
         "show_app" => crate::shortcuts::DEFAULT_SHOW_APP,
         "open_ai_chat" => crate::shortcuts::DEFAULT_OPEN_AI_CHAT,
         "quick_search" => crate::shortcuts::DEFAULT_QUICK_SEARCH,
+        "open_settings" => crate::shortcuts::DEFAULT_OPEN_SETTINGS,
         _ => return Err(format!("未知操作: {}", action)),
     };
 
@@ -44,6 +45,9 @@ pub fn update_shortcut(
                         }
                         "quick_search" => {
                             let _ = window.emit("open-quick-search", ());
+                        }
+                        "open_settings" => {
+                            let _ = window.emit("open-settings", ());
                         }
                         _ => {}
                     }
@@ -73,5 +77,6 @@ pub fn get_registered_shortcuts(_app: AppHandle) -> Result<Vec<String>, String> 
         crate::shortcuts::DEFAULT_SHOW_APP.to_string(),
         crate::shortcuts::DEFAULT_OPEN_AI_CHAT.to_string(),
         crate::shortcuts::DEFAULT_QUICK_SEARCH.to_string(),
+        crate::shortcuts::DEFAULT_OPEN_SETTINGS.to_string(),
     ])
 }

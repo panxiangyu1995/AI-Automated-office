@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-15",
+  "lastUpdated": "2026-03-16",
   "tasks": [
     {
       "id": 1,
@@ -336,6 +336,28 @@
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.1"],
       "passes": false
+    },
+    {
+      "id": 15,
+      "epic": "Epic 1",
+      "story": "Story 1.15",
+      "title": "设置与偏好基础框架",
+      "description": "提供统一设置入口与基础页面框架，支持快捷键与基础偏好配置持久化。",
+      "openspec_change": "epic-1-story-15-settings-foundation",
+      "steps": [
+        "增加 TopBar 设置入口与路由跳转",
+        "搭建设置页面基础布局与分区导航",
+        "实现通用/快捷键/Agent/更新分区占位内容",
+        "建立设置项持久化与恢复默认机制",
+        "连接快捷键配置与全局快捷键生效逻辑",
+        "补充基础交互校验与可用性检查"
+      ],
+      "frs_covered": ["FR8"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-001"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 1.4"],
+      "passes": true
     }
   ]
 }

@@ -9,6 +9,7 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 pub const DEFAULT_SHOW_APP: &str = "CmdOrCtrl+Shift+A";
 pub const DEFAULT_OPEN_AI_CHAT: &str = "CmdOrCtrl+Shift+D";
 pub const DEFAULT_QUICK_SEARCH: &str = "CmdOrCtrl+Shift+F";
+pub const DEFAULT_OPEN_SETTINGS: &str = "CmdOrCtrl+,";
 
 /// 注册默认快捷键
 pub fn register_default_shortcuts(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -18,6 +19,7 @@ pub fn register_default_shortcuts(app: &AppHandle) -> Result<(), Box<dyn std::er
     let show_shortcut: Shortcut = DEFAULT_SHOW_APP.parse()?;
     let chat_shortcut: Shortcut = DEFAULT_OPEN_AI_CHAT.parse()?;
     let search_shortcut: Shortcut = DEFAULT_QUICK_SEARCH.parse()?;
+    let settings_shortcut: Shortcut = DEFAULT_OPEN_SETTINGS.parse()?;
 
     // 注册显示/隐藏主窗口快捷键
     let app_clone = app.clone();
@@ -69,11 +71,26 @@ pub fn register_default_shortcuts(app: &AppHandle) -> Result<(), Box<dyn std::er
         }
     })?;
 
+    // 注册设置快捷键 - 使用 app.emit() 发送应用级别事件
+    let app_clone = app.clone();
+    shortcut.on_shortcut(settings_shortcut, move |_app, _shortcut, event| {
+        if event.state == ShortcutState::Pressed {
+            tracing::info!("快捷键触发: {}", DEFAULT_OPEN_SETTINGS);
+            if let Some(window) = app_clone.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+            let _ = app_clone.emit("open-settings", ());
+            tracing::info!("快捷键: 已发送 open-settings 事件");
+        }
+    })?;
+
     tracing::info!(
-        "默认快捷键注册完成: {}, {}, {}",
+        "默认快捷键注册完成: {}, {}, {}, {}",
         DEFAULT_SHOW_APP,
         DEFAULT_OPEN_AI_CHAT,
-        DEFAULT_QUICK_SEARCH
+        DEFAULT_QUICK_SEARCH,
+        DEFAULT_OPEN_SETTINGS
     );
     Ok(())
 }
@@ -92,6 +109,7 @@ mod tests {
             DEFAULT_SHOW_APP,
             DEFAULT_OPEN_AI_CHAT,
             DEFAULT_QUICK_SEARCH,
+            DEFAULT_OPEN_SETTINGS,
         ];
 
         for shortcut_str in shortcuts {

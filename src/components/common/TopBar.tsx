@@ -11,6 +11,7 @@ import {
   PanelLeft,
   PanelRight,
   Puzzle,
+  Settings,
   Wrench,
 } from 'lucide-react'
 import {
@@ -40,6 +41,7 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     toggleSidebar, 
     toggleChatPanel,
     toggleBottomPanel,
+    setActiveActivityItem,
   } = useUIStore()
 
   if (!visible) return null
@@ -68,6 +70,13 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   const handleOpenLayoutDialog = () => {
     console.log('[TopBar] Layout dialog requested')
     onOpenLayoutDialog?.()
+  }
+
+  /**
+   * 打开设置页面
+   */
+  const handleOpenSettings = () => {
+    setActiveActivityItem('settings')
   }
 
   return (
@@ -110,6 +119,12 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
               <MenubarItem onSelect={handleMenuAction('File: Export')}>
                 <FileText size={14} className="mr-2" />
                 导出...
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('File: Settings', handleOpenSettings)}>
+                <Settings size={14} className="mr-2" />
+                设置...
+                <MenubarShortcut>⌘,</MenubarShortcut>
               </MenubarItem>
               <MenubarSeparator />
               <MenubarItem onSelect={handleMenuAction('File: Print')}>
@@ -296,6 +311,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
               帮助
             </MenubarTrigger>
             <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Help: Settings', handleOpenSettings)}>
+                <Settings size={14} className="mr-2" />
+                设置...
+              </MenubarItem>
+              <MenubarSeparator />
               <MenubarItem onSelect={handleMenuAction('Help: Documentation', handleOpenDocs)}>
                 <HelpCircle size={14} className="mr-2" />
                 文档

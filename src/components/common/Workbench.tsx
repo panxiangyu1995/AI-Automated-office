@@ -1,11 +1,29 @@
 import { type ReactNode } from 'react'
+import { useUIStore } from '../../stores/uiStore'
+import { SettingsPanel } from '../../features/settings/components/SettingsPanel'
 
 interface WorkbenchProps {
   children?: ReactNode
   className?: string
 }
 
+/**
+ * 工作区容器
+ */
 export function Workbench({ children, className = '' }: WorkbenchProps) {
+  const { activeActivityItem } = useUIStore()
+
+  if (activeActivityItem === 'settings') {
+    return (
+      <main 
+        className={`flex-1 overflow-auto ${className}`}
+        style={{ backgroundColor: '#F8FAFC' }}
+      >
+        <SettingsPanel />
+      </main>
+    )
+  }
+
   return (
     <main 
       className={`flex-1 overflow-auto ${className}`}

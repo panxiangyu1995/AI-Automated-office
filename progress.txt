@@ -1,5 +1,53 @@
 # Progress Log - AI-Automated-office
 
+## 2026-03-16 - Task: 设置与偏好基础框架 (Story 1.15)
+
+**铁律合规检查：**
+- PRD 合规：FR8
+- 架构合规：ADR-001
+- UX 合规：UX-02, UX-04
+
+**完成内容：**
+- 新增设置页面基础框架与分区导航
+- 支持通用布局开关与恢复默认布局
+- 快捷键配置支持保存、恢复默认与即时生效
+- 新增打开设置的全局快捷键与菜单入口
+
+**测试结果：**
+- ✅ npm run lint
+- ✅ npm run build
+
+---
+
+## 2026-03-16 - Task: Go云端后端项目初始化 (Story 1.6)
+
+**铁律合规检查：**
+- PRD 合规：FR27
+- 架构合规：ADR-005
+- UX 合规：无（后端基础设施）
+
+**完成内容：**
+- 创建 cloud-server 项目结构与 Go 模块定义
+- 集成 Gin 路由与健康检查端点
+- 集成 Viper 配置与环境变量覆盖
+- 集成 GORM 连接模块与就绪检查
+- 集成 Zap 日志与请求中间件
+- 配置 Swagger UI 路由与文档模板
+- 增加 Dockerfile、docker-compose 与热重载配置
+
+**测试结果：**
+- ✅ go mod tidy（使用 GOPROXY=https://goproxy.cn,direct）
+- ❌ go run cmd/server/main.go（未监听 8080，curl 返回 000）
+- ✅ ./server.exe 启动后 GET /api/v1/health 返回 200
+- ✅ GET /swagger/index.html 返回 200
+- ❌ docker-compose up -d（Docker Desktop 引擎未运行）
+- ❌ air -c .air.toml（未安装 air）
+
+**备注：**
+数据库连接因默认密码未配置而失败，但不影响健康检查与 Swagger 验证
+
+---
+
 ## 2026-03-15 - Task: 任务 5 完成
 
 ### 任务 5: 面板布局自定义 (Story 1.5)
