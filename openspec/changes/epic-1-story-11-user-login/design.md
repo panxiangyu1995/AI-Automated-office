@@ -1,5 +1,17 @@
 # Design: 用户登录功能
 
+## UI 设计
+
+### 界面原型
+本功能实施参考以下 UI 原型设计：
+- **原型文件**: `I:\AI-Automated-office\_bmad-output\UI-PEN\login_prototype.pen`
+- **预览图**: `I:\AI-Automated-office\_bmad-output\UI-PEN\login_screen_final.png`
+
+### 设计说明
+- **布局**: 采用左右分栏布局。左侧为品牌展示区（包含 Logo、Slogan），右侧为登录表单区。
+- **Logo**: 使用应用图标 (`src-tauri/icons/128x128.png`)。
+- **交互**: 输入框带有图标辅助，按钮使用品牌色渐变，支持"记住我"和"忘记密码"功能。
+
 ## 技术方案
 
 ### 前端实现

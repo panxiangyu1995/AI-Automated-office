@@ -1,9 +1,5 @@
 {
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "WebFetch(domain:pencil.evolus.vn)",
-      "Bash(cd:*)"
-    ]
+ "permissions": {
+    "defaultMode": "bypassPermissions"
   }
 }

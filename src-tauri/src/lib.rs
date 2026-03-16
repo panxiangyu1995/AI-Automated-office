@@ -3,9 +3,14 @@
 //! 本模块是 Tauri 应用的入口点，负责初始化应用和注册命令。
 
 mod commands;
+mod http;
+mod network;
 mod shortcuts;
+mod storage;
+mod sync;
 mod tray;
 mod utils;
+mod vector;
 
 use tauri::Manager;
 
@@ -38,6 +43,8 @@ pub fn run() {
             
             // 注册默认快捷键
             shortcuts::register_default_shortcuts(app.handle()).expect("无法注册默认快捷键");
+
+            network::status::start_monitor(app.handle().clone());
             
             tracing::info!("应用启动完成");
             Ok(())
@@ -51,9 +58,16 @@ pub fn run() {
             commands::storage::set_storage,
             commands::storage::remove_storage,
             commands::network::check_network_status,
+            commands::network::get_network_status,
             commands::shortcuts::update_shortcut,
             commands::shortcuts::check_shortcut_available,
             commands::shortcuts::get_registered_shortcuts,
+            http::commands::http_request,
+            http::commands::http_get,
+            http::commands::http_post,
+            sync::offline_queue::enqueue_request,
+            sync::offline_queue::get_pending_requests,
+            sync::offline_queue::process_pending_requests,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");
