@@ -48,3 +48,4 @@ coverage/
 *.tmp
 *.temp
 test-results/.last-run.json
+playwright-report/index.html
