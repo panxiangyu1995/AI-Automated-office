@@ -297,7 +297,7 @@ describe('软件更新 - Scenario 2: 更新提醒', () => {
       />
     )
 
-    expect(screen.getByText(/当前版本：1.0.0/)).toBeInTheDocument()
+    expect(screen.getByText(/当前版本:\s*v?\s*1\.0\.0/)).toBeInTheDocument()
   })
 
   it('更新提醒显示更新内容（更新日志）', () => {
@@ -625,8 +625,12 @@ describe('软件更新 - Scenario 4: 安装更新', () => {
       />
     )
 
-    // 应该显示进度
-    expect(screen.getByText(/正在下载.*75%/)).toBeInTheDocument()
+    expect(screen.getByText(/正在下载更新/)).toBeInTheDocument()
+    expect(screen.getByText(/75%/)).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: '更新下载进度' })).toHaveAttribute(
+      'aria-valuenow',
+      '75'
+    )
   })
 })
 
@@ -779,9 +783,11 @@ describe('软件更新 - Scenario 5: 稍后提醒', () => {
     })
 
     // 调用 dismiss - 这里测试 dismiss 不会抛出错误
-    expect(() => {
-      if (dismissFn) dismissFn()
-    }).not.toThrow()
+    await act(async () => {
+      expect(() => {
+        if (dismissFn) dismissFn()
+      }).not.toThrow()
+    })
   })
 })
 
@@ -926,16 +932,18 @@ describe('软件更新 - 边界条件测试', () => {
       />
     )
 
-    // 进度应该被处理为 0
+    // 进度应被夹紧到 0
     expect(screen.getByText(/0%/)).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: '更新下载进度' })).toHaveAttribute(
+      'aria-valuenow',
+      '0'
+    )
   })
 
   it('处理进度值超过 100', () => {
     const updateInfo = createUpdateInfo()
 
-    // 注意：UpdateDialog 直接接收 progress 作为 props
-    // 如果传入 150，应该显示 150（由调用方负责限制）
-    // 这里测试组件正确显示传入的值
+    // 进度应被夹紧到 100
     render(
       <UpdateDialog
         updateInfo={updateInfo}
@@ -946,7 +954,10 @@ describe('软件更新 - 边界条件测试', () => {
       />
     )
 
-    // 组件会直接显示传入的值（150%）
-    expect(screen.getByText(/150%/)).toBeInTheDocument()
+    expect(screen.getByText(/100%/)).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: '更新下载进度' })).toHaveAttribute(
+      'aria-valuenow',
+      '100'
+    )
   })
 })
