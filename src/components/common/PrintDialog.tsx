@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,15 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
   const [previewData, setPreviewData] = useState<number[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+  const isMountedRef = useRef(true)
+  const previewRequestIdRef = useRef(0)
+  const printRequestIdRef = useRef(0)
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // 重置状态
   useEffect(() => {
@@ -65,20 +74,32 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
   const handleLoadPreview = useCallback(async () => {
     if (!documentContent) return
 
+    const requestId = ++previewRequestIdRef.current
     setIsLoadingPreview(true)
     try {
       const preview = await printPreview(documentContent)
+      if (!isMountedRef.current || requestId !== previewRequestIdRef.current) {
+        return
+      }
       setPreviewData(preview)
+      setError(null)
     } catch (err) {
       console.error('Failed to load preview:', err)
+      if (!isMountedRef.current || requestId !== previewRequestIdRef.current) {
+        return
+      }
+      setError('预览加载失败，请重试')
     } finally {
-      setIsLoadingPreview(false)
+      if (isMountedRef.current && requestId === previewRequestIdRef.current) {
+        setIsLoadingPreview(false)
+      }
     }
   }, [documentContent, printPreview])
 
   const handleStartPrint = useCallback(async () => {
     if (!selectedDevice) return
 
+    const requestId = ++printRequestIdRef.current
     setStep('printing')
     setError(null)
 
@@ -86,18 +107,47 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
       // 如果没有传入文档内容，使用预览数据
       const content = documentContent || previewData || []
       await printDocument(selectedDevice.id, content, printOptions)
+      if (!isMountedRef.current || requestId !== printRequestIdRef.current) {
+        return
+      }
       setStep('complete')
     } catch (err) {
+      if (!isMountedRef.current || requestId !== printRequestIdRef.current) {
+        return
+      }
       setError(err instanceof Error ? err.message : '打印失败')
       setStep('error')
     }
   }, [selectedDevice, documentContent, previewData, printOptions, printDocument])
 
   const hasContent = documentContent && documentContent.length > 0
+  const isPrinting = step === 'printing'
+
+  const handleDialogOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen && isPrinting) {
+        return
+      }
+      onOpenChange(nextOpen)
+    },
+    [isPrinting, onOpenChange]
+  )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[850px] p-0 gap-0 overflow-hidden bg-slate-50 transition-all duration-300">
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent
+        className="sm:max-w-[850px] p-0 gap-0 overflow-hidden bg-slate-50 transition-all duration-300"
+        onEscapeKeyDown={(event) => {
+          if (isPrinting) {
+            event.preventDefault()
+          }
+        }}
+        onPointerDownOutside={(event) => {
+          if (isPrinting) {
+            event.preventDefault()
+          }
+        }}
+      >
         
         {/* 顶部标题栏 */}
         <div className="bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between shadow-sm z-10">
@@ -118,7 +168,7 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
           </div>
           
           {/* 步骤指示器 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" role="list" aria-label="打印步骤">
              {[
                { id: 'select-device', label: '选择设备' }, 
                { id: 'configure', label: '配置参数' }, 
@@ -127,11 +177,11 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
                const isCurrent = step === s.id;
                const isPast = ['select-device', 'configure', 'printing', 'complete'].indexOf(step) > i;
                return (
-                 <div key={s.id} className="flex items-center gap-2">
+                <div key={s.id} className="flex items-center gap-2" role="listitem">
                    <div className={`
                      px-3 py-1 rounded-full text-xs font-medium transition-all duration-300
                      ${isCurrent ? 'bg-blue-600 text-white shadow-md' : isPast ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'}
-                   `}>
+                   `} aria-current={isCurrent ? 'step' : undefined}>
                      {i + 1}. {s.label}
                    </div>
                    {i < 2 && <div className="w-4 h-px bg-slate-200" />}
@@ -250,7 +300,11 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
 
               {/* 结果状态 */}
               {(step === 'complete' || step === 'error' || step === 'printing') && (
-                <div className="flex flex-col items-center justify-center h-full space-y-6 text-center animate-in zoom-in-95 fade-in duration-300">
+                <div
+                  className="flex flex-col items-center justify-center h-full space-y-6 text-center animate-in zoom-in-95 fade-in duration-300"
+                  aria-live="polite"
+                  aria-busy={isPrinting}
+                >
                   {step === 'printing' && (
                     <>
                       <div className="relative w-20 h-20">
@@ -307,7 +361,7 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
                  <Button 
                    className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200" 
                    onClick={handleStartPrint}
-                   disabled={!hasContent && !previewData}
+                   disabled={!hasContent && !previewData || isLoadingPreview}
                  >
                    开始打印
                  </Button>

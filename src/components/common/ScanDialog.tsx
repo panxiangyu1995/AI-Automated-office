@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,6 @@ import {
 } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
-import { Input } from '../ui/input'
 import {
   Select,
   SelectContent,
@@ -39,6 +38,14 @@ export function ScanDialog({ open, onOpenChange, onScanComplete }: ScanDialogPro
   })
   const [scanData, setScanData] = useState<number[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
+  const scanRequestIdRef = useRef(0)
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // 重置状态
   useEffect(() => {
@@ -65,14 +72,21 @@ export function ScanDialog({ open, onOpenChange, onScanComplete }: ScanDialogPro
   const handleStartScan = useCallback(async () => {
     if (!selectedDevice) return
 
+    const requestId = ++scanRequestIdRef.current
     setStep('scanning')
     setError(null)
 
     try {
       const data = await scanDocument(selectedDevice.id, scanOptions)
+      if (!isMountedRef.current || requestId !== scanRequestIdRef.current) {
+        return
+      }
       setScanData(data)
       setStep('complete')
     } catch (err) {
+      if (!isMountedRef.current || requestId !== scanRequestIdRef.current) {
+        return
+      }
       setError(err instanceof Error ? err.message : '扫描失败')
       setStep('error')
     }
@@ -85,9 +99,32 @@ export function ScanDialog({ open, onOpenChange, onScanComplete }: ScanDialogPro
     }
   }, [scanData, onScanComplete, onOpenChange])
 
+  const isScanning = step === 'scanning'
+  const handleDialogOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen && isScanning) {
+        return
+      }
+      onOpenChange(nextOpen)
+    },
+    [isScanning, onOpenChange]
+  )
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[850px] p-0 gap-0 overflow-hidden bg-slate-50 transition-all duration-300">
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent
+        className="sm:max-w-[850px] p-0 gap-0 overflow-hidden bg-slate-50 transition-all duration-300"
+        onEscapeKeyDown={(event) => {
+          if (isScanning) {
+            event.preventDefault()
+          }
+        }}
+        onPointerDownOutside={(event) => {
+          if (isScanning) {
+            event.preventDefault()
+          }
+        }}
+      >
         
         {/* 顶部标题栏 */}
         <div className="bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between shadow-sm z-10">
@@ -108,7 +145,7 @@ export function ScanDialog({ open, onOpenChange, onScanComplete }: ScanDialogPro
           </div>
           
           {/* 步骤指示器 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" role="list" aria-label="扫描步骤">
              {[
                { id: 'select-device', label: '选择设备' }, 
                { id: 'configure', label: '配置参数' }, 
@@ -117,11 +154,11 @@ export function ScanDialog({ open, onOpenChange, onScanComplete }: ScanDialogPro
                const isCurrent = step === s.id;
                const isPast = ['select-device', 'configure', 'scanning', 'complete'].indexOf(step) > i;
                return (
-                 <div key={s.id} className="flex items-center gap-2">
+                <div key={s.id} className="flex items-center gap-2" role="listitem">
                    <div className={`
                      px-3 py-1 rounded-full text-xs font-medium transition-all duration-300
                      ${isCurrent ? 'bg-indigo-600 text-white shadow-md' : isPast ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}
-                   `}>
+                   `} aria-current={isCurrent ? 'step' : undefined}>
                      {i + 1}. {s.label}
                    </div>
                    {i < 2 && <div className="w-4 h-px bg-slate-200" />}
@@ -256,7 +293,11 @@ export function ScanDialog({ open, onOpenChange, onScanComplete }: ScanDialogPro
 
               {/* 结果状态 */}
               {(step === 'complete' || step === 'error' || step === 'scanning') && (
-                <div className="flex flex-col items-center justify-center h-full space-y-6 text-center animate-in zoom-in-95 fade-in duration-300">
+                <div
+                  className="flex flex-col items-center justify-center h-full space-y-6 text-center animate-in zoom-in-95 fade-in duration-300"
+                  aria-live="polite"
+                  aria-busy={isScanning}
+                >
                   {step === 'scanning' && (
                     <>
                       <div className="relative w-20 h-20">

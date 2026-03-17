@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '../ui/dialog'
 import { Button } from '../ui/button'
-import { RefreshCw, Printer, Scan, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { RefreshCw, Printer, Scan, XCircle, Loader2 } from 'lucide-react'
 import { useHardware, type ScannerDevice, type PrinterDevice } from '../../hooks/useHardware'
 
 interface HardwareDialogProps {
@@ -22,17 +22,39 @@ export function HardwareDialog({ open, onOpenChange }: HardwareDialogProps) {
   const [printers, setPrinters] = useState<PrinterDevice[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
+  const requestIdRef = useRef(0)
 
-  const loadDevices = useCallback(async () => {
-    setIsLoading(true)
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  const loadDevices = useCallback(async (silent = false) => {
+    const requestId = ++requestIdRef.current
+    if (!silent) {
+      setIsLoading(true)
+    }
+    setLoadError(null)
     try {
       const [scannerList, printerList] = await Promise.all([listScanners(), listPrinters()])
+      if (!isMountedRef.current || requestId !== requestIdRef.current) {
+        return
+      }
       setScanners(scannerList)
       setPrinters(printerList)
     } catch (error) {
       console.error('Failed to load devices:', error)
+      if (!isMountedRef.current || requestId !== requestIdRef.current) {
+        return
+      }
+      setLoadError('设备检测失败，请检查连接后重试')
     } finally {
-      setIsLoading(false)
+      if (!silent && isMountedRef.current) {
+        setIsLoading(false)
+      }
     }
   }, [listScanners, listPrinters])
 
@@ -45,8 +67,10 @@ export function HardwareDialog({ open, onOpenChange }: HardwareDialogProps) {
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true)
-    await loadDevices()
-    setIsRefreshing(false)
+    await loadDevices(true)
+    if (isMountedRef.current) {
+      setIsRefreshing(false)
+    }
   }, [loadDevices])
 
   const hasDevices = scanners.length > 0 || printers.length > 0
@@ -69,6 +93,15 @@ export function HardwareDialog({ open, onOpenChange }: HardwareDialogProps) {
         </DialogHeader>
 
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+          {!isLoading && loadError && (
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700"
+            >
+              {loadError}
+            </div>
+          )}
           {/* 加载状态 */}
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
@@ -78,7 +111,9 @@ export function HardwareDialog({ open, onOpenChange }: HardwareDialogProps) {
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                 </div>
               </div>
-              <p className="text-sm font-medium text-slate-600">正在检测硬件设备...</p>
+              <p className="text-sm font-medium text-slate-600" aria-live="polite">
+                正在检测硬件设备...
+              </p>
             </div>
           )}
 
@@ -184,7 +219,7 @@ export function HardwareDialog({ open, onOpenChange }: HardwareDialogProps) {
                           ) : (
                             <>
                               <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                              <span className="text-xs font-medium text-slate-600">闲置</span>
+                              <span className="text-xs font-medium text-slate-600">就绪</span>
                             </>
                           )}
                         </div>
