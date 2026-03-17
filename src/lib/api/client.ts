@@ -130,7 +130,8 @@ export class ApiClient {
       if (refreshed) {
         this.token = refreshed
         if (attempt < this.config.retryCount) {
-          return this.executeRequest<T>(config, attempt + 1)
+          // 使用合并后的配置重试，确保使用新的 token
+          return this.executeRequest<T>(mergedConfig, attempt + 1)
         }
       }
     }
