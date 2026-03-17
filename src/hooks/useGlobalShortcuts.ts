@@ -54,34 +54,39 @@ export function useGlobalShortcuts() {
     // 使用 async/await 正确处理 Promise
     const setupListeners = async () => {
       console.log('[useGlobalShortcuts] 开始设置事件监听器...')
-      
-      unlistenOpenAiChat = await listen('open-ai-chat', () => {
-        console.log('[useGlobalShortcuts] 收到 open-ai-chat 事件，派发 window 事件')
-        window.dispatchEvent(new CustomEvent('shortcut:open-ai-chat'))
-      })
+
+      const [openAiUnlisten, quickSearchUnlisten, openSettingsUnlisten] = await Promise.all([
+        listen('open-ai-chat', () => {
+          console.log('[useGlobalShortcuts] 收到 open-ai-chat 事件，派发 window 事件')
+          window.dispatchEvent(new CustomEvent('shortcut:open-ai-chat'))
+        }),
+        listen('open-quick-search', () => {
+          console.log('[useGlobalShortcuts] 收到 open-quick-search 事件，派发 window 事件')
+          window.dispatchEvent(new CustomEvent('shortcut:open-quick-search'))
+        }),
+        listen('open-settings', () => {
+          console.log('[useGlobalShortcuts] 收到 open-settings 事件，派发 window 事件')
+          window.dispatchEvent(new CustomEvent('shortcut:open-settings'))
+        }),
+      ])
+
+      unlistenOpenAiChat = openAiUnlisten
+      unlistenQuickSearch = quickSearchUnlisten
+      unlistenOpenSettings = openSettingsUnlisten
+
       if (cancelled && unlistenOpenAiChat) {
         unlistenOpenAiChat()
         unlistenOpenAiChat = null
       }
-
-      unlistenQuickSearch = await listen('open-quick-search', () => {
-        console.log('[useGlobalShortcuts] 收到 open-quick-search 事件，派发 window 事件')
-        window.dispatchEvent(new CustomEvent('shortcut:open-quick-search'))
-      })
       if (cancelled && unlistenQuickSearch) {
         unlistenQuickSearch()
         unlistenQuickSearch = null
       }
-
-      unlistenOpenSettings = await listen('open-settings', () => {
-        console.log('[useGlobalShortcuts] 收到 open-settings 事件，派发 window 事件')
-        window.dispatchEvent(new CustomEvent('shortcut:open-settings'))
-      })
       if (cancelled && unlistenOpenSettings) {
         unlistenOpenSettings()
         unlistenOpenSettings = null
       }
-      
+
       console.log('[useGlobalShortcuts] 事件监听器设置完成')
     }
 

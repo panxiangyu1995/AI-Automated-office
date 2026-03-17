@@ -57,9 +57,9 @@
 
 ## 测试要点
 
-- [ ] sqlite-vec 扩展加载成功
-- [ ] 向量插入和搜索正常
-- [ ] BM25 全文搜索正常
-- [ ] RRF 融合结果正确
-- [ ] 云端 Qdrant 连接成功
-- [ ] Embedding API 调用成功
+- [x] sqlite-vec 扩展加载成功
+- [x] 向量插入和搜索正常
+- [x] BM25 全文搜索正常
+- [x] RRF 融合结果正确
+- [x] 云端 Qdrant 连接成功
+- [x] Embedding API 调用成功

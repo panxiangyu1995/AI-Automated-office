@@ -12,7 +12,7 @@ mod storage;
 mod sync;
 mod tray;
 mod utils;
-mod vector;
+pub mod vector;
 
 use tauri::Manager;
 

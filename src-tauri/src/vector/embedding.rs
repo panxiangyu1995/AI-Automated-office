@@ -7,13 +7,20 @@ pub struct EmbeddingService {
     config: EmbeddingConfig,
 }
 
+/// OpenAI 格式的响应
 #[derive(Debug, Deserialize)]
-struct EmbeddingResponse {
-    data: Vec<EmbeddingData>,
+struct OpenAIEmbeddingResponse {
+    data: Vec<OpenAIEmbeddingData>,
 }
 
 #[derive(Debug, Deserialize)]
-struct EmbeddingData {
+struct OpenAIEmbeddingData {
+    embedding: Vec<f32>,
+}
+
+/// Ollama 格式的响应
+#[derive(Debug, Deserialize)]
+struct OllamaEmbeddingResponse {
     embedding: Vec<f32>,
 }
 
@@ -35,6 +42,22 @@ impl EmbeddingService {
         if inputs.is_empty() {
             return Ok(Vec::new());
         }
+
+        // 检测是否为 Ollama API（本地服务）
+        let base_url = self.config.base_url.trim_end_matches('/');
+        let is_ollama = base_url.contains("localhost") || base_url.contains("127.0.0.1");
+
+        if is_ollama {
+            // 使用 Ollama API 格式
+            self.embed_texts_ollama(inputs).await
+        } else {
+            // 使用 OpenAI API 格式
+            self.embed_texts_openai(inputs).await
+        }
+    }
+
+    /// OpenAI 兼容格式的嵌入调用
+    async fn embed_texts_openai(&self, inputs: Vec<String>) -> Result<Vec<Vec<f32>>> {
         let url = format!("{}/v1/embeddings", self.config.base_url.trim_end_matches('/'));
         let body = serde_json::json!({
             "input": inputs,
@@ -50,7 +73,7 @@ impl EmbeddingService {
         if !response.status().is_success() {
             return Err(anyhow!("Embedding API 调用失败: {}", response.status()));
         }
-        let payload: EmbeddingResponse = response.json().await?;
+        let payload: OpenAIEmbeddingResponse = response.json().await?;
         let embeddings: Vec<Vec<f32>> =
             payload.data.into_iter().map(|d| d.embedding).collect();
         if let Some(first) = embeddings.first() {
@@ -62,6 +85,39 @@ impl EmbeddingService {
                 ));
             }
         }
+        Ok(embeddings)
+    }
+
+    /// Ollama 格式的嵌入调用（单请求）
+    async fn embed_texts_ollama(&self, inputs: Vec<String>) -> Result<Vec<Vec<f32>>> {
+        let mut embeddings = Vec::new();
+
+        for input in inputs {
+            let url = format!("{}/api/embeddings", self.config.base_url.trim_end_matches('/'));
+            let body = serde_json::json!({
+                "model": self.config.model,
+                "prompt": input
+            });
+            let response = self
+                .client
+                .post(&url)
+                .json(&body)
+                .send()
+                .await?;
+            if !response.status().is_success() {
+                return Err(anyhow!("Ollama Embedding API 调用失败: {}", response.status()));
+            }
+            let payload: OllamaEmbeddingResponse = response.json().await?;
+            if payload.embedding.len() != self.config.dimension {
+                return Err(anyhow!(
+                    "向量维度不匹配，期望 {}，实际 {}",
+                    self.config.dimension,
+                    payload.embedding.len()
+                ));
+            }
+            embeddings.push(payload.embedding);
+        }
+
         Ok(embeddings)
     }
 }

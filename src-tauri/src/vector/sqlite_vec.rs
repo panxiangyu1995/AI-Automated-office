@@ -193,9 +193,10 @@ impl VectorStore for SqliteVecStore {
             let conn = conn.lock().map_err(|_| anyhow!("无法获取连接锁"))?;
             let vector = Self::normalize_vector(&vector);
             let content = Self::metadata_content(&metadata, &None);
+            // sqlite-vec 虚拟表不支持 UPSERT，需要先删除再插入
+            conn.execute("DELETE FROM vec_items WHERE id = ?1", params![id])?;
             conn.execute(
-                "INSERT INTO vec_items (id, embedding, content, metadata, created_at) VALUES (?1, ?2, ?3, ?4, ?5)
-                 ON CONFLICT(id) DO UPDATE SET embedding = excluded.embedding, content = excluded.content, metadata = excluded.metadata, created_at = excluded.created_at;",
+                "INSERT INTO vec_items (id, embedding, content, metadata, created_at) VALUES (?1, ?2, ?3, ?4, ?5)",
                 params![id, vector.as_bytes(), content, metadata.to_string(), Self::current_timestamp()],
             )?;
             Self::upsert_text_index(&*conn, &id, &content, &metadata)?;
@@ -216,9 +217,10 @@ impl VectorStore for SqliteVecStore {
                 }
                 let vector = Self::normalize_vector(&item.vector);
                 let content = Self::metadata_content(&item.metadata, &item.content);
+                // sqlite-vec 虚拟表不支持 UPSERT，需要先删除再插入
+                tx.execute("DELETE FROM vec_items WHERE id = ?1", params![item.id])?;
                 tx.execute(
-                    "INSERT INTO vec_items (id, embedding, content, metadata, created_at) VALUES (?1, ?2, ?3, ?4, ?5)
-                     ON CONFLICT(id) DO UPDATE SET embedding = excluded.embedding, content = excluded.content, metadata = excluded.metadata, created_at = excluded.created_at;",
+                    "INSERT INTO vec_items (id, embedding, content, metadata, created_at) VALUES (?1, ?2, ?3, ?4, ?5)",
                     params![
                         item.id,
                         vector.as_bytes(),
@@ -321,7 +323,9 @@ impl TextIndexConnection for rusqlite::Connection {
 
 impl TextIndexConnection for rusqlite::Transaction<'_> {
     fn execute(&self, sql: &str, params: &[&dyn rusqlite::ToSql]) -> rusqlite::Result<usize> {
-        rusqlite::Transaction::execute(self, sql, params)
+        // 注意：这里调用的是 Connection 的 execute，不是 Transaction 自己的
+        // 因为 trait 方法和 impl 方法同名，会导致递归调用
+        rusqlite::Connection::execute(self, sql, params)
     }
 }
 

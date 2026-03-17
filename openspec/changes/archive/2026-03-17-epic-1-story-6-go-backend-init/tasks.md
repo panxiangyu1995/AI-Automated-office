@@ -57,8 +57,8 @@
 ## 测试要点
 
 - [x] `go mod tidy` 无错误
-- [ ] `go run cmd/server/main.go` 启动成功
+- [x] `go run cmd/server/main.go` 启动成功
 - [x] GET /api/v1/health 返回正确响应
 - [x] Swagger 文档可访问
-- [ ] Docker 容器正常启动
-- [ ] 热重载功能生效
+- [x] Docker 容器正常启动
+- [x] 热重载功能生效

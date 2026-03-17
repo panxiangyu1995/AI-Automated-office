@@ -1,5 +1,56 @@
 # Progress Log - AI-Automated-office
 
+## 2026-03-17 - Task: 向量数据库 (Story 1.9) Bug修复与验收测试
+
+### 铁律合规检查：
+- PRD 合规：FR14-8, FR14-11, FR250, FR251, FR273, FR285, FR286, FR287
+- 架构合规：ADR-014
+- UX 合规：无（后端基础设施）
+
+### 测试验收结果：
+- ✅ 向量存储抽象接口 (VectorStore Trait)
+- ✅ sqlite-vec本地存储 (CRUD + BM25全文搜索)
+- ✅ Qdrant云端适配器 (CRUD + 批量操作)
+- ✅ 向量嵌入服务 (Ollama nomic-embed-text)
+- ✅ 混合搜索实现 (RRF + BM25)
+
+### Bug修复记录：
+
+#### Bug 1: sqlite-vec UPSERT 不支持
+- **文件**: src-tauri/src/vector/sqlite_vec.rs
+- **问题**: sqlite-vec 虚拟表不支持 `ON CONFLICT` UPSERT 语法
+- **修复**: 改用 `DELETE + INSERT` 组合实现 upsert 逻辑
+
+#### Bug 2: TextIndexConnection 递归调用栈溢出
+- **文件**: src-tauri/src/vector/sqlite_vec.rs
+- **问题**: `impl TextIndexConnection for Transaction` 中调用同名方法导致无限递归
+- **修复**: 显式调用 `rusqlite::Connection::execute` 而非 `self.execute`
+
+#### Bug 3: Qdrant 云端 API 格式错误
+- **文件**: src-tauri/src/vector/qdrant.rs
+- **问题**: 云端 Qdrant 使用 `ids/vectors/payloads` 格式，而非标准 `points` 数组
+- **修复**: 修改请求体格式为云端兼容格式
+
+#### Bug 4: Qdrant 云端 ID 格式限制
+- **文件**: src-tauri/src/vector/qdrant.rs
+- **问题**: 云端只接受数字或 UUID 格式的 ID，普通字符串被拒绝
+- **修复**: 添加 FNV 哈希算法将任意字符串转换为数字 ID
+
+#### Bug 5: Qdrant HTTP 方法错误
+- **文件**: src-tauri/src/vector/qdrant.rs
+- **问题**: 云端使用 `POST` 方法，而代码使用了 `PUT`
+- **修复**: 将 `client.put()` 改为 `client.post()`
+
+### Testing:
+- ✅ cargo run --example vector_test（全部5项验收测试通过）
+
+### Notes:
+- Qdrant 云端 (HF Spaces) 使用修改过的 API，需特殊处理
+- Ollama embedding 使用 /api/embeddings 端点（非 OpenAI 兼容格式）
+- 完整测试文件: src-tauri/examples/vector_test.rs
+
+---
+
 ## 2026-03-17 - Task: 向量数据库初始化 (Story 1.9) 编译修复
 
 ### 铁律合规检查：

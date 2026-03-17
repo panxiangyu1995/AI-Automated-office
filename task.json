@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-16",
+  "lastUpdated": "2026-03-17",
   "tasks": [
     {
       "id": 1,
@@ -358,6 +358,29 @@
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.4"],
       "passes": true
+    },
+    {
+      "id": 16,
+      "epic": "Epic 1",
+      "story": "Story 1.16",
+      "title": "基础测试框架搭建",
+      "description": "搭建覆盖单元、集成、E2E、契约、性能、安全、可访问性的测试基座，并建立覆盖率与质量门禁能力。",
+      "openspec_change": "epic-1-story-16-testing-foundation",
+      "steps": [
+        "安装并配置 Vitest",
+        "安装并配置 Playwright",
+        "建立 unit/integration/e2e/contracts/performance/security 分层目录与样例",
+        "建立 fixtures/factories/seeds 测试数据体系",
+        "补充覆盖率阈值检查与质量门禁脚本",
+        "建立选择性测试执行机制并保留 P0 全量执行",
+        "补充统一测试命令与标准化报告输出"
+      ],
+      "frs_covered": ["FR24", "FR25", "FR1186"],
+      "nfrs_covered": ["NFR1", "NFR17", "NFR35"],
+      "arch_covered": ["ADR-001"],
+      "ux_covered": ["UX-04"],
+      "dependencies": ["Story 1.1", "Story 1.6", "Story 1.10"],
+      "passes": false
     }
   ]
 }

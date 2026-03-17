@@ -9,7 +9,8 @@ pub fn database_path(tenant_id: &str) -> Result<PathBuf> {
     let project_dirs = ProjectDirs::from("com", "ai-automated-office", "AI-Automated-office")
         .context("无法获取应用数据目录")?;
     let base_dir = project_dirs.data_local_dir().to_path_buf();
-    Ok(base_dir.join("data").join(tenant_id).join("local.db"))
+    // 修复：移除非必要的 data 目录层级，直接使用 tenant_id
+    Ok(base_dir.join(tenant_id).join("local.db"))
 }
 
 pub async fn create_pool(tenant_id: &str) -> Result<SqlitePool> {

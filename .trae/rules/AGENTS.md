@@ -86,6 +86,7 @@
 - 详细的用户故事（Story）拆分
 - 需求覆盖映射表（FR/NFR/ARCH/UX）
 - 验收标准（Acceptance Criteria）
+- 最新规划包含 Epic 1, Story 1.16（基础测试框架搭建）
 
 **Epic 列表：**
 | Epic | 名称 | Stories |

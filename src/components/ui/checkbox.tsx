@@ -9,10 +9,12 @@ export interface CheckboxProps
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, label, onCheckedChange, onChange, ...props }, ref) => {
+    const generatedId = React.useId()
+    const inputId = props.id ?? generatedId
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange?.(e);
-      onCheckedChange?.(e.target.checked);
-    };
+      onChange?.(e)
+      onCheckedChange?.(e.target.checked)
+    }
 
     return (
       <div className="flex items-center space-x-2">
@@ -23,11 +25,15 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             className
           )}
           ref={ref}
+          id={inputId}
           onChange={handleChange}
           {...props}
         />
         {label && (
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          <label
+            htmlFor={inputId}
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
             {label}
           </label>
         )}

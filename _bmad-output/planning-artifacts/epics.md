@@ -1346,7 +1346,7 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 **Epic目标：** 建立完整的基础设施层（Go后端、数据库、向量存储）和Tauri桌面端框架，为后续功能模块提供坚实的底层支持。
 
-**覆盖需求：** FR1-FR15, FR27-FR43, FR250-FR254, NFR1, NFR5-NFR6, NFR8-1至NFR8-4, NFR9-NFR16, NFR36-NFR38
+**覆盖需求：** FR1-FR15, FR25, FR27-FR43, FR250-FR254, FR1186, NFR1, NFR5-NFR6, NFR8-1至NFR8-4, NFR9-NFR17, NFR36-NFR38
 
 **Phase:** Phase 1 - 基础设施层
 
@@ -1712,16 +1712,38 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 ---
 
+### Story 1.16: 基础测试框架搭建
+
+**As a** 开发者,
+**I want** 建立统一的项目测试框架,
+**So that** 可以稳定执行单元测试、集成测试和端到端测试，保障迭代质量。
+
+**Acceptance Criteria:**
+
+**Given** 项目代码仓库已初始化
+**When** 搭建测试基础设施
+**Then** 配置 Vitest 用于单元测试
+**And** 配置 Playwright 用于 E2E 测试
+**And** 建立 tests/unit、tests/integration、tests/e2e 目录结构
+
+**Given** 开发者执行测试脚本
+**When** 运行 `pnpm test` 与 `pnpm test:e2e`
+**Then** 可执行基础 smoke 测试用例
+**And** 输出标准化测试报告
+**And** 失败时返回非零退出码用于质量门禁
+
+---
+
 ### Epic 1 Summary
 
 | 指标 | 数量 |
 |------|------|
-| **Story总数** | 15 |
+| **Story总数** | 16 |
 | **已完成** | 5 (Story 1.1-1.5) |
 | **新增基础设施** | 5 (Story 1.6-1.10) |
-| **核心功能** | 5 (Story 1.11-1.15) |
-| **覆盖FR** | FR1-FR15, FR27-FR43, FR250-FR254 |
-| **覆盖NFR** | NFR1, NFR5-NFR6, NFR8-1至NFR8-4, NFR9-NFR16, NFR36-NFR38 |
+| **核心功能** | 6 (Story 1.11-1.16) |
+| **覆盖FR** | FR1-FR15, FR25, FR27-FR43, FR250-FR254, FR1186 |
+| **覆盖NFR** | NFR1, NFR5-NFR6, NFR8-1至NFR8-4, NFR9-NFR17, NFR36-NFR38 |
 
 **依赖关系图：**
 
@@ -1737,6 +1759,7 @@ Story 1.8 (SQLite) ─── Story 1.9 (向量数据库) ───────�
 Story 1.13 (硬件设备) ─── 独立，可并行
 Story 1.14 (软件更新) ─── 独立，可并行
 Story 1.15 (设置入口) ─── 支撑 Story 1.3 (快捷键配置)
+Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 ```
 
 **TopBar 菜单栏需求明细：**
