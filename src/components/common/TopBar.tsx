@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-shell'
 import {
@@ -5,15 +6,21 @@ import {
   Edit3,
   Eye,
   FileText,
+  HardDrive,
   HelpCircle,
   LayoutTemplate,
   PanelBottom,
   PanelLeft,
   PanelRight,
+  Printer,
   Puzzle,
+  Scan,
   Settings,
   Wrench,
 } from 'lucide-react'
+import { ScanDialog } from './ScanDialog'
+import { PrintDialog } from './PrintDialog'
+import { HardwareDialog } from './HardwareDialog'
 import {
   Menubar,
   MenubarContent,
@@ -34,15 +41,33 @@ interface TopBarProps {
 }
 
 export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
-  const { 
-    sidebarCollapsed, 
-    chatPanelCollapsed, 
+  const {
+    sidebarCollapsed,
+    chatPanelCollapsed,
     bottomPanelCollapsed,
-    toggleSidebar, 
+    toggleSidebar,
     toggleChatPanel,
     toggleBottomPanel,
     setActiveActivityItem,
   } = useUIStore()
+
+  // 硬件对话框状态
+  const [scanDialogOpen, setScanDialogOpen] = useState(false)
+  const [printDialogOpen, setPrintDialogOpen] = useState(false)
+  const [hardwareDialogOpen, setHardwareDialogOpen] = useState(false)
+
+  // 硬件对话框回调
+  const handleOpenScanDialog = useCallback(() => {
+    setScanDialogOpen(true)
+  }, [])
+
+  const handleOpenPrintDialog = useCallback(() => {
+    setPrintDialogOpen(true)
+  }, [])
+
+  const handleOpenHardwareDialog = useCallback(() => {
+    setHardwareDialogOpen(true)
+  }, [])
 
   if (!visible) return null
 
@@ -127,7 +152,7 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
                 <MenubarShortcut>⌘,</MenubarShortcut>
               </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('File: Print')}>
+              <MenubarItem onSelect={handleMenuAction('File: Print', handleOpenPrintDialog)}>
                 <FileText size={14} className="mr-2" />
                 打印...
               </MenubarItem>
@@ -308,6 +333,29 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
 
           <MenubarMenu>
             <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+              硬件
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onSelect={handleMenuAction('Hardware: Scan Document', handleOpenScanDialog)}>
+                <Scan size={14} className="mr-2" />
+                扫描文档...
+                <MenubarShortcut>Ctrl+Shift+S</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onSelect={handleMenuAction('Hardware: Print Document', handleOpenPrintDialog)}>
+                <Printer size={14} className="mr-2" />
+                打印文档...
+                <MenubarShortcut>Ctrl+P</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onSelect={handleMenuAction('Hardware: Device Management', handleOpenHardwareDialog)}>
+                <HardDrive size={14} className="mr-2" />
+                设备管理...
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+
+          <MenubarMenu>
+            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
               帮助
             </MenubarTrigger>
             <MenubarContent>
@@ -343,6 +391,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
         toggleBottomPanel={toggleBottomPanel}
         onOpenLayoutDialog={handleOpenLayoutDialog}
       />
+
+      {/* 硬件相关对话框 */}
+      <ScanDialog open={scanDialogOpen} onOpenChange={setScanDialogOpen} />
+      <PrintDialog open={printDialogOpen} onOpenChange={setPrintDialogOpen} />
+      <HardwareDialog open={hardwareDialogOpen} onOpenChange={setHardwareDialogOpen} />
     </header>
   )
 }

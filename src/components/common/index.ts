@@ -10,3 +10,8 @@ export { StatusBar } from './StatusBar'
 export { ResizablePanel } from './ResizablePanel'
 export { OfflineIndicator } from './OfflineIndicator'
 export { DeviceSelector } from './DeviceSelector'
+
+// 硬件相关对话框
+export { ScanDialog } from './ScanDialog'
+export { PrintDialog } from './PrintDialog'
+export { HardwareDialog } from './HardwareDialog'

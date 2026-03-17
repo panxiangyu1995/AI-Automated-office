@@ -122,5 +122,9 @@ export function useNetworkStatus() {
     void syncPendingRequests()
   }, [status.isOnline, status.pendingSyncCount, syncPendingRequests])
 
-  return status
+  return {
+    ...status,
+    refreshPendingCount,
+    syncPendingRequests,
+  }
 }
