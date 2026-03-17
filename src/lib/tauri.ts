@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import type { QueuedRequest } from './api/types'
 
 /**
  * Tauri 命令封装
@@ -37,6 +38,30 @@ export const removeStorage = async (key: string): Promise<void> => {
 }
 
 // 网络状态
+/**
+ * 检测当前网络连通状态
+ */
 export const checkNetworkStatus = async (): Promise<boolean> => {
   return invoke('check_network_status')
+}
+
+export interface SyncResult {
+  id: string
+  success: boolean
+  status_code?: number
+  error?: string
+}
+
+/**
+ * 获取待同步的请求列表
+ */
+export const getPendingRequests = async (): Promise<QueuedRequest[]> => {
+  return invoke('get_pending_requests')
+}
+
+/**
+ * 处理待同步的请求并返回结果
+ */
+export const processPendingRequests = async (): Promise<SyncResult[]> => {
+  return invoke('process_pending_requests')
 }

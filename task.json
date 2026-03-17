@@ -170,7 +170,7 @@
       "arch_covered": ["ADR-005"],
       "ux_covered": [],
       "dependencies": ["Story 1.6"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 8,
@@ -218,7 +218,7 @@
       "arch_covered": ["ADR-014"],
       "ux_covered": [],
       "dependencies": ["Story 1.8"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 10,
@@ -288,7 +288,7 @@
       "arch_covered": ["ADR-003"],
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.8", "Story 1.10", "Story 1.11"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 13,
@@ -312,7 +312,7 @@
       "arch_covered": ["ADR-001"],
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.1"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 14,
@@ -335,7 +335,7 @@
       "arch_covered": ["ADR-001"],
       "ux_covered": ["UX-02", "UX-04"],
       "dependencies": ["Story 1.1"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 15,

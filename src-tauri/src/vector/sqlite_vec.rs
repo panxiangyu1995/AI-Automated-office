@@ -169,10 +169,13 @@ impl SqliteVecStore {
         content: &str,
         metadata: &serde_json::Value,
     ) -> Result<()> {
-        conn.execute("DELETE FROM text_index WHERE id = ?1;", params![id])?;
+        let metadata_string = metadata.to_string();
+        let delete_params: [&dyn rusqlite::ToSql; 1] = [&id];
+        conn.execute("DELETE FROM text_index WHERE id = ?1;", &delete_params)?;
+        let insert_params: [&dyn rusqlite::ToSql; 3] = [&id, &content, &metadata_string];
         conn.execute(
             "INSERT INTO text_index (id, content, metadata) VALUES (?1, ?2, ?3);",
-            params![id, content, metadata.to_string()],
+            &insert_params,
         )?;
         Ok(())
     }
@@ -195,7 +198,7 @@ impl VectorStore for SqliteVecStore {
                  ON CONFLICT(id) DO UPDATE SET embedding = excluded.embedding, content = excluded.content, metadata = excluded.metadata, created_at = excluded.created_at;",
                 params![id, vector.as_bytes(), content, metadata.to_string(), Self::current_timestamp()],
             )?;
-            Self::upsert_text_index(&conn, &id, &content, &metadata)?;
+            Self::upsert_text_index(&*conn, &id, &content, &metadata)?;
             Ok(())
         })
         .await?
@@ -205,7 +208,7 @@ impl VectorStore for SqliteVecStore {
         let conn = self.conn.clone();
         let dimension = self.dimension;
         tokio::task::spawn_blocking(move || {
-            let conn = conn.lock().map_err(|_| anyhow!("无法获取连接锁"))?;
+            let mut conn = conn.lock().map_err(|_| anyhow!("无法获取连接锁"))?;
             let tx = conn.transaction()?;
             for item in items {
                 if item.vector.len() != dimension {
@@ -307,18 +310,18 @@ impl VectorStore for SqliteVecStore {
 }
 
 trait TextIndexConnection {
-    fn execute(&self, sql: &str, params: impl rusqlite::Params) -> rusqlite::Result<usize>;
+    fn execute(&self, sql: &str, params: &[&dyn rusqlite::ToSql]) -> rusqlite::Result<usize>;
 }
 
 impl TextIndexConnection for rusqlite::Connection {
-    fn execute(&self, sql: &str, params: impl rusqlite::Params) -> rusqlite::Result<usize> {
-        self.execute(sql, params)
+    fn execute(&self, sql: &str, params: &[&dyn rusqlite::ToSql]) -> rusqlite::Result<usize> {
+        rusqlite::Connection::execute(self, sql, params)
     }
 }
 
 impl TextIndexConnection for rusqlite::Transaction<'_> {
-    fn execute(&self, sql: &str, params: impl rusqlite::Params) -> rusqlite::Result<usize> {
-        self.execute(sql, params)
+    fn execute(&self, sql: &str, params: &[&dyn rusqlite::ToSql]) -> rusqlite::Result<usize> {
+        rusqlite::Transaction::execute(self, sql, params)
     }
 }
 

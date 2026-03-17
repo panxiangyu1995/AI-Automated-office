@@ -2,3 +2,4 @@
 export { useTray, useWindowVisibility } from './useTray'
 export { useGlobalShortcuts, useShortcutListener } from './useGlobalShortcuts'
 export type { ShortcutConfig } from './useGlobalShortcuts'
+export { useHardware } from './useHardware'

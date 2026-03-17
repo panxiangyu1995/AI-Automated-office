@@ -2,7 +2,9 @@
 //!
 //! 本模块是 Tauri 应用的入口点，负责初始化应用和注册命令。
 
+mod auth;
 mod commands;
+mod hardware;
 mod http;
 mod network;
 mod shortcuts;
@@ -19,6 +21,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             // 初始化日志
             utils::logger::init_logger();
@@ -41,6 +44,17 @@ pub fn run() {
             // 初始化系统托盘
             tray::setup_tray(app.handle()).expect("无法初始化系统托盘");
             
+            // 初始化数据库和认证服务
+            tauri::async_runtime::block_on(async {
+                let pool = storage::sqlite::create_pool("default").await.expect("无法创建数据库连接池");
+                storage::migrations::run_migrations(&pool).await.expect("无法运行数据库迁移");
+                
+                let auth_service = auth::AuthService::new(pool);
+                auth_service.ensure_default_user().await.expect("无法初始化默认用户");
+                
+                app.manage(auth_service);
+            });
+            
             // 注册默认快捷键
             shortcuts::register_default_shortcuts(app.handle()).expect("无法注册默认快捷键");
 
@@ -62,6 +76,16 @@ pub fn run() {
             commands::shortcuts::update_shortcut,
             commands::shortcuts::check_shortcut_available,
             commands::shortcuts::get_registered_shortcuts,
+            commands::hardware::list_scanners,
+            commands::hardware::scan_document,
+            commands::hardware::list_printers,
+            commands::hardware::print_document,
+            commands::hardware::print_preview,
+            commands::update::check_update,
+            commands::update::download_and_install,
+            commands::auth::login,
+            commands::auth::logout,
+            commands::auth::get_current_user,
             http::commands::http_request,
             http::commands::http_get,
             http::commands::http_post,

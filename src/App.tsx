@@ -1,15 +1,31 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from './stores/appStore'
-import { AppLayout } from './components/common'
+import { AppLayout, OfflineIndicator } from './components/common'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { useUpdate } from './hooks/useUpdate'
 import { listen } from '@tauri-apps/api/event'
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert'
 import { Button } from './components/ui/button'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { LoginPage } from './features/auth/pages/LoginPage'
+import { AuthGuard } from './components/common/AuthGuard'
+import { UpdateDialog } from './components/common/UpdateDialog'
 
+/**
+ * 应用入口组件
+ */
 function App() {
   const { setInitialized } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [showTopBarHint, setShowTopBarHint] = useState(false)
+  const {
+    updateInfo,
+    downloading,
+    progress,
+    checkUpdate,
+    downloadAndInstall,
+    dismiss,
+  } = useUpdate()
 
   // 注册全局快捷键监听器
   useGlobalShortcuts()
@@ -60,6 +76,19 @@ function App() {
     initApp()
   }, [setInitialized])
 
+  /**
+   * 启动后自动检查更新
+   */
+  const handleAutoCheckUpdate = useCallback(async () => {
+    await checkUpdate()
+  }, [checkUpdate])
+
+  useEffect(() => {
+    if (!loading) {
+      void handleAutoCheckUpdate()
+    }
+  }, [loading, handleAutoCheckUpdate])
+
   useEffect(() => {
     const dismissed = localStorage.getItem('topbar-hint-dismissed')
     if (!dismissed) {
@@ -84,7 +113,8 @@ function App() {
   }
 
   return (
-    <>
+    <BrowserRouter>
+      <OfflineIndicator />
       {showTopBarHint && (
         <div className="fixed left-1/2 top-4 z-50 w-[520px] -translate-x-1/2">
           <Alert className="border-slate-200 bg-white shadow-lg">
@@ -100,8 +130,25 @@ function App() {
           </Alert>
         </div>
       )}
-      <AppLayout />
-    </>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/*"
+          element={
+            <AuthGuard>
+              <AppLayout />
+            </AuthGuard>
+          }
+        />
+      </Routes>
+      <UpdateDialog
+        updateInfo={updateInfo}
+        downloading={downloading}
+        progress={progress}
+        onDownload={downloadAndInstall}
+        onDismiss={dismiss}
+      />
+    </BrowserRouter>
   )
 }
 

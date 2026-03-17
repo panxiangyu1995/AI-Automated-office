@@ -281,12 +281,16 @@
                   "cornerRadius": 12,
                   "id": "ihj7f",
                   "name": "logoIcon",
-                  "fill": "#FFFFFF33",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../../src-tauri/icons/128x128.png",
+                    "mode": "fit"
+                  },
                   "width": 48,
                   "height": 48,
                   "stroke": {
-                    "thickness": 1,
-                    "fill": "#FFFFFF66"
+                    "thickness": 0
                   }
                 },
                 {

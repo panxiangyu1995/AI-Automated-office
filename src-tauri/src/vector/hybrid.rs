@@ -82,8 +82,8 @@ pub fn reciprocal_rank_fusion(
     let mut results: Vec<_> = scores
         .into_iter()
         .map(|(id, score)| SearchResult {
-            id,
             metadata: metadata_map.remove(&id).unwrap_or_default(),
+            id,
             score,
         })
         .collect();

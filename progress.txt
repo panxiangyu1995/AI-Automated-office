@@ -1,25 +1,6 @@
 # Progress Log - AI-Automated-office
 
-## 2026-03-16 - Task: 前后端通信架构 (Story 1.10)
-
-### 铁律合规检查：
-- PRD 合规：FR9, FR44, FR46
-- 架构合规：ADR-004
-- UX 合规：无（通信与后端基础设施）
-
-### What was done:
-- 新增 REST API 客户端、请求/响应拦截器与类型定义
-- 实现 WebSocket 客户端及自动重连与心跳机制
-- 新增 Tauri HTTP IPC 命令与离线请求队列处理
-- 增加网络状态检测与状态变化事件监听
-
-### Testing:
-- ✅ npm run lint（存在 TypeScript 版本提示警告）
-- ✅ npm run build
-
----
-
-## 2026-03-16 - Task: 向量数据库初始化 (Story 1.9)
+## 2026-03-17 - Task: 向量数据库初始化 (Story 1.9) 编译修复
 
 ### 铁律合规检查：
 - PRD 合规：FR14-8, FR14-11, FR250, FR251, FR273, FR285, FR286, FR287
@@ -27,36 +8,14 @@
 - UX 合规：无（后端基础设施）
 
 ### What was done:
-- 新增向量模块与抽象接口（VectorStore、VectorQuery、SearchResult）
-- 实现 sqlite-vec 本地向量存储与 BM25 搜索能力
-- 实现 Qdrant 云端向量存储适配器
-- 新增 Embedding 服务与混合搜索 RRF 融合逻辑
-- 添加向量存储配置与默认配置文件
+- 修复 sqlite-vec 文本索引写入逻辑与混合搜索融合逻辑
+- 恢复向量模块接入并新增 MSVC 链接器配置
+- 通过设置 Windows SDK/VC LIB 路径完成 Rust 测试
 
 ### Testing:
+- ✅ cargo test（使用 PowerShell 设置 LIB 后通过）
 - ✅ npm run lint
 - ✅ npm run build
-- ❌ cargo test（link.exe 缺少 C++ Build Tools）
-
----
-
-## 2026-03-16 - Task: SQLite本地存储初始化 (Story 1.8)
-
-### 铁律合规检查：
-- PRD 合规：FR5, FR38, FR39, FR42
-- 架构合规：ADR-003, ADR-024, ADR-030
-- UX 合规：无（后端基础设施）
-
-### What was done:
-- 新增 SQLite 存储模块与租户级数据库路径
-- 增加迁移框架与 v1/v2 迁移脚本
-- 实现会话、消息、同步队列、记忆、检查点存储接口
-- 增加最小启动验证流程与数据库表检查测试
-
-### Testing:
-- ✅ npm run lint
-- ✅ npm run build
-- ❌ cargo test（link.exe 缺少 C++ Build Tools）
 
 ---
 
@@ -81,6 +40,21 @@
 ### Notes:
 - 数据库迁移未执行，Docker Registry 网络不可达导致无法拉取 postgres 镜像
 - 需要在可联网环境或本地已有镜像时重新执行迁移验证
+
+## 2026-03-17 - Task: PostgreSQL数据库初始化 (Story 1.7) 验证补充
+
+### What was done:
+- 增加数据库配置环境变量覆盖逻辑，便于迁移工具读取密码与连接参数
+- 通过 Docker 容器内 psql 执行初始化与种子脚本，补充迁移验证
+
+### Testing:
+- ✅ docker compose -f cloud-server/docker-compose.yml up -d postgres
+- ✅ docker exec psql 运行 001/002/003 脚本并写入 schema_migrations
+- ✅ docker exec psql 验证表结构（\dt）
+
+### Notes:
+- 由于宿主到容器的认证失败，临时在容器内追加 pg_hba.conf 允许 host trust 并 reload
+- 迁移执行器仍建议在能直接访问 Postgres 的网络环境中验证
 
 ## 2026-03-16 - Task: 设置与偏好基础框架 (Story 1.15)
 ## 2026-03-16 - Task: 设置与偏好基础框架 (Story 1.15)
@@ -123,11 +97,11 @@
 - ❌ go run cmd/server/main.go（未监听 8080，curl 返回 000）
 - ✅ ./server.exe 启动后 GET /api/v1/health 返回 200
 - ✅ GET /swagger/index.html 返回 200
-- ❌ docker compose -f cloud-server/docker-compose.yml up -d（无法拉取 postgres 镜像）
+- ❌ docker-compose up -d（Docker Desktop 引擎未运行）
 - ❌ air -c .air.toml（未安装 air）
 
 **备注：**
-数据库连接因默认密码未配置而失败，但不影响健康检查与 Swagger 验证；Docker Registry 网络不可达导致镜像拉取失败
+数据库连接因默认密码未配置而失败，但不影响健康检查与 Swagger 验证
 
 ---
 

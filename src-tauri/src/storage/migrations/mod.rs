@@ -4,6 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 mod v1_initial;
 mod v2_context_summaries;
+mod v3_users;
 
 pub struct Migration {
     pub version: i64,
@@ -19,7 +20,11 @@ fn now_timestamp() -> i64 {
 }
 
 pub fn all_migrations() -> Vec<Migration> {
-    vec![v1_initial::migration(), v2_context_summaries::migration()]
+    vec![
+        v1_initial::migration(),
+        v2_context_summaries::migration(),
+        v3_users::migration(),
+    ]
 }
 
 pub async fn run_migrations(pool: &SqlitePool) -> Result<()> {

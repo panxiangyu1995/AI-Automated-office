@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -88,6 +89,50 @@ func Load() (Config, error) {
 
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	if envValue := os.Getenv("DB_HOST"); envValue != "" {
+		viper.Set("database.host", envValue)
+	} else if envValue := os.Getenv("DATABASE_HOST"); envValue != "" {
+		viper.Set("database.host", envValue)
+	}
+
+	if envValue := os.Getenv("DB_USER"); envValue != "" {
+		viper.Set("database.user", envValue)
+	} else if envValue := os.Getenv("DATABASE_USER"); envValue != "" {
+		viper.Set("database.user", envValue)
+	}
+
+	if envValue := os.Getenv("DB_NAME"); envValue != "" {
+		viper.Set("database.name", envValue)
+	} else if envValue := os.Getenv("DATABASE_NAME"); envValue != "" {
+		viper.Set("database.name", envValue)
+	}
+
+	if envValue := os.Getenv("DB_SSLMODE"); envValue != "" {
+		viper.Set("database.sslmode", envValue)
+	} else if envValue := os.Getenv("DATABASE_SSLMODE"); envValue != "" {
+		viper.Set("database.sslmode", envValue)
+	}
+
+	if envValue := os.Getenv("DB_PORT"); envValue != "" {
+		if portValue, err := strconv.Atoi(envValue); err == nil {
+			viper.Set("database.port", portValue)
+		}
+	} else if envValue := os.Getenv("DATABASE_PORT"); envValue != "" {
+		if portValue, err := strconv.Atoi(envValue); err == nil {
+			viper.Set("database.port", portValue)
+		}
+	}
+
+	passwordValue := os.Getenv("DB_PASSWORD")
+	if passwordValue == "" {
+		passwordValue = os.Getenv("DATABASE_PASSWORD")
+	}
+	if passwordValue != "" {
+		viper.Set("database.password", passwordValue)
+	} else if rawPassword := viper.GetString("database.password"); rawPassword == "" || strings.Contains(rawPassword, "${") {
+		viper.Set("database.password", "")
+	}
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {

@@ -8,36 +8,43 @@
 - **描述**: 创建 useNetworkStatus Hook
 - **文件**: `src/hooks/useNetworkStatus.ts`
 - **验收**: 可检测网络状态变化
+- [x] 已完成
 
 ### 任务 2: 创建离线提示组件
 - **描述**: 创建 OfflineIndicator 组件
 - **文件**: `src/components/common/OfflineIndicator.tsx`
 - **验收**: 离线时显示提示
+- [x] 已完成
 
 ### 任务 3: 实现同步队列
 - **描述**: 创建同步队列管理模块
 - **文件**: `src-tauri/src/sync/queue.rs`
 - **验收**: 可管理待同步数据
+- [x] 已完成
 
 ### 任务 4: 创建同步数据库表
 - **描述**: 创建 sync_queue 表
 - **文件**: `src-tauri/src/storage/migrations/`
 - **验收**: 数据库迁移成功
+- [x] 已完成
 
 ### 任务 5: 实现网络状态检测命令
 - **描述**: 创建 Tauri 命令检测网络状态
 - **文件**: `src-tauri/src/commands/network.rs`
 - **验收**: 可检测网络状态
+- [x] 已完成
 
 ### 任务 6: 创建同步状态组件
 - **描述**: 创建同步状态显示组件
 - **文件**: `src/components/common/SyncStatus.tsx`
 - **验收**: 显示同步进度
+- [x] 已完成
 
 ### 任务 7: 集成到应用
 - **描述**: 在 App.tsx 中集成离线提示
 - **文件**: `src/App.tsx`
 - **验收**: 离线提示正常显示
+- [x] 已完成
 
 ## 执行顺序
 

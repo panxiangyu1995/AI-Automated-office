@@ -1,4 +1,4 @@
-use crate::network::status::{check_network_status as probe, get_network_status, NetworkStatus};
+use crate::network::status::{check_network_status as probe, get_network_status as fetch_network_status, NetworkStatus};
 
 #[tauri::command]
 pub async fn check_network_status() -> bool {
@@ -7,5 +7,5 @@ pub async fn check_network_status() -> bool {
 
 #[tauri::command]
 pub async fn get_network_status() -> NetworkStatus {
-    get_network_status().await
+    fetch_network_status().await
 }

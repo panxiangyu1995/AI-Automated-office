@@ -1,11 +1,18 @@
+import type { ReactNode } from 'react'
+import { SyncStatus } from './SyncStatus'
+
 interface StatusBarProps {
   message?: string
+  rightContent?: ReactNode
 }
 
-export function StatusBar({ message = '系统就绪' }: StatusBarProps) {
+/**
+ * 渲染应用状态栏
+ */
+export function StatusBar({ message = '系统就绪', rightContent }: StatusBarProps) {
   return (
     <footer 
-      className="h-6 px-3 flex items-center flex-shrink-0"
+      className="h-6 px-3 flex items-center justify-between flex-shrink-0"
       style={{ backgroundColor: '#1E3A5F' }}
     >
       <span 
@@ -14,6 +21,10 @@ export function StatusBar({ message = '系统就绪' }: StatusBarProps) {
       >
         {message}
       </span>
+      <div className="flex items-center gap-2">
+        {rightContent}
+        <SyncStatus />
+      </div>
     </footer>
   )
 }
