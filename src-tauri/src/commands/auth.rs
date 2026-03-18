@@ -15,6 +15,19 @@ pub struct LoginResponse {
     token: String,
 }
 
+#[derive(Deserialize)]
+pub struct RegisterRequest {
+    username: String,
+    password: String,
+    name: String,
+    department: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct RegisterResponse {
+    user: User,
+}
+
 #[tauri::command]
 pub async fn login(
     request: LoginRequest,
@@ -26,6 +39,24 @@ pub async fn login(
         .map_err(|e| e.to_string())?;
 
     Ok(LoginResponse { user, token })
+}
+
+#[tauri::command]
+pub async fn register(
+    request: RegisterRequest,
+    auth_service: State<'_, AuthService>,
+) -> Result<RegisterResponse, String> {
+    let user = auth_service
+        .register(
+            &request.username,
+            &request.password,
+            &request.name,
+            request.department.as_deref(),
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(RegisterResponse { user })
 }
 
 #[tauri::command]

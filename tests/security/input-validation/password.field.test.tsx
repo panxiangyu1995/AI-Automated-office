@@ -14,7 +14,7 @@ vi.mock('react-router-dom', async () => {
 describe('security input validation', () => {
   it('renders password input as password type', () => {
     render(<LoginForm />)
-    const input = screen.getByPlaceholderText('密码')
+    const input = screen.getByLabelText('密码')
     expect(input).toHaveAttribute('type', 'password')
   })
 })

@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-shell'
+import { useNavigate } from 'react-router-dom'
 import {
   Bot,
+  CircleUserRound,
   Edit3,
   Eye,
   FileText,
@@ -14,8 +16,10 @@ import {
   PanelRight,
   Printer,
   Puzzle,
+  RefreshCw,
   Scan,
   Settings,
+  LogOut,
   Wrench,
 } from 'lucide-react'
 import { ScanDialog } from './ScanDialog'
@@ -25,6 +29,7 @@ import {
   Menubar,
   MenubarContent,
   MenubarItem,
+  MenubarLabel,
   MenubarMenu,
   MenubarSeparator,
   MenubarShortcut,
@@ -33,6 +38,7 @@ import {
 import { Button } from '../ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { useUIStore } from '../../stores/uiStore'
+import { useAuthStore } from '../../stores/authStore'
 
 interface TopBarProps {
   visible: boolean
@@ -41,6 +47,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
+  const navigate = useNavigate()
   const {
     sidebarCollapsed,
     chatPanelCollapsed,
@@ -50,6 +57,7 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     toggleBottomPanel,
     setActiveActivityItem,
   } = useUIStore()
+  const { user, isAuthenticated, clearAuthSession, switchAccount } = useAuthStore()
 
   // 硬件对话框状态
   const [scanDialogOpen, setScanDialogOpen] = useState(false)
@@ -68,8 +76,6 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   const handleOpenHardwareDialog = useCallback(() => {
     setHardwareDialogOpen(true)
   }, [])
-
-  if (!visible) return null
 
   const handleMenuAction = (label: string, handler?: () => void | Promise<void>) => {
     return (event?: Event) => {
@@ -103,6 +109,22 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   const handleOpenSettings = () => {
     setActiveActivityItem('settings')
   }
+
+  const navigateToLogin = useCallback(() => {
+    navigate('/login', { replace: true })
+  }, [navigate])
+
+  const handleSwitchAccount = useCallback(() => {
+    switchAccount()
+    navigateToLogin()
+  }, [switchAccount, navigateToLogin])
+
+  const handleLogout = useCallback(() => {
+    clearAuthSession()
+    navigateToLogin()
+  }, [clearAuthSession, navigateToLogin])
+
+  if (!visible) return null
 
   return (
     <header className="h-8 bg-[#1E3A5F] border-b border-[#152A45] flex items-center justify-between px-2 select-none">
@@ -382,21 +404,109 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
         </Menubar>
       </div>
 
-      <LayoutControlButtons
-        sidebarCollapsed={sidebarCollapsed}
-        chatPanelCollapsed={chatPanelCollapsed}
-        bottomPanelCollapsed={bottomPanelCollapsed}
-        toggleSidebar={toggleSidebar}
-        toggleChatPanel={toggleChatPanel}
-        toggleBottomPanel={toggleBottomPanel}
-        onOpenLayoutDialog={handleOpenLayoutDialog}
-      />
+      <div className="flex items-center gap-2">
+        <AccountMenu
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onNavigateToLogin={navigateToLogin}
+          onSwitchAccount={handleSwitchAccount}
+          onLogout={handleLogout}
+          handleMenuAction={handleMenuAction}
+        />
+        <LayoutControlButtons
+          sidebarCollapsed={sidebarCollapsed}
+          chatPanelCollapsed={chatPanelCollapsed}
+          bottomPanelCollapsed={bottomPanelCollapsed}
+          toggleSidebar={toggleSidebar}
+          toggleChatPanel={toggleChatPanel}
+          toggleBottomPanel={toggleBottomPanel}
+          onOpenLayoutDialog={handleOpenLayoutDialog}
+        />
+      </div>
 
       {/* 硬件相关对话框 */}
       <ScanDialog open={scanDialogOpen} onOpenChange={setScanDialogOpen} />
       <PrintDialog open={printDialogOpen} onOpenChange={setPrintDialogOpen} />
       <HardwareDialog open={hardwareDialogOpen} onOpenChange={setHardwareDialogOpen} />
     </header>
+  )
+}
+
+interface AccountMenuProps {
+  isAuthenticated: boolean
+  user: {
+    username: string
+    name: string
+    department: string
+    role: string
+  } | null
+  onNavigateToLogin: () => void
+  onSwitchAccount: () => void
+  onLogout: () => void
+  handleMenuAction: (label: string, handler?: () => void | Promise<void>) => (event?: Event) => void
+}
+
+function AccountMenu({
+  isAuthenticated,
+  user,
+  onNavigateToLogin,
+  onSwitchAccount,
+  onLogout,
+  handleMenuAction,
+}: AccountMenuProps) {
+  const resolveField = (value: string | undefined, placeholder: string) => {
+    if (!value || value.trim().length === 0) {
+      return placeholder
+    }
+    return value
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 text-white hover:bg-[#2A4A73]"
+        aria-label="登录账号"
+        onClick={onNavigateToLogin}
+      >
+        <CircleUserRound size={16} />
+      </Button>
+    )
+  }
+
+  return (
+    <Menubar className="h-auto border-none bg-transparent p-0">
+      <MenubarMenu>
+        <MenubarTrigger
+          aria-label="账号菜单"
+          className="h-6 w-6 justify-center rounded-md p-0 text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]"
+        >
+          <CircleUserRound size={16} />
+        </MenubarTrigger>
+        <MenubarContent align="end" sideOffset={8} className="min-w-[240px]">
+          <MenubarLabel className="text-xs text-muted-foreground">当前账号</MenubarLabel>
+          <div className="rounded-md bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-600">
+            <div>用户名：{resolveField(user?.username, '未设置用户名')}</div>
+            <div>姓名：{resolveField(user?.name, '未设置姓名')}</div>
+            <div>部门：{resolveField(user?.department, '未设置部门')}</div>
+            <div>角色：{resolveField(user?.role, '未设置角色')}</div>
+          </div>
+          <MenubarSeparator />
+          <MenubarItem onSelect={handleMenuAction('Account: Switch Account', onSwitchAccount)}>
+            <RefreshCw size={14} className="mr-2" />
+            切换账号
+          </MenubarItem>
+          <MenubarItem
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+            onSelect={handleMenuAction('Account: Logout', onLogout)}
+          >
+            <LogOut size={14} className="mr-2" />
+            退出登录
+          </MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
+    </Menubar>
   )
 }
 

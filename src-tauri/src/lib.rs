@@ -84,6 +84,7 @@ pub fn run() {
             commands::update::check_update,
             commands::update::download_and_install,
             commands::auth::login,
+            commands::auth::register,
             commands::auth::logout,
             commands::auth::get_current_user,
             http::commands::http_request,

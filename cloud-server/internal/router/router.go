@@ -34,12 +34,19 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		Version: "1.0.0",
 		SQLDB:   sqlDB,
 	}
+	authHandler := &handler.AuthHandler{
+		SQLDB: sqlDB,
+		JWT:   cfg.JWT,
+	}
 
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.Health)
 		v1.GET("/health/liveness", healthHandler.Liveness)
 		v1.GET("/health/readiness", healthHandler.Readiness)
+		v1.POST("/auth/login", authHandler.Login)
+		v1.POST("/auth/register", authHandler.Register)
+		v1.POST("/auth/forgot-password", authHandler.ForgotPassword)
 	}
 
 	return r

@@ -19,7 +19,6 @@
 ```typescript
 // src/features/auth/components/LoginForm.tsx
 import { useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,12 +48,18 @@ export function LoginForm() {
     setLoading(true)
 
     try {
-      const user = await invoke('login', {
-        username: credentials.username,
-        password: credentials.password,
-        rememberMe: credentials.rememberMe,
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password,
+          remember_me: credentials.rememberMe,
+        }),
       })
-      setUser(user)
+      const result = await response.json()
+      setUser(result.data.user)
+      setToken(result.data.token)
       navigate('/')
     } catch (err) {
       setError('账号或密码错误')
@@ -98,48 +103,30 @@ export function LoginForm() {
 }
 ```
 
-### 后端实现（Rust）
+### 后端实现（Go/cloud-server）
 
-```rust
-// src-tauri/src/commands/auth.rs
-use serde::{Deserialize, Serialize};
-use tauri::State;
-use crate::auth::{AuthService, User};
-
-#[derive(Deserialize)]
-pub struct LoginRequest {
-    username: String,
-    password: String,
-    remember_me: bool,
+```go
+// cloud-server/internal/handler/auth.go
+type AuthHandler struct {
+    SQLDB *sql.DB
+    JWT   config.JWTConfig
 }
 
-#[derive(Serialize)]
-pub struct LoginResponse {
-    user: User,
-    token: String,
+func (h *AuthHandler) Login(c *gin.Context) {
+    var req LoginRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        response.Error(c, http.StatusBadRequest, "ERR_INVALID_INPUT", "请求参数错误", nil)
+        return
+    }
+    // 查询 users 表、校验 bcrypt、签发 JWT
 }
 
-#[tauri::command]
-pub async fn login(
-    request: LoginRequest,
-    auth_service: State<'_, AuthService>,
-) -> Result<LoginResponse, String> {
-    auth_service
-        .login(&request.username, &request.password, request.remember_me)
-        .await
-        .map_err(|e| e.to_string())
+func (h *AuthHandler) Register(c *gin.Context) {
+    // 校验账号唯一性并写入 users 表
 }
 
-#[tauri::command]
-pub async fn logout(auth_service: State<'_, AuthService>) -> Result<(), String> {
-    auth_service.logout().await.map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub async fn get_current_user(
-    auth_service: State<'_, AuthService>,
-) -> Result<Option<User>, String> {
-    auth_service.get_current_user().await.map_err(|e| e.to_string())
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+    // 受理忘记密码请求，返回统一受理结果
 }
 ```
 
@@ -190,9 +177,9 @@ export const useAuthStore = create<AuthState>()(
 ## 安全设计
 
 1. **密码传输**: 使用 TLS 1.3 加密传输
-2. **密码存储**: bcrypt 加密，强度因子 >= 12
-3. **Token 管理**: JWT Token，有效期 30 分钟
-4. **本地存储**: Token 使用系统安全存储（Keychain/Credential Manager）
+2. **密码存储**: Go 云端使用 bcrypt 加密存储
+3. **Token 管理**: JWT Token，由云端签发
+4. **接口安全**: 忘记密码接口返回统一文案避免账号枚举
 
 ## 性能考虑
 

@@ -1,5 +1,29 @@
 # Progress Log - AI-Automated-office
 
+## 2026-03-18 - Task: TopBar 账号菜单与认证动作闭环（epic-1-story-11-auth-topbar-account-menu）
+
+### 铁律合规检查：
+- PRD 合规：FR8-1（TopBar 统一入口）、FR27（登录态与退出流程）
+- 架构合规：沿用 React + Zustand 认证状态管理，不跨越模块边界；复用 AuthGuard 登录兜底逻辑
+- UX 合规：账号入口位于 TopBar，沿用品牌色体系与 Lucide 图标；菜单文案与占位策略符合可用性要求
+- Epic 合规：Epic 1 / Story 1.11 认证体验补全（账号入口、切换账号、退出登录）
+
+### What was done:
+- 在 `TopBar` 增加账号图标入口和账号菜单，包含账号信息、切换账号、退出登录
+- 增加未登录入口行为：点击账号入口直接跳转 `/login`
+- 在 `authStore` 增加统一会话清理动作 `clearAuthSession`，并新增 `switchAccount` 复用同一清理流程
+- 新增 `tests/integration/auth/account-menu.test.tsx`，覆盖信息展示、字段占位、切换账号、退出登录、未登录入口行为
+- 更新 OpenSpec change 任务清单：`openspec/changes/epic-1-story-11-auth-topbar-account-menu/tasks.md` 全部勾选完成
+
+### Testing:
+- ✅ `npx.cmd vitest run --config vitest.config.ts tests/integration/auth/account-menu.test.tsx`
+- ✅ `npm.cmd run lint`
+- ✅ `npm.cmd run build`
+
+### Notes:
+- `./init.sh` 在当前 PowerShell 环境中因执行限制无法直接运行（已尝试 `bash ./init.sh`，受环境权限限制失败）
+- `openspec.cmd` 可正常执行，已完成变更状态读取与任务应用流程
+
 ## 2026-03-17 - Task: 向量数据库 (Story 1.9) Bug修复与验收测试
 
 ### 铁律合规检查：

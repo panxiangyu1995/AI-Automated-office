@@ -19,10 +19,10 @@
 - **文件**: `src/stores/authStore.ts`
 - **验收**: 认证状态可管理
 
-### 任务 4: 实现后端认证模块
-- **描述**: 创建 Rust 认证服务和命令
-- **文件**: `src-tauri/src/auth/`, `src-tauri/src/commands/auth.rs`
-- **验收**: 可处理登录请求
+### 任务 4: 实现云端认证模块
+- **描述**: 在 cloud-server 实现登录与注册接口
+- **文件**: `cloud-server/internal/handler/`, `cloud-server/internal/router/router.go`
+- **验收**: 可处理登录与注册请求
 
 ### 任务 5: 实现路由守卫
 - **描述**: 创建路由守卫组件
@@ -35,9 +35,9 @@
 - **验收**: 记住我功能生效
 
 ### 任务 7: 添加忘记密码入口
-- **描述**: 添加忘记密码链接（仅 UI）
-- **文件**: `src/features/auth/components/LoginForm.tsx`
-- **验收**: 链接可点击
+- **描述**: 添加忘记密码请求调用
+- **文件**: `src/features/auth/components/LoginForm.tsx`, `cloud-server/internal/handler/`
+- **验收**: 点击后调用云端受理接口并展示提示
 
 ## 执行顺序
 
@@ -51,6 +51,8 @@
 - [x] 登录页面正常显示
 - [x] 正确账号密码登录成功
 - [x] 错误账号密码显示错误提示
+- [x] 注册请求由云端接口处理
+- [x] 忘记密码请求由云端接口处理
 - [x] 记住我功能生效
 - [x] 未登录时重定向到登录页
 - [x] 登录后跳转到主页

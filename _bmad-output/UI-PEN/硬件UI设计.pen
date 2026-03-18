@@ -1,5 +1,5 @@
 {
-  "version": "2.8",
+  "version": "2.9",
   "children": [
     {
       "type": "frame",
@@ -11,7 +11,152 @@
       "width": 800,
       "height": 600,
       "fill": "#FFFFFF",
-      "layout": "none"
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Ijggd",
+          "x": -116,
+          "y": 325,
+          "name": "Scan Dialog",
+          "width": 700,
+          "height": 550,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "fduS4",
+              "name": "Update Dialog",
+              "width": 400,
+              "height": 320,
+              "fill": "#FFFFFF",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 16,
+                  "id": "BG9GB",
+                  "name": "updateIcon",
+                  "fill": "#EFF6FF",
+                  "width": 64,
+                  "height": 64
+                },
+                {
+                  "type": "frame",
+                  "id": "0MbK0",
+                  "name": "updateTitle",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GJXLR",
+                      "name": "uTitleText",
+                      "fill": "#1E293B",
+                      "content": "发现新版本",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qVMf3",
+                      "name": "uVersion",
+                      "fill": "#2563EB",
+                      "content": "v2.1.0",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "N8KDy",
+                      "name": "uDesc",
+                      "fill": "#64748B",
+                      "content": "包含多项性能优化和新功能",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 4,
+                  "id": "Z3ejZ",
+                  "name": "uProgress",
+                  "fill": "#F1F5F9",
+                  "width": 336,
+                  "height": 8
+                },
+                {
+                  "type": "frame",
+                  "id": "1rcZp",
+                  "name": "uActions",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tckJh",
+                      "name": "uLaterBtn",
+                      "fill": "#F8FAFC",
+                      "cornerRadius": 8,
+                      "padding": [
+                        10,
+                        24
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eIXMR",
+                          "name": "uLaterText",
+                          "fill": "#64748B",
+                          "content": "稍后",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "8q3gg",
+                      "name": "uNowBtn",
+                      "fill": "#2563EB",
+                      "cornerRadius": 8,
+                      "padding": [
+                        10,
+                        24
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YBLu2",
+                          "name": "uNowText",
+                          "fill": "#FFFFFF",
+                          "content": "立即更新",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "frame",
@@ -730,149 +875,6 @@
     },
     {
       "type": "frame",
-      "id": "Ijggd",
-      "x": -147,
-      "y": 50,
-      "name": "Scan Dialog",
-      "width": 700,
-      "height": 550,
-      "fill": "#FFFFFF",
-      "cornerRadius": 12,
-      "children": [
-        {
-          "type": "frame",
-          "id": "fduS4",
-          "name": "Update Dialog",
-          "width": 400,
-          "height": 320,
-          "fill": "#FFFFFF",
-          "cornerRadius": 12,
-          "layout": "vertical",
-          "gap": 24,
-          "padding": 32,
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "rectangle",
-              "cornerRadius": 16,
-              "id": "BG9GB",
-              "name": "updateIcon",
-              "fill": "#EFF6FF",
-              "width": 64,
-              "height": 64
-            },
-            {
-              "type": "frame",
-              "id": "0MbK0",
-              "name": "updateTitle",
-              "layout": "vertical",
-              "gap": 8,
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "GJXLR",
-                  "name": "uTitleText",
-                  "fill": "#1E293B",
-                  "content": "发现新版本",
-                  "fontFamily": "Inter",
-                  "fontSize": 20,
-                  "fontWeight": "bold"
-                },
-                {
-                  "type": "text",
-                  "id": "qVMf3",
-                  "name": "uVersion",
-                  "fill": "#2563EB",
-                  "content": "v2.1.0",
-                  "fontFamily": "Inter",
-                  "fontSize": 16,
-                  "fontWeight": "600"
-                },
-                {
-                  "type": "text",
-                  "id": "N8KDy",
-                  "name": "uDesc",
-                  "fill": "#64748B",
-                  "content": "包含多项性能优化和新功能",
-                  "textAlign": "center",
-                  "fontFamily": "Inter",
-                  "fontSize": 14,
-                  "fontWeight": "normal"
-                }
-              ]
-            },
-            {
-              "type": "rectangle",
-              "cornerRadius": 4,
-              "id": "Z3ejZ",
-              "name": "uProgress",
-              "fill": "#F1F5F9",
-              "width": 336,
-              "height": 8
-            },
-            {
-              "type": "frame",
-              "id": "1rcZp",
-              "name": "uActions",
-              "width": "fill_container",
-              "gap": 12,
-              "justifyContent": "center",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "tckJh",
-                  "name": "uLaterBtn",
-                  "fill": "#F8FAFC",
-                  "cornerRadius": 8,
-                  "padding": [
-                    10,
-                    24
-                  ],
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "eIXMR",
-                      "name": "uLaterText",
-                      "fill": "#64748B",
-                      "content": "稍后",
-                      "fontFamily": "Inter",
-                      "fontSize": 14,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "8q3gg",
-                  "name": "uNowBtn",
-                  "fill": "#2563EB",
-                  "cornerRadius": 8,
-                  "padding": [
-                    10,
-                    24
-                  ],
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "YBLu2",
-                      "name": "uNowText",
-                      "fill": "#FFFFFF",
-                      "content": "立即更新",
-                      "fontFamily": "Inter",
-                      "fontSize": 14,
-                      "fontWeight": "500"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "frame",
       "id": "Lz5UC",
       "x": 618,
       "y": 50,
@@ -1093,6 +1095,199 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "GL3FD",
+      "x": 0,
+      "y": 0,
+      "name": "Empty State Template",
+      "width": "fill_container(0)",
+      "fill": "#F8FAFC",
+      "cornerRadius": 12,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 32,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "rectangle",
+          "cornerRadius": 24,
+          "id": "Ye4yn",
+          "name": "emptyIcon",
+          "fill": "#E2E8F0",
+          "width": 48,
+          "height": 48
+        },
+        {
+          "type": "text",
+          "id": "xHH1H",
+          "name": "emptyTitle",
+          "fill": "#334155",
+          "content": "未检测到任何设备",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "nF9vU",
+          "name": "emptyDesc",
+          "fill": "#64748B",
+          "content": "请确保扫描仪或打印机已正确连接并开启电源",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "XPlnV",
+          "name": "retryBtn",
+          "fill": "#FFFFFF",
+          "cornerRadius": 6,
+          "padding": [
+            8,
+            16
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "5pAAX",
+              "name": "retryText",
+              "fill": "#1E293B",
+              "content": "重新检测",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "bKo4S",
+      "x": 0,
+      "y": 0,
+      "name": "Error State Template",
+      "width": "fill_container(0)",
+      "height": "fit_content(112)",
+      "fill": "#FEF2F2",
+      "cornerRadius": 12,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 32,
+      "justifyContent": "center",
+      "alignItems": "center"
+    },
+    {
+      "type": "frame",
+      "id": "THYzN",
+      "x": 0,
+      "y": 0,
+      "name": "Loading State Template",
+      "width": "fill_container(0)",
+      "height": "fill_container(0)",
+      "layout": "vertical",
+      "gap": 16,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "t4OY5",
+          "name": "spinnerBox",
+          "width": 48,
+          "height": 48,
+          "fill": "#FFFFFF",
+          "cornerRadius": 24,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "ellipse",
+              "id": "YIf8y",
+              "name": "spinner",
+              "fill": "#2563EB",
+              "width": 24,
+              "height": 24
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "fAlkN",
+          "name": "loadingText",
+          "fill": "#64748B",
+          "content": "正在检测硬件设备...",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "jhhHy",
+      "x": -169,
+      "y": -53,
+      "name": "errorDesc",
+      "fill": "#B91C1C",
+      "content": "网络错误或服务不可用",
+      "textAlign": "center",
+      "fontFamily": "Inter",
+      "fontSize": 12,
+      "fontWeight": "normal"
+    },
+    {
+      "type": "text",
+      "id": "vsVKz",
+      "x": -169,
+      "y": 62,
+      "name": "errorTitle",
+      "fill": "#991B1B",
+      "content": "设备加载失败",
+      "fontFamily": "Inter",
+      "fontSize": 14,
+      "fontWeight": "500"
+    },
+    {
+      "type": "frame",
+      "id": "kWttG",
+      "x": -175,
+      "y": 168,
+      "name": "retryBtnErr",
+      "fill": "#FFFFFF",
+      "cornerRadius": 6,
+      "padding": [
+        8,
+        16
+      ],
+      "children": [
+        {
+          "type": "text",
+          "id": "f1BU0",
+          "name": "retryTextErr",
+          "fill": "#991B1B",
+          "content": "重试",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "rectangle",
+      "cornerRadius": 24,
+      "id": "RGfAG",
+      "x": -127,
+      "y": -4,
+      "name": "errorIcon",
+      "fill": "#FEE2E2",
+      "width": 48,
+      "height": 48
     }
   ]
 }
