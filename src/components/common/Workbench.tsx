@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { Outlet } from 'react-router-dom'
 import { useUIStore } from '../../stores/uiStore'
 import { SettingsPanel } from '../../features/settings/components/SettingsPanel'
 
@@ -29,6 +30,10 @@ export function Workbench({ children, className = '' }: WorkbenchProps) {
       className={`flex-1 overflow-auto ${className}`}
       style={{ backgroundColor: '#F8FAFC' }}
     >
+      {/* Render nested routes via Outlet */}
+      <Outlet />
+      
+      {/* Fallback content when no nested route matches */}
       {children || (
         <div className="h-full flex flex-col items-center justify-center p-8">
           <h2 className="text-2xl font-bold text-slate-800 mb-2">

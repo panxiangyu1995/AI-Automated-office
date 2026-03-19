@@ -11,6 +11,7 @@ import { Button } from './components/ui/button'
 import { LoginPage } from './features/auth/pages/LoginPage'
 import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
+import { UserListPage, UserCreatePage, UserEditPage } from './features/admin/pages'
 
 function App() {
   const { setInitialized } = useAppStore()
@@ -120,7 +121,12 @@ function App() {
               <AppLayout />
             </AuthGuard>
           }
-        />
+        >
+          {/* Admin routes - rendered via Outlet in Workbench */}
+          <Route path="admin/users" element={<UserListPage />} />
+          <Route path="admin/users/create" element={<UserCreatePage />} />
+          <Route path="admin/users/:id/edit" element={<UserEditPage />} />
+        </Route>
       </Routes>
       <UpdateDialog
         updateInfo={updateInfo}

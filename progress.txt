@@ -1,5 +1,41 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-19] - Task: User Admin UI (epic-2-story-2-2-user-admin-ui)
+
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR28 - ç”¨æˆ·ä¸å‘˜å·¥æ¡£æ¡ˆç®¡ç†å‰ç«¯ç•Œé¢åŸºçº¿]
+- æ¶æ„åˆè§„ï¼š[ADR-001 React + TypeScript + Shadcn/ui æŠ€æœ¯æ ˆ]
+- UX åˆè§„ï¼š[UX-02 ç»„ä»¶åº“ã€UX-04 é¢œè‰²ç³»ç»Ÿã€Lucide React å›¾æ ‡]
+
+### What was done:
+- åˆ›å»º `src/features/admin/` æ¨¡å—ç»“æ„ï¼š
+  - `types/user.types.ts` - ç”¨æˆ·ç±»å‹å®šä¹‰ï¼ˆUserã€Departmentã€Roleã€API è¯·æ±‚/å“åº”ç±»å‹ï¼‰
+  - `api/userApi.ts` - API è°ƒç”¨å°è£…ï¼ˆç”¨æˆ·åˆ—è¡¨ã€åˆ›å»ºã€æ›´æ–°ã€çŠ¶æ€å˜æ›´ï¼‰
+  - `hooks/useUsers.ts` - ç”¨æˆ·æ•°æ® Hookï¼ˆåˆ†é¡µåŠ è½½ã€ç­›é€‰å‚æ•°ç®¡ç†ï¼‰
+  - `hooks/useUserMutations.ts` - ç”¨æˆ·å˜æ›´ Hookï¼ˆåˆ›å»ºã€æ›´æ–°ã€çŠ¶æ€å˜æ›´ mutationï¼‰
+  - `components/UserStatusBadge.tsx` - çŠ¶æ€å¾½ç« ç»„ä»¶ï¼ˆå¯ç”¨/åœç”¨/é”å®šæ ·å¼ï¼‰
+  - `components/UserTable.tsx` - ç”¨æˆ·æ•°æ®è¡¨æ ¼ç»„ä»¶
+  - `components/UserFilters.tsx` - ç­›é€‰å™¨ç»„ä»¶ï¼ˆå§“åã€å·¥å·ã€éƒ¨é—¨ã€çŠ¶æ€ï¼‰
+  - `components/UserForm.tsx` - ç”¨æˆ·è¡¨å•ç»„ä»¶ï¼ˆåˆ›å»º/ç¼–è¾‘æ¨¡å¼ï¼‰
+  - `pages/UserListPage.tsx` - ç”¨æˆ·åˆ—è¡¨é¡µ
+  - `pages/UserCreatePage.tsx` - åˆ›å»ºç”¨æˆ·é¡µ
+  - `pages/UserEditPage.tsx` - ç¼–è¾‘ç”¨æˆ·é¡µ
+- æ›´æ–° `src/components/common/Workbench.tsx` - æ·»åŠ  Outlet æ”¯æŒåµŒå¥—è·¯ç”±
+- æ›´æ–° `src/App.tsx` - æ·»åŠ ç”¨æˆ·ç®¡ç†è·¯ç”±å®šä¹‰
+
+### Testing:
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- Dev server å¯åŠ¨æ­£å¸¸ï¼ˆç«¯å£ 1420ï¼‰
+
+### Notes:
+- é¡µé¢ç¬¦åˆ UX è®¾è®¡è§„èŒƒï¼Œä½¿ç”¨ Shadcn/ui ç»„ä»¶å’Œ Lucide React å›¾æ ‡
+- é¢œè‰²ç³»ç»Ÿç¬¦åˆå“ç‰Œè‰² #1E3A5F å’ŒçŠ¶æ€è‰²è§„èŒƒ
+- æ”¯æŒå“åº”å¼è®¾è®¡
+- E2E æµ‹è¯•éœ€è¦åç«¯ API å¯åŠ¨åå®Œæ•´éªŒè¯
+
+---
+
 ## [2026-03-19] - Task: Local session cache wrapper (epic-2-story-2-1-local-session-cache)
 
 ### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
@@ -404,84 +440,84 @@
 
 ## [2026-03-19] - Task: Login API and Password Policy (epic-2-story-2-1-login-password-policy)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR27 - ÓÃ»§µÇÂ¼ÈÏÖ¤]
-- ¼Ü¹¹ºÏ¹æ£º[ADR-005 Go Cloud Layer DDD ¼Ü¹¹]
-- UX ºÏ¹æ£º[ÎŞÖ±½Ó UI ±ä¸ü£¬ºó¶Ë»ù´¡ÉèÊ©]
+### ï¿½ï¿½ï¿½ÉºÏ¹ï¿½ï¿½é£º
+- PRD ï¿½Ï¹æ£º[FR27 - ï¿½Ã»ï¿½ï¿½ï¿½Â¼ï¿½ï¿½Ö¤]
+- ï¿½Ü¹ï¿½ï¿½Ï¹æ£º[ADR-005 Go Cloud Layer DDD ï¿½Ü¹ï¿½]
+- UX ï¿½Ï¹æ£º[ï¿½ï¿½Ö±ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë»ï¿½ï¿½ï¿½ï¿½ï¿½Ê©]
 
 ### What was done:
-- ´´½¨Êı¾İ¿âÇ¨ÒÆ£º
-  - cloud-server/migrations/004_login_attempts.up.sql - Ìí¼Ó failed_login_count¡¢locked_until ×Ö¶Î£¬´´½¨ login_attempts ±í
-  - cloud-server/migrations/004_login_attempts.down.sql - »Ø¹ö½Å±¾
-- ¸üĞÂ internal/model/user.go - Ìí¼Ó FailedLoginCount ºÍ LockedUntil ×Ö¶Î
-- ´´½¨ internal/module/auth/domain/entity/login_attempt.go - µÇÂ¼³¢ÊÔÊµÌå
-- ´´½¨ internal/module/auth/domain/repository/login_attempt_repository.go - µÇÂ¼³¢ÊÔ²Ö´¢½Ó¿Ú
-- ´´½¨ internal/module/auth/infrastructure/persistence/login_attempt_repository.go - µÇÂ¼³¢ÊÔ²Ö´¢ÊµÏÖ
-- ´´½¨ internal/module/auth/domain/service/lock_policy_service.go - Ëø¶¨²ßÂÔ·şÎñ
-- ´´½¨ internal/module/auth/domain/service/permission_service.go - È¨ÏŞ²éÑ¯·şÎñ
-- ¸üĞÂ internal/module/auth/application/dto/login_response.go - Ìí¼Ó PermissionInfo ºÍ RoleInfo ÀàĞÍ
-- ÍêÕûÊµÏÖ internal/module/auth/application/service/auth_service.go - µÇÂ¼·şÎñÂß¼­£º
-  - ÓÃ»§²éÕÒÓëÑéÖ¤
-  - ÕË»§×´Ì¬¼ì²é£¨½ûÓÃ/Ëø¶¨£©
-  - ÃÜÂëÑéÖ¤£¨bcrypt£©
-  - Ê§°Ü¼ÆÊıÓëËø¶¨²ßÂÔ
-  - JWT Token Éú³É
-  - »á»°´´½¨
-  - È¨ÏŞÕªÒª²éÑ¯
-  - Éó¼ÆÈÕÖ¾¼ÇÂ¼
-- ¸üĞÂ internal/module/auth/interface/handler/auth_handler.go - ÍêÉÆ´íÎóÏìÓ¦´¦Àí
-- ¸üĞÂ internal/module/auth/module.go - ÒÀÀµ×¢ÈëÓëÄ£¿é×é×°
-- ´´½¨µ¥Ôª²âÊÔ£º
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¿ï¿½Ç¨ï¿½Æ£ï¿½
+  - cloud-server/migrations/004_login_attempts.up.sql - ï¿½ï¿½ï¿½ï¿½ failed_login_countï¿½ï¿½locked_until ï¿½Ö¶Î£ï¿½ï¿½ï¿½ï¿½ï¿½ login_attempts ï¿½ï¿½
+  - cloud-server/migrations/004_login_attempts.down.sql - ï¿½Ø¹ï¿½ï¿½Å±ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/model/user.go - ï¿½ï¿½ï¿½ï¿½ FailedLoginCount ï¿½ï¿½ LockedUntil ï¿½Ö¶ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/domain/entity/login_attempt.go - ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/domain/repository/login_attempt_repository.go - ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ô²Ö´ï¿½ï¿½Ó¿ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/infrastructure/persistence/login_attempt_repository.go - ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ô²Ö´ï¿½Êµï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/domain/service/lock_policy_service.go - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô·ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/domain/service/permission_service.go - È¨ï¿½Ş²ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/application/dto/login_response.go - ï¿½ï¿½ï¿½ï¿½ PermissionInfo ï¿½ï¿½ RoleInfo ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ internal/module/auth/application/service/auth_service.go - ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½
+  - ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤
+  - ï¿½Ë»ï¿½×´Ì¬ï¿½ï¿½é£¨ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½bcryptï¿½ï¿½
+  - Ê§ï¿½Ü¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - JWT Token ï¿½ï¿½ï¿½ï¿½
+  - ï¿½á»°ï¿½ï¿½ï¿½ï¿½
+  - È¨ï¿½ï¿½ÕªÒªï¿½ï¿½Ñ¯
+  - ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½Â¼
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/interface/handler/auth_handler.go - ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/module/auth/module.go - ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½×°
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ô£ï¿½
   - internal/module/auth/domain/service/lock_policy_service_test.go
   - internal/module/auth/domain/service/permission_service_test.go
 
 ### Testing:
-- go build ./... Í¨¹ı
-- go mod tidy Í¨¹ı
-- go test ./... Í¨¹ı
-- go test ./internal/module/auth/domain/service/... -v Í¨¹ı£¨17 ¸ö²âÊÔ£©
+- go build ./... Í¨ï¿½ï¿½
+- go mod tidy Í¨ï¿½ï¿½
+- go test ./... Í¨ï¿½ï¿½
+- go test ./internal/module/auth/domain/service/... -v Í¨ï¿½ï¿½ï¿½ï¿½17 ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½
 
 ### Notes:
-- Ëø¶¨²ßÂÔ£º5 ´ÎÊ§°ÜºóËø¶¨ 15 ·ÖÖÓ
-- ÃÜÂë²ßÂÔ£º8 Î»+´óĞ¡Ğ´+Êı×Ö
-- È¨ÏŞ²éÑ¯Ö§³Ö½ÇÉ«¡¢È¨ÏŞÁĞ±í¡¢È¨ÏŞ´úÂëÁĞ±í
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½5 ï¿½ï¿½Ê§ï¿½Üºï¿½ï¿½ï¿½ï¿½ï¿½ 15 ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½8 Î»+ï¿½ï¿½Ğ¡Ğ´+ï¿½ï¿½ï¿½ï¿½
+- È¨ï¿½Ş²ï¿½Ñ¯Ö§ï¿½Ö½ï¿½É«ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½È¨ï¿½Ş´ï¿½ï¿½ï¿½ï¿½Ğ±ï¿½
 
 ---
 
 ## [2026-03-19] - Task: User Admin APIs (epic-2-story-2-2-user-admin-api)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR28 - ÓÃ»§ÓëÔ±¹¤µµ°¸¹ÜÀí]
-- ¼Ü¹¹ºÏ¹æ£º[ADR-005 - ¶à×â»§Êı¾İ¿â¼¶¸ôÀë]
-- UX ºÏ¹æ£º[ºó¶Ë API£¬ÎŞÖ±½Ó UI ±ä¸ü]
+### ï¿½ï¿½ï¿½ÉºÏ¹ï¿½ï¿½é£º
+- PRD ï¿½Ï¹æ£º[FR28 - ï¿½Ã»ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]
+- ï¿½Ü¹ï¿½ï¿½Ï¹æ£º[ADR-005 - ï¿½ï¿½ï¿½â»§ï¿½ï¿½ï¿½İ¿â¼¶ï¿½ï¿½ï¿½ï¿½]
+- UX ï¿½Ï¹æ£º[ï¿½ï¿½ï¿½ APIï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ UI ï¿½ï¿½ï¿½]
 
 ### What was done:
-- ´´½¨ admin Ä£¿éÄ¿Â¼½á¹¹£º
-  - internal/module/admin/admin_module.go - Ä£¿éÈë¿Ú
-  - internal/module/admin/domain/repository/user_repository.go - ²Ö´¢½Ó¿Ú
-  - internal/module/admin/infrastructure/persistence/user_repo_impl.go - ²Ö´¢ÊµÏÖ
-  - internal/module/admin/application/service/user_service.go - ÓÃ»§·şÎñ
-  - internal/module/admin/application/service/audit_logger.go - Éó¼Æ½Ó¿Ú
-  - internal/module/admin/interface/handler/admin_handler.go - HTTP ´¦ÀíÆ÷
-- ´´½¨Éó¼ÆÈÕÖ¾»ù´¡ÉèÊ©£º
-  - migrations/005_audit_logs.up.sql - Éó¼ÆÈÕÖ¾±í
-  - migrations/005_audit_logs.down.sql - »Ø¹ö½Å±¾
-  - internal/model/audit_log.go - Éó¼ÆÈÕÖ¾Ä£ĞÍ
-  - internal/module/admin/infrastructure/service/audit_service.go - Éó¼Æ·şÎñ
-- ¸üĞÂÂ·ÓÉ×¢²á£º
-  - internal/router/router.go - ×¢²á admin Ä£¿éÂ·ÓÉ
-- API ¶Ëµã£º
-  - GET /api/v1/admin/users - ÓÃ»§ÁĞ±í£¨·ÖÒ³+É¸Ñ¡£©
-  - GET /api/v1/admin/users/:id - ÓÃ»§ÏêÇé
-  - POST /api/v1/admin/users - ´´½¨ÓÃ»§
-  - PUT /api/v1/admin/users/:id - ¸üĞÂÓÃ»§
-  - PATCH /api/v1/admin/users/:id/status - ¸üĞÂ×´Ì¬
+- ï¿½ï¿½ï¿½ï¿½ admin Ä£ï¿½ï¿½Ä¿Â¼ï¿½á¹¹ï¿½ï¿½
+  - internal/module/admin/admin_module.go - Ä£ï¿½ï¿½ï¿½ï¿½ï¿½
+  - internal/module/admin/domain/repository/user_repository.go - ï¿½Ö´ï¿½ï¿½Ó¿ï¿½
+  - internal/module/admin/infrastructure/persistence/user_repo_impl.go - ï¿½Ö´ï¿½Êµï¿½ï¿½
+  - internal/module/admin/application/service/user_service.go - ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½
+  - internal/module/admin/application/service/audit_logger.go - ï¿½ï¿½Æ½Ó¿ï¿½
+  - internal/module/admin/interface/handler/admin_handler.go - HTTP ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©ï¿½ï¿½
+  - migrations/005_audit_logs.up.sql - ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½
+  - migrations/005_audit_logs.down.sql - ï¿½Ø¹ï¿½ï¿½Å±ï¿½
+  - internal/model/audit_log.go - ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Ä£ï¿½ï¿½
+  - internal/module/admin/infrastructure/service/audit_service.go - ï¿½ï¿½Æ·ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½×¢ï¿½á£º
+  - internal/router/router.go - ×¢ï¿½ï¿½ admin Ä£ï¿½ï¿½Â·ï¿½ï¿½
+- API ï¿½Ëµã£º
+  - GET /api/v1/admin/users - ï¿½Ã»ï¿½ï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½Ò³+É¸Ñ¡ï¿½ï¿½
+  - GET /api/v1/admin/users/:id - ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½
+  - POST /api/v1/admin/users - ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½
+  - PUT /api/v1/admin/users/:id - ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½
+  - PATCH /api/v1/admin/users/:id/status - ï¿½ï¿½ï¿½ï¿½×´Ì¬
 
 ### Testing:
-- go build ./... Í¨¹ı
-- go test ./... Í¨¹ı
+- go build ./... Í¨ï¿½ï¿½
+- go test ./... Í¨ï¿½ï¿½
 
 ### Notes:
-- Ö§³Ö°´ĞÕÃû¡¢¹¤ºÅ¡¢²¿ÃÅ¡¢×´Ì¬É¸Ñ¡
-- ´´½¨ÓÃ»§Ê±×Ô¶¯Éú³ÉÁÙÊ±ÃÜÂë
-- Éó¼ÆÈÕÖ¾¼ÇÂ¼ÓÃ»§´´½¨¡¢¸üĞÂ¡¢×´Ì¬±ä¸üÊÂ¼ş
+- Ö§ï¿½Ö°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¡ï¿½ï¿½ï¿½ï¿½Å¡ï¿½×´Ì¬É¸Ñ¡
+- ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ê±ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½Â¼ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¡ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
