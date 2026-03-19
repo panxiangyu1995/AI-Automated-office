@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-18",
+  "lastUpdated": "2026-03-19",
   "note": "Task.json-style breakdown for Epic 2 story subtasks. Planning only. Does not replace the main task.json rule of one formal task per story.",
   "subtasks": [
     {
@@ -101,7 +101,7 @@
         "Implement create, update, enable, and disable APIs",
         "Add validation and standard error responses"
       ],
-      "frs_covered": ["FR28"],
+      "frs_covered": ["FR28", "FR99"],
       "nfrs_covered": ["NFR16"],
       "arch_covered": ["ADR-005"],
       "ux_covered": [],
@@ -122,7 +122,7 @@
         "Create create and edit forms",
         "Show base profile and latest status"
       ],
-      "frs_covered": ["FR28"],
+      "frs_covered": ["FR28", "FR99"],
       "nfrs_covered": ["NFR16"],
       "arch_covered": ["ADR-001"],
       "ux_covered": ["UX-02", "UX-04"],
@@ -519,9 +519,10 @@
         "Define request and response DTOs",
         "Define standard error codes and 403 contract",
         "Define pagination and filter contracts",
+        "Add personal profile view and update API contracts",
         "Sync TypeScript API types"
       ],
-      "frs_covered": ["FR27", "FR28", "FR29", "FR33"],
+      "frs_covered": ["FR27", "FR28", "FR29", "FR33", "FR105"],
       "nfrs_covered": ["NFR9", "NFR16"],
       "arch_covered": ["ADR-004", "ADR-005"],
       "ux_covered": [],
@@ -534,7 +535,7 @@
       "story": "Cross-Story",
       "parent_story": "Epic 2",
       "title": "Integration and E2E coverage",
-      "description": "Cover login, session expiry, user admin, permission denial, import or export, and audit query flows.",
+      "description": "Cover login, session expiry, personal profile, user admin, permission denial, import or export, and audit query flows.",
       "openspec_change": "epic-2-cross-test-plan",
       "steps": [
         "Write Go API tests",
@@ -542,7 +543,7 @@
         "Write frontend E2E auth and permission tests",
         "Cover import, export, and audit regression scenarios"
       ],
-      "frs_covered": ["FR27", "FR28", "FR29", "FR33"],
+      "frs_covered": ["FR27", "FR28", "FR29", "FR33", "FR99", "FR105"],
       "nfrs_covered": ["NFR12", "NFR14", "NFR16"],
       "arch_covered": ["ADR-001", "ADR-005"],
       "ux_covered": ["UX-04"],

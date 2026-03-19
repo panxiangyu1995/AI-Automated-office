@@ -1,0 +1,22 @@
+name: epic-2-story-2-3-org-domain-model
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Story 2.3
+title: Department and Position Domain Model
+description: 定义部门树和岗位数据结构，实现 CRUD API
+mapping:
+  frs:
+    - FR100
+    - FR102
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-005
+  ux: []
+dependencies:
+  - E2-S2.1-01
+implementer_notes: |
+  本变更为 Story 2.3 组织管理的后端数据模型和 API 实现。
+  部门使用 parent_id + 闭包表混合方案实现树形结构。
+  删除约束必须检查子部门和关联员工。

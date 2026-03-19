@@ -1,0 +1,15 @@
+name: epic-2-cross-api-contracts
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Cross-Story
+subtask_id: E2-CROSS-01
+title: API contracts and error codes
+mapping:
+  frs: []
+  nfrs: []
+  arch:
+    - ADR-001
+    - ADR-005
+  ux: []
+dependencies: []

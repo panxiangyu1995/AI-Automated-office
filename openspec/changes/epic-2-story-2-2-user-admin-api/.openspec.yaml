@@ -1,0 +1,21 @@
+name: epic-2-story-2-2-user-admin-api
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Story 2.2
+title: User Admin APIs
+description: 在 Go 云端后端实现用户管理相关 API
+mapping:
+  frs:
+    - FR28
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-005
+  ux: []
+dependencies:
+  - E2-S2.1-01
+implementer_notes: |
+  本变更为 Story 2.2 用户管理工作台的后端 API 实现。
+  需要遵循 Epic 2 分层架构，确保所有写操作写入审计日志。
+  前端 UI 由 E2-S2.2-02 实现。

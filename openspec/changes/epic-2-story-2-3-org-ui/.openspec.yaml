@@ -1,0 +1,25 @@
+name: epic-2-story-2-3-org-ui
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Story 2.3
+title: Department and Position UI
+description: 构建部门树管理和岗位管理前端界面
+mapping:
+  frs:
+    - FR100
+    - FR102
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-001
+  ux:
+    - UX-02
+    - UX-03
+dependencies:
+  - E2-S2.3-01
+implementer_notes: |
+  本变更为 Story 2.3 组织管理的前端 UI 实现。
+  必须使用 Shadcn/ui 组件库和 Lucide React 图标库。
+  颜色系统遵循品牌色 #1E3A5F。
+  部门树使用左右分栏布局。

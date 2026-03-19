@@ -1,0 +1,17 @@
+name: epic-2-story-2-5-permission-model
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Story 2.5
+title: Three-layer permission model
+mapping:
+  frs:
+    - FR29
+    - FR30
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-005
+    - ADR-017
+  ux: []
+

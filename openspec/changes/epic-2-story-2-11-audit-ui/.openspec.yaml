@@ -1,0 +1,21 @@
+name: epic-2-story-2-11-audit-ui
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Story 2.11
+subtask_id: E2-S2.11-03
+title: Audit query and export UI
+mapping:
+  frs:
+    - FR33
+  nfrs:
+    - NFR14
+  arch:
+    - ADR-001
+    - ADR-005
+  ux:
+    - UX-01
+    - UX-02
+dependencies:
+  - E2-S2.11-01
+  - E2-S2.11-02

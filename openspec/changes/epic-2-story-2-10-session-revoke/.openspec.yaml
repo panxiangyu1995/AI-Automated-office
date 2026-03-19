@@ -1,0 +1,21 @@
+name: epic-2-story-2-10-session-revoke
+status: pending
+created_at: 2026-03-18
+epic: 2
+story: Story 2.10
+subtask_id: E2-S2.10-02
+title: Force logout and expiry handling
+mapping:
+  frs:
+    - FR27
+  nfrs:
+    - NFR12
+  arch:
+    - ADR-001
+    - ADR-005
+  ux:
+    - UX-04
+dependencies:
+  - E2-S2.10-01
+  - E2-S2.1-03
+  - E2-S2.1-04
