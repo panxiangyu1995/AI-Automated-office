@@ -445,3 +445,43 @@
 - 锁定策略：5 次失败后锁定 15 分钟
 - 密码策略：8 位+大小写+数字
 - 权限查询支持角色、权限列表、权限代码列表
+
+---
+
+## [2026-03-19] - Task: User Admin APIs (epic-2-story-2-2-user-admin-api)
+
+### 铁律合规检查：
+- PRD 合规：[FR28 - 用户与员工档案管理]
+- 架构合规：[ADR-005 - 多租户数据库级隔离]
+- UX 合规：[后端 API，无直接 UI 变更]
+
+### What was done:
+- 创建 admin 模块目录结构：
+  - internal/module/admin/admin_module.go - 模块入口
+  - internal/module/admin/domain/repository/user_repository.go - 仓储接口
+  - internal/module/admin/infrastructure/persistence/user_repo_impl.go - 仓储实现
+  - internal/module/admin/application/service/user_service.go - 用户服务
+  - internal/module/admin/application/service/audit_logger.go - 审计接口
+  - internal/module/admin/interface/handler/admin_handler.go - HTTP 处理器
+- 创建审计日志基础设施：
+  - migrations/005_audit_logs.up.sql - 审计日志表
+  - migrations/005_audit_logs.down.sql - 回滚脚本
+  - internal/model/audit_log.go - 审计日志模型
+  - internal/module/admin/infrastructure/service/audit_service.go - 审计服务
+- 更新路由注册：
+  - internal/router/router.go - 注册 admin 模块路由
+- API 端点：
+  - GET /api/v1/admin/users - 用户列表（分页+筛选）
+  - GET /api/v1/admin/users/:id - 用户详情
+  - POST /api/v1/admin/users - 创建用户
+  - PUT /api/v1/admin/users/:id - 更新用户
+  - PATCH /api/v1/admin/users/:id/status - 更新状态
+
+### Testing:
+- go build ./... 通过
+- go test ./... 通过
+
+### Notes:
+- 支持按姓名、工号、部门、状态筛选
+- 创建用户时自动生成临时密码
+- 审计日志记录用户创建、更新、状态变更事件

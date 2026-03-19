@@ -7,6 +7,8 @@ import (
 	"cloud-server/internal/config"
 	"cloud-server/internal/handler"
 	"cloud-server/internal/middleware"
+	adminHandler "cloud-server/internal/module/admin/interface/handler"
+	adminModule "cloud-server/internal/module/admin"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -39,6 +41,10 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		JWT:   cfg.JWT,
 	}
 
+	// 初始化 admin 模块
+	adminMod := adminModule.NewAdminModule(sqlDB, log)
+	adminH := adminHandler.NewAdminHandler(adminMod.UserService, adminMod.AuditLogger, log)
+
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.Health)
@@ -47,6 +53,10 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		v1.POST("/auth/login", authHandler.Login)
 		v1.POST("/auth/register", authHandler.Register)
 		v1.POST("/auth/forgot-password", authHandler.ForgotPassword)
+
+		// Admin routes (需要认证中间件注入 tenant_id)
+		// TODO: 添加认证中间件
+		adminH.RegisterRoutes(v1)
 	}
 
 	return r
