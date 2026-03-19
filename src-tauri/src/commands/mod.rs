@@ -6,6 +6,7 @@ pub mod auth;
 pub mod config;
 pub mod hardware;
 pub mod network;
+pub mod session;
 pub mod shortcuts;
 pub mod storage;
 pub mod system;

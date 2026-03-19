@@ -4,9 +4,11 @@
 
 mod auth;
 mod commands;
+pub mod crypto;
 mod hardware;
 mod http;
 mod network;
+pub mod session;
 mod shortcuts;
 mod storage;
 mod sync;
@@ -14,7 +16,19 @@ mod tray;
 mod utils;
 pub mod vector;
 
+use std::path::PathBuf;
 use tauri::Manager;
+use directories::ProjectDirs;
+
+/// Get the application data directory
+fn get_app_data_dir() -> PathBuf {
+    ProjectDirs::from("com", "AI-Automated", "Office")
+        .map(|dirs| dirs.data_dir().to_path_buf())
+        .unwrap_or_else(|| {
+            // Fallback to current directory
+            std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+        })
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -53,6 +67,13 @@ pub fn run() {
                 auth_service.ensure_default_user().await.expect("无法初始化默认用户");
                 
                 app.manage(auth_service);
+                
+                // Initialize session cache
+                let app_data_dir = get_app_data_dir();
+                let session_cache = session::SessionCache::new(app_data_dir)
+                    .await
+                    .expect("无法初始化会话缓存");
+                app.manage(session_cache);
             });
             
             // 注册默认快捷键
@@ -87,6 +108,11 @@ pub fn run() {
             commands::auth::register,
             commands::auth::logout,
             commands::auth::get_current_user,
+            // Session cache commands
+            commands::session::save_session_metadata,
+            commands::session::get_session_metadata,
+            commands::session::clear_session_cache,
+            commands::session::has_session_cache,
             http::commands::http_request,
             http::commands::http_get,
             http::commands::http_post,

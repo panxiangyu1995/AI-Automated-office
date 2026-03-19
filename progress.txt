@@ -1,5 +1,43 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-19] - Task: Local session cache wrapper (epic-2-story-2-1-local-session-cache)
+
+### 铁律合规检查：
+- PRD 合规：[FR27 - 用户登录会话恢复]
+- 架构合规：[ADR-001 Tauri + Rust 架构, ADR-003 本地优先存储策略]
+- UX 合规：[无直接 UI 变更，后端基础设施]
+
+### What was done:
+- 创建 `src-tauri/src/session/` 模块：
+  - `mod.rs` - 会话错误类型定义
+  - `metadata.rs` - SessionMetadata 结构与 security_check 方法
+  - `cache.rs` - SessionCache 管理器（save/load/clear/过期检查）
+  - `security_check.rs` - 禁止字段检测与安全日志
+- 创建 `src-tauri/src/crypto/` 模块：
+  - `mod.rs` - 加密错误类型定义
+  - `local_encryptor.rs` - AES-256-GCM 加密器与 PBKDF2 密钥派生
+- 创建 `src-tauri/src/utils/machine_id.rs` - 跨平台机器标识获取
+- 创建 `src-tauri/src/commands/session.rs` - Tauri 命令接口（4 个命令）
+- 更新 `src-tauri/src/lib.rs` - 注册命令与初始化 SessionCache
+- 更新 `src/lib/tauri.ts` - TypeScript 类型与命令封装
+- 更新 `src/stores/authStore.ts` - 会话缓存集成（setAuth 保存、restoreSession 恢复、clearAuthSession 清理）
+- 更新 `src/features/auth/hooks/useAuth.ts` - 添加 expiresIn 参数
+- 创建 `src-tauri/tests/session_integration_test.rs` - 集成测试（8 个测试）
+
+### Testing:
+- `cargo test --lib` 通过（22 个单元测试）
+- `cargo test --test session_integration_test` 通过（8 个集成测试）
+- `npm run lint` 通过
+- `npm run build` 通过
+
+### Notes:
+- 使用 AES-256-GCM 加密，密钥通过 PBKDF2 从机器标识派生
+- 禁止存储 password、access_token 等敏感字段
+- 会话过期自动清理
+- 机器标识变更后解密失败，触发重新登录
+
+---
+
 ## 2026-03-18 - Task: TopBar 账号菜单与认证动作闭环（epic-1-story-11-auth-topbar-account-menu）
 
 ### 铁律合规检查：
