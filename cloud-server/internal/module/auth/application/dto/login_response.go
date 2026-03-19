@@ -38,3 +38,18 @@ type PermissionSummary struct {
 	Permissions []string          `json:"permissions"`
 	DataScopes  map[string]string `json:"data_scopes,omitempty"`
 }
+
+// PermissionInfo 权限详情
+type PermissionInfo struct {
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Resource string `json:"resource"`
+	Action   string `json:"action"`
+}
+
+// RoleInfo 角色信息
+type RoleInfo struct {
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	IsSystem bool   `json:"is_system"`
+}

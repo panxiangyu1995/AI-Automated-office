@@ -399,3 +399,49 @@
 
 ### Notes:
 - æœ¬æ¬¡æäº¤ä»…åŒ…å« `epic-2-story-2-1-frontend-login-flow` çš„å‰ç«¯å®ç°ä¿®å¤ä¸éªŒæ”¶ç”¨ä¾‹æ›´æ–°ã€‚
+
+---
+
+## [2026-03-19] - Task: Login API and Password Policy (epic-2-story-2-1-login-password-policy)
+
+### ÌúÂÉºÏ¹æ¼ì²é£º
+- PRD ºÏ¹æ£º[FR27 - ÓÃ»§µÇÂ¼ÈÏÖ¤]
+- ¼Ü¹¹ºÏ¹æ£º[ADR-005 Go Cloud Layer DDD ¼Ü¹¹]
+- UX ºÏ¹æ£º[ÎŞÖ±½Ó UI ±ä¸ü£¬ºó¶Ë»ù´¡ÉèÊ©]
+
+### What was done:
+- ´´½¨Êı¾İ¿âÇ¨ÒÆ£º
+  - cloud-server/migrations/004_login_attempts.up.sql - Ìí¼Ó failed_login_count¡¢locked_until ×Ö¶Î£¬´´½¨ login_attempts ±í
+  - cloud-server/migrations/004_login_attempts.down.sql - »Ø¹ö½Å±¾
+- ¸üĞÂ internal/model/user.go - Ìí¼Ó FailedLoginCount ºÍ LockedUntil ×Ö¶Î
+- ´´½¨ internal/module/auth/domain/entity/login_attempt.go - µÇÂ¼³¢ÊÔÊµÌå
+- ´´½¨ internal/module/auth/domain/repository/login_attempt_repository.go - µÇÂ¼³¢ÊÔ²Ö´¢½Ó¿Ú
+- ´´½¨ internal/module/auth/infrastructure/persistence/login_attempt_repository.go - µÇÂ¼³¢ÊÔ²Ö´¢ÊµÏÖ
+- ´´½¨ internal/module/auth/domain/service/lock_policy_service.go - Ëø¶¨²ßÂÔ·şÎñ
+- ´´½¨ internal/module/auth/domain/service/permission_service.go - È¨ÏŞ²éÑ¯·şÎñ
+- ¸üĞÂ internal/module/auth/application/dto/login_response.go - Ìí¼Ó PermissionInfo ºÍ RoleInfo ÀàĞÍ
+- ÍêÕûÊµÏÖ internal/module/auth/application/service/auth_service.go - µÇÂ¼·şÎñÂß¼­£º
+  - ÓÃ»§²éÕÒÓëÑéÖ¤
+  - ÕË»§×´Ì¬¼ì²é£¨½ûÓÃ/Ëø¶¨£©
+  - ÃÜÂëÑéÖ¤£¨bcrypt£©
+  - Ê§°Ü¼ÆÊıÓëËø¶¨²ßÂÔ
+  - JWT Token Éú³É
+  - »á»°´´½¨
+  - È¨ÏŞÕªÒª²éÑ¯
+  - Éó¼ÆÈÕÖ¾¼ÇÂ¼
+- ¸üĞÂ internal/module/auth/interface/handler/auth_handler.go - ÍêÉÆ´íÎóÏìÓ¦´¦Àí
+- ¸üĞÂ internal/module/auth/module.go - ÒÀÀµ×¢ÈëÓëÄ£¿é×é×°
+- ´´½¨µ¥Ôª²âÊÔ£º
+  - internal/module/auth/domain/service/lock_policy_service_test.go
+  - internal/module/auth/domain/service/permission_service_test.go
+
+### Testing:
+- go build ./... Í¨¹ı
+- go mod tidy Í¨¹ı
+- go test ./... Í¨¹ı
+- go test ./internal/module/auth/domain/service/... -v Í¨¹ı£¨17 ¸ö²âÊÔ£©
+
+### Notes:
+- Ëø¶¨²ßÂÔ£º5 ´ÎÊ§°ÜºóËø¶¨ 15 ·ÖÖÓ
+- ÃÜÂë²ßÂÔ£º8 Î»+´óĞ¡Ğ´+Êı×Ö
+- È¨ÏŞ²éÑ¯Ö§³Ö½ÇÉ«¡¢È¨ÏŞÁĞ±í¡¢È¨ÏŞ´úÂëÁĞ±í

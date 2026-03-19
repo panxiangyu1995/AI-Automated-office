@@ -187,10 +187,49 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 // handleError 处理错误响应
 func (h *AuthHandler) handleError(c *gin.Context, err error) {
-	// 根据错误类型返回不同的状态码
-	// 这里简化处理，实际应该根据具体的错误类型判断
+	// Map errors to HTTP status codes and error codes
+	switch err.Error() {
+	case "invalid credentials":
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "invalid_credentials",
+			"message": "Invalid email or password",
+		})
+		return
+	case "account is disabled":
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "account_disabled",
+			"message": "Your account has been disabled. Please contact administrator.",
+		})
+		return
+	case "account is locked":
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "account_locked",
+			"message": "Your account has been locked due to too many failed login attempts. Please try again later.",
+		})
+		return
+	case "token has expired":
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "token_expired",
+			"message": "Your session has expired. Please log in again.",
+		})
+		return
+	case "token is invalid", "token is malformed":
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "token_invalid",
+			"message": "Invalid authentication token.",
+		})
+		return
+	case "tenant not found":
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "tenant_not_found",
+			"message": "Invalid tenant ID.",
+		})
+		return
+	}
+
+	// Default to internal server error
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"error":   "internal_error",
-		"message": err.Error(),
+		"message": "An unexpected error occurred. Please try again later.",
 	})
 }
