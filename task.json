@@ -677,17 +677,23 @@
                       "id":  19,
                       "epic":  "Epic 2",
                       "story":  "Story 2.1",
-                      "title":  "Frontend login flow",
-                      "description":  "Build the React login page, form validation, login request flow, and global auth state management.",
+                      "title":  "Frontend login flow enhancement",
+                      "description":  "Enhance the frontend login flow with permission management, dual token mechanism, and code modularization. Base implementation completed in epic-1-story-11-user-login.",
                       "openspec_change":  "epic-2-story-2-1-frontend-login-flow",
                       "steps":  [
-                                    "Create the login page and form components",
-                                    "Connect the cloud login API",
-                                    "Create auth state store",
-                                    "Handle errors, redirects, and route guards"
+                                    "Create auth.types.ts type definitions",
+                                    "Create authApi.ts API module",
+                                    "Extend authStore with permissions and dual token",
+                                    "Create useAuth Hook",
+                                    "Refactor LoginForm.tsx to use modular API",
+                                    "Create LoginError.tsx component (optional)",
+                                    "Write unit tests",
+                                    "E2E test verification"
                                 ],
                       "frs_covered":  [
-                                          "FR27"
+                                          "FR27",
+                                          "FR29",
+                                          "FR30"
                                       ],
                       "nfrs_covered":  [
                                            "NFR9",
@@ -701,9 +707,10 @@
                                          "UX-04"
                                      ],
                       "dependencies":  [
+                                           "epic-1-story-11-user-login",
                                            "E2-S2.1-02"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  20,
@@ -1455,3 +1462,4 @@
                   }
               ]
 }
+

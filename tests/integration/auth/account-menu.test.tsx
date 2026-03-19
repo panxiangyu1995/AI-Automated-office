@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+﻿import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TopBar } from '@/components/common/TopBar'
@@ -13,6 +13,13 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => navigateMock,
   }
 })
+
+vi.mock('@/lib/tauri', () => ({
+  clearSessionCache: vi.fn().mockResolvedValue(undefined),
+  saveSessionMetadata: vi.fn().mockResolvedValue(undefined),
+  getSessionMetadata: vi.fn().mockResolvedValue(null),
+  hasSessionCache: vi.fn().mockResolvedValue(false),
+}))
 
 vi.mock('@tauri-apps/api/window', () => ({
   getCurrentWindow: vi.fn(() => ({
@@ -42,8 +49,11 @@ describe('TopBar 账号菜单', () => {
     window.localStorage.clear()
     useAuthStore.setState({
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
+      permissions: null,
       isAuthenticated: false,
+      isRestoring: false,
     })
   })
 
@@ -56,7 +66,8 @@ describe('TopBar 账号菜单', () => {
         department: '管理层',
         role: 'super_admin',
       },
-      token: 'token-1',
+      accessToken: 'access-token-1',
+      refreshToken: 'refresh-token-1',
       isAuthenticated: true,
     })
 
@@ -81,7 +92,8 @@ describe('TopBar 账号菜单', () => {
         department: '',
         role: '',
       },
-      token: 'token-2',
+      accessToken: 'access-token-2',
+      refreshToken: 'refresh-token-2',
       isAuthenticated: true,
     })
 
@@ -103,7 +115,8 @@ describe('TopBar 账号菜单', () => {
         department: '销售部',
         role: 'staff',
       },
-      token: 'token-3',
+      accessToken: 'access-token-3',
+      refreshToken: 'refresh-token-3',
       isAuthenticated: true,
     })
 
@@ -113,7 +126,8 @@ describe('TopBar 账号菜单', () => {
 
     await waitFor(() => {
       expect(useAuthStore.getState().isAuthenticated).toBe(false)
-      expect(useAuthStore.getState().token).toBeNull()
+      expect(useAuthStore.getState().accessToken).toBeNull()
+      expect(useAuthStore.getState().refreshToken).toBeNull()
       expect(useAuthStore.getState().user).toBeNull()
       expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
     })
@@ -128,7 +142,8 @@ describe('TopBar 账号菜单', () => {
         department: '财务部',
         role: 'manager',
       },
-      token: 'token-4',
+      accessToken: 'access-token-4',
+      refreshToken: 'refresh-token-4',
       isAuthenticated: true,
     })
 
@@ -138,13 +153,14 @@ describe('TopBar 账号菜单', () => {
 
     await waitFor(() => {
       expect(useAuthStore.getState().isAuthenticated).toBe(false)
-      expect(useAuthStore.getState().token).toBeNull()
+      expect(useAuthStore.getState().accessToken).toBeNull()
+      expect(useAuthStore.getState().refreshToken).toBeNull()
       expect(useAuthStore.getState().user).toBeNull()
       expect(navigateMock).toHaveBeenCalledWith('/login', { replace: true })
     })
   })
 
-  it('未登录点击账号入口会直接跳转登录页', async () => {
+  it('未登录点击账户入口会直接跳转登录页', async () => {
     render(<TopBar visible={true} onToggle={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText('登录账号'))

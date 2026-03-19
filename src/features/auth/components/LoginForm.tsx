@@ -1,8 +1,10 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useAuthStore } from '@/stores/authStore'
-import { Loader2, User, Lock } from 'lucide-react'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import { authApi, resolveAuthErrorMessage } from '@/features/auth/api/authApi'
+import type { LoginRequest, RegisterRequest } from '@/features/auth/types/auth.types'
+import { Loader2, Lock, User } from 'lucide-react'
 
 interface LoginCredentials {
   username: string
@@ -10,86 +12,11 @@ interface LoginCredentials {
   rememberMe: boolean
 }
 
-interface LoginResponse {
-  user: {
-    id: string
-    username: string
-    name: string
-    department: string
-    role: string
-  }
-  token: string
-}
-
 interface RegisterFormData {
   username: string
   password: string
   name: string
   department: string
-}
-
-interface RegisterResponse {
-  user: {
-    id: string
-    username: string
-    name: string
-    department: string
-    role: string
-  }
-}
-
-interface ForgotPasswordResponse {
-  accepted: boolean
-}
-
-interface ApiEnvelope<T> {
-  success: boolean
-  data?: T
-  message?: string
-  code?: string
-}
-
-const REQUEST_TIMEOUT_MS = 10000
-const AUTH_API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8080').replace(/\/$/, '')
-
-const requestAuthApi = async <T,>(path: string, payload: Record<string, unknown>) => {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-  try {
-    const response = await fetch(`${AUTH_API_BASE_URL}${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    })
-    const result = (await response.json()) as ApiEnvelope<T>
-    if (!response.ok || !result.success || !result.data) {
-      throw new Error(result.message || '请求失败')
-    }
-    return result
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error('AUTH_API_TIMEOUT')
-    }
-    throw err
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-const resolveAuthErrorMessage = (err: unknown, mode: 'login' | 'register') => {
-  if (err instanceof Error && err.message === 'AUTH_API_TIMEOUT') {
-    return '认证服务响应超时，请稍后重试'
-  }
-  if (err instanceof Error) {
-    return err.message
-  }
-  if (typeof err === 'string') {
-    return err
-  }
-  return mode === 'login' ? '登录失败，请检查账号或密码' : '注册失败，请检查输入信息'
 }
 
 export function LoginForm() {
@@ -110,7 +37,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const navigate = useNavigate()
-  const { setUser, setToken } = useAuthStore()
+  const { login: authLogin, register: authRegister } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,30 +47,26 @@ export function LoginForm() {
 
     try {
       if (mode === 'login') {
-        const response = await requestAuthApi<LoginResponse>('/api/v1/auth/login', {
+        const loginRequest: LoginRequest = {
           username: credentials.username,
           password: credentials.password,
-          remember_me: credentials.rememberMe,
-        })
-        if (!response.data) {
-          throw new Error('登录失败，请检查账号或密码')
+          rememberMe: credentials.rememberMe,
         }
-        setUser(response.data.user)
-        setToken(response.data.token)
+
+        await authLogin(loginRequest)
         navigate('/')
       } else {
-        const response = await requestAuthApi<RegisterResponse>('/api/v1/auth/register', {
+        const registerRequest: RegisterRequest = {
           username: registerData.username,
           password: registerData.password,
           name: registerData.name,
           department: registerData.department || undefined,
-        })
-        if (!response.data) {
-          throw new Error('注册失败，请检查输入信息')
         }
+        const response = await authRegister(registerRequest)
+
         setMode('login')
         setCredentials({
-          username: response.data.user.username,
+          username: response.user.username,
           password: '',
           rememberMe: true,
         })
@@ -164,12 +87,11 @@ export function LoginForm() {
       setError('请先输入用户名后再进行忘记密码操作')
       return
     }
+
     setForgotPasswordLoading(true)
     try {
-      const response = await requestAuthApi<ForgotPasswordResponse>('/api/v1/auth/forgot-password', {
-        username,
-      })
-      setMessage(response.message || '若账号存在，重置指引将发送至对应账号')
+      const response = await authApi.forgotPassword(username)
+      setMessage(response.accepted ? '若账号存在，重置指引将发送至对应账号' : '请求已受理')
     } catch (err) {
       setError(resolveAuthErrorMessage(err, 'login'))
     } finally {

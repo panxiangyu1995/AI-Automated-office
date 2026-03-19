@@ -1,84 +1,63 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { listen } from '@tauri-apps/api/event'
 import { useAppStore } from './stores/appStore'
+import { useAuthStore } from './stores/authStore'
 import { AppLayout, OfflineIndicator } from './components/common'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useUpdate } from './hooks/useUpdate'
-import { listen } from '@tauri-apps/api/event'
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert'
 import { Button } from './components/ui/button'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { LoginPage } from './features/auth/pages/LoginPage'
 import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
 
-/**
- * 应用入口组件
- */
 function App() {
   const { setInitialized } = useAppStore()
+  const { restoreSession } = useAuthStore()
   const [loading, setLoading] = useState(true)
   const [showTopBarHint, setShowTopBarHint] = useState(false)
-  const {
-    updateInfo,
-    downloading,
-    progress,
-    checkUpdate,
-    downloadAndInstall,
-    dismiss,
-  } = useUpdate()
+  const { updateInfo, downloading, progress, checkUpdate, downloadAndInstall, dismiss } = useUpdate()
 
-  // 注册全局快捷键监听器
   useGlobalShortcuts()
 
-  // 直接在 App 中监听 Tauri 事件进行测试
   useEffect(() => {
-    console.log('[App] 开始设置 Tauri 事件监听...')
-    
     const setupListeners = async () => {
-      const unlisten1 = await listen('open-ai-chat', (event) => {
-        console.log('[App] 收到 open-ai-chat 事件:', event)
+      const unlisten1 = await listen('open-ai-chat', () => {
+        // noop in App layer
       })
-      
-      const unlisten2 = await listen('open-quick-search', (event) => {
-        console.log('[App] 收到 open-quick-search 事件:', event)
+      const unlisten2 = await listen('open-quick-search', () => {
+        // noop in App layer
       })
-      
-      console.log('[App] Tauri 事件监听设置完成')
-      
+
       return () => {
         unlisten1()
         unlisten2()
       }
     }
-    
+
     const cleanup = setupListeners()
-    
     return () => {
-      cleanup.then(fn => fn())
+      cleanup.then((fn) => fn())
     }
   }, [])
 
   useEffect(() => {
-    // 初始化应用
     const initApp = async () => {
       try {
-        // 这里可以添加应用初始化逻辑
-        // 例如：检查用户登录状态、加载配置等
+        await restoreSession()
         await new Promise((resolve) => setTimeout(resolve, 500))
         setInitialized(true)
       } catch (error) {
-        console.error('应用初始化失败:', error)
+        console.error('应用初始化失败', error)
       } finally {
         setLoading(false)
       }
     }
 
-    initApp()
-  }, [setInitialized])
+    void initApp()
+  }, [restoreSession, setInitialized])
 
-  /**
-   * 启动后自动检查更新
-   */
   const handleAutoCheckUpdate = useCallback(async () => {
     await checkUpdate()
   }, [checkUpdate])
@@ -101,6 +80,8 @@ function App() {
     setShowTopBarHint(false)
   }
 
+  const isLoginRoute = typeof window !== 'undefined' && window.location.pathname === '/login'
+
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -115,12 +96,12 @@ function App() {
   return (
     <BrowserRouter>
       <OfflineIndicator />
-      {showTopBarHint && (
+      {showTopBarHint && !isLoginRoute && (
         <div className="fixed left-1/2 top-4 z-50 w-[520px] -translate-x-1/2">
           <Alert className="border-slate-200 bg-white shadow-lg">
             <AlertTitle className="text-slate-900">欢迎使用顶部菜单栏</AlertTitle>
             <AlertDescription className="mt-2 text-slate-600">
-              <div>快捷键提示：Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，Ctrl+Shift+I 切换 AI Chat Panel。</div>
+              <div>快捷键提示: Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，Ctrl+Shift+I 切换 AI Chat Panel。</div>
               <div className="mt-3 flex justify-end">
                 <Button size="sm" onClick={handleDismissTopBarHint}>
                   知道了

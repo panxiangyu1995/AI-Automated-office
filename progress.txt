@@ -334,3 +334,30 @@
 
 ### Notes:
 - `./init.sh` 在当前 Windows 沙箱环境触发 Git Bash 权限错误（signal pipe Win32 error 5），未作为本任务阻塞项；后续可在具备 Bash 执行权限环境复验。
+
+## [2026-03-19] - Task: Frontend login flow enhancement (epic-2-story-2-1-frontend-login-flow)
+
+### 铁律合规检查：
+- PRD 合规：[FR27, FR29, FR30]
+- 架构合规：[ADR-001；前端 React+Zustand 认证状态，云端会话刷新]
+- UX 合规：[UX-01, UX-04；登录流程可用性与错误反馈一致性]
+
+### What was done:
+- 修复 `authApi` 认证请求基址拼接，避免 `/api/api/...` 路径错误。
+- 增强认证请求链路：支持 access token 注入、401 自动 refresh、并发刷新锁与失效会话清理。
+- 重构 `authStore`：
+  - `rememberMe` 才写本地会话缓存；
+  - 启动恢复必须走 refresh 验证，不再直接标记已登录；
+  - 修复兼容方法导致的“仅 user/token 也算已登录”问题。
+- 重构 `useAuth` 与 `LoginForm`：统一使用新认证链路，去除冗余旧写法。
+- 更新 `App` 启动逻辑：初始化阶段执行 `restoreSession()`；登录页不再被顶部提示浮层干扰。
+- 修复并强化登录相关自动化测试（集成 + E2E），覆盖真实文案与双 token 模型。
+
+### Testing:
+- `npm.cmd run lint` 通过
+- `npm.cmd run build` 通过
+- `npx.cmd vitest run tests/integration/auth/register-login.test.tsx tests/integration/auth/account-menu.test.tsx --config vitest.config.ts` 通过（10/10）
+- `npx.cmd playwright test tests/e2e/smoke/login.spec.ts tests/e2e/resilience/login.reload.spec.ts tests/e2e/accessibility/login.a11y.spec.ts` 通过（3/3）
+
+### Notes:
+- 本次提交仅包含 `epic-2-story-2-1-frontend-login-flow` 的前端实现修复与验收用例更新。
