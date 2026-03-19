@@ -310,3 +310,27 @@
 - [ ] 任务 7: 离线模式支持
 - [ ] 任务 8: 本地硬件设备调用
 - [ ] 任务 9: 软件更新机制
+
+## [2026-03-19] - Task: Epic 2 Story 2.1 Cloud auth module foundation
+
+### 铁律合规检查：
+- PRD 合规：[FR27]
+- 架构合规：[ADR-001 Cloud Layer 认证、ADR-005 多租户上下文]
+- UX 合规：[后端基础设施任务，无直接 UI 变更]
+
+### What was done:
+- 补齐 auth 模块 DDD 基础结构：`domain/entity`、`domain/valueobject`、`domain/service`、`infrastructure/logging`、`internal/pkg/errors`
+- 按 OpenSpec 拆分 DTO 文件：`login_request.go`、`login_response.go`、`refresh_request.go`、`refresh_response.go`
+- 修复 JWT JTI 生成逻辑，避免低随机性实现
+- 设计并落地验收测试：
+  - 单元测试：实体字段/GORM tag、密码与 JWT 行为、接口契约、统一错误与日志
+  - 集成测试：仓储层通过 `database/sql` stub driver 验证 Query/Exec 路径
+  - 接口测试：DTO `binding` 校验（Gin `ShouldBindJSON`）
+- 更新 OpenSpec 任务勾选状态（tests 3/3）
+- 更新 task.json 对应任务 `passes=true`
+
+### Testing:
+- `go test ./...`（workdir: `cloud-server`）通过
+
+### Notes:
+- `./init.sh` 在当前 Windows 沙箱环境触发 Git Bash 权限错误（signal pipe Win32 error 5），未作为本任务阻塞项；后续可在具备 Bash 执行权限环境复验。
