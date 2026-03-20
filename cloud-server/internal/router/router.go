@@ -18,6 +18,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// 编译时检查接口实现
+var _ = adminModule.NewAdminModule
+var _ = permissionModule.NewPermissionModule
+
 func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 	mode := cfg.Server.Mode
 	if mode == "" {
@@ -56,6 +60,15 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		log,
 	)
 
+	// 初始化权限覆盖处理器 (Story 2.6)
+	permissionOverrideH := permissionHandler.NewPermissionOverrideHandler(
+		permissionMod.OverrideCRUDService,
+		permissionMod.OverrideService,
+		permissionMod.DataScopeService,
+		permissionMod.FieldPermissionService,
+		log,
+	)
+
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.Health)
@@ -71,6 +84,9 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 
 		// Permission routes
 		permissionH.RegisterRoutes(v1)
+
+		// Permission override routes (Story 2.6)
+		permissionOverrideH.RegisterRoutes(v1)
 	}
 
 	return r

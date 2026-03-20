@@ -1,5 +1,61 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-20] - Task: Fine-grained Permission Overrides (epic-2-story-2-6-fine-grained-permissions)
+
+### 铁律合规检查：
+- PRD 合规：[FR31, FR32 - 细粒度权限到个人级别、数据访问权限部门级/个人级]
+- 架构合规：[ADR-018 字段级权限配置规范]
+- Epic 合规：Epic 2 / Story 2.6 细粒度权限覆盖
+
+### What was done:
+
+**数据库迁移：**
+- `cloud-server/migrations/010_user_permission_overrides.up.sql` - 创建 user_permission_overrides 表
+- `cloud-server/migrations/010_user_permission_overrides.down.sql` - 回滚脚本
+
+**模型定义：**
+- `cloud-server/internal/model/permission_override.go` - PermissionOverride、DataScope、FieldRestriction、PermissionResult 实体
+
+**权限模块扩展：**
+- `internal/module/permission/domain/repository/permission_override_repository.go` - 仓储接口
+- `internal/module/permission/infrastructure/persistence/permission_override_repo_impl.go` - PostgreSQL 实现
+- `internal/module/permission/application/service/permission_override_service.go` - 权限覆盖计算服务
+- `internal/module/permission/application/service/permission_override_crud_service.go` - CRUD 操作服务
+- `internal/module/permission/application/service/data_scope_service.go` - 数据范围过滤服务
+- `internal/module/permission/application/service/field_permission_service.go` - 字段权限服务
+- `internal/module/permission/interface/handler/permission_override_handler.go` - HTTP 处理器
+
+**权限覆盖功能：**
+- 用户级权限覆盖（grant/deny）
+- 数据范围权限：all、department、department_tree、self、custom
+- 字段级权限：visible、hidden、readonly、masked
+- 字段脱敏：手机号、邮箱、身份证、银行卡
+
+**API 端点：**
+- GET `/api/admin/users/:id/permission-overrides` - 获取用户权限覆盖
+- PUT `/api/admin/users/:id/permission-overrides` - 批量更新权限覆盖
+- POST `/api/admin/users/:id/permission-overrides` - 创建权限覆盖
+- DELETE `/api/admin/users/:id/permission-overrides/:overrideId` - 删除权限覆盖
+- GET `/api/admin/users/:id/permission-result` - 获取完整权限结果
+- GET `/api/admin/users/:id/data-scope` - 获取数据范围
+- GET `/api/admin/users/:id/field-restrictions` - 获取字段限制
+
+**测试：**
+- `permission_override_service_test.go` - 权限覆盖计算测试
+- `field_permission_service_test.go` - 字段脱敏和权限测试
+
+### Testing:
+- go test ./internal/module/permission/application/service/... -v -short - 28 个测试通过
+- go build ./... - 编译成功
+
+### Notes:
+- deny 类型覆盖优先级高于 grant
+- 字段脱敏支持自定义模式
+- 权限缓存 TTL 为 5 分钟
+- 支持有效期配置（临时授权场景）
+
+---
+
 ## [2026-03-20] - Task: Three-layer Permission Model (epic-2-story-2-5-permission-model)
 
 ### 铁律合规检查：
