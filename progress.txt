@@ -1,6 +1,69 @@
 # Progress Log - AI-Automated-office
 
-## [2026-03-20] - Task: Fine-grained Permission Overrides (epic-2-story-2-6-fine-grained-permissions)
+## [2026-03-20] - Task: Fine-grained Permission UI (epic-2-story-2-6-fine-grained-ui)
+
+### 铁律合规检查：
+- PRD 合规：[FR31, FR32 - 细粒度权限到个人级别、数据访问权限部门级/个人级]
+- 架构合规：[ADR-001 前端技术栈规范]
+- UX 合规：[UX-02, UX-04 - 交互体验、组件使用]
+- Epic 合规：Epic 2 / Story 2.6 细粒度权限 UI
+
+### What was done:
+
+**类型定义：**
+- `src/features/permission/types/fine-grained.types.ts` - 细粒度权限相关类型定义
+  - DataScope、FieldRestriction、PermissionOverride 等核心类型
+  - API 请求/响应类型
+
+**API 封装：**
+- `src/features/permission/api/fineGrainedApi.ts` - 细粒度权限 API 调用封装
+  - getUserPermissionResult、getUserOverrides、updateUserOverrides
+  - getUserDataScopes、updateDataScopes
+  - getUserFieldRestrictions、updateUserFieldRestrictions
+  - getResources、getDepartmentTree
+
+**状态管理：**
+- `src/features/permission/stores/fineGrainedStore.ts` - Zustand Store
+  - 用户选择、权限覆盖、数据范围、字段权限状态
+  - 变更追踪和保存逻辑
+
+**UI 组件：**
+- `src/features/permission/components/UserSelector.tsx` - 用户搜索选择器
+- `src/features/permission/components/PermissionOverrideTab.tsx` - 权限覆盖配置 Tab
+  - 权限来源对比（角色权限 vs 用户覆盖 vs 最终权限）
+  - 授权/剥夺/清除操作
+- `src/features/permission/components/DataScopeTab.tsx` - 数据范围配置 Tab
+  - 全部数据/仅本部门/本部门及下级/仅本人/自定义规则
+  - 部门树选择器
+  - 自定义规则编辑器
+- `src/features/permission/components/FieldPermissionTab.tsx` - 字段权限配置 Tab
+  - 可见/隐藏/只读/脱敏配置
+  - 脱敏规则选择（手机号、邮箱、身份证、银行卡）
+  - 批量操作功能
+- `src/features/permission/components/FineGrainedPermissionPage.tsx` - 主页面容器
+  - Tab 切换布局
+  - 保存/重置功能
+  - 未保存变更提示
+
+**路由配置：**
+- 添加路由 `/admin/permissions/fine-grained`
+
+**新增 UI 组件：**
+- `src/components/ui/tabs.tsx` - Tabs 组件
+- `src/components/ui/radio-group.tsx` - RadioGroup 组件
+
+**模块导出：**
+- 更新 `src/features/permission/index.ts` 导出所有新组件和类型
+
+### Testing:
+- npm run lint - 通过（仅有测试文件的警告）
+- npm run build - 构建成功
+- 浏览器测试 - 页面正常加载，UI 符合设计规范
+
+### Notes:
+- 后端 API 未启动时，用户搜索功能会显示"未找到匹配的用户"
+- 已添加开发模式下的模拟认证支持（VITE_BYPASS_AUTH=true）
+
 
 ### 铁律合规检查：
 - PRD 合规：[FR31, FR32 - 细粒度权限到个人级别、数据访问权限部门级/个人级]
