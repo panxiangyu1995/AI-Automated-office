@@ -1,300 +1,338 @@
-# Design: Frontend Login Flow
+# Design: Frontend Login Flow Enhancement
 
-## 技术方案
+## 现有架构
 
-### 整体架构
+基于 `epic-1-story-11-user-login` 已实现的架构：
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    UI Layer                                  │
-│  LoginPage.tsx                                              │
-│  ├── LoginForm.tsx                                          │
-│  │   ├── Username Input                                     │
-│  │   ├── Password Input                                     │
-│  │   └── Submit Button                                      │
-│  └── LoginError.tsx                                         │
+│                    已实现的架构                              │
 ├─────────────────────────────────────────────────────────────┤
-│                    Hook Layer                                │
-│  useAuth()                                                  │
-│  ├── login()                                                │
-│  ├── logout()                                               │
-│  └── refreshSession()                                       │
-├─────────────────────────────────────────────────────────────┤
-│                    State Layer (Zustand)                     │
-│  authStore                                                  │
-│  ├── user: User | null                                      │
-│  ├── token: string | null                                   │
-│  ├── permissions: PermissionSummary | null                  │
-│  ├── isAuthenticated: boolean                               │
-│  └── actions: setUser, clearAuth, updateToken               │
-├─────────────────────────────────────────────────────────────┤
-│                    API Layer                                 │
-│  authApi                                                    │
-│  ├── login(request): Promise<LoginResponse>                 │
-│  └── refreshToken(token): Promise<TokenPair>                │
+│                                                             │
+│  UI Layer                                                   │
+│  ├── LoginPage.tsx (左右分栏布局)                           │
+│  │   └── LoginForm.tsx (登录/注册/忘记密码)                 │
+│  │                                                          │
+│  State Layer (Zustand)                                      │
+│  └── authStore.ts                                           │
+│      ├── user: User | null                                  │
+│      ├── token: string | null                               │
+│      ├── isAuthenticated: boolean                           │
+│      └── actions: setUser, setToken, clearAuthSession       │
+│                                                             │
+│  Route Layer                                                │
+│  ├── App.tsx (路由配置)                                     │
+│  └── AuthGuard.tsx (路由守卫)                               │
+│                                                             │
+│  API Layer (内联在 LoginForm.tsx)                           │
+│  ├── POST /api/v1/auth/login                                │
+│  ├── POST /api/v1/auth/register                             │
+│  └── POST /api/v1/auth/forgot-password                      │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 组件设计
+## 增强后架构
 
-#### LoginPage
-
-```tsx
-// src/features/auth/components/LoginPage.tsx
-import { useState } from 'react';
-import { LoginForm } from './LoginForm';
-import { LoginError } from './LoginError';
-import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-
-export function LoginPage() {
-  const [error, setError] = useState<AuthError | null>(null);
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  const handleSubmit = async (username: string, password: string) => {
-    try {
-      setError(null);
-      await login({ username, password });
-      navigate('/');
-    } catch (err) {
-      setError(err as AuthError);
-    }
-  };
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <div className="text-center mb-8">
-          {/* Logo */}
-          <h1 className="text-2xl font-bold text-primary">AI-Automated-office</h1>
-        </div>
-        
-        {error && <LoginError error={error} />}
-        
-        <LoginForm onSubmit={handleSubmit} />
-      </div>
-    </div>
-  );
-}
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    增强后的架构                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  UI Layer                                                   │
+│  ├── LoginPage.tsx (不变)                                   │
+│  │   └── LoginForm.tsx (重构: 使用 useAuth + authApi)       │
+│  │       └── LoginError.tsx (可选: 错误提示组件)            │
+│                                                             │
+│  Hook Layer (新增)                                          │
+│  └── useAuth()                                              │
+│      ├── login(request): Promise<void>                      │
+│      ├── logout(): void                                     │
+│      ├── refreshSession(): Promise<void>                    │
+│      ├── hasPermission(permission): boolean                 │
+│      └── hasRole(role): boolean                             │
+│                                                             │
+│  State Layer (Zustand, 扩展)                                │
+│  └── authStore                                              │
+│      ├── user: User | null                                  │
+│      ├── accessToken: string | null (原 token)              │
+│      ├── refreshToken: string | null (新增)                 │
+│      ├── permissions: PermissionSummary | null (新增)       │
+│      ├── isAuthenticated: boolean                           │
+│      └── actions: setAuth, updateToken, clearAuth           │
+│                                                             │
+│  API Layer (新增模块化)                                     │
+│  └── authApi                                                │
+│      ├── login(request): Promise<LoginResponse>             │
+│      ├── register(request): Promise<RegisterResponse>       │
+│      ├── forgotPassword(username): Promise<void>            │
+│      └── refreshToken(token): Promise<TokenPair>            │
+│                                                             │
+│  Types Layer (新增)                                         │
+│  └── auth.types.ts                                          │
+│      ├── LoginRequest, LoginResponse                        │
+│      ├── RegisterRequest, RegisterResponse                  │
+│      ├── User, PermissionSummary                            │
+│      └── TokenPair                                          │
+│                                                             │
+│  Route Layer (不变)                                         │
+│  ├── App.tsx                                                │
+│  └── AuthGuard.tsx                                          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-#### LoginForm
+## 新增模块设计
 
-```tsx
-// src/features/auth/components/LoginForm.tsx
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
-
-interface LoginFormProps {
-  onSubmit: (username: string, password: string) => Promise<void>;
-}
-
-export function LoginForm({ onSubmit }: LoginFormProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {};
-    
-    if (username.length < 3) {
-      newErrors.username = '用户名至少 3 个字符';
-    }
-    if (password.length < 8) {
-      newErrors.password = '密码至少 8 个字符';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validate()) return;
-    
-    setLoading(true);
-    try {
-      await onSubmit(username, password);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="username">用户名</Label>
-        <Input
-          id="username"
-          type="text"
-          placeholder="请输入用户名"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          disabled={loading}
-        />
-        {errors.username && (
-          <p className="text-sm text-red-500">{errors.username}</p>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="password">密码</Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="请输入密码"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-        />
-        {errors.password && (
-          <p className="text-sm text-red-500">{errors.password}</p>
-        )}
-      </div>
-      
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            登录中...
-          </>
-        ) : (
-          '登录'
-        )}
-      </Button>
-    </form>
-  );
-}
-```
-
-#### LoginError
-
-```tsx
-// src/features/auth/components/LoginError.tsx
-import { AlertCircle, Lock, UserX } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-
-interface AuthError {
-  code: string;
-  message: string;
-}
-
-export function LoginError({ error }: { error: AuthError }) {
-  const getErrorConfig = (code: string) => {
-    switch (code) {
-      case 'AUTH_001':
-        return {
-          icon: UserX,
-          message: '用户名或密码错误，请重新输入',
-          variant: 'destructive' as const,
-        };
-      case 'AUTH_002':
-        return {
-          icon: Lock,
-          message: '账户已被锁定，请稍后重试',
-          variant: 'destructive' as const,
-        };
-      case 'AUTH_003':
-        return {
-          icon: UserX,
-          message: '账户已禁用，请联系管理员',
-          variant: 'destructive' as const,
-        };
-      default:
-        return {
-          icon: AlertCircle,
-          message: error.message || '登录失败，请稍后重试',
-          variant: 'destructive' as const,
-        };
-    }
-  };
-
-  const config = getErrorConfig(error.code);
-  const Icon = config.icon;
-
-  return (
-    <Alert variant={config.variant} className="mb-4">
-      <Icon className="h-4 w-4" />
-      <AlertDescription>{config.message}</AlertDescription>
-    </Alert>
-  );
-}
-```
-
-### 状态管理设计
-
-#### authStore (Zustand)
+### auth.types.ts
 
 ```typescript
-// src/stores/authStore.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+// src/features/auth/types/auth.types.ts
 
-interface User {
+/**
+ * 用户信息
+ */
+export interface User {
   id: string;
   username: string;
-  email: string;
-  realName: string;
-  departmentId: string;
-  positionId: string;
-  status: string;
+  name: string;
+  department: string;
+  role: string;
 }
 
-interface PermissionSummary {
+/**
+ * 权限摘要
+ */
+export interface PermissionSummary {
   roles: string[];
   permissions: string[];
   dataScopes: Record<string, string>;
 }
 
+/**
+ * Token 对
+ */
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+/**
+ * 登录请求
+ */
+export interface LoginRequest {
+  username: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+/**
+ * 登录响应
+ */
+export interface LoginResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  permissions?: PermissionSummary;
+}
+
+/**
+ * 注册请求
+ */
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  name: string;
+  department?: string;
+}
+
+/**
+ * 注册响应
+ */
+export interface RegisterResponse {
+  user: User;
+}
+
+/**
+ * 认证错误
+ */
+export interface AuthError {
+  code: string;
+  message: string;
+}
+```
+
+### authApi.ts
+
+```typescript
+// src/features/auth/api/authApi.ts
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from '../types/auth.types';
+
+const REQUEST_TIMEOUT_MS = 10000;
+const AUTH_API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8080').replace(/\/$/, '');
+
+interface ApiEnvelope<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  code?: string;
+}
+
+async function requestAuthApi<T>(path: string, payload: Record<string, unknown>): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  
+  try {
+    const response = await fetch(`${AUTH_API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    
+    const result = (await response.json()) as ApiEnvelope<T>;
+    
+    if (!response.ok || !result.success || !result.data) {
+      throw new Error(result.message || '请求失败');
+    }
+    
+    return result.data;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('AUTH_API_TIMEOUT');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export const authApi = {
+  /**
+   * 登录
+   */
+  async login(request: LoginRequest): Promise<LoginResponse> {
+    return requestAuthApi<LoginResponse>('/api/v1/auth/login', {
+      username: request.username,
+      password: request.password,
+      remember_me: request.rememberMe,
+    });
+  },
+
+  /**
+   * 注册
+   */
+  async register(request: RegisterRequest): Promise<RegisterResponse> {
+    return requestAuthApi<RegisterResponse>('/api/v1/auth/register', {
+      username: request.username,
+      password: request.password,
+      name: request.name,
+      department: request.department,
+    });
+  },
+
+  /**
+   * 忘记密码
+   */
+  async forgotPassword(username: string): Promise<{ accepted: boolean }> {
+    return requestAuthApi('/api/v1/auth/forgot-password', { username });
+  },
+
+  /**
+   * 刷新 Token
+   */
+  async refreshToken(refreshToken: string): Promise<TokenPair> {
+    return requestAuthApi<TokenPair>('/api/v1/auth/refresh', {
+      refresh_token: refreshToken,
+    });
+  },
+};
+```
+
+### authStore.ts (扩展)
+
+```typescript
+// src/stores/authStore.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { User, PermissionSummary } from '@/features/auth/types/auth.types';
+
 interface AuthState {
+  // 基础状态（已实现）
   user: User | null;
+  isAuthenticated: boolean;
+  
+  // 扩展状态（新增）
   accessToken: string | null;
   refreshToken: string | null;
   permissions: PermissionSummary | null;
-  isAuthenticated: boolean;
   
-  // Actions
+  // Actions（已实现）
+  setUser: (user: User) => void;
+  clearAuthSession: () => void;
+  logout: () => void;
+  
+  // Actions（新增/修改）
   setAuth: (data: {
     user: User;
     accessToken: string;
     refreshToken: string;
-    permissions: PermissionSummary;
+    permissions?: PermissionSummary;
   }) => void;
   updateToken: (accessToken: string, refreshToken: string) => void;
-  clearAuth: () => void;
+  setToken: (token: string) => void; // 兼容旧代码
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
+      isAuthenticated: false,
       accessToken: null,
       refreshToken: null,
       permissions: null,
-      isAuthenticated: false,
       
+      // 设置完整认证信息
       setAuth: (data) =>
         set({
           user: data.user,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
-          permissions: data.permissions,
+          permissions: data.permissions ?? null,
           isAuthenticated: true,
         }),
-        
+      
+      // 更新 Token
       updateToken: (accessToken, refreshToken) =>
         set({
           accessToken,
           refreshToken,
         }),
-        
-      clearAuth: () =>
+      
+      // 兼容旧代码
+      setUser: (user) => set({ user, isAuthenticated: true }),
+      setToken: (token) => set({ accessToken: token }),
+      
+      // 清除认证
+      clearAuthSession: () =>
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          permissions: null,
+          isAuthenticated: false,
+        }),
+      
+      logout: () =>
         set({
           user: null,
           accessToken: null,
@@ -305,7 +343,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // 只持久化 refreshToken，不持久化 accessToken
+      // 只持久化 refreshToken，不持久化 accessToken 和敏感信息
       partialize: (state) => ({
         refreshToken: state.refreshToken,
       }),
@@ -314,166 +352,238 @@ export const useAuthStore = create<AuthState>()(
 );
 ```
 
-#### useAuth Hook
+### useAuth.ts
 
 ```typescript
 // src/features/auth/hooks/useAuth.ts
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
+import type { LoginRequest, RegisterRequest } from '../types/auth.types';
 
 export function useAuth() {
-  const { setAuth, clearAuth, isAuthenticated, user, permissions } = useAuthStore();
+  const {
+    setAuth,
+    clearAuthSession,
+    isAuthenticated,
+    user,
+    permissions,
+    accessToken,
+    refreshToken,
+    updateToken,
+  } = useAuthStore();
   const navigate = useNavigate();
 
+  /**
+   * 登录
+   */
   const login = async (request: LoginRequest) => {
     const response = await authApi.login(request);
     
     setAuth({
       user: response.user,
-      accessToken: response.access_token,
-      refreshToken: response.refresh_token,
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
       permissions: response.permissions,
     });
   };
 
+  /**
+   * 注册
+   */
+  const register = async (request: RegisterRequest) => {
+    return authApi.register(request);
+  };
+
+  /**
+   * 登出
+   */
   const logout = () => {
-    clearAuth();
+    clearAuthSession();
     navigate('/login');
   };
 
+  /**
+   * 刷新会话
+   */
+  const refreshSession = async () => {
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+    
+    const tokens = await authApi.refreshToken(refreshToken);
+    updateToken(tokens.accessToken, tokens.refreshToken);
+  };
+
+  /**
+   * 检查是否拥有权限
+   */
   const hasPermission = (permission: string): boolean => {
     return permissions?.permissions.includes(permission) ?? false;
   };
 
+  /**
+   * 检查是否拥有角色
+   */
   const hasRole = (role: string): boolean => {
     return permissions?.roles.includes(role) ?? false;
   };
 
+  /**
+   * 检查是否有任意权限
+   */
+  const hasAnyPermission = (permissionList: string[]): boolean => {
+    return permissionList.some((p) => hasPermission(p));
+  };
+
+  /**
+   * 检查是否有所有权限
+   */
+  const hasAllPermissions = (permissionList: string[]): boolean => {
+    return permissionList.every((p) => hasPermission(p));
+  };
+
   return {
-    login,
-    logout,
-    hasPermission,
-    hasRole,
+    // 状态
     isAuthenticated,
     user,
     permissions,
+    accessToken,
+    
+    // 方法
+    login,
+    register,
+    logout,
+    refreshSession,
+    hasPermission,
+    hasRole,
+    hasAnyPermission,
+    hasAllPermissions,
   };
 }
 ```
 
-### 路由守卫设计
+### LoginError.tsx (可选)
 
 ```tsx
-// src/components/common/AuthGuard.tsx
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/stores/authStore';
+// src/features/auth/components/LoginError.tsx
+import { AlertCircle, Lock, UserX } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import type { AuthError } from '../types/auth.types';
 
-interface AuthGuardProps {
-  children: React.ReactNode;
+interface LoginErrorProps {
+  error: AuthError | string;
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, accessToken } = useAuthStore();
-  const location = useLocation();
+export function LoginError({ error }: LoginErrorProps) {
+  const errorCode = typeof error === 'string' ? 'UNKNOWN' : error.code;
+  const errorMessage = typeof error === 'string' ? error : error.message;
 
-  if (!isAuthenticated || !accessToken) {
-    // 保存当前路径，登录后重定向
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  const getErrorConfig = (code: string) => {
+    switch (code) {
+      case 'AUTH_001':
+        return {
+          icon: UserX,
+          message: '用户名或密码错误，请重新输入',
+        };
+      case 'AUTH_002':
+        return {
+          icon: Lock,
+          message: '账户已被锁定，请稍后重试',
+        };
+      case 'AUTH_003':
+        return {
+          icon: UserX,
+          message: '账户已禁用，请联系管理员',
+        };
+      default:
+        return {
+          icon: AlertCircle,
+          message: errorMessage || '登录失败，请稍后重试',
+        };
+    }
+  };
 
-  return <>{children}</>;
+  const config = getErrorConfig(errorCode);
+  const Icon = config.icon;
+
+  return (
+    <Alert variant="destructive" className="mb-4">
+      <Icon className="h-4 w-4" />
+      <AlertDescription>{config.message}</AlertDescription>
+    </Alert>
+  );
 }
 ```
 
-### API 封装设计
+## 与现有代码的集成
 
-```typescript
-// src/features/auth/api/authApi.ts
-import { apiClient } from '@/lib/api';
+### LoginForm.tsx 重构
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-  tenantId?: string;
-}
+重构 LoginForm 使用模块化 API 和 useAuth Hook：
 
-export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    real_name: string;
-    department_id: string;
-    position_id: string;
-    status: string;
-  };
-  tenant: {
-    id: string;
-    name: string;
-  };
-  permissions: {
-    roles: string[];
-    permissions: string[];
-    data_scopes: Record<string, string>;
-  };
-}
+```tsx
+// 关键变更点
+import { useAuth } from '../hooks/useAuth';
+import { authApi } from '../api/authApi';
+import type { LoginRequest, RegisterRequest } from '../types/auth.types';
 
-export const authApi = {
-  login: async (request: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>('/api/auth/login', request);
-    return response.data;
-  },
-  
-  refreshToken: async (refreshToken: string): Promise<TokenPair> => {
-    const response = await apiClient.post<TokenPair>('/api/auth/refresh', {
-      refresh_token: refreshToken,
-    });
-    return response.data;
-  },
-};
+// 替换内联 API 调用
+const { login, register } = useAuth();
+
+// 登录
+const response = await login({
+  username: credentials.username,
+  password: credentials.password,
+  rememberMe: credentials.rememberMe,
+});
+
+// 注册
+await register({
+  username: registerData.username,
+  password: registerData.password,
+  name: registerData.name,
+  department: registerData.department,
+});
 ```
 
 ## 样式设计
 
-遵循 UX 设计规范：
-- 主色：#1E3A5F（深蓝色）
-- 背景色：#F8FAFC（浅灰）
-- 输入框：白色背景，圆角边框
-- 按钮：主色背景，白色文字
-- 错误提示：红色（#EF4444）背景
+遵循 UX 设计规范（已在 epic-1-story-11-user-login 实现）：
+- 主色：#4F46E5（靛蓝色）
+- 品牌色渐变：from-[#4F46E5] to-[#4338CA]
+- 背景色：#F9FAFB（浅灰）
+- 输入框：圆角边框，带图标
+- 按钮：渐变背景，阴影效果
 
 ## 安全考虑
 
 1. **Token 存储**
-   - Access Token 存储在内存中
-   - Refresh Token 可持久化存储
-   - 不存储敏感信息
+   - AccessToken 存储在内存中（不持久化）
+   - RefreshToken 可持久化存储（用于自动刷新）
+   - 不存储敏感信息（密码等）
 
-2. **表单安全**
-   - 密码输入框类型为 password
-   - 不在 URL 中传递密码
-   - 表单提交使用 HTTPS
+2. **权限检查**
+   - 前端权限检查仅用于 UI 展示控制
+   - 后端必须进行真实的权限校验
 
-3. **错误处理**
-   - 不泄露服务器内部错误
-   - 统一的错误提示格式
+3. **Token 刷新**
+   - 在 AccessToken 即将过期时自动刷新
+   - 刷新失败时提示用户重新登录
 
-## 与其他模块的关系
+## 测试策略
 
-```
-┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│  LoginPage    │────→│   AuthStore   │     │  Tauri/Rust   │
-│   (本模块)    │     │  (状态管理)   │←────│ (本地缓存)    │
-└───────────────┘     └───────────────┘     └───────────────┘
-        │                     │                     
-        │                     │                     
-        ▼                     ▼                     
-┌───────────────┐     ┌───────────────┐             
-│   Cloud API   │     │   Main App    │             
-│  (登录接口)   │     │  (主界面)     │             
-└───────────────┘     └───────────────┘             
-```
+### 单元测试
+- authStore 状态管理
+- useAuth Hook 方法
+- authApi 请求封装
+- hasPermission / hasRole 逻辑
+
+### 集成测试
+- 登录流程
+- Token 刷新流程
+- 权限检查流程
+
+### E2E 测试
+- 完整登录流程
+- 权限控制页面访问

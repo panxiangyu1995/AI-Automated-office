@@ -43,7 +43,7 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 
 	// 初始化 admin 模块
 	adminMod := adminModule.NewAdminModule(sqlDB, log)
-	adminH := adminHandler.NewAdminHandler(adminMod.UserService, adminMod.AuditLogger, log)
+	adminH := adminHandler.NewAdminHandler(adminMod.UserService, adminMod.DepartmentService, adminMod.PositionService, adminMod.AuditLogger, log)
 
 	v1 := r.Group("/api/v1")
 	{

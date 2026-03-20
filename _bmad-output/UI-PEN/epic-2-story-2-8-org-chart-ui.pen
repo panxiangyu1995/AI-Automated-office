@@ -1,0 +1,1219 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "FglrH",
+      "x": 0,
+      "y": 0,
+      "name": "Org Chart View",
+      "width": 1440,
+      "height": 900,
+      "fill": "#F9FAFB",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "WX36I",
+          "name": "header",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "#FFFFFF",
+          "stroke": {
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#E5E7EB"
+          },
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "u20BW",
+              "name": "titleArea",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nUBRY",
+                  "fill": "#111827",
+                  "content": "组织架构图",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Lqw5t",
+              "name": "toolbar",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "EKS3O",
+                  "name": "searchBox",
+                  "width": 240,
+                  "fill": "#F3F4F6",
+                  "cornerRadius": 6,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ervda",
+                      "content": "🔍",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "9ST44",
+                      "fill": "#9CA3AF",
+                      "content": "搜索员工或部门...",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JyqSH",
+                  "name": "viewToggle",
+                  "fill": "#F3F4F6",
+                  "cornerRadius": 6,
+                  "padding": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gUm7Z",
+                      "name": "btnTree",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 4,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000D",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 2
+                      },
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zNAkA",
+                          "fill": "#111827",
+                          "content": "树形布局",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FTpik",
+                      "name": "btnMatrix",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IKA21",
+                          "fill": "#6B7280",
+                          "content": "矩阵布局",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ALg2m",
+                  "name": "zoomControls",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "oyDNH",
+                      "name": "zOut",
+                      "width": 32,
+                      "height": 32,
+                      "cornerRadius": 4,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "#D1D5DB"
+                      },
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZjWh1",
+                          "content": "-",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FLgQH",
+                      "name": "zIn",
+                      "width": 32,
+                      "height": 32,
+                      "cornerRadius": 4,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "#D1D5DB"
+                      },
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "m3xim",
+                          "content": "+",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "WYNU9",
+          "name": "mainArea",
+          "width": "fill_container",
+          "height": "fill_container",
+          "children": [
+            {
+              "type": "frame",
+              "id": "4BevS",
+              "name": "canvas",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "#F9FAFB",
+              "layout": "vertical",
+              "padding": 40,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "40Ii0",
+                  "name": "nodeCEO",
+                  "width": 240,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "#E5E7EB"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NMrqh",
+                      "name": "avatar1",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#DBEAFE",
+                      "cornerRadius": 24,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Qpyr8",
+                          "fill": "#1E40AF",
+                          "content": "李",
+                          "fontFamily": "Inter",
+                          "fontSize": 20,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "usL3h",
+                      "name": "info1",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "4AtIw",
+                          "fill": "#111827",
+                          "content": "李总",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xifrz",
+                          "fill": "#6B7280",
+                          "content": "CEO",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KDs6e",
+                  "name": "line1",
+                  "width": 2,
+                  "height": 40,
+                  "fill": "#D1D5DB"
+                },
+                {
+                  "type": "frame",
+                  "id": "iKJo4",
+                  "name": "level2Wrap",
+                  "layout": "vertical",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xQU9U",
+                      "name": "hLine",
+                      "width": 560,
+                      "height": 2,
+                      "fill": "#D1D5DB"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KUz6T",
+                      "name": "level2",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "7xyIk",
+                          "name": "colTech",
+                          "layout": "vertical",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tRIzX",
+                              "width": 2,
+                              "height": 40,
+                              "fill": "#D1D5DB"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "aTvSV",
+                              "name": "nodeTech",
+                              "width": 240,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 8,
+                              "stroke": {
+                                "thickness": 1,
+                                "fill": "#E5E7EB"
+                              },
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#0000000D",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 2
+                                },
+                                "blur": 4
+                              },
+                              "layout": "vertical",
+                              "gap": 12,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "n3hjQ",
+                                  "name": "deptHeader1",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "vy9nA",
+                                      "fill": "#111827",
+                                      "content": "技术部",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 16,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "vC0M9",
+                                      "name": "badge1",
+                                      "fill": "#F3F4F6",
+                                      "cornerRadius": 10,
+                                      "padding": [
+                                        2,
+                                        6
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "a7zHS",
+                                          "fill": "#4B5563",
+                                          "content": "42人",
+                                          "fontFamily": "Inter",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ojB2F",
+                                  "name": "mgr1",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "GcCEo",
+                                      "fill": "#D1D5DB",
+                                      "width": 24,
+                                      "height": 24
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "XUXPD",
+                                      "fill": "#4B5563",
+                                      "content": "张技术 (负责人)",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "usmfg",
+                          "name": "colHR",
+                          "layout": "vertical",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "UXall",
+                              "width": 2,
+                              "height": 40,
+                              "fill": "#D1D5DB"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "1OJ05",
+                              "name": "nodeHR",
+                              "width": 240,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 8,
+                              "stroke": {
+                                "thickness": 2,
+                                "fill": "#2563EB"
+                              },
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#2563EB33",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 4
+                                },
+                                "blur": 8
+                              },
+                              "layout": "vertical",
+                              "gap": 12,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "D6klP",
+                                  "name": "deptHeader2",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "4oJ94",
+                                      "fill": "#111827",
+                                      "content": "人事部",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 16,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "AJjAI",
+                                      "name": "badge2",
+                                      "fill": "#F3F4F6",
+                                      "cornerRadius": 10,
+                                      "padding": [
+                                        2,
+                                        6
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ZtUwA",
+                                          "fill": "#4B5563",
+                                          "content": "5人",
+                                          "fontFamily": "Inter",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MIQlf",
+                                  "name": "mgr2",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "ANVV6",
+                                      "fill": "#D1D5DB",
+                                      "width": 24,
+                                      "height": 24
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "G43xD",
+                                      "fill": "#4B5563",
+                                      "content": "王人事 (负责人)",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "saWGF",
+                                  "name": "line2",
+                                  "width": 2,
+                                  "height": 40,
+                                  "fill": "#D1D5DB"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "6HJ7d",
+                              "name": "level3Wrap",
+                              "layout": "vertical",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "yzXnP",
+                                  "name": "hLine2",
+                                  "width": 280,
+                                  "height": 2,
+                                  "fill": "#D1D5DB"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "UXCdy",
+                                  "name": "level3",
+                                  "gap": 40,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "nL0ea",
+                                      "name": "colRecruit",
+                                      "layout": "vertical",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "L1haC",
+                                          "width": 2,
+                                          "height": 40,
+                                          "fill": "#D1D5DB"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "4dcBb",
+                                          "name": "nodeRecruit",
+                                          "width": 240,
+                                          "fill": "#FFFFFF",
+                                          "cornerRadius": 8,
+                                          "stroke": {
+                                            "thickness": 1,
+                                            "fill": "#E5E7EB"
+                                          },
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#0000000D",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 2
+                                            },
+                                            "blur": 4
+                                          },
+                                          "layout": "vertical",
+                                          "gap": 12,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "SDlwN",
+                                              "name": "deptHeader4",
+                                              "width": "fill_container",
+                                              "justifyContent": "space_between",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "8WLDf",
+                                                  "fill": "#111827",
+                                                  "content": "招聘组",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "z1IBH",
+                                                  "name": "badge4",
+                                                  "fill": "#F3F4F6",
+                                                  "cornerRadius": 10,
+                                                  "padding": [
+                                                    2,
+                                                    6
+                                                  ],
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "HAwwP",
+                                                      "fill": "#4B5563",
+                                                      "content": "3人",
+                                                      "fontFamily": "Inter",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "qnKld",
+                                          "width": 2,
+                                          "height": 24,
+                                          "fill": "#D1D5DB"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ZFwio",
+                                          "name": "emp1",
+                                          "width": 220,
+                                          "fill": "#FFFFFF",
+                                          "cornerRadius": 8,
+                                          "stroke": {
+                                            "thickness": 1,
+                                            "fill": "#E5E7EB"
+                                          },
+                                          "gap": 12,
+                                          "padding": 12,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "z1iPk",
+                                              "fill": "#D1D5DB",
+                                              "width": 32,
+                                              "height": 32
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "e5I9p",
+                                              "name": "eInfo1",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "7Ur8g",
+                                                  "fill": "#111827",
+                                                  "content": "陈专员",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "500"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "nDWhR",
+                                                  "fill": "#6B7280",
+                                                  "content": "招聘专员",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RZu78",
+                                      "name": "colCB",
+                                      "layout": "vertical",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "k5r3l",
+                                          "width": 2,
+                                          "height": 40,
+                                          "fill": "#D1D5DB"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "0EuUr",
+                                          "name": "nodeCB",
+                                          "width": 240,
+                                          "fill": "#FFFFFF",
+                                          "cornerRadius": 8,
+                                          "stroke": {
+                                            "thickness": 1,
+                                            "fill": "#E5E7EB"
+                                          },
+                                          "effect": {
+                                            "type": "shadow",
+                                            "shadowType": "outer",
+                                            "color": "#0000000D",
+                                            "offset": {
+                                              "x": 0,
+                                              "y": 2
+                                            },
+                                            "blur": 4
+                                          },
+                                          "layout": "vertical",
+                                          "gap": 12,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "Fthav",
+                                              "name": "deptHeader5",
+                                              "width": "fill_container",
+                                              "justifyContent": "space_between",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "V690t",
+                                                  "fill": "#111827",
+                                                  "content": "薪酬福利组",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "LuuQk",
+                                                  "name": "badge5",
+                                                  "fill": "#F3F4F6",
+                                                  "cornerRadius": 10,
+                                                  "padding": [
+                                                    2,
+                                                    6
+                                                  ],
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "i9jXC",
+                                                      "fill": "#4B5563",
+                                                      "content": "1人",
+                                                      "fontFamily": "Inter",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bzWHS",
+                          "name": "colSales",
+                          "layout": "vertical",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "BGd2A",
+                              "width": 2,
+                              "height": 40,
+                              "fill": "#D1D5DB"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ib24J",
+                              "name": "nodeSales",
+                              "width": 240,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 8,
+                              "stroke": {
+                                "thickness": 1,
+                                "fill": "#E5E7EB"
+                              },
+                              "effect": {
+                                "type": "shadow",
+                                "shadowType": "outer",
+                                "color": "#0000000D",
+                                "offset": {
+                                  "x": 0,
+                                  "y": 2
+                                },
+                                "blur": 4
+                              },
+                              "layout": "vertical",
+                              "gap": 12,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "WnUjD",
+                                  "name": "deptHeader3",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Z58jF",
+                                      "fill": "#111827",
+                                      "content": "销售部",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 16,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "zT6ya",
+                                      "name": "badge3",
+                                      "fill": "#F3F4F6",
+                                      "cornerRadius": 10,
+                                      "padding": [
+                                        2,
+                                        6
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "FzfYK",
+                                          "fill": "#4B5563",
+                                          "content": "128人",
+                                          "fontFamily": "Inter",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DiUDX",
+                                  "name": "mgr3",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "AbpXb",
+                                      "fill": "#D1D5DB",
+                                      "width": 24,
+                                      "height": 24
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "MzUsE",
+                                      "fill": "#4B5563",
+                                      "content": "赵销售 (负责人)",
+                                      "fontFamily": "Inter",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "G52C4",
+              "name": "sidebar",
+              "width": 320,
+              "height": "fill_container",
+              "fill": "#FFFFFF",
+              "stroke": {
+                "thickness": {
+                  "left": 1
+                },
+                "fill": "#E5E7EB"
+              },
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sd5i8",
+                  "name": "sideHeader",
+                  "width": "fill_container",
+                  "stroke": {
+                    "thickness": {
+                      "bottom": 1
+                    },
+                    "fill": "#E5E7EB"
+                  },
+                  "padding": 24,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aJ1EA",
+                      "fill": "#111827",
+                      "content": "部门详情",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "uuOta",
+                      "fill": "#9CA3AF",
+                      "content": "✕",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NKbiN",
+                  "name": "sideContent",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Bx6Xc",
+                      "fill": "#111827",
+                      "content": "人事部",
+                      "fontFamily": "Inter",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "OwwDn",
+                      "name": "dInfo",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "WAVGU",
+                          "name": "dRow1",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "m67Z1",
+                              "fill": "#6B7280",
+                              "content": "部门编码",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nDbxf",
+                              "fill": "#111827",
+                              "content": "DEPT_HR",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LuFQs",
+                          "name": "dRow2",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qSs5q",
+                              "fill": "#6B7280",
+                              "content": "负责人",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "6uQbt",
+                              "fill": "#2563EB",
+                              "content": "王人事",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "1mhAe",
+                          "name": "dRow3",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "9jIif",
+                              "fill": "#6B7280",
+                              "content": "成员数量",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "vPOXt",
+                              "fill": "#111827",
+                              "content": "5 人",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "4ZBaR",
+                      "name": "memberList",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HE83F",
+                          "fill": "#111827",
+                          "content": "部门成员",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wy44a",
+                          "name": "m1",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "rYGVt",
+                              "fill": "#D1D5DB",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Khz6t",
+                              "name": "mInfo1",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "meyPh",
+                                  "fill": "#111827",
+                                  "content": "王人事",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "fVwer",
+                                  "fill": "#6B7280",
+                                  "content": "HR总监",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "H00q3",
+                          "name": "m2",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "j1EmB",
+                              "fill": "#D1D5DB",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "frame",
+                              "id": "5aFwc",
+                              "name": "mInfo2",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "BtqyE",
+                                  "fill": "#111827",
+                                  "content": "陈专员",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "dI5k8",
+                                  "fill": "#6B7280",
+                                  "content": "招聘专员",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

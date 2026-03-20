@@ -13,15 +13,21 @@ import (
 
 // AdminModule 管理模块
 type AdminModule struct {
-	UserService *service.UserService
-	UserRepo    repository.UserRepository
-	AuditLogger service.AuditLogger
+	UserService       *service.UserService
+	DepartmentService *service.DepartmentService
+	PositionService   *service.PositionService
+	UserRepo          repository.UserRepository
+	DepartmentRepo    repository.DepartmentRepository
+	PositionRepo      repository.PositionRepository
+	AuditLogger       service.AuditLogger
 }
 
 // NewAdminModule 创建管理模块
 func NewAdminModule(db *sql.DB, logger *zap.Logger) *AdminModule {
 	// 创建仓储
 	userRepo := persistence.NewUserRepository(db)
+	departmentRepo := persistence.NewDepartmentRepository(db)
+	positionRepo := persistence.NewPositionRepository(db)
 
 	// 创建审计服务
 	auditLogger := auditService.NewAuditService(db, logger)
@@ -30,9 +36,21 @@ func NewAdminModule(db *sql.DB, logger *zap.Logger) *AdminModule {
 	userService := service.NewUserService(userRepo, db, logger)
 	userService.SetAuditLogger(auditLogger)
 
+	// 创建部门服务
+	departmentService := service.NewDepartmentService(departmentRepo, db, logger)
+	departmentService.SetAuditLogger(auditLogger)
+
+	// 创建岗位服务
+	positionService := service.NewPositionService(positionRepo, departmentRepo, db, logger)
+	positionService.SetAuditLogger(auditLogger)
+
 	return &AdminModule{
-		UserService: userService,
-		UserRepo:    userRepo,
-		AuditLogger: auditLogger,
+		UserService:       userService,
+		DepartmentService: departmentService,
+		PositionService:   positionService,
+		UserRepo:          userRepo,
+		DepartmentRepo:    departmentRepo,
+		PositionRepo:      positionRepo,
+		AuditLogger:       auditLogger,
 	}
 }

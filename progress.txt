@@ -521,3 +521,74 @@
 - 支锟街帮拷锟斤拷锟斤拷锟斤拷锟斤拷锟脚★拷锟斤拷锟脚★拷状态筛选
 - 锟斤拷锟斤拷锟矫伙拷时锟皆讹拷锟斤拷锟斤拷锟斤拷时锟斤拷锟斤拷
 - 锟斤拷锟斤拷锟街撅拷锟铰硷拷没锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷隆锟阶刺拷锟斤拷锟铰硷拷
+
+---
+
+## [2026-03-20] - Task: Department and Position Domain Model Backend (epic-2-story-2-3-org-domain-model)
+
+### 铁律合规检查：
+- PRD 合规：[FR100, FR102 - 部门和岗位管理后端 API]
+- 架构合规：[ADR-005 - Go Cloud Layer DDD 架构]
+- UX 合规：[无直接 UI 变更，后端基础设施]
+
+### What was done:
+- 创建数据库迁移：
+  - migrations/006_positions.up.sql - 岗位表、部门闭包表、索引
+  - migrations/006_positions.down.sql - 回滚脚本
+- 更新 internal/model/department.go - 添加 SortOrder、Status 字段，Position 模型，DepartmentClosure 模型
+- 创建 admin 模块部门岗位功能：
+  - domain/repository/department_repository.go - 部门仓储接口
+  - domain/repository/position_repository.go - 岗位仓储接口
+  - infrastructure/persistence/department_repo_impl.go - 部门仓储实现
+  - infrastructure/persistence/position_repo_impl.go - 岗位仓储实现
+  - application/service/department_service.go - 部门服务
+  - application/service/position_service.go - 岗位服务
+  - interface/handler/department_handler.go - 部门 HTTP 处理器
+  - interface/handler/position_handler.go - 岗位 HTTP 处理器
+- 更新 admin_module.go - 注册部门岗位服务
+- 更新 admin_handler.go - 添加部门岗位路由
+- 更新 router.go - 初始化 AdminHandler
+
+### Testing:
+- go build ./... 通过
+
+### Notes:
+- 部门树使用闭包表优化层级查询
+- 支持部门循环引用检测
+- 支持软删除和租户隔离
+
+---
+
+## [2026-03-20] - Task: Department and Position UI (epic-2-story-2-3-org-ui)
+
+### 铁律合规检查：
+- PRD 合规：[FR100, FR102 - 部门和岗位管理前端界面]
+- 架构合规：[ADR-001 - React + TypeScript + Shadcn/ui 技术栈]
+- UX 合规：[UX-02 组件库、UX-04 颜色系统、Lucide React 图标]
+
+### What was done:
+- 创建组织管理模块（集成到 admin 功能下）：
+  - types/organization.types.ts - 部门和岗位类型定义
+  - api/organizationApi.ts - API 调用封装
+  - hooks/useDepartmentTree.ts - 部门树数据 Hook
+  - hooks/usePositions.ts - 岗位数据 Hook
+  - hooks/useOrganizationMutations.ts - 变更操作 Hook
+  - components/DepartmentTree.tsx - 部门树组件
+  - components/DepartmentForm.tsx - 部门表单组件
+  - components/DepartmentDetail.tsx - 部门详情面板
+  - components/PositionTable.tsx - 岗位表格组件
+  - components/PositionForm.tsx - 岗位表单组件
+  - pages/OrganizationPage.tsx - 组织管理主页面
+- 更新 components/ui/textarea.tsx - 新增 Textarea 组件
+- 更新 components/common/Sidebar.tsx - 添加管理员导航菜单
+- 更新 App.tsx - 添加组织管理路由
+
+### Testing:
+- npm run lint 通过
+- npm run build 通过
+
+### Notes:
+- 使用品牌色 #1E3A5F 和选中背景 #EFF6FF
+- 使用 Shadcn/ui 组件和 Lucide React 图标
+- 左右分栏布局：左侧部门树，右侧部门详情和岗位列表
+- 支持部门 CRUD 和岗位 CRUD 操作

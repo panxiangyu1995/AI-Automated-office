@@ -1,153 +1,160 @@
-# Tasks: Frontend Login Flow
+# Tasks: Frontend Login Flow Enhancement
 
-## 任务列表
+> **前置说明**: 基础登录功能已在 `epic-1-story-11-user-login` 完成，本 Story 专注于增强和优化。
 
-### 任务 1: 定义类型和 API 封装
-- **描述**: 定义认证相关的 TypeScript 类型和 API 封装
-- **文件**: 
-  - `src/features/auth/types/auth.types.ts`
-  - `src/features/auth/api/authApi.ts`
+## 已完成任务（来自 epic-1-story-11-user-login）
+
+- [x] ~~创建登录页面~~ → `src/features/auth/pages/LoginPage.tsx`
+- [x] ~~创建登录表单组件~~ → `src/features/auth/components/LoginForm.tsx`
+- [x] ~~实现认证状态管理~~ → `src/stores/authStore.ts`
+- [x] ~~实现路由守卫~~ → `src/components/common/AuthGuard.tsx`
+- [x] ~~实现记住我功能~~ → 已在 LoginForm.tsx 实现
+- [x] ~~添加忘记密码入口~~ → 已在 LoginForm.tsx 实现
+
+## 本次已完成任务
+
+### 任务 1: 创建类型定义模块 ✅
+- **描述**: 从 LoginForm.tsx 抽取类型定义，创建独立的类型文件
+- **文件**: `src/features/auth/types/auth.types.ts`
 - **验收**: 
-  - 类型定义完整
-  - API 封装正确
-  - 与后端 API 契约一致
+  - [x] 定义 User, PermissionSummary, TokenPair 类型
+  - [x] 定义 LoginRequest, LoginResponse 类型
+  - [x] 定义 RegisterRequest, RegisterResponse 类型
+  - [x] 定义 AuthError 类型
+  - [x] LoginForm.tsx 可正常导入使用
 
-### 任务 2: 创建认证状态 Store
-- **描述**: 使用 Zustand 创建全局认证状态管理
-- **文件**: 
-  - `src/stores/authStore.ts`
+### 任务 2: 创建 API 封装模块 ✅
+- **描述**: 从 LoginForm.tsx 抽取 API 调用逻辑，创建独立的 API 模块
+- **文件**: `src/features/auth/api/authApi.ts`
 - **验收**: 
-  - Store 包含 user、token、permissions 状态
-  - 提供 setAuth、clearAuth、updateToken actions
-  - 配置持久化存储
+  - [x] 实现 login, register, forgotPassword 方法
+  - [x] 实现 refreshToken 方法
+  - [x] 统一错误处理和超时控制
+  - [x] LoginForm.tsx 可正常调用
 
-### 任务 3: 创建 useAuth Hook
+### 任务 3: 扩展认证状态 Store ✅
+- **描述**: 扩展 authStore 支持权限管理和双 Token
+- **文件**: `src/stores/authStore.ts`
+- **验收**: 
+  - [x] 添加 accessToken, refreshToken 状态
+  - [x] 添加 permissions 状态
+  - [x] 添加 setAuth, updateToken actions
+  - [x] 保留原有 setUser, setToken 的兼容性
+  - [x] 配置持久化策略（只持久化 refreshToken）
+
+### 任务 4: 创建 useAuth Hook ✅
 - **描述**: 创建认证 Hook，封装登录、登出、权限检查逻辑
-- **文件**: 
-  - `src/features/auth/hooks/useAuth.ts`
+- **文件**: `src/features/auth/hooks/useAuth.ts`
 - **验收**: 
-  - 提供 login、logout 方法
-  - 提供 hasPermission、hasRole 方法
-  - 正确调用 authApi 和 authStore
+  - [x] 提供 login, logout, register 方法
+  - [x] 提供 refreshSession 方法
+  - [x] 提供 hasPermission, hasRole 方法
+  - [x] 提供 hasAnyPermission, hasAllPermissions 方法
+  - [x] 返回 isAuthenticated, user, permissions 状态
 
-### 任务 4: 创建登录表单组件
-- **描述**: 创建登录表单组件，包含用户名、密码输入和验证
-- **文件**: 
-  - `src/features/auth/components/LoginForm.tsx`
+### 任务 5: 重构登录表单组件 ✅
+- **描述**: 重构 LoginForm.tsx 使用模块化 API 和 useAuth Hook
+- **文件**: `src/features/auth/components/LoginForm.tsx`
 - **验收**: 
-  - 表单包含用户名和密码输入
-  - 客户端验证逻辑正确
-  - 加载状态显示正确
-  - 使用 Shadcn/ui 组件
+  - [x] 移除内联 API 调用代码
+  - [x] 使用 authApi 调用 API
+  - [x] 使用 useAuth Hook 管理状态
+  - [x] 功能保持不变（登录/注册/忘记密码）
 
-### 任务 5: 创建错误提示组件
-- **描述**: 创建登录错误提示组件，显示友好的错误信息
-- **文件**: 
-  - `src/features/auth/components/LoginError.tsx`
+### 任务 6: 创建错误提示组件 ✅
+- **描述**: 创建独立的错误提示组件，根据错误码显示友好提示
+- **文件**: `src/features/auth/components/LoginError.tsx`
 - **验收**: 
-  - 根据错误码显示对应错误信息
-  - 使用 Lucide React 图标
-  - 样式符合 UX 规范
+  - [x] 根据错误码显示对应图标和文案
+  - [x] 使用 Lucide React 图标
+  - [x] 样式符合 UX 规范
+  - [x] LoginForm 可正常使用
 
-### 任务 6: 创建登录页面
-- **描述**: 创建完整的登录页面，整合表单和错误提示
-- **文件**: 
-  - `src/features/auth/components/LoginPage.tsx`
-- **验收**: 
-  - 页面布局符合 UX 设计规范
-  - 包含 Logo 和品牌元素
-  - 正确处理登录流程
-  - 登录成功后跳转到主界面
+## 待执行任务
 
-### 任务 7: 实现路由守卫
-- **描述**: 创建 AuthGuard 组件，保护需要认证的路由
+### 任务 7: 编写单元测试
+- **描述**: 为新增模块编写单元测试
 - **文件**: 
-  - `src/components/common/AuthGuard.tsx`
-  - `src/App.tsx` (更新路由配置)
-- **验收**: 
-  - 未认证用户重定向到登录页
-  - 保存原始访问路径
-  - 认证后正确跳转
-
-### 任务 8: 配置路由
-- **描述**: 更新 App.tsx 路由配置，添加登录页和路由守卫
-- **文件**: 
-  - `src/App.tsx`
-- **验收**: 
-  - /login 路由指向 LoginPage
-  - 其他路由需要 AuthGuard 保护
-  - 默认路由重定向正确
-
-### 任务 9: 编写单元测试
-- **描述**: 为核心组件和 Hook 编写单元测试
-- **文件**: 
-  - `src/features/auth/components/LoginForm.test.tsx`
   - `src/features/auth/hooks/useAuth.test.ts`
   - `src/stores/authStore.test.ts`
 - **验收**: 
-  - 覆盖率 > 80%
-  - 测试各种状态场景
+  - [ ] useAuth Hook 测试覆盖
+  - [ ] authStore 权限相关测试
+  - [ ] 覆盖率 > 80%
 
-### 任务 10: 编写 E2E 测试
-- **描述**: 测试完整的登录流程
-- **文件**: 
-  - `tests/e2e/auth/login.spec.ts`
+### 任务 8: E2E 测试验证
+- **描述**: 验证完整的登录增强流程
+- **文件**: `tests/e2e/auth/login-enhancement.spec.ts`
 - **验收**: 
-  - 测试成功登录场景
-  - 测试失败登录场景
-  - 测试路由守卫
+  - [ ] 登录成功获取权限
+  - [ ] 权限检查功能正常
+  - [ ] Token 刷新流程正常
 
 ## 执行顺序
 
 ```
-1. 定义类型和 API 封装
+任务 1: 创建类型定义模块 ✅
       ↓
-2. 创建认证状态 Store
+任务 2: 创建 API 封装模块 ✅
       ↓
-3. 创建 useAuth Hook
+任务 3: 扩展认证状态 Store ✅
       ↓
-4. 创建登录表单组件
+任务 4: 创建 useAuth Hook ✅
       ↓
-5. 创建错误提示组件
+任务 5: 重构登录表单组件 ✅
       ↓
-6. 创建登录页面
+任务 6: 创建错误提示组件 ✅
       ↓
-7. 实现路由守卫
+任务 7: 编写单元测试 (待执行)
       ↓
-8. 配置路由
-      ↓
-9. 编写单元测试
-      ↓
-10. 编写 E2E 测试
+任务 8: E2E 测试验证 (待执行)
 ```
 
 ## 测试要点
 
 ### 单元测试
-- [ ] LoginForm 表单验证
-- [ ] LoginForm 提交处理
-- [ ] useAuth login 方法
-- [ ] useAuth hasPermission 方法
-- [ ] authStore 状态管理
+- [ ] useAuth Hook 方法
+- [ ] authStore 权限状态管理
+- [ ] hasPermission / hasRole 逻辑
+- [ ] authApi 请求封装
 
 ### 集成测试
-- [ ] LoginPage 完整流程
-- [ ] AuthGuard 路由保护
+- [ ] 登录流程（使用 useAuth）
+- [ ] Token 刷新流程
+- [ ] 权限检查流程
 
 ### E2E 测试
-- [ ] 成功登录流程
-- [ ] 密码错误提示
-- [ ] 账户锁定提示
-- [ ] 路由守卫重定向
-- [ ] 登录后权限检查
+- [ ] 成功登录获取权限
+- [ ] 权限控制页面访问
+- [ ] Token 过期自动刷新
 
 ## 交付物
 
-1. 登录页面 UI（LoginPage）
-2. 登录表单组件（LoginForm）
-3. 错误提示组件（LoginError）
-4. 认证状态 Store（authStore）
-5. 认证 Hook（useAuth）
-6. 路由守卫（AuthGuard）
-7. API 封装（authApi）
-8. 单元测试和 E2E 测试
+1. ✅ `src/features/auth/types/auth.types.ts` - 类型定义
+2. ✅ `src/features/auth/api/authApi.ts` - API 封装
+3. ✅ `src/features/auth/hooks/useAuth.ts` - 认证 Hook
+4. ✅ `src/stores/authStore.ts` - 扩展后的认证状态
+5. ✅ `src/features/auth/components/LoginForm.tsx` - 重构后的登录表单
+6. ✅ `src/features/auth/components/LoginError.tsx` - 错误提示组件
+7. 单元测试和 E2E 测试（待完成）
+
+## 风险与注意事项
+
+1. **向后兼容**: 保留原有 setUser, setToken 方法，避免破坏现有代码
+2. **渐进式重构**: 先创建新模块，再逐步迁移现有代码
+3. **测试覆盖**: 重构后确保所有原有功能正常
+4. **权限一致性**: 前端权限检查仅用于 UI 控制，后端必须校验
+
+## 与 task.json 的对应
+
+本 OpenSpec 变更对应 `task.json` 中的任务 ID 19:
+```json
+{
+  "id": 19,
+  "epic": "Epic 2",
+  "story": "Story 2.1",
+  "title": "Frontend login flow enhancement",
+  "description": "Enhance the frontend login flow with permission management, dual token mechanism, and code modularization. Base implementation completed in epic-1-story-11-user-login.",
+  "openspec_change": "epic-2-story-2-1-frontend-login-flow"
+}
+```
