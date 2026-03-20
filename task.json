@@ -897,7 +897,7 @@
                                            "E2-S2.2-01",
                                            "E2-S2.3-01"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  26,

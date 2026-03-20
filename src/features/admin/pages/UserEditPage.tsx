@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { UserForm } from '../components'
 import { useUserMutations } from '../hooks/useUserMutations'
 import { userApi } from '../api/userApi'
-import type { UpdateUserRequest, UserDetail, DepartmentOption, RoleOption } from '../types/user.types'
+import type { UpdateUserRequest, UserDetail, DepartmentOption, RoleOption, UserSummary } from '../types/user.types'
 
 // Mock data - in real app, this would come from APIs
 const mockDepartments: DepartmentOption[] = [
@@ -79,6 +79,16 @@ export function UserEditPage() {
       setSuccessMessage('用户信息更新成功！')
     }
   }, [id, updateUser])
+
+  const handleSearchManager = useCallback(async (query: string): Promise<UserSummary[]> => {
+    if (!id) return []
+    try {
+      return await userApi.searchUsersForManager(id, query, 10)
+    } catch (err) {
+      console.error('Search manager failed:', err)
+      return []
+    }
+  }, [id])
 
   const handleBack = useCallback(() => {
     navigate('/admin/users')
@@ -149,6 +159,8 @@ export function UserEditPage() {
               roles={mockRoles}
               onSubmit={handleSubmit}
               loading={updating}
+              currentUserId={id}
+              onSearchManager={handleSearchManager}
             />
           </div>
         </div>

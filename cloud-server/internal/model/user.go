@@ -16,6 +16,7 @@ type User struct {
 	AvatarURL        string         `gorm:"type:text" json:"avatar_url,omitempty"`
 	EmployeeID       string         `gorm:"size:50" json:"employee_id,omitempty"`
 	Phone            string         `gorm:"size:50" json:"phone,omitempty"`
+	ManagerID        *string        `gorm:"type:uuid;index" json:"manager_id,omitempty"`
 	Status           string         `gorm:"size:20;default:active" json:"status"`
 	EmailVerified    bool           `gorm:"default:false" json:"email_verified"`
 	LastLoginAt      *time.Time     `json:"last_login_at,omitempty"`

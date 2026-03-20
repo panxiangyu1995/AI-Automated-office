@@ -31,6 +31,8 @@ type UserListItem struct {
 	Email        string          `json:"email"`
 	Phone        string          `json:"phone"`
 	Status       string          `json:"status"`
+	ManagerID    *string         `json:"manager_id,omitempty"`
+	ManagerName  string          `json:"manager_name,omitempty"`
 	Departments  []DepartmentRef `json:"departments"`
 	Roles        []RoleRef       `json:"roles"`
 	CreatedAt    string          `json:"created_at"`
@@ -55,6 +57,35 @@ type UserDetail struct {
 	*UserListItem
 	UpdatedAt   string `json:"updated_at,omitempty"`
 	LastLoginAt string `json:"last_login_at,omitempty"`
+}
+
+// ManagerChainItem 上级链项
+type ManagerChainItem struct {
+	Level int          `json:"level"`
+	User  *UserSummary `json:"user"`
+}
+
+// UserSummary 用户简要信息
+type UserSummary struct {
+	ID           string        `json:"id"`
+	RealName     string        `json:"real_name"`
+	EmployeeCode string        `json:"employee_code,omitempty"`
+	Department   *DeptSummary  `json:"department,omitempty"`
+}
+
+// DeptSummary 部门简要信息
+type DeptSummary struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// SubordinateItem 下属项
+type SubordinateItem struct {
+	ID           string       `json:"id"`
+	RealName     string       `json:"real_name"`
+	EmployeeCode string       `json:"employee_code"`
+	Department   *DeptSummary `json:"department,omitempty"`
+	Status       string       `json:"status"`
 }
 
 // UserRepository 用户管理仓储接口
@@ -103,4 +134,19 @@ type UserRepository interface {
 
 	// GetUserRoleIDs 获取用户角色 ID 列表
 	GetUserRoleIDs(ctx context.Context, userID string) ([]string, error)
+
+	// UpdateManagerID 更新用户上级
+	UpdateManagerID(ctx context.Context, tenantID, userID string, managerID *string) error
+
+	// GetManagerChain 获取用户上级链
+	GetManagerChain(ctx context.Context, tenantID, userID string, maxDepth int) ([]*ManagerChainItem, error)
+
+	// GetSubordinates 获取用户直接下属列表
+	GetSubordinates(ctx context.Context, tenantID, managerID string) ([]*SubordinateItem, error)
+
+	// FindUserSummaries 根据用户 ID 列表获取用户简要信息
+	FindUserSummaries(ctx context.Context, tenantID string, userIDs []string) ([]*UserSummary, error)
+
+	// SearchUsersForManager 搜索可选上级的用户
+	SearchUsersForManager(ctx context.Context, tenantID string, query string, excludeIDs []string, limit int) ([]*UserSummary, error)
 }

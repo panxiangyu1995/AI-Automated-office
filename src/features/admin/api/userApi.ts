@@ -15,6 +15,11 @@ import type {
   UpdateUserRequest,
   UserDetail,
   UpdateStatusRequest,
+  UpdateManagerRequest,
+  ManagerChainResponse,
+  SubordinatesResponse,
+  ManagerSearchResponse,
+  UserSummary,
 } from '../types/user.types'
 
 const REQUEST_TIMEOUT_MS = 15000
@@ -194,6 +199,43 @@ export const userApi = {
       method: 'PATCH',
       body: request,
     })
+  },
+
+  /**
+   * 更新用户上级
+   */
+  async updateManager(userId: string, request: UpdateManagerRequest): Promise<{ id: string }> {
+    return requestApi<{ id: string }>(`/api/admin/users/${userId}/manager`, {
+      method: 'PUT',
+      body: request,
+    })
+  },
+
+  /**
+   * 获取用户上级链
+   */
+  async getManagerChain(userId: string): Promise<ManagerChainResponse> {
+    return requestApi<ManagerChainResponse>(`/api/admin/users/${userId}/managers`)
+  },
+
+  /**
+   * 获取用户直接下属
+   */
+  async getSubordinates(userId: string): Promise<SubordinatesResponse> {
+    return requestApi<SubordinatesResponse>(`/api/admin/users/${userId}/subordinates`)
+  },
+
+  /**
+   * 搜索可选上级的用户
+   */
+  async searchUsersForManager(userId: string, query: string, limit: number = 10): Promise<UserSummary[]> {
+    const queryString = buildQueryString({
+      user_id: userId,
+      q: query,
+      limit,
+    })
+    const response = await requestApi<ManagerSearchResponse>(`/api/admin/users/search-for-manager${queryString}`)
+    return response.items
   },
 }
 

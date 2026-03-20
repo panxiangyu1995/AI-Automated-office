@@ -39,6 +39,8 @@ export interface UserListItem {
   email: string
   phone: string
   status: UserStatus
+  manager_id?: string
+  manager_name?: string
   departments: DepartmentRef[]
   roles: RoleRef[]
   created_at: string
@@ -95,6 +97,7 @@ export interface CreateUserRequest {
   phone?: string
   department_ids?: string[]
   role_ids?: string[]
+  manager_id?: string | null
   send_notification?: boolean
 }
 
@@ -117,6 +120,7 @@ export interface UpdateUserRequest {
   phone?: string
   department_ids?: string[]
   role_ids?: string[]
+  manager_id?: string | null
 }
 
 /**
@@ -152,4 +156,69 @@ export interface RoleOption {
   id: string
   name: string
   code: string
+}
+
+/**
+ * 部门简要信息
+ */
+export interface DeptSummary {
+  id: string
+  name: string
+}
+
+/**
+ * 用户简要信息
+ */
+export interface UserSummary {
+  id: string
+  real_name: string
+  employee_code?: string
+  department?: DeptSummary
+}
+
+/**
+ * 上级链项
+ */
+export interface ManagerChainItem {
+  level: number
+  user: UserSummary
+}
+
+/**
+ * 下属项
+ */
+export interface SubordinateItem {
+  id: string
+  real_name: string
+  employee_code: string
+  department?: DeptSummary
+  status: string
+}
+
+/**
+ * 更新上级请求
+ */
+export interface UpdateManagerRequest {
+  manager_id: string | null
+}
+
+/**
+ * 上级链响应
+ */
+export interface ManagerChainResponse {
+  chain: ManagerChainItem[]
+}
+
+/**
+ * 下属列表响应
+ */
+export interface SubordinatesResponse {
+  items: SubordinateItem[]
+}
+
+/**
+ * 上级搜索响应
+ */
+export interface ManagerSearchResponse {
+  items: UserSummary[]
 }

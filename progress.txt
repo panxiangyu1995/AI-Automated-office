@@ -1,5 +1,55 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-20] - Task: Direct Manager Relation (epic-2-story-2-4-manager-relationship)
+
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR101 - ç›´å±ä¸Šçº§è®¾ç½®åŠŸèƒ½åŸºçº¿]
+- æ¶æ„åˆè§„ï¼š[ADR-005 Go DDD æ¶æ„ã€ADR-001 React + TypeScript å‰ç«¯]
+- UX åˆè§„ï¼š[UX-04 ä¸Šçº§é€‰æ‹©å™¨é›†æˆåˆ°ç”¨æˆ·ç¼–è¾‘è¡¨å•]
+- Epic åˆè§„ï¼šEpic 2 / Story 2.4 ç»„ç»‡æ±‡æŠ¥å…³ç³»ç®¡ç†
+
+### What was done:
+
+**åç«¯å®ç°ï¼š**
+- åˆ›å»ºæ•°æ®åº“è¿ç§» `cloud-server/migrations/007_manager_relation.up.sql` - æ·»åŠ  manager_id å­—æ®µ
+- åˆ›å»ºå›æ»šè¿ç§» `cloud-server/migrations/007_manager_relation.down.sql`
+- æ›´æ–° `cloud-server/internal/model/user.go` - æ·»åŠ  ManagerID å­—æ®µ
+- æ›´æ–° `cloud-server/internal/module/admin/domain/repository/user_repository.go` - æ·»åŠ ä»“å‚¨æ¥å£æ–¹æ³•
+- æ›´æ–° `cloud-server/internal/module/admin/infrastructure/persistence/user_repo_impl.go` - å®ç°ä»“å‚¨æ–¹æ³•
+- æ›´æ–° `cloud-server/internal/module/admin/application/service/user_service.go` - æ·»åŠ æœåŠ¡æ–¹æ³•
+- æ›´æ–° `cloud-server/internal/module/admin/interface/handler/admin_handler.go` - æ·»åŠ  API ç«¯ç‚¹
+
+**API ç«¯ç‚¹ï¼š**
+- `PUT /api/admin/users/:id/manager` - è®¾ç½®/æ¸…é™¤ä¸Šçº§
+- `GET /api/admin/users/:id/managers` - æŸ¥è¯¢ä¸Šçº§é“¾
+- `GET /api/admin/users/:id/subordinates` - æŸ¥è¯¢ä¸‹å±åˆ—è¡¨
+- `GET /api/admin/users/search-for-manager` - æœç´¢å¯è®¾ä¸ºä¸Šçº§çš„ç”¨æˆ·
+
+**å‰ç«¯å®ç°ï¼š**
+- åˆ›å»º `src/features/admin/components/ManagerPicker.tsx` - ä¸Šçº§é€‰æ‹©å™¨ç»„ä»¶
+- æ›´æ–° `src/features/admin/types/user.types.ts` - æ·»åŠ ç±»å‹å®šä¹‰
+- æ›´æ–° `src/features/admin/api/userApi.ts` - æ·»åŠ  API æ–¹æ³•
+- æ›´æ–° `src/features/admin/components/UserForm.tsx` - é›†æˆä¸Šçº§é€‰æ‹©å™¨
+- æ›´æ–° `src/features/admin/pages/UserEditPage.tsx` - æ·»åŠ ä¸Šçº§æœç´¢åŠŸèƒ½
+
+**æµ‹è¯•ï¼š**
+- åˆ›å»ºå•å…ƒæµ‹è¯• `cloud-server/internal/module/admin/application/service/user_service_manager_test.go` (12 ä¸ªæµ‹è¯•)
+- åˆ›å»ºé›†æˆæµ‹è¯• `cloud-server/internal/module/admin/integration/manager_integration_test.go` (è·³è¿‡ - éœ€è¦ CGO)
+- åˆ›å»º E2E æµ‹è¯• `tests/e2e/admin/manager-relationship.spec.ts`
+
+### Testing:
+- âœ… `go test -v ./internal/module/admin/application/service/...` - 12 ä¸ªæµ‹è¯•é€šè¿‡
+- âœ… `go build ./...` - ç¼–è¯‘æˆåŠŸ
+- âœ… `npm run build` - å‰ç«¯æ„å»ºæˆåŠŸ
+- âœ… `npx eslint` (ä¿®æ”¹çš„æ–‡ä»¶) - æ— é”™è¯¯
+
+### Notes:
+- é›†æˆæµ‹è¯•éœ€è¦ CGO_ENABLED=1 è¿è¡Œï¼ˆSQLite é©±åŠ¨ä¾èµ–ï¼‰
+- E2E æµ‹è¯•éœ€è¦åç«¯æœåŠ¡è¿è¡ŒåéªŒè¯
+- é”™è¯¯ç ï¼šMANAGER_CANNOT_BE_SELFã€CIRCULAR_MANAGER_CHAINã€CROSS_TENANT_MANAGERã€MANAGER_CHAIN_TOO_DEEP
+
+---
+
 ## [2026-03-19] - Task: User Admin UI (epic-2-story-2-2-user-admin-ui)
 
 ### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
@@ -526,69 +576,69 @@
 
 ## [2026-03-20] - Task: Department and Position Domain Model Backend (epic-2-story-2-3-org-domain-model)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR100, FR102 - ²¿ÃÅºÍ¸ÚÎ»¹ÜÀíºó¶Ë API]
-- ¼Ü¹¹ºÏ¹æ£º[ADR-005 - Go Cloud Layer DDD ¼Ü¹¹]
-- UX ºÏ¹æ£º[ÎŞÖ±½Ó UI ±ä¸ü£¬ºó¶Ë»ù´¡ÉèÊ©]
+### ï¿½ï¿½ï¿½ÉºÏ¹ï¿½ï¿½é£º
+- PRD ï¿½Ï¹æ£º[FR100, FR102 - ï¿½ï¿½ï¿½ÅºÍ¸ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ API]
+- ï¿½Ü¹ï¿½ï¿½Ï¹æ£º[ADR-005 - Go Cloud Layer DDD ï¿½Ü¹ï¿½]
+- UX ï¿½Ï¹æ£º[ï¿½ï¿½Ö±ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë»ï¿½ï¿½ï¿½ï¿½ï¿½Ê©]
 
 ### What was done:
-- ´´½¨Êı¾İ¿âÇ¨ÒÆ£º
-  - migrations/006_positions.up.sql - ¸ÚÎ»±í¡¢²¿ÃÅ±Õ°ü±í¡¢Ë÷Òı
-  - migrations/006_positions.down.sql - »Ø¹ö½Å±¾
-- ¸üĞÂ internal/model/department.go - Ìí¼Ó SortOrder¡¢Status ×Ö¶Î£¬Position Ä£ĞÍ£¬DepartmentClosure Ä£ĞÍ
-- ´´½¨ admin Ä£¿é²¿ÃÅ¸ÚÎ»¹¦ÄÜ£º
-  - domain/repository/department_repository.go - ²¿ÃÅ²Ö´¢½Ó¿Ú
-  - domain/repository/position_repository.go - ¸ÚÎ»²Ö´¢½Ó¿Ú
-  - infrastructure/persistence/department_repo_impl.go - ²¿ÃÅ²Ö´¢ÊµÏÖ
-  - infrastructure/persistence/position_repo_impl.go - ¸ÚÎ»²Ö´¢ÊµÏÖ
-  - application/service/department_service.go - ²¿ÃÅ·şÎñ
-  - application/service/position_service.go - ¸ÚÎ»·şÎñ
-  - interface/handler/department_handler.go - ²¿ÃÅ HTTP ´¦ÀíÆ÷
-  - interface/handler/position_handler.go - ¸ÚÎ» HTTP ´¦ÀíÆ÷
-- ¸üĞÂ admin_module.go - ×¢²á²¿ÃÅ¸ÚÎ»·şÎñ
-- ¸üĞÂ admin_handler.go - Ìí¼Ó²¿ÃÅ¸ÚÎ»Â·ÓÉ
-- ¸üĞÂ router.go - ³õÊ¼»¯ AdminHandler
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¿ï¿½Ç¨ï¿½Æ£ï¿½
+  - migrations/006_positions.up.sql - ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å±Õ°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - migrations/006_positions.down.sql - ï¿½Ø¹ï¿½ï¿½Å±ï¿½
+- ï¿½ï¿½ï¿½ï¿½ internal/model/department.go - ï¿½ï¿½ï¿½ï¿½ SortOrderï¿½ï¿½Status ï¿½Ö¶Î£ï¿½Position Ä£ï¿½Í£ï¿½DepartmentClosure Ä£ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ admin Ä£ï¿½é²¿ï¿½Å¸ï¿½Î»ï¿½ï¿½ï¿½Ü£ï¿½
+  - domain/repository/department_repository.go - ï¿½ï¿½ï¿½Å²Ö´ï¿½ï¿½Ó¿ï¿½
+  - domain/repository/position_repository.go - ï¿½ï¿½Î»ï¿½Ö´ï¿½ï¿½Ó¿ï¿½
+  - infrastructure/persistence/department_repo_impl.go - ï¿½ï¿½ï¿½Å²Ö´ï¿½Êµï¿½ï¿½
+  - infrastructure/persistence/position_repo_impl.go - ï¿½ï¿½Î»ï¿½Ö´ï¿½Êµï¿½ï¿½
+  - application/service/department_service.go - ï¿½ï¿½ï¿½Å·ï¿½ï¿½ï¿½
+  - application/service/position_service.go - ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
+  - interface/handler/department_handler.go - ï¿½ï¿½ï¿½ï¿½ HTTP ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - interface/handler/position_handler.go - ï¿½ï¿½Î» HTTP ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ admin_module.go - ×¢ï¿½á²¿ï¿½Å¸ï¿½Î»ï¿½ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ admin_handler.go - ï¿½ï¿½ï¿½Ó²ï¿½ï¿½Å¸ï¿½Î»Â·ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ router.go - ï¿½ï¿½Ê¼ï¿½ï¿½ AdminHandler
 
 ### Testing:
-- go build ./... Í¨¹ı
+- go build ./... Í¨ï¿½ï¿½
 
 ### Notes:
-- ²¿ÃÅÊ÷Ê¹ÓÃ±Õ°ü±íÓÅ»¯²ã¼¶²éÑ¯
-- Ö§³Ö²¿ÃÅÑ­»·ÒıÓÃ¼ì²â
-- Ö§³ÖÈíÉ¾³ıºÍ×â»§¸ôÀë
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã±Õ°ï¿½ï¿½ï¿½ï¿½Å»ï¿½ï¿½ã¼¶ï¿½ï¿½Ñ¯
+- Ö§ï¿½Ö²ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½
+- Ö§ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½ï¿½â»§ï¿½ï¿½ï¿½ï¿½
 
 ---
 
 ## [2026-03-20] - Task: Department and Position UI (epic-2-story-2-3-org-ui)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR100, FR102 - ²¿ÃÅºÍ¸ÚÎ»¹ÜÀíÇ°¶Ë½çÃæ]
-- ¼Ü¹¹ºÏ¹æ£º[ADR-001 - React + TypeScript + Shadcn/ui ¼¼ÊõÕ»]
-- UX ºÏ¹æ£º[UX-02 ×é¼ş¿â¡¢UX-04 ÑÕÉ«ÏµÍ³¡¢Lucide React Í¼±ê]
+### ï¿½ï¿½ï¿½ÉºÏ¹ï¿½ï¿½é£º
+- PRD ï¿½Ï¹æ£º[FR100, FR102 - ï¿½ï¿½ï¿½ÅºÍ¸ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ç°ï¿½Ë½ï¿½ï¿½ï¿½]
+- ï¿½Ü¹ï¿½ï¿½Ï¹æ£º[ADR-001 - React + TypeScript + Shadcn/ui ï¿½ï¿½ï¿½ï¿½Õ»]
+- UX ï¿½Ï¹æ£º[UX-02 ï¿½ï¿½ï¿½ï¿½â¡¢UX-04 ï¿½ï¿½É«ÏµÍ³ï¿½ï¿½Lucide React Í¼ï¿½ï¿½]
 
 ### What was done:
-- ´´½¨×éÖ¯¹ÜÀíÄ£¿é£¨¼¯³Éµ½ admin ¹¦ÄÜÏÂ£©£º
-  - types/organization.types.ts - ²¿ÃÅºÍ¸ÚÎ»ÀàĞÍ¶¨Òå
-  - api/organizationApi.ts - API µ÷ÓÃ·â×°
-  - hooks/useDepartmentTree.ts - ²¿ÃÅÊ÷Êı¾İ Hook
-  - hooks/usePositions.ts - ¸ÚÎ»Êı¾İ Hook
-  - hooks/useOrganizationMutations.ts - ±ä¸ü²Ù×÷ Hook
-  - components/DepartmentTree.tsx - ²¿ÃÅÊ÷×é¼ş
-  - components/DepartmentForm.tsx - ²¿ÃÅ±íµ¥×é¼ş
-  - components/DepartmentDetail.tsx - ²¿ÃÅÏêÇéÃæ°å
-  - components/PositionTable.tsx - ¸ÚÎ»±í¸ñ×é¼ş
-  - components/PositionForm.tsx - ¸ÚÎ»±íµ¥×é¼ş
-  - pages/OrganizationPage.tsx - ×éÖ¯¹ÜÀíÖ÷Ò³Ãæ
-- ¸üĞÂ components/ui/textarea.tsx - ĞÂÔö Textarea ×é¼ş
-- ¸üĞÂ components/common/Sidebar.tsx - Ìí¼Ó¹ÜÀíÔ±µ¼º½²Ëµ¥
-- ¸üĞÂ App.tsx - Ìí¼Ó×éÖ¯¹ÜÀíÂ·ÓÉ
+- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¯ï¿½ï¿½ï¿½ï¿½Ä£ï¿½é£¨ï¿½ï¿½ï¿½Éµï¿½ admin ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½
+  - types/organization.types.ts - ï¿½ï¿½ï¿½ÅºÍ¸ï¿½Î»ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½
+  - api/organizationApi.ts - API ï¿½ï¿½ï¿½Ã·ï¿½×°
+  - hooks/useDepartmentTree.ts - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Hook
+  - hooks/usePositions.ts - ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ Hook
+  - hooks/useOrganizationMutations.ts - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Hook
+  - components/DepartmentTree.tsx - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - components/DepartmentForm.tsx - ï¿½ï¿½ï¿½Å±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - components/DepartmentDetail.tsx - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - components/PositionTable.tsx - ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - components/PositionForm.tsx - ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  - pages/OrganizationPage.tsx - ï¿½ï¿½Ö¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ components/ui/textarea.tsx - ï¿½ï¿½ï¿½ï¿½ Textarea ï¿½ï¿½ï¿½
+- ï¿½ï¿½ï¿½ï¿½ components/common/Sidebar.tsx - ï¿½ï¿½ï¿½Ó¹ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½
+- ï¿½ï¿½ï¿½ï¿½ App.tsx - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¯ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
 
 ### Testing:
-- npm run lint Í¨¹ı
-- npm run build Í¨¹ı
+- npm run lint Í¨ï¿½ï¿½
+- npm run build Í¨ï¿½ï¿½
 
 ### Notes:
-- Ê¹ÓÃÆ·ÅÆÉ« #1E3A5F ºÍÑ¡ÖĞ±³¾° #EFF6FF
-- Ê¹ÓÃ Shadcn/ui ×é¼şºÍ Lucide React Í¼±ê
-- ×óÓÒ·ÖÀ¸²¼¾Ö£º×ó²à²¿ÃÅÊ÷£¬ÓÒ²à²¿ÃÅÏêÇéºÍ¸ÚÎ»ÁĞ±í
-- Ö§³Ö²¿ÃÅ CRUD ºÍ¸ÚÎ» CRUD ²Ù×÷
+- Ê¹ï¿½ï¿½Æ·ï¿½ï¿½É« #1E3A5F ï¿½ï¿½Ñ¡ï¿½Ğ±ï¿½ï¿½ï¿½ #EFF6FF
+- Ê¹ï¿½ï¿½ Shadcn/ui ï¿½ï¿½ï¿½ï¿½ï¿½ Lucide React Í¼ï¿½ï¿½
+- ï¿½ï¿½ï¿½Ò·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½à²¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²à²¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½Î»ï¿½Ğ±ï¿½
+- Ö§ï¿½Ö²ï¿½ï¿½ï¿½ CRUD ï¿½Í¸ï¿½Î» CRUD ï¿½ï¿½ï¿½ï¿½

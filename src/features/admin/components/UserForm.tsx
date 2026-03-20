@@ -11,10 +11,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ManagerPicker } from './ManagerPicker'
 import type {
   DepartmentOption,
   RoleOption,
   UserDetail,
+  UserSummary,
 } from '../types/user.types'
 
 interface UserFormProps {
@@ -25,6 +27,9 @@ interface UserFormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (data: any) => Promise<void>
   loading?: boolean
+  // Manager-related props
+  currentUserId?: string
+  onSearchManager?: (query: string) => Promise<UserSummary[]>
 }
 
 interface FormData {
@@ -35,6 +40,7 @@ interface FormData {
   phone: string
   department_ids: string[]
   role_ids: string[]
+  manager_id: string | null
   send_notification: boolean
 }
 
@@ -53,6 +59,8 @@ export function UserForm({
   roles,
   onSubmit,
   loading = false,
+  currentUserId,
+  onSearchManager,
 }: UserFormProps) {
   const [formData, setFormData] = useState<FormData>({
     username: '',
@@ -62,10 +70,12 @@ export function UserForm({
     phone: '',
     department_ids: [],
     role_ids: [],
+    manager_id: null,
     send_notification: true,
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
+  const [selectedManager, setSelectedManager] = useState<UserSummary | null>(null)
 
   useEffect(() => {
     if (mode === 'edit' && initialValues) {
@@ -77,8 +87,16 @@ export function UserForm({
         phone: initialValues.phone || '',
         department_ids: initialValues.departments?.map((d) => d.id) || [],
         role_ids: initialValues.roles?.map((r) => r.id) || [],
+        manager_id: initialValues.manager_id || null,
         send_notification: false,
       })
+      // Set selected manager info if available
+      if (initialValues.manager_id && initialValues.manager_name) {
+        setSelectedManager({
+          id: initialValues.manager_id,
+          real_name: initialValues.manager_name,
+        })
+      }
     }
   }, [mode, initialValues])
 
@@ -126,6 +144,7 @@ export function UserForm({
         phone: formData.phone || undefined,
         department_ids: formData.department_ids,
         role_ids: formData.role_ids,
+        manager_id: formData.manager_id,
         send_notification: formData.send_notification,
       })
     } else {
@@ -135,6 +154,7 @@ export function UserForm({
         phone: formData.phone || undefined,
         department_ids: formData.department_ids,
         role_ids: formData.role_ids,
+        manager_id: formData.manager_id,
       })
     }
   }
@@ -155,6 +175,11 @@ export function UserForm({
         ? prev.role_ids.filter((id) => id !== roleId)
         : [...prev.role_ids, roleId],
     }))
+  }
+
+  const handleManagerChange = (managerId: string | null, manager?: UserSummary) => {
+    setFormData((prev) => ({ ...prev, manager_id: managerId }))
+    setSelectedManager(manager || null)
   }
 
   return (
@@ -254,6 +279,25 @@ export function UserForm({
           <p className="text-sm text-red-500">{errors.phone}</p>
         )}
       </div>
+
+      {/* 上级选择 */}
+      {currentUserId && onSearchManager && (
+        <div className="space-y-2">
+          <Label>直属上级</Label>
+          <ManagerPicker
+            value={formData.manager_id}
+            managerInfo={selectedManager}
+            currentUserId={currentUserId}
+            onChange={handleManagerChange}
+            onSearch={onSearchManager}
+            disabled={loading}
+            placeholder="搜索并选择直属上级"
+          />
+          <p className="text-xs text-muted-foreground">
+            可选，选择该用户的直属上级
+          </p>
+        </div>
+      )}
 
       {/* 部门选择 */}
       <div className="space-y-2">

@@ -27,12 +27,12 @@ func NewUserRepository(db *sql.DB) repository.UserRepository {
 func (r *userRepository) FindByID(ctx context.Context, tenantID, userID string) (*model.User, error) {
 	user := &model.User{}
 	var lastLoginAt, lockedUntil sql.NullTime
-	var avatarURL, employeeID, phone sql.NullString
+	var avatarURL, employeeID, phone, managerID sql.NullString
 	var deletedAt sql.NullTime
 
 	query := `
 		SELECT id, tenant_id, email, password_hash, name, avatar_url, employee_id, phone,
-		       status, email_verified, last_login_at, failed_login_count, locked_until,
+		       manager_id, status, email_verified, last_login_at, failed_login_count, locked_until,
 		       preferences, created_at, updated_at, deleted_at
 		FROM users
 		WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
@@ -40,7 +40,7 @@ func (r *userRepository) FindByID(ctx context.Context, tenantID, userID string) 
 
 	err := r.db.QueryRowContext(ctx, query, userID, tenantID).Scan(
 		&user.ID, &user.TenantID, &user.Email, &user.PasswordHash, &user.Name,
-		&avatarURL, &employeeID, &phone, &user.Status, &user.EmailVerified,
+		&avatarURL, &employeeID, &phone, &managerID, &user.Status, &user.EmailVerified,
 		&lastLoginAt, &user.FailedLoginCount, &lockedUntil,
 		&user.Preferences, &user.CreatedAt, &user.UpdatedAt, &deletedAt,
 	)
@@ -54,6 +54,9 @@ func (r *userRepository) FindByID(ctx context.Context, tenantID, userID string) 
 	user.AvatarURL = avatarURL.String
 	user.EmployeeID = employeeID.String
 	user.Phone = phone.String
+	if managerID.Valid {
+		user.ManagerID = &managerID.String
+	}
 	if lastLoginAt.Valid {
 		user.LastLoginAt = &lastLoginAt.Time
 	}
@@ -603,4 +606,258 @@ func nullString(s string) interface{} {
 		return nil
 	}
 	return s
+}
+
+// UpdateManagerID 更新用户上级
+func (r *userRepository) UpdateManagerID(ctx context.Context, tenantID, userID string, managerID *string) error {
+	query := `
+		UPDATE users SET manager_id = $1, updated_at = $2
+		WHERE id = $3 AND tenant_id = $4 AND deleted_at IS NULL
+	`
+
+	var managerParam interface{}
+	if managerID != nil {
+		managerParam = *managerID
+	}
+
+	result, err := r.db.ExecContext(ctx, query, managerParam, time.Now(), userID, tenantID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return errors.New("user not found")
+	}
+
+	return nil
+}
+
+// GetManagerChain 获取用户上级链
+func (r *userRepository) GetManagerChain(ctx context.Context, tenantID, userID string, maxDepth int) ([]*repository.ManagerChainItem, error) {
+	var chain []*repository.ManagerChainItem
+
+	currentUserID := userID
+	visited := make(map[string]bool)
+
+	for level := 1; level <= maxDepth; level++ {
+		// 查询当前用户的上级
+		query := `
+			SELECT u.id, u.name, u.employee_id, u.manager_id
+			FROM users u
+			WHERE u.id = (
+				SELECT manager_id FROM users WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
+			) AND u.tenant_id = $2 AND u.deleted_at IS NULL
+		`
+
+		var managerID sql.NullString
+		var id, name, employeeCode string
+
+		err := r.db.QueryRowContext(ctx, query, currentUserID, tenantID).Scan(&id, &name, &employeeCode, &managerID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				break // 没有上级了
+			}
+			return nil, err
+		}
+
+		// 检测循环
+		if visited[id] {
+			break // 检测到循环，停止
+		}
+		visited[id] = true
+
+		// 获取上级部门信息
+		dept, err := r.getUserPrimaryDepartment(ctx, id, tenantID)
+		if err != nil {
+			return nil, err
+		}
+
+		chain = append(chain, &repository.ManagerChainItem{
+			Level: level,
+			User: &repository.UserSummary{
+				ID:           id,
+				RealName:     name,
+				EmployeeCode: employeeCode,
+				Department:   dept,
+			},
+		})
+
+		if !managerID.Valid {
+			break // 这是最顶级
+		}
+
+		currentUserID = id
+	}
+
+	return chain, nil
+}
+
+// GetSubordinates 获取用户直接下属列表
+func (r *userRepository) GetSubordinates(ctx context.Context, tenantID, managerID string) ([]*repository.SubordinateItem, error) {
+	query := `
+		SELECT u.id, u.name, u.employee_id, u.status
+		FROM users u
+		WHERE u.manager_id = $1 AND u.tenant_id = $2 AND u.deleted_at IS NULL
+		ORDER BY u.name
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, managerID, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var subordinates []*repository.SubordinateItem
+
+	for rows.Next() {
+		var id, name, employeeCode, status string
+		if err := rows.Scan(&id, &name, &employeeCode, &status); err != nil {
+			return nil, err
+		}
+
+		dept, err := r.getUserPrimaryDepartment(ctx, id, tenantID)
+		if err != nil {
+			return nil, err
+		}
+
+		subordinates = append(subordinates, &repository.SubordinateItem{
+			ID:           id,
+			RealName:     name,
+			EmployeeCode: employeeCode,
+			Department:   dept,
+			Status:       status,
+		})
+	}
+
+	return subordinates, nil
+}
+
+// FindUserSummaries 根据用户 ID 列表获取用户简要信息
+func (r *userRepository) FindUserSummaries(ctx context.Context, tenantID string, userIDs []string) ([]*repository.UserSummary, error) {
+	if len(userIDs) == 0 {
+		return nil, nil
+	}
+
+	query := `
+		SELECT id, name, employee_id
+		FROM users
+		WHERE id = ANY($1) AND tenant_id = $2 AND deleted_at IS NULL
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, userIDs, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var summaries []*repository.UserSummary
+
+	for rows.Next() {
+		var id, name string
+		var employeeCode sql.NullString
+
+		if err := rows.Scan(&id, &name, &employeeCode); err != nil {
+			return nil, err
+		}
+
+		dept, err := r.getUserPrimaryDepartment(ctx, id, tenantID)
+		if err != nil {
+			return nil, err
+		}
+
+		summaries = append(summaries, &repository.UserSummary{
+			ID:           id,
+			RealName:     name,
+			EmployeeCode: employeeCode.String,
+			Department:   dept,
+		})
+	}
+
+	return summaries, nil
+}
+
+// SearchUsersForManager 搜索可选上级的用户
+func (r *userRepository) SearchUsersForManager(ctx context.Context, tenantID string, query string, excludeIDs []string, limit int) ([]*repository.UserSummary, error) {
+	sqlQuery := `
+		SELECT id, name, employee_id
+		FROM users
+		WHERE tenant_id = $1 AND deleted_at IS NULL AND status = 'active'
+	`
+	args := []interface{}{tenantID}
+	argIndex := 2
+
+	if query != "" {
+		sqlQuery += fmt.Sprintf(" AND (name ILIKE $%d OR employee_id ILIKE $%d)", argIndex, argIndex)
+		args = append(args, "%"+query+"%")
+		argIndex++
+	}
+
+	if len(excludeIDs) > 0 {
+		sqlQuery += fmt.Sprintf(" AND id != ALL($%d)", argIndex)
+		args = append(args, excludeIDs)
+		argIndex++
+	}
+
+	sqlQuery += fmt.Sprintf(" ORDER BY name LIMIT $%d", argIndex)
+	args = append(args, limit)
+
+	rows, err := r.db.QueryContext(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var summaries []*repository.UserSummary
+
+	for rows.Next() {
+		var id, name string
+		var employeeCode sql.NullString
+
+		if err := rows.Scan(&id, &name, &employeeCode); err != nil {
+			return nil, err
+		}
+
+		dept, err := r.getUserPrimaryDepartment(ctx, id, tenantID)
+		if err != nil {
+			return nil, err
+		}
+
+		summaries = append(summaries, &repository.UserSummary{
+			ID:           id,
+			RealName:     name,
+			EmployeeCode: employeeCode.String,
+			Department:   dept,
+		})
+	}
+
+	return summaries, nil
+}
+
+// getUserPrimaryDepartment 获取用户主部门
+func (r *userRepository) getUserPrimaryDepartment(ctx context.Context, userID, tenantID string) (*repository.DeptSummary, error) {
+	query := `
+		SELECT d.id, d.name
+		FROM user_departments ud
+		JOIN departments d ON d.id = ud.department_id
+		WHERE ud.user_id = $1 AND ud.is_primary = true
+		LIMIT 1
+	`
+
+	var id, name string
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&id, &name)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // 没有主部门
+		}
+		return nil, err
+	}
+
+	return &repository.DeptSummary{
+		ID:   id,
+		Name: name,
+	}, nil
 }

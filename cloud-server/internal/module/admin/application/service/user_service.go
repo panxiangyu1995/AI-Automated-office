@@ -28,6 +28,10 @@ var (
 	ErrDuplicateEmployeeCode   = errors.New("DUPLICATE_EMPLOYEE_CODE")
 	ErrValidation              = errors.New("VALIDATION_ERROR")
 	ErrPermissionDenied        = errors.New("PERMISSION_DENIED")
+	ErrManagerCannotBeSelf     = errors.New("MANAGER_CANNOT_BE_SELF")
+	ErrCircularManagerChain    = errors.New("CIRCULAR_MANAGER_CHAIN")
+	ErrCrossTenantManager      = errors.New("CROSS_TENANT_MANAGER")
+	ErrManagerChainTooDeep     = errors.New("MANAGER_CHAIN_TOO_DEEP")
 )
 
 // UserService 用户服务
@@ -432,4 +436,198 @@ func mustRandomChar(chars string) byte {
 		panic(err)
 	}
 	return c
+}
+
+// UpdateManagerRequest 更新上级请求
+type UpdateManagerRequest struct {
+	ManagerID *string `json:"manager_id"`
+}
+
+// ManagerChainResponse 上级链响应
+type ManagerChainResponse struct {
+	Chain []*repository.ManagerChainItem `json:"chain"`
+}
+
+// SubordinatesResponse 下属列表响应
+type SubordinatesResponse struct {
+	Items []*repository.SubordinateItem `json:"items"`
+}
+
+// ManagerSearchResponse 上级搜索响应
+type ManagerSearchResponse struct {
+	Items []*repository.UserSummary `json:"items"`
+}
+
+// UpdateManager 更新用户上级
+func (s *UserService) UpdateManager(ctx context.Context, tenantID, userID string, req *UpdateManagerRequest) error {
+	// 检查用户是否存在
+	user, err := s.userRepo.FindByID(ctx, tenantID, userID)
+	if err != nil {
+		s.logger.Error("failed to find user", zap.Error(err), zap.String("userID", userID))
+		return err
+	}
+	if user == nil {
+		return ErrUserNotFound
+	}
+
+	// 检查是否设置为自己
+	if req.ManagerID != nil && *req.ManagerID == userID {
+		return ErrManagerCannotBeSelf
+	}
+
+	// 如果设置了上级，需要验证
+	if req.ManagerID != nil {
+		// 检查上级是否存在且属于同一租户
+		manager, err := s.userRepo.FindByID(ctx, tenantID, *req.ManagerID)
+		if err != nil {
+			s.logger.Error("failed to find manager", zap.Error(err), zap.String("managerID", *req.ManagerID))
+			return err
+		}
+		if manager == nil {
+			return ErrUserNotFound
+		}
+
+		// 检查是否会形成循环（新上级不能是自己的下属）
+		isCircular, err := s.checkCircularChain(ctx, tenantID, userID, *req.ManagerID)
+		if err != nil {
+			s.logger.Error("failed to check circular chain", zap.Error(err))
+			return err
+		}
+		if isCircular {
+			return ErrCircularManagerChain
+		}
+
+		// 检查上级链深度
+		chain, err := s.userRepo.GetManagerChain(ctx, tenantID, *req.ManagerID, 20)
+		if err != nil {
+			s.logger.Error("failed to get manager chain", zap.Error(err))
+			return err
+		}
+		if len(chain) >= 19 { // 上级链最多 20 层
+			return ErrManagerChainTooDeep
+		}
+	}
+
+	// 更新上级
+	if err := s.userRepo.UpdateManagerID(ctx, tenantID, userID, req.ManagerID); err != nil {
+		s.logger.Error("failed to update manager", zap.Error(err))
+		return err
+	}
+
+	s.logger.Info("user manager updated",
+		zap.String("userID", userID),
+		zap.Any("managerID", req.ManagerID),
+		zap.String("tenantID", tenantID),
+	)
+
+	return nil
+}
+
+// GetManagerChain 获取用户上级链
+func (s *UserService) GetManagerChain(ctx context.Context, tenantID, userID string) (*ManagerChainResponse, error) {
+	// 检查用户是否存在
+	user, err := s.userRepo.FindByID(ctx, tenantID, userID)
+	if err != nil {
+		s.logger.Error("failed to find user", zap.Error(err), zap.String("userID", userID))
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	chain, err := s.userRepo.GetManagerChain(ctx, tenantID, userID, 20)
+	if err != nil {
+		s.logger.Error("failed to get manager chain", zap.Error(err))
+		return nil, err
+	}
+
+	return &ManagerChainResponse{Chain: chain}, nil
+}
+
+// GetSubordinates 获取用户直接下属
+func (s *UserService) GetSubordinates(ctx context.Context, tenantID, userID string) (*SubordinatesResponse, error) {
+	// 检查用户是否存在
+	user, err := s.userRepo.FindByID(ctx, tenantID, userID)
+	if err != nil {
+		s.logger.Error("failed to find user", zap.Error(err), zap.String("userID", userID))
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	subordinates, err := s.userRepo.GetSubordinates(ctx, tenantID, userID)
+	if err != nil {
+		s.logger.Error("failed to get subordinates", zap.Error(err))
+		return nil, err
+	}
+
+	return &SubordinatesResponse{Items: subordinates}, nil
+}
+
+// SearchUsersForManager 搜索可选上级的用户
+func (s *UserService) SearchUsersForManager(ctx context.Context, tenantID, userID, query string, limit int) (*ManagerSearchResponse, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 50 {
+		limit = 50
+	}
+
+	// 排除自己
+	excludeIDs := []string{userID}
+
+	// 获取当前用户的下属，他们不能作为上级
+	subordinates, err := s.userRepo.GetSubordinates(ctx, tenantID, userID)
+	if err != nil {
+		s.logger.Error("failed to get subordinates for exclusion", zap.Error(err))
+		return nil, err
+	}
+	for _, sub := range subordinates {
+		excludeIDs = append(excludeIDs, sub.ID)
+	}
+
+	items, err := s.userRepo.SearchUsersForManager(ctx, tenantID, query, excludeIDs, limit)
+	if err != nil {
+		s.logger.Error("failed to search users for manager", zap.Error(err))
+		return nil, err
+	}
+
+	return &ManagerSearchResponse{Items: items}, nil
+}
+
+// checkCircularChain 检查设置上级是否会形成循环
+func (s *UserService) checkCircularChain(ctx context.Context, tenantID, userID, newManagerID string) (bool, error) {
+	// 获取新上级的所有下属（递归）
+	visited := make(map[string]bool)
+	queue := []string{userID}
+
+	for len(queue) > 0 {
+		currentID := queue[0]
+		queue = queue[1:]
+
+		if visited[currentID] {
+			continue
+		}
+		visited[currentID] = true
+
+		// 如果新上级在下属列表中，则形成循环
+		if currentID == newManagerID {
+			return true, nil
+		}
+
+		// 获取当前用户的直接下属
+		subordinates, err := s.userRepo.GetSubordinates(ctx, tenantID, currentID)
+		if err != nil {
+			return false, err
+		}
+
+		for _, sub := range subordinates {
+			if !visited[sub.ID] {
+				queue = append(queue, sub.ID)
+			}
+		}
+	}
+
+	return false, nil
 }

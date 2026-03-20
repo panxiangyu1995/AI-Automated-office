@@ -749,16 +749,155 @@ func (h *AdminHandler) DeletePosition(c *gin.Context) {
 	response.Success(c, gin.H{"id": positionID}, "岗位删除成功")
 }
 
+// ==================== 上级关系相关方法 ====================
+
+// UpdateManager 更新用户上级
+// PUT /api/admin/users/:id/manager
+func (h *AdminHandler) UpdateManager(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	userID := c.Param("id")
+	if userID == "" {
+		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "用户ID不能为空", nil)
+		return
+	}
+
+	var req service.UpdateManagerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "请求参数错误", nil)
+		return
+	}
+
+	err := h.UserService.UpdateManager(c.Request.Context(), tenantID, userID, &req)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			response.Error(c, http.StatusNotFound, "USER_NOT_FOUND", "用户不存在", nil)
+			return
+		}
+		if errors.Is(err, service.ErrManagerCannotBeSelf) {
+			response.Error(c, http.StatusBadRequest, "MANAGER_CANNOT_BE_SELF", "不能将自己设置为上级", nil)
+			return
+		}
+		if errors.Is(err, service.ErrCircularManagerChain) {
+			response.Error(c, http.StatusBadRequest, "CIRCULAR_MANAGER_CHAIN", "设置此上级会形成循环引用", nil)
+			return
+		}
+		if errors.Is(err, service.ErrManagerChainTooDeep) {
+			response.Error(c, http.StatusBadRequest, "MANAGER_CHAIN_TOO_DEEP", "上级链层数已达上限", nil)
+			return
+		}
+		h.Logger.Error("failed to update manager", zap.Error(err), zap.String("userID", userID))
+		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "更新上级失败", nil)
+		return
+	}
+
+	response.Success(c, gin.H{"id": userID}, "上级更新成功")
+}
+
+// GetManagerChain 获取用户上级链
+// GET /api/admin/users/:id/managers
+func (h *AdminHandler) GetManagerChain(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	userID := c.Param("id")
+	if userID == "" {
+		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "用户ID不能为空", nil)
+		return
+	}
+
+	result, err := h.UserService.GetManagerChain(c.Request.Context(), tenantID, userID)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			response.Error(c, http.StatusNotFound, "USER_NOT_FOUND", "用户不存在", nil)
+			return
+		}
+		h.Logger.Error("failed to get manager chain", zap.Error(err), zap.String("userID", userID))
+		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "获取上级链失败", nil)
+		return
+	}
+
+	response.Success(c, result, "")
+}
+
+// GetSubordinates 获取用户直接下属
+// GET /api/admin/users/:id/subordinates
+func (h *AdminHandler) GetSubordinates(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	userID := c.Param("id")
+	if userID == "" {
+		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "用户ID不能为空", nil)
+		return
+	}
+
+	result, err := h.UserService.GetSubordinates(c.Request.Context(), tenantID, userID)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			response.Error(c, http.StatusNotFound, "USER_NOT_FOUND", "用户不存在", nil)
+			return
+		}
+		h.Logger.Error("failed to get subordinates", zap.Error(err), zap.String("userID", userID))
+		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "获取下属列表失败", nil)
+		return
+	}
+
+	response.Success(c, result, "")
+}
+
+// SearchUsersForManager 搜索可选上级的用户
+// GET /api/admin/users/search-for-manager
+func (h *AdminHandler) SearchUsersForManager(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	userID := c.Query("user_id")
+	if userID == "" {
+		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "用户ID不能为空", nil)
+		return
+	}
+
+	query := c.Query("q")
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	result, err := h.UserService.SearchUsersForManager(c.Request.Context(), tenantID, userID, query, limit)
+	if err != nil {
+		h.Logger.Error("failed to search users for manager", zap.Error(err), zap.String("userID", userID))
+		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "搜索可选上级失败", nil)
+		return
+	}
+
+	response.Success(c, result, "")
+}
+
 // RegisterRoutes 注册路由
 func (h *AdminHandler) RegisterRoutes(r *gin.RouterGroup) {
 	// 用户路由
 	users := r.Group("/admin/users")
 	{
 		users.GET("", h.ListUsers)
+		users.GET("/search-for-manager", h.SearchUsersForManager)
 		users.GET("/:id", h.GetUser)
 		users.POST("", h.CreateUser)
 		users.PUT("/:id", h.UpdateUser)
 		users.PATCH("/:id/status", h.UpdateUserStatus)
+		users.PUT("/:id/manager", h.UpdateManager)
+		users.GET("/:id/managers", h.GetManagerChain)
+		users.GET("/:id/subordinates", h.GetSubordinates)
 	}
 
 	// 部门路由
