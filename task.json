@@ -961,7 +961,7 @@
                       "dependencies":  [
                                            "E2-S2.5-01"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  28,

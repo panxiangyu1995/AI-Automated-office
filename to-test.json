@@ -1,0 +1,386 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-20",
+  "description": "测试验收清单 - AI Agent 和开发者按此清单进行测试验收",
+  "testCategories": {
+    "unit": {
+      "name": "单元测试",
+      "description": "Rust 后端模块的单元测试",
+      "commands": ["cd src-tauri && cargo test --lib"]
+    },
+    "integration": {
+      "name": "集成测试",
+      "description": "Rust 后端集成测试",
+      "commands": ["cd src-tauri && cargo test --test session_integration_test"]
+    },
+    "e2e": {
+      "name": "E2E 测试",
+      "description": "前端 Playwright E2E 测试",
+      "commands": ["npx playwright test"]
+    },
+    "frontend": {
+      "name": "前端构建测试",
+      "description": "前端 TypeScript 编译和构建",
+      "commands": ["npm run build"]
+    },
+    "lint": {
+      "name": "代码检查",
+      "description": "ESLint 代码检查",
+      "commands": ["npm run lint"]
+    }
+  },
+  "tasks": [
+    {
+      "id": 20,
+      "epic": "Epic 2",
+      "story": "Story 2.1",
+      "title": "Local session cache wrapper",
+      "openspec_change": "epic-2-story-2-1-local-session-cache",
+      "test验收": {
+        "status": "partial",
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib session",
+          "coverage": "22 tests passed",
+          "items": [
+            {
+              "name": "SessionMetadata 结构定义",
+              "test": "metadata_struct_test",
+              "status": "pass"
+            },
+            {
+              "name": "SessionMetadata.security_check()",
+              "test": "security_check_test",
+              "status": "pass"
+            },
+            {
+              "name": "LocalEncryptor 加密解密",
+              "test": "encrypt_decrypt_test",
+              "status": "pass"
+            },
+            {
+              "name": "LocalEncryptor PBKDF2 密钥派生",
+              "test": "key_derivation_test",
+              "status": "pass"
+            },
+            {
+              "name": "SessionCache save/load",
+              "test": "save_load_test",
+              "status": "pass"
+            },
+            {
+              "name": "SessionCache 过期检查",
+              "test": "expiry_check_test",
+              "status": "pass"
+            },
+            {
+              "name": "SecurityCheck 禁止字段检测",
+              "test": "forbidden_fields_test",
+              "status": "pass"
+            },
+            {
+              "name": "机器标识获取 (Windows/macOS/Linux)",
+              "test": "machine_id_test",
+              "status": "pass"
+            }
+          ]
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test session_integration_test",
+          "coverage": "8 tests passed",
+          "items": [
+            {
+              "name": "完整保存-读取流程",
+              "test": "test_save_and_load_roundtrip",
+              "status": "pass"
+            },
+            {
+              "name": "安全检查-空refresh_token",
+              "test": "test_security_violation_empty_refresh_token",
+              "status": "pass"
+            },
+            {
+              "name": "安全检查-空user_id",
+              "test": "test_security_violation_empty_user_id",
+              "status": "pass"
+            },
+            {
+              "name": "多次保存覆盖",
+              "test": "test_multiple_saves_overwrite",
+              "status": "pass"
+            },
+            {
+              "name": "会话过期自动清理",
+              "test": "test_expired_session_is_cleared",
+              "status": "pass"
+            },
+            {
+              "name": "内存缓存快速访问",
+              "test": "test_memory_cache_fast_access",
+              "status": "pass"
+            },
+            {
+              "name": "损坏文件处理",
+              "test": "test_corrupted_file_handling",
+              "status": "pass"
+            },
+            {
+              "name": "清理流程",
+              "test": "test_clear_removes_cache",
+              "status": "pass"
+            }
+          ]
+        },
+        "e2e测试": {
+          "status": "partial",
+          "command": "npx playwright test tests/e2e/resilience/session-cache.spec.ts",
+          "items": [
+            {
+              "name": "UI Flow - 登录页面显示",
+              "test": "login page shows session restore option",
+              "status": "pass",
+              "note": "仅测试 UI 元素"
+            },
+            {
+              "name": "UI Flow - 登录表单正确显示",
+              "test": "login form displays correctly",
+              "status": "pass",
+              "note": "仅测试 UI 元素"
+            },
+            {
+              "name": "UI Flow - 记住我复选框",
+              "test": "remember me checkbox is present",
+              "status": "pass",
+              "note": "仅测试 UI 元素"
+            },
+            {
+              "name": "集成 - 保存会话元数据",
+              "test": "save session metadata on login",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            },
+            {
+              "name": "集成 - 恢复会话",
+              "test": "restore session on app start",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            },
+            {
+              "name": "集成 - 登出清理",
+              "test": "clear session cache on logout",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            },
+            {
+              "name": "安全 - 密码不存储",
+              "test": "password field is never logged",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            },
+            {
+              "name": "安全 - access_token 不存储",
+              "test": "access_token is never stored",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            },
+            {
+              "name": "过期 - 过期会话自动清理",
+              "test": "expired session is cleared",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            },
+            {
+              "name": "过期 - 跳转登录页",
+              "test": "redirect to login when expired",
+              "status": "skip",
+              "note": "需要 Tauri 运行时"
+            }
+          ]
+        },
+        "前端构建测试": {
+          "status": "not_run",
+          "command": "npm run build",
+          "items": [
+            {
+              "name": "TypeScript 编译无错误",
+              "status": "not_run"
+            },
+            {
+              "name": "build 构建成功",
+              "status": "not_run"
+            }
+          ]
+        },
+        "手动测试检查项": {
+          "status": "pending",
+          "items": [
+            {
+              "category": "安全测试",
+              "checks": [
+                {
+                  "name": "尝试存储 password 字段被拒绝",
+                  "expected": "返回 SecurityViolation 错误"
+                },
+                {
+                  "name": "尝试存储 access_token 字段被拒绝",
+                  "expected": "返回 SecurityViolation 错误"
+                },
+                {
+                  "name": "加密文件被篡改后解密失败",
+                  "expected": "返回 null，清理损坏文件"
+                }
+              ]
+            },
+            {
+              "category": "功能测试",
+              "checks": [
+                {
+                  "name": "登录成功后会话元数据被加密保存",
+                  "expected": "本地文件存在且加密"
+                },
+                {
+                  "name": "应用重启后会话自动恢复",
+                  "expected": "使用 refresh_token 刷新，跳转到主页"
+                },
+                {
+                  "name": "登出后会话缓存被清理",
+                  "expected": "本地文件被删除"
+                },
+                {
+                  "name": "会话过期后自动清理",
+                  "expected": "缓存文件被删除"
+                }
+              ]
+            },
+            {
+              "category": "性能测试",
+              "checks": [
+                {
+                  "name": "会话保存时间",
+                  "expected": "< 100ms"
+                },
+                {
+                  "name": "会话读取时间",
+                  "expected": "< 50ms"
+                },
+                {
+                  "name": "会话清理时间",
+                  "expected": "< 50ms"
+                }
+              ]
+            }
+          ]
+        },
+        "代码质量检查": {
+          "status": "pass",
+          "items": [
+            {
+              "name": "敏感字段不包含在 SessionMetadata",
+              "check": "password, access_token, permissions, roles 不在结构体中",
+              "status": "pass"
+            },
+            {
+              "name": "使用 AES-256-GCM 加密",
+              "check": "加密算法符合 NFR10",
+              "status": "pass"
+            },
+            {
+              "name": "机器绑定密钥派生",
+              "check": "使用 PBKDF2-HMAC-SHA256",
+              "status": "pass"
+            },
+            {
+              "name": "会话超时 30 分钟",
+              "check": "符合 NFR12",
+              "status": "pass"
+            }
+          ]
+        }
+      },
+      "passes": false,
+      "notes": "Rust 单元测试和集成测试已通过，E2E 测试需要 Tauri 运行时环境"
+    },
+    {
+      "id": 1,
+      "epic": "Epic 1",
+      "story": "Story 1.1",
+      "title": "Tauri桌面应用初始化",
+      "openspec_change": "epic-1-story-1-tauri-project-init",
+      "test验收": {
+        "status": "pending",
+        "rust单元测试": {
+          "status": "not_run",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "not_run",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "not_run",
+          "command": "npx playwright test",
+          "items": []
+        },
+        "前端构建测试": {
+          "status": "not_run",
+          "command": "npm run build",
+          "items": [
+            {
+              "name": "TypeScript 编译无错误",
+              "status": "not_run"
+            },
+            {
+              "name": "build 构建成功",
+              "status": "not_run"
+            }
+          ]
+        },
+        "手动测试检查项": {
+          "status": "pending",
+          "items": [
+            {
+              "category": "应用启动",
+              "checks": [
+                {
+                  "name": "应用能在 Windows 上启动",
+                  "expected": "窗口正常显示"
+                },
+                {
+                  "name": "应用能在 macOS 上启动",
+                  "expected": "窗口正常显示"
+                }
+              ]
+            },
+            {
+              "category": "UI 验证",
+              "checks": [
+                {
+                  "name": "四栏布局正确显示",
+                  "expected": "活动栏、侧边栏、工作区、AI 对话面板"
+                },
+                {
+                  "name": "Tailwind CSS 样式生效",
+                  "expected": "自定义样式正确应用"
+                }
+              ]
+            }
+          ]
+        },
+        "代码质量检查": {
+          "status": "pending",
+          "items": [
+            {
+              "name": "技术栈正确",
+              "check": "Tauri + React + TypeScript + Tailwind",
+              "status": "pending"
+            }
+          ]
+        }
+      },
+      "passes": false
+    }
+  ]
+}

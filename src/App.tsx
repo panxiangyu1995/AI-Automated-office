@@ -12,6 +12,8 @@ import { LoginPage } from './features/auth/pages/LoginPage'
 import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
 import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage } from './features/admin/pages'
+import { PermissionCenter } from './features/permission'
+import { Toaster } from './components/ui/toaster'
 
 function App() {
   const { setInitialized } = useAppStore()
@@ -127,6 +129,8 @@ function App() {
           <Route path="admin/users/create" element={<UserCreatePage />} />
           <Route path="admin/users/:id/edit" element={<UserEditPage />} />
           <Route path="admin/organization" element={<OrganizationPage />} />
+          {/* Permission center route */}
+          <Route path="admin/permissions" element={<PermissionCenter />} />
         </Route>
       </Routes>
       <UpdateDialog
@@ -136,6 +140,7 @@ function App() {
         onDownload={downloadAndInstall}
         onDismiss={dismiss}
       />
+      <Toaster />
     </BrowserRouter>
   )
 }
