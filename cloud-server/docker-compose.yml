@@ -7,6 +7,7 @@ services:
       - "8080:8080"
     environment:
       - DB_HOST=postgres
+      - DB_PORT=5432
       - DB_PASSWORD=postgres
     depends_on:
       - postgres
@@ -19,7 +20,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "54320:5432"
 
 volumes:
   postgres_data:
