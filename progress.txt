@@ -1,5 +1,64 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-20] - Task: Three-layer Permission Model (epic-2-story-2-5-permission-model)
+
+### 铁律合规检查：
+- PRD 合规：[FR29, FR30 - 部门权限模型、管理员分配权限]
+- 架构合规：[ADR-005 Go DDD 架构、ADR-017 命名规范 {module}_{resource}_{action}]
+- Epic 合规：Epic 2 / Story 2.5 三层权限模型
+
+### What was done:
+
+**数据库迁移：**
+- `cloud-server/migrations/008_permission_model_enhancement.up.sql` - 增强 roles/permissions 表结构
+- `cloud-server/migrations/008_permission_model_enhancement.down.sql` - 回滚脚本
+- `cloud-server/migrations/009_seed_three_layer_permissions.up.sql` - 种子数据（6个默认角色、按模块分组的权限）
+- `cloud-server/migrations/009_seed_three_layer_permissions.down.sql` - 回滚脚本
+
+**模型定义：**
+- 更新 `cloud-server/internal/model/role.go` - RoleType、PermissionLayer、PermissionAction 常量
+- 更新 `cloud-server/internal/model/permission.go` - PermissionSet 聚合方法
+
+**权限模块（DDD架构）：**
+- `internal/module/permission/domain/repository/` - 仓储接口定义
+- `internal/module/permission/infrastructure/persistence/` - SQL 实现
+- `internal/module/permission/application/service/` - 业务服务层
+- `internal/module/permission/interface/handler/` - HTTP 处理器
+- `internal/module/permission/permission_module.go` - 模块入口
+
+**API 端点：**
+- GET/POST/PUT/DELETE `/api/admin/roles` - 角色管理
+- GET `/api/admin/roles/:id/permissions` - 角色权限列表
+- PUT `/api/admin/roles/:id/permissions` - 更新角色权限
+- GET `/api/admin/permissions` - 权限列表
+- GET `/api/admin/permissions/check` - 权限检查
+- GET/POST/DELETE `/api/admin/users/:id/roles` - 用户角色管理
+
+**三层权限模型：**
+- base 层：所有用户可访问的基础权限
+- department 层：部门成员可访问的权限
+- approval 层：审批人员可访问的权限
+
+**权限命名规范：**
+- 格式：`{module}_{resource}_{action}`
+- 示例：`auth_profile_read`, `hr_employee_write`, `finance_invoice_delete`
+
+**测试：**
+- `internal/model/permission_test.go` - PermissionSet 单元测试
+- `internal/module/permission/application/service/permission_cache_test.go` - 缓存测试
+- `internal/module/permission/interface/handler/permission_handler_test.go` - 模型验证测试
+
+### Testing:
+- go test ./internal/module/permission/... -v -count=1 - 15 个测试全部通过
+- go build ./... - 编译成功
+
+### Notes:
+- 权限常量使用 PermAction* 前缀避免与 audit_log.go 的 ActionDelete 冲突
+- 权限缓存 TTL 为 5 分钟
+- 支持多租户数据隔离
+
+---
+
 ## [2026-03-20] - Task: Permission Center UI (epic-2-story-2-5-permission-center-ui)
 
 ### 铁律合规检查：
