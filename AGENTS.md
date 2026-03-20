@@ -765,7 +765,7 @@ cp .env.example .env  # 复制环境变量模板
 │  8. 执行铁律合规检查                                         │
 │     → PRD + 架构 + UX + Epic 四方约束                        │
 │     ↓                                                       │
-│  9. 按照OpenSpec 变更文档设计实现功能代码                      │
+│  9. 按照OpenSpec 变更文档设计实现(opensx-apply)功能代码                      │
 │     ↓                                                       │
 │  10. 执行测试验证                                            │
 │     → lint / build / playwright mcp浏览器测试                │
