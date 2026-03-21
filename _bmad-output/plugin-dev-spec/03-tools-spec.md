@@ -1,18 +1,71 @@
 # 第3章：工具层规范 (Tools Specification)
 
-> 工具层是插件的核心能力层，提供 AI Agent 可调用的原子操作和复杂技能。
+> 工具层是插件的核心能力层，提供 AI Agent 可调用的原子操作和复杂技能。采用**混合架构**设计，根据场景选择最优实现方式。
 
 ---
 
 ## 3.1 概述
 
-工具层包含三种类型的工具：
+### 3.1.1 混合架构设计理念
 
-| 类型 | 说明 | 复杂度 | 示例 |
-|------|------|:------:|------|
-| **Tools** | 原子操作，单一职责 | 低 | 查询、创建、更新 |
-| **Skills** | 复杂技能，多步骤组合 | 中 | AI生成合同、智能报价 |
-| **MCP** | 外部服务接入 | 高 | 闲鱼API、钉钉集成 |
+工具层采用**三层混合架构**，根据操作特性选择最优实现：
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    工具层混合架构                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                   统一工具接口 (Unified Interface)            │   │
+│  │  - name, description, parameters                            │   │
+│  │  - handler: Native | CLI | MCP                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                               │                                     │
+│         ┌─────────────────────┼─────────────────────┐              │
+│         ▼                     ▼                     ▼              │
+│  ┌─────────────┐       ┌─────────────┐       ┌─────────────┐      │
+│  │ Native Tools│       │ CLI Wrapper │       │MCP Adapters │      │
+│  │  (高频/简单) │       │ (低频/复杂)  │       │ (外部服务)   │      │
+│  ├─────────────┤       ├─────────────┤       ├─────────────┤      │
+│  │ • 数据查询   │       │ • 媒体处理   │       │ • 闲鱼API   │      │
+│  │ • 数据变更   │       │ • 文档转换   │       │ • 钉钉集成   │      │
+│  │ • 业务操作   │       │ • 批量处理   │       │ • 企业微信   │      │
+│  │ • 权限验证   │       │ • 工具链组合 │       │ • 第三方服务 │      │
+│  └─────────────┘       └─────────────┘       └─────────────┘      │
+│                                                                     │
+│  Token 消耗：低          Token 消耗：极低        Token 消耗：中      │
+│  执行速度：快            执行速度：中            执行速度：取决于网络 │
+│  调试难度：低            调试难度：中            调试难度：中        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.1.2 工具类型对比
+
+| 类型 | 说明 | 复杂度 | Token消耗 | 适用场景 |
+|------|------|:------:|:---------:|---------|
+| **Native Tools** | 原生函数调用，直接执行 | 低 | 中 | 高频、简单、需要类型安全 |
+| **CLI Wrapper** | 命令行包装，子进程执行 | 中 | 极低 | 复杂工具链、媒体处理、文档转换 |
+| **MCP Adapters** | 外部服务接入，网络调用 | 高 | 中 | 第三方API、认证管理 |
+| **Skills** | 复杂技能，多步骤组合 | 高 | 可变 | AI生成、智能分析 |
+
+### 3.1.3 选择决策矩阵
+
+| 操作类型 | 推荐方案 | 理由 |
+|---------|---------|------|
+| 数据查询 (query) | Native Tool | 高频、简单、需要类型安全 |
+| 数据变更 (mutate) | Native Tool | 需要事务、权限检查 |
+| 业务操作 (action) | Native Tool | 需要复杂验证和事件发布 |
+| 统计聚合 (aggregate) | Native Tool | 高频、需要实时响应 |
+| 数据导出 (export) | Native Tool | 需要权限控制和审计 |
+| 图像处理 | CLI Wrapper | 复杂工具链、低频、已有成熟 CLI |
+| 音频处理 | CLI Wrapper | 复杂工具链、低频 |
+| 视频处理 | CLI Wrapper | 复杂工具链、低频 |
+| 文档转换 | CLI Wrapper | 低频、复杂格式处理 |
+| 批量处理 | CLI Wrapper | 适合命令行批处理 |
+| 闲鱼 API | MCP Adapter | 外部服务、OAuth认证 |
+| 钉钉集成 | MCP Adapter | 外部服务、Webhook |
+| 企业微信 | MCP Adapter | 外部服务、API调用 |
 
 ---
 
@@ -37,13 +90,13 @@ sales_query(entity: "contract", filters: { dateRange, salesId, ... })
 
 每个插件最多注册 **5个核心工具**：
 
-| 工具类型 | 命名格式 | 用途 |
-|---------|---------|------|
-| **query** | `{plugin}_query` | 通用数据查询 |
-| **aggregate** | `{plugin}_aggregate` | 统计聚合 |
-| **mutate** | `{plugin}_mutate` | 数据变更（增删改） |
-| **action** | `{plugin}_action` | 业务操作 |
-| **export** | `{plugin}_export` | 数据导出 |
+| 工具类型 | 命名格式 | 用途 | 推荐实现 |
+|---------|---------|------|---------|
+| **query** | `{plugin}_query` | 通用数据查询 | Native |
+| **aggregate** | `{plugin}_aggregate` | 统计聚合 | Native |
+| **mutate** | `{plugin}_mutate` | 数据变更（增删改） | Native |
+| **action** | `{plugin}_action` | 业务操作 | Native |
+| **export** | `{plugin}_export` | 数据导出 | Native |
 
 ### 3.2.3 工具数量对比
 
@@ -57,61 +110,11 @@ sales_query(entity: "contract", filters: { dateRange, salesId, ... })
 
 ---
 
-## 3.3 通用查询工具
+## 3.3 Native Tools 规范
 
-### 3.3.1 接口定义
+Native Tools 是最常用的工具类型，适用于高频、简单的操作。
 
-```typescript
-// 工具名: {plugin}_query
-// 示例: sales_query, hr_query, finance_query
-
-interface UniversalQueryParams {
-  // 实体类型（必填）
-  entity: string;
-  
-  // 过滤条件（可选）
-  filters?: {
-    dateRange?: { start: Date | string; end: Date | string };
-    status?: string | string[];
-    ownerId?: string;
-    departmentId?: string;
-    keyword?: string;
-    custom?: Record<string, any>;
-  };
-  
-  // 返回字段（可选）
-  fields?: string[];
-  
-  // 分页
-  page?: number;
-  pageSize?: number;
-  
-  // 排序
-  orderBy?: { field: string; direction: 'asc' | 'desc' };
-}
-
-interface UniversalQueryResult<T = Record<string, any>> {
-  entity: string;
-  total: number;
-  page: number;
-  pageSize: number;
-  items: T[];
-}
-```
-
-### 3.3.2 实体类型映射
-
-每个插件的实体类型：
-
-| 插件 | 实体类型 |
-|------|---------|
-| sales | `contract` `order` `customer` `quote` `lead` |
-| hr | `employee` `department` `position` `attendance` `leave` |
-| finance | `invoice` `expense` `payment` `ledger` `budget` |
-| warehouse | `inventory` `inbound` `outbound` `location` |
-| approval | `request` `workflow` `template` `history` |
-
-### 3.3.3 实现示例
+### 3.3.1 通用查询工具
 
 ```typescript
 // tools/query.ts
@@ -120,6 +123,8 @@ import { ContractRepository, OrderRepository, CustomerRepository } from '../data
 
 export default defineTool({
   name: 'sales_query',
+  type: 'native',  // 明确声明类型
+  
   description: `
     查询销售部数据（合同、订单、客户、报价单）
     适用场景：获取具体记录列表、查看详情、筛选数据
@@ -181,20 +186,7 @@ export default defineTool({
     await context.checkPermission(`sales:${entity}:read`);
     
     // 根据实体类型选择Repository
-    let repository;
-    switch (entity) {
-      case 'contract':
-        repository = new ContractRepository(context.db);
-        break;
-      case 'order':
-        repository = new OrderRepository(context.db);
-        break;
-      case 'customer':
-        repository = new CustomerRepository(context.db);
-        break;
-      default:
-        throw new Error(`Unknown entity: ${entity}`);
-    }
+    const repository = getRepository(entity, context);
     
     // 执行查询
     const result = await repository.query({
@@ -224,151 +216,7 @@ export default defineTool({
 });
 ```
 
----
-
-## 3.4 统计聚合工具
-
-### 3.4.1 接口定义
-
-```typescript
-// 工具名: {plugin}_aggregate
-
-interface UniversalAggregateParams {
-  // 实体类型
-  entity: string;
-  
-  // 过滤条件
-  filters?: UniversalQueryParams['filters'];
-  
-  // 聚合配置
-  aggregations: {
-    metric: 'sum' | 'count' | 'avg' | 'max' | 'min';
-    field: string;
-    alias?: string;
-  }[];
-  
-  // 分组
-  groupBy?: string | string[];
-  
-  // 时间分组（快捷方式）
-  timeGroup?: 'day' | 'week' | 'month' | 'quarter' | 'year';
-}
-
-interface UniversalAggregateResult {
-  entity: string;
-  total: Record<string, number>;
-  groups?: {
-    key: string | Record<string, any>;
-    metrics: Record<string, number>;
-  }[];
-}
-```
-
-### 3.4.2 实现示例
-
-```typescript
-// tools/aggregate.ts
-import { defineTool } from '@office/plugin-sdk';
-
-export default defineTool({
-  name: 'sales_aggregate',
-  description: `
-    统计聚合销售数据
-    适用场景：计算总和、平均值、计数、按条件分组统计
-    
-    示例用法：
-    - "今天合同总额多少？"
-      entity: "contract", aggregations: [{ metric: "sum", field: "amount" }]
-    - "按销售统计合同金额"
-      entity: "contract", aggregations: [{ metric: "sum", field: "amount" }], groupBy: "salesName"
-    - "每月销售额趋势"
-      entity: "order", aggregations: [{ metric: "sum", field: "amount" }], timeGroup: "month"
-  `,
-  
-  parameters: {
-    type: 'object',
-    properties: {
-      entity: { type: 'string', enum: ['contract', 'order', 'customer'] },
-      filters: { type: 'object' },
-      aggregations: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            metric: { type: 'string', enum: ['sum', 'count', 'avg', 'max', 'min'] },
-            field: { type: 'string' },
-            alias: { type: 'string' }
-          },
-          required: ['metric', 'field']
-        }
-      },
-      groupBy: { type: ['string', 'array'] },
-      timeGroup: { type: 'string', enum: ['day', 'week', 'month', 'quarter', 'year'] }
-    },
-    required: ['entity', 'aggregations']
-  },
-  
-  handler: async (params: UniversalAggregateParams, context: ToolContext) => {
-    const { entity, filters, aggregations, groupBy, timeGroup } = params;
-    
-    await context.checkPermission(`sales:${entity}:read`);
-    
-    const repository = getRepository(entity, context);
-    const result = await repository.aggregate({
-      filters,
-      aggregations,
-      groupBy,
-      timeGroup
-    });
-    
-    context.auditLog({
-      action: 'aggregate',
-      entity,
-      aggregations
-    });
-    
-    return result;
-  }
-});
-```
-
----
-
-## 3.5 数据变更工具
-
-### 3.5.1 接口定义
-
-```typescript
-// 工具名: {plugin}_mutate
-
-interface UniversalMutateParams {
-  // 操作类型
-  action: 'create' | 'update' | 'delete';
-  
-  // 实体类型
-  entity: string;
-  
-  // 数据（create/update时必填）
-  data?: Record<string, any>;
-  
-  // 条件（update/delete时必填）
-  where?: { id: string } | { ids: string[] };
-  
-  // 是否批量操作
-  batch?: boolean;
-}
-
-interface UniversalMutateResult {
-  success: boolean;
-  action: string;
-  entity: string;
-  affected?: number;
-  id?: string;
-  ids?: string[];
-}
-```
-
-### 3.5.2 实现示例
+### 3.3.2 数据变更工具
 
 ```typescript
 // tools/mutate.ts
@@ -376,6 +224,8 @@ import { defineTool } from '@office/plugin-sdk';
 
 export default defineTool({
   name: 'sales_mutate',
+  type: 'native',
+  
   description: `
     变更销售数据（创建、更新、删除）
     适用场景：新增记录、修改数据、删除记录
@@ -437,12 +287,7 @@ export default defineTool({
         break;
     }
     
-    context.auditLog({
-      action,
-      entity,
-      data,
-      where
-    });
+    context.auditLog({ action, entity, data, where });
     
     return {
       success: true,
@@ -457,312 +302,236 @@ export default defineTool({
 
 ---
 
-## 3.6 业务操作工具
+## 3.4 CLI Wrapper 规范
 
-### 3.6.1 接口定义
+CLI Wrapper 用于包装命令行工具，实现极低的 Token 消耗。
 
-```typescript
-// 工具名: {plugin}_action
+### 3.4.1 设计理念
 
-interface ActionParams {
-  // 操作名称
-  action: string;
-  
-  // 目标实体
-  entity: string;
-  
-  // 目标ID
-  targetId: string;
-  
-  // 操作参数
-  params?: Record<string, any>;
-}
+```
+传统方式（高 Token 消耗）：
+┌─────────────┐     需要详细描述     ┌─────────────┐
+│  AI Agent   │ ──────────────────▶ │   工具 API  │
+└─────────────┘                     └─────────────┘
+      每次调用需要传输完整的参数描述和结果
 
-interface ActionResult {
-  success: boolean;
-  action: string;
-  entity: string;
-  targetId: string;
-  result?: Record<string, any>;
-  message?: string;
-}
+CLI 方式（极低 Token 消耗）：
+┌─────────────┐     SKILL.md 按需加载    ┌─────────────┐
+│  AI Agent   │ ◀────────────────────▶ │  CLI 命令   │
+└─────────────┘                        └─────────────┘
+      只加载 YAML frontmatter，--help 即时获取详情
 ```
 
-### 3.6.2 实现示例
+### 3.4.2 CLI 工具定义
 
 ```typescript
-// tools/action.ts
-import { defineTool } from '@office/plugin-sdk';
-
-// 定义支持的操作
-const SUPPORTED_ACTIONS = {
-  contract: ['submit', 'approve', 'reject', 'cancel', 'renew'],
-  order: ['confirm', 'ship', 'complete', 'cancel', 'refund'],
-  quote: ['send', 'accept', 'reject', 'expire']
-};
+// tools/image-process.ts
+import { defineTool, CLIToolWrapper } from '@office/plugin-sdk';
+import { execSync } from 'child_process';
+import path from 'path';
 
 export default defineTool({
-  name: 'sales_action',
+  name: 'image_process',
+  type: 'cli',  // 声明为 CLI 类型
+  
   description: `
-    执行销售业务操作
+    图像处理工具（基于 GIMP CLI）
     
-    合同操作：
-    - submit: 提交审批
-    - approve: 审批通过
-    - reject: 审批驳回
-    - cancel: 取消合同
-    - renew: 续签
+    支持操作：
+    - blur: 模糊处理
+    - sharpen: 锐化
+    - resize: 调整大小
+    - crop: 裁剪
+    - filter: 滤镜效果
     
-    订单操作：
-    - confirm: 确认订单
-    - ship: 发货
-    - complete: 完成
-    - cancel: 取消
-    - refund: 退款
+    详细用法请使用 --help 查看
   `,
+  
+  // CLI 配置
+  cli: {
+    command: 'cli-anything-gimp',
+    skillFile: './skills/gimp-skill.md',
+    jsonOutput: true,  // 强制 JSON 输出
+    timeout: 30000     // 超时时间
+  },
   
   parameters: {
     type: 'object',
     properties: {
-      action: { type: 'string' },
-      entity: { type: 'string' },
-      targetId: { type: 'string' },
+      operation: { 
+        type: 'string', 
+        enum: ['blur', 'sharpen', 'resize', 'crop', 'filter'] 
+      },
+      inputFile: { type: 'string' },
+      outputFile: { type: 'string' },
       params: { type: 'object' }
     },
-    required: ['action', 'entity', 'targetId']
+    required: ['operation', 'inputFile', 'outputFile']
   },
   
-  handler: async (params: ActionParams, context: ToolContext) => {
-    const { action, entity, targetId, params: actionParams } = params;
+  handler: async (params, context) => {
+    const { operation, inputFile, outputFile, params: opParams } = params;
     
-    // 验证操作是否支持
-    if (!SUPPORTED_ACTIONS[entity]?.includes(action)) {
-      throw new Error(`Unsupported action: ${action} for ${entity}`);
+    // 验证文件存在
+    if (!await context.fs.exists(inputFile)) {
+      throw new Error(`输入文件不存在: ${inputFile}`);
     }
     
-    await context.checkPermission(`sales:${entity}:${action}`);
+    // 创建临时项目文件
+    const tempProject = path.join(context.tempDir, `gimp-${Date.now()}.json`);
     
-    const service = getService(entity, context);
-    const result = await service.executeAction(action, targetId, actionParams);
+    // 生成 CLI 命令序列
+    const commands = generateCLICommands({
+      operation,
+      inputFile,
+      outputFile,
+      tempProject,
+      params: opParams
+    });
     
-    // 发布事件
-    context.emitEvent(`sales:${entity}:${action}ed`, { id: targetId, result });
+    // 执行 CLI 命令
+    const results = await context.executeCLI(commands, {
+      timeout: 30000,
+      jsonOutput: true
+    });
+    
+    // 清理临时文件
+    await context.fs.unlink(tempProject);
     
     return {
       success: true,
-      action,
-      entity,
-      targetId,
-      result
+      outputFile,
+      operation,
+      metadata: results.metadata
     };
   }
 });
-```
 
----
-
-## 3.7 数据导出工具
-
-### 3.7.1 接口定义
-
-```typescript
-// 工具名: {plugin}_export
-
-interface ExportParams {
-  // 实体类型
-  entity: string;
+// CLI 命令生成器
+function generateCLICommands(config: CLIConfig): string[] {
+  const { operation, inputFile, outputFile, tempProject, params } = config;
   
-  // 过滤条件
-  filters?: UniversalQueryParams['filters'];
+  const baseCommands = [
+    `cli-anything-gimp --json project new -o ${tempProject}`,
+    `cli-anything-gimp --project ${tempProject} layer import 0 ${inputFile}`
+  ];
   
-  // 导出格式
-  format: 'excel' | 'csv' | 'pdf';
+  const operationCommands: Record<string, string[]> = {
+    blur: [
+      `cli-anything-gimp --project ${tempProject} filter apply blur --radius ${params.radius || 5}`
+    ],
+    sharpen: [
+      `cli-anything-gimp --project ${tempProject} filter apply sharpen --amount ${params.amount || 50}`
+    ],
+    resize: [
+      `cli-anything-gimp --project ${tempProject} image resize --width ${params.width} --height ${params.height}`
+    ],
+    crop: [
+      `cli-anything-gimp --project ${tempProject} layer crop --x ${params.x} --y ${params.y} --width ${params.width} --height ${params.height}`
+    ]
+  };
   
-  // 导出字段
-  fields?: string[];
+  const exportCommands = [
+    `cli-anything-gimp --project ${tempProject} export render ${outputFile} --overwrite`
+  ];
   
-  // 文件名
-  filename?: string;
+  return [
+    ...baseCommands,
+    ...(operationCommands[operation] || []),
+    ...exportCommands
+  ];
 }
-
-interface ExportResult {
-  success: boolean;
-  filename: string;
-  filepath: string;
-  recordCount: number;
-  expiresAt: Date;
-}
 ```
 
-### 3.7.2 实现示例
+### 3.4.3 SKILL.md 规范
 
-```typescript
-// tools/export.ts
-import { defineTool } from '@office/plugin-sdk';
-import { exportToExcel, exportToCSV, exportToPDF } from '@office/export-utils';
+每个 CLI 工具需要提供 SKILL.md 文件，供 Agent 按需加载：
 
-export default defineTool({
-  name: 'sales_export',
-  description: `
-    导出销售报表
-    
-    支持格式：
-    - excel: Excel文件(.xlsx)
-    - csv: CSV文件(.csv)
-    - pdf: PDF文件(.pdf)
-  `,
-  
-  parameters: {
-    type: 'object',
-    properties: {
-      entity: { type: 'string' },
-      filters: { type: 'object' },
-      format: { type: 'string', enum: ['excel', 'csv', 'pdf'] },
-      fields: { type: 'array', items: { type: 'string' } },
-      filename: { type: 'string' }
-    },
-    required: ['entity', 'format']
-  },
-  
-  handler: async (params: ExportParams, context: ToolContext) => {
-    const { entity, filters, format, fields, filename } = params;
-    
-    await context.checkPermission(`sales:${entity}:export`);
-    
-    // 查询数据
-    const repository = getRepository(entity, context);
-    const { items } = await repository.query({ filters, fields, pageSize: 10000 });
-    
-    // 导出文件
-    const defaultFilename = `${entity}_${formatDate(new Date())}.${format}`;
-    const exportFilename = filename || defaultFilename;
-    
-    let filepath: string;
-    switch (format) {
-      case 'excel':
-        filepath = await exportToExcel(items, fields, exportFilename);
-        break;
-      case 'csv':
-        filepath = await exportToCSV(items, fields, exportFilename);
-        break;
-      case 'pdf':
-        filepath = await exportToPDF(items, fields, exportFilename);
-        break;
-    }
-    
-    context.auditLog({
-      action: 'export',
-      entity,
-      format,
-      recordCount: items.length
-    });
-    
-    return {
-      success: true,
-      filename: exportFilename,
-      filepath,
-      recordCount: items.length,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24小时后过期
-    };
-  }
-});
+```markdown
+---
+name: cli-anything-gimp
+description: Image editing and processing CLI
+version: 1.0.0
+---
+
+# cli-anything-gimp
+
+Command-line interface for GIMP - A stateful CLI for image editing.
+
+## Installation
+
+```bash
+pip install cli-anything-gimp
 ```
+
+**Prerequisites:**
+- Python 3.10+
+- GIMP 2.10+ must be installed
+
+## Command Groups
+
+### Project
+| Command | Description |
+|---------|-------------|
+| `new` | Create a new project |
+| `open` | Open an existing project |
+| `save` | Save the current project |
+| `info` | Show project information |
+
+### Layer
+| Command | Description |
+|---------|-------------|
+| `import` | Import image as layer |
+| `add` | Add a new layer |
+| `remove` | Remove a layer |
+| `crop` | Crop a layer |
+
+### Filter
+| Command | Description |
+|---------|-------------|
+| `apply blur` | Apply blur filter |
+| `apply sharpen` | Apply sharpen filter |
+| `apply noise` | Apply noise filter |
+
+### Export
+| Command | Description |
+|---------|-------------|
+| `render` | Render to image file |
+
+## Examples
+
+### Blur an image
+
+```bash
+cli-anything-gimp project new -o temp.json
+cli-anything-gimp --project temp.json layer import 0 input.png
+cli-anything-gimp --project temp.json filter apply blur --radius 5
+cli-anything-gimp --project temp.json export render output.png --overwrite
+```
+
+## For AI Agents
+
+1. **Always use `--json` flag** for parseable output
+2. **Check return codes** - 0 for success
+3. **Use absolute paths** for all file operations
+```
+
+### 3.4.4 Token 优化效果
+
+| 操作类型 | Native Tool | CLI Wrapper | 节省比例 |
+|---------|-------------|-------------|---------|
+| 简单操作 | 100-200 tokens | 20-30 tokens | 70-85% |
+| 中等操作 | 300-500 tokens | 30-50 tokens | 85-90% |
+| 复杂操作 | 500-1000 tokens | 50-80 tokens | 90-95% |
+| 批量操作 | 1000+ tokens | 100-200 tokens | 80-90% |
 
 ---
 
-## 3.8 Skills 规范
+## 3.5 MCP Adapters 规范
 
-### 3.8.1 Skill 定义
+MCP (Model Context Protocol) 用于接入外部服务。
 
-Skill 是多个工具的组合，用于实现复杂的业务场景：
-
-```typescript
-// skills/generate-contract.ts
-import { defineSkill } from '@office/plugin-sdk';
-
-export default defineSkill({
-  id: 'generate-contract',
-  name: 'AI生成合同',
-  description: '根据客户信息和报价单自动生成合同初稿',
-  trigger: 'natural-language',
-  
-  // 依赖的工具
-  tools: ['sales_query', 'sales_mutate'],
-  
-  // 使用示例
-  examples: [
-    '帮我给XX公司生成一份采购合同',
-    '根据报价单Q2024001生成合同'
-  ],
-  
-  // 执行流程
-  execute: async (context: SkillContext) => {
-    const { userMessage, callTool } = context;
-    
-    // 1. 解析用户意图
-    const intent = await context.llm.analyze(userMessage, {
-      task: 'extract_contract_requirements'
-    });
-    
-    // 2. 查询客户信息
-    const customer = await callTool('sales_query', {
-      entity: 'customer',
-      filters: { keyword: intent.customerName }
-    });
-    
-    // 3. 查询报价单（如有）
-    let quote = null;
-    if (intent.quoteId) {
-      quote = await callTool('sales_query', {
-        entity: 'quote',
-        filters: { id: intent.quoteId }
-      });
-    }
-    
-    // 4. AI生成合同内容
-    const contractContent = await context.llm.generate({
-      template: 'contract_template',
-      variables: {
-        customer: customer.items[0],
-        quote: quote?.items[0],
-        requirements: intent.requirements
-      }
-    });
-    
-    // 5. 创建合同草稿
-    const result = await callTool('sales_mutate', {
-      action: 'create',
-      entity: 'contract',
-      data: contractContent
-    });
-    
-    return {
-      success: true,
-      message: '合同已生成，请查看并确认',
-      contractId: result.id
-    };
-  }
-});
-```
-
-### 3.8.2 Skill 注册
-
-```typescript
-// skills/index.ts
-import generateContract from './generate-contract';
-import generateQuote from './generate-quote';
-
-export const skills = [
-  generateContract,
-  generateQuote
-];
-```
-
----
-
-## 3.9 MCP 规范
-
-### 3.9.1 MCP 服务定义
+### 3.5.1 MCP 服务定义
 
 ```typescript
 // mcp/xianyu-adapter.ts
@@ -796,7 +565,6 @@ export default defineMCPService({
         required: ['orderId', 'message']
       },
       handler: async (params, context) => {
-        // 调用闲鱼API
         const response = await context.mcpClient.call('xianyu', 'sendMessage', params);
         return response;
       }
@@ -820,11 +588,273 @@ export default defineMCPService({
 });
 ```
 
+### 3.5.2 MCP 工具调用
+
+```typescript
+// tools/xianyu-query.ts
+import { defineTool } from '@office/plugin-sdk';
+
+export default defineTool({
+  name: 'xianyu_query',
+  type: 'mcp',
+  
+  description: `
+    查询闲鱼订单和消息
+    
+    适用场景：
+    - 查看闲鱼订单状态
+    - 获取买家消息
+    - 同步订单数据
+  `,
+  
+  mcp: {
+    service: 'xianyu-adapter',
+    autoAuth: true  // 自动处理认证
+  },
+  
+  parameters: {
+    type: 'object',
+    properties: {
+      action: {
+        type: 'string',
+        enum: ['getOrders', 'getMessages', 'syncOrders']
+      },
+      filters: { type: 'object' }
+    },
+    required: ['action']
+  },
+  
+  handler: async (params, context) => {
+    const { action, filters } = params;
+    
+    // 检查 MCP 服务是否可用
+    const mcpService = await context.getMCPService('xianyu-adapter');
+    if (!mcpService.isAvailable()) {
+      throw new Error('闲鱼服务未配置，请先在设置中配置闲鱼账号');
+    }
+    
+    // 调用 MCP 服务
+    const result = await context.callMCP('xianyu-adapter', action, filters);
+    
+    return result;
+  }
+});
+```
+
 ---
 
-## 3.10 工具描述规范
+## 3.6 Skills 规范
 
-### 3.10.1 描述模板
+Skill 是多个工具的组合，用于实现复杂的业务场景。
+
+### 3.6.1 Skill 定义
+
+```typescript
+// skills/generate-contract.ts
+import { defineSkill } from '@office/plugin-sdk';
+
+export default defineSkill({
+  id: 'generate-contract',
+  name: 'AI生成合同',
+  description: '根据客户信息和报价单自动生成合同初稿',
+  trigger: 'natural-language',
+  
+  // 依赖的工具
+  tools: ['sales_query', 'sales_mutate'],
+  
+  // 使用示例
+  examples: [
+    '帮我给XX公司生成一份采购合同',
+    '根据报价单Q2024001生成合同'
+  ],
+  
+  // 执行流程
+  execute: async (context: SkillContext) => {
+    const { userMessage, callTool, llm } = context;
+    
+    // 1. 解析用户意图
+    const intent = await llm.analyze(userMessage, {
+      task: 'extract_contract_requirements'
+    });
+    
+    // 2. 查询客户信息
+    const customer = await callTool('sales_query', {
+      entity: 'customer',
+      filters: { keyword: intent.customerName }
+    });
+    
+    // 3. 查询报价单（如有）
+    let quote = null;
+    if (intent.quoteId) {
+      quote = await callTool('sales_query', {
+        entity: 'quote',
+        filters: { id: intent.quoteId }
+      });
+    }
+    
+    // 4. AI生成合同内容
+    const contractContent = await llm.generate({
+      template: 'contract_template',
+      variables: {
+        customer: customer.items[0],
+        quote: quote?.items[0],
+        requirements: intent.requirements
+      }
+    });
+    
+    // 5. 创建合同草稿
+    const result = await callTool('sales_mutate', {
+      action: 'create',
+      entity: 'contract',
+      data: contractContent
+    });
+    
+    return {
+      success: true,
+      message: '合同已生成，请查看并确认',
+      contractId: result.id
+    };
+  }
+});
+```
+
+### 3.6.2 Skill 注册
+
+```typescript
+// skills/index.ts
+import generateContract from './generate-contract';
+import generateQuote from './generate-quote';
+
+export const skills = [
+  generateContract,
+  generateQuote
+];
+```
+
+---
+
+## 3.7 工具注册与发现
+
+### 3.7.1 工具注册
+
+```typescript
+// tools/index.ts
+import query from './query';
+import aggregate from './aggregate';
+import mutate from './mutate';
+import action from './action';
+import export_ from './export';
+import imageProcess from './image-process';
+import xianyuQuery from './xianyu-query';
+
+export const tools = {
+  // Native Tools
+  native: [query, aggregate, mutate, action, export_],
+  
+  // CLI Wrappers
+  cli: [imageProcess],
+  
+  // MCP Adapters
+  mcp: [xianyuQuery]
+};
+
+export function registerTools(pluginContext: PluginContext) {
+  // 注册 Native Tools
+  for (const tool of tools.native) {
+    pluginContext.registerTool(tool);
+  }
+  
+  // 注册 CLI Wrappers
+  for (const tool of tools.cli) {
+    pluginContext.registerCLITool(tool);
+  }
+  
+  // 注册 MCP Adapters
+  for (const tool of tools.mcp) {
+    pluginContext.registerMCPTool(tool);
+  }
+}
+```
+
+### 3.7.2 工具发现机制
+
+```typescript
+// 核心工具发现服务
+class ToolDiscoveryService {
+  private skillCache = new Map<string, Skill>();
+  private helpCache = new Map<string, string>();
+  
+  /**
+   * 获取工具概览（极低 Token 消耗）
+   * 只返回工具名称和简短描述
+   */
+  getToolOverview(): ToolOverview[] {
+    return [
+      { name: 'sales_query', type: 'native', description: '查询销售数据' },
+      { name: 'sales_mutate', type: 'native', description: '变更销售数据' },
+      { name: 'image_process', type: 'cli', description: '图像处理', skillFile: './skills/gimp-skill.md' },
+      { name: 'xianyu_query', type: 'mcp', description: '闲鱼订单查询' }
+    ];
+  }
+  
+  /**
+   * 按需加载工具详情
+   */
+  async loadToolDetail(toolName: string): Promise<ToolDetail> {
+    const tool = this.getTool(toolName);
+    
+    switch (tool.type) {
+      case 'native':
+        // Native Tool: 返回完整 Schema
+        return {
+          name: tool.name,
+          description: tool.description,
+          parameters: tool.parameters
+        };
+        
+      case 'cli':
+        // CLI Tool: 只加载 SKILL.md frontmatter
+        const skill = await this.loadSkillFrontmatter(tool.skillFile);
+        return {
+          name: tool.name,
+          description: skill.description,
+          skillFile: tool.skillFile,
+          hint: '使用 --help 获取详细参数'
+        };
+        
+      case 'mcp':
+        // MCP Tool: 返回基本描述
+        return {
+          name: tool.name,
+          description: tool.description,
+          service: tool.mcp.service,
+          hint: '需要配置外部服务'
+        };
+    }
+  }
+  
+  /**
+   * 加载 SKILL.md frontmatter（约 50 tokens）
+   */
+  private async loadSkillFrontmatter(skillFile: string): Promise<SkillFrontmatter> {
+    if (this.skillCache.has(skillFile)) {
+      return this.skillCache.get(skillFile)!;
+    }
+    
+    const content = await fs.readFile(skillFile, 'utf-8');
+    const frontmatter = this.parseYAMLFrontmatter(content);
+    
+    this.skillCache.set(skillFile, frontmatter);
+    return frontmatter;
+  }
+}
+```
+
+---
+
+## 3.8 工具描述规范
+
+### 3.8.1 描述模板
 
 为帮助AI正确选择工具，工具描述应包含：
 
@@ -849,7 +879,7 @@ const TOOL_DESCRIPTION_TEMPLATE = `
 `;
 ```
 
-### 3.10.2 完整示例
+### 3.8.2 完整示例
 
 ```typescript
 const QUERY_TOOL_DESCRIPTION = `
@@ -878,96 +908,170 @@ const QUERY_TOOL_DESCRIPTION = `
   - pageSize: 每页数量（默认20）
   
   示例用法：
-  - "今天签了哪些合同？" 
-    → { entity: "contract", filters: { dateRange: "今天", status: "signed" } }
-  - "王明的客户有哪些？"
-    → { entity: "customer", filters: { ownerId: "王明ID" } }
-  - "查看订单O001的详情"
-    → { entity: "order", filters: { id: "O001" }, fields: ["*"] }
+  - "今天签了哪些合同？" → { entity: "contract", filters: { dateRange: "today", status: "signed" } }
+  - "王明的客户有哪些？" → { entity: "customer", filters: { ownerId: "王明ID" } }
 `;
 ```
 
 ---
 
-## 3.11 工具注册
+## 3.9 Token 预算管理
 
-### 3.11.1 注册入口
+### 3.9.1 预算分配策略
 
 ```typescript
-// tools/index.ts
-import query from './query';
-import aggregate from './aggregate';
-import mutate from './mutate';
-import action from './action';
-import exportTool from './export';
-
-export const tools = {
-  query,
-  aggregate,
-  mutate,
-  action,
-  export: exportTool
-};
-
-export type ToolName = keyof typeof tools;
-```
-
-### 3.11.2 插件配置
-
-在 `plugin.json` 中声明：
-
-```json
-{
-  "tools": {
-    "register": ["query", "aggregate", "mutate", "action", "export"],
-    "public": ["query", "aggregate"],
-    "descriptions": {
-      "query": "查询销售部数据（合同、订单、客户、报价单）",
-      "aggregate": "统计聚合销售数据，支持按销售/客户/时间分组",
-      "mutate": "创建、更新、删除销售数据",
-      "action": "执行销售业务操作（审批、发货、退款等）",
-      "export": "导出销售报表（Excel/PDF/CSV）"
+class TokenBudgetManager {
+  private maxTokens = 8000;
+  private usedTokens = 0;
+  
+  /**
+   * 估算工具加载成本
+   */
+  estimateToolCost(tool: Tool): number {
+    switch (tool.type) {
+      case 'native':
+        // Native Tool: 完整 Schema，约 200-500 tokens
+        return 300;
+        
+      case 'cli':
+        // CLI Tool: 只加载 frontmatter，约 50 tokens
+        return 50;
+        
+      case 'mcp':
+        // MCP Tool: 基本描述，约 100 tokens
+        return 100;
+        
+      default:
+        return 200;
     }
+  }
+  
+  /**
+   * 智能加载工具
+   */
+  async loadTool(toolName: string): Promise<boolean> {
+    const tool = this.getTool(toolName);
+    const cost = this.estimateToolCost(tool);
+    
+    if (this.usedTokens + cost > this.maxTokens) {
+      // 预算不足，尝试释放低优先级工具
+      if (!this.tryFreeBudget(cost)) {
+        throw new TokenBudgetExceeded();
+      }
+    }
+    
+    await this.doLoadTool(tool);
+    this.usedTokens += cost;
+    return true;
   }
 }
 ```
 
----
-
-## 3.12 工具调用流程
+### 3.9.2 按需加载策略
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    AI工具调用流程                            │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  用户问题："今天签了哪些合同？总额多少？"                   │
-│                                                             │
-│  Step 1: 意图识别                                           │
-│  ├── 部门：销售部 (sales)                                   │
-│  ├── 实体：合同 (contract)                                  │
-│  ├── 操作：查询 + 聚合                                      │
-│  └── 条件：时间=今天、状态=已签订                           │
-│                                                             │
-│  Step 2: 工具选择                                           │
-│  ├── 查询列表 → sales_query                                │
-│  └── 统计总额 → sales_aggregate                            │
-│                                                             │
-│  Step 3: 参数构建                                           │
-│  ├── sales_query:                                          │
-│  │   { entity: "contract",                                 │
-│  │     filters: { dateRange: "今天", status: "signed" } }  │
-│  │                                                          │
-│  └── sales_aggregate:                                       │
-│      { entity: "contract",                                  │
-│        filters: { dateRange: "今天", status: "signed" },    │
-│        aggregations: [{ metric: "sum", field: "amount" }], │
-│        groupBy: "salesName" }                              │
-│                                                             │
-│  Step 4: 执行并返回                                         │
-│  └── AI整合结果，生成自然语言回复                           │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+初始加载（约 500 tokens）：
+┌─────────────────────────────────────────────────────────┐
+│  只加载所有工具的概览信息：                              │
+│  - sales_query: 查询销售数据 (native)                   │
+│  - sales_mutate: 变更销售数据 (native)                  │
+│  - image_process: 图像处理 (cli, skill: gimp-skill.md)  │
+│  - xianyu_query: 闲鱼订单查询 (mcp)                     │
+└─────────────────────────────────────────────────────────┘
+
+按需加载（每次约 50-300 tokens）：
+┌─────────────────────────────────────────────────────────┐
+│  用户请求图像处理时：                                    │
+│  - 加载 gimp-skill.md 的 frontmatter (50 tokens)        │
+│  - 使用 --help 获取具体命令 (20 tokens)                 │
+│  - 执行命令并返回 JSON 结果 (30 tokens)                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 3.10 错误处理规范
+
+### 3.10.1 统一错误格式
+
+```typescript
+interface ToolError {
+  code: string;
+  message: string;
+  details?: any;
+  recoverable: boolean;
+  suggestions?: string[];
+}
+
+// 错误码定义
+const ErrorCodes = {
+  // 通用错误
+  'TOOL_NOT_FOUND': { code: 'E001', recoverable: false },
+  'INVALID_PARAMS': { code: 'E002', recoverable: true },
+  'PERMISSION_DENIED': { code: 'E003', recoverable: false },
+  
+  // Native Tool 错误
+  'DATABASE_ERROR': { code: 'E101', recoverable: true },
+  'VALIDATION_ERROR': { code: 'E102', recoverable: true },
+  
+  // CLI 错误
+  'CLI_NOT_INSTALLED': { code: 'E201', recoverable: true },
+  'CLI_TIMEOUT': { code: 'E202', recoverable: true },
+  'CLI_EXECUTION_ERROR': { code: 'E203', recoverable: true },
+  
+  // MCP 错误
+  'MCP_SERVICE_UNAVAILABLE': { code: 'E301', recoverable: true },
+  'MCP_AUTH_FAILED': { code: 'E302', recoverable: true },
+  'MCP_RATE_LIMITED': { code: 'E303', recoverable: true }
+};
+```
+
+### 3.10.2 错误处理示例
+
+```typescript
+handler: async (params, context) => {
+  try {
+    // 执行操作
+    const result = await doOperation(params);
+    return result;
+    
+  } catch (error) {
+    // CLI 错误处理
+    if (error.code === 'ENOENT') {
+      throw {
+        code: 'CLI_NOT_INSTALLED',
+        message: 'GIMP CLI 未安装',
+        recoverable: true,
+        suggestions: [
+          '运行 pip install cli-anything-gimp 安装 CLI',
+          '确保 GIMP 已安装在系统中'
+        ]
+      };
+    }
+    
+    // 超时错误
+    if (error.code === 'ETIMEDOUT') {
+      throw {
+        code: 'CLI_TIMEOUT',
+        message: '图像处理超时',
+        recoverable: true,
+        suggestions: [
+          '尝试减小图像尺寸',
+          '简化处理操作',
+          '增加超时时间'
+        ]
+      };
+    }
+    
+    // 其他错误
+    throw {
+      code: 'CLI_EXECUTION_ERROR',
+      message: error.message,
+      recoverable: true,
+      details: error
+    };
+  }
+}
 ```
 
 ---

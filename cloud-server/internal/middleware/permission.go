@@ -222,7 +222,7 @@ func getUserPermissionResult(
 	}
 
 	// 4. 添加角色权限来源
-	for code, perm := range permSet.Permissions {
+	for _, perm := range permSet.Permissions {
 		result.Sources = append(result.Sources, model.PermissionSource{
 			PermissionID: perm.ID,
 			SourceType:   "role",
