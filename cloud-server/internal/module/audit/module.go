@@ -12,9 +12,9 @@ import (
 
 // Module 审计模块
 type Module struct {
-	Repo      repository.AuditLogRepository
-	Logger    *service.AuditLogger
-	Builder   *service.AuditLogBuilder
+	Repository repository.AuditLogRepository
+	Logger     *service.AuditLogger
+	Builder    *service.AuditLogBuilder
 	Middleware *middleware.AuditMiddleware
 }
 
@@ -46,7 +46,7 @@ func NewModule(cfg Config) *Module {
 	auditMiddleware := middleware.NewAuditMiddleware(auditLogger, middlewareConfig, cfg.ZapLogger)
 
 	return &Module{
-		Repo:       repo,
+		Repository: repo,
 		Logger:     auditLogger,
 		Builder:    service.NewAuditLogBuilder(),
 		Middleware: auditMiddleware,

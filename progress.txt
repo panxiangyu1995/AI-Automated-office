@@ -908,6 +908,61 @@
 
 ---
 
+## [2026-03-21] - Task: Audit Query and Export UI (epic-2-story-2-11-audit-ui)
+
+### 铁律合规检查：
+- PRD 合规：[FR28, FR29, FR33 - 审计日志查询和导出]
+- 架构合规：[ADR-001 前端架构, ADR-005 Go DDD 架构]
+- UX 合规：[UX-02 表格筛选和排序, UX-04 Shadcn/ui 组件]
+- Epic 合规：Epic 2 / Story 2.11 审计查询和导出 UI
+
+### What was done:
+
+**后端审计查询 API：**
+- `cloud-server/internal/module/audit/interface/handler/audit_handler.go`
+  - List: 分页查询审计日志，支持多种筛选条件
+  - Get: 获取审计日志详情
+  - Export: 导出审计日志（CSV/Excel 格式）
+  - 使用 excelize 库生成 Excel 文件
+
+**后端路由注册：**
+- 更新 `cloud-server/internal/router/router.go`
+  - 注册审计 API 路由：/api/v1/audit/logs, /api/v1/audit/logs/:id, /api/v1/audit/export
+  - 更新模块导出字段名 Repository
+
+**前端审计 API 客户端：**
+- `src/features/audit/api/auditApi.ts`
+  - listAuditLogs: 查询审计日志列表
+  - getAuditLog: 获取审计日志详情
+  - exportAuditLogs: 导出审计日志
+
+**前端类型定义：**
+- `src/features/audit/types/audit.types.ts`
+  - AuditLogItem, AuditLogDetail, AuditLogQueryParams 类型
+  - 事件类型、资源类型、操作类型选项常量
+
+**前端组件：**
+- `src/features/audit/components/AuditLogTable.tsx` - 审计日志表格
+- `src/features/audit/components/AuditFilterBar.tsx` - 筛选器（事件类型、资源、操作、结果、时间范围）
+- `src/features/audit/components/AuditLogDetail.tsx` - 详情弹窗（显示变更前后值）
+- `src/features/audit/components/AuditExportButton.tsx` - 导出按钮（支持 CSV/Excel 格式选择）
+- `src/features/audit/components/AuditPage.tsx` - 审计页面入口
+
+**前端路由：**
+- 更新 `src/App.tsx` 添加路由 /admin/audit
+
+### Testing:
+- go build ./... - 后端编译成功
+- npm run build - 前端编译成功
+
+### Notes:
+- 审计日志页面位于 /admin/audit 路由
+- 支持按事件类型、资源类型、操作类型、结果、时间范围筛选
+- 导出功能支持 CSV 和 Excel 两种格式
+- 详情弹窗显示完整的变更前后值对比
+
+---
+
 ## [2026-03-21] - Task: Structured Audit Log Model (epic-2-story-2-11-audit-model)
 
 ### 铁律合规检查：

@@ -11,6 +11,7 @@ import (
 	adminModule "cloud-server/internal/module/admin"
 	auditModule "cloud-server/internal/module/audit"
 	auditService "cloud-server/internal/module/audit/application/service"
+	auditHandler "cloud-server/internal/module/audit/interface/handler"
 	permissionHandler "cloud-server/internal/module/permission/interface/handler"
 	permissionModule "cloud-server/internal/module/permission"
 
@@ -57,6 +58,7 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 	})
 	auditMod.Start()
 	auditSvc := auditService.NewAuditService(auditMod.Logger, log)
+	auditH := auditHandler.NewAuditHandler(auditMod.Logger, auditMod.Repository, log, auditSvc)
 
 	// 初始化 admin 模块
 	adminMod := adminModule.NewAdminModule(sqlDB, log)
@@ -110,6 +112,14 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 
 		// Permission override routes (Story 2.6)
 		permissionOverrideH.RegisterRoutes(protected)
+
+		// Audit routes (Story 2.11)
+		audit := protected.Group("/audit")
+		{
+			audit.GET("/logs", auditH.List)
+			audit.GET("/logs/:id", auditH.Get)
+			audit.GET("/export", auditH.Export)
+		}
 	}
 
 	return r

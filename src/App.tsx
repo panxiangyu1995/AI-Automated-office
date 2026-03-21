@@ -16,6 +16,7 @@ import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
 import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage, OrgChartPage, ImportExportPage } from './features/admin/pages'
 import { PermissionCenter, FineGrainedPermissionPage } from './features/permission'
+import { AuditPage } from './features/audit'
 import { ForbiddenPage, ForbiddenModal } from './components/permission'
 import { Toaster } from './components/ui/toaster'
 import { setForbiddenHandler, setUnauthorizedHandler } from './lib/api/interceptors'
@@ -199,6 +200,8 @@ function App() {
           <Route path="admin/permissions/fine-grained" element={<FineGrainedPermissionPage />} />
           {/* User import/export route */}
           <Route path="admin/import-export" element={<ImportExportPage />} />
+          {/* Audit log route */}
+          <Route path="admin/audit" element={<AuditPage />} />
         </Route>
       </Routes>
       <UpdateDialog
