@@ -1,5 +1,92 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-21] - Task: Forbidden Feedback UI (epic-2-story-2-7-forbidden-feedback-ui)
+
+### 铁律合规检查：
+- PRD 合规：[FR29, FR31, FR32 - 权限拒绝反馈、权限申请入口]
+- 架构合规：[ADR-001 - React + TypeScript + Shadcn/ui + Zustand]
+- UX 合规：[UX-02, UX-04 - 交互体验、组件使用、Lucide React 图标]
+- Epic 合规：Epic 2 / Story 2.7 权限拒绝反馈 UI
+
+### What was done:
+
+**类型定义：**
+- `src/features/permission/types/permission.types.ts` - 添加 403 相关类型
+  - ForbiddenResponse、ForbiddenData（403 响应数据）
+  - ApplyPermissionParams、ApplyPermissionResponse（权限申请）
+  - PermissionGuardMode（守卫模式）
+  - PermissionState、UsePermissionReturn 等 Hook 类型
+
+**状态管理：**
+- `src/stores/permissionStore.ts` - 权限状态 Store
+  - permissions 权限集合管理
+  - forbiddenModal 弹窗状态
+  - shownForbiddenResources 防重复弹出机制（5 分钟冷却）
+  - hasPermission 权限检查方法
+  - showForbidden/hideForbidden 弹窗控制
+
+**权限 Hooks：**
+- `src/features/permission/hooks/usePermission.ts` - 权限检查 Hook
+  - hasPermission 单个/多个权限检查（OR 关系）
+  - refresh 刷新权限
+- `src/features/permission/hooks/useForbiddenHandler.ts` - 403 处理 Hook
+  - showForbidden/hideForbidden 弹窗控制
+- `src/features/permission/hooks/useApplyPermission.ts` - 权限申请 Hook
+  - mutate 提交申请
+  - isPending/isError/error 状态
+
+**UI 组件：**
+- `src/components/permission/ForbiddenPage.tsx` - 403 页面组件
+  - ShieldX 图标 + "访问被拒绝" 标题
+  - 资源/权限信息框（背景色 #F3F4F6）
+  - 返回/申请按钮
+- `src/components/permission/NoPermissionEmpty.tsx` - 空状态组件
+  - Lock 图标 + "暂无权限" 文案
+  - 申请入口按钮
+- `src/components/permission/PermissionGuard.tsx` - 权限守卫组件
+  - hidden 模式（隐藏）
+  - disabled 模式（禁用 + Tooltip 提示）
+  - empty 模式（显示空状态）
+  - 支持多权限 OR 关系
+- `src/components/permission/ForbiddenModal.tsx` - 权限拒绝弹窗
+  - 资源/权限信息展示
+  - 返回/申请按钮
+  - 集成 ApplyPermissionModal
+- `src/components/permission/ApplyPermissionModal.tsx` - 申请权限弹窗
+  - 申请原因输入框
+  - 提交/取消按钮
+  - 成功/失败反馈
+
+**API 拦截器：**
+- `src/lib/api/interceptors.ts` - 添加 403 响应处理
+  - parseForbiddenResponse 解析 403 响应
+  - handleForbiddenResponse 触发弹窗
+  - setForbiddenHandler 设置处理器
+
+**路由配置：**
+- `src/App.tsx` - 添加 /forbidden 路由
+- 集成全局 ForbiddenModal 组件
+- 初始化时设置 403 拦截器
+
+**类型修复：**
+- `src/features/auth/types/auth.types.ts` - 更新 User 和 PermissionSummary 类型
+- `src/components/common/AuthGuard.tsx` - 修复开发模式模拟认证字段
+
+### Testing:
+- npm run build - 构建成功
+- frontend-tester 验证：
+  - 页面加载正常
+  - UI 元素符合设计规范
+  - 交互功能正常
+
+### Notes:
+- 同一资源 5 分钟内不重复弹出 403 弹窗
+- PermissionGuard 支持三种模式：hidden/disabled/empty
+- 权限申请原因为必填项
+- 使用 Lucide React 图标（ShieldX、Lock、Key、ArrowLeft）
+
+---
+
 ## [2026-03-20] - Task: Fine-grained Permission UI (epic-2-story-2-6-fine-grained-ui)
 
 ### 铁律合规检查：

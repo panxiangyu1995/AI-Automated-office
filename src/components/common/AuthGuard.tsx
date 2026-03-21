@@ -19,7 +19,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           username: 'dev',
           name: '开发用户',
           email: 'dev@example.com',
+          department: '开发部',
           tenant_id: 'default',
+          role: 'admin',
           roles: ['admin'],
           status: 'active',
         },
@@ -28,6 +30,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         permissions: {
           roles: ['admin'],
           permissions: ['*'],
+          dataScopes: {},
           department_ids: ['*'],
         },
         isAuthenticated: true,

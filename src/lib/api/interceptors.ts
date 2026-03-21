@@ -17,6 +17,45 @@ const mapStatusToCode = (status?: number) => {
   return 'ERR_UNKNOWN'
 }
 
+/**
+ * 403 响应处理函数类型
+ */
+export type ForbiddenHandler = (data: {
+  resource: string
+  requiredPermission: string
+  message: string
+  applyEntry?: string
+  traceId?: string
+}) => void
+
+/** 403 处理回调（由应用层设置） */
+let forbiddenHandler: ForbiddenHandler | null = null
+
+/**
+ * 设置 403 响应处理函数
+ */
+export const setForbiddenHandler = (handler: ForbiddenHandler | null) => {
+  forbiddenHandler = handler
+}
+
+/**
+ * 处理 403 响应
+ */
+const handleForbiddenResponse = (
+  body: Record<string, unknown> | null,
+  defaultMessage: string
+) => {
+  if (!forbiddenHandler) return
+
+  forbiddenHandler({
+    resource: (body?.resource as string) || 'unknown',
+    requiredPermission: (body?.required_permission as string) || 'unknown',
+    message: (body?.message as string) || defaultMessage,
+    applyEntry: body?.apply_entry as string | undefined,
+    traceId: body?.trace_id as string | undefined,
+  })
+}
+
 export const applyRequestInterceptors = (
   config: RequestConfig,
   token: string | null
@@ -42,10 +81,18 @@ export const applyRequestInterceptors = (
 
 export const parseResponseBody = <T>(response: HttpResponse): ApiResult<T> => {
   const bodyText = response.body ?? ''
+  
+  // 处理空响应体
   if (!bodyText) {
     if (response.ok) {
       return { success: true, data: undefined as T }
     }
+    
+    // 403 无响应体时的处理
+    if (response.status === 403) {
+      handleForbiddenResponse(null, '您没有权限执行此操作')
+    }
+    
     return {
       success: false,
       code: mapStatusToCode(response.status),
@@ -61,6 +108,12 @@ export const parseResponseBody = <T>(response: HttpResponse): ApiResult<T> => {
       return bodyText
     }
   })()
+
+  // 处理 403 响应
+  if (response.status === 403 && typeof parsed === 'object' && parsed) {
+    const body = parsed as Record<string, unknown>
+    handleForbiddenResponse(body, '您没有权限执行此操作')
+  }
 
   if (typeof parsed === 'object' && parsed && 'success' in parsed) {
     const result = parsed as ApiResult<T>

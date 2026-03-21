@@ -201,3 +201,109 @@ export const LAYER_CONFIG: Record<PermissionLayer, { name: string; color: string
     bgColor: '#DCFCE7',
   },
 }
+
+// ==================== 403 权限拒绝反馈 ====================
+
+/**
+ * 403 禁止访问响应数据
+ */
+export interface ForbiddenResponse {
+  code: 'PERMISSION_DENIED'
+  message: string
+  resource: string
+  required_permission: string
+  apply_entry?: string
+  trace_id?: string
+}
+
+/**
+ * ForbiddenModal 展示数据
+ */
+export interface ForbiddenData {
+  resource: string
+  requiredPermission: string
+  message: string
+  applyEntry?: string
+  traceId?: string
+}
+
+/**
+ * 权限申请参数
+ */
+export interface ApplyPermissionParams {
+  resource: string
+  permission: string
+  reason: string
+}
+
+/**
+ * 权限申请响应
+ */
+export interface ApplyPermissionResponse {
+  id: string
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: string
+}
+
+/**
+ * PermissionGuard 守卫模式
+ */
+export type PermissionGuardMode = 'hidden' | 'disabled' | 'empty'
+
+/**
+ * 权限状态 Store
+ */
+export interface PermissionState {
+  permissions: Set<string>
+  forbiddenModal: {
+    open: boolean
+    data: ForbiddenData | null
+  }
+  shownForbiddenResources: Set<string>
+
+  setPermissions: (permissions: string[]) => void
+  hasPermission: (permission: string | string[]) => boolean
+  showForbidden: (data: ForbiddenData) => void
+  hideForbidden: () => void
+  clearForbiddenRecord: (resource: string) => void
+}
+
+/**
+ * usePermission Hook 返回值
+ */
+export interface UsePermissionReturn {
+  permissions: Set<string>
+  isLoading: boolean
+  hasPermission: (permission: string | string[]) => boolean
+  refresh: () => Promise<void>
+}
+
+/**
+ * useForbiddenHandler Hook 返回值
+ */
+export interface UseForbiddenHandlerReturn {
+  showForbidden: (data: ForbiddenData) => void
+  hideForbidden: () => void
+  forbiddenModal: {
+    open: boolean
+    data: ForbiddenData | null
+  }
+}
+
+/**
+ * useApplyPermission Hook 返回值
+ */
+export interface UseApplyPermissionReturn {
+  mutate: (params: ApplyPermissionParams, options?: ApplyPermissionOptions) => void
+  isPending: boolean
+  isError: boolean
+  error: Error | null
+}
+
+/**
+ * 权限申请选项
+ */
+export interface ApplyPermissionOptions {
+  onSuccess?: () => void
+  onError?: (error: Error) => void
+}

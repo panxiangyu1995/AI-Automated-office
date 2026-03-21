@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { listen } from '@tauri-apps/api/event'
 import { useAppStore } from './stores/appStore'
 import { useAuthStore } from './stores/authStore'
+import { usePermissionStore } from './stores/permissionStore'
 import { AppLayout, OfflineIndicator } from './components/common'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useUpdate } from './hooks/useUpdate'
@@ -13,16 +14,31 @@ import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
 import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage } from './features/admin/pages'
 import { PermissionCenter, FineGrainedPermissionPage } from './features/permission'
+import { ForbiddenPage, ForbiddenModal } from './components/permission'
 import { Toaster } from './components/ui/toaster'
+import { setForbiddenHandler } from './lib/api/interceptors'
 
 function App() {
   const { setInitialized } = useAppStore()
   const { restoreSession } = useAuthStore()
+  const showForbidden = usePermissionStore((state) => state.showForbidden)
+  const hideForbidden = usePermissionStore((state) => state.hideForbidden)
+  const forbiddenModal = usePermissionStore((state) => state.forbiddenModal)
   const [loading, setLoading] = useState(true)
   const [showTopBarHint, setShowTopBarHint] = useState(false)
   const { updateInfo, downloading, progress, checkUpdate, downloadAndInstall, dismiss } = useUpdate()
 
   useGlobalShortcuts()
+
+  // 设置 403 拦截器
+  useEffect(() => {
+    setForbiddenHandler((data) => {
+      showForbidden(data)
+    })
+    return () => {
+      setForbiddenHandler(null)
+    }
+  }, [showForbidden])
 
   useEffect(() => {
     const setupListeners = async () => {
@@ -116,6 +132,7 @@ function App() {
       )}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forbidden" element={<ForbiddenPage />} />
         <Route
           path="/*"
           element={
@@ -141,6 +158,11 @@ function App() {
         progress={progress}
         onDownload={downloadAndInstall}
         onDismiss={dismiss}
+      />
+      <ForbiddenModal
+        open={forbiddenModal.open}
+        onClose={hideForbidden}
+        data={forbiddenModal.data}
       />
       <Toaster />
     </BrowserRouter>

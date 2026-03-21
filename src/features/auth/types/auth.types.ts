@@ -12,8 +12,12 @@ export interface User {
   id: string
   username: string
   name: string
+  email?: string
   department: string
+  tenant_id?: string
   role: string
+  roles?: string[]
+  status?: 'active' | 'inactive' | 'suspended'
 }
 
 /**
@@ -23,6 +27,7 @@ export interface PermissionSummary {
   roles: string[]
   permissions: string[]
   dataScopes: Record<string, string>
+  department_ids?: string[]
 }
 
 /**
