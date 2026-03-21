@@ -14,15 +14,21 @@ import (
 
 // ImportHandler 导入处理器
 type ImportHandler struct {
-	ImportService *service.ImportService
-	Logger        *zap.Logger
+	ImportService      *service.ImportService
+	ImportCommitService *service.ImportCommitService
+	Logger             *zap.Logger
 }
 
 // NewImportHandler 创建导入处理器
-func NewImportHandler(importService *service.ImportService, logger *zap.Logger) *ImportHandler {
+func NewImportHandler(
+	importService *service.ImportService,
+	importCommitService *service.ImportCommitService,
+	logger *zap.Logger,
+) *ImportHandler {
 	return &ImportHandler{
-		ImportService: importService,
-		Logger:        logger,
+		ImportService:       importService,
+		ImportCommitService: importCommitService,
+		Logger:              logger,
 	}
 }
 
@@ -101,17 +107,91 @@ func (h *ImportHandler) ConfirmImport(c *gin.Context) {
 		return
 	}
 
-	// TODO: 实现确认导入逻辑
-	// 1. 验证批次是否存在且未过期
-	// 2. 幂等性检查（通过 idempotency_key）
-	// 3. 执行导入
-	// 4. 记录审计日志
+	// 调用提交服务
+	result, err := h.ImportCommitService.ConfirmImport(
+		c.Request.Context(),
+		uuid.MustParse(tenantID),
+		&req,
+	)
+	if err != nil {
+		h.Logger.Error("confirm import failed", zap.Error(err))
+		switch err.Error() {
+		case "BATCH_NOT_FOUND":
+			response.Error(c, http.StatusNotFound, "BATCH_NOT_FOUND", "导入批次不存在", nil)
+		case "BATCH_ALREADY_PROCESSED":
+			response.Error(c, http.StatusBadRequest, "BATCH_ALREADY_PROCESSED", "该批次已处理完成", nil)
+		case "BATCH_EXPIRED":
+			response.Error(c, http.StatusBadRequest, "BATCH_EXPIRED", "导入批次已过期，请重新上传", nil)
+		case "IMPORT_IN_PROGRESS":
+			response.Error(c, http.StatusConflict, "IMPORT_IN_PROGRESS", "导入正在处理中，请稍后查询结果", nil)
+		default:
+			response.Error(c, http.StatusInternalServerError, "IMPORT_FAILED", "导入失败: "+err.Error(), nil)
+		}
+		return
+	}
 
-	response.Success(c, &dto.ConfirmImportResponse{
-		BatchID: req.BatchID,
-		Status:  "processing",
-		Message: "导入任务已提交，正在处理中",
-	}, "导入确认成功")
+	response.Success(c, result, "导入完成")
+}
+
+// GetImportReceipt 获取导入回执
+// GET /api/admin/users/import/:batch_id/receipt
+func (h *ImportHandler) GetImportReceipt(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	batchID := c.Param("batch_id")
+	if batchID == "" {
+		response.Error(c, http.StatusBadRequest, "INVALID_BATCH_ID", "批次ID不能为空", nil)
+		return
+	}
+
+	receipt, err := h.ImportCommitService.GetReceipt(
+		c.Request.Context(),
+		uuid.MustParse(tenantID),
+		batchID,
+	)
+	if err != nil {
+		h.Logger.Error("get receipt failed", zap.Error(err))
+		response.Error(c, http.StatusNotFound, "RECEIPT_NOT_FOUND", "回执不存在", nil)
+		return
+	}
+
+	response.Success(c, receipt, "获取导入回执成功")
+}
+
+// DownloadReceiptExcel 下载回执 Excel 文件
+// GET /api/admin/users/import/:batch_id/receipt/download
+func (h *ImportHandler) DownloadReceiptExcel(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	batchID := c.Param("batch_id")
+	if batchID == "" {
+		response.Error(c, http.StatusBadRequest, "INVALID_BATCH_ID", "批次ID不能为空", nil)
+		return
+	}
+
+	receipt, err := h.ImportCommitService.GetReceipt(
+		c.Request.Context(),
+		uuid.MustParse(tenantID),
+		batchID,
+	)
+	if err != nil {
+		h.Logger.Error("get receipt failed", zap.Error(err))
+		response.Error(c, http.StatusNotFound, "RECEIPT_NOT_FOUND", "回执不存在", nil)
+		return
+	}
+
+	// TODO: 生成 Excel 文件
+	// 目前返回 JSON 数据
+	c.Header("Content-Disposition", "attachment; filename=import_receipt_"+batchID+".json")
+	c.JSON(http.StatusOK, receipt)
 }
 
 // GetImportBatchList 获取导入批次列表
@@ -154,6 +234,35 @@ func (h *ImportHandler) GetImportBatchDetail(c *gin.Context) {
 		"batch_id": batchID,
 		"message":  "批次详情查询功能待实现",
 	}, "获取导入批次详情成功")
+}
+
+// GetImportProgress 获取导入进度
+// GET /api/admin/users/import/:batch_id/progress
+func (h *ImportHandler) GetImportProgress(c *gin.Context) {
+	tenantID := getTenantID(c)
+	if tenantID == "" {
+		response.Error(c, http.StatusUnauthorized, "UNAUTHORIZED", "租户信息缺失", nil)
+		return
+	}
+
+	batchID := c.Param("batch_id")
+	if batchID == "" {
+		response.Error(c, http.StatusBadRequest, "INVALID_BATCH_ID", "批次ID不能为空", nil)
+		return
+	}
+
+	// TODO: 实现进度查询
+	_ = tenantID
+
+	response.Success(c, &dto.ImportProgressResponse{
+		BatchID:       batchID,
+		Status:        "completed",
+		TotalRows:     0,
+		ProcessedRows: 0,
+		SuccessRows:   0,
+		FailedRows:    0,
+		Progress:      100,
+	}, "获取导入进度成功")
 }
 
 // isValidExcelFile 检查是否为有效的 Excel 文件

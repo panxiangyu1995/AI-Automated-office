@@ -78,25 +78,6 @@ type ImportRowDataDTO struct {
 	Phone          string `json:"phone"`
 }
 
-// ConfirmImportRequest 确认导入请求
-type ConfirmImportRequest struct {
-	BatchID      string   `json:"batch_id" binding:"required"`
-	RowNumbers   []int    `json:"row_numbers,omitempty"` // 指定导入的行号，为空则导入所有有效行
-	SkipConflicts bool    `json:"skip_conflicts"`        // 是否跳过冲突行
-	IdempotencyKey string `json:"idempotency_key,omitempty"` // 幂等键
-}
-
-// ConfirmImportResponse 确认导入响应
-type ConfirmImportResponse struct {
-	BatchID     string `json:"batch_id"`
-	Status      string `json:"status"`
-	TotalRows   int    `json:"total_rows"`
-	Imported    int    `json:"imported"`
-	Skipped     int    `json:"skipped"`
-	Failed      int    `json:"failed"`
-	Message     string `json:"message,omitempty"`
-}
-
 // ImportBatchListItem 导入批次列表项
 type ImportBatchListItem struct {
 	ID           uuid.UUID `json:"id"`

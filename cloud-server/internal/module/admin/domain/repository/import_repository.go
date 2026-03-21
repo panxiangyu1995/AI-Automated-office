@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"cloud-server/internal/module/admin/application/dto"
 	"cloud-server/internal/module/admin/domain/entity"
 
 	"github.com/google/uuid"
@@ -27,6 +28,15 @@ type ImportBatchRepository interface {
 
 	// Delete 删除批次
 	Delete(ctx context.Context, id uuid.UUID) error
+
+	// GetBatchRows 获取批次的所有行数据
+	GetBatchRows(ctx context.Context, batchID uuid.UUID) ([]*entity.ImportRowData, error)
+
+	// SaveReceipt 保存导入回执
+	SaveReceipt(ctx context.Context, batchID uuid.UUID, receipt *dto.ImportReceipt) error
+
+	// GetReceipt 获取导入回执
+	GetReceipt(ctx context.Context, batchID uuid.UUID) (*dto.ImportReceipt, error)
 }
 
 // ImportRowRepository 导入行仓储接口

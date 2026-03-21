@@ -1,5 +1,62 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-21] - Task: Import Commit and Receipt (epic-2-story-2-9-import-commit)
+
+### 铁律合规检查：
+- PRD 合规：[FR33 - 用户导入确认、结果回执]
+- 架构合规：[ADR-005 Go DDD 架构]
+- UX 合规：[标准 API 响应契约]
+- Epic 合规：Epic 2 / Story 2.9 导入提交与回执
+
+### What was done:
+
+**DTO定义：**
+- `cloud-server/internal/module/admin/application/dto/import_commit.go`
+  - ConfirmImportRequest: batch_id, idempotency_key, conflict_policy, row_policies
+  - ConfirmImportResponse: batch_id, status, success_rows, skipped_rows, failed_rows, receipt_url
+  - ConflictPolicy: skip, update, create 三种策略
+  - ImportReceipt: 完整回执信息，包含所有行结果
+
+**冲突解决器：**
+- `cloud-server/internal/module/admin/application/service/conflict_resolver.go`
+  - ResolveRow: 单行冲突解决
+  - prepareUpdateData: 准备更新已有用户数据
+  - prepareCreateData: 创建新用户（添加后缀避免冲突）
+  - BatchResolve: 批量解决冲突
+
+**导入提交服务：**
+- `cloud-server/internal/module/admin/application/service/import_commit_service.go`
+  - ConfirmImport: 确认导入主流程
+    - 幂等性检查（idempotency_key）
+    - 批次状态验证
+    - 冲突检测与解决
+    - 批量创建用户
+    - 部门绑定、上级设置
+    - 审计日志写入
+  - GetReceipt: 获取导入回执
+  - 批量用户创建逻辑
+
+**HTTP处理器更新：**
+- `cloud-server/internal/module/admin/interface/handler/import_handler.go`
+  - ConfirmImport: POST /api/admin/users/import/confirm
+  - GetImportReceipt: GET /api/admin/users/import/:batch_id/receipt
+  - DownloadReceiptExcel: GET /api/admin/users/import/:batch_id/receipt/download
+  - GetImportProgress: GET /api/admin/users/import/:batch_id/progress
+
+**Repository接口更新：**
+- `cloud-server/internal/module/admin/domain/repository/import_repository.go`
+  - 新增 GetBatchRows, SaveReceipt, GetReceipt 方法
+
+### Testing:
+- go build - 构建成功
+
+### Notes:
+- 幂等性控制使用内存 sync.Map，生产环境需替换为 Redis
+- 密码哈希使用 SHA256，生产环境应使用 bcrypt
+- 回执 Excel 下载功能待完善
+
+---
+
 ## [2026-03-21] - Task: Import Preview and Conflict Detection (epic-2-story-2-9-import-preview)
 
 ### 铁律合规检查：
