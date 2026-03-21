@@ -9,6 +9,8 @@ import (
 	"cloud-server/internal/middleware"
 	adminHandler "cloud-server/internal/module/admin/interface/handler"
 	adminModule "cloud-server/internal/module/admin"
+	auditModule "cloud-server/internal/module/audit"
+	auditService "cloud-server/internal/module/audit/application/service"
 	permissionHandler "cloud-server/internal/module/permission/interface/handler"
 	permissionModule "cloud-server/internal/module/permission"
 
@@ -21,6 +23,7 @@ import (
 // 编译时检查接口实现
 var _ = adminModule.NewAdminModule
 var _ = permissionModule.NewPermissionModule
+var _ = auditModule.NewModule
 
 func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 	mode := cfg.Server.Mode
@@ -47,6 +50,14 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		JWT:   cfg.JWT,
 	}
 
+	// 初始化 audit 模块
+	auditMod := auditModule.NewModule(auditModule.Config{
+		DB:        sqlDB,
+		ZapLogger: log,
+	})
+	auditMod.Start()
+	auditSvc := auditService.NewAuditService(auditMod.Logger, log)
+
 	// 初始化 admin 模块
 	adminMod := adminModule.NewAdminModule(sqlDB, log)
 	adminH := adminHandler.NewAdminHandler(adminMod.UserService, adminMod.DepartmentService, adminMod.PositionService, adminMod.AuditLogger, log)
@@ -66,6 +77,7 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		permissionMod.OverrideService,
 		permissionMod.DataScopeService,
 		permissionMod.FieldPermissionService,
+		auditSvc,
 		log,
 	)
 
@@ -135,6 +147,14 @@ func NewRouterWithMiddleware(
 		JWT:   cfg.JWT,
 	}
 
+	// 初始化 audit 模块
+	auditMod := auditModule.NewModule(auditModule.Config{
+		DB:        sqlDB,
+		ZapLogger: log,
+	})
+	auditMod.Start()
+	auditSvc := auditService.NewAuditService(auditMod.Logger, log)
+
 	adminMod := adminModule.NewAdminModule(sqlDB, log)
 	adminH := adminHandler.NewAdminHandler(adminMod.UserService, adminMod.DepartmentService, adminMod.PositionService, adminMod.AuditLogger, log)
 
@@ -151,6 +171,7 @@ func NewRouterWithMiddleware(
 		permissionMod.OverrideService,
 		permissionMod.DataScopeService,
 		permissionMod.FieldPermissionService,
+		auditSvc,
 		log,
 	)
 

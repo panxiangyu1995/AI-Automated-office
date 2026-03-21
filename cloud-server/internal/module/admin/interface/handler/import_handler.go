@@ -5,6 +5,7 @@ import (
 
 	"cloud-server/internal/module/admin/application/dto"
 	"cloud-server/internal/module/admin/application/service"
+	auditService "cloud-server/internal/module/audit/application/service"
 	"cloud-server/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ import (
 type ImportHandler struct {
 	ImportService      *service.ImportService
 	ImportCommitService *service.ImportCommitService
+	AuditService       *auditService.AuditService
 	Logger             *zap.Logger
 }
 
@@ -23,11 +25,13 @@ type ImportHandler struct {
 func NewImportHandler(
 	importService *service.ImportService,
 	importCommitService *service.ImportCommitService,
+	auditSvc *auditService.AuditService,
 	logger *zap.Logger,
 ) *ImportHandler {
 	return &ImportHandler{
 		ImportService:       importService,
 		ImportCommitService: importCommitService,
+		AuditService:        auditSvc,
 		Logger:              logger,
 	}
 }
@@ -107,6 +111,18 @@ func (h *ImportHandler) ConfirmImport(c *gin.Context) {
 		return
 	}
 
+	// 获取操作者信息
+	operatorID, _ := c.Get("user_id")
+	operatorName, _ := c.Get("username")
+	operatorIDStr := ""
+	if operatorID != nil {
+		operatorIDStr = operatorID.(string)
+	}
+	operatorNameStr := ""
+	if operatorName != nil {
+		operatorNameStr = operatorName.(string)
+	}
+
 	// 调用提交服务
 	result, err := h.ImportCommitService.ConfirmImport(
 		c.Request.Context(),
@@ -128,6 +144,21 @@ func (h *ImportHandler) ConfirmImport(c *gin.Context) {
 			response.Error(c, http.StatusInternalServerError, "IMPORT_FAILED", "导入失败: "+err.Error(), nil)
 		}
 		return
+	}
+
+	// 记录审计日志
+	if h.AuditService != nil {
+		h.AuditService.LogImport(
+			c.Request.Context(),
+			tenantID,
+			operatorIDStr,
+			operatorNameStr,
+			"user",
+			req.BatchID,
+			result.TotalRows,
+			result.SuccessRows,
+			result.FailedRows,
+		)
 	}
 
 	response.Success(c, result, "导入完成")

@@ -7,6 +7,7 @@ import (
 
 	"cloud-server/internal/model"
 	"cloud-server/internal/module/permission/application/service"
+	auditService "cloud-server/internal/module/audit/application/service"
 	"cloud-server/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,7 @@ type PermissionOverrideHandler struct {
 	overrideService     *service.PermissionOverrideService
 	dataScopeService    *service.DataScopeService
 	fieldService        *service.FieldPermissionService
+	auditService        *auditService.AuditService
 	logger              *zap.Logger
 }
 
@@ -28,6 +30,7 @@ func NewPermissionOverrideHandler(
 	overrideService *service.PermissionOverrideService,
 	dataScopeService *service.DataScopeService,
 	fieldService *service.FieldPermissionService,
+	auditSvc *auditService.AuditService,
 	logger *zap.Logger,
 ) *PermissionOverrideHandler {
 	return &PermissionOverrideHandler{
@@ -35,6 +38,7 @@ func NewPermissionOverrideHandler(
 		overrideService:     overrideService,
 		dataScopeService:    dataScopeService,
 		fieldService:        fieldService,
+		auditService:        auditSvc,
 		logger:              logger,
 	}
 }
@@ -85,6 +89,11 @@ func (h *PermissionOverrideHandler) UpdateUserOverrides(c *gin.Context) {
 	}
 
 	operatorID := getOperatorID(c)
+	operatorName, _ := c.Get("username")
+	operatorNameStr := ""
+	if operatorName != nil {
+		operatorNameStr = operatorName.(string)
+	}
 
 	err := h.overrideCRUDService.UpdateUserOverrides(c.Request.Context(), tenantID, userID, operatorID, &req)
 	if err != nil {
@@ -107,6 +116,18 @@ func (h *PermissionOverrideHandler) UpdateUserOverrides(c *gin.Context) {
 		h.logger.Error("failed to update user overrides", zap.Error(err), zap.String("userID", userID))
 		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "更新用户权限覆盖失败", nil)
 		return
+	}
+
+	// 记录审计日志
+	if h.auditService != nil && operatorID != "" {
+		// 根据覆盖类型记录不同的审计事件
+		for _, item := range req.Overrides {
+			if item.OverrideType == model.OverrideTypeGrant {
+				h.auditService.LogPermissionGrant(c.Request.Context(), tenantID, operatorID, operatorNameStr, userID, nil)
+			} else if item.OverrideType == model.OverrideTypeDeny {
+				h.auditService.LogPermissionRevoke(c.Request.Context(), tenantID, operatorID, operatorNameStr, userID, nil)
+			}
+		}
 	}
 
 	response.Success(c, gin.H{"id": userID}, "用户权限覆盖更新成功")

@@ -5,19 +5,22 @@ import (
 
 	"cloud-server/internal/module/auth/application/dto"
 	"cloud-server/internal/module/auth/application/service"
+	auditService "cloud-server/internal/module/audit/application/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // AuthHandler 认证处理器
 type AuthHandler struct {
-	authService *service.AuthService
+	authService  *service.AuthService
+	auditService *auditService.AuditService
 }
 
 // NewAuthHandler 创建认证处理器
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService, auditSvc *auditService.AuditService) *AuthHandler {
 	return &AuthHandler{
-		authService: authService,
+		authService:  authService,
+		auditService: auditSvc,
 	}
 }
 
@@ -50,8 +53,17 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// 执行登录
 	resp, err := h.authService.Login(c.Request.Context(), &req)
 	if err != nil {
+		// 记录登录失败审计日志
+		if h.auditService != nil {
+			h.auditService.LogLogin(c.Request.Context(), req.TenantID, "", req.Username, c.ClientIP(), c.GetHeader("User-Agent"), false)
+		}
 		h.handleError(c, err)
 		return
+	}
+
+	// 记录登录成功审计日志
+	if h.auditService != nil && resp.User != nil && resp.Tenant != nil {
+		h.auditService.LogLogin(c.Request.Context(), resp.Tenant.ID, resp.User.ID, resp.User.RealName, c.ClientIP(), c.GetHeader("User-Agent"), true)
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -68,13 +80,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Router /api/v1/auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	// 从上下文获取用户信息
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error":   "unauthorized",
 			"message": "User not authenticated",
 		})
 		return
+	}
+
+	// 获取用户名
+	username, _ := c.Get("username")
+	usernameStr := ""
+	if username != nil {
+		usernameStr = username.(string)
+	}
+
+	// 获取租户 ID
+	tenantID, _ := c.Get("tenant_id")
+	tenantIDStr := ""
+	if tenantID != nil {
+		tenantIDStr = tenantID.(string)
 	}
 
 	// 获取会话 ID
@@ -92,6 +118,11 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 			h.handleError(c, err)
 			return
 		}
+	}
+
+	// 记录登出审计日志
+	if h.auditService != nil {
+		h.auditService.LogLogout(c.Request.Context(), tenantIDStr, userID.(string), usernameStr)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

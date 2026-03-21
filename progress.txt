@@ -815,6 +815,102 @@
 ## [2026-03-21] - Task: Structured Audit Log Model (epic-2-story-2-11-audit-model)
 
 ### 铁律合规检查：
+- PRD 合规：[FR28, FR29, FR33 - 审计日志模型]
+- 架构合规：[ADR-005 Go DDD 架构]
+- UX 合规：[无前端变更]
+- Epic 合规：Epic 2 / Story 2.11 审计日志模型
+
+### What was done:
+
+**审计模块目录结构：**
+- `cloud-server/internal/module/audit/domain/repository/audit_log_repository.go` - 仓储接口
+- `cloud-server/internal/module/audit/infrastructure/persistence/audit_log_repo.go` - PostgreSQL 实现
+- `cloud-server/internal/module/audit/application/service/audit_logger.go` - 异步批量写入器
+- `cloud-server/internal/module/audit/application/service/audit_log_builder.go` - 流式构建器
+- `cloud-server/internal/module/audit/application/service/audit_service.go` - 业务层集成服务
+- `cloud-server/internal/module/audit/interface/middleware/audit_middleware.go` - HTTP 审计中间件
+- `cloud-server/internal/module/audit/module.go` - 模块入口
+
+**异步批量写入器：**
+- 队列大小 10000
+- 刷新间隔 5 秒
+- 批量大小 100
+- 队列满时降级丢弃
+
+**流式构建器：**
+- Tenant/Operator/Target 链式调用
+- 预定义事件类型和操作常量
+- 便捷构建方法：BuildLoginLog, BuildLogoutLog, BuildUserCreateLog 等
+
+**HTTP 审计中间件：**
+- 自动记录 HTTP 请求
+- 敏感信息脱敏（password, token, api_key 等）
+- 支持跳过特定路径
+
+### Testing:
+- go build ./... - 编译成功
+
+### Notes:
+- 审计日志器使用后台 goroutine 异步写入
+- 停止时会刷新剩余日志
+
+---
+
+## [2026-03-21] - Task: Audit Event Integration (epic-2-story-2-11-audit-events)
+
+### 铁律合规检查：
+- PRD 合规：[FR27, FR29, FR33 - 审计事件集成]
+- 架构合规：[ADR-005 Go DDD 架构]
+- UX 合规：[无前端变更]
+- Epic 合规：Epic 2 / Story 2.11 审计事件集成
+
+### What was done:
+
+**审计服务：**
+- `cloud-server/internal/module/audit/application/service/audit_service.go`
+  - LogLogin/LogLogout - 认证事件
+  - LogSessionRevoke - 会话撤销事件
+  - LogUserCreate/LogUserUpdate/LogUserDelete - 用户管理事件
+  - LogRoleCreate/LogRoleUpdate/LogRoleDelete - 角色管理事件
+  - LogPermissionGrant/LogPermissionRevoke - 权限变更事件
+  - LogImport/LogExport - 导入导出事件
+
+**认证 API 集成：**
+- 更新 `cloud-server/internal/module/auth/interface/handler/auth_handler.go`
+  - Login: 记录登录成功/失败审计日志
+  - Logout: 记录登出审计日志
+
+**会话 API 集成：**
+- 更新 `cloud-server/internal/module/auth/interface/handler/session_handler.go`
+  - RevokeSession: 记录会话撤销审计日志
+  - RevokeAllUserSessions: 记录批量撤销审计日志
+
+**权限 API 集成：**
+- 更新 `cloud-server/internal/module/permission/interface/handler/permission_override_handler.go`
+  - UpdateUserOverrides: 根据覆盖类型记录权限授予/撤销审计日志
+
+**导入 API 集成：**
+- 更新 `cloud-server/internal/module/admin/interface/handler/import_handler.go`
+  - ConfirmImport: 记录导入审计日志
+
+**路由集成：**
+- 更新 `cloud-server/internal/router/router.go`
+  - 初始化 audit 模块
+  - 创建 AuditService 实例
+  - 传递给需要的 handler
+
+### Testing:
+- go build ./... - 编译成功
+
+### Notes:
+- 所有审计日志通过异步队列写入，不影响 API 响应时间
+- 审计日志包含操作者信息、目标对象、变更前后值等完整信息
+
+---
+
+## [2026-03-21] - Task: Structured Audit Log Model (epic-2-story-2-11-audit-model)
+
+### 铁律合规检查：
 - PRD 合规：[FR28, FR29, FR33 - 审计日志记录]
 - 架构合规：[ADR-005 Go DDD 架构]
 - UX 合规：[无前端变更]

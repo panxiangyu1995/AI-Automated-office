@@ -5,6 +5,7 @@ import (
 
 	"cloud-server/internal/model"
 	"cloud-server/internal/module/auth/application/service"
+	auditService "cloud-server/internal/module/audit/application/service"
 	"cloud-server/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -14,16 +15,19 @@ import (
 // SessionHandler 会话处理器
 type SessionHandler struct {
 	sessionService *service.SessionService
+	auditService   *auditService.AuditService
 	logger         *zap.Logger
 }
 
 // NewSessionHandler 创建会话处理器
 func NewSessionHandler(
 	sessionService *service.SessionService,
+	auditSvc *auditService.AuditService,
 	logger *zap.Logger,
 ) *SessionHandler {
 	return &SessionHandler{
 		sessionService: sessionService,
+		auditService:   auditSvc,
 		logger:         logger,
 	}
 }
@@ -222,6 +226,29 @@ func (h *SessionHandler) RevokeSession(c *gin.Context) {
 		return
 	}
 
+	// 记录审计日志
+	if h.auditService != nil {
+		// Get operator info from context
+		operatorID, _ := c.Get("user_id")
+		operatorName, _ := c.Get("username")
+		tenantID, _ := c.Get("tenant_id")
+
+		operatorIDStr := ""
+		if operatorID != nil {
+			operatorIDStr = operatorID.(string)
+		}
+		operatorNameStr := ""
+		if operatorName != nil {
+			operatorNameStr = operatorName.(string)
+		}
+		tenantIDStr := ""
+		if tenantID != nil {
+			tenantIDStr = tenantID.(string)
+		}
+
+		h.auditService.LogSessionRevoke(c.Request.Context(), tenantIDStr, operatorIDStr, operatorNameStr, sessionID, req.Reason)
+	}
+
 	response.Success[any](c, nil, "撤销成功")
 }
 
@@ -279,6 +306,29 @@ func (h *SessionHandler) RevokeAllUserSessions(c *gin.Context) {
 		h.logger.Error("failed to revoke all user sessions", zap.Error(err), zap.String("user_id", userID))
 		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "撤销用户会话失败", nil)
 		return
+	}
+
+	// 记录审计日志
+	if h.auditService != nil {
+		// Get operator info from context
+		operatorID, _ := c.Get("user_id")
+		operatorName, _ := c.Get("username")
+		tenantID, _ := c.Get("tenant_id")
+
+		operatorIDStr := ""
+		if operatorID != nil {
+			operatorIDStr = operatorID.(string)
+		}
+		operatorNameStr := ""
+		if operatorName != nil {
+			operatorNameStr = operatorName.(string)
+		}
+		tenantIDStr := ""
+		if tenantID != nil {
+			tenantIDStr = tenantID.(string)
+		}
+
+		h.auditService.LogSessionRevoke(c.Request.Context(), tenantIDStr, operatorIDStr, operatorNameStr, userID, "revoke_all: "+req.Reason)
 	}
 
 	response.Success[any](c, nil, "撤销成功")

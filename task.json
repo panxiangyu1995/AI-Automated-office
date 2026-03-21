@@ -226,7 +226,7 @@
                       "dependencies":  [
 
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  7,
@@ -608,7 +608,7 @@
                                            "Story 1.6",
                                            "Story 1.10"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  17,
@@ -1349,7 +1349,7 @@
                                            "E2-S2.9-02",
                                            "E2-S2.10-02"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  40,
