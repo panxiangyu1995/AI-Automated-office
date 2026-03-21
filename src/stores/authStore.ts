@@ -30,6 +30,7 @@ interface AuthState {
   setUser: (user: User) => void
   setToken: (token: string) => void
 
+  clearAuth: () => Promise<void>
   clearAuthSession: () => Promise<void>
   switchAccount: () => Promise<void>
   logout: () => Promise<void>
@@ -99,6 +100,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       accessToken: token,
       isAuthenticated: Boolean(token && state.user),
     })),
+
+  clearAuth: async () => {
+    await get().clearAuthSession()
+  },
 
   clearAuthSession: async () => {
     try {

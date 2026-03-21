@@ -4,9 +4,11 @@ import { listen } from '@tauri-apps/api/event'
 import { useAppStore } from './stores/appStore'
 import { useAuthStore } from './stores/authStore'
 import { usePermissionStore } from './stores/permissionStore'
-import { AppLayout, OfflineIndicator } from './components/common'
+import { AppLayout, OfflineIndicator, SessionExpiredModal } from './components/common'
+import type { SessionExpiredReason } from './components/common'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useUpdate } from './hooks/useUpdate'
+import { useSessionCheck } from './hooks/useSessionCheck'
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert'
 import { Button } from './components/ui/button'
 import { LoginPage } from './features/auth/pages/LoginPage'
@@ -16,19 +18,56 @@ import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage, OrgChartP
 import { PermissionCenter, FineGrainedPermissionPage } from './features/permission'
 import { ForbiddenPage, ForbiddenModal } from './components/permission'
 import { Toaster } from './components/ui/toaster'
-import { setForbiddenHandler } from './lib/api/interceptors'
+import { setForbiddenHandler, setUnauthorizedHandler } from './lib/api/interceptors'
 
 function App() {
   const { setInitialized } = useAppStore()
-  const { restoreSession } = useAuthStore()
+  const { restoreSession, isAuthenticated } = useAuthStore()
   const showForbidden = usePermissionStore((state) => state.showForbidden)
   const hideForbidden = usePermissionStore((state) => state.hideForbidden)
   const forbiddenModal = usePermissionStore((state) => state.forbiddenModal)
   const [loading, setLoading] = useState(true)
   const [showTopBarHint, setShowTopBarHint] = useState(false)
   const { updateInfo, downloading, progress, checkUpdate, downloadAndInstall, dismiss } = useUpdate()
+  const [sessionExpiredModal, setSessionExpiredModal] = useState<{
+    open: boolean
+    reason: SessionExpiredReason
+    message?: string
+  }>({ open: false, reason: 'unknown' })
 
   useGlobalShortcuts()
+
+  // 处理会话过期
+  const handleSessionExpired = useCallback((reason: string) => {
+    const reasonMap: Record<string, SessionExpiredReason> = {
+      session_expired: 'session_expired',
+      idle_timeout: 'idle_timeout',
+      forced_logout: 'forced_logout',
+      token_invalid: 'token_invalid',
+      token_revoked: 'token_revoked',
+      session_invalid: 'token_invalid',
+      session_check_failed: 'session_expired',
+    }
+    
+    setSessionExpiredModal({
+      open: true,
+      reason: reasonMap[reason] || 'unknown',
+    })
+  }, [])
+
+  const handleSessionExpiredConfirm = useCallback(() => {
+    setSessionExpiredModal({ open: false, reason: 'unknown' })
+  }, [])
+
+  // 设置 401 拦截器
+  useEffect(() => {
+    setUnauthorizedHandler((data) => {
+      handleSessionExpired(data.reason || 'session_expired')
+    })
+    return () => {
+      setUnauthorizedHandler(null)
+    }
+  }, [handleSessionExpired])
 
   // 设置 403 拦截器
   useEffect(() => {
@@ -39,6 +78,12 @@ function App() {
       setForbiddenHandler(null)
     }
   }, [showForbidden])
+
+  // 定期检查会话状态
+  useSessionCheck({
+    enabled: isAuthenticated && !sessionExpiredModal.open,
+    onSessionExpired: handleSessionExpired,
+  })
 
   useEffect(() => {
     const setupListeners = async () => {
@@ -167,6 +212,12 @@ function App() {
         open={forbiddenModal.open}
         onClose={hideForbidden}
         data={forbiddenModal.data}
+      />
+      <SessionExpiredModal
+        open={sessionExpiredModal.open}
+        reason={sessionExpiredModal.reason}
+        message={sessionExpiredModal.message}
+        onConfirm={handleSessionExpiredConfirm}
       />
       <Toaster />
     </BrowserRouter>

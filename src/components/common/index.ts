@@ -10,6 +10,8 @@ export { StatusBar } from './StatusBar'
 export { ResizablePanel } from './ResizablePanel'
 export { OfflineIndicator } from './OfflineIndicator'
 export { DeviceSelector } from './DeviceSelector'
+export { SessionExpiredModal } from './SessionExpiredModal'
+export type { SessionExpiredReason } from './SessionExpiredModal'
 
 // 硬件相关对话框
 export { ScanDialog } from './ScanDialog'

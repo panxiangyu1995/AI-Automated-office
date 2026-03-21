@@ -18,6 +18,41 @@ const mapStatusToCode = (status?: number) => {
 }
 
 /**
+ * 401 响应处理函数类型
+ */
+export type UnauthorizedHandler = (data: {
+  code?: string
+  message: string
+  reason?: string
+}) => void
+
+/** 401 处理回调（由应用层设置） */
+let unauthorizedHandler: UnauthorizedHandler | null = null
+
+/**
+ * 设置 401 响应处理函数
+ */
+export const setUnauthorizedHandler = (handler: UnauthorizedHandler | null) => {
+  unauthorizedHandler = handler
+}
+
+/**
+ * 处理 401 响应
+ */
+const handleUnauthorizedResponse = (
+  body: Record<string, unknown> | null,
+  defaultMessage: string
+) => {
+  if (!unauthorizedHandler) return
+
+  unauthorizedHandler({
+    code: body?.code as string | undefined,
+    message: (body?.message as string) || defaultMessage,
+    reason: body?.reason as string | undefined,
+  })
+}
+
+/**
  * 403 响应处理函数类型
  */
 export type ForbiddenHandler = (data: {
@@ -88,6 +123,11 @@ export const parseResponseBody = <T>(response: HttpResponse): ApiResult<T> => {
       return { success: true, data: undefined as T }
     }
     
+    // 401 无响应体时的处理
+    if (response.status === 401) {
+      handleUnauthorizedResponse(null, '登录已过期，请重新登录')
+    }
+    
     // 403 无响应体时的处理
     if (response.status === 403) {
       handleForbiddenResponse(null, '您没有权限执行此操作')
@@ -108,6 +148,12 @@ export const parseResponseBody = <T>(response: HttpResponse): ApiResult<T> => {
       return bodyText
     }
   })()
+
+  // 处理 401 响应
+  if (response.status === 401 && typeof parsed === 'object' && parsed) {
+    const body = parsed as Record<string, unknown>
+    handleUnauthorizedResponse(body, '登录已过期，请重新登录')
+  }
 
   // 处理 403 响应
   if (response.status === 403 && typeof parsed === 'object' && parsed) {

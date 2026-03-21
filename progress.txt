@@ -750,3 +750,62 @@
 - 会话状态：active、expired、revoked、idle_timeout
 - 空闲超时默认 30 分钟，可通过环境变量配置
 - 支持管理员强制登出用户
+
+---
+
+## [2026-03-21] - Task: Force Logout and Expiry Handling (epic-2-story-2-10-session-revoke)
+
+### 铁律合规检查：
+- PRD 合规：[FR27 - 会话撤销、强制登出]
+- 架构合规：[ADR-001 React Frontend, ADR-005 Go DDD]
+- UX 合规：[UX-04 会话过期弹窗]
+- Epic 合规：Epic 2 / Story 2.10 强制登出与会话过期处理
+
+### What was done:
+
+**后端实现：**
+- 更新 `cloud-server/internal/module/auth/interface/handler/session_handler.go`
+  - CheckSessionStatus：GET /api/auth/sessions/status 检查会话状态
+  - 返回 valid、session_id、status、expires_at、reason 等字段
+- 更新 `cloud-server/internal/module/auth/application/service/session_service.go`
+  - ValidateSessionByID：通过 Session ID 验证会话有效性
+
+**前端实现：**
+
+*401 响应拦截器：*
+- 更新 `src/lib/api/interceptors.ts`
+  - UnauthorizedHandler 类型定义
+  - setUnauthorizedHandler 设置处理器
+  - handleUnauthorizedResponse 处理 401 响应
+
+*会话过期弹窗：*
+- 创建 `src/components/common/SessionExpiredModal.tsx`
+  - 6 种过期原因：session_expired, idle_timeout, forced_logout, token_invalid, token_revoked, unknown
+  - 5 秒自动跳转登录页
+  - 不同原因显示不同图标和文案
+  - 使用 Lucide React 图标（Clock, ShieldAlert, AlertCircle, LogOut）
+
+*定期会话检查：*
+- 创建 `src/hooks/useSessionCheck.ts`
+  - 每 5 分钟检查会话状态
+  - enabled 参数控制是否启用
+  - onSessionExpired 回调处理过期
+
+*认证状态管理：*
+- 更新 `src/stores/authStore.ts`
+  - 添加 clearAuth 方法（clearAuthSession 别名）
+
+*应用入口集成：*
+- 更新 `src/App.tsx`
+  - 设置 401 拦截器
+  - 集成 useSessionCheck Hook
+  - 添加 SessionExpiredModal 组件
+
+### Testing:
+- go build ./... - 后端编译成功
+- pnpm run build - 前端构建成功
+
+### Notes:
+- 会话过期后自动跳转登录页
+- 401 和定期检查双重保障会话有效性
+- 弹窗阻止用户关闭，强制重新登录

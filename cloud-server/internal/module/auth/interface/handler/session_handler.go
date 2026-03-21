@@ -290,6 +290,7 @@ func (h *SessionHandler) RegisterRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/auth")
 	{
 		auth.GET("/sessions", h.GetMySessions)
+		auth.GET("/sessions/status", h.CheckSessionStatus)
 		auth.POST("/sessions/revoke-others", h.RevokeMyOtherSessions)
 	}
 
@@ -300,4 +301,62 @@ func (h *SessionHandler) RegisterRoutes(r *gin.RouterGroup) {
 		admin.POST("/sessions/:session_id/revoke", h.RevokeSession)
 		admin.POST("/users/:user_id/sessions/revoke-all", h.RevokeAllUserSessions)
 	}
+}
+
+// SessionStatusResponse 会话状态响应
+type SessionStatusResponse struct {
+	Valid          bool   `json:"valid"`
+	SessionID      string `json:"session_id,omitempty"`
+	UserID         string `json:"user_id,omitempty"`
+	TenantID       string `json:"tenant_id,omitempty"`
+	Status         string `json:"status,omitempty"`
+	ExpiresAt      string `json:"expires_at,omitempty"`
+	LastActivityAt string `json:"last_activity_at,omitempty"`
+	Reason         string `json:"reason,omitempty"`
+}
+
+// CheckSessionStatus 检查会话状态
+func (h *SessionHandler) CheckSessionStatus(c *gin.Context) {
+	// Get session ID from context
+	sid, exists := c.Get("session_id")
+	if !exists {
+		response.Success(c, SessionStatusResponse{
+			Valid:  false,
+			Reason: "no_session",
+		}, "会话不存在")
+		return
+	}
+	sessionID := sid.(string)
+
+	// Get tenant ID
+	tid, exists := c.Get("tenant_id")
+	if !exists {
+		response.Success(c, SessionStatusResponse{
+			Valid:  false,
+			Reason: "no_tenant",
+		}, "租户不存在")
+		return
+	}
+	tenantID := tid.(string)
+
+	// Validate session
+	session, err := h.sessionService.ValidateSessionByID(c.Request.Context(), sessionID, tenantID)
+	if err != nil || session == nil {
+		response.Success(c, SessionStatusResponse{
+			Valid:  false,
+			Reason: "session_invalid",
+		}, "会话无效")
+		return
+	}
+
+	// Return session status
+	response.Success(c, SessionStatusResponse{
+		Valid:          true,
+		SessionID:      session.ID,
+		UserID:         session.UserID,
+		TenantID:       session.TenantID,
+		Status:         string(session.Status),
+		ExpiresAt:      session.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+		LastActivityAt: session.LastActivityAt.Format("2006-01-02T15:04:05Z07:00"),
+	}, "会话有效")
 }

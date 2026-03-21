@@ -130,6 +130,42 @@ func (s *SessionService) ValidateSession(ctx context.Context, tokenHash string) 
 	return session, nil
 }
 
+// ValidateSessionByID 通过 Session ID 验证会话有效性
+func (s *SessionService) ValidateSessionByID(ctx context.Context, sessionID, tenantID string) (*model.Session, error) {
+	session, err := s.sessionRepo.FindByID(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if session == nil {
+		return nil, ErrSessionNotFound
+	}
+
+	// Verify tenant
+	if session.TenantID != tenantID {
+		return nil, ErrSessionNotFound
+	}
+
+	// Check if revoked
+	if session.IsRevoked() {
+		return nil, ErrSessionRevoked
+	}
+
+	// Check if expired
+	if session.IsExpired() {
+		_ = s.sessionRepo.UpdateStatus(ctx, session.ID, model.SessionStatusExpired, "token_expired")
+		return nil, ErrSessionExpired
+	}
+
+	// Check idle timeout
+	if session.IsIdleTimedOut(s.config.IdleTimeout) {
+		_ = s.sessionRepo.UpdateStatus(ctx, session.ID, model.SessionStatusIdleTimeout, "idle_timeout")
+		return nil, ErrSessionIdleTimeout
+	}
+
+	return session, nil
+}
+
 // UpdateActivity 更新会话活动时间
 func (s *SessionService) UpdateActivity(ctx context.Context, sessionID string) error {
 	return s.sessionRepo.UpdateLastActivity(ctx, sessionID)
