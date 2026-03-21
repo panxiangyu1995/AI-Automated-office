@@ -196,14 +196,21 @@ export function LoginForm() {
 
         {mode === 'login' && (
           <div className="flex items-center justify-between">
-            <Checkbox
-              id="remember"
-              checked={credentials.rememberMe}
-              onCheckedChange={(checked) => setCredentials({ ...credentials, rememberMe: checked === true })}
-              disabled={loading}
-              label="记住我"
-              className="rounded-md border-[#D1D5DB] text-[#4F46E5] focus:ring-[#4F46E5]"
-            />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remember"
+                checked={credentials.rememberMe}
+                onCheckedChange={(checked) => setCredentials({ ...credentials, rememberMe: checked === true })}
+                disabled={loading}
+                className="rounded-md border-[#D1D5DB] text-[#4F46E5] focus:ring-[#4F46E5]"
+              />
+              <label
+                htmlFor="remember"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                记住我
+              </label>
+            </div>
             <button
               type="button"
               onClick={handleForgotPassword}

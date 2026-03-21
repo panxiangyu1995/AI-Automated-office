@@ -1,5 +1,56 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-21] - Task: Import and Export UI (epic-2-story-2-9-import-export-ui)
+
+### 铁律合规检查：
+- PRD 合规：[FR33 - 用户导入导出界面]
+- 架构合规：[React + TypeScript + Shadcn/ui]
+- UX 合规：[参考 UI 原型 epic-2-story-2-9-import-export-ui.pen]
+- Epic 合规：Epic 2 / Story 2.9 导入导出 UI
+
+### What was done:
+
+**类型定义：**
+- `src/features/admin/types/import.types.ts`
+  - ImportBatchStatus, ImportRowStatus, ConflictType, ConflictPolicy
+  - ImportPreviewResponse, ImportPreviewItem, ImportConflictItem
+  - ConfirmImportRequest, ConfirmImportResponse
+  - ImportReceipt, ImportReceiptItem, ImportProgress
+  - ExportScope, ExportUsersRequest, ExportUsersResponse
+
+**API 服务：**
+- `src/features/admin/api/importApi.ts`
+  - importApi: downloadTemplate, uploadAndPreview, confirmImport, getReceipt, downloadReceiptExcel, getProgress
+  - exportApi: getExportableFields, exportUsers, downloadExport
+  - 辅助函数: generateIdempotencyKey, triggerFileDownload
+
+**页面组件：**
+- `src/features/admin/pages/ImportExportPage.tsx`
+  - 步骤指示器 (StepIndicator): 显示 4 步导入流程
+  - 文件上传区 (FileUploadZone): 支持拖拽上传
+  - 预览数据表 (PreviewDataTable): 显示预览数据和冲突
+  - 结果展示 (ResultView): 显示导入回执统计
+  - 导出面板 (ExportPanel): 导出范围选择和字段选择
+
+**UI 组件补充：**
+- `src/components/ui/card.tsx` - Card 组件
+- `src/components/ui/progress.tsx` - Progress 组件
+- `src/components/ui/table.tsx` - Table 组件
+- 更新 `src/components/ui/checkbox.tsx` - 使用 Radix UI
+
+**路由配置：**
+- 添加路由 `/admin/import-export`
+
+### Testing:
+- pnpm run build - 构建成功
+- 浏览器测试通过 - 页面正确渲染，标签切换正常
+
+### Notes:
+- 导入流程: 上传文件 → 预览数据 → 确认导入 → 导入结果
+- 导出支持: 全部用户、按部门、按条件三种范围
+
+---
+
 ## [2026-03-21] - Task: Import Commit and Receipt (epic-2-story-2-9-import-commit)
 
 ### 铁律合规检查：

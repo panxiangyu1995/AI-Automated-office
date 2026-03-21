@@ -12,7 +12,7 @@ import { Button } from './components/ui/button'
 import { LoginPage } from './features/auth/pages/LoginPage'
 import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
-import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage, OrgChartPage } from './features/admin/pages'
+import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage, OrgChartPage, ImportExportPage } from './features/admin/pages'
 import { PermissionCenter, FineGrainedPermissionPage } from './features/permission'
 import { ForbiddenPage, ForbiddenModal } from './components/permission'
 import { Toaster } from './components/ui/toaster'
@@ -152,6 +152,8 @@ function App() {
           <Route path="admin/permissions" element={<PermissionCenter />} />
           {/* Fine-grained permission configuration route */}
           <Route path="admin/permissions/fine-grained" element={<FineGrainedPermissionPage />} />
+          {/* User import/export route */}
+          <Route path="admin/import-export" element={<ImportExportPage />} />
         </Route>
       </Routes>
       <UpdateDialog
