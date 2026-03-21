@@ -1080,3 +1080,94 @@
 - 错误码格式：DOMAIN_NUMBER（如 AUTH_001, USER_001）
 - 前后端错误码保持同步
 - ForbiddenResponse 包含 resource, required_permission, apply_entry 字段
+
+
+---
+
+## [2026-03-21] - Task: Integration and E2E Coverage (epic-2-cross-test-plan)
+
+### 铁律合规检查：
+- PRD 合规：[FR27, FR28, FR29, FR33 - E2E 测试覆盖]
+- 架构合规：[ADR-001 前端架构, Playwright 测试框架]
+- UX 合规：[无 UI 变更]
+- Epic 合规：Epic 2 / Cross-Story 集成测试
+
+### What was done:
+
+**测试基础设施：**
+- \	ests/fixtures/test-data.ts\ - 测试数据夹具
+  - 测试用户：admin, manager, employee, inactiveUser
+  - 测试部门：root, tech, hr, finance
+  - 测试角色：admin, deptManager, employee, hrAdmin
+  - API 端点常量
+  - generateTestId 工具函数
+
+- \	ests/helpers/auth.ts\ - 认证测试辅助函数
+  - login/logout 模拟登录登出
+  - mockLogin 快速认证状态设置
+  - isAuthenticated 状态检查
+  - expectLoginPage/expectForbiddenPage 断言辅助
+
+**E2E 测试用例：**
+
+*认证测试 (\	ests/e2e/smoke/auth.spec.ts\)：*
+- 登录页面显示验证
+- 表单验证错误
+- 无效凭据错误处理
+- 成功登录重定向
+- 会话持久化（刷新后保持）
+- 会话过期处理
+- Token 自动刷新
+- 未认证重定向到登录
+- 权限不足显示 403
+
+*用户管理测试 (\	ests/e2e/smoke/user.spec.ts\)：*
+- 用户列表表格显示
+- 姓名搜索过滤
+- 状态过滤
+- 创建用户表单显示和验证
+- 成功创建用户
+- 编辑表单数据加载
+- 更新用户信息
+- 禁用用户账户
+- 上级选择器显示
+- 循环上级关系阻止
+
+*权限测试 (\	ests/e2e/smoke/permission.spec.ts\)：*
+- 角色列表显示
+- 权限矩阵显示
+- 更新角色权限
+- 用户权限覆盖显示
+- 数据范围配置显示
+- 权限拒绝弹窗
+- UI 元素权限隐藏
+
+*审计测试 (\	ests/e2e/smoke/audit.spec.ts\)：*
+- 审计日志表格显示
+- 事件类型过滤
+- 日期范围过滤
+- 审计详情弹窗
+- CSV 导出
+- Excel 导出
+
+*导入导出测试 (\	ests/e2e/smoke/import-export.spec.ts\)：*
+- 导入/导出标签页显示
+- 文件上传区域显示
+- 下载导入模板
+- 文件上传预览
+- 冲突解决选项
+- 执行导入显示结果
+- 导出选项显示
+- Excel 导出
+- 按部门过滤导出
+- 无效文件格式错误
+- 文件大小超限错误
+
+### Testing:
+- npx tsc --noEmit - TypeScript 编译通过
+- 所有测试文件语法正确
+
+### Notes:
+- 所有测试使用 Playwright 框架
+- 使用 route mocking 模拟 API 响应
+- 测试覆盖认证、用户管理、权限、审计、导入导出核心流程
