@@ -1022,3 +1022,61 @@
 - ä½¿ç”¨ datatypes.JSON å­˜å‚¨ old_values å’Œ new_values
 - å®¡è®¡æ—¥å¿—ä¿ç•™ç­–ç•¥å¾…å®ç°ï¼ˆDeleteBefore æ–¹æ³•å·²å‡†å¤‡ï¼‰
 - é˜Ÿåˆ—æ»¡æ—¶ä¸¢å¼ƒæ—¥å¿—ï¼Œä¸å½±å“ä¸»ä¸šåŠ¡æ€§èƒ½
+
+---
+
+## [2026-03-21] - Task: API Contracts and Shared Types (epic-2-cross-api-contracts)
+
+### ÌúÂÉºÏ¹æ¼ì²é£º
+- PRD ºÏ¹æ£º[FR27, FR28, FR29, FR33 - API ÆõÔ¼¹æ·¶]
+- ¼Ü¹¹ºÏ¹æ£º[ADR-004, ADR-005 - API Éè¼Æ¹æ·¶]
+- UX ºÏ¹æ£º[ÎŞ UI ±ä¸ü]
+- Epic ºÏ¹æ£ºEpic 2 / Cross-Story API ÆõÔ¼
+
+### What was done:
+
+**ºó¶Ë´íÎóÂë¶¨Òå£º**
+- \cloud-server/pkg/errors/codes.go\ - ±ê×¼´íÎóÂë³£Á¿
+  - General: GEN_001-GEN_007 (BadRequest, NotFound, Conflict, Internal, etc.)
+  - Auth: AUTH_001-AUTH_012 (AuthRequired, InvalidCredentials, TokenExpired, etc.)
+  - Tenant: TENANT_001-TENANT_005 (TenantRequired, TenantInvalid, etc.)
+  - Permission: PERM_001-PERM_007 (PermissionDenied, RoleNotFound, etc.)
+  - User: USER_001-USER_010 (UserNotFound, UserAlreadyExists, etc.)
+  - Department: DEPT_001-DEPT_006 (DeptNotFound, DeptHasChildren, etc.)
+  - Role: ROLE_001-ROLE_003 (RoleInUse, CannotModifyBuiltin, etc.)
+  - Import/Export: IMP_001-IMP_006 (ImportFailed, ExportFailed, etc.)
+  - Session: SESS_001-SESS_003 (SessionNotFound, SessionRevoked, etc.)
+  - Audit: AUDIT_001-AUDIT_002 (AuditLogNotFound, AuditExportFailed)
+
+**ºó¶Ë´íÎóÀàĞÍ£º**
+- \cloud-server/pkg/errors/errors.go\ - ´íÎóÀàĞÍºÍ¹¤³§º¯Êı
+  - AppError ½á¹¹Ìå£¨Code, Message, HTTPStatus, Details, TraceID£©
+  - ¹¤³§º¯Êı£ºBadRequest, NotFound, Conflict, Internal, ValidationError
+  - ÈÏÖ¤´íÎó£ºUnauthorized, InvalidCredentials, TokenExpired, TokenInvalid, SessionExpired, AccountLocked, AccountDisabled
+  - È¨ÏŞ´íÎó£ºForbidden, PermissionDenied, DataScopeDenied
+  - ÓÃ»§´íÎó£ºUserNotFound, UserAlreadyExists
+  - ×â»§´íÎó£ºTenantRequired, TenantInvalid, TenantInactive
+  - µ¼Èëµ¼³ö´íÎó£ºImportFailed, ExportFailed, InvalidFileFormat, FileTooLarge
+
+**Ç°¶Ë´íÎóÂë³£Á¿£º**
+- \src/lib/api/errorCodes.ts\ - Óëºó¶ËÍ¬²½µÄ´íÎóÂë³£Á¿
+  - ËùÓĞ´íÎóÂëµ¼³ö
+  - getErrorMessage ±¾µØ»¯´íÎóÏûÏ¢
+  - isAuthError, isPermissionError, isTenantError ¸¨Öúº¯Êı
+
+**Ç°¶Ë API ÀàĞÍ£º**
+- \src/lib/api/types.ts\ - ¹²ÏíÀàĞÍ¶¨Òå
+  - ApiResponse, ApiError, ApiResult, ForbiddenResponse
+  - PaginationParams, PaginatedResponse
+  - UserSummary, UserDetail, DepartmentTree, DepartmentOption
+  - RoleSummary, SessionInfo, AuditLogItem, AuditLogDetail
+  - ImportResult, ExportOptions, PermissionCheck, UserPermission
+
+### Testing:
+- go build ./... - ºó¶Ë±àÒë³É¹¦
+- npm run build - Ç°¶Ë±àÒë³É¹¦
+
+### Notes:
+- ´íÎóÂë¸ñÊ½£ºDOMAIN_NUMBER£¨Èç AUTH_001, USER_001£©
+- Ç°ºó¶Ë´íÎóÂë±£³ÖÍ¬²½
+- ForbiddenResponse °üº¬ resource, required_permission, apply_entry ×Ö¶Î
