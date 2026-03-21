@@ -1,5 +1,88 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-21] - Task: Import Preview and Conflict Detection (epic-2-story-2-9-import-preview)
+
+### 铁律合规检查：
+- PRD 合规：[FR37 - 用户导入预览]
+- 架构合规：[ADR-005 Go DDD 架构 - application/service, domain/entity, infrastructure/parser, interface/handler]
+- UX 合规：[标准 API 响应契约]
+- Epic 合规：Epic 2 / Story 2.9 导入预览与冲突检测
+
+### What was done:
+
+**数据库迁移：**
+- `cloud-server/migrations/011_user_import_batches.up.sql` - 创建导入批次表
+  - user_import_batches 表：批次ID、文件名、总行数、有效行数、冲突行数、错误行数、状态、预览数据
+  - user_import_rows 表：行号、原始数据、解析数据、状态、冲突类型、错误信息
+
+**实体定义：**
+- `cloud-server/internal/module/admin/domain/entity/import_batch.go`
+  - ImportBatchStatus: pending, preview, confirmed, processing, completed, failed, cancelled
+  - ImportRowStatus: pending, valid, conflict, error
+  - ConflictType: duplicate_username, duplicate_employee_code, department_not_found, position_not_found, manager_not_found
+  - ImportBatch, ImportRow, ImportRowData, ConflictResult 实体
+
+**DTO 定义：**
+- `cloud-server/internal/module/admin/application/dto/import_preview.go`
+  - ImportTemplateField - 模板字段定义
+  - ImportPreviewResponse - 预览响应
+  - ImportPreviewItem - 预览项
+  - ImportConflictItem - 冲突项
+  - ImportErrorItem - 错误项
+  - ConfirmImportRequest/Response - 确认导入
+  - ImportBatchListResponse - 批次列表
+
+**Excel 解析器：**
+- `cloud-server/internal/module/admin/infrastructure/parser/excel_parser.go`
+  - Parse() - 解析 Excel 文件
+  - ValidateRow() - 验证行数据
+  - 支持 .xlsx 格式
+  - 支持自定义字段映射
+
+- `cloud-server/internal/module/admin/infrastructure/parser/field_mapper.go`
+  - 中文到英文字段映射（用户名→username, 姓名→name, 工号→employee_code 等）
+  - 支持多种中文别名
+
+**冲突检测服务：**
+- `cloud-server/internal/module/admin/application/service/conflict_checker.go`
+  - CheckRow() - 单行冲突检测
+  - CheckBatch() - 批量内部冲突检测
+  - 检测：用户名重复、工号重复、部门不存在、岗位不存在、上级不存在
+
+**导入服务：**
+- `cloud-server/internal/module/admin/application/service/import_service.go`
+  - PreviewImport() - 预览导入
+  - GetTemplate() - 获取导入模板
+  - 协调解析器和冲突检测
+  - 生成预览报告
+
+**仓储接口：**
+- `cloud-server/internal/module/admin/domain/repository/import_repository.go`
+  - ImportBatchRepository - 批次仓储接口
+  - ImportRowRepository - 行仓储接口
+
+**HTTP 处理器：**
+- `cloud-server/internal/module/admin/interface/handler/import_handler.go`
+  - GetTemplate() - GET /api/admin/users/import/template
+  - UploadAndPreview() - POST /api/admin/users/import/preview
+  - ConfirmImport() - POST /api/admin/users/import/confirm
+  - GetImportBatchList() - GET /api/admin/users/import/batches
+  - GetImportBatchDetail() - GET /api/admin/users/import/batches/:batch_id
+
+**依赖更新：**
+- go.mod 添加 github.com/xuri/excelize/v2 v2.8.1
+
+### Testing:
+- go mod tidy - 依赖下载成功
+- go build - 编译成功
+
+### Notes:
+- 单元测试和集成测试待后续补充
+- Excel 模板生成功能待完善（目前返回字段定义）
+- 批次查询详情待完善实现
+
+---
+
 ## [2026-03-21] - Task: Org Chart View (epic-2-story-2-8-org-chart-ui)
 
 ### 铁律合规检查：
