@@ -682,3 +682,71 @@
 - 集成测试需要 CGO_ENABLED=1 运行（SQLite 驱动依赖）
 - E2E 测试需要后端服务运行后验证
 - 错误码：MANAGER_CANNOT_BE_SELF、CIRCULAR_MANAGER_CHAIN、CROSS_TENANT_MANAGER、MANAGER_CHAIN_TOO_DEEP
+
+---
+
+## [2026-03-21] - Task: Session Model and Timeout Engine (epic-2-story-2-10-session-domain)
+
+### 铁律合规检查：
+- PRD 合规：[FR27 - 会话管理、空闲超时]
+- 架构合规：[ADR-005 Go DDD 架构]
+- UX 合规：[无前端变更]
+- Epic 合规：Epic 2 / Story 2.10 会话模型与超时引擎
+
+### What was done:
+
+**数据库迁移：**
+- `cloud-server/migrations/012_session_idle_timeout.up.sql` - 添加 status、revoked_at、revoked_reason 字段和索引
+- `cloud-server/migrations/012_session_idle_timeout.down.sql` - 回滚脚本
+
+**模型定义：**
+- 更新 `cloud-server/internal/model/session.go`
+  - SessionStatus 枚举：active, expired, revoked, idle_timeout
+  - RevokedAt、RevokedReason 字段
+  - IsExpired、IsRevoked、IsIdleTimedOut 方法
+
+**仓储接口与实现：**
+- 更新 `cloud-server/internal/module/auth/domain/repository/session_repository.go`
+  - 新增方法：FindByStatus、FindIdleTimedOut、CountByUserID、UpdateStatus
+- 更新 `cloud-server/internal/module/auth/infrastructure/persistence/session_repository.go`
+  - 实现所有新增方法
+
+**会话服务：**
+- `cloud-server/internal/module/auth/application/service/session_service.go`
+  - ListSessions：分页查询会话列表
+  - GetUserSessions：获取用户会话
+  - RevokeSession：撤销指定会话
+  - RevokeOtherSessions：撤销其他会话
+  - RevokeAllUserSessions：撤销用户所有会话
+  - ValidateSession：验证会话有效性
+  - UpdateActivity：更新活动时间
+
+**空闲超时引擎：**
+- `cloud-server/internal/module/auth/application/service/idle_timeout_engine.go`
+  - CheckIdleTimeout：检查空闲超时
+  - RevokeIdleSessions：撤销空闲会话
+  - Start：启动后台定时任务
+  - Stop：停止后台任务
+  - 默认 30 分钟空闲超时
+
+**会话中间件：**
+- `cloud-server/internal/module/auth/interface/middleware/session_middleware.go`
+  - SessionMiddleware：验证会话并更新活动时间
+  - ActivityTracker：追踪用户活动
+  - GetSession：获取当前会话信息
+
+**会话处理器：**
+- `cloud-server/internal/module/auth/interface/handler/session_handler.go`
+  - GET /api/auth/sessions：获取当前用户会话
+  - POST /api/auth/sessions/revoke-others：撤销其他会话
+  - GET /api/admin/sessions：管理员查询会话列表
+  - POST /api/admin/sessions/:session_id/revoke：撤销指定会话
+  - POST /api/admin/users/:user_id/sessions/revoke-all：撤销用户所有会话
+
+### Testing:
+- go build ./... - 编译成功
+
+### Notes:
+- 会话状态：active、expired、revoked、idle_timeout
+- 空闲超时默认 30 分钟，可通过环境变量配置
+- 支持管理员强制登出用户
