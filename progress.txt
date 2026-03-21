@@ -1,5 +1,63 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-21] - Task: Permission Gateway (epic-2-story-2-7-permission-gateway)
+
+### 铁律合规检查：
+- PRD 合规：[FR29, FR30, FR31, FR32 - 权限网关、租户隔离、认证授权]
+- 架构合规：[ADR-005 Go DDD 架构、多租户隔离规范]
+- UX 合规：[标准 403 响应契约、权限申请入口]
+- Epic 合规：Epic 2 / Story 2.7 权限网关
+
+### What was done:
+
+**响应契约：**
+- `cloud-server/pkg/response/forbidden.go` - 标准 403 响应契约
+  - ForbiddenResponse 结构体（code, http_status, message, resource, required_permission, apply_entry, trace_id）
+  - 错误码常量：TENANT_REQUIRED, TENANT_INVALID, TENANT_INACTIVE, AUTH_REQUIRED, TOKEN_INVALID, TOKEN_EXPIRED, TOKEN_REVOKED, USER_INACTIVE, PERMISSION_DENIED
+  - Forbidden/Unauthorized/TenantError/AuthError 响应函数
+
+**租户隔离中间件：**
+- `cloud-server/internal/middleware/tenant.go` - TenantMiddleware
+  - 从 Header/Path/Query 解析 tenant_id
+  - 验证租户有效性
+  - 检查租户状态（active）
+  - 设置租户上下文
+
+**认证中间件：**
+- `cloud-server/internal/middleware/auth.go` - AuthMiddleware
+  - 解析 Authorization Bearer Token
+  - 验证 Token 签名和有效期
+  - 检查 Token 是否被撤销
+  - 加载用户信息
+  - 检查用户状态
+  - 设置用户上下文
+
+**权限中间件：**
+- `cloud-server/internal/middleware/permission.go` - PermissionMiddleware
+  - 公开路由白名单配置
+  - 资源路径解析（resource）
+  - 请求方法到操作映射（action: read/create/update/delete）
+  - 权限计算（角色权限 + 覆盖权限）
+  - 数据范围注入
+  - 字段权限注入
+
+**路由集成：**
+- `cloud-server/internal/router/router.go` - 集成中间件链
+  - TenantMiddleware → AuthMiddleware → PermissionMiddleware
+  - 公开路由不需要中间件
+  - protected 路由组使用完整中间件链
+
+### Testing:
+- 代码编写完成，等待 Go 环境配置后验证构建
+
+### Notes:
+- 中间件顺序：租户隔离 → 认证 → 权限校验
+- 403 响应包含权限申请入口 URL
+- 权限缓存 TTL 为 5 分钟
+- 支持资源级和权限级覆盖
+
+---
+
 ## [2026-03-21] - Task: Forbidden Feedback UI (epic-2-story-2-7-forbidden-feedback-ui)
 
 ### 铁律合规检查：

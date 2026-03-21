@@ -71,6 +71,7 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	{
+		// 公开路由（不需要认证）
 		v1.GET("/health", healthHandler.Health)
 		v1.GET("/health/liveness", healthHandler.Liveness)
 		v1.GET("/health/readiness", healthHandler.Readiness)
@@ -78,15 +79,103 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		v1.POST("/auth/register", authHandler.Register)
 		v1.POST("/auth/forgot-password", authHandler.ForgotPassword)
 
-		// Admin routes (需要认证中间件注入 tenant_id)
-		// TODO: 添加认证中间件
-		adminH.RegisterRoutes(v1)
+		// 需要认证的路由组
+		protected := v1.Group("")
+		protected.Use(middleware.TenantMiddleware(sqlDB, log))
+		protected.Use(middleware.AuthMiddleware(sqlDB, cfg.JWT, log))
+		protected.Use(middleware.PermissionMiddleware(
+			permissionMod.PermissionCalculator,
+			permissionMod.OverrideService,
+			nil, // 使用默认配置
+			log,
+		))
 
-		// Permission routes
-		permissionH.RegisterRoutes(v1)
+		// Admin routes (需要认证和权限)
+		adminH.RegisterRoutes(protected)
+
+		// Permission routes (需要认证和权限)
+		permissionH.RegisterRoutes(protected)
 
 		// Permission override routes (Story 2.6)
-		permissionOverrideH.RegisterRoutes(v1)
+		permissionOverrideH.RegisterRoutes(protected)
+	}
+
+	return r
+}
+
+// NewRouterWithMiddleware 创建带有自定义中间件配置的路由
+// 用于测试或特殊场景
+func NewRouterWithMiddleware(
+	cfg config.Config,
+	log *zap.Logger,
+	sqlDB *sql.DB,
+	permConfig *middleware.PermissionConfig,
+) *gin.Engine {
+	mode := cfg.Server.Mode
+	if mode == "" {
+		mode = gin.DebugMode
+	}
+	gin.SetMode(mode)
+
+	r := gin.New()
+	r.Use(middleware.RecoveryMiddleware(log))
+	r.Use(middleware.LoggerMiddleware(log))
+	r.Use(middleware.CORSMiddleware(cfg.Cors))
+
+	swagger.SwaggerInfo.Host = ""
+	swagger.SwaggerInfo.BasePath = "/api/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	healthHandler := &handler.HealthHandler{
+		Version: "1.0.0",
+		SQLDB:   sqlDB,
+	}
+	authHandler := &handler.AuthHandler{
+		SQLDB: sqlDB,
+		JWT:   cfg.JWT,
+	}
+
+	adminMod := adminModule.NewAdminModule(sqlDB, log)
+	adminH := adminHandler.NewAdminHandler(adminMod.UserService, adminMod.DepartmentService, adminMod.PositionService, adminMod.AuditLogger, log)
+
+	permissionMod := permissionModule.NewPermissionModule(sqlDB, log)
+	permissionH := permissionHandler.NewPermissionHandler(
+		permissionMod.RoleService,
+		permissionMod.PermissionService,
+		permissionMod.UserRoleService,
+		log,
+	)
+
+	permissionOverrideH := permissionHandler.NewPermissionOverrideHandler(
+		permissionMod.OverrideCRUDService,
+		permissionMod.OverrideService,
+		permissionMod.DataScopeService,
+		permissionMod.FieldPermissionService,
+		log,
+	)
+
+	v1 := r.Group("/api/v1")
+	{
+		v1.GET("/health", healthHandler.Health)
+		v1.GET("/health/liveness", healthHandler.Liveness)
+		v1.GET("/health/readiness", healthHandler.Readiness)
+		v1.POST("/auth/login", authHandler.Login)
+		v1.POST("/auth/register", authHandler.Register)
+		v1.POST("/auth/forgot-password", authHandler.ForgotPassword)
+
+		protected := v1.Group("")
+		protected.Use(middleware.TenantMiddleware(sqlDB, log))
+		protected.Use(middleware.AuthMiddleware(sqlDB, cfg.JWT, log))
+		protected.Use(middleware.PermissionMiddleware(
+			permissionMod.PermissionCalculator,
+			permissionMod.OverrideService,
+			permConfig,
+			log,
+		))
+
+		adminH.RegisterRoutes(protected)
+		permissionH.RegisterRoutes(protected)
+		permissionOverrideH.RegisterRoutes(protected)
 	}
 
 	return r
