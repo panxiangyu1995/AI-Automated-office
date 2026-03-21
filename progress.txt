@@ -809,3 +809,65 @@
 - 会话过期后自动跳转登录页
 - 401 和定期检查双重保障会话有效性
 - 弹窗阻止用户关闭，强制重新登录
+
+---
+
+## [2026-03-21] - Task: Structured Audit Log Model (epic-2-story-2-11-audit-model)
+
+### 铁律合规检查：
+- PRD 合规：[FR28, FR29, FR33 - 审计日志记录]
+- 架构合规：[ADR-005 Go DDD 架构]
+- UX 合规：[无前端变更]
+- Epic 合规：Epic 2 / Story 2.11 结构化审计日志模型
+
+### What was done:
+
+**已有基础设施：**
+- `cloud-server/internal/model/audit_log.go` - AuditLog 实体已存在
+- `cloud-server/migrations/005_audit_logs.up.sql` - audit_logs 表已存在
+
+**审计模块目录结构：**
+- `cloud-server/internal/module/audit/`
+  - `domain/repository/audit_log_repository.go` - 仓储接口
+  - `infrastructure/persistence/audit_log_repo.go` - PostgreSQL 实现
+  - `application/service/audit_logger.go` - 异步批量写入器
+  - `application/service/audit_log_builder.go` - 流式构建器
+  - `interface/middleware/audit_middleware.go` - HTTP 请求审计中间件
+  - `module.go` - 模块入口
+
+**仓储接口：**
+- AuditLogRepository：Create、CreateBatch、FindByID、List、DeleteBefore
+- AuditLogQuery：支持按租户、操作者、目标、事件类型、资源、操作、结果、追踪ID、时间范围过滤
+
+**异步审计日志器：**
+- AuditLogger：队列异步写入
+- 配置：队列大小（10000）、刷新间隔（5秒）、批量大小（100）
+- 队列满时丢弃日志并记录警告
+- Start/Stop 生命周期管理
+- 支持同步写入 LogSync
+
+**审计日志构建器：**
+- AuditLogBuilder：流式 API
+- 预定义事件类型：EventTypeAuth、EventTypeUser、EventTypeSession 等
+- 预定义操作：ActionCreate、ActionUpdate、ActionDelete、ActionLogin、ActionLogout 等
+- 便捷构建方法：BuildLoginLog、BuildLogoutLog、BuildUserCreateLog、BuildUserUpdateLog、BuildUserDeleteLog、BuildSessionRevokeLog
+
+**审计中间件：**
+- AuditMiddleware：HTTP 请求审计
+- 可配置跳过路径和前缀
+- 自动记录请求方法、路径、状态码、耗时
+- 敏感信息脱敏（password、token、api_key 等）
+- 支持请求体和响应体记录
+
+**模块入口：**
+- Module：整合仓储、日志器、中间件
+- Config：数据库连接、日志器配置、中间件配置
+- Start/Stop：生命周期管理
+
+### Testing:
+- go build ./... - 编译成功
+
+### Notes:
+- 使用 datatypes.JSON 存储 old_values 和 new_values
+- 审计日志保留策略待实现（DeleteBefore 方法已准备）
+- 队列满时丢弃日志，不影响主业务性能

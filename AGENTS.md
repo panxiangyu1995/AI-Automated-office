@@ -795,5 +795,5 @@ cp .env.example .env  # 复制环境变量模板
 ---
 新增注意事项：Qdrant 云端只接受数字或 UUID 格式的 ID
 现有测试框架：参考：I:\AI-Automated-office\tests\README.md
-UI原型图目录：I:\AI-Automated-office\_bmad-output\UI-PEN
+凡是有UI实现的参考UI原型图目录：I:\AI-Automated-office\_bmad-output\UI-PEN
 UI原型图设计使用：pencil mcp
