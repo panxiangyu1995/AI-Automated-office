@@ -28,6 +28,12 @@ export interface DepartmentTreeNode {
   status: DepartmentStatus
   leader_id: string | null
   leader_name?: string
+  employeeCount?: number
+  manager?: {
+    id: string
+    name: string
+    avatar?: string
+  }
   children: DepartmentTreeNode[]
 }
 

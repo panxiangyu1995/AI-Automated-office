@@ -268,23 +268,121 @@
 }
 ```
 
-### 1.6.3 工具入口
+### 1.6.3 工具入口（混合架构）
+
+工具层支持三种类型：**Native**、**CLI**、**MCP**
 
 ```json
 {
   "tools": {
-    "register": ["query", "aggregate", "mutate", "action", "export"],
-    "public": ["query", "aggregate"],
-    "descriptions": {
-      "query": "查询销售部数据（合同、订单、客户、报价单）",
-      "aggregate": "统计聚合销售数据，支持按销售/客户/时间分组",
-      "mutate": "创建、更新、删除销售数据",
-      "action": "执行销售业务操作",
-      "export": "导出销售报表（Excel/PDF）"
+    "native": {
+      "register": ["query", "aggregate", "mutate", "action", "export"],
+      "public": ["query", "aggregate"],
+      "descriptions": {
+        "query": "查询销售部数据（合同、订单、客户、报价单）",
+        "aggregate": "统计聚合销售数据，支持按销售/客户/时间分组",
+        "mutate": "创建、更新、删除销售数据",
+        "action": "执行销售业务操作",
+        "export": "导出销售报表（Excel/PDF）"
+      }
+    },
+    
+    "cli": {
+      "tools": [
+        {
+          "name": "image_process",
+          "command": "cli-anything-gimp",
+          "skillFile": "./skills/gimp-skill.md",
+          "description": "图像处理工具",
+          "timeout": 30000
+        }
+      ]
+    },
+    
+    "mcp": {
+      "services": ["xianyu-adapter", "dingtalk-adapter"]
     }
   }
 }
 ```
+
+### 1.6.4 CLI 工具配置
+
+```json
+{
+  "cli": {
+    "tools": [
+      {
+        "name": "image_process",
+        "command": "cli-anything-gimp",
+        "skillFile": "./skills/gimp-skill.md",
+        "description": "图像处理工具（模糊、锐化、裁剪等）",
+        "timeout": 30000,
+        "jsonOutput": true,
+        "envVars": ["GIMP_PATH"]
+      },
+      {
+        "name": "audio_process",
+        "command": "cli-anything-audacity",
+        "skillFile": "./skills/audacity-skill.md",
+        "description": "音频处理工具",
+        "timeout": 60000
+      }
+    ]
+  }
+}
+```
+
+| 字段 | 类型 | 必需 | 说明 |
+|------|------|:----:|------|
+| `name` | string | ✅ | 工具名称，用于 Agent 调用 |
+| `command` | string | ✅ | CLI 命令名称 |
+| `skillFile` | string | ✅ | SKILL.md 文件路径 |
+| `description` | string | ✅ | 工具描述 |
+| `timeout` | number | 否 | 超时时间（毫秒），默认 30000 |
+| `jsonOutput` | boolean | 否 | 是否强制 JSON 输出，默认 true |
+| `envVars` | string[] | 否 | 需要的环境变量 |
+
+### 1.6.5 MCP 服务配置
+
+```json
+{
+  "mcp": [
+    {
+      "id": "xianyu-adapter",
+      "name": "闲鱼平台接入",
+      "protocol": "mcp",
+      "version": "1.0.0",
+      "config": {
+        "endpoints": ["message", "order"],
+        "authType": "oauth2"
+      },
+      "envVars": ["XIANYU_APP_ID", "XIANYU_APP_SECRET"],
+      "tools": [
+        {
+          "name": "xianyu_send_message",
+          "description": "发送闲鱼消息"
+        },
+        {
+          "name": "xianyu_get_orders",
+          "description": "获取闲鱼订单列表"
+        }
+      ]
+    }
+  ]
+}
+```
+
+| 字段 | 类型 | 必需 | 说明 |
+|------|------|:----:|------|
+| `id` | string | ✅ | MCP 服务唯一标识 |
+| `name` | string | ✅ | 服务显示名称 |
+| `protocol` | string | ✅ | 协议类型，固定为 `mcp` |
+| `version` | string | ✅ | 服务版本 |
+| `config.endpoints` | string[] | 否 | 服务端点列表 |
+| `config.authType` | string | 否 | 认证类型：`oauth2` / `api_key` / `none` |
+| `envVars` | string[] | 否 | 需要的环境变量 |
+| `tools` | array | 否 | 暴露的工具列表 |
 
 ---
 
@@ -442,14 +540,22 @@
   },
   
   "tools": {
-    "register": ["query", "aggregate", "mutate", "action", "export"],
-    "public": ["query", "aggregate"],
-    "descriptions": {
-      "query": "查询销售部数据（合同、订单、客户、报价单）",
-      "aggregate": "统计聚合销售数据",
-      "mutate": "创建、更新、删除销售数据",
-      "action": "执行销售业务操作",
-      "export": "导出销售报表"
+    "native": {
+      "register": ["query", "aggregate", "mutate", "action", "export"],
+      "public": ["query", "aggregate"],
+      "descriptions": {
+        "query": "查询销售部数据（合同、订单、客户、报价单）",
+        "aggregate": "统计聚合销售数据",
+        "mutate": "创建、更新、删除销售数据",
+        "action": "执行销售业务操作",
+        "export": "导出销售报表"
+      }
+    },
+    "cli": {
+      "tools": []
+    },
+    "mcp": {
+      "services": []
     }
   },
   

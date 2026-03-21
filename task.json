@@ -428,7 +428,7 @@
                                            "Story 1.7",
                                            "Story 1.10"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  12,
@@ -1124,7 +1124,7 @@
                                            "E2-S2.3-02",
                                            "E2-S2.4-01"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  33,

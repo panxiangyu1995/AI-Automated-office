@@ -1,7 +1,7 @@
-# AI-Automated-office 插件开发规范 v1.0
+# AI-Automated-office 插件开发规范 v2.0
 
-> **版本：** 1.0.0  
-> **最后更新：** 2026-03-13  
+> **版本：** 2.0.0  
+> **最后更新：** 2026-03-21  
 > **状态：** 正式发布
 
 ---
@@ -14,6 +14,7 @@
 - **可扩展性**：支持渐进式功能增强
 - **可维护性**：清晰的架构边界和代码组织
 - **安全性**：最小权限原则和数据隔离
+- **高效性**：混合架构实现最优 Token 消耗
 
 ---
 
@@ -46,8 +47,15 @@
 ### 5. 渐进增强 (Progressive Enhancement)
 
 - MVP最小实现：manifest + 基础工具
-- 按需添加：UI、Skill、MCP
+- 按需添加：UI、Skill、MCP、CLI
 - 不强制实现所有层
+
+### 6. 混合架构 (Hybrid Architecture)
+
+- 根据场景选择最优实现方式
+- Native Tools 用于高频简单操作
+- CLI Wrapper 用于复杂工具链
+- MCP 用于外部服务集成
 
 ---
 
@@ -57,7 +65,7 @@
 |------|------|
 | [01-manifest-spec.md](./01-manifest-spec.md) | 插件清单规范 - plugin.json 定义 |
 | [02-ui-spec.md](./02-ui-spec.md) | UI层规范 - 路由、组件、样式 |
-| [03-tools-spec.md](./03-tools-spec.md) | 工具层规范 - Tools/Skills/MCP |
+| [03-tools-spec.md](./03-tools-spec.md) | 工具层规范 - **混合架构 (Native + CLI + MCP)** |
 | [04-data-spec.md](./04-data-spec.md) | 数据层规范 - 模型、迁移、同步 |
 | [05-business-spec.md](./05-business-spec.md) | 业务层规范 - 服务、事件、定时任务 |
 | [06-permission-spec.md](./06-permission-spec.md) | 权限层规范 - 角色、权限矩阵 |
@@ -81,7 +89,7 @@
 │  │  ├── 基本信息：id, name, version, author, description       │   │
 │  │  ├── 依赖声明：dependencies, peerDependencies               │   │
 │  │  ├── 权限声明：permissions, dataAccess                       │   │
-│  │  └── 入口声明：main, ui, tools, routes                       │   │
+│  │  └── 入口声明：main, ui, tools, routes, cli, mcp            │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
@@ -94,17 +102,19 @@
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                     3. 工具层 (Tools)                        │   │
-│  │  ├── Tools：原子操作（遵循通用工具架构 ADR-025）             │   │
+│  │                     3. 工具层 (Tools) - 混合架构             │   │
+│  │  ├── Native Tools：高频简单操作                             │   │
 │  │  │   ├── {plugin}_query                                     │   │
 │  │  │   ├── {plugin}_aggregate                                 │   │
 │  │  │   ├── {plugin}_mutate                                    │   │
 │  │  │   ├── {plugin}_action                                    │   │
 │  │  │   └── {plugin}_export                                    │   │
-│  │  ├── Skills：复杂技能封装                                   │   │
-│  │  │   └── 多步骤组合 + AI推理                                │   │
-│  │  └── MCP：外部服务接入                                      │   │
-│  │      └── 第三方API、数据库连接等                            │   │
+│  │  ├── CLI Wrappers：复杂工具链                               │   │
+│  │  │   └── 媒体处理、文档转换、批量操作                       │   │
+│  │  ├── MCP Adapters：外部服务接入                             │   │
+│  │  │   └── 闲鱼API、钉钉集成、企业微信                        │   │
+│  │  └── Skills：复杂技能封装                                   │   │
+│  │      └── 多步骤组合 + AI推理                                │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
@@ -135,6 +145,59 @@
 
 ---
 
+## 工具层混合架构
+
+工具层采用**三层混合架构**，根据操作特性选择最优实现：
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    工具层混合架构                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                   统一工具接口 (Unified Interface)            │   │
+│  │  - name, description, parameters                            │   │
+│  │  - handler: Native | CLI | MCP                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                               │                                     │
+│         ┌─────────────────────┼─────────────────────┐              │
+│         ▼                     ▼                     ▼              │
+│  ┌─────────────┐       ┌─────────────┐       ┌─────────────┐      │
+│  │ Native Tools│       │ CLI Wrapper │       │MCP Adapters │      │
+│  │  (高频/简单) │       │ (低频/复杂)  │       │ (外部服务)   │      │
+│  ├─────────────┤       ├─────────────┤       ├─────────────┤      │
+│  │ • 数据查询   │       │ • 媒体处理   │       │ • 闲鱼API   │      │
+│  │ • 数据变更   │       │ • 文档转换   │       │ • 钉钉集成   │      │
+│  │ • 业务操作   │       │ • 批量处理   │       │ • 企业微信   │      │
+│  │ • 权限验证   │       │ • 工具链组合 │       │ • 第三方服务 │      │
+│  └─────────────┘       └─────────────┘       └─────────────┘      │
+│                                                                     │
+│  Token 消耗：低          Token 消耗：极低        Token 消耗：中      │
+│  执行速度：快            执行速度：中            执行速度：取决于网络 │
+│  调试难度：低            调试难度：中            调试难度：中        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 选择决策矩阵
+
+| 操作类型 | 推荐方案 | 理由 |
+|---------|---------|------|
+| 数据查询 (query) | Native Tool | 高频、简单、需要类型安全 |
+| 数据变更 (mutate) | Native Tool | 需要事务、权限检查 |
+| 业务操作 (action) | Native Tool | 需要复杂验证和事件发布 |
+| 统计聚合 (aggregate) | Native Tool | 高频、需要实时响应 |
+| 数据导出 (export) | Native Tool | 需要权限控制和审计 |
+| 图像处理 | CLI Wrapper | 复杂工具链、低频、已有成熟 CLI |
+| 音频处理 | CLI Wrapper | 复杂工具链、低频 |
+| 视频处理 | CLI Wrapper | 复杂工具链、低频 |
+| 文档转换 | CLI Wrapper | 低频、复杂格式处理 |
+| 批量处理 | CLI Wrapper | 适合命令行批处理 |
+| 闲鱼 API | MCP Adapter | 外部服务、OAuth认证 |
+| 钉钉集成 | MCP Adapter | 外部服务、Webhook |
+
+---
+
 ## 目录结构规范
 
 ```
@@ -151,11 +214,13 @@ plugins/
 │   │
 │   ├── tools/                      # 工具层
 │   │   ├── index.ts                # 工具注册入口
-│   │   ├── query.ts                # {plugin}_query
-│   │   ├── aggregate.ts            # {plugin}_aggregate
-│   │   ├── mutate.ts               # {plugin}_mutate
-│   │   ├── action.ts               # {plugin}_action
-│   │   └── export.ts               # {plugin}_export
+│   │   ├── query.ts                # {plugin}_query (Native)
+│   │   ├── aggregate.ts            # {plugin}_aggregate (Native)
+│   │   ├── mutate.ts               # {plugin}_mutate (Native)
+│   │   ├── action.ts               # {plugin}_action (Native)
+│   │   ├── export.ts               # {plugin}_export (Native)
+│   │   └── cli/                    # CLI Wrappers (可选)
+│   │       └── image-process.ts
 │   │
 │   ├── skills/                     # Skills层（可选）
 │   │   └── index.ts                # Skill注册入口
@@ -205,6 +270,7 @@ import { defineTool } from '@office/plugin-sdk';
 
 export default defineTool({
   name: 'example_query',
+  type: 'native',
   description: '查询示例数据',
   parameters: { ... },
   handler: async (params) => { ... }
@@ -229,7 +295,7 @@ export default defineTool({
 |---------|------------|------|
 | 1.0.x | 1.0 | 初始版本 |
 | 1.1.x | 1.0-1.1 | 向后兼容 |
-| 2.0.x | 2.0 | 重大变更 |
+| 2.0.x | 2.0 | 重大变更 - 引入混合架构 |
 
 ---
 
@@ -239,6 +305,7 @@ export default defineTool({
 - [PRD文档](../planning-artifacts/prd.md)
 - [UX设计规范](../planning-artifacts/ux-design-specification.md)
 - [Epic文档](../planning-artifacts/epics.md)
+- [CLI-Anything 集成研究](../cli-anything/README.md)
 
 ---
 
@@ -246,4 +313,5 @@ export default defineTool({
 
 | 版本 | 日期 | 变更说明 |
 |------|------|---------|
+| 2.0.0 | 2026-03-21 | 引入混合架构 (Native + CLI + MCP)，优化 Token 消耗 |
 | 1.0.0 | 2026-03-13 | 初始版本发布 |

@@ -11,3 +11,4 @@ export { UserEditPage } from './UserEditPage'
  */
 
 export { OrganizationPage } from './OrganizationPage'
+export { OrgChartPage } from './OrgChartPage'

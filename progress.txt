@@ -1,5 +1,78 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-21] - Task: Org Chart View (epic-2-story-2-8-org-chart-ui)
+
+### 铁律合规检查：
+- PRD 合规：[FR106 - 组织架构图可视化]
+- 架构合规：[ADR-001 - React + TypeScript + Shadcn/ui + Zustand]
+- UX 合规：[UX-02, UX-03, UX-04 - 交互体验、组件使用、Lucide React 图标]
+- Epic 合规：Epic 2 / Story 2.8 组织架构图视图
+
+### What was done:
+
+**组件目录结构：**
+- `src/features/admin/components/OrgChart/index.ts` - 组件导出
+- `src/features/admin/components/OrgChart/types.ts` - 类型定义
+
+**类型定义：**
+- OrgChartLayout - 布局类型（tree/matrix）
+- OrgChartNodeData - 节点数据类型（位置、展开状态、员工数量、负责人）
+- OrgChartProps - 主组件属性
+- TreeLayoutConfig - 布局配置
+
+**OrgChartNode 组件：**
+- `src/features/admin/components/OrgChart/OrgChartNode.tsx`
+- 显示部门名称、编码
+- 显示部门负责人和员工数量
+- 支持展开/折叠按钮
+- 子节点数量指示器
+- 选中状态高亮
+
+**OrgChartTree 组件：**
+- `src/features/admin/components/OrgChart/OrgChartTree.tsx`
+- 贝塞尔曲线连接线渲染
+- 节点布局计算
+- 支持拖拽和缩放
+
+**OrgChartToolbar 组件：**
+- `src/features/admin/components/OrgChart/OrgChartToolbar.tsx`
+- 布局切换（树形/矩阵）
+- 缩放控制（放大/缩小/百分比显示）
+- 重置视图按钮
+- 部门搜索框
+
+**OrgChart 主组件：**
+- `src/features/admin/components/OrgChart/OrgChart.tsx`
+- 树形布局算法
+- 矩阵布局算法
+- 拖拽平移功能
+- 滚轮缩放功能
+- 搜索过滤功能
+- 展开/折叠管理
+
+**页面入口：**
+- `src/features/admin/pages/OrgChartPage.tsx` - 组织架构图页面
+- 集成 DepartmentDetail 侧边栏
+- 更新 `src/features/admin/pages/index.ts` 导出
+- 更新 `src/App.tsx` 添加路由 `/admin/org-chart`
+
+**类型更新：**
+- `src/features/admin/types/organization.types.ts` - DepartmentTreeNode 添加 employeeCount 和 manager 字段
+
+**组件更新：**
+- `src/features/admin/components/DepartmentDetail.tsx` - 添加 onClose 属性
+
+### Testing:
+- npm run build - 构建成功
+
+### Notes:
+- 支持树形和矩阵两种布局模式
+- 使用贝塞尔曲线绘制连接线
+- 支持拖拽平移和滚轮缩放
+- 大数据量性能优化：虚拟滚动待实现
+
+---
+
 ## [2026-03-21] - Task: Permission Gateway (epic-2-story-2-7-permission-gateway)
 
 ### 铁律合规检查：

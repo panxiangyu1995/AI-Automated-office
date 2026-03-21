@@ -52,24 +52,108 @@
       │
       ▼
 ┌─────────────┐
-│ 4. 数据迁移 │ ──▶ 执行数据库迁移脚本
+│ 4. CLI 检查 │ ──▶ 检查 CLI 工具依赖（如有）
 └─────────────┘
       │
       ▼
 ┌─────────────┐
-│ 5. 注册组件 │ ──▶ 注册路由、工具、事件等
+│ 5. MCP 配置 │ ──▶ 配置 MCP 服务连接（如有）
 └─────────────┘
       │
       ▼
 ┌─────────────┐
-│ 6. 初始化   │ ──▶ 执行插件初始化钩子
+│ 6. 数据迁移 │ ──▶ 执行数据库迁移脚本
+└─────────────┘
+      │
+      ▼
+┌─────────────┐
+│ 7. 注册组件 │ ──▶ 注册路由、工具、事件等
+└─────────────┘
+      │
+      ▼
+┌─────────────┐
+│ 8. 初始化   │ ──▶ 执行插件初始化钩子
 └─────────────┘
       │
       ▼
    安装完成
 ```
 
-### 7.2.2 安装钩子
+### 7.2.2 CLI 工具安装检查
+
+当插件声明了 CLI 工具时，安装流程会检查 CLI 工具是否可用：
+
+```typescript
+// CLI 工具安装检查
+async function checkCLIDependencies(plugin: Plugin): Promise<CLICheckResult> {
+  const cliTools = plugin.manifest.cli?.tools || [];
+  const results: CLIToolStatus[] = [];
+  
+  for (const tool of cliTools) {
+    const status = await checkCLITool(tool);
+    results.push(status);
+  }
+  
+  return {
+    allAvailable: results.every(r => r.available),
+    tools: results
+  };
+}
+
+async function checkCLITool(tool: CLIToolConfig): Promise<CLIToolStatus> {
+  try {
+    // 检查命令是否存在
+    const result = await exec(`${tool.command} --version`);
+    return {
+      name: tool.name,
+      command: tool.command,
+      available: true,
+      version: result.stdout.trim(),
+      skillFile: tool.skillFile
+    };
+  } catch (error) {
+    return {
+      name: tool.name,
+      command: tool.command,
+      available: false,
+      installHint: getInstallHint(tool.command)
+    };
+  }
+}
+```
+
+### 7.2.3 MCP 服务配置
+
+当插件声明了 MCP 服务时，需要配置连接：
+
+```typescript
+// MCP 服务配置
+async function configureMCServices(plugin: Plugin, context: InstallContext): Promise<void> {
+  const mcpServices = plugin.manifest.mcp || [];
+  
+  for (const service of mcpServices) {
+    // 检查环境变量
+    const missingEnvVars = service.envVars?.filter(v => !process.env[v]);
+    
+    if (missingEnvVars && missingEnvVars.length > 0) {
+      // 提示用户配置环境变量
+      await context.promptEnvVars({
+        serviceId: service.id,
+        serviceName: service.name,
+        requiredVars: missingEnvVars,
+        authType: service.config?.authType
+      });
+    }
+    
+    // 测试连接
+    if (service.config?.authType === 'oauth2') {
+      await context.initiateOAuth(service);
+    }
+  }
+}
+```
+
+### 7.2.4 安装钩子
 
 ```typescript
 // 插件可以定义安装时执行的逻辑
@@ -372,14 +456,68 @@ async update(plugin: Plugin, newVersion: string): Promise<void> {
       │
       ▼
 ┌─────────────┐
-│ 4. 数据处理 │ ──▶ 根据用户选择处理数据
+│ 4. CLI 清理 │ ──▶ 清理 CLI 工具相关资源
+└─────────────┘
+      │
+      ▼
+┌─────────────┐
+│ 5. MCP 断开 │ ──▶ 断开 MCP 服务连接
+└─────────────┘
+      │
+      ▼
+┌─────────────┐
+│ 6. 数据处理 │ ──▶ 根据用户选择处理数据
 └─────────────┘
       │
       ▼
    卸载完成
 ```
 
-### 7.5.2 卸载钩子
+### 7.5.2 CLI 清理
+
+```typescript
+// CLI 工具清理
+async function cleanupCLITools(plugin: Plugin, context: UninstallContext): Promise<void> {
+  const cliTools = plugin.manifest.cli?.tools || [];
+  
+  for (const tool of cliTools) {
+    // 清理缓存文件
+    await context.clearCache(`cli:${tool.name}`);
+    
+    // 清理临时文件
+    await context.clearTempFiles(`cli-${tool.name}`);
+    
+    // 可选：清理 skill 文件
+    if (context.options.removeSkillFiles) {
+      await context.removeFile(tool.skillFile);
+    }
+  }
+}
+```
+
+### 7.5.3 MCP 断开
+
+```typescript
+// MCP 服务断开
+async function disconnectMCPServices(plugin: Plugin, context: UninstallContext): Promise<void> {
+  const mcpServices = plugin.manifest.mcp || [];
+  
+  for (const service of mcpServices) {
+    // 断开连接
+    await context.mcpManager.disconnect(service.id);
+    
+    // 撤销 OAuth 令牌（如果需要）
+    if (context.options.revokeOAuth) {
+      await context.oauthManager.revoke(service.id);
+    }
+    
+    // 清理存储的凭据
+    await context.clearCredentials(service.id);
+  }
+}
+```
+
+### 7.5.4 卸载钩子
 
 ```typescript
 export const uninstallHooks = {

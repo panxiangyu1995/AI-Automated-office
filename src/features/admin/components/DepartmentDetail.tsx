@@ -5,7 +5,7 @@
  * @description 展示选中部门的基本信息和下属岗位
  */
 
-import { Pencil, Trash2, Briefcase, Plus } from 'lucide-react'
+import { Pencil, Trash2, Briefcase, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DepartmentDetail } from '../types/organization.types'
 
@@ -14,6 +14,7 @@ interface DepartmentDetailProps {
   onEdit: () => void
   onDelete: () => void
   onCreatePosition: () => void
+  onClose?: () => void
 }
 
 export function DepartmentDetail({
@@ -21,6 +22,7 @@ export function DepartmentDetail({
   onEdit,
   onDelete,
   onCreatePosition,
+  onClose,
 }: DepartmentDetailProps) {
   if (!department) {
     return (
@@ -45,7 +47,7 @@ export function DepartmentDetail({
             )}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -64,6 +66,16 @@ export function DepartmentDetail({
             <Trash2 className="h-4 w-4" />
             删除
           </Button>
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-9 w-9 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
