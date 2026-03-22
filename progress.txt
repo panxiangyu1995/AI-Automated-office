@@ -1,3 +1,40 @@
+## [2026-03-23] - Task: Interrupt Retry and Checkpoint Recovery (Story 43.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-01, PRD-P2-02 - Interrupt and Recovery
+- 架构合规：ADR-001, ADR-037 - 分层架构，运行时中断与恢复
+- UX 合规：UX-01, UX-04 - 中断恢复支持
+
+### What was done:
+- 创建 interruptHandler.ts - 运行时中断处理器
+  - 4 种中断类型：pause, stop, abort, timeout
+  - 中断状态管理：none, pending, processing, completed, cancelled
+  - 步骤检查点创建和管理
+  - 4 种恢复策略：restart, checkpoint, step_start, skip
+  - 恢复历史记录
+  
+- 创建 interruptHostContext.tsx - React 中断上下文
+  - InterruptProvider 组件
+  - useInterruptContext/useInterruptStatus/useCurrentInterrupt hooks
+  - useInterruptControl/useCheckpoints/useRecovery hooks
+  - useStepManagement/useIsInterrupted/useInterruptState hooks
+  
+- 创建 InMemoryCheckpointStorage - 内存检查点存储
+- 创建 InMemoryRecoveryHistoryStorage - 内存恢复历史存储
+
+### Testing:
+- 44 个单元测试覆盖中断处理、检查点管理、恢复功能
+- TypeScript check passed
+- Build succeeded
+- All 97 streaming tests pass
+
+### Notes:
+- 依赖 Story 43.1 (Session Lifecycle Management) 和 Story 43.3 (Streaming Output)
+- 为运行时中断和恢复提供完整支持
+- 支持检查点回放和步骤级恢复
+
+---
+
 ## [2026-03-23] - Task: Streaming Output and Status Sync (Story 43.3)
 
 ### 铁律合规检查：
