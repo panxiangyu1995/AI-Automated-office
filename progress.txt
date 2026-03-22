@@ -1359,3 +1359,33 @@
 
 ### Notes:
 - Story 39.2 的 `task.json` 变更名与当前 openspec 目录命名存在差异（markdown vs structured-document-table），本次实现覆盖 markdown 编辑 + 结构化表格编辑两侧能力，并同步按 Story 39.2 完成验收。
+
+## [2026-03-22] - Task: Builtin JSON Editor (Epic 39, Story 39.3)
+
+### 铁律合规检查：
+- PRD 合规：[FR1182]
+- 架构合规：[遵循 ADR-035，在 editor host 下新增 JSON 编辑能力，并复用统一保存状态与生命周期契约]
+- UX 合规：[保持四栏工作区结构，使用 Shadcn/ui + Lucide，提供透明可控的校验/格式化反馈]
+- Epic 合规：[Epic 39, Story 39.3]
+
+### What was done:
+- 新增 JSON 编辑页面 `BuiltinJsonEditorPage`：
+  - JSON 内容编辑、实时校验（Valid/Invalid）
+  - `Format JSON` 自动格式化
+  - 只读/可编辑切换、脏状态检测、关闭确认
+  - 解析侧栏（顶层 key 摘要）
+- 扩展本地存储契约，新增 json 文档 load/save/index 能力，与 text/markdown 共享统一存储模式。
+- 更新编辑器分派：`/editor/:docId` 根据扩展名支持 `.json` / `.md` / 纯文本。
+- 面向模板/配置工作流：当文件名命中 template/config 语义时显示 workflow 提示面板。
+- 新增集成测试 `tests/integration/builtin-json-editor.test.tsx`。
+- 新增浏览器烟测 `tests/e2e/smoke/builtin-json-editor.spec.ts`。
+- 更新 OpenSpec Story 39.3 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/builtin-json-editor.test.tsx` 通过（2/2）。
+- `npx playwright test tests/e2e/smoke/builtin-json-editor.spec.ts --project=smoke` 通过（1/1）。
+
+### Notes:
+- Story 39.3 在 task.json 与 openspec 命名上存在“JSON 编辑器 / host integration”语义差异；本次实现同时覆盖 JSON 编辑能力与 host 内扩展名实例切换行为。

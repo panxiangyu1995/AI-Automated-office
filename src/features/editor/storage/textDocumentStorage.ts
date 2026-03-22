@@ -2,6 +2,8 @@ const TEXT_STORAGE_PREFIX = 'editor:text:'
 const TEXT_STORAGE_INDEX_KEY = 'editor:text:index'
 const MARKDOWN_STORAGE_PREFIX = 'editor:markdown:'
 const MARKDOWN_STORAGE_INDEX_KEY = 'editor:markdown:index'
+const JSON_STORAGE_PREFIX = 'editor:json:'
+const JSON_STORAGE_INDEX_KEY = 'editor:json:index'
 
 export interface TextDocumentSnapshot {
   id: string
@@ -104,4 +106,16 @@ export function saveMarkdownDocument(id: string, content: string): TextDocumentS
 
 export function listMarkdownDocuments(): TextDocumentSnapshot[] {
   return readIndex(MARKDOWN_STORAGE_INDEX_KEY).map((id) => loadMarkdownDocument(id))
+}
+
+export function loadJsonDocument(id: string): TextDocumentSnapshot {
+  return loadDocument(JSON_STORAGE_PREFIX, id)
+}
+
+export function saveJsonDocument(id: string, content: string): TextDocumentSnapshot {
+  return saveDocument(JSON_STORAGE_PREFIX, JSON_STORAGE_INDEX_KEY, id, content)
+}
+
+export function listJsonDocuments(): TextDocumentSnapshot[] {
+  return readIndex(JSON_STORAGE_INDEX_KEY).map((id) => loadJsonDocument(id))
 }

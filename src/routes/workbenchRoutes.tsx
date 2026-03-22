@@ -10,7 +10,7 @@ import {
 } from '@/features/admin/pages'
 import { PermissionCenter, FineGrainedPermissionPage } from '@/features/permission'
 import { AuditPage } from '@/features/audit'
-import { BuiltinMarkdownEditorPage, BuiltinTextEditorPage } from '@/features/editor/pages'
+import { BuiltinJsonEditorPage, BuiltinMarkdownEditorPage, BuiltinTextEditorPage } from '@/features/editor/pages'
 
 export const workbenchRoutes: WorkbenchRouteDefinition[] = [
   {
@@ -106,6 +106,9 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
       mode: 'editor',
       render: () => {
         const docId = decodeURIComponent(context.params.docId ?? '')
+        if (/\.json$/i.test(docId)) {
+          return <BuiltinJsonEditorPage context={context} />
+        }
         if (/\.md$/i.test(docId)) {
           return <BuiltinMarkdownEditorPage context={context} />
         }
