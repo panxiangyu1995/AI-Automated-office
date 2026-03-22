@@ -81,7 +81,7 @@
                                            "Story 41.1",
                                            "Story 41.4"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  61,
@@ -115,7 +115,7 @@
                       "dependencies":  [
                                            "Story 43.1"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  62,
@@ -149,7 +149,7 @@
                       "dependencies":  [
                                            "Story 43.2"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  63,
@@ -184,7 +184,7 @@
                                            "Story 43.1",
                                            "Story 43.3"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  64,
@@ -218,7 +218,7 @@
                                            "Story 43.1",
                                            "Story 43.2"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  65,
@@ -251,7 +251,7 @@
                       "dependencies":  [
                                            "Story 44.1"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  66,
