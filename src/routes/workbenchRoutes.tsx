@@ -11,6 +11,59 @@ import {
 import { PermissionCenter, FineGrainedPermissionPage } from '@/features/permission'
 import { AuditPage } from '@/features/audit'
 import { BuiltinJsonEditorPage, BuiltinMarkdownEditorPage, BuiltinTextEditorPage } from '@/features/editor/pages'
+import { EditorRegistry, type EditorDescriptor } from '@/features/editor/registry/editorRegistry'
+import type { WorkbenchPageContext } from '@/components/common'
+
+const fallbackEditorDescriptor: EditorDescriptor = {
+  id: 'builtin-text-editor',
+  label: 'Text Editor',
+  priority: 0,
+  matches: () => true,
+  render: (context) => <BuiltinTextEditorPage context={context} />,
+}
+
+const coreEditorRegistry = new EditorRegistry(fallbackEditorDescriptor)
+
+let hasRegisteredCoreEditors = false
+
+function registerCoreEditors() {
+  if (hasRegisteredCoreEditors) {
+    return
+  }
+
+  coreEditorRegistry.register({
+    id: 'builtin-json-editor',
+    label: 'JSON Editor',
+    priority: 300,
+    matches: (resourceId) => /\.json$/i.test(resourceId),
+    render: (context) => <BuiltinJsonEditorPage context={context} />,
+  })
+
+  coreEditorRegistry.register({
+    id: 'builtin-markdown-editor',
+    label: 'Markdown Editor',
+    priority: 200,
+    matches: (resourceId) => /\.md$/i.test(resourceId),
+    render: (context) => <BuiltinMarkdownEditorPage context={context} />,
+  })
+
+  coreEditorRegistry.register({
+    id: 'builtin-text-editor',
+    label: 'Text Editor',
+    priority: 100,
+    matches: () => true,
+    render: (context) => <BuiltinTextEditorPage context={context} />,
+  })
+
+  hasRegisteredCoreEditors = true
+}
+
+registerCoreEditors()
+
+function resolveEditorDescriptor(context: WorkbenchPageContext): EditorDescriptor {
+  const docId = decodeURIComponent(context.params.docId ?? '')
+  return coreEditorRegistry.resolve(docId)
+}
 
 export const workbenchRoutes: WorkbenchRouteDefinition[] = [
   {
@@ -100,21 +153,15 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     title: 'Text Editor',
     resource: 'editor/text',
     mode: 'editor',
-    resolveDescriptor: (context) => ({
-      id: `builtin-text-editor:${context.params.docId ?? 'untitled'}`,
-      title: `Text Editor · ${context.params.docId ?? 'untitled.txt'}`,
-      mode: 'editor',
-      render: () => {
-        const docId = decodeURIComponent(context.params.docId ?? '')
-        if (/\.json$/i.test(docId)) {
-          return <BuiltinJsonEditorPage context={context} />
-        }
-        if (/\.md$/i.test(docId)) {
-          return <BuiltinMarkdownEditorPage context={context} />
-        }
-        return <BuiltinTextEditorPage context={context} />
-      },
-    }),
+    resolveDescriptor: (context) => {
+      const resolvedEditor = resolveEditorDescriptor(context)
+      return {
+        id: `${resolvedEditor.id}:${context.params.docId ?? 'untitled'}`,
+        title: `${resolvedEditor.label} · ${context.params.docId ?? 'untitled.txt'}`,
+        mode: 'editor',
+        render: () => resolvedEditor.render(context),
+      }
+    },
   },
 ]
 

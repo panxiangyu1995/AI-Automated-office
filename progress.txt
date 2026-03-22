@@ -1389,3 +1389,34 @@
 
 ### Notes:
 - Story 39.3 在 task.json 与 openspec 命名上存在“JSON 编辑器 / host integration”语义差异；本次实现同时覆盖 JSON 编辑能力与 host 内扩展名实例切换行为。
+
+## [2026-03-22] - Task: Editor Registry and Resolver (Epic 40, Story 40.1)
+
+### 铁律合规检查：
+- PRD 合规：[FR1217]
+- 架构合规：[遵循 ADR-035，新增 EditorDescriptor 合约、EditorRegistry 注册与解析机制，提供 fallback 与冲突优先级规则]
+- UX 合规：[保持统一 editor host 的路由体验，类型分派对用户透明，保存状态与交互行为一致]
+- Epic 合规：[Epic 40, Story 40.1]
+
+### What was done:
+- 新增 `EditorRegistry` 模块：
+  - `EditorDescriptor` 合约定义
+  - 注册机制（按 id 可替换重注册）
+  - 资源到编辑器解析（matcher + priority）
+  - fallback 规则与冲突规则（优先级 > 注册顺序）
+- 将 `/editor/:docId` 路由解析迁移为 registry 驱动：
+  - `.json` -> JSON 编辑器
+  - `.md` -> Markdown 编辑器
+  - 其他 -> Text 编辑器 fallback
+- 新增注册表解析测试 `tests/integration/editor-registry-resolver.test.tsx`。
+- 回归验证 JSON 编辑器路由烟测确保 resolver 在浏览器路径生效。
+- 更新 OpenSpec Story 40.1 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/editor-registry-resolver.test.tsx tests/integration/builtin-json-editor.test.tsx` 通过（5/5）。
+- `npx playwright test tests/e2e/smoke/builtin-json-editor.spec.ts --project=smoke` 通过（1/1）。
+
+### Notes:
+- 当前 registry 先服务 core editors；后续 Story 可通过 `register()` 暴露插件编辑器接入点。
