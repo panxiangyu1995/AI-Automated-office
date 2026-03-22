@@ -80,3 +80,29 @@ export {
   isRetryableError,
   isRecoverableError,
 } from './toolExecutor'
+
+// Adapters
+export type {
+  ToolSource,
+  CoreToolDefinition,
+  PluginToolDefinition,
+  MCPToolDefinition,
+  MCPInputSchema,
+  MCPPropertySchema,
+  NormalizedToolResult,
+  ToolAdapter,
+  MCPToolExecutor,
+} from './toolAdapters'
+
+export {
+  CoreToolAdapter,
+  PluginToolAdapter,
+  MCPToolAdapter,
+  UnifiedToolManager,
+  createUnifiedToolManager,
+  getToolSource,
+  parsePluginToolId,
+  parseMCPToolId,
+  createPluginToolId,
+  createMCPToolId,
+} from './toolAdapters'

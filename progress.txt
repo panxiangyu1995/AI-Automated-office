@@ -1,3 +1,56 @@
+## [2026-03-23] - Task: Unified Core Plugin and MCP Tool Adapters (Story 45.3)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - Unified Core Plugin and MCP Tool Adapters
+- 架构合规：ADR-018, ADR-037 - 工具适配器
+- UX 合规：UX-01, UX-04 - 工具源统一
+
+### What was done:
+- 创建 toolAdapters.ts - 工具适配器模块
+  - CoreToolAdapter: 核心工具适配器
+  - PluginToolAdapter: 插件工具适配器（plugin_pluginId_toolId 格式）
+  - MCPToolAdapter: MCP 工具适配器（mcp_serverId_toolName 格式）
+  - UnifiedToolManager: 统一工具管理器
+
+- 类型定义：
+  - ToolSource: 工具源类型（core, plugin, mcp, builtin）
+  - CoreToolDefinition: 核心工具定义
+  - PluginToolDefinition: 插件工具定义
+  - MCPToolDefinition: MCP 工具定义
+  - MCPInputSchema/MCPPropertySchema: MCP 输入 schema
+  - NormalizedToolResult: 归一化工具结果
+  - ToolAdapter: 工具适配器接口
+  - MCPToolExecutor: MCP 执行器接口
+
+- 功能实现：
+  - MCP schema 转换为工具参数
+  - 插件和 MCP 工具 ID 前缀规范化
+  - 跨工具源的一致输出格式
+  - 执行器解析和代理
+
+- 辅助函数：
+  - createUnifiedToolManager: 创建统一工具管理器
+  - getToolSource: 获取工具源类型
+  - parsePluginToolId/parseMCPToolId: 解析工具 ID
+  - createPluginToolId/createMCPToolId: 创建工具 ID
+
+- 更新 index.ts - 导出新模块
+
+- 创建 toolAdapters.test.ts - 35 个单元测试
+
+### Testing:
+- 122 个单元测试通过
+- TypeScript check passed
+- All 661 unit tests passed
+
+### Notes:
+- 依赖 Story 45.1 (Tool Descriptor and Registry) 已完成
+- 依赖 Story 45.2 (Tool Executor and Validation) 已完成
+- 支持从多种工具源注册和执行工具
+- 提供一致的错误处理和结果归一化
+
+---
+
 ## [2026-03-23] - Task: Tool Executor and Validation (Story 45.2)
 
 ### 铁律合规检查：
