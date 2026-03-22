@@ -1137,6 +1137,8 @@ VSCode 的布局结构：
 <!-- UX design content will be appended sequentially through collaborative workflow steps -->
 ## 固定 UI / 混合 UI / 动态 UI 边界补充说明
 
+> **详细矩阵参考：** [ui-module-matrix-2026-03-22.md](./ui-module-matrix-2026-03-22.md) — 包含完整清单、部门维度矩阵、判断标准及迁移建议。
+
 为了支撑通用 Agent 覆盖所有业务功能，同时保持系统的一致性与可控性，界面必须遵循以下边界：
 
 | 类型 | 适用范围 | 说明 |

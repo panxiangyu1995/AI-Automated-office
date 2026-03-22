@@ -1,5 +1,46 @@
 # Progress Log - AI-Automated-office
 
+## [2026-03-23] - Task: Dashboard Content Card Composition (epic-42-story-42-5)
+
+### 铁律合规检查：
+- PRD 合规：[FR1226 - Dashboard 卡片组件]
+- 架构合规：[Schema-driven dynamic UI rendering, permission context, visibility expressions]
+- UX 合规：[Card block types: chart, todo, quick-entry, metric, container, divider]
+- Epic 合规：Epic 42 / Story 42.5 Dashboard Content Card Composition
+
+### What was done:
+
+**Schema 定义：**
+- `src/features/cards/runtime/cardLayoutSchema.ts`
+  - Types: CardBlockType, ChartCardBlock, TodoCardBlock, QuickEntryBlock, MetricCardBlock, ContainerBlock, DividerBlock, CardLayoutSchema
+  - Functions: resolveCardBlockPermission, evaluateCardVisibility, buildCardLayoutRuntimeContract, validateCardLayoutSchema, createDefaultCardLayoutSchema
+
+**渲染器实现：**
+- `src/features/cards/runtime/CardLayoutRenderer.tsx`
+  - CardLayoutRenderer 主组件
+  - ChartCard, TodoCard, QuickEntryCard, MetricCard, ContainerCard 子渲染器
+
+**状态管理：**
+- `src/features/cards/runtime/cardLayoutStore.ts`
+  - In-memory store for card layouts
+  - Functions: cardLayoutStore, resolveCardLayout, loadCardLayout, saveCardLayout, applyCardLayoutSettings
+
+**单元测试：**
+- `tests/unit/features/cards/cardLayout.test.ts`
+  - 25 tests covering schema validation, permissions, visibility, runtime contracts
+
+### Testing:
+- TypeScript check passed
+- ESLint passed
+- 25 unit tests passed
+- Build succeeded
+
+### Notes:
+- Card block types support: chart, todo, quick-entry, metric, container, divider
+- Permission context: canView, canEdit
+- Visibility expressions with path evaluation
+- Default schema includes chart, todo, quick-entry sections
+
 ## [2026-03-21] - Task: Import and Export UI (epic-2-story-2-9-import-export-ui)
 
 ### 铁律合规检查：

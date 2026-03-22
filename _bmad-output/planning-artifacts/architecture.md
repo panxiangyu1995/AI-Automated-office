@@ -6198,6 +6198,8 @@ ws_endpoint = "wss://ws.example.com"
 
 ## UI 分层与模块矩阵
 
+> **参考文档：** [ui-module-matrix-2026-03-22.md](./ui-module-matrix-2026-03-22.md) — 详细定义了固定 UI / 混合 UI / 动态 UI 的完整清单、部门维度矩阵及迁移建议。
+
 ### 分层策略
 
 系统前端采用三层划分：
