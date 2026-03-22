@@ -142,3 +142,24 @@ export {
   isFailureEnvelope,
   isPartialEnvelope,
 } from './toolResultNormalization'
+
+// Permission Precheck
+export type {
+  PermissionType,
+  PermissionResource,
+  PermissionScope,
+  Permission,
+  PermissionCheckResult,
+  PermissionDecisionEvent,
+  PermissionResolverConfig,
+  PermissionStreamListener,
+} from './toolPermissionPrecheck'
+
+export {
+  PermissionPrecheck,
+  createPermissionPrecheck,
+  checkToolPermission,
+  formatPermissionResult,
+  isPermissionDenied,
+  extractPermissionRequirements,
+} from './toolPermissionPrecheck'

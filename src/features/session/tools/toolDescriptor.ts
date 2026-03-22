@@ -83,7 +83,7 @@ export interface ToolCapabilities {
  * Tool permission requirement
  */
 export interface ToolPermissionRequirement {
-  type: 'read' | 'write' | 'execute' | 'admin'
+  type: 'read' | 'write' | 'execute' | 'admin' | 'sensitive' | 'delete' | 'external' | 'file' | 'network' | 'system'
   resource: string
   description: string
   optional?: boolean

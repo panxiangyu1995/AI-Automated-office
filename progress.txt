@@ -1,4 +1,47 @@
-## 2026-03-23 - Task 71: Tool Result Normalization (Story 45.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02, PRD-P2-03 - Tool Permission Precheck
+- 架构合规：ADR-002, ADR-037 - 权限预检查
+- UX 合规：UX-01, UX-02, UX-04 - 权限决策透明性
+
+### What was done:
+- 创建 toolPermissionPrecheck.ts - 工具权限预检查模块
+  - PermissionPrecheck: 核心预检查类
+  - PermissionType: 权限类型（execute, read, write, delete, admin 等）
+  - PermissionCheckResult: 权限检查结果
+  - PermissionDecisionEvent: 权限决策事件（用于运行时流）
+
+- 功能实现：
+  - 从工具描述符解析所需权限
+  - 检查用户、部门、租户权限
+  - 阻止未授权的工具调用
+  - 发布权限决策到运行时流
+  - 权限缓存机制（可配置 TTL）
+  - 通配符权限支持（execute:*, admin:*）
+
+- 辅助函数：
+  - createPermissionPrecheck: 创建预检查实例
+  - checkToolPermission: 快速权限检查
+  - formatPermissionResult: 格式化结果
+  - extractPermissionRequirements: 提取权限需求
+
+- 更新 toolDescriptor.ts - 扩展权限类型
+- 更新 index.ts - 导出新模块
+
+- 创建 toolPermissionPrecheck.test.ts - 38 个单元测试
+
+### Testing:
+- 200 个工具模块单元测试通过
+- TypeScript check passed
+
+### Notes:
+- 依赖 Story 45.1 (Tool Descriptor) 和 Story 45.2 (Tool Executor) 已完成
+- 工具无显式权限定义时默认允许访问（安全默认可选）
+- 支持审计流监听器用于权限决策日志
+
+---
+
+## [2026-03-23] - Task: Tool Result Normalization (Story 45.4)
 
 ### 铁律合规检查：
 - PRD 合规：PRD-P2-02 - Tool Result Normalization
