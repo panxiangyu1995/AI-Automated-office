@@ -203,7 +203,7 @@
             "dependencies": [
                 "Story 40.2"
             ],
-            "passes": false
+            "passes": true
         },
         {
             "id": 53,

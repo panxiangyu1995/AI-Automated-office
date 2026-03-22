@@ -76,7 +76,7 @@ describe('Schema renderer foundation', () => {
       documentId: 'doc-debug',
       nodeCount: 2,
       renderedNodeIds: ['stack-debug', 'text-debug'],
+      validationErrors: [],
     })
   })
 })
-

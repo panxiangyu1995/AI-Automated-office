@@ -1450,3 +1450,31 @@
 
 ### Notes:
 - 当前为 renderer foundation，后续 Story 40.3/40.4 可在此基础继续扩展 binding、条件渲染和权限安全边界。
+
+## [2026-03-23] - Task: Data Binding and Conditional Rendering (Epic 40, Story 40.3)
+
+### 铁律合规检查：
+- PRD 合规：[FR1219]
+- 架构合规：[在 ADR-036 基线 renderer 上扩展 runtime data binding、条件表达式、repeat 列表渲染与权限上下文过滤]
+- UX 合规：[动态内容渲染保持可解释行为，条件隐藏与权限过滤结果一致可预测]
+- Epic 合规：[Epic 40, Story 40.3]
+
+### What was done:
+- 扩展 `SchemaRenderer`：
+  - `bind` 路径绑定（点路径读取 runtimeData）
+  - `visibleWhen` 条件显示（支持 `path` 与 `!path`）
+  - `repeat` 列表渲染（数组迭代节点）
+  - `requiredPermission` 权限上下文渲染控制（view/edit）
+- 新增 binding 预校验并通过 debug metadata 暴露 `validationErrors`。
+- 维护 whitelist、fallback、error boundary 与 debug metadata 兼容。
+- 新增测试 `tests/integration/schema-renderer-data-binding.test.tsx` 覆盖 binding/conditional/repeat/permission/validation。
+- 同步更新 foundation 测试断言以覆盖新增 debug 字段。
+- 更新 OpenSpec Story 40.3 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx tests/integration/schema-renderer-data-binding.test.tsx` 通过（7/7）。
+
+### Notes:
+- 当前表达式能力为轻量路径判断，后续可在 Story 40.4/40.5 按安全边界扩展更严格表达式语法。
