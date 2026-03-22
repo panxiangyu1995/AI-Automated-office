@@ -1262,4 +1262,24 @@
 - npm.cmd run build: pass
 
 ### Notes:
-- 当前应用路由已切换到统一 workbench route objects，后续 Story 41.3/41.4 可继续在此基础上扩展资源入口与上下文契约
+- 当前应用路由已切换到统一 workbench route objects，后续 Story 41.3/41.4 可继续在此基础上扩展资源入口与上下文契约## [2026-03-22] - Task: Sidebar Resource Entry Model
+
+### 铁律合规检查：
+- PRD 合规: [FR1215]
+- 架构合规: 对齐 ADR-001、ADR-035，为 Sidebar 增加统一资源入口模型与最近访问登记
+- UX 合规: 保持四栏布局与侧栏层级结构，新增动态资源/编辑器/最近打开三个分区
+- Epic 合规: Epic 41, Story 41.3
+
+### What was done:
+- 重构 uiStore，新增动态资源、编辑器入口、最近打开项的数据模型与操作方法
+- 重构 Sidebar，保留固定导航，同时支持 dynamic/editor/recent 三类入口渲染
+- 在 RouteContainer 中自动登记最近打开资源，确保统一通过 host protocol 打开资源
+- 新增 sidebar-resource-entry 集成测试，覆盖固定导航、资源区渲染和统一打开协议
+
+### Testing:
+- npx.cmd vitest run --config vitest.config.ts tests/integration/sidebar-resource-entry.test.tsx tests/integration/route-container.test.tsx: pass
+- npm.cmd run lint: pass
+- npm.cmd run build: pass
+
+### Notes:
+- 当前 dynamic/editor 入口模型已可被后续 Story 39/40/41.4 复用，真实条目来源将在后续编辑器注册与资源解析阶段接入

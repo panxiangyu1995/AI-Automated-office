@@ -1,39 +1,46 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
-// 活动栏项目类型
-export type ActivityBarItem = 
-  | 'dashboard' 
-  | 'hr' 
-  | 'finance' 
-  | 'sales' 
-  | 'approval' 
-  | 'service' 
-  | 'warehouse' 
+export type ActivityBarItem =
+  | 'dashboard'
+  | 'hr'
+  | 'finance'
+  | 'sales'
+  | 'approval'
+  | 'service'
+  | 'warehouse'
   | 'knowledge'
   | 'settings'
 
+export type SidebarOpenMode = 'static' | 'dynamic' | 'editor'
+
+export interface SidebarOpenTarget {
+  path: string
+  mode: SidebarOpenMode
+  activityItem?: ActivityBarItem
+}
+
+export interface SidebarResourceEntry {
+  id: string
+  label: string
+  description?: string
+  kind: 'dynamic' | 'editor' | 'recent'
+  target: SidebarOpenTarget
+}
+
 interface UIState {
-  // 侧边栏状态
   sidebarWidth: number
   sidebarCollapsed: boolean
-  
-  // AI 对话面板状态
   chatPanelWidth: number
   chatPanelCollapsed: boolean
-
   quickSearchOpen: boolean
-  
-  // 活动栏状态
   activeActivityItem: ActivityBarItem
-
   topBarVisible: boolean
-
-  // 底部面板状态
   bottomPanelHeight: number
   bottomPanelCollapsed: boolean
-  
-  // 操作方法
+  dynamicSidebarEntries: SidebarResourceEntry[]
+  editorSidebarEntries: SidebarResourceEntry[]
+  recentSidebarEntries: SidebarResourceEntry[]
   setSidebarWidth: (width: number) => void
   setChatPanelWidth: (width: number) => void
   setBottomPanelHeight: (height: number) => void
@@ -46,6 +53,10 @@ interface UIState {
   closeQuickSearch: () => void
   toggleQuickSearch: () => void
   setActiveActivityItem: (item: ActivityBarItem) => void
+  setDynamicSidebarEntries: (entries: SidebarResourceEntry[]) => void
+  setEditorSidebarEntries: (entries: SidebarResourceEntry[]) => void
+  registerRecentSidebarEntry: (entry: SidebarResourceEntry) => void
+  clearRecentSidebarEntries: () => void
 }
 
 type PersistedUIState = Pick<
@@ -98,43 +109,36 @@ const createDebouncedStorage = (storage: Storage, delay: number) => {
 export const useUIStore = create<UIState>()(
   persist<UIState, [], [], PersistedUIState>(
     (set, get) => ({
-      // 默认值 - 对齐 pencil-new.pen 设计
       ...defaultLayout,
       quickSearchOpen: false,
       activeActivityItem: 'dashboard',
-      
-      // 操作方法
+      dynamicSidebarEntries: [],
+      editorSidebarEntries: [],
+      recentSidebarEntries: [],
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       setChatPanelWidth: (width) => set({ chatPanelWidth: width }),
       setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
-      toggleSidebar: () => {
-        const current = get().sidebarCollapsed
-        console.log('[uiStore] toggleSidebar:', current, '->', !current)
-        set({ sidebarCollapsed: !current })
-      },
-      toggleChatPanel: () => {
-        const current = get().chatPanelCollapsed
-        console.log('[uiStore] toggleChatPanel:', current, '->', !current)
-        set({ chatPanelCollapsed: !current })
-      },
-      toggleBottomPanel: () => {
-        const current = get().bottomPanelCollapsed
-        console.log('[uiStore] toggleBottomPanel:', current, '->', !current)
-        set({ bottomPanelCollapsed: !current })
-      },
-      toggleTopBar: () => {
-        const current = get().topBarVisible
-        console.log('[uiStore] toggleTopBar:', current, '->', !current)
-        set({ topBarVisible: !current })
-      },
+      toggleSidebar: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
+      toggleChatPanel: () => set({ chatPanelCollapsed: !get().chatPanelCollapsed }),
+      toggleBottomPanel: () => set({ bottomPanelCollapsed: !get().bottomPanelCollapsed }),
+      toggleTopBar: () => set({ topBarVisible: !get().topBarVisible }),
       resetLayout: () => set({ ...defaultLayout }),
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
-      toggleQuickSearch: () => {
-        const current = get().quickSearchOpen
-        set({ quickSearchOpen: !current })
-      },
+      toggleQuickSearch: () => set({ quickSearchOpen: !get().quickSearchOpen }),
       setActiveActivityItem: (item) => set({ activeActivityItem: item }),
+      setDynamicSidebarEntries: (entries) => set({ dynamicSidebarEntries: entries }),
+      setEditorSidebarEntries: (entries) => set({ editorSidebarEntries: entries }),
+      registerRecentSidebarEntry: (entry) =>
+        set((state) => {
+          const nextEntries = [
+            { ...entry, kind: 'recent' as const },
+            ...state.recentSidebarEntries.filter((item) => item.id !== entry.id),
+          ].slice(0, 6)
+
+          return { recentSidebarEntries: nextEntries }
+        }),
+      clearRecentSidebarEntries: () => set({ recentSidebarEntries: [] }),
     }),
     {
       name: 'ui-layout',

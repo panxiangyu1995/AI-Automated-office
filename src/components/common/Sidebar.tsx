@@ -1,109 +1,219 @@
 import { type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Users, Building2 } from 'lucide-react'
+import {
+  Building2,
+  FileText,
+  FolderOpen,
+  History,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 import { ResizablePanel } from './ResizablePanel'
-import { useUIStore } from '../../stores/uiStore'
+import { useUIStore, type ActivityBarItem, type SidebarResourceEntry } from '../../stores/uiStore'
 
 interface SidebarProps {
   children?: ReactNode
 }
 
-// 管理员菜单配置
-const adminMenuItems = [
-  { id: 'users', label: '用户管理', icon: Users, path: '/admin/users' },
-  { id: 'organization', label: '组织架构', icon: Building2, path: '/admin/organization' },
+type FixedSidebarEntry = {
+  id: string
+  label: string
+  icon: LucideIcon
+  target: {
+    path: string
+    mode: 'static'
+    activityItem?: ActivityBarItem
+  }
+}
+
+const adminMenuItems: FixedSidebarEntry[] = [
+  {
+    id: 'users',
+    label: '用户管理',
+    icon: Users,
+    target: { path: '/admin/users', mode: 'static' },
+  },
+  {
+    id: 'organization',
+    label: '组织架构',
+    icon: Building2,
+    target: { path: '/admin/organization', mode: 'static' },
+  },
 ]
 
 export function Sidebar({ children }: SidebarProps) {
-  const { 
-    sidebarWidth, 
-    sidebarCollapsed, 
-    setSidebarWidth, 
+  const {
+    sidebarWidth,
+    sidebarCollapsed,
+    setSidebarWidth,
+    dynamicSidebarEntries,
+    editorSidebarEntries,
+    recentSidebarEntries,
+    setActiveActivityItem,
   } = useUIStore()
   const location = useLocation()
   const navigate = useNavigate()
 
-  // 判断是否是管理员路由
   const isAdminRoute = location.pathname.startsWith('/admin')
-  
-  // 获取当前选中的菜单项
-  const getActiveItem = () => {
-    if (location.pathname === '/admin/users') return 'users'
-    if (location.pathname === '/admin/organization') return 'organization'
-    return null
+  const fixedEntries = isAdminRoute ? adminMenuItems : []
+
+  const openEntry = (entry: { target: { path: string; activityItem?: ActivityBarItem } }) => {
+    if (entry.target.activityItem) {
+      setActiveActivityItem(entry.target.activityItem)
+    }
+    navigate(entry.target.path)
   }
-  
-  const activeItem = getActiveItem()
 
   return (
     <ResizablePanel
       width={sidebarWidth}
-      minWidth={200}
-      maxWidth={280}
+      minWidth={220}
+      maxWidth={320}
       onWidthChange={setSidebarWidth}
       direction="right"
       collapsed={sidebarCollapsed}
       className="h-full"
     >
-      <div 
-        className="h-full flex flex-col"
-        style={{ backgroundColor: '#1E293B' }}
-      >
-        {/* 菜单内容 */}
+      <div className="flex h-full flex-col" style={{ backgroundColor: '#1E293B' }}>
         <div className="flex-1 overflow-y-auto p-4">
           {children || (
-            <>
-              <p 
-                className="text-xs font-bold mb-2"
-                style={{ color: '#94A3B8' }}
-              >
-                {isAdminRoute ? '系统管理' : '功能菜单'}
-              </p>
-              <nav className="space-y-1">
-                {isAdminRoute ? (
-                  adminMenuItems.map((item) => {
-                    const Icon = item.icon
-                    const isActive = activeItem === item.id
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => navigate(item.path)}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                          isActive
-                            ? 'bg-slate-700 text-white'
-                            : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        {item.label}
-                      </button>
-                    )
-                  })
-                ) : (
-                  // 默认占位菜单
-                  <>
-                    <button
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-slate-700 text-white"
-                    >
-                      菜单项 1
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-700/50 hover:text-white"
-                    >
-                      菜单项 2
-                    </button>
-                    <button
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-700/50 hover:text-white"
-                    >
-                      菜单项 3
-                    </button>
-                  </>
-                )}
-              </nav>
-            </>
+            <div className="space-y-6">
+              <SidebarSection
+                title={isAdminRoute ? '系统管理' : '固定导航'}
+                entries={fixedEntries}
+                activePath={location.pathname}
+                onOpen={openEntry}
+              />
+
+              {dynamicSidebarEntries.length > 0 && (
+                <SidebarResourceSection
+                  title="动态资源"
+                  entries={dynamicSidebarEntries}
+                  activePath={location.pathname}
+                  icon={FolderOpen}
+                  onOpen={openEntry}
+                />
+              )}
+
+              {editorSidebarEntries.length > 0 && (
+                <SidebarResourceSection
+                  title="编辑器"
+                  entries={editorSidebarEntries}
+                  activePath={location.pathname}
+                  icon={FileText}
+                  onOpen={openEntry}
+                />
+              )}
+
+              {recentSidebarEntries.length > 0 && (
+                <SidebarResourceSection
+                  title="最近打开"
+                  entries={recentSidebarEntries}
+                  activePath={location.pathname}
+                  icon={History}
+                  onOpen={openEntry}
+                />
+              )}
+
+              {!isAdminRoute && fixedEntries.length === 0 && dynamicSidebarEntries.length === 0 && editorSidebarEntries.length === 0 && (
+                <div className="rounded-lg border border-slate-700/80 bg-slate-800/60 p-3 text-xs leading-5 text-slate-400">
+                  当前工作区尚未注册固定资源或编辑器入口。
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
     </ResizablePanel>
+  )
+}
+
+function SidebarSection({
+  title,
+  entries,
+  activePath,
+  onOpen,
+}: {
+  title: string
+  entries: FixedSidebarEntry[]
+  activePath: string
+  onOpen: (entry: FixedSidebarEntry) => void
+}) {
+  if (entries.length === 0) {
+    return null
+  }
+
+  return (
+    <section>
+      <p className="mb-2 text-xs font-bold text-slate-400">{title}</p>
+      <nav className="space-y-1">
+        {entries.map((entry) => {
+          const Icon = entry.icon
+          const isActive = activePath.startsWith(entry.target.path)
+
+          return (
+            <button
+              key={entry.id}
+              onClick={() => onOpen(entry)}
+              className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? 'bg-slate-700 text-white'
+                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {entry.label}
+            </button>
+          )
+        })}
+      </nav>
+    </section>
+  )
+}
+
+function SidebarResourceSection({
+  title,
+  entries,
+  activePath,
+  icon: Icon,
+  onOpen,
+}: {
+  title: string
+  entries: SidebarResourceEntry[]
+  activePath: string
+  icon: LucideIcon
+  onOpen: (entry: SidebarResourceEntry) => void
+}) {
+  return (
+    <section>
+      <p className="mb-2 text-xs font-bold text-slate-400">{title}</p>
+      <nav className="space-y-1">
+        {entries.map((entry) => {
+          const isActive = activePath === entry.target.path
+
+          return (
+            <button
+              key={entry.id}
+              onClick={() => onOpen(entry)}
+              className={`flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                isActive
+                  ? 'bg-slate-700 text-white'
+                  : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+              }`}
+            >
+              <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+              <span className="min-w-0">
+                <span className="block truncate">{entry.label}</span>
+                {entry.description && (
+                  <span className={`block truncate text-xs ${isActive ? 'text-slate-200' : 'text-slate-500'}`}>
+                    {entry.description}
+                  </span>
+                )}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
+    </section>
   )
 }

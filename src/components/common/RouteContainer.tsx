@@ -1,4 +1,4 @@
-import { useMemo, type ComponentType } from 'react'
+import { useEffect, useMemo, type ComponentType } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { ForbiddenPage } from '@/components/permission'
 import { usePermission } from '@/features/permission/hooks'
@@ -28,7 +28,7 @@ interface RouteContainerProps {
 export function RouteContainer({ route }: RouteContainerProps) {
   const location = useLocation()
   const params = useParams()
-  const { activeActivityItem } = useUIStore()
+  const { activeActivityItem, registerRecentSidebarEntry } = useUIStore()
   const { hasPermission } = usePermission()
 
   const hasAccess = route.requiredPermission ? hasPermission(route.requiredPermission) : true
@@ -51,6 +51,24 @@ export function RouteContainer({ route }: RouteContainerProps) {
   const requiredPermissionLabel = Array.isArray(route.requiredPermission)
     ? route.requiredPermission.join(' | ')
     : route.requiredPermission
+
+  useEffect(() => {
+    if (!hasAccess) {
+      return
+    }
+
+    registerRecentSidebarEntry({
+      id: route.id,
+      label: route.title,
+      description: route.resource,
+      kind: 'recent',
+      target: {
+        path: location.pathname,
+        mode: route.mode,
+        activityItem: activeActivityItem,
+      },
+    })
+  }, [activeActivityItem, hasAccess, location.pathname, registerRecentSidebarEntry, route.id, route.mode, route.resource, route.title])
 
   if (!hasAccess) {
     return (
