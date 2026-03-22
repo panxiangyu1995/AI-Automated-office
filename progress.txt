@@ -1504,3 +1504,28 @@
 
 ### Notes:
 - 目前 action 权限按 allow-list 兜底，后续可在 Story 40.5/40.6 对接更细粒度权限网关。
+
+## [2026-03-23] - Task: Template Publish and Version Baseline (Epic 40, Story 40.5)
+
+### 铁律合规检查：
+- PRD 合规：[FR1221]
+- 架构合规：[提供模板版本模型与发布/回滚/默认选择能力，符合 ADR-036 的运行时基础要求]
+- UX 合规：[当前无 UI 变更，逻辑能力可被后续界面复用]
+- Epic 合规：[Epic 40, Story 40.5]
+
+### What was done:
+- 新增模板版本存储模块 `templateVersionStore`：
+  - 版本与状态模型（draft/published/archived）
+  - 发布/回滚行为（自动归档旧版）
+  - 默认版本选择与 active 解析
+  - LocalStorage 持久化
+- 新增集成测试 `tests/integration/template-version-store.test.tsx` 覆盖版本创建、发布、回滚、默认版本选择。
+- 更新 OpenSpec Story 40.5 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/template-version-store.test.tsx` 通过（3/3）。
+
+### Notes:
+- 当前实现为运行时基础能力，后续可接入模板管理 UI 与权限控制。
