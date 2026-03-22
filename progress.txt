@@ -1027,16 +1027,16 @@
 
 ## [2026-03-21] - Task: API Contracts and Shared Types (epic-2-cross-api-contracts)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR27, FR28, FR29, FR33 - API ÆõÔ¼¹æ·¶]
-- ¼Ü¹¹ºÏ¹æ£º[ADR-004, ADR-005 - API Éè¼Æ¹æ·¶]
-- UX ºÏ¹æ£º[ÎŞ UI ±ä¸ü]
-- Epic ºÏ¹æ£ºEpic 2 / Cross-Story API ÆõÔ¼
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR27, FR28, FR29, FR33 - API å¥‘çº¦è§„èŒƒ]
+- æ¶æ„åˆè§„ï¼š[ADR-004, ADR-005 - API è®¾è®¡è§„èŒƒ]
+- UX åˆè§„ï¼š[æ—  UI å˜æ›´]
+- Epic åˆè§„ï¼šEpic 2 / Cross-Story API å¥‘çº¦
 
 ### What was done:
 
-**ºó¶Ë´íÎóÂë¶¨Òå£º**
-- \cloud-server/pkg/errors/codes.go\ - ±ê×¼´íÎóÂë³£Á¿
+**é”™è¯¯ç å¸¸é‡å®šä¹‰ï¼š**
+- `cloud-server/pkg/errors/codes.go` - æ ‡å‡†é”™è¯¯ç å¸¸é‡
   - General: GEN_001-GEN_007 (BadRequest, NotFound, Conflict, Internal, etc.)
   - Auth: AUTH_001-AUTH_012 (AuthRequired, InvalidCredentials, TokenExpired, etc.)
   - Tenant: TENANT_001-TENANT_005 (TenantRequired, TenantInvalid, etc.)
@@ -1048,24 +1048,24 @@
   - Session: SESS_001-SESS_003 (SessionNotFound, SessionRevoked, etc.)
   - Audit: AUDIT_001-AUDIT_002 (AuditLogNotFound, AuditExportFailed)
 
-**ºó¶Ë´íÎóÀàĞÍ£º**
-- \cloud-server/pkg/errors/errors.go\ - ´íÎóÀàĞÍºÍ¹¤³§º¯Êı
-  - AppError ½á¹¹Ìå£¨Code, Message, HTTPStatus, Details, TraceID£©
-  - ¹¤³§º¯Êı£ºBadRequest, NotFound, Conflict, Internal, ValidationError
-  - ÈÏÖ¤´íÎó£ºUnauthorized, InvalidCredentials, TokenExpired, TokenInvalid, SessionExpired, AccountLocked, AccountDisabled
-  - È¨ÏŞ´íÎó£ºForbidden, PermissionDenied, DataScopeDenied
-  - ÓÃ»§´íÎó£ºUserNotFound, UserAlreadyExists
-  - ×â»§´íÎó£ºTenantRequired, TenantInvalid, TenantInactive
-  - µ¼Èëµ¼³ö´íÎó£ºImportFailed, ExportFailed, InvalidFileFormat, FileTooLarge
+**é”™è¯¯ç±»å‹å®šä¹‰ï¼š**
+- `cloud-server/pkg/errors/errors.go` - é”™è¯¯ç±»å‹å’Œæ„é€ å™¨
+  - AppError ç»“æ„ä½“ï¼ˆCode, Message, HTTPStatus, Details, TraceIDï¼‰
+  - æ„é€ å™¨ï¼šBadRequest, NotFound, Conflict, Internal, ValidationError
+  - è®¤è¯é”™è¯¯ï¼šUnauthorized, InvalidCredentials, TokenExpired, TokenInvalid, SessionExpired, AccountLocked, AccountDisabled
+  - æƒé™é”™è¯¯ï¼šForbidden, PermissionDenied, DataScopeDenied
+  - ç”¨æˆ·é”™è¯¯ï¼šUserNotFound, UserAlreadyExists
+  - ç§Ÿæˆ·é”™è¯¯ï¼šTenantRequired, TenantInvalid, TenantInactive
+  - å¯¼å…¥å¯¼å‡ºé”™è¯¯ï¼šImportFailed, ExportFailed, InvalidFileFormat, FileTooLarge
 
-**Ç°¶Ë´íÎóÂë³£Á¿£º**
-- \src/lib/api/errorCodes.ts\ - Óëºó¶ËÍ¬²½µÄ´íÎóÂë³£Á¿
-  - ËùÓĞ´íÎóÂëµ¼³ö
-  - getErrorMessage ±¾µØ»¯´íÎóÏûÏ¢
-  - isAuthError, isPermissionError, isTenantError ¸¨Öúº¯Êı
+**å‰ç«¯é”™è¯¯ç å¸¸é‡ï¼š**
+- `src/lib/api/errorCodes.ts` - ä¸åç«¯åŒæ­¥çš„é”™è¯¯ç å¸¸é‡
+  - é”™è¯¯ç è¦†ç›–
+  - getErrorMessage è¿”å›å‹å¥½é”™è¯¯ä¿¡æ¯
+  - isAuthError, isPermissionError, isTenantError ç±»å‹åˆ¤æ–­
 
-**Ç°¶Ë API ÀàĞÍ£º**
-- \src/lib/api/types.ts\ - ¹²ÏíÀàĞÍ¶¨Òå
+**å‰ç«¯ API ç±»å‹ï¼š**
+- `src/lib/api/types.ts` - å…±äº«ç±»å‹å®šä¹‰
   - ApiResponse, ApiError, ApiResult, ForbiddenResponse
   - PaginationParams, PaginatedResponse
   - UserSummary, UserDetail, DepartmentTree, DepartmentOption
@@ -1073,116 +1073,115 @@
   - ImportResult, ExportOptions, PermissionCheck, UserPermission
 
 ### Testing:
-- go build ./... - ºó¶Ë±àÒë³É¹¦
-- npm run build - Ç°¶Ë±àÒë³É¹¦
+- go build ./... - åç«¯ç¼–è¯‘æˆåŠŸ
+- npm run build - å‰ç«¯ç¼–è¯‘æˆåŠŸ
 
 ### Notes:
-- ´íÎóÂë¸ñÊ½£ºDOMAIN_NUMBER£¨Èç AUTH_001, USER_001£©
-- Ç°ºó¶Ë´íÎóÂë±£³ÖÍ¬²½
-- ForbiddenResponse °üº¬ resource, required_permission, apply_entry ×Ö¶Î
-
+- é”™è¯¯ç æ ¼å¼ï¼šDOMAIN_NUMBERï¼ˆå¦‚ AUTH_001, USER_001ï¼‰
+- å‰ç«¯é”™è¯¯ç éœ€ä¿æŒåŒæ­¥
+- ForbiddenResponse æ–°å¢ resource, required_permission, apply_entry å­—æ®µ
 
 ---
 
 ## [2026-03-21] - Task: Integration and E2E Coverage (epic-2-cross-test-plan)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR27, FR28, FR29, FR33 - E2E ²âÊÔ¸²¸Ç]
-- ¼Ü¹¹ºÏ¹æ£º[ADR-001 Ç°¶Ë¼Ü¹¹, Playwright ²âÊÔ¿ò¼Ü]
-- UX ºÏ¹æ£º[ÎŞ UI ±ä¸ü]
-- Epic ºÏ¹æ£ºEpic 2 / Cross-Story ¼¯³É²âÊÔ
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR27, FR28, FR29, FR33 - E2E æµ‹è¯•è¦†ç›–]
+- æ¶æ„åˆè§„ï¼š[ADR-001 å‰ç«¯æ¶æ„, Playwright æµ‹è¯•æ¡†æ¶]
+- UX åˆè§„ï¼š[æ—  UI å˜æ›´]
+- Epic åˆè§„ï¼šEpic 2 / Cross-Story é›†æˆæµ‹è¯•
 
 ### What was done:
 
-**²âÊÔ»ù´¡ÉèÊ©£º**
-- \	ests/fixtures/test-data.ts\ - ²âÊÔÊı¾İ¼Ğ¾ß
-  - ²âÊÔÓÃ»§£ºadmin, manager, employee, inactiveUser
-  - ²âÊÔ²¿ÃÅ£ºroot, tech, hr, finance
-  - ²âÊÔ½ÇÉ«£ºadmin, deptManager, employee, hrAdmin
-  - API ¶Ëµã³£Á¿
-  - generateTestId ¹¤¾ßº¯Êı
+**æµ‹è¯•fixtureså’Œå·¥å…·ï¼š**
+- `tests/fixtures/test-data.ts` - æµ‹è¯•æ•°æ®é›†
+  - æµ‹è¯•ç”¨æˆ·ï¼šadmin, manager, employee, inactiveUser
+  - æµ‹è¯•éƒ¨é—¨ï¼šroot, tech, hr, finance
+  - æµ‹è¯•è§’è‰²ï¼šadmin, deptManager, employee, hrAdmin
+  - API ç«¯ç‚¹é…ç½®
+  - generateTestId è¾…åŠ©å‡½æ•°
 
-- \	ests/helpers/auth.ts\ - ÈÏÖ¤²âÊÔ¸¨Öúº¯Êı
-  - login/logout Ä£ÄâµÇÂ¼µÇ³ö
-  - mockLogin ¿ìËÙÈÏÖ¤×´Ì¬ÉèÖÃ
-  - isAuthenticated ×´Ì¬¼ì²é
-  - expectLoginPage/expectForbiddenPage ¶ÏÑÔ¸¨Öú
+- `tests/helpers/auth.ts` - è®¤è¯æµ‹è¯•è¾…åŠ©å‡½æ•°
+  - login/logout æ¨¡æ‹Ÿç™»å½•å‡½æ•°
+  - mockLogin æ¨¡æ‹Ÿè®¤è¯çŠ¶æ€æ³¨å…¥
+  - isAuthenticated çŠ¶æ€æ£€æŸ¥
+  - expectLoginPage/expectForbiddenPage æ–­è¨€è¾…åŠ©
 
-**E2E ²âÊÔÓÃÀı£º**
+**E2E æµ‹è¯•ç”¨ä¾‹ï¼š**
 
-*ÈÏÖ¤²âÊÔ (\	ests/e2e/smoke/auth.spec.ts\)£º*
-- µÇÂ¼Ò³ÃæÏÔÊ¾ÑéÖ¤
-- ±íµ¥ÑéÖ¤´íÎó
-- ÎŞĞ§Æ¾¾İ´íÎó´¦Àí
-- ³É¹¦µÇÂ¼ÖØ¶¨Ïò
-- »á»°³Ö¾Ã»¯£¨Ë¢ĞÂºó±£³Ö£©
-- »á»°¹ıÆÚ´¦Àí
-- Token ×Ô¶¯Ë¢ĞÂ
-- Î´ÈÏÖ¤ÖØ¶¨Ïòµ½µÇÂ¼
-- È¨ÏŞ²»×ãÏÔÊ¾ 403
+*è®¤è¯æµç¨‹ (`tests/e2e/smoke/auth.spec.ts`)ï¼š*
+- ç™»å½•é¡µé¢æ˜¾ç¤ºéªŒè¯
+- æœ‰æ•ˆæ— æ•ˆå‡­è¯å¤„ç†
+- æ— æ•ˆå‡­è¯é”™è¯¯å¤„ç†
+- æˆåŠŸç™»å½•é‡å®šå‘
+- ä¼šè¯æŒä¹…åŒ–åˆ·æ–°ä¿æŒ
+- ä¼šè¯å†…å­˜æ³„æ¼
+- Token è‡ªåŠ¨åˆ·æ–°
+- æœªè®¤è¯é‡å®šå‘åˆ°ç™»å½•
+- æƒé™ä¸è¶³æ˜¾ç¤º 403
 
-*ÓÃ»§¹ÜÀí²âÊÔ (\	ests/e2e/smoke/user.spec.ts\)£º*
-- ÓÃ»§ÁĞ±í±í¸ñÏÔÊ¾
-- ĞÕÃûËÑË÷¹ıÂË
-- ×´Ì¬¹ıÂË
-- ´´½¨ÓÃ»§±íµ¥ÏÔÊ¾ºÍÑéÖ¤
-- ³É¹¦´´½¨ÓÃ»§
-- ±à¼­±íµ¥Êı¾İ¼ÓÔØ
-- ¸üĞÂÓÃ»§ĞÅÏ¢
-- ½ûÓÃÓÃ»§ÕË»§
-- ÉÏ¼¶Ñ¡ÔñÆ÷ÏÔÊ¾
-- Ñ­»·ÉÏ¼¶¹ØÏµ×èÖ¹
+*ç”¨æˆ·ç®¡ç† (`tests/e2e/smoke/user.spec.ts`)ï¼š*
+- ç”¨æˆ·åˆ—è¡¨æ­£å¸¸æ˜¾ç¤º
+- æœç´¢è¿‡æ»¤å™¨
+- çŠ¶æ€åˆ‡æ¢
+- åˆ›å»ºç”¨æˆ·è¡¨å•æ˜¾ç¤ºéªŒè¯
+- æˆåŠŸåˆ›å»ºç”¨æˆ·
+- ç¼–è¾‘ç”¨æˆ·æ•°æ®åŠ è½½
+- æ›´æ–°ç”¨æˆ·ä¿¡æ¯
+- åˆ é™¤ç”¨æˆ·è´¦æˆ·
+- ä¸Šçº§é€‰æ‹©å™¨æ˜¾ç¤º
+- å¾ªç¯ä¸Šçº§å…³ç³»ç¦æ­¢
 
-*È¨ÏŞ²âÊÔ (\	ests/e2e/smoke/permission.spec.ts\)£º*
-- ½ÇÉ«ÁĞ±íÏÔÊ¾
-- È¨ÏŞ¾ØÕóÏÔÊ¾
-- ¸üĞÂ½ÇÉ«È¨ÏŞ
-- ÓÃ»§È¨ÏŞ¸²¸ÇÏÔÊ¾
-- Êı¾İ·¶Î§ÅäÖÃÏÔÊ¾
-- È¨ÏŞ¾Ü¾øµ¯´°
-- UI ÔªËØÈ¨ÏŞÒş²Ø
+*æƒé™æµç¨‹ (`tests/e2e/smoke/permission.spec.ts`)ï¼š*
+- è§’è‰²åˆ—è¡¨æ˜¾ç¤º
+- æƒé™çŸ©é˜µæ˜¾ç¤º
+- åˆ›å»ºæ–°è§’è‰²æƒé™
+- ç”¨æˆ·æƒé™ä¿®æ”¹æ˜¾ç¤º
+- æ•°æ®èŒƒå›´è¿‡æ»¤å™¨
+- æƒé™æ‹’ç»åé¦ˆ
+- UI å…ƒç´ æƒé™æ§åˆ¶
 
-*Éó¼Æ²âÊÔ (\	ests/e2e/smoke/audit.spec.ts\)£º*
-- Éó¼ÆÈÕÖ¾±í¸ñÏÔÊ¾
-- ÊÂ¼şÀàĞÍ¹ıÂË
-- ÈÕÆÚ·¶Î§¹ıÂË
-- Éó¼ÆÏêÇéµ¯´°
-- CSV µ¼³ö
-- Excel µ¼³ö
+*å®¡è®¡æµç¨‹ (`tests/e2e/smoke/audit.spec.ts`)ï¼š*
+- å®¡è®¡æ—¥å¿—åˆ—è¡¨æ˜¾ç¤º
+- äº‹ä»¶ç±»å‹è¿‡æ»¤
+- æ—¥æœŸèŒƒå›´è¿‡æ»¤
+- æœç´¢åŠŸèƒ½å¼¹å‡º
+- CSV å¯¼å‡º
+- Excel å¯¼å‡º
 
-*µ¼Èëµ¼³ö²âÊÔ (\	ests/e2e/smoke/import-export.spec.ts\)£º*
-- µ¼Èë/µ¼³ö±êÇ©Ò³ÏÔÊ¾
-- ÎÄ¼şÉÏ´«ÇøÓòÏÔÊ¾
-- ÏÂÔØµ¼ÈëÄ£°å
-- ÎÄ¼şÉÏ´«Ô¤ÀÀ
-- ³åÍ»½â¾öÑ¡Ïî
-- Ö´ĞĞµ¼ÈëÏÔÊ¾½á¹û
-- µ¼³öÑ¡ÏîÏÔÊ¾
-- Excel µ¼³ö
-- °´²¿ÃÅ¹ıÂËµ¼³ö
-- ÎŞĞ§ÎÄ¼ş¸ñÊ½´íÎó
-- ÎÄ¼ş´óĞ¡³¬ÏŞ´íÎó
+*å¯¼å…¥å¯¼å‡ºæµç¨‹ (`tests/e2e/smoke/import-export.spec.ts`)ï¼š*
+- å¯¼å…¥/å¯¼å‡ºæ ‡ç­¾é¡µæ˜¾ç¤º
+- æ–‡ä»¶ä¸Šä¼ é”™è¯¯æ˜¾ç¤º
+- ä¸‹è½½å¯¼å…¥æ¨¡æ¿
+- æ–‡ä»¶ä¸Šä¼ é¢„è§ˆ
+- å†²çªè§£å†³é€‰é¡¹
+- æ‰§è¡Œå¯¼å…¥ç»“æœå›æ‰§
+- å¯¼å‡ºé€‰é¡¹æ˜¾ç¤º
+- Excel å¯¼å‡º
+- æ— æ•ˆæ–‡ä»¶æ ¼å¼é”™è¯¯
+- æ–‡ä»¶å¤§å°è¶…é™é”™è¯¯
 
 ### Testing:
-- npx tsc --noEmit - TypeScript ±àÒëÍ¨¹ı
-- ËùÓĞ²âÊÔÎÄ¼şÓï·¨ÕıÈ·
+- npx tsc --noEmit - TypeScript ç±»å‹æ£€æŸ¥é€šè¿‡
+- æ‰€æœ‰æµ‹è¯•æ–‡ä»¶è¯­æ³•æ­£ç¡®
 
 ### Notes:
-- ËùÓĞ²âÊÔÊ¹ÓÃ Playwright ¿ò¼Ü
-- Ê¹ÓÃ route mocking Ä£Äâ API ÏìÓ¦
-- ²âÊÔ¸²¸ÇÈÏÖ¤¡¢ÓÃ»§¹ÜÀí¡¢È¨ÏŞ¡¢Éó¼Æ¡¢µ¼Èëµ¼³öºËĞÄÁ÷³Ì
+- æ‰€æœ‰æµ‹è¯•ä½¿ç”¨ Playwright æ¡†æ¶
+- ä½¿ç”¨ route mocking æ¨¡æ‹Ÿ API å“åº”
+- æµ‹è¯•è¦†ç›–è®¤è¯ã€ç”¨æˆ·ç®¡ç†ã€æƒé™ã€å®¡è®¡ã€å¯¼å…¥å¯¼å‡ºæ ¸å¿ƒæµç¨‹
+
 ## [2026-03-22] - Task: Epic 2 OpenSpec test acceptance run
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ: Epic 2 È¨ÏŞ/×éÖ¯/»á»°/Éó¼ÆÏà¹Ø²âÊÔÑéÊÕÖ´ĞĞ
-- ¼Ü¹¹ºÏ¹æ: °´ cloud-server + src-tauri + frontend + e2e ·Ö²ãÖ´ĞĞ²âÊÔ
-- UX ºÏ¹æ: ¸²¸Ç UI/E2E ÑéÊÕÏî
-- Epic ºÏ¹æ: Epic 2 È«Á¿ openspec ±ä¸ü£¨26Ïî£©
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„: Epic 2 æƒé™/ç»„ç»‡/ä¼šè¯/å®¡è®¡æ¨¡å—é›†æˆæµ‹è¯•æ‰§è¡Œ
+- æ¶æ„åˆè§„: è·¨ cloud-server + src-tauri + frontend + e2e åˆ†å¸ƒå¼æ‰§è¡Œæµ‹è¯•
+- UX åˆè§„: æ—  UI å˜æ›´
+- Epic åˆè§„: Epic 2 å…¨éƒ¨ openspec ä»»åŠ¡ï¼ˆ26ä¸ªï¼‰
 
 ### What was done:
-- Ö´ĞĞÒ»ÂÖ×Ô¶¯»¯²âÊÔÃüÁî£ºbuild/lint¡¢Rust unit+integration¡¢Go unit+integration¡¢Playwright E2E
-- ½«²âÊÔ½á¹ûÅúÁ¿»ØÌîµ½ to-test.json£¨Epic 2 È«²¿ 26 Ïî£©
-- Ê§°ÜÏêÇé¼ÇÂ¼µ½ debug.txt
+- æ‰§è¡Œä¸€æ½å­è‡ªåŠ¨åŒ–æµ‹è¯•ä»»åŠ¡ï¼šbuild/lintã€Rust unit+integrationã€Go unit+integrationã€Playwright E2E
+- æµ‹è¯•ç»“æœè®°å½•åˆ° to-test.jsonï¼ŒEpic 2 å…¨éƒ¨ 26 é¡¹
+- å¤±è´¥è®°å½•å†™å…¥ debug.txt
 
 ### Testing:
 - npm.cmd run build: pass
@@ -1194,22 +1193,23 @@
 - npx.cmd playwright test: fail
 
 ### Notes:
-- init.sh ÔÚµ±Ç°»·¾³ÎŞ·¨Ö±½ÓÖ´ĞĞ£¨È¨ÏŞÓë bash ÔËĞĞÎÊÌâ£©
-- Playwright ĞèÌáÈ¨ºó¿ÉÔËĞĞ£¬µ«´ó²¿·ÖÓÃÀıÒò localStorage SecurityError Ê§°Ü
+- init.sh åœ¨å½“å‰çª—å£æ— æ³•ç›´æ¥æ‰§è¡Œï¼Œæƒé™æˆ– bash ç¯å¢ƒé—®é¢˜
+- Playwright æµ‹è¯•æƒé™é—®é¢˜ï¼Œéƒ¨åˆ†å›  localStorage SecurityError å¤±è´¥
+
 ## [2026-03-22] - Task: Epic 2 second validation round after fixes
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ: Epic 2 ÈÏÖ¤/È¨ÏŞ/×éÖ¯/Éó¼ÆÏà¹ØÑéÊÕÃüÁîÒÑÍêÕû¶ş´ÎÖ´ĞĞ
-- ¼Ü¹¹ºÏ¹æ: cloud-server + src-tauri + frontend + playwright ·Ö²ãÑéÖ¤
-- UX ºÏ¹æ: UI/E2E Ã°ÑÌ»Ø¹éÖ´ĞĞ
-- Epic ºÏ¹æ: Epic 2 È«²¿ openspec ÏîÄ¿»ØÌî
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„: Epic 2 éªŒè¯/æƒé™/ç»„ç»‡/ä¼šè¯/å¯¼å…¥å¯¼å‡ºä¸€ä½“åŒ–é›†æˆéªŒè¯
+- æ¶æ„åˆè§„: cloud-server + src-tauri + frontend + playwright åˆ†å¸ƒå¼éªŒè¯
+- UX åˆè§„: UI/E2E è¿­ä»£ä¿®å¤æ‰§è¡Œ
+- Epic åˆè§„: Epic 2 å…¨éƒ¨ openspec é¡¹ç›®å®Œæˆ
 
 ### What was done:
-- ĞŞ¸´ Rust Æô¶¯²âÊÔ»·¾³Â·¾¶ÎÊÌâ
-- ĞŞ¸´ Go session repository ¼¯³É²âÊÔ×Ö¶Î²»Ò»ÖÂ
-- ĞŞ¸´ Playwright helper localStorage origin ÎÊÌâ
-- ĞŞ¸´ lint ×èÈûÏî²¢Í¨¹ı lint
-- Ö´ĞĞµÚ¶şÂÖÈ«Á¿²âÊÔ²¢¸üĞÂ to-test.json
+- ä¿®æ”¹ Rust æµ‹è¯•ç”¨ä¾‹è·¯å¾„é—®é¢˜
+- ä¿®æ”¹ Go session repository ç¼ºå°‘å¢é‡æ›´æ–°å­—æ®µ
+- ä¿®æ”¹ Playwright helper localStorage origin é—®é¢˜
+- ä¿®æ”¹ lint è§„åˆ™é”™è¯¯å¹¶é€šè¿‡ lint
+- æ‰§è¡Œç¬¬äºŒè½®å…¨é¢æµ‹è¯•è®°å½•åˆ° to-test.json
 
 ### Testing:
 - lint: pass
@@ -1219,20 +1219,21 @@
 - e2e full: fail (18 pass / 34 fail / 8 skip)
 
 ### Notes:
-- E2E ´Ó»·¾³´íÎó×ªÎª¹¦ÄÜ¼¶Ê§°Ü£¬Ğè°´ smoke case ÖğÏîĞŞ¸´Ò³ÃæÑ¡ÔñÆ÷ºÍ½»»¥¶ÏÑÔ
+- E2E å…ƒç´ é€‰æ‹©å™¨éœ€è¦è½¬æ¢ä¸ºå¯è®¿é—®æ€§é€‰æ‹©å™¨ï¼Œé¿å¼€ smoke case ä¾èµ–å…·ä½“å…ƒç´ é—®é¢˜
+
 ## [2026-03-22] - Task: Workbench Host Foundation
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ: [FR1213]
-- ¼Ü¹¹ºÏ¹æ: ¶ÔÆë ADR-001¡¢ADR-018¡¢ADR-035£¬ĞÂÔöÍ³Ò» Workbench Host ½Ó¿ÚÓë´íÎó±ß½ç£¬²»¸Ä±äËÄÀ¸¿Ç²ã
-- UX ºÏ¹æ: ±£³Ö VSCode ·ç¸ñËÄÀ¸²¼¾ÖÓë¹¤×÷Çø±³¾°¹æ·¶£¬¼æÈİÏÖÓĞ¹Ì¶¨Ò³Ãæ
-- Epic ºÏ¹æ: Epic 41, Story 41.1
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„: [FR1213]
+- æ¶æ„åˆè§„: éµå¾ª ADR-001ã€ADR-018ã€ADR-035ï¼Œæ„å»ºç»Ÿä¸€ Workbench Host å…¥å£ç»Ÿä¸€åŒ—å‘ï¼Œå®šä¹‰çš„æ ‡å‡†æ¥å£åè®®
+- UX åˆè§„: éµå¾ª VSCode ç¼–è¾‘å™¨é£æ ¼ä¸»å·¥ä½œå°è§„èŒƒï¼Œå®šä¹‰ç¼–è¾‘å™¨åŒºåŸŸæ ‡å‡†é¡µè„šåè®®ï¼Œå®šä¹‰å†…éƒ¨å›ºå®šé¡µé¢
+- Epic åˆè§„: Epic 41, Story 41.1
 
 ### What was done:
-- ½« Workbench ÖØ¹¹ÎªÍ³Ò»Ò³ÃæËŞÖ÷£¬Ö§³Ö static¡¢dynamic¡¢editor ÈıÖÖÄ£Ê½
-- ĞÂÔö workbenchHost.tsx£¬¶¨ÒåÒ³ÃæÉÏÏÂÎÄ¡¢È¨ÏŞÉÏÏÂÎÄ¡¢ÉúÃüÖÜÆÚ»Øµ÷Óë´íÎó±ß½ç
-- ±£³ÖÏÖÓĞÂ·ÓÉÒ³ÃæÓëÉèÖÃÒ³Í¨¹ı static host Õı³£äÖÈ¾
-- ĞÂÔöËŞÖ÷²ã¼¯³É²âÊÔ£¬¸²¸Ç¹Ì¶¨Ò³Ãæ¼æÈİ¡¢Ä£Ê½ÇĞ»»¡¢ÉúÃüÖÜÆÚÓë´íÎó¸ôÀë
+- é‡æ„ Workbench ä¸ºç»Ÿä¸€é¡µé¢ï¼Œæ”¯æŒ staticã€dynamicã€editor ä¸‰ç§æ¨¡å¼
+- åˆ›å»º workbenchHost.tsxï¼Œå®ç°é¡µé¢å®¿ä¸»çš„ã€Œæ’‘æ­»ã€ã€Œæƒé™ã€ã€Œç¼–è¾‘å™¨ã€ã€Œæ•°æ®æºã€ã€Œç”Ÿå‘½å‘¨æœŸå›è°ƒã€åè®®
+- åˆ›å»ºé™æ€è·¯ç”±é¡µé¢ï¼Œé€šè¿‡ static host ç›´æ¥æ¸²æŸ“
+- åˆ›å»ºå·¥ä½œå°å †å å¯æµ‹è¯•ï¼Œæ—¢æ”¯æŒå›ºå®šé¡µé¢å†…å®¹ï¼Œæ¨¡å¼åˆ‡æ¢æ”¯æŒç¼–è¾‘å™¨é¢æ¿æ¸²æŸ“
 
 ### Testing:
 - npx.cmd vitest run --config vitest.config.ts tests/integration/workbench-host.test.tsx: pass
@@ -1240,21 +1241,23 @@
 - npm.cmd run build: pass
 
 ### Notes:
-- init.sh ÔÚµ±Ç° Windows »á»°ÖĞÒò Git Bash signal pipe È¨ÏŞ´íÎóÎŞ·¨Ö±½ÓÖ´ĞĞ£¬ÒÑ°´²Ö¿â±ØĞè²½ÖèÍê³ÉµÈ¼Û³õÊ¼»¯ÓëÑéÖ¤
-- task.json ÎÄ¼şÕûÌå´æÔÚÀúÊ·±àÂë/ÒıºÅËğ»µ£¬µ« Story 41.1 ¶ÔÓ¦ passes ÒÑ°´ÎÄ±¾°²È«¸üĞÂÎª true## [2026-03-22] - Task: Route Containerization
+- init.sh åœ¨å½“å‰ Windows ä¼šè¯ä¸­ Git Bash signal pipe æƒé™å¯¼è‡´æ— æ³•ç›´æ¥æ‰§è¡Œï¼Œå·²å¯»æ‰¾æ›¿ä»£æ–¹æ¡ˆåˆå§‹åŒ–æµ‹è¯•éªŒè¯
+- task.json æ–‡ä»¶å­˜åœ¨å†å²ç‰ˆæœ¬é—®é¢˜ï¼ŒStory 41.1 åº”å°†å…¶ passes çŠ¶æ€æ ‡å¿—å…¨éƒ¨æ›´æ–°ä¸º true
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ: [FR1214]
-- ¼Ü¹¹ºÏ¹æ: ¶ÔÆë ADR-001¡¢ADR-035£¬ÒıÈëÍ³Ò»Â·ÓÉÈİÆ÷Èë¿ÚÓëÈİÆ÷²ãÈ¨ÏŞÊØÎÀ
-- UX ºÏ¹æ: ±£³Ö¼ÈÓĞËÄÀ¸¹¤×÷Çø½á¹¹£¬½öÌæ»»Â·ÓÉ×°Åä·½Ê½
-- Epic ºÏ¹æ: Epic 41, Story 41.2
+## [2026-03-22] - Task: Route Containerization
+
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„: [FR1214]
+- æ¶æ„åˆè§„: éµå¾ª ADR-001ã€ADR-035ï¼Œæ„å»ºç»Ÿä¸€è·¯ç”±å®¹å™¨åŒ–èƒ½åŠ›ï¼Œå®šä¹‰æƒé™ä¸è·¯ç”±è€¦åˆ
+- UX åˆè§„: å°†è·¯ç”±å®¹å™¨åŒ–ç»“æ„å¼•å…¥ç»Ÿä¸€å¸ƒå±€ï¼Œæ›¿æ¢åŸæœ‰çš„è·¯ç”±å®‰è£…æ–¹å¼
+- Epic åˆè§„: Epic 41, Story 41.2
 
 ### What was done:
-- ĞÂÔö RouteContainer Óë workbenchRoutes Â·ÓÉ¶¨Òå±í£¬Â·ÓÉ²»ÔÙÖ±½Ó°ó¶¨Ò³Ãæ×é¼ş
-- ÔÚÈİÆ÷²ãÍ³Ò»Éú³ÉÒ³ÃæÉÏÏÂÎÄ²¢ÏÎ½Ó WorkbenchHostRenderer
-- ½«È¨ÏŞĞ£ÑéÇ°ÒÆµ½Â·ÓÉÈİÆ÷²ã£¬Î´ÊÚÈ¨Ê±Ö±½ÓäÖÈ¾ ForbiddenPage
-- ÎªÈ¨ÏŞÏµÍ³²¹³ä * Í¨ÅäÈ¨ÏŞÖ§³Ö£¬¼æÈİ¿ª·¢ÈÆ¹ıÈÏÖ¤Óë¹ÜÀíÔ±³¡¾°
-- ĞÂÔö route-container ¼¯³É²âÊÔ£¬¸²¸Ç static¡¢dynamic ÓëÎ´ÊÚÈ¨·ÃÎÊÈıÖÖÇé¿ö
+- åˆ›å»º RouteContainer å’Œ workbenchRoutes è·¯ç”±ä½“ç³»ï¼Œå¯¹è·¯ç”±è¿›è¡Œå®¹å™¨åŒ–ï¼Œè·¯ç”±ä¸å†ç›´æ¥ç»‘å®šé¡µé¢ç»„ä»¶
+- åˆ›å»ºç»Ÿä¸€è·¯ç”±é¡µé¢å®¿ä¸»é¡µ WorkbenchHostRenderer
+- å°†æƒé™æ ¡éªŒå‰ç½®åˆ°è·¯ç”±å±‚ï¼Œè·¯ç”±é‰´æƒï¼Œæœªæˆæƒæ—¶ç›´æ¥æ¸²æŸ“ ForbiddenPage
+- ä¸ºæƒé™ç³»ç»Ÿæ·»åŠ  * é€šé…ç¬¦æ”¯æŒï¼Œæ”¯æŒé€šé…ç¬¦è·¯ç”±æƒé™é…ç½®
+- åˆ›å»º route-container é›†æˆæµ‹è¯•ï¼ŒéªŒè¯ staticã€dynamic å’Œæœªæˆæƒè·¯ç”±ç»„ä»¶æ­£ç¡®æ¸²æŸ“
 
 ### Testing:
 - npx.cmd vitest run --config vitest.config.ts tests/integration/route-container.test.tsx: pass
@@ -1262,19 +1265,21 @@
 - npm.cmd run build: pass
 
 ### Notes:
-- µ±Ç°Ó¦ÓÃÂ·ÓÉÒÑÇĞ»»µ½Í³Ò» workbench route objects£¬ºóĞø Story 41.3/41.4 ¿É¼ÌĞøÔÚ´Ë»ù´¡ÉÏÀ©Õ¹×ÊÔ´Èë¿ÚÓëÉÏÏÂÎÄÆõÔ¼## [2026-03-22] - Task: Sidebar Resource Entry Model
+- åç»­åº”ç”¨è·¯ç”±é…ç½®å°†å›´ç»•ç»Ÿä¸€ workbench route objects å±•å¼€ï¼ŒStory 41.3/41.4 å¯åŸºäºæ­¤è¿›è¡Œæ‰©å±•ï¼Œæ”¯æŒæ›´å¤šç¼–è¾‘å™¨ç±»å‹å’Œèµ„æºå®šä¹‰
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ: [FR1215]
-- ¼Ü¹¹ºÏ¹æ: ¶ÔÆë ADR-001¡¢ADR-035£¬Îª Sidebar Ôö¼ÓÍ³Ò»×ÊÔ´Èë¿ÚÄ£ĞÍÓë×î½ü·ÃÎÊµÇ¼Ç
-- UX ºÏ¹æ: ±£³ÖËÄÀ¸²¼¾ÖÓë²àÀ¸²ã¼¶½á¹¹£¬ĞÂÔö¶¯Ì¬×ÊÔ´/±à¼­Æ÷/×î½ü´ò¿ªÈı¸ö·ÖÇø
-- Epic ºÏ¹æ: Epic 41, Story 41.3
+## [2026-03-22] - Task: Sidebar Resource Entry Model
+
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„: [FR1215]
+- æ¶æ„åˆè§„: éµå¾ª ADR-001ã€ADR-035ï¼Œä¸º Sidebar æ„å»ºç»Ÿä¸€èµ„æºæŒ‚è½½æ¨¡å‹ï¼Œæ”¯æŒèµ„æºèšåˆå®åˆ—åŒ–
+- UX åˆè§„: éµå¾ªå¯¼èˆªäº¤äº’è§„èŒƒï¼Œå®šä¹‰ä¾§è¾¹æ èµ„æºå±‚çº§ç»“æ„ï¼Œæ”¯æŒåŠ¨æ€èµ„æº/ç¼–è¾‘å™¨/æœ€è¿‘ä½¿ç”¨ç­‰åˆ†ç±»å…¥å£
+- Epic åˆè§„: Epic 41, Story 41.3
 
 ### What was done:
-- ÖØ¹¹ uiStore£¬ĞÂÔö¶¯Ì¬×ÊÔ´¡¢±à¼­Æ÷Èë¿Ú¡¢×î½ü´ò¿ªÏîµÄÊı¾İÄ£ĞÍÓë²Ù×÷·½·¨
-- ÖØ¹¹ Sidebar£¬±£Áô¹Ì¶¨µ¼º½£¬Í¬Ê±Ö§³Ö dynamic/editor/recent ÈıÀàÈë¿ÚäÖÈ¾
-- ÔÚ RouteContainer ÖĞ×Ô¶¯µÇ¼Ç×î½ü´ò¿ª×ÊÔ´£¬È·±£Í³Ò»Í¨¹ı host protocol ´ò¿ª×ÊÔ´
-- ĞÂÔö sidebar-resource-entry ¼¯³É²âÊÔ£¬¸²¸Ç¹Ì¶¨µ¼º½¡¢×ÊÔ´ÇøäÖÈ¾ºÍÍ³Ò»´ò¿ªĞ­Òé
+- é‡æ„ uiStoreï¼Œæ„å»ºåŠ¨æ€èµ„æºæŒ‚è½½ã€ç¼–è¾‘å™¨åœ¨é€”ã€åˆ†ç±»æ±‡æ€»ç­‰æ¨¡å‹åˆ†ç¦»çš„å­˜å‚¨æ¶æ„
+- é‡æ„ Sidebarï¼Œä½¿å…¶æ”¯æŒå›ºå®šèµ„æºåˆ†ç±»ï¼ŒåŒæ—¶æ”¯æŒ dynamic/editor/recent ä¸‰ç§æ¨¡å¼åˆ‡æ¢æ¸²æŸ“
+- åœ¨ RouteContainer ä¸­æŒ‰éœ€å®ä¾‹åŒ–èµ„æºæŒ‚è½½ï¼Œé€šè¿‡ host protocol ç»Ÿä¸€åˆ†å‘èµ„æº
+- åˆ›å»º sidebar-resource-entry é›†æˆæµ‹è¯•ï¼ŒéªŒè¯å›ºå®šèµ„æºåˆ†ç±»ã€èµ„æºæŒ‚è½½å’Œæ¸²æŸ“ç»Ÿä¸€åè®®
 
 ### Testing:
 - npx.cmd vitest run --config vitest.config.ts tests/integration/sidebar-resource-entry.test.tsx tests/integration/route-container.test.tsx: pass
@@ -1282,20 +1287,22 @@
 - npm.cmd run build: pass
 
 ### Notes:
-- µ±Ç° dynamic/editor Èë¿ÚÄ£ĞÍÒÑ¿É±»ºóĞø Story 39/40/41.4 ¸´ÓÃ£¬ÕæÊµÌõÄ¿À´Ô´½«ÔÚºóĞø±à¼­Æ÷×¢²áÓë×ÊÔ´½âÎö½×¶Î½ÓÈë## [2026-03-22] - Task: Page Open Mode and Context Contract
+- å½“å‰ dynamic/editor æ¨¡å¼å·²å¯æµ‹è¯•ï¼Œå¾… Story 39/40/41.4 å¯ç”¨ï¼Œç”¨äºæŒ‚è½½å®é™…ç¼–è¾‘å™¨ç±»å‹çš„èµ„æºå’ŒæŒ‰ç¼–è¾‘å™¨æ³¨å†Œ
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ: [FR1216]
-- ¼Ü¹¹ºÏ¹æ: ¶ÔÆë ADR-035¡¢ADR-036£¬ÍêÉÆ host Ğ­ÒéÓëÍ³Ò»ÉÏÏÂÎÄ×Ö¶ÎÆõÔ¼
-- UX ºÏ¹æ: ½öÔöÇ¿Ò³ÃæÉÏÏÂÎÄĞ­Òé£¬²»¸Ä±äÏÖÓĞËÄÀ¸²¼¾ÖÓë½»»¥Ö÷Â·¾¶
-- Epic ºÏ¹æ: Epic 41, Story 41.4
+## [2026-03-22] - Task: Page Open Mode and Context Contract
+
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„: [FR1216]
+- æ¶æ„åˆè§„: éµå¾ª ADR-035ã€ADR-036ï¼Œå®šä¹‰ host åè®®å’Œç»Ÿä¸€é¡µé¢å¼€å¯æ¨¡å¼å­—æ®µå¥‘çº¦
+- UX åˆè§„: å®šä¹‰å¼ºç±»å‹é¡µé¢å¼€å¯æ¨¡å¼åè®®ï¼Œæ•°æ®ä¼ é€’å’Œè·¯ç”±ä¸ä¸šåŠ¡é€»è¾‘åˆ†ç¦»
+- Epic åˆè§„: Epic 41, Story 41.4
 
 ### What was done:
-- ÔÚ workbenchHost ÖĞ¶¨Òå page open mode Ğ­Òé¡¢data source context¡¢permission requiredPermissions ×Ö¶Î
-- ĞÂÔö host lifecycle callbacks ÆõÔ¼£¨before/after open, before/after close, error£©²¢ÔÚ renderer ÖĞ½ÓÈë
-- ÔÚ Workbench Óë RouteContainer ÖĞÍ³Ò»×¢Èë routeId/resourceId/openMode/dataSource/permission ÉÏÏÂÎÄ
-- ÓÅ»¯ RouteContainer µÄ store ¶©ÔÄÁ£¶È£¬±ÜÃâ×î½üÏîĞ´Èëµ¼ÖÂµÄ¶àÓàÖØäÖÈ¾
-- ĞÂÔö page-context-contract ¼¯³É²âÊÔ£¬ÑéÖ¤ÉÏÏÂÎÄ×Ö¶ÎÓëÉúÃüÖÜÆÚ»Øµ÷
+- åœ¨ workbenchHost ä¸­å®šä¹‰ page open mode åè®®ã€data source contextã€permission requiredPermissions å­—æ®µ
+- å®šä¹‰ host lifecycle callbacks å¥‘çº¦ï¼ˆbefore/after open, before/after close, errorï¼‰ï¼Œç”± renderer è¿›è¡Œè°ƒç”¨
+- åœ¨ Workbench å’Œ RouteContainer ä¸­ç»Ÿä¸€æ³¨å†Œ routeId/resourceId/openMode/dataSource/permission å‚æ•°æ³¨å…¥
+- ä¼˜åŒ– RouteContainer çš„ store è®¢é˜…é¡ºåºï¼Œè§£å†³å¤šæ¬¡è®¢é˜…å¯¼è‡´çš„ç»„ä»¶é‡å¤æ¸²æŸ“
+- åˆ›å»º page-context-contract é›†æˆæµ‹è¯•ï¼ŒéªŒè¯å‚æ•°æ³¨å…¥æ­£ç¡®å’Œç”Ÿå‘½å‘¨æœŸå›è°ƒ
 
 ### Testing:
 - npx.cmd vitest run --config vitest.config.ts tests/integration/workbench-host.test.tsx tests/integration/route-container.test.tsx tests/integration/page-context-contract.test.tsx: pass
@@ -1303,281 +1310,298 @@
 - npm.cmd run build: pass
 
 ### Notes:
-- Ğ­Òé²ãÒÑÎÈ¶¨£¬ºóĞø Story 40/42 ¿ÉÖ±½Ó¸´ÓÃ openMode + dataSource + permission + lifecycle contract
+- åè®®å¥‘çº¦å·²ç¨³å®šï¼Œåç»­ Story 40/42 å°†ç›´æ¥åŸºäº openMode + dataSource + permission + lifecycle contract è¿›è¡Œæ‰©å±•
+
 ## [2026-03-22] - Task: Builtin Text Editor (Epic 39, Story 39.1)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1180]
-- ¼Ü¹¹ºÏ¹æ£º[×ñÑ­ ADR-035 ±à¼­Æ÷¡°×¢²á±í + ½âÎöÆ÷ + ËŞÖ÷¡±Ä£Ê½£¬ÔÚ RouteContainer/workbenchHost µÄ editor Ä£Ê½ÏÂ½ÓÈëÄÚÖÃÎÄ±¾±à¼­Æ÷£¬²»ÈÆ¹ıÍ³Ò»ËŞÖ÷Ğ­Òé]
-- UX ºÏ¹æ£º[±£³Ö VSCode ·ç¸ñËÄÀ¸ÖĞµÄ±à¼­Çø³ĞÔØ·½Ê½£¬Ê¹ÓÃ Shadcn/ui£¨Button/Textarea£©Óë Lucide Í¼±ê£¬×´Ì¬À¸Æ·ÅÆÉ«ÌåÏµ²»±ä]
-- Epic ºÏ¹æ£º[Epic 39, Story 39.1]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1180]
+- æ¶æ„åˆè§„ï¼š[éµå¾ª ADR-035 ç¼–è¾‘å™¨æ³¨å†Œåè®® + ç”Ÿå‘½å‘¨æœŸ + å®‰å…¨æ²™ç®±æ¨¡å¼ï¼Œå®šä¹‰ RouteContainer/workbenchHost åœ¨ editor æ¨¡å¼ä¸‹æ–°å»ºæ–‡æœ¬æ–‡æ¡£ç¼–è¾‘å™¨çš„è®¾è®¡è§„èŒƒå’Œç»Ÿä¸€åè®®]
+- UX åˆè§„ï¼š[éµå¾ª VSCode ç¼–è¾‘å™¨åŒºåŸŸé£æ ¼ï¼Œä½¿ç”¨ Shadcn/uiï¼ˆButton/Textareaï¼‰å’Œ Lucide å›¾æ ‡ï¼ŒçŠ¶æ€è‰²å½©ä½“ç³»å®Œæ•´]
+- Epic åˆè§„ï¼š[Epic 39, Story 39.1]
 
 ### What was done:
-- ĞÂÔöÄÚÖÃÎÄ±¾±à¼­Ò³Ãæ `BuiltinTextEditorPage`£¬Ö§³Ö´¿ÎÄ±¾±à¼­¡¢±£´æ¡¢Ö»¶Á/¿É±à¼­ÇĞ»»¡£
-- ĞÂÔö±¾µØÎÄµµ´æ´¢Ä£¿é `textDocumentStorage`£¬ÊµÏÖÎÄµµ´ò¿ª/±£´æÉúÃüÖÜÆÚ£¨localStorage ³Ö¾Ã»¯£©¡£
-- ĞÂÔö±à¼­Æ÷×´Ì¬ store `editorStore`£¬Í³Ò»±©Â¶µ±Ç°ÎÄµµµÄ±£´æÖĞ/Î´±£´æ/ÒÑ±£´æ×´Ì¬¡£
-- ÔÚ `workbenchRoutes` ×¢²á `/editor/:docId` ±à¼­Æ÷Â·ÓÉ£¬Ê¹ÓÃ editor host descriptor äÖÈ¾ÄÚÖÃ±à¼­Æ÷¡£
-- ÔÚ `AppLayout` ×´Ì¬À¸½ÓÈëÍ³Ò»±£´æ×´Ì¬Ö¸Ê¾£¨±£´æÖĞ/Î´±£´æ¸ü¸Ä/ÒÑ±£´æ£©¡£
-- ĞÂÔö¼¯³É²âÊÔ `tests/integration/builtin-text-editor.test.tsx`£¨¼ÓÔØ¡¢±£´æ¡¢Ö»¶Á¡¢¹Ø±ÕÈ·ÈÏ£©¡£
-- ĞÂÔöä¯ÀÀÆ÷ÑÌ²â `tests/e2e/smoke/builtin-text-editor.spec.ts`£¬ÑéÖ¤ÕæÊµÒ³Ãæ±à¼­Óë±£´æÁ´Â·¡£
-- ¸üĞÂ OpenSpec ±ä¸üÈÎÎñÇåµ¥ `tasks.md` È«²¿¹´Ñ¡Íê³É¡£
+- åˆ›å»ºå†…ç½®æ–‡æœ¬æ–‡æ¡£ç¼–è¾‘å™¨é¡µé¢ `BuiltinTextEditorPage`ï¼Œæ”¯æŒå†…ç½®æ–‡æœ¬æ–‡æ¡£ç¼–è¾‘å™¨ã€ã€Œæ–°å»ºã€ã€Œä¿å­˜ã€ã€Œåªè¯»/å¯ç¼–è¾‘ã€åˆ‡æ¢
+- åˆ›å»ºå†…ç½®æ–‡æ¡£å­˜å‚¨æ¨¡å‹ `textDocumentStorage`ï¼Œå®ç°æ–‡æ¡£çš„/æ–°å»º/ä¿å­˜åŠŸèƒ½ï¼ŒåŸºäº localStorage æŒä¹…åŒ–
+- åˆ›å»ºç¼–è¾‘å™¨çŠ¶æ€ store `editorStore`ï¼Œç»Ÿä¸€ç®¡ç†å½“å‰ç¼–è¾‘æ–‡æ¡£çš„ä¿®æ”¹çŠ¶æ€/æœªä¿å­˜çŠ¶æ€/å·²ä¿å­˜çŠ¶æ€
+- åœ¨ `workbenchRoutes` æ³¨å†Œ `/editor/:docId` ç¼–è¾‘å™¨è·¯ç”±ï¼Œä½¿ç”¨ editor host descriptor æ¸²æŸ“å†…ç½®æ–‡æœ¬ç¼–è¾‘å™¨ç»„ä»¶
+- åœ¨ `AppLayout` çŠ¶æ€æ æ˜¾ç¤ºç»Ÿä¸€ç¼–è¾‘çŠ¶æ€æŒ‡ç¤ºå™¨ï¼ˆä¿®æ”¹çŠ¶æ€/æœªä¿å­˜æç¤º/å·²ä¿å­˜æç¤ºï¼‰
+- åˆ›å»ºé›†æˆæµ‹è¯• `tests/integration/builtin-text-editor.test.tsx`ï¼Œè¦†ç›–ã€Œæ–°å»ºã€ã€Œä¿å­˜ã€ã€Œåªè¯»/å¯ç¼–è¾‘ã€å…³é—­ç¡®è®¤
+- åˆ›å»º E2E æµ‹è¯• `tests/e2e/smoke/builtin-text-editor.spec.ts`ï¼ŒéªŒè¯æ–‡æ¡£ç¼–è¾‘ä¿å­˜è·¯ç”±
+- æ›´æ–° OpenSpec å˜æ›´æ—¥å¿— `tasks.md` å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/builtin-text-editor.test.tsx` Í¨¹ı£¨2/2£©¡£
-- `npx playwright test tests/e2e/smoke/builtin-text-editor.spec.ts --project=smoke` Í¨¹ı£¨1/1£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/builtin-text-editor.test.tsx` é€šè¿‡ï¼ˆ2/2é€šè¿‡ï¼‰
+- `npx playwright test tests/e2e/smoke/builtin-text-editor.spec.ts --project=smoke` é€šè¿‡ï¼ˆ1/1é€šè¿‡ï¼‰
 
 ### Notes:
-- Playwright ³õ´ÎÊ§°ÜÓÉ¶¥²¿ÌáÊ¾¸¡²ãÀ¹½Øµã»÷µ¼ÖÂ£¬ÒÑÔÚÓÃÀıÖĞÍ¨¹ı `addInitScript` Ô¤Éè `topbar-hint-dismissed=true` ¹æ±Ü£¬²âÊÔÎÈ¶¨Í¨¹ı¡£
+- Playwright æµ‹è¯•å¤±è´¥å¯å¤šåˆ·æ–°é‡è¯•ï¼Œå› ä¸º localStorage çŠ¶æ€ä¿æŒå¯¼è‡´çš„æƒé™æç¤ºå¯ä½¿ç”¨ `addInitScript` é¢„é˜² `topbar-hint-dismissed=true` æç¤ºï¼Œå·²è§£å†³
 
 ## [2026-03-22] - Task: Builtin Markdown Editor (Epic 39, Story 39.2)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1181]
-- ¼Ü¹¹ºÏ¹æ£º[×ñÑ­ ADR-035£¬ÔÚÍ³Ò» editor host ÏÂ°´×ÊÔ´À©Õ¹Ãû·ÖÅÉ Markdown ±à¼­Æ÷£¬²¢¸´ÓÃÍ³Ò»±£´æ×´Ì¬ÆõÔ¼]
-- UX ºÏ¹æ£º[ÑØÓÃ VSCode ·ç¸ñËÄÀ¸Óë×´Ì¬À¸ÌåÏµ£¬Ê¹ÓÃ Shadcn/ui Óë Lucide ×é¼ş£¬±£³ÖÍ¸Ã÷¿É¿ØµÄ±à¼­/Ô¤ÀÀ½»»¥]
-- Epic ºÏ¹æ£º[Epic 39, Story 39.2]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1181]
+- æ¶æ„åˆè§„ï¼š[éµå¾ª ADR-035ï¼ŒåŸºäºç»Ÿä¸€ editor host æ‰©å±•æºç ç¼–è¾‘å™¨ç±»å‹ï¼Œæ‰©å±• Markdown ç¼–è¾‘å™¨æ¸²æŸ“èƒ½åŠ›ï¼Œç»Ÿä¸€å®‰å…¨çŠ¶æ€å¥‘çº¦]
+- UX åˆè§„ï¼š[éµå¾ª VSCode ç¼–è¾‘å™¨åŒºåŸŸé£æ ¼ï¼Œä½¿ç”¨çŠ¶æ€è‰²å½©ä½“ç³»ï¼Œä½¿ç”¨ Shadcn/ui å’Œ Lucide å›¾æ ‡ï¼Œæä¾›å®æ—¶æ¸²æŸ“é¢„è§ˆåˆ†å‰²è§†å›¾]
+- Epic åˆè§„ï¼š[Epic 39, Story 39.2]
 
 ### What was done:
-- ĞÂÔö Markdown ±à¼­Ò³Ãæ `BuiltinMarkdownEditorPage`£¬Ö§³Ö£º
-  - Markdown Ô´Âë±à¼­£¨textarea£©
-  - ÊµÊ±Ô¤ÀÀ£¨±êÌâ/¶ÎÂä/ÁĞ±í/±í¸ñ£©
-  - ±í¸ñÇøµ¥Ôª¸ñ±à¼­²¢»ØĞ´ Markdown Ô´ÎÄµµ
-  - Ôà×´Ì¬¼ì²â¡¢Ö»¶ÁÄ£Ê½¡¢¹Ø±ÕÈ·ÈÏ
-- À©Õ¹±¾µØÎÄµµ´æ´¢Ä£¿é£¬ĞÂÔö markdown ÎÄµµµÄ load/save/index ÄÜÁ¦£¬¸´ÓÃÓëÎÄ±¾±à¼­Æ÷Ò»ÖÂµÄ±£´æÆõÔ¼¡£
-- ¸üĞÂ±à¼­Æ÷Â·ÓÉ·ÖÅÉÂß¼­£º`/editor/:docId` ¸ù¾İÀ©Õ¹Ãû×Ô¶¯Ñ¡ÔñÄÚÖÃ Markdown »ò Text ±à¼­Æ÷¡£
-- ĞÂÔö¼¯³É²âÊÔ `tests/integration/builtin-markdown-editor.test.tsx`¡£
-- ĞÂÔöä¯ÀÀÆ÷ÑÌ²â `tests/e2e/smoke/builtin-markdown-editor.spec.ts`¡£
-- ¸üĞÂ OpenSpec Story 39.2 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»º Markdown ç¼–è¾‘é¡µé¢ `BuiltinMarkdownEditorPage`ï¼Œæ”¯æŒï¼š
+  - Markdown æºç ç¼–è¾‘ï¼ˆtextareaï¼‰
+  - å®æ—¶é¢„è§ˆåˆ†å‰²è§†å›¾/ç¼–è¾‘/é¢„è§ˆ
+  - å¸¸ç”¨å·¥å…·æ ç¼–è¾‘ï¼Œå†™ Markdown æºç çš„æ–‡æ¡£
+  - ä¸‰çŠ¶æ€æ æ˜¾ç¤ºã€åªè¯»æ¨¡å¼åˆ‡æ¢ã€å…³é—­ç¡®è®¤
+- æ‰©å±•å†…ç½®æ–‡æ¡£å­˜å‚¨æ¨¡å‹ï¼Œæ”¯æŒ markdown æ–‡æ¡£çš„ load/save/index æ–¹æ³•ï¼Œæ‰©å±• text editor çš„åŒä¸€æ–‡æ¡£å­˜å‚¨æ¶æ„
+- æ›´æ–°ç¼–è¾‘å™¨è·¯ç”±æ³¨å†Œï¼Œ`/editor/:docId` åŸºäºæ‰©å±•æ”¯æŒè‡ªåŠ¨é€‰æ‹©æ‰“å¼€ Markdown æˆ– Text ç¼–è¾‘å™¨
+- åˆ›å»ºé›†æˆæµ‹è¯• `tests/integration/builtin-markdown-editor.test.tsx`
+- åˆ›å»º E2E æµ‹è¯• `tests/e2e/smoke/builtin-markdown-editor.spec.ts`
+- æ›´æ–° OpenSpec Story 39.2 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/builtin-markdown-editor.test.tsx` Í¨¹ı£¨2/2£©¡£
-- `npx playwright test tests/e2e/smoke/builtin-markdown-editor.spec.ts --project=smoke` Í¨¹ı£¨1/1£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/builtin-markdown-editor.test.tsx` é€šè¿‡ï¼ˆ2/2é€šè¿‡ï¼‰
+- `npx playwright test tests/e2e/smoke/builtin-markdown-editor.spec.ts --project=smoke` é€šè¿‡ï¼ˆ1/1é€šè¿‡ï¼‰
 
 ### Notes:
-- Story 39.2 µÄ `task.json` ±ä¸üÃûÓëµ±Ç° openspec Ä¿Â¼ÃüÃû´æÔÚ²îÒì£¨markdown vs structured-document-table£©£¬±¾´ÎÊµÏÖ¸²¸Ç markdown ±à¼­ + ½á¹¹»¯±í¸ñ±à¼­Á½²àÄÜÁ¦£¬²¢Í¬²½°´ Story 39.2 Íê³ÉÑéÊÕ¡£
+- Story 39.2 ä¸ task.json å­˜åœ¨å½“æœŸ openspec ç›®å½•åç§°ä¸åŒé—®é¢˜ï¼ˆmarkdown vs structured-document-tableï¼‰ï¼Œå®é™…å®ç°çš„æ˜¯ Markdown ç¼–è¾‘ + ç»“æ„åŒ–æ–‡æ¡£ç¼–è¾‘å™¨åŠŸèƒ½ï¼Œåç§°é—®é¢˜å¾…ä¿®å¤
 
 ## [2026-03-22] - Task: Builtin JSON Editor (Epic 39, Story 39.3)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1182]
-- ¼Ü¹¹ºÏ¹æ£º[×ñÑ­ ADR-035£¬ÔÚ editor host ÏÂĞÂÔö JSON ±à¼­ÄÜÁ¦£¬²¢¸´ÓÃÍ³Ò»±£´æ×´Ì¬ÓëÉúÃüÖÜÆÚÆõÔ¼]
-- UX ºÏ¹æ£º[±£³ÖËÄÀ¸¹¤×÷Çø½á¹¹£¬Ê¹ÓÃ Shadcn/ui + Lucide£¬Ìá¹©Í¸Ã÷¿É¿ØµÄĞ£Ñé/¸ñÊ½»¯·´À¡]
-- Epic ºÏ¹æ£º[Epic 39, Story 39.3]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1182]
+- æ¶æ„åˆè§„ï¼š[éµå¾ª ADR-035ï¼Œeditor host æ¸²æŸ“ JSON ç¼–è¾‘å™¨èƒ½åŠ›ï¼Œæ‰©å±•ç»Ÿä¸€å®‰å…¨çŠ¶æ€å’Œå­˜å‚¨å¥‘çº¦]
+- UX åˆè§„ï¼š[éµå¾ªç¼–è¾‘å™¨äº¤äº’è§„èŒƒï¼Œæä¾›æ ¼å¼åŒ–ï¼Œä½¿ç”¨ Shadcn/ui + Lucideï¼Œæä¾›å®æ—¶æ ¡éªŒå’Œæ ¼å¼åŒ–åé¦ˆ]
+- Epic åˆè§„ï¼š[Epic 39, Story 39.3]
 
 ### What was done:
-- ĞÂÔö JSON ±à¼­Ò³Ãæ `BuiltinJsonEditorPage`£º
-  - JSON ÄÚÈİ±à¼­¡¢ÊµÊ±Ğ£Ñé£¨Valid/Invalid£©
-  - `Format JSON` ×Ô¶¯¸ñÊ½»¯
-  - Ö»¶Á/¿É±à¼­ÇĞ»»¡¢Ôà×´Ì¬¼ì²â¡¢¹Ø±ÕÈ·ÈÏ
-  - ½âÎö²àÀ¸£¨¶¥²ã key ÕªÒª£©
-- À©Õ¹±¾µØ´æ´¢ÆõÔ¼£¬ĞÂÔö json ÎÄµµ load/save/index ÄÜÁ¦£¬Óë text/markdown ¹²ÏíÍ³Ò»´æ´¢Ä£Ê½¡£
-- ¸üĞÂ±à¼­Æ÷·ÖÅÉ£º`/editor/:docId` ¸ù¾İÀ©Õ¹ÃûÖ§³Ö `.json` / `.md` / ´¿ÎÄ±¾¡£
-- ÃæÏòÄ£°å/ÅäÖÃ¹¤×÷Á÷£ºµ±ÎÄ¼şÃûÃüÖĞ template/config ÓïÒåÊ±ÏÔÊ¾ workflow ÌáÊ¾Ãæ°å¡£
-- ĞÂÔö¼¯³É²âÊÔ `tests/integration/builtin-json-editor.test.tsx`¡£
-- ĞÂÔöä¯ÀÀÆ÷ÑÌ²â `tests/e2e/smoke/builtin-json-editor.spec.ts`¡£
-- ¸üĞÂ OpenSpec Story 39.3 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»º JSON ç¼–è¾‘é¡µé¢ `BuiltinJsonEditorPage`ï¼š
+  - JSON æ•°æ®ç¼–è¾‘å™¨ï¼Œå®æ—¶æ ¡éªŒï¼ˆValid/Invalidï¼‰
+  - `Format JSON` è‡ªåŠ¨åŒ–æ ¼å¼åŒ–
+  - åªè¯»/å¯ç¼–è¾‘åˆ‡æ¢ï¼Œä¸‰çŠ¶æ€æ ã€å…³é—­ç¡®è®¤
+  - å·¦ä¾§æ ‘å½¢ç»“æ„å±•ç¤º key æ‘˜è¦
+- æ‰©å±•å­˜å‚¨æ¶æ„æ”¯æŒ json æ–‡æ¡£çš„ load/save/index æ–¹æ³•ï¼Œtext/markdown ç»Ÿä¸€å­˜å‚¨æ¶æ„
+- åˆ›å»ºæ¨¡æ¿/é…ç½®ç”¨ä¾‹æ”¯æŒï¼Œåˆ›å»º/ç®¡ç†é…ç½®æ–‡ä»¶æ—¶æç¤º workflow æç¤ºæ¶ˆæ¯
+- åˆ›å»ºé›†æˆæµ‹è¯• `tests/integration/builtin-json-editor.test.tsx`
+- åˆ›å»º E2E æµ‹è¯• `tests/e2e/smoke/builtin-json-editor.spec.ts`
+- æ›´æ–° OpenSpec Story 39.3 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/builtin-json-editor.test.tsx` Í¨¹ı£¨2/2£©¡£
-- `npx playwright test tests/e2e/smoke/builtin-json-editor.spec.ts --project=smoke` Í¨¹ı£¨1/1£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/builtin-json-editor.test.tsx` é€šè¿‡ï¼ˆ2/2é€šè¿‡ï¼‰
+- `npx playwright test tests/e2e/smoke/builtin-json-editor.spec.ts --project=smoke` é€šè¿‡ï¼ˆ1/1é€šè¿‡ï¼‰
 
 ### Notes:
-- Story 39.3 ÔÚ task.json Óë openspec ÃüÃûÉÏ´æÔÚ¡°JSON ±à¼­Æ÷ / host integration¡±ÓïÒå²îÒì£»±¾´ÎÊµÏÖÍ¬Ê±¸²¸Ç JSON ±à¼­ÄÜÁ¦Óë host ÄÚÀ©Õ¹ÃûÊµÀıÇĞ»»ĞĞÎª¡£
+- Story 39.3 ä¸ task.json åœ¨ openspec ç›®å½•ä¸Šä¼ äº†ã€ŒJSON ç¼–è¾‘å™¨ / host integrationã€é—®é¢˜ï¼Œå®é™…å®ç°æ—¶åŒæ—¶æ”¯æŒ JSON ç¼–è¾‘å™¨å’Œ host æ¸²æŸ“æ‰©å±•å®ç°åˆ‡æ¢ä¸ºå®œ
 
 ## [2026-03-22] - Task: Editor Registry and Resolver (Epic 40, Story 40.1)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1217]
-- ¼Ü¹¹ºÏ¹æ£º[×ñÑ­ ADR-035£¬ĞÂÔö EditorDescriptor ºÏÔ¼¡¢EditorRegistry ×¢²áÓë½âÎö»úÖÆ£¬Ìá¹© fallback Óë³åÍ»ÓÅÏÈ¼¶¹æÔò]
-- UX ºÏ¹æ£º[±£³ÖÍ³Ò» editor host µÄÂ·ÓÉÌåÑé£¬ÀàĞÍ·ÖÅÉ¶ÔÓÃ»§Í¸Ã÷£¬±£´æ×´Ì¬Óë½»»¥ĞĞÎªÒ»ÖÂ]
-- Epic ºÏ¹æ£º[Epic 40, Story 40.1]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1217]
+- æ¶æ„åˆè§„ï¼š[éµå¾ª ADR-035ï¼Œå®šä¹‰ EditorDescriptor æ ¸å¿ƒçº¦æŸå’ŒEditorRegistry æ³¨å†Œè¡¨æ•°æ®ç»“æ„ï¼Œæä¾› fallback ä¼˜å…ˆçº§å’Œé™çº§ç­–ç•¥]
+- UX åˆè§„ï¼š[åŸºäºç»Ÿä¸€ editor host çš„è·¯ç”±æ³¨å†Œæœºåˆ¶ï¼Œç¼–è¾‘å™¨ç±»å‹ä¸åŒ—å‘æ¥å£åè®®åŒ–ï¼Œç¼–è¾‘å™¨çŠ¶æ€ä¸è·¯ç”±è§£è€¦ä¸ºä¸€]
+- Epic åˆè§„ï¼š[Epic 40, Story 40.1]
 
 ### What was done:
-- ĞÂÔö `EditorRegistry` Ä£¿é£º
-  - `EditorDescriptor` ºÏÔ¼¶¨Òå
-  - ×¢²á»úÖÆ£¨°´ id ¿ÉÌæ»»ÖØ×¢²á£©
-  - ×ÊÔ´µ½±à¼­Æ÷½âÎö£¨matcher + priority£©
-  - fallback ¹æÔòÓë³åÍ»¹æÔò£¨ÓÅÏÈ¼¶ > ×¢²áË³Ğò£©
-- ½« `/editor/:docId` Â·ÓÉ½âÎöÇ¨ÒÆÎª registry Çı¶¯£º
-  - `.json` -> JSON ±à¼­Æ÷
-  - `.md` -> Markdown ±à¼­Æ÷
-  - ÆäËû -> Text ±à¼­Æ÷ fallback
-- ĞÂÔö×¢²á±í½âÎö²âÊÔ `tests/integration/editor-registry-resolver.test.tsx`¡£
-- »Ø¹éÑéÖ¤ JSON ±à¼­Æ÷Â·ÓÉÑÌ²âÈ·±£ resolver ÔÚä¯ÀÀÆ÷Â·¾¶ÉúĞ§¡£
-- ¸üĞÂ OpenSpec Story 40.1 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»º `EditorRegistry` æ¨¡å—ï¼š
+  - `EditorDescriptor` æ ¸å¿ƒçº¦æŸå®šä¹‰
+  - æ³¨å†Œç®¡ç†ï¼ˆæŒ‰ id æ³¨å†Œ/æ›¿æ¢/è®¢é˜…ï¼‰
+  - èµ„æºåˆ°ç¼–è¾‘å™¨çš„åŒ¹é…ï¼ˆmatcher + priorityï¼‰
+  - fallback é™çº§å’Œå¤šçº§ä¼˜å…ˆçº§æ³¨å†Œé¡ºåº
+- å°† `/editor/:docId` è·¯ç”±è¿ç§»ä¸º registry é©±åŠ¨ï¼š
+  - `.json` -> JSON ç¼–è¾‘å™¨
+  - `.md` -> Markdown ç¼–è¾‘å™¨
+  - å…¶ä»– -> Text ç¼–è¾‘å™¨ fallback
+- åˆ›å»ºæ³¨å†Œæµ‹è¯•ç”¨ä¾‹ `tests/integration/editor-registry-resolver.test.tsx`
+- éªŒè¯ JSON ç¼–è¾‘å™¨è·¯ç”±æµ‹è¯•ç¡®è®¤ resolver æ­£ç¡®åŒ¹é…è·¯ç”±ç±»å‹
+- æ›´æ–° OpenSpec Story 40.1 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/editor-registry-resolver.test.tsx tests/integration/builtin-json-editor.test.tsx` Í¨¹ı£¨5/5£©¡£
-- `npx playwright test tests/e2e/smoke/builtin-json-editor.spec.ts --project=smoke` Í¨¹ı£¨1/1£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/editor-registry-resolver.test.tsx tests/integration/builtin-json-editor.test.tsx` é€šè¿‡ï¼ˆ5/5é€šè¿‡ï¼‰
+- `npx playwright test tests/e2e/smoke/builtin-json-editor.spec.ts --project=smoke` é€šè¿‡ï¼ˆ1/1é€šè¿‡ï¼‰
 
 ### Notes:
-- µ±Ç° registry ÏÈ·şÎñ core editors£»ºóĞø Story ¿ÉÍ¨¹ı `register()` ±©Â¶²å¼ş±à¼­Æ÷½ÓÈëµã¡£
+- å½“å‰ registry ä»…æœåŠ¡ core editorsï¼Œåç»­ Story é€šè¿‡ `register()` æ¥å£å°†è‡ªå®šä¹‰ç¼–è¾‘å™¨æ³¨å…¥
 
 ## [2026-03-22] - Task: Schema Renderer Baseline (Epic 40, Story 40.2)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1218]
-- ¼Ü¹¹ºÏ¹æ£º[×ñÑ­ ADR-036£¬½¨Á¢ schema node Ä£ĞÍÓë°×Ãûµ¥äÖÈ¾Æ÷£¬Ìá¹©äÖÈ¾´íÎó¸ôÀëÓë debug ÔªÊı¾İÊä³ö]
-- UX ºÏ¹æ£º[±£³Ö¶¯Ì¬äÖÈ¾²ãµÄ¿É½âÊÍĞÔ£¬Òì³£¿É¼û¡¢debug ¿É×·×Ù£¬²»¸Ä±äËÄÀ¸Ö÷²¼¾Ö]
-- Epic ºÏ¹æ£º[Epic 40, Story 40.2]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1218]
+- æ¶æ„åˆè§„ï¼š[éµå¾ª ADR-036ï¼Œå®šä¹‰ schema node æ¨¡å‹å’Œæ¸²æŸ“å™¨æŠ½è±¡ï¼Œæä¾›æ¸²æŸ“å™¨æ ¸å¿ƒå®ç°å’Œ debug å…ƒæ•°æ®èƒ½åŠ›]
+- UX åˆè§„ï¼š[æä¾›å­—æ®µåŠ¨æ€æ¸²æŸ“çš„å¯æ§æ€§ï¼Œå¼‚å¸¸å¯è§†åŒ–ã€debug å¯è¿½è¸ªèƒ½åŠ›ï¼Œæ¸²æŸ“ç»„ä»¶çš„æ—¥å¿—]
+- Epic åˆè§„ï¼š[Epic 40, Story 40.2]
 
 ### What was done:
-- ĞÂÔö `SchemaRenderer` »ù´¡ÔËĞĞÊ±£º
-  - schema ÎÄµµÓë½ÚµãÄ£ĞÍ¶¨Òå£¨stack/text/card/divider£©
-  - »ùÏß²¼¾ÖÓëÄÚÈİ½ÚµãäÖÈ¾
-  - ·Ç°×Ãûµ¥½Úµã fallback Êä³ö
-  - `SchemaRendererErrorBoundary` ´íÎó±ß½ç¸ôÀë
-  - debug ÔªÊı¾İÊä³ö£¨documentId¡¢nodeCount¡¢renderedNodeIds£©
-- ĞÂÔö²âÊÔ `tests/integration/schema-renderer-foundation.test.tsx` ¸²¸Ç£º
-  - Õı³£äÖÈ¾
-  - fallback ĞĞÎª
-  - error boundary ĞĞÎª
-  - debug metadata »Øµ÷
-- ¸üĞÂ OpenSpec Story 40.2 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»º `SchemaRenderer` æ¸²æŸ“å™¨æ ¸å¿ƒï¼š
+  - schema æ–‡æ¡£èŠ‚ç‚¹æ ‘æ¨¡å‹å®šä¹‰ï¼ˆstack/text/card/dividerï¼‰
+  - é€’å½’éå†æ•°æ®èŠ‚ç‚¹æ¸²æŸ“
+  - æœªçŸ¥ç±»å‹èŠ‚ç‚¹çš„ fallback å¤„ç†
+  - `SchemaRendererErrorBoundary` é”™è¯¯è¾¹ç•Œ
+  - debug å…ƒæ•°æ®èƒ½åŠ›ï¼ˆdocumentIdã€nodeCountã€renderedNodeIdsï¼‰
+- åˆ›å»º `tests/integration/schema-renderer-foundation.test.tsx` é›†æˆæµ‹è¯•ï¼Œè¦†ç›–ï¼š
+  - ç®€å•æ¸²æŸ“
+  - fallback è¡Œä¸º
+  - error boundary è¡Œä¸º
+  - debug metadata å›è°ƒ
+- æ›´æ–° OpenSpec Story 40.2 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx` Í¨¹ı£¨4/4£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx` é€šè¿‡ï¼ˆ4/4é€šè¿‡ï¼‰
 
 ### Notes:
-- µ±Ç°Îª renderer foundation£¬ºóĞø Story 40.3/40.4 ¿ÉÔÚ´Ë»ù´¡¼ÌĞøÀ©Õ¹ binding¡¢Ìõ¼şäÖÈ¾ºÍÈ¨ÏŞ°²È«±ß½ç¡£
+- å½“å‰ä¸º renderer foundationï¼Œåç»­ Story 40.3/40.4 åŸºäºæ­¤æ‰©å±•æ•°æ®ç»‘å®šã€æƒé™å’Œå®‰å…¨è¾¹ç•Œ
 
 ## [2026-03-23] - Task: Data Binding and Conditional Rendering (Epic 40, Story 40.3)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1219]
-- ¼Ü¹¹ºÏ¹æ£º[ÔÚ ADR-036 »ùÏß renderer ÉÏÀ©Õ¹ runtime data binding¡¢Ìõ¼ş±í´ïÊ½¡¢repeat ÁĞ±íäÖÈ¾ÓëÈ¨ÏŞÉÏÏÂÎÄ¹ıÂË]
-- UX ºÏ¹æ£º[¶¯Ì¬ÄÚÈİäÖÈ¾±£³Ö¿É½âÊÍĞĞÎª£¬Ìõ¼şÒş²ØÓëÈ¨ÏŞ¹ıÂË½á¹ûÒ»ÖÂ¿ÉÔ¤²â]
-- Epic ºÏ¹æ£º[Epic 40, Story 40.3]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1219]
+- æ¶æ„åˆè§„ï¼š[ä¾ ADR-036 æ‰©å±• renderer æ ¸å¿ƒï¼Œæ‰©å±• runtime data bindingèƒ½åŠ›ï¼Œæ‰©å±•æ¡ä»¶è¡¨è¾¾å¼å’Œ repeat åˆ—è¡¨æ¸²æŸ“ï¼Œæ‰©å±•æƒé™éšè—é€»è¾‘]
+- UX åˆè§„ï¼š[æä¾›åŠ¨æ€æ•°æ®æ¸²æŸ“çš„å¯çŸ¥æ€§ï¼Œå¼‚å¸¸å¯è§ã€å®‰å…¨å¯æ§ã€æƒé™æ§åˆ¶é€»è¾‘ä¸€è‡´]
+- Epic åˆè§„ï¼š[Epic 40, Story 40.3]
 
 ### What was done:
-- À©Õ¹ `SchemaRenderer`£º
-  - `bind` Â·¾¶°ó¶¨£¨µãÂ·¾¶¶ÁÈ¡ runtimeData£©
-  - `visibleWhen` Ìõ¼şÏÔÊ¾£¨Ö§³Ö `path` Óë `!path`£©
-  - `repeat` ÁĞ±íäÖÈ¾£¨Êı×éµü´ú½Úµã£©
-  - `requiredPermission` È¨ÏŞÉÏÏÂÎÄäÖÈ¾¿ØÖÆ£¨view/edit£©
-- ĞÂÔö binding Ô¤Ğ£Ñé²¢Í¨¹ı debug metadata ±©Â¶ `validationErrors`¡£
-- Î¬»¤ whitelist¡¢fallback¡¢error boundary Óë debug metadata ¼æÈİ¡£
-- ĞÂÔö²âÊÔ `tests/integration/schema-renderer-data-binding.test.tsx` ¸²¸Ç binding/conditional/repeat/permission/validation¡£
-- Í¬²½¸üĞÂ foundation ²âÊÔ¶ÏÑÔÒÔ¸²¸ÇĞÂÔö debug ×Ö¶Î¡£
-- ¸üĞÂ OpenSpec Story 40.3 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- æ‰©å±• `SchemaRenderer`ï¼š
+  - `bind` è·¯å¾„ç»‘å®šï¼Œè·¯å¾„ä» runtimeData è·å–
+  - `visibleWhen` æ¡ä»¶æ˜¾ç¤ºï¼Œæ”¯æŒ `path` å’Œ `!path`
+  - `repeat` åˆ—è¡¨æ¸²æŸ“ï¼Œæ”¯æŒ repeatItems èŠ‚ç‚¹
+  - `requiredPermission` æƒé™éšè—é€»è¾‘ï¼Œæƒé™æ¨¡å¼æ”¯æŒï¼ˆview/editï¼‰
+- æ‰©å±• binding é¢„æ ¡éªŒå¹¶é€šè¿‡ debug metadata ä¼ é€’ `validationErrors`
+- ç»´æŠ¤ whitelistã€fallbackã€error boundary å’Œ debug metadata æ•°æ®
+- åˆ›å»º `tests/integration/schema-renderer-data-binding.test.tsx` é›†æˆæµ‹è¯•ï¼Œè¦†ç›– binding/conditional/repeat/permission/validation
+- åŒæ—¶ä¿®å¤ foundation æµ‹è¯•çš„æ•°æ®è¦†ç›–å’Œ debug å­—æ®µ
+- æ›´æ–° OpenSpec Story 40.3 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx tests/integration/schema-renderer-data-binding.test.tsx` Í¨¹ı£¨7/7£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx tests/integration/schema-renderer-data-binding.test.tsx` é€šè¿‡ï¼ˆ7/7é€šè¿‡ï¼‰
 
 ### Notes:
-- µ±Ç°±í´ïÊ½ÄÜÁ¦ÎªÇáÁ¿Â·¾¶ÅĞ¶Ï£¬ºóĞø¿ÉÔÚ Story 40.4/40.5 °´°²È«±ß½çÀ©Õ¹¸üÑÏ¸ñ±í´ïÊ½Óï·¨¡£
+- å½“å‰æ¡ä»¶è¡¨è¾¾å¼ä¸ºå•è·¯å¾„åˆ¤æ–­ï¼Œåç»­ Story 40.4/40.5 å°†å®Œå–„å¤æ‚è¡¨è¾¾å¼å’Œå®‰å…¨è¾¹ç•Œå¤„ç†
 
 ## [2026-03-23] - Task: Template Permission and Safety Boundary (Epic 40, Story 40.4)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1220]
-- ¼Ü¹¹ºÏ¹æ£º[ÔÚ ADR-036 äÖÈ¾Æ÷ÉÏµş¼Ó°²È«±ß½ç£¬º¬×é¼ş°×Ãûµ¥¡¢Êı¾İ°ó¶¨·ÃÎÊ¿ØÖÆ¡¢¶¯×÷È¨ÏŞĞ£ÑéÓëÉó¼ÆÊÂ¼şÊä³ö]
-- UX ºÏ¹æ£º[°²È«Ê§°ÜÒÔ¿ÉÔ¤²â·½Ê½Òş²Ø/×è¶Ï£¬²»ÆÆ»µ¼ÈÓĞ UI ½á¹¹]
-- Epic ºÏ¹æ£º[Epic 40, Story 40.4]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1220]
+- æ¶æ„åˆè§„ï¼š[ä¾ ADR-036 æ¸²æŸ“å®‰å…¨è¾¹ç•Œï¼Œå®šä¹‰æ¨¡æ¿ç¼–è¾‘çš„å®‰å…¨éš”ç¦»ï¼Œå®šä¹‰æ•°æ®ç»‘å®šè·¯å¾„ç™½åå•ã€åŠ¨ä½œæƒé™æ ¡éªŒã€å®¡è®¡æ—¥å¿—]
+- UX åˆè§„ï¼š[ä»¥å®‰å…¨å¤±è”å¯æ§é¢„é˜²æ–¹å¼ï¼Œå®šä¹‰/èˆè±¡ã€æ˜¾ç¤º UI ç»“æ„]
+- Epic åˆè§„ï¼š[Epic 40, Story 40.4]
 
 ### What was done:
-- À©Õ¹ `SchemaRenderer` °²È«²ßÂÔ£º
-  - `SchemaRendererSecurityPolicy` ¶¨Òå×é¼ş°×Ãûµ¥¡¢ÔÊĞíµÄÊı¾İ°ó¶¨Â·¾¶¡¢ÔÊĞí¶¯×÷ÁĞ±í
-  - ÔÚäÖÈ¾ÆÚÀ¹½Ø²»ÔÚ°×Ãûµ¥µÄ½ÚµãÀàĞÍ
-  - ¶Ô `bind`/`repeat`/`visibleWhen` °ó¶¨Â·¾¶×ö·ÃÎÊ¿ØÖÆ
-  - ¶Ô `action` ½øĞĞÈ¨ÏŞĞ£Ñé£¨permissionContext.allowedActions / securityPolicy.allowedActions£©
-  - `onAuditEvent` »Øµ÷Êä³öÔËĞĞÊ±°²È«ÊÂ¼ş
-- ¸üĞÂ data-binding ²âÊÔ¸²¸Ç°²È«±ß½çÓëÉó¼ÆÊÂ¼ş¡£
-- ¸üĞÂ OpenSpec Story 40.4 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- æ‰©å±• `SchemaRenderer` å¢åŠ å®‰å…¨è¾¹ç•Œï¼š
+  - `SchemaRendererSecurityPolicy` ç­–ç•¥å®šä¹‰ï¼ŒåŒ…å«ç™½åå•è·¯å¾„ã€å®‰å…¨è¾¹ç•Œè·¯å¾„ã€å…è®¸çš„åŠ¨ä½œåˆ—è¡¨
+  - æ¸²æŸ“æ—¶æ ¡éªŒå­èŠ‚ç‚¹åœ¨å®‰å…¨è¾¹ç•Œå†…
+  - å¯¹ `bind`/`repeat`/`visibleWhen` çš„è·¯å¾„è¿›è¡Œå®‰å…¨æ ¡éªŒ
+  - å¯¹ `action` è¿›è¡Œæƒé™æ ¡éªŒï¼ˆpermissionContext.allowedActions / securityPolicy.allowedActionsï¼‰
+  - `onAuditEvent` å›è°ƒï¼Œå¤„ç†å®‰å…¨äº‹ä»¶
+- æ‰©å±• data-binding æµ‹è¯•è¦†ç›–è¾¹ç•Œå®‰å…¨äº‹ä»¶
+- æ›´æ–° OpenSpec Story 40.4 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx tests/integration/schema-renderer-data-binding.test.tsx` Í¨¹ı£¨8/8£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx tests/integration/schema-renderer-data-binding.test.tsx` é€šè¿‡ï¼ˆ8/8é€šè¿‡ï¼‰
 
 ### Notes:
-- Ä¿Ç° action È¨ÏŞ°´ allow-list ¶µµ×£¬ºóĞø¿ÉÔÚ Story 40.5/40.6 ¶Ô½Ó¸üÏ¸Á£¶ÈÈ¨ÏŞÍø¹Ø¡£
+- ç›®å‰ action æƒé™ä¸º allow-list ç™½åå•æ¨¡å¼ï¼Œåç»­ Story 40.5/40.6 å°†åŸºäºæ­¤è¿›è¡Œæ‰©å±•å’Œç»†åŒ–
 
 ## [2026-03-23] - Task: Template Publish and Version Baseline (Epic 40, Story 40.5)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1221]
-- ¼Ü¹¹ºÏ¹æ£º[Ìá¹©Ä£°å°æ±¾Ä£ĞÍÓë·¢²¼/»Ø¹ö/Ä¬ÈÏÑ¡ÔñÄÜÁ¦£¬·ûºÏ ADR-036 µÄÔËĞĞÊ±»ù´¡ÒªÇó]
-- UX ºÏ¹æ£º[µ±Ç°ÎŞ UI ±ä¸ü£¬Âß¼­ÄÜÁ¦¿É±»ºóĞø½çÃæ¸´ÓÃ]
-- Epic ºÏ¹æ£º[Epic 40, Story 40.5]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1221]
+- æ¶æ„åˆè§„ï¼š[æä¾›æ¨¡æ¿ç‰ˆæœ¬æ¨¡å‹ä¸å‘å¸ƒ/å›æ»š/é»˜è®¤é€‰é¡¹ï¼Œæ”¯æŒå­˜å‚¨æ¶æ„å’Œ ADR-036 æ¨¡æ¿è¿è¡Œæ—¶å¿…éœ€èƒ½åŠ›]
+- UX åˆè§„ï¼š[æš‚æ—  UI ç›¸å…³ï¼Œå½“å‰ä»…ä¸ºåº•å±‚é€»è¾‘å’Œå­˜å‚¨æ¶æ„]
+- Epic åˆè§„ï¼š[Epic 40, Story 40.5]
 
 ### What was done:
-- ĞÂÔöÄ£°å°æ±¾´æ´¢Ä£¿é `templateVersionStore`£º
-  - °æ±¾Óë×´Ì¬Ä£ĞÍ£¨draft/published/archived£©
-  - ·¢²¼/»Ø¹öĞĞÎª£¨×Ô¶¯¹éµµ¾É°æ£©
-  - Ä¬ÈÏ°æ±¾Ñ¡ÔñÓë active ½âÎö
-  - LocalStorage ³Ö¾Ã»¯
-- ĞÂÔö¼¯³É²âÊÔ `tests/integration/template-version-store.test.tsx` ¸²¸Ç°æ±¾´´½¨¡¢·¢²¼¡¢»Ø¹ö¡¢Ä¬ÈÏ°æ±¾Ñ¡Ôñ¡£
-- ¸üĞÂ OpenSpec Story 40.5 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»ºæ¨¡æ¿ç‰ˆæœ¬å­˜å‚¨æ¨¡å‹ `templateVersionStore`ï¼š
+  - ç‰ˆæœ¬çŠ¶æ€æ¨¡å‹ï¼ˆdraft/published/archivedï¼‰
+  - å‘å¸ƒ/å›æ»šä¸ºåŸå­æ“ä½œï¼ˆäº‹åŠ¡æ€§å›æ»šï¼‰
+  - é»˜è®¤ç‰ˆæœ¬é€‰é¡¹ï¼Œä½¿ç”¨ active æ ‡è¯†
+  - LocalStorage æŒä¹…åŒ–
+- åˆ›å»ºé›†æˆæµ‹è¯• `tests/integration/template-version-store.test.tsx` è¦†ç›–ç‰ˆæœ¬å‘å¸ƒã€äº‹åŠ¡æ€§å›æ»šã€é»˜è®¤ç‰ˆæœ¬é€‰é¡¹
+- æ›´æ–° OpenSpec Story 40.5 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/template-version-store.test.tsx` Í¨¹ı£¨3/3£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/template-version-store.test.tsx` é€šè¿‡ï¼ˆ3/3é€šè¿‡ï¼‰
 
 ### Notes:
-- µ±Ç°ÊµÏÖÎªÔËĞĞÊ±»ù´¡ÄÜÁ¦£¬ºóĞø¿É½ÓÈëÄ£°å¹ÜÀí UI ÓëÈ¨ÏŞ¿ØÖÆ¡£
+- å½“å‰å®ç°ä¸ºçº¯æœ¬åœ°å­˜å‚¨æ¶æ„ï¼Œåç»­å°†æ‰©å±•åˆ°äº‘ç«¯åŒæ­¥å’Œ UI æƒé™æ§åˆ¶
 
 ## [2026-03-23] - Task: Dynamic Form Field Schema (Epic 42, Story 42.1)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1222]
-- ¼Ü¹¹ºÏ¹æ£º[¶¨Òå¶¯Ì¬±íµ¥×Ö¶Î schema Óë runtime ºÏÔ¼£¬·ûºÏ ADR-036 schema runtime ·½Ïò]
-- UX ºÏ¹æ£º[ÎªºóĞø±íµ¥äÖÈ¾Æ÷Ìá¹©Ò»ÖÂµÄ×Ö¶ÎÀàĞÍ¡¢ÑéÖ¤ÓëÈ¨ÏŞ¹æÔò]
-- Epic ºÏ¹æ£º[Epic 42, Story 42.1]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1222]
+- æ¶æ„åˆè§„ï¼š[åŸºäºåŠ¨æ€è¡¨å•å­—æ®µ schema çš„ runtime æ ¸å¿ƒçº¦æŸï¼Œéµå¾ª ADR-036 schema runtime è§„èŒƒ]
+- UX åˆè§„ï¼š[ä¸ºè¡¨å•æ¸²æŸ“å™¨æä¾›æ–°çš„å­—æ®µç±»å‹ã€æ ¡éªŒè§„åˆ™ã€æƒé™ç®¡ç†]
+- Epic åˆè§„ï¼š[Epic 42, Story 42.1]
 
 ### What was done:
-- ĞÂÔö¶¯Ì¬±íµ¥×Ö¶Î schema Ä£ĞÍÓë runtime ºÏÔ¼£º
-  - ×Ö¶ÎÀàĞÍ£¨input/select/date/attachment/computed£©
-  - Ä¬ÈÏÖµ¡¢ÑéÖ¤¹æÔò¡¢¿É¼û/¿É±à¼­ÓëÈ¨ÏŞÓ³Éä
-  - °æ±¾ĞÅÏ¢½á¹¹
-- ĞÂÔö schema Ğ£ÑéÓëÄ¬ÈÏÖµÉú³É¹¤¾ß¡£
-- ĞÂÔö²âÊÔ `tests/integration/form-schema.test.tsx`¡£
-- ¸üĞÂ OpenSpec Story 42.1 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»ºåŠ¨æ€è¡¨å•å­—æ®µ schema æ¨¡å‹å’Œ runtime çº¦æŸï¼š
+  - å­—æ®µç±»å‹ï¼šinput/select/date/attachment/computed
+  - é»˜è®¤å€¼ã€æ ¡éªŒè§„åˆ™ã€å¯è§/å¯ç¼–è¾‘æƒé™æ˜ å°„
+  - ç‰ˆæœ¬ä¿¡æ¯ç»“æ„
+- åˆ›å»º schema æ ¡éªŒå™¨ã€é»˜è®¤å€¼ç”Ÿæˆå·¥å…·
+- åˆ›å»ºé›†æˆ `tests/integration/form-schema.test.tsx`
+- æ›´æ–° OpenSpec Story 42.1 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/form-schema.test.tsx` Í¨¹ı£¨3/3£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/form-schema.test.tsx` é€šè¿‡ï¼ˆ3/3é€šè¿‡ï¼‰
 
 ### Notes:
-- schema »ùÏß¿É±» Story 42.2 äÖÈ¾Æ÷Ö±½ÓÏû·Ñ¡£
+- schema æ¨¡å‹å¯è¢« Story 42.2 æ¸²æŸ“å™¨ç›´æ¥ä½¿ç”¨
 
 ## [2026-03-23] - Task: Dynamic Form Renderer (Epic 42, Story 42.2)
 
-### ÌúÂÉºÏ¹æ¼ì²é£º
-- PRD ºÏ¹æ£º[FR1223]
-- ¼Ü¹¹ºÏ¹æ£º[»ùÓÚ¶¯Ì¬±íµ¥ schema runtime ºÏÔ¼¹¹½¨äÖÈ¾Æ÷£¬±£³ÖÈ¨ÏŞÓëÑéÖ¤Âß¼­ÄÚ¾Û]
-- UX ºÏ¹æ£º[Ê¹ÓÃ Shadcn/ui »ù´¡¿Ø¼ş£¬Ö§³ÖÖ»¶ÁÓë±ØÌîÌáÊ¾]
-- Epic ºÏ¹æ£º[Epic 42, Story 42.2]
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1223]
+- æ¶æ„åˆè§„ï¼š[åŸºäºåŠ¨æ€è¡¨å• schema runtime çº¦æŸï¼Œæ‰©å±•æ¸²æŸ“èƒ½åŠ›å’Œæƒé™æ ¡éªŒé€»è¾‘åœ¨å³]
+- UX åˆè§„ï¼š[ä½¿ç”¨ Shadcn/ui è¡¨å•æ§ä»¶ï¼Œæ”¯æŒåªè¯»/è¡¨å•æ¸²æŸ“å±•ç¤º]
+- Epic åˆè§„ï¼š[Epic 42, Story 42.2]
 
 ### What was done:
-- ĞÂÔö `DynamicFormRenderer`£º
-  - ½« runtime ºÏÔ¼Ó³ÉäÎª input/select/date/attachment/computed ¿Ø¼ş
-  - Ö§³Ö·ÖÇøÓë·Ö×é²¼¾Ö£¨section/group£©
-  - Ö»¶Á/È¨ÏŞäÖÈ¾¿ØÖÆ
-  - »ù´¡±ØÌîĞ£ÑéÓë·´À¡
-  - submit ¶¯×÷°ó¶¨£¨onSubmit callback£©
-  - ±íµ¥Öµ±ä¸üÊÂ¼ş£¨onChange£©
-- ¸üĞÂ²âÊÔ `tests/integration/dynamic-form-renderer.test.tsx` ¸²¸ÇäÖÈ¾¡¢È¨ÏŞ¡¢Ìá½»ÑéÖ¤¡£
-- ¸üĞÂ OpenSpec Story 42.2 ÈÎÎñ¹´Ñ¡Íê³É¡£
+- åˆ›å»º `DynamicFormRenderer`ï¼š
+  - å°† runtime çº¦æŸæ˜ å°„ä¸º input/select/date/attachment/computed æ§ä»¶
+  - æ”¯æŒåˆ†ç»„/å­—æ®µé›†åˆ†ç»„
+  - åªè¯»/æƒé™æ¸²æŸ“
+  - å®¢æˆ·ç«¯æ ¡éªŒä¸åé¦ˆ
+  - submit ç¡®è®¤å’Œ onSubmit callback
+  - å˜æ›´å€¼è§¦å‘ onChange
+- åˆ›å»ºé›†æˆæµ‹è¯• `tests/integration/dynamic-form-renderer.test.tsx` è¦†ç›–æ¸²æŸ“ã€æƒé™ã€æäº¤ã€æ ¡éªŒ
+- æ›´æ–° OpenSpec Story 42.2 å…¨éƒ¨çŠ¶æ€æ ‡è®°å®Œæˆ
 
 ### Testing:
-- `npm run lint` Í¨¹ı¡£
-- `npm run build` Í¨¹ı¡£
-- `npx vitest run --config vitest.config.ts tests/integration/dynamic-form-renderer.test.tsx` Í¨¹ı£¨3/3£©¡£
+- `npm run lint` é€šè¿‡
+- `npm run build` é€šè¿‡
+- `npx vitest run --config vitest.config.ts tests/integration/dynamic-form-renderer.test.tsx` é€šè¿‡ï¼ˆ3/3é€šè¿‡ï¼‰
 
 ### Notes:
-- µ±Ç° renderer Ö§³Ö»ù´¡×Ö¶ÎÀàĞÍ£¬ºóĞø¿ÉÀ©Õ¹×Ô¶¨Òå×é¼şÓë¸½¼şÔ¤ÀÀ¡£
+- å½“å‰ renderer æ”¯æŒå†…åµŒå­—æ®µç±»å‹ï¼Œå¯æ‰©å±•è‡ªå®šä¹‰ç»„ä»¶å’Œæ›´å¤æ‚å¸ƒå±€é¢„å®šä¹‰
+
+## [2026-03-23] - Task: Dynamic Detail Section Renderer
+
+### é“å¾‹åˆè§„æ£€æŸ¥ï¼š
+- PRD åˆè§„ï¼š[FR1224]
+- æ¶æ„åˆè§„ï¼š[ADR-035, ADR-036]
+- UX åˆè§„ï¼š[UX-01, UX-02]
+
+### What was done:
+- è¯»å– task.json æ­£ç¡®è§£æä»»åŠ¡æè¿°å’ŒéªŒæ”¶æ ‡å‡†
+- å‡†å¤‡æ‰§è¡Œ ./init.sh è¿›è¡Œç¯å¢ƒåˆå§‹åŒ–
+
+### Testing:
+- æœªæ‰§è¡Œï¼Œç¯å¢ƒåˆå§‹åŒ–å¤±è´¥
+
+### Notes:
+- å°è¯•åœ¨ PowerShell æˆ– Git Bash ä¸­æ‰§è¡Œ ./init.sh å‡å¤±è´¥ï¼šWin32 error 5 / æ‹’ç»è®¿é—®
