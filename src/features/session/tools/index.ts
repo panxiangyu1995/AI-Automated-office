@@ -55,3 +55,28 @@ export {
   createToolRegistry,
   registerCoreTools,
 } from './toolRegistry'
+
+// Executor
+export type {
+  ToolRuntimeContext,
+  ToolExecutionInput,
+  ToolExecutionResult,
+  ToolExecutionStatus,
+  ToolExecutionError,
+  ToolErrorCode,
+  ToolCallLifecycleEvent,
+  ToolCallEventType,
+  ToolExecutorFn,
+  ToolExecutorConfig,
+  ToolExecutorListener,
+} from './toolExecutor'
+
+export {
+  ToolExecutor,
+  createRuntimeContext,
+  createExecutionInput,
+  isSuccessfulResult,
+  isFailedResult,
+  isRetryableError,
+  isRecoverableError,
+} from './toolExecutor'
