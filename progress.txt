@@ -1,4 +1,61 @@
-# Progress Log - AI-Automated-office
+## [2026-03-23] - Task: Session Lifecycle Management (epic-43-story-43-1)
+
+### 铁律合规检查：
+- PRD 合规：[PRD-P2-01, PRD-P2-02 - Session Lifecycle]
+- 架构合规：[ADR-001 分层微内核架构, ADR-037 模板设计器归属]
+- UX 合规：[UX-01, UX-04]
+- Epic 合规：Epic 43 / Story 43.1 Session Lifecycle Management
+
+### What was done:
+
+**类型定义：**
+- `src/features/session/runtime/sessionLifecycle.ts`
+  - SessionState: 8 种状态 (created, active, paused, resuming, closing, closed, expired, error)
+  - SessionTransition: 8 种转换 (activate, pause, resume, close, finish, expire, error, reset)
+  - SessionOwner: 会话所有者信息
+  - SessionRuntimeMetadata: 会话运行时元数据
+  - SessionContext: 会话上下文（host 集成）
+  - SessionRecord: 完整会话记录
+  - CreateSessionRequest/Response, ResumeSessionRequest/Response, CloseSessionRequest/Response
+  - SessionStateChangeEvent: 状态变更事件
+
+**会话存储：**
+- `src/features/session/runtime/sessionStore.ts`
+  - sessionStore: Zustand 状态管理
+  - createSession/resumeSession/closeSession API
+  - 状态转换函数: activateSession, pauseSession, expireSession, errorSession, resetSession
+  - 监听器机制: addStateListener
+  - 清理函数: cleanupExpiredSessions, clearAllSessions
+  - Hooks: useActiveSession, useSessionsByOwner
+
+**API 服务：**
+- `src/features/session/runtime/sessionApi.ts`
+  - SessionApi 类：封装所有会话操作
+  - 单例模式: getSessionApi
+  - 便捷函数: createSession, resumeSession, closeSession
+
+**Host 上下文集成：**
+- `src/features/session/runtime/sessionHostContext.ts`
+  - useSessionHostContext: Hook 用于管理 host 会话生命周期
+  - useSessionStateListener: 监听会话状态变化
+  - useSessionCleanup: 定期清理过期会话
+  - 工厂函数: createWorkbenchSessionContext, createDashboardSessionContext, createEditorSessionContext
+  - 持久化集成: persistSessionToStorage, restoreSessionFromStorage
+
+**测试：**
+- `tests/unit/features/session/sessionLifecycle.test.ts`
+  - 38 个单元测试覆盖状态转换、会话创建、过期检测、上下文构建
+
+### Testing:
+- pnpm run build - 构建成功
+- 38 个单元测试通过
+- TypeScript check passed
+
+### Notes:
+- 会话状态机：created -> active -> (pause/resume) -> closing -> closed
+- 错误状态可重置：error -> reset -> created
+- 支持会话过期自动检测和清理
+- 与 Tauri 后端存储集成
 
 ## [2026-03-23] - Task: Dashboard Content Card Composition (epic-42-story-42-5)
 
