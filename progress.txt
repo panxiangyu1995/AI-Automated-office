@@ -1529,3 +1529,28 @@
 
 ### Notes:
 - 当前实现为运行时基础能力，后续可接入模板管理 UI 与权限控制。
+
+## [2026-03-23] - Task: Dynamic Form Field Schema (Epic 42, Story 42.1)
+
+### 铁律合规检查：
+- PRD 合规：[FR1222]
+- 架构合规：[定义动态表单字段 schema 与 runtime 合约，符合 ADR-036 schema runtime 方向]
+- UX 合规：[为后续表单渲染器提供一致的字段类型、验证与权限规则]
+- Epic 合规：[Epic 42, Story 42.1]
+
+### What was done:
+- 新增动态表单字段 schema 模型与 runtime 合约：
+  - 字段类型（input/select/date/attachment/computed）
+  - 默认值、验证规则、可见/可编辑与权限映射
+  - 版本信息结构
+- 新增 schema 校验与默认值生成工具。
+- 新增测试 `tests/integration/form-schema.test.tsx`。
+- 更新 OpenSpec Story 42.1 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/form-schema.test.tsx` 通过（3/3）。
+
+### Notes:
+- schema 基线可被 Story 42.2 渲染器直接消费。
