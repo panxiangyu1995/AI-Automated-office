@@ -1,453 +1,453 @@
 {
-    "version":  "1.0.0",
-    "lastUpdated":  "2026-03-22",
-    "scope":  "Current execution batch",
-    "batch":  "Batch 1",
-    "range":  "Task 47-59",
-    "tasks":  [
-                  {
-                      "id":  47,
-                      "epic":  "Epic 39",
-                      "story":  "Story 39.1",
-                      "title":  "Builtin Text Editor",
-                      "description":  "Provide a native text editor baseline that can open plain text content inside the unified editor host.",
-                      "openspec_change":  "epic-39-story-39-1-builtin-text-editor",
-                      "steps":  [
-                                    "Register the text editor with the host",
-                                    "Support file open and save lifecycle",
-                                    "Render plain text editing surface",
-                                    "Handle dirty state and close confirmation"
-                                ],
-                      "frs_covered":  [
-                                          "FR1180"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-018",
-                                           "ADR-035"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 41.1",
-                                           "Story 41.4"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  48,
-                      "epic":  "Epic 39",
-                      "story":  "Story 39.2",
-                      "title":  "Builtin Markdown Editor",
-                      "description":  "Add a markdown editor experience with preview-ready structure inside the common editor host.",
-                      "openspec_change":  "epic-39-story-39-2-builtin-markdown-editor",
-                      "steps":  [
-                                    "Register markdown editor type",
-                                    "Support markdown content editing",
-                                    "Provide preview-ready content pipeline",
-                                    "Reuse host lifecycle and save contract"
-                                ],
-                      "frs_covered":  [
-                                          "FR1181"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-018",
-                                           "ADR-035"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 39.1"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  49,
-                      "epic":  "Epic 39",
-                      "story":  "Story 39.3",
-                      "title":  "Builtin JSON Editor",
-                      "description":  "Provide a structured JSON editor baseline for template and configuration content managed by the editor host.",
-                      "openspec_change":  "epic-39-story-39-3-builtin-json-editor",
-                      "steps":  [
-                                    "Register JSON editor type",
-                                    "Support JSON formatting and validation hooks",
-                                    "Reuse open/save lifecycle",
-                                    "Integrate with template and config workflows"
-                                ],
-                      "frs_covered":  [
-                                          "FR1182"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-018",
-                                           "ADR-035"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 39.1"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  50,
-                      "epic":  "Epic 40",
-                      "story":  "Story 40.1",
-                      "title":  "Editor Registry and Resolver",
-                      "description":  "Create a unified editor registry and resolver so resources open in the correct editor host.",
-                      "openspec_change":  "epic-40-story-40-1-editor-registry-resolver",
-                      "steps":  [
-                                    "Define editor descriptor schema",
-                                    "Implement resource-to-editor resolution",
-                                    "Support fallback editor resolution",
-                                    "Expose registration hooks for core and plugin editors"
-                                ],
-                      "frs_covered":  [
-                                          "FR1217"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-018",
-                                           "ADR-035"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 41.4",
-                                           "Story 39.1"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  51,
-                      "epic":  "Epic 40",
-                      "story":  "Story 40.2",
-                      "title":  "Schema Renderer Baseline",
-                      "description":  "Implement the baseline schema renderer for dynamic content areas and template-backed views.",
-                      "openspec_change":  "epic-40-story-40-2-schema-renderer-baseline",
-                      "steps":  [
-                                    "Define schema node model",
-                                    "Render core layout and content primitives",
-                                    "Handle renderer fallback and validation",
-                                    "Support secure component whitelist"
-                                ],
-                      "frs_covered":  [
-                                          "FR1218"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 40.1"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  52,
-                      "epic":  "Epic 40",
-                      "story":  "Story 40.3",
-                      "title":  "Data Binding and Conditional Rendering",
-                      "description":  "Add data binding, conditional visibility, and repeatable content support to the schema runtime.",
-                      "openspec_change":  "epic-40-story-40-3-data-binding-conditional-rendering",
-                      "steps":  [
-                                    "Bind schema fields to runtime data",
-                                    "Support conditional visibility expressions",
-                                    "Support repeatable sections and collections",
-                                    "Validate bindings before render execution"
-                                ],
-                      "frs_covered":  [
-                                          "FR1219"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 40.2"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  53,
-                      "epic":  "Epic 40",
-                      "story":  "Story 40.4",
-                      "title":  "Template Permission and Safety Boundary",
-                      "description":  "Enforce template runtime safety, permission checks, and restricted component access.",
-                      "openspec_change":  "epic-40-story-40-4-template-permission-safety-boundary",
-                      "steps":  [
-                                    "Restrict component and action whitelist",
-                                    "Run permission checks before template action execution",
-                                    "Prevent unsafe schema access to unauthorized fields",
-                                    "Record runtime safety decisions for audit"
-                                ],
-                      "frs_covered":  [
-                                          "FR1220"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR8",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-002",
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 40.2",
-                                           "Story 40.3",
-                                           "Story 2.7"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  54,
-                      "epic":  "Epic 40",
-                      "story":  "Story 40.5",
-                      "title":  "Template Publish and Version Baseline",
-                      "description":  "Create the minimum publish and version flow for dynamic templates used by runtime hosts.",
-                      "openspec_change":  "epic-40-story-40-5-template-publish-version-baseline",
-                      "steps":  [
-                                    "Define template version metadata",
-                                    "Support draft and published states",
-                                    "Resolve active version by host context",
-                                    "Keep change history for runtime rollback"
-                                ],
-                      "frs_covered":  [
-                                          "FR1221"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 40.2",
-                                           "Story 40.3"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  55,
-                      "epic":  "Epic 42",
-                      "story":  "Story 42.1",
-                      "title":  "Dynamic Form Field Schema",
-                      "description":  "Define the field schema and runtime contract for dynamic business forms.",
-                      "openspec_change":  "epic-42-story-42-1-dynamic-form-field-schema",
-                      "steps":  [
-                                    "Define field schema for input, select, date, attachment, and computed fields",
-                                    "Support default values, visibility, editability, and validation rules",
-                                    "Map field permissions to runtime contract",
-                                    "Expose stable schema versioning rules"
-                                ],
-                      "frs_covered":  [
-                                          "FR1222"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 40.2",
-                                           "Story 40.3",
-                                           "Story 40.4"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  56,
-                      "epic":  "Epic 42",
-                      "story":  "Story 42.2",
-                      "title":  "Dynamic Form Renderer",
-                      "description":  "Build the renderer that turns approved field schema into dynamic form UI inside the page host.",
-                      "openspec_change":  "epic-42-story-42-2-dynamic-form-renderer",
-                      "steps":  [
-                                    "Render field schema into form controls",
-                                    "Apply validation and permission rules at runtime",
-                                    "Support section layout and nested groups",
-                                    "Expose form state change events to the host"
-                                ],
-                      "frs_covered":  [
-                                          "FR1223"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 42.1"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  57,
-                      "epic":  "Epic 42",
-                      "story":  "Story 42.3",
-                      "title":  "Dynamic Detail Section Renderer",
-                      "description":  "Render dynamic detail sections for business entities using schema-driven blocks.",
-                      "openspec_change":  "epic-42-story-42-3-dynamic-detail-section-renderer",
-                      "steps":  [
-                                    "Define detail section block schema",
-                                    "Render fields, attachments, relations, and timeline blocks",
-                                    "Support conditional sections and ordering",
-                                    "Integrate read-only permission checks"
-                                ],
-                      "frs_covered":  [
-                                          "FR1224"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 40.2",
-                                           "Story 40.3",
-                                           "Story 40.4"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  58,
-                      "epic":  "Epic 42",
-                      "story":  "Story 42.4",
-                      "title":  "Approval Content Dynamicization",
-                      "description":  "Convert approval content bodies into dynamic schema-driven documents while keeping actions fixed.",
-                      "openspec_change":  "epic-42-story-42-4-approval-content-dynamicization",
-                      "steps":  [
-                                    "Keep approval actions in fixed UI shell",
-                                    "Render approval body content through schema runtime",
-                                    "Respect action, field, and data permissions",
-                                    "Preserve approval trace and auditability"
-                                ],
-                      "frs_covered":  [
-                                          "FR1225"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR8",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-002",
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 42.2",
-                                           "Story 42.3"
-                                       ],
-                      "passes":  false
-                  },
-                  {
-                      "id":  59,
-                      "epic":  "Epic 42",
-                      "story":  "Story 42.5",
-                      "title":  "Dashboard Content Card Composition",
-                      "description":  "Support dynamic workbench cards and dashboard content blocks as Agent-ready runtime targets.",
-                      "openspec_change":  "epic-42-story-42-5-dashboard-content-card-composition",
-                      "steps":  [
-                                    "Define card block schema for workbench content",
-                                    "Render cards inside the page host content region",
-                                    "Support card-level permissions and visibility",
-                                    "Prepare card containers for Agent writeback"
-                                ],
-                      "frs_covered":  [
-                                          "FR1226"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-035",
-                                           "ADR-036"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
-                                     ],
-                      "dependencies":  [
-                                           "Story 41.1",
-                                           "Story 42.3"
-                                       ],
-                      "passes":  false
-                  }
-              ]
+    "version": "1.0.0",
+    "lastUpdated": "2026-03-22",
+    "scope": "Current execution batch",
+    "batch": "Batch 1",
+    "range": "Task 47-59",
+    "tasks": [
+        {
+            "id": 47,
+            "epic": "Epic 39",
+            "story": "Story 39.1",
+            "title": "Builtin Text Editor",
+            "description": "Provide a native text editor baseline that can open plain text content inside the unified editor host.",
+            "openspec_change": "epic-39-story-39-1-builtin-text-editor",
+            "steps": [
+                "Register the text editor with the host",
+                "Support file open and save lifecycle",
+                "Render plain text editing surface",
+                "Handle dirty state and close confirmation"
+            ],
+            "frs_covered": [
+                "FR1180"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-018",
+                "ADR-035"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 41.1",
+                "Story 41.4"
+            ],
+            "passes": true
+        },
+        {
+            "id": 48,
+            "epic": "Epic 39",
+            "story": "Story 39.2",
+            "title": "Builtin Markdown Editor",
+            "description": "Add a markdown editor experience with preview-ready structure inside the common editor host.",
+            "openspec_change": "epic-39-story-39-2-builtin-markdown-editor",
+            "steps": [
+                "Register markdown editor type",
+                "Support markdown content editing",
+                "Provide preview-ready content pipeline",
+                "Reuse host lifecycle and save contract"
+            ],
+            "frs_covered": [
+                "FR1181"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-018",
+                "ADR-035"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 39.1"
+            ],
+            "passes": false
+        },
+        {
+            "id": 49,
+            "epic": "Epic 39",
+            "story": "Story 39.3",
+            "title": "Builtin JSON Editor",
+            "description": "Provide a structured JSON editor baseline for template and configuration content managed by the editor host.",
+            "openspec_change": "epic-39-story-39-3-builtin-json-editor",
+            "steps": [
+                "Register JSON editor type",
+                "Support JSON formatting and validation hooks",
+                "Reuse open/save lifecycle",
+                "Integrate with template and config workflows"
+            ],
+            "frs_covered": [
+                "FR1182"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-018",
+                "ADR-035"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 39.1"
+            ],
+            "passes": false
+        },
+        {
+            "id": 50,
+            "epic": "Epic 40",
+            "story": "Story 40.1",
+            "title": "Editor Registry and Resolver",
+            "description": "Create a unified editor registry and resolver so resources open in the correct editor host.",
+            "openspec_change": "epic-40-story-40-1-editor-registry-resolver",
+            "steps": [
+                "Define editor descriptor schema",
+                "Implement resource-to-editor resolution",
+                "Support fallback editor resolution",
+                "Expose registration hooks for core and plugin editors"
+            ],
+            "frs_covered": [
+                "FR1217"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-018",
+                "ADR-035"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 41.4",
+                "Story 39.1"
+            ],
+            "passes": false
+        },
+        {
+            "id": 51,
+            "epic": "Epic 40",
+            "story": "Story 40.2",
+            "title": "Schema Renderer Baseline",
+            "description": "Implement the baseline schema renderer for dynamic content areas and template-backed views.",
+            "openspec_change": "epic-40-story-40-2-schema-renderer-baseline",
+            "steps": [
+                "Define schema node model",
+                "Render core layout and content primitives",
+                "Handle renderer fallback and validation",
+                "Support secure component whitelist"
+            ],
+            "frs_covered": [
+                "FR1218"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 40.1"
+            ],
+            "passes": false
+        },
+        {
+            "id": 52,
+            "epic": "Epic 40",
+            "story": "Story 40.3",
+            "title": "Data Binding and Conditional Rendering",
+            "description": "Add data binding, conditional visibility, and repeatable content support to the schema runtime.",
+            "openspec_change": "epic-40-story-40-3-data-binding-conditional-rendering",
+            "steps": [
+                "Bind schema fields to runtime data",
+                "Support conditional visibility expressions",
+                "Support repeatable sections and collections",
+                "Validate bindings before render execution"
+            ],
+            "frs_covered": [
+                "FR1219"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 40.2"
+            ],
+            "passes": false
+        },
+        {
+            "id": 53,
+            "epic": "Epic 40",
+            "story": "Story 40.4",
+            "title": "Template Permission and Safety Boundary",
+            "description": "Enforce template runtime safety, permission checks, and restricted component access.",
+            "openspec_change": "epic-40-story-40-4-template-permission-safety-boundary",
+            "steps": [
+                "Restrict component and action whitelist",
+                "Run permission checks before template action execution",
+                "Prevent unsafe schema access to unauthorized fields",
+                "Record runtime safety decisions for audit"
+            ],
+            "frs_covered": [
+                "FR1220"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR8",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-002",
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 40.2",
+                "Story 40.3",
+                "Story 2.7"
+            ],
+            "passes": false
+        },
+        {
+            "id": 54,
+            "epic": "Epic 40",
+            "story": "Story 40.5",
+            "title": "Template Publish and Version Baseline",
+            "description": "Create the minimum publish and version flow for dynamic templates used by runtime hosts.",
+            "openspec_change": "epic-40-story-40-5-template-publish-version-baseline",
+            "steps": [
+                "Define template version metadata",
+                "Support draft and published states",
+                "Resolve active version by host context",
+                "Keep change history for runtime rollback"
+            ],
+            "frs_covered": [
+                "FR1221"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 40.2",
+                "Story 40.3"
+            ],
+            "passes": false
+        },
+        {
+            "id": 55,
+            "epic": "Epic 42",
+            "story": "Story 42.1",
+            "title": "Dynamic Form Field Schema",
+            "description": "Define the field schema and runtime contract for dynamic business forms.",
+            "openspec_change": "epic-42-story-42-1-dynamic-form-field-schema",
+            "steps": [
+                "Define field schema for input, select, date, attachment, and computed fields",
+                "Support default values, visibility, editability, and validation rules",
+                "Map field permissions to runtime contract",
+                "Expose stable schema versioning rules"
+            ],
+            "frs_covered": [
+                "FR1222"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 40.2",
+                "Story 40.3",
+                "Story 40.4"
+            ],
+            "passes": false
+        },
+        {
+            "id": 56,
+            "epic": "Epic 42",
+            "story": "Story 42.2",
+            "title": "Dynamic Form Renderer",
+            "description": "Build the renderer that turns approved field schema into dynamic form UI inside the page host.",
+            "openspec_change": "epic-42-story-42-2-dynamic-form-renderer",
+            "steps": [
+                "Render field schema into form controls",
+                "Apply validation and permission rules at runtime",
+                "Support section layout and nested groups",
+                "Expose form state change events to the host"
+            ],
+            "frs_covered": [
+                "FR1223"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 42.1"
+            ],
+            "passes": false
+        },
+        {
+            "id": 57,
+            "epic": "Epic 42",
+            "story": "Story 42.3",
+            "title": "Dynamic Detail Section Renderer",
+            "description": "Render dynamic detail sections for business entities using schema-driven blocks.",
+            "openspec_change": "epic-42-story-42-3-dynamic-detail-section-renderer",
+            "steps": [
+                "Define detail section block schema",
+                "Render fields, attachments, relations, and timeline blocks",
+                "Support conditional sections and ordering",
+                "Integrate read-only permission checks"
+            ],
+            "frs_covered": [
+                "FR1224"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 40.2",
+                "Story 40.3",
+                "Story 40.4"
+            ],
+            "passes": false
+        },
+        {
+            "id": 58,
+            "epic": "Epic 42",
+            "story": "Story 42.4",
+            "title": "Approval Content Dynamicization",
+            "description": "Convert approval content bodies into dynamic schema-driven documents while keeping actions fixed.",
+            "openspec_change": "epic-42-story-42-4-approval-content-dynamicization",
+            "steps": [
+                "Keep approval actions in fixed UI shell",
+                "Render approval body content through schema runtime",
+                "Respect action, field, and data permissions",
+                "Preserve approval trace and auditability"
+            ],
+            "frs_covered": [
+                "FR1225"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR8",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-002",
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 42.2",
+                "Story 42.3"
+            ],
+            "passes": false
+        },
+        {
+            "id": 59,
+            "epic": "Epic 42",
+            "story": "Story 42.5",
+            "title": "Dashboard Content Card Composition",
+            "description": "Support dynamic workbench cards and dashboard content blocks as Agent-ready runtime targets.",
+            "openspec_change": "epic-42-story-42-5-dashboard-content-card-composition",
+            "steps": [
+                "Define card block schema for workbench content",
+                "Render cards inside the page host content region",
+                "Support card-level permissions and visibility",
+                "Prepare card containers for Agent writeback"
+            ],
+            "frs_covered": [
+                "FR1226"
+            ],
+            "nfrs_covered": [
+                "NFR1",
+                "NFR16"
+            ],
+            "arch_covered": [
+                "ADR-035",
+                "ADR-036"
+            ],
+            "ux_covered": [
+                "UX-01",
+                "UX-02"
+            ],
+            "dependencies": [
+                "Story 41.1",
+                "Story 42.3"
+            ],
+            "passes": false
+        }
+    ]
 }

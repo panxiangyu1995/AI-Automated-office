@@ -1304,3 +1304,29 @@
 
 ### Notes:
 - 协议层已稳定，后续 Story 40/42 可直接复用 openMode + dataSource + permission + lifecycle contract
+## [2026-03-22] - Task: Builtin Text Editor (Epic 39, Story 39.1)
+
+### 铁律合规检查：
+- PRD 合规：[FR1180]
+- 架构合规：[遵循 ADR-035 编辑器“注册表 + 解析器 + 宿主”模式，在 RouteContainer/workbenchHost 的 editor 模式下接入内置文本编辑器，不绕过统一宿主协议]
+- UX 合规：[保持 VSCode 风格四栏中的编辑区承载方式，使用 Shadcn/ui（Button/Textarea）与 Lucide 图标，状态栏品牌色体系不变]
+- Epic 合规：[Epic 39, Story 39.1]
+
+### What was done:
+- 新增内置文本编辑页面 `BuiltinTextEditorPage`，支持纯文本编辑、保存、只读/可编辑切换。
+- 新增本地文档存储模块 `textDocumentStorage`，实现文档打开/保存生命周期（localStorage 持久化）。
+- 新增编辑器状态 store `editorStore`，统一暴露当前文档的保存中/未保存/已保存状态。
+- 在 `workbenchRoutes` 注册 `/editor/:docId` 编辑器路由，使用 editor host descriptor 渲染内置编辑器。
+- 在 `AppLayout` 状态栏接入统一保存状态指示（保存中/未保存更改/已保存）。
+- 新增集成测试 `tests/integration/builtin-text-editor.test.tsx`（加载、保存、只读、关闭确认）。
+- 新增浏览器烟测 `tests/e2e/smoke/builtin-text-editor.spec.ts`，验证真实页面编辑与保存链路。
+- 更新 OpenSpec 变更任务清单 `tasks.md` 全部勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/builtin-text-editor.test.tsx` 通过（2/2）。
+- `npx playwright test tests/e2e/smoke/builtin-text-editor.spec.ts --project=smoke` 通过（1/1）。
+
+### Notes:
+- Playwright 初次失败由顶部提示浮层拦截点击导致，已在用例中通过 `addInitScript` 预设 `topbar-hint-dismissed=true` 规避，测试稳定通过。

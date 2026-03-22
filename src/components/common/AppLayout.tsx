@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useUIStore } from '../../stores/uiStore'
+import { useEditorStore } from '../../stores/editorStore'
 import { TopBar } from './TopBar'
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
@@ -21,6 +23,7 @@ type SearchResult = {
 const searchResults: SearchResult[] = []
 
 export function AppLayout() {
+  const location = useLocation()
   const { 
     sidebarCollapsed,
     topBarVisible,
@@ -33,6 +36,7 @@ export function AppLayout() {
   const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const activeEditorDocument = useEditorStore((state) => state.activeDocument)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const handleSelectResult = (index: number) => {
     const result = searchResults[index]
@@ -72,6 +76,22 @@ export function AppLayout() {
     }
   }, [toggleTopBar])
 
+  const statusMessage = (() => {
+    if (!location.pathname.startsWith('/editor') || !activeEditorDocument) {
+      return '系统就绪'
+    }
+
+    if (activeEditorDocument.isSaving) {
+      return `${activeEditorDocument.title} · 保存中...`
+    }
+
+    if (activeEditorDocument.isDirty) {
+      return `${activeEditorDocument.title} · 未保存更改`
+    }
+
+    return `${activeEditorDocument.title} · 已保存`
+  })()
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* 顶部工具栏 - 必须 */}
@@ -103,7 +123,7 @@ export function AppLayout() {
       </div>
 
       {/* 状态栏 */}
-      <StatusBar />
+      <StatusBar message={statusMessage} />
 
       {/* 布局设置对话框 */}
       <LayoutSettingsDialog 

@@ -10,6 +10,7 @@ import {
 } from '@/features/admin/pages'
 import { PermissionCenter, FineGrainedPermissionPage } from '@/features/permission'
 import { AuditPage } from '@/features/audit'
+import { BuiltinTextEditorPage } from '@/features/editor/pages'
 
 export const workbenchRoutes: WorkbenchRouteDefinition[] = [
   {
@@ -92,6 +93,19 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     mode: 'static',
     requiredPermission: 'admin_audit_read',
     component: AuditPage,
+  },
+  {
+    id: 'builtin-text-editor',
+    path: 'editor/:docId',
+    title: 'Text Editor',
+    resource: 'editor/text',
+    mode: 'editor',
+    resolveDescriptor: (context) => ({
+      id: `builtin-text-editor:${context.params.docId ?? 'untitled'}`,
+      title: `Text Editor · ${context.params.docId ?? 'untitled.txt'}`,
+      mode: 'editor',
+      render: () => <BuiltinTextEditorPage context={context} />,
+    }),
   },
 ]
 
