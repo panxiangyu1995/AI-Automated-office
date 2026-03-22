@@ -1554,3 +1554,30 @@
 
 ### Notes:
 - schema 基线可被 Story 42.2 渲染器直接消费。
+
+## [2026-03-23] - Task: Dynamic Form Renderer (Epic 42, Story 42.2)
+
+### 铁律合规检查：
+- PRD 合规：[FR1223]
+- 架构合规：[基于动态表单 schema runtime 合约构建渲染器，保持权限与验证逻辑内聚]
+- UX 合规：[使用 Shadcn/ui 基础控件，支持只读与必填提示]
+- Epic 合规：[Epic 42, Story 42.2]
+
+### What was done:
+- 新增 `DynamicFormRenderer`：
+  - 将 runtime 合约映射为 input/select/date/attachment/computed 控件
+  - 支持分区与分组布局（section/group）
+  - 只读/权限渲染控制
+  - 基础必填校验与反馈
+  - submit 动作绑定（onSubmit callback）
+  - 表单值变更事件（onChange）
+- 更新测试 `tests/integration/dynamic-form-renderer.test.tsx` 覆盖渲染、权限、提交验证。
+- 更新 OpenSpec Story 42.2 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/dynamic-form-renderer.test.tsx` 通过（3/3）。
+
+### Notes:
+- 当前 renderer 支持基础字段类型，后续可扩展自定义组件与附件预览。

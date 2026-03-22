@@ -24,6 +24,8 @@ export interface FormFieldSchema {
   visible?: boolean
   editable?: boolean
   permission?: FieldPermission
+  section?: string
+  group?: string
 }
 
 export interface FormSchemaVersion {
@@ -101,4 +103,3 @@ export function applyDefaultValues(schema: DynamicFormSchema): Record<string, st
     return acc
   }, {})
 }
-
