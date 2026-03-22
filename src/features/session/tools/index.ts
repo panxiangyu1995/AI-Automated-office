@@ -106,3 +106,39 @@ export {
   createPluginToolId,
   createMCPToolId,
 } from './toolAdapters'
+
+// Result Normalization
+export type {
+  NormalizedStatus,
+  ResultSeverity,
+  NormalizedSuccessEnvelope,
+  NormalizedFailureEnvelope,
+  NormalizedPartialEnvelope,
+  NormalizedResultEnvelope,
+  NormalizedError,
+  ErrorCategory,
+  ResultMetadata,
+  RawOutputReference,
+  PartialResultItem,
+  PlannerPayload,
+  AuditPayload,
+  UIWritebackPayload,
+  SideEffect,
+  SuggestedAction,
+  UIAction,
+  RefreshInstruction,
+  ResultNormalizerConfig,
+  NormalizationOptions,
+  PlannerContext,
+  AuditContext,
+  UIContext,
+} from './toolResultNormalization'
+
+export {
+  ResultNormalizer,
+  createResultNormalizer,
+  normalizeResult,
+  isSuccessEnvelope,
+  isFailureEnvelope,
+  isPartialEnvelope,
+} from './toolResultNormalization'

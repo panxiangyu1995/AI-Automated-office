@@ -1,3 +1,51 @@
+## 2026-03-23 - Task 71: Tool Result Normalization (Story 45.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - Tool Result Normalization
+- 架构合规：ADR-018, ADR-037 - 结果归一化
+- UX 合规：UX-01, UX-04 - 标准化结果输出
+
+### What was done:
+- 创建 toolResultNormalization.ts - 工具结果归一化模块
+  - ResultNormalizer: 核心归一化器类
+  - NormalizedSuccessEnvelope: 成功结果信封
+  - NormalizedFailureEnvelope: 失败结果信封
+  - NormalizedPartialEnvelope: 部分成功信封
+  - NormalizedError: 归一化错误结构
+
+- 下游载荷生成：
+  - PlannerPayload: 计划器载荷（副作用、建议操作、置信度）
+  - AuditPayload: 审计载荷（操作、资源、结果、敏感字段）
+  - UIWritebackPayload: UI 回写载荷（显示数据、状态指示）
+
+- 功能实现：
+  - 成功/失败结果信封标准化
+  - 工具输出映射为结构化载荷
+  - 原始输出引用保存（内联/引用模式）
+  - 敏感字段自动检测和脱敏
+  - 副作用提取（create/update/delete）
+  - 建议操作生成（retry/recover）
+
+- 辅助函数：
+  - normalizeResult: 便捷归一化函数
+  - createResultNormalizer: 创建归一化器
+  - isSuccessEnvelope/isFailureEnvelope/isPartialEnvelope: 类型守卫
+
+- 更新 index.ts - 导出新模块
+
+- 创建 toolResultNormalization.test.ts - 40 个单元测试
+
+### Testing:
+- 162 个工具模块单元测试通过
+- TypeScript check passed
+
+### Notes:
+- 依赖 Story 45.2 (Tool Executor) 和 Story 45.3 (Tool Adapters) 已完成
+- 为 planner、audit、UI writeback 层提供标准化结果接口
+- 支持敏感字段自动脱敏（password, token, secret, key 等）
+
+---
+
 ## [2026-03-23] - Task: Unified Core Plugin and MCP Tool Adapters (Story 45.3)
 
 ### 铁律合规检查：
