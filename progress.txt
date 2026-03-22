@@ -1,3 +1,35 @@
+## [2026-03-23] - Task: Replan and Failure Strategy (Story 44.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - Replan and Failure Strategy
+- 架构合规：ADR-001, ADR-037 - 分层架构，重规划策略
+- UX 合规：UX-01, UX-04 - 故障处理支持
+
+### What was done:
+- 创建 replanStrategy.ts - 重规划策略
+  - 有界重规划规则（最大重规划次数）
+  - 8 种重规划触发器：tool_failure, permission_denied, step_timeout, user_cancelled, resource_error, unexpected_state, constraint_violation, dependency_failed
+  - 7 种重规划动作：retry_step, skip_step, restart_plan, partial_replan, abort, escalate, fallback
+  - 失败严重性评估
+  - 指数退避延迟计算
+  - 重规划历史记录
+
+- 创建 index.ts - 模块导出
+
+- 创建 replanStrategy.test.ts - 单元测试
+
+### Testing:
+- 25 个单元测试覆盖重规划决策、失败处理、历史记录
+- TypeScript check passed
+- All 392 unit tests passed
+
+### Notes:
+- 依赖 Story 44.2 (Structured Planner) 已完成
+- 依赖 Story 44.3 (Step Executor) 已完成
+- 为 Agent 运行时提供完整的故障恢复支持
+
+---
+
 ## [2026-03-23] - Task: Step Executor (Story 44.3)
 
 ### 铁律合规检查：
