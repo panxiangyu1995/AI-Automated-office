@@ -1,5 +1,5 @@
 {
-    "version":  "1.0.0",
+    "version":  "1.1.0",
     "lastUpdated":  "2026-03-22",
     "scope":  "Pending execution batch",
     "batch":  "Batch 2",
@@ -19,7 +19,8 @@
                                     "Integrate session lifecycle with host context"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-001"
+                                          "PRD-P2-01",
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -31,7 +32,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 41.1",
@@ -53,7 +54,8 @@
                                     "Expose serialization contract for frontend streaming"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-002"
+                                          "PRD-P2-01",
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -65,7 +67,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 43.1"
@@ -86,7 +88,8 @@
                                     "Handle reconnect and replay for active sessions"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-003"
+                                          "PRD-P2-01",
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -98,7 +101,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 43.2"
@@ -119,7 +122,8 @@
                                     "Record recovery decisions in runtime history"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-004"
+                                          "PRD-P2-01",
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -131,7 +135,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 43.1",
@@ -153,7 +157,7 @@
                                     "Persist step and task status consistently"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-005"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -165,7 +169,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 43.1",
@@ -187,7 +191,7 @@
                                     "Persist plans for audit and replay"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-006"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -199,7 +203,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 44.1"
@@ -220,7 +224,7 @@
                                     "Update state and message parts after each step"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-007"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -232,7 +236,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 44.1",
@@ -254,7 +258,7 @@
                                     "Surface actionable failure states to the host"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-008"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -266,7 +270,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 44.2",
@@ -288,7 +292,7 @@
                                     "Validate registry uniqueness and availability"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-009"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -300,7 +304,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 44.2"
@@ -321,7 +325,7 @@
                                     "Track tool call lifecycle in the session stream"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-010"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -333,7 +337,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 45.1",
@@ -355,7 +359,7 @@
                                     "Keep adapter outputs consistent across tool sources"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-011"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -367,7 +371,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 45.1",
@@ -389,7 +393,7 @@
                                     "Expose normalized results to downstream runtime layers"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-012"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -401,7 +405,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 45.2",
@@ -423,7 +427,8 @@
                                     "Publish permission decisions into the runtime stream"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-013"
+                                          "PRD-P2-02",
+                                          "PRD-P2-03"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -436,7 +441,8 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-02",
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 45.1",
@@ -459,7 +465,8 @@
                                     "Prevent automatic execution of high-risk actions"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-014"
+                                          "PRD-P2-02",
+                                          "PRD-P2-03"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -472,7 +479,8 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-02",
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 46.1"
@@ -493,7 +501,8 @@
                                     "Resume or terminate execution based on confirmation result"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-015"
+                                          "PRD-P2-02",
+                                          "PRD-P2-03"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -506,7 +515,8 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-02",
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 46.2",
@@ -528,7 +538,8 @@
                                     "Expose authorization outcomes to audit logs"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-016"
+                                          "PRD-P2-02",
+                                          "PRD-P2-03"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -541,7 +552,8 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-02",
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 46.1",

@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "6f2c9c0ab62a0d030780c51b955e4f0ec561581d59fa123daad1c87a7748b85a"
+    },
     "architecture-diagrams": {
       "source": "aj-geddes/useful-ai-prompts",
       "sourceType": "github",
@@ -20,6 +25,16 @@
       "source": "currents-dev/playwright-best-practices-skill",
       "sourceType": "github",
       "computedHash": "6db654e753257e642d6507d59b4fc633a2382e93429748ba0fb6817c23ef5216"
+    },
+    "remotion-best-practices": {
+      "source": "remotion-dev/skills",
+      "sourceType": "github",
+      "computedHash": "6f22ccc0dd7103de270a465b30e44b001bcee4751e43197bba60680e69928635"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "e218e50fe7057a4db91390e579c7db5aafac2394c31a3d8e5fa9444c8fa00726"
     }
   }
 }

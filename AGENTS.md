@@ -770,7 +770,7 @@ cp .env.example .env  # 复制环境变量模板
 │  10. 执行测试验证                                            │
 │     → lint / build / playwright mcp浏览器测试                │
 │     ↓                                                       │
-│  11. 更新 progress.txt/标记tasks.md为已完成                   │
+│  11. 更新 progress.txt/标记tasks.md中的内容为已完成                   │
 │     ↓                                                       │
 │  12. 更新 task.json (passes: true)                           │
 │     ↓                                                       │

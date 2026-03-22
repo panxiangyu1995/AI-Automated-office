@@ -1,5 +1,5 @@
 {
-    "version":  "1.0.0",
+    "version":  "1.1.0",
     "lastUpdated":  "2026-03-22",
     "scope":  "Pending execution batch",
     "batch":  "Batch 3",
@@ -19,7 +19,7 @@
                                     "Reuse existing permission model identifiers"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-017"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -31,7 +31,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 44.1",
@@ -53,7 +53,7 @@
                                     "Expose context safely to planner and tool runtime"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-018"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -65,7 +65,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 41.4",
@@ -87,7 +87,7 @@
                                     "Refresh memory after important runtime milestones"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-019"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -98,7 +98,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 43.2",
@@ -120,7 +120,7 @@
                                     "Keep retrieval references available for audit"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-020"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -131,7 +131,7 @@
                                        ],
                       "ux_covered":  [
                                          "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 47.1",
@@ -153,7 +153,7 @@
                                     "Expose trace lookup for debugging"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-021"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -163,8 +163,7 @@
                                            "ADR-037"
                                        ],
                       "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 43.2",
@@ -186,7 +185,7 @@
                                     "Make audit events available for future governance views"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-022"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -198,8 +197,7 @@
                                            "ADR-037"
                                        ],
                       "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 45.4",
@@ -222,7 +220,7 @@
                                     "Expose records for recovery and analysis flows"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-023"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -232,8 +230,7 @@
                                            "ADR-037"
                                        ],
                       "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 44.4",
@@ -255,7 +252,7 @@
                                     "Support filtering by trace or session id"
                                 ],
                       "frs_covered":  [
-                                          "FR-P2-024"
+                                          "PRD-P2-02"
                                       ],
                       "nfrs_covered":  [
                                            "NFR1",
@@ -265,8 +262,7 @@
                                            "ADR-037"
                                        ],
                       "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02"
+                                         "UX-04"
                                      ],
                       "dependencies":  [
                                            "Story 48.1",
