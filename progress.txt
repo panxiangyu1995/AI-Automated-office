@@ -1,3 +1,37 @@
+## [2026-03-23] - Task: Agent Runtime State Machine (Story 44.1)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - Agent Runtime State Machine
+- 架构合规：ADR-001, ADR-037 - 分层架构，运行时状态机
+- UX 合规：UX-01, UX-04 - 状态机支持
+
+### What was done:
+- 创建 runtimeStateMachine.ts - 运行时状态机
+  - 10 种运行时状态：idle, planning, running, confirming, paused, completing, completed, failed, cancelled, timeout
+  - 有效状态转换映射和验证
+  - 步骤和任务状态管理
+  - 状态持久化到 localStorage
+  - 监听器系统支持状态变更通知
+
+- 创建 runtimeStateContext.tsx - React 运行时状态上下文
+  - RuntimeStateProvider 组件
+  - useRuntimeStateContext/useRuntimeState/useRuntimeIsActive hooks
+  - useRuntimeTransitions/useRuntimeTasks/useRuntimeSteps hooks
+  - useRuntimeConfirmation/useRuntimeError hooks
+  - 工厂函数支持不同宿主类型
+
+### Testing:
+- 94 个单元测试覆盖状态转换、任务管理、步骤管理、持久化
+- TypeScript check passed
+- Build succeeded
+
+### Notes:
+- 依赖 Story 43.1 (Session Lifecycle Management) 和 Story 43.2 (Runtime Events)
+- 为 Agent 运行时提供完整的状态机支持
+- 支持任务和步骤的完整生命周期管理
+
+---
+
 ## [2026-03-23] - Task: Interrupt Retry and Checkpoint Recovery (Story 43.4)
 
 ### 铁律合规检查：

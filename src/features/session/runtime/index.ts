@@ -70,3 +70,59 @@ export {
   persistSessionToStorage,
   restoreSessionFromStorage,
 } from './sessionHostContext'
+
+// Runtime State Machine
+export {
+  // Types
+  type RuntimeState,
+  type RuntimeTransition,
+  type StepStatus,
+  type TaskStatus,
+  type StepRecord,
+  type TaskRecord,
+  type RuntimeStateContext,
+  type RuntimeStateChangeEvent,
+  type RuntimeStateMachineConfig,
+  
+  // Constants
+  VALID_RUNTIME_TRANSITIONS,
+  RUNTIME_TRANSITION_TARGETS,
+  
+  // Class
+  RuntimeStateMachine,
+  
+  // Functions
+  createRuntimeStateMachine,
+  isRuntimeActive,
+  isRuntimeTerminal,
+  isRuntimeWaitingForInput,
+  getRuntimeStateName,
+  calculateOverallProgress,
+  getActiveTask,
+  getPendingTasksCount,
+  getCompletedTasksCount,
+  getFailedTasksCount,
+} from './runtimeStateMachine'
+
+// Runtime State Context (React)
+export {
+  // Types
+  type RuntimeStateContextValue,
+  type RuntimeStateProviderProps,
+  
+  // Components
+  RuntimeStateProvider,
+  
+  // Hooks
+  useRuntimeStateContext,
+  useRuntimeState,
+  useRuntimeIsActive,
+  useRuntimeIsTerminal,
+  useRuntimeIsWaitingForInput,
+  useRuntimeTransitions,
+  useRuntimeTasks,
+  useRuntimeSteps,
+  useRuntimeConfirmation,
+  useRuntimeError,
+  useRuntimeStateName,
+} from './runtimeStateContext'
