@@ -6354,6 +6354,52 @@ ws_endpoint = "wss://ws.example.com"
 3. 模板运行时必须复用统一组件协议、统一事件协议和统一审计链路，不允许部门插件各自实现不兼容渲染框架。
 4. 已完成固定页面无需整体返工，但业务承载区应逐步改造为页面容器和动态渲染宿主。
 
+## Phase 2: 通用 Agent Runtime 与动态 UI 集成架构
+
+### 架构目标
+
+Phase 2 的目标不是为单一部门构建专用 Agent，而是在现有 Agent Core 基础上补齐通用 Agent Runtime，使同一套 Agent 核心可以覆盖审批、销售、财务、仓储、人事、售后、招投标和管理层等多业务场景。
+
+### 分层关系
+
+```text
+User Intent
+  -> Agent Runtime
+  -> Planner / Tool Selection / Permission Gate
+  -> Department Tools / MCP / Skills / Plugins
+  -> Dynamic UI Host / Template Runtime / Form Runtime
+  -> Human Confirmation / Audit / Memory
+```
+
+### 关键组件边界
+
+| 组件 | 职责 | 与 Epic 41/39/40/42 的关系 |
+|------|------|---------------------------|
+| Agent Runtime | 统一任务生命周期、计划拆解、步骤执行、失败恢复 | 通过页面宿主和动态内容区回写结果 |
+| Tool Registry | 统一注册部门工具、插件工具、MCP工具与系统工具 | 结果可进入编辑器、模板、表单、详情页 |
+| Context Assembler | 组装用户、租户、部门、页面、资源、知识库上下文 | 依赖 Epic 41 的页面上下文协议 |
+| Permission Gate | 校验工具权限、数据权限、字段权限、动作权限 | 依赖 Epic 42 的字段和区块权限承载 |
+| Template Runtime | 渲染 Schema、执行数据绑定、条件/循环渲染 | 依赖 Epic 40 的基础运行时能力 |
+| Editor Host | 承载文档、模板、结构化编辑器实例 | 依赖 Epic 39 和 Epic 41 |
+
+### 执行原则
+
+1. 通用 Agent Runtime 必须输出到统一页面宿主和动态内容区，而不是仅停留在对话消息中。
+2. Agent 对业务页面的写入必须通过模板运行时、表单运行时或编辑器宿主完成，不允许直接绕过 UI 协议修改页面状态。
+3. Agent 能力扩展采用“统一 Runtime + 部门工具/上下文差异化”的方式，不采用“每个部门各自实现一套 Agent”模式。
+4. 高风险动作仍需人工确认，所有 Agent 决策与工具调用必须进入统一审计链路。
+
+### 推荐 Phase 2 依赖链
+
+```text
+Epic 41
+  -> Epic 39 / Epic 40
+  -> Epic 42
+  -> 通用 Agent Runtime MVP
+  -> Tool / Context / Memory / Audit
+  -> 各部门业务接入
+```
+
 ## Architecture Validation Results
 
 ### Coherence Validation ✅

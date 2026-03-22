@@ -1,0 +1,16 @@
+name: epic-40-story-40-1-editor-registry-resolver
+status: pending
+created_at: 2026-03-22
+epic: 40
+story: Story 40.1
+title: Editor Registry and Resolver
+mapping:
+  frs:
+    - FR1213
+    - FR1214
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-035
+  ux:
+    - UX-04

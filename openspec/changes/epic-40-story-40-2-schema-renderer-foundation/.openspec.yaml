@@ -1,0 +1,17 @@
+name: epic-40-story-40-2-schema-renderer-foundation
+status: pending
+created_at: 2026-03-22
+epic: 40
+story: Story 40.2
+title: Schema Renderer Foundation
+mapping:
+  frs:
+    - FR1215
+    - FR1216
+  nfrs:
+    - NFR1
+    - NFR16
+  arch:
+    - ADR-036
+  ux:
+    - UX-02

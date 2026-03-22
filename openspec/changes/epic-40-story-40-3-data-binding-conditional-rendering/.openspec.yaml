@@ -1,0 +1,16 @@
+name: epic-40-story-40-3-data-binding-conditional-rendering
+status: pending
+created_at: 2026-03-22
+epic: 40
+story: Story 40.3
+title: Data Binding and Conditional Rendering
+mapping:
+  frs:
+    - FR1217
+    - FR1218
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-036
+  ux:
+    - UX-04

@@ -1,1465 +1,1962 @@
-﻿{
-    "version":  "1.0.0",
-    "lastUpdated":  "2026-03-20",
-    "tasks":  [
-                  {
-                      "id":  1,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.1",
-                      "title":  "Tauri桌面应用初始化",
-                      "description":  "创建基于Tauri的桌面应用基础框架，使应用可以在Windows和macOS上运行。",
-                      "openspec_change":  "epic-1-story-1-tauri-project-init",
-                      "steps":  [
-                                    "创建 Tauri 项目",
-                                    "配置前端框架",
-                                    "集成 Tailwind CSS",
-                                    "集成 Shadcn/ui",
-                                    "创建 Rust 后端结构",
-                                    "配置 Tauri 窗口",
-                                    "创建初始化脚本",
-                                    "创建基础组件",
-                                    "配置环境变量",
-                                    "创建基础文档"
-                                ],
-                      "frs_covered":  [
-                                          "FR1",
-                                          "FR5",
-                                          "FR8"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR5",
-                                           "NFR6",
-                                           "NFR36",
-                                           "NFR37",
-                                           "NFR38"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001",
-                                           "ADR-002"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  2,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.2",
-                      "title":  "系统托盘集成",
-                      "description":  "实现系统托盘集成，用户可以通过系统托盘快速唤起应用。",
-                      "openspec_change":  "epic-1-story-2-system-tray",
-                      "steps":  [
-                                    "启用 Tauri Tray 特性",
-                                    "创建托盘图标资源",
-                                    "实现托盘模块",
-                                    "实现托盘菜单",
-                                    "实现单击唤起",
-                                    "实现最小化到托盘",
-                                    "创建前端托盘 Hook",
-                                    "更新配置"
-                                ],
-                      "frs_covered":  [
-                                          "FR3",
-                                          "FR8"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR5"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.1"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  3,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.3",
-                      "title":  "全局快捷键支持",
-                      "description":  "实现全局快捷键功能，用户可以设置和使用系统级快捷键快速执行常用操作。",
-                      "openspec_change":  "epic-1-story-3-global-shortcuts",
-                      "steps":  [
-                                    "添加 Global Shortcut 插件",
-                                    "创建快捷键模块",
-                                    "实现默认快捷键注册",
-                                    "实现快捷键更新命令",
-                                    "实现快捷键冲突检测",
-                                    "创建快捷键设置组件",
-                                    "实现快捷键持久化",
-                                    "创建快捷键 Hook"
-                                ],
-                      "frs_covered":  [
-                                          "FR4"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.1",
-                                           "Story 1.2"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  4,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.4",
-                      "title":  "类VSCode四栏布局",
-                      "description":  "实现类VSCode风格的四栏布局界面，包括活动栏、侧边栏、工作区和AI对话面板。",
-                      "openspec_change":  "epic-1-story-4-vscode-layout",
-                      "steps":  [
-                                    "创建布局组件结构",
-                                    "实现活动栏组件",
-                                    "实现侧边栏组件",
-                                    "实现工作区组件",
-                                    "实现 AI 对话面板组件",
-                                    "实现状态栏组件",
-                                    "实现面板拖拽调整",
-                                    "创建布局状态管理",
-                                    "实现布局持久化",
-                                    "集成到应用"
-                                ],
-                      "frs_covered":  [
-                                          "FR2"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-02",
-                                         "UX-03",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.1"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  5,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.5",
-                      "title":  "面板布局自定义",
-                      "description":  "实现面板布局自定义功能，用户可以根据自己的使用习惯调整界面布局。",
-                      "openspec_change":  "epic-1-story-5-panel-customization",
-                      "steps":  [
-                                    "完善布局状态管理",
-                                    "优化 ResizablePanel",
-                                    "添加布局重置功能",
-                                    "创建布局设置组件",
-                                    "防抖保存优化"
-                                ],
-                      "frs_covered":  [
-                                          "FR2"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-03"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.4"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  6,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.6",
-                      "title":  "Go云端后端项目初始化",
-                      "description":  "创建Go语言云端后端项目基础框架，为认证、租户管理、数据同步提供服务基础。",
-                      "openspec_change":  "epic-1-story-6-go-backend-init",
-                      "steps":  [
-                                    "创建 Go 项目结构",
-                                    "集成 Gin Web 框架",
-                                    "集成 GORM 数据库 ORM",
-                                    "配置 Viper 环境变量管理",
-                                    "集成 Zap 日志系统",
-                                    "配置 Swagger API 文档",
-                                    "实现热重载开发模式",
-                                    "创建 Docker 配置"
-                                ],
-                      "frs_covered":  [
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR9",
-                                           "NFR10",
-                                           "NFR11",
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  7,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.7",
-                      "title":  "PostgreSQL数据库初始化",
-                      "description":  "初始化云端数据库并创建核心表结构，为用户认证、租户管理提供数据存储。",
-                      "openspec_change":  "epic-1-story-7-postgresql-init",
-                      "steps":  [
-                                    "创建数据库连接模块",
-                                    "创建租户表 (tenants)",
-                                    "创建用户表 (users)",
-                                    "创建角色权限表 (roles, permissions, user_roles, role_permissions)",
-                                    "创建部门表 (departments)",
-                                    "创建会话表 (sessions)",
-                                    "实现数据库迁移管理",
-                                    "实现多租户 Schema 隔离",
-                                    "创建种子数据脚本"
-                                ],
-                      "frs_covered":  [
-                                          "FR27",
-                                          "FR28",
-                                          "FR29",
-                                          "FR30",
-                                          "FR34",
-                                          "FR35",
-                                          "FR36"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR10",
-                                           "NFR13"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.6"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  8,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.8",
-                      "title":  "SQLite本地存储初始化",
-                      "description":  "初始化本地SQLite数据库，支持离线模式、会话管理、记忆存储。",
-                      "openspec_change":  "epic-1-story-8-sqlite-init",
-                      "steps":  [
-                                    "创建 SQLite 连接模块",
-                                    "创建本地会话表 (sessions)",
-                                    "创建消息记录表 (messages)",
-                                    "创建同步队列表 (sync_queue)",
-                                    "创建记忆事实表 (memory_facts)",
-                                    "创建检查点元数据表 (checkpoints)",
-                                    "创建上下文摘要表 (context_summaries)",
-                                    "实现数据库版本迁移",
-                                    "实现租户数据隔离"
-                                ],
-                      "frs_covered":  [
-                                          "FR5",
-                                          "FR38",
-                                          "FR39",
-                                          "FR42"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR5",
-                                           "NFR10"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-003",
-                                           "ADR-024",
-                                           "ADR-030"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  9,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.9",
-                      "title":  "向量数据库初始化",
-                      "description":  "初始化向量数据库支持，为知识库RAG、记忆层系统提供向量检索能力。",
-                      "openspec_change":  "epic-1-story-9-vector-db-init",
-                      "steps":  [
-                                    "创建向量存储抽象接口",
-                                    "实现 sqlite-vec 本地向量存储",
-                                    "实现 Qdrant 云端向量存储适配器",
-                                    "创建向量嵌入服务（OpenAI兼容）",
-                                    "实现混合搜索（向量 + BM25）",
-                                    "实现 RRF 融合搜索算法",
-                                    "创建向量存储配置管理"
-                                ],
-                      "frs_covered":  [
-                                          "FR14-8",
-                                          "FR14-11",
-                                          "FR250",
-                                          "FR251",
-                                          "FR273",
-                                          "FR285",
-                                          "FR286",
-                                          "FR287"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR8-1",
-                                           "NFR8-2",
-                                           "NFR28-3"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-014"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.8"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  10,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.10",
-                      "title":  "前后端通信架构",
-                      "description":  "建立前后端通信架构，使Tauri桌面端可以与云端服务通信。",
-                      "openspec_change":  "epic-1-story-10-communication-arch",
-                      "steps":  [
-                                    "创建 REST API 客户端封装",
-                                    "实现 WebSocket 实时通信模块",
-                                    "完善 Tauri IPC 通信接口",
-                                    "实现请求拦截器（Token 注入）",
-                                    "实现响应拦截器（错误处理、Token 刷新）",
-                                    "实现离线请求队列",
-                                    "创建 API 类型定义",
-                                    "实现网络状态监控"
-                                ],
-                      "frs_covered":  [
-                                          "FR9",
-                                          "FR44",
-                                          "FR46"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR9",
-                                           "NFR17"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-004"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.6",
-                                           "Story 1.8"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  11,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.11",
-                      "title":  "用户登录功能",
-                      "description":  "实现用户登录功能，用户可以使用账号密码登录系统，访问个人工作空间。",
-                      "openspec_change":  "epic-1-story-11-user-login",
-                      "steps":  [
-                                    "创建登录页面",
-                                    "创建登录表单组件",
-                                    "实现认证状态管理",
-                                    "实现后端认证模块",
-                                    "实现路由守卫",
-                                    "实现记住我功能",
-                                    "添加忘记密码入口"
-                                ],
-                      "frs_covered":  [
-                                          "FR1",
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR9",
-                                           "NFR11",
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.6",
-                                           "Story 1.7",
-                                           "Story 1.10"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  12,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.12",
-                      "title":  "离线模式支持",
-                      "description":  "实现离线模式支持，用户可以在离线状态下使用本地功能。",
-                      "openspec_change":  "epic-1-story-12-offline-mode",
-                      "steps":  [
-                                    "创建网络状态 Hook",
-                                    "创建离线提示组件",
-                                    "实现同步队列",
-                                    "创建同步数据库表",
-                                    "实现网络状态检测命令",
-                                    "创建同步状态组件",
-                                    "集成到应用"
-                                ],
-                      "frs_covered":  [
-                                          "FR5"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR5"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-003"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.8",
-                                           "Story 1.10",
-                                           "Story 1.11"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  13,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.13",
-                      "title":  "本地硬件设备调用",
-                      "description":  "实现本地硬件设备调用功能，用户可以在AI辅助下调用扫描仪、打印机等设备。",
-                      "openspec_change":  "epic-1-story-13-hardware-integration",
-                      "steps":  [
-                                    "创建硬件模块结构",
-                                    "实现扫描仪枚举",
-                                    "实现扫描功能",
-                                    "实现打印机枚举",
-                                    "实现打印功能",
-                                    "创建 Tauri 命令",
-                                    "创建前端 Hook",
-                                    "创建设备选择组件"
-                                ],
-                      "frs_covered":  [
-                                          "FR6"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR32"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.1"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  14,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.14",
-                      "title":  "软件更新机制",
-                      "description":  "实现软件更新机制，用户可以接收软件更新提醒并手动更新。",
-                      "openspec_change":  "epic-1-story-14-software-updates",
-                      "steps":  [
-                                    "添加 Tauri Updater 插件",
-                                    "实现更新检查命令",
-                                    "实现下载安装命令",
-                                    "创建更新 Hook",
-                                    "创建更新提醒组件",
-                                    "实现启动时检查更新",
-                                    "配置更新服务器"
-                                ],
-                      "frs_covered":  [
-                                          "FR7"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR17"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.1"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  15,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.15",
-                      "title":  "设置与偏好基础框架",
-                      "description":  "提供统一设置入口与基础页面框架，支持快捷键与基础偏好配置持久化。",
-                      "openspec_change":  "epic-1-story-15-settings-foundation",
-                      "steps":  [
-                                    "增加 TopBar 设置入口与路由跳转",
-                                    "搭建设置页面基础布局与分区导航",
-                                    "实现通用/快捷键/Agent/更新分区占位内容",
-                                    "建立设置项持久化与恢复默认机制",
-                                    "连接快捷键配置与全局快捷键生效逻辑",
-                                    "补充基础交互校验与可用性检查"
-                                ],
-                      "frs_covered":  [
-                                          "FR8"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.4"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  16,
-                      "epic":  "Epic 1",
-                      "story":  "Story 1.16",
-                      "title":  "基础测试框架搭建",
-                      "description":  "搭建覆盖单元、集成、E2E、契约、性能、安全、可访问性的测试基座，并建立覆盖率与质量门禁能力。",
-                      "openspec_change":  "epic-1-story-16-testing-foundation",
-                      "steps":  [
-                                    "安装并配置 Vitest",
-                                    "安装并配置 Playwright",
-                                    "建立 unit/integration/e2e/contracts/performance/security 分层目录与样例",
-                                    "建立 fixtures/factories/seeds 测试数据体系",
-                                    "补充覆盖率阈值检查与质量门禁脚本",
-                                    "建立选择性测试执行机制并保留 P0 全量执行",
-                                    "补充统一测试命令与标准化报告输出"
-                                ],
-                      "frs_covered":  [
-                                          "FR24",
-                                          "FR25",
-                                          "FR1186"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR1",
-                                           "NFR17",
-                                           "NFR35"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "Story 1.1",
-                                           "Story 1.6",
-                                           "Story 1.10"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  17,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.1",
-                      "title":  "Cloud auth module foundation",
-                      "description":  "Build the Go cloud auth module foundation for login, logout, token refresh, and session validation.",
-                      "openspec_change":  "epic-2-story-2-1-cloud-auth-foundation",
-                      "steps":  [
-                                    "Create auth service, handler, and repository skeletons",
-                                    "Define login request and response DTOs",
-                                    "Define token, session, and password policy interfaces",
-                                    "Connect logging and standard error handling"
-                                ],
-                      "frs_covered":  [
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR9",
-                                           "NFR11",
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  18,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.1",
-                      "title":  "Login API and password policy",
-                      "description":  "Implement the Go cloud login API, password verification, retry limits, and temporary lock strategy.",
-                      "openspec_change":  "epic-2-story-2-1-login-password-policy",
-                      "steps":  [
-                                    "Implement POST /api/auth/login",
-                                    "Apply bcrypt password verification and strength rules",
-                                    "Implement failed login counters and lock rules",
-                                    "Return token, user info, tenant info, and permission summary"
-                                ],
-                      "frs_covered":  [
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR11",
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  19,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.1",
-                      "title":  "Frontend login flow enhancement",
-                      "description":  "Enhance the frontend login flow with permission management, dual token mechanism, and code modularization. Base implementation completed in epic-1-story-11-user-login.",
-                      "openspec_change":  "epic-2-story-2-1-frontend-login-flow",
-                      "steps":  [
-                                    "Create auth.types.ts type definitions",
-                                    "Create authApi.ts API module",
-                                    "Extend authStore with permissions and dual token",
-                                    "Create useAuth Hook",
-                                    "Refactor LoginForm.tsx to use modular API",
-                                    "Create LoginError.tsx component (optional)",
-                                    "Write unit tests",
-                                    "E2E test verification"
-                                ],
-                      "frs_covered":  [
-                                          "FR27",
-                                          "FR29",
-                                          "FR30"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR9",
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-01",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "epic-1-story-11-user-login",
-                                           "E2-S2.1-02"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  20,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.1",
-                      "title":  "Local session cache wrapper",
-                      "description":  "Implement the Tauri local session metadata cache and clear flow without any local password auth fallback.",
-                      "openspec_change":  "epic-2-story-2-1-local-session-cache",
-                      "steps":  [
-                                    "Define safe local session metadata",
-                                    "Implement save and clear commands",
-                                    "Block plaintext password storage",
-                                    "Integrate with frontend auth store"
-                                ],
-                      "frs_covered":  [
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR10",
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001",
-                                           "ADR-003"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-03"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  21,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.2",
-                      "title":  "User admin APIs",
-                      "description":  "Create user list, create, update, and enable or disable APIs in the cloud backend.",
-                      "openspec_change":  "epic-2-story-2-2-user-admin-api",
-                      "steps":  [
-                                    "Define user repository and service methods",
-                                    "Implement pagination and filter support",
-                                    "Implement create, update, enable, and disable APIs",
-                                    "Add validation and standard error responses"
-                                ],
-                      "frs_covered":  [
-                                          "FR28"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  22,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.2",
-                      "title":  "User admin UI",
-                      "description":  "Build the user admin list page, filters, create form, and edit form.",
-                      "openspec_change":  "epic-2-story-2-2-user-admin-ui",
-                      "steps":  [
-                                    "Create the user list page",
-                                    "Add name, employee code, department, and status filters",
-                                    "Create create and edit forms",
-                                    "Show base profile and latest status"
-                                ],
-                      "frs_covered":  [
-                                          "FR28"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.2-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  23,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.3",
-                      "title":  "Department and position domain model",
-                      "description":  "Define department tree and position data structures with CRUD APIs.",
-                      "openspec_change":  "epic-2-story-2-3-org-domain-model",
-                      "steps":  [
-                                    "Design departments and positions models",
-                                    "Implement department tree query",
-                                    "Implement CRUD for departments and positions",
-                                    "Define delete and migration constraints"
-                                ],
-                      "frs_covered":  [
-                                          "FR100",
-                                          "FR102"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  24,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.3",
-                      "title":  "Department and position UI",
-                      "description":  "Build department tree management and position management pages.",
-                      "openspec_change":  "epic-2-story-2-3-org-ui",
-                      "steps":  [
-                                    "Create the department tree view",
-                                    "Support create, edit, and delete department flows",
-                                    "Build position list management",
-                                    "Handle node selection, order, and validation feedback"
-                                ],
-                      "frs_covered":  [
-                                          "FR100",
-                                          "FR102"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-03"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.3-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  25,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.4",
-                      "title":  "Direct manager relation",
-                      "description":  "Add direct manager relation support with cycle checks and legal org constraints.",
-                      "openspec_change":  "epic-2-story-2-4-manager-relationship",
-                      "steps":  [
-                                    "Add direct manager relation to user model",
-                                    "Build manager lookup API",
-                                    "Check circular manager chains and illegal cross-tenant links",
-                                    "Connect manager picker in the user edit form"
-                                ],
-                      "frs_covered":  [
-                                          "FR101"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.2-01",
-                                           "E2-S2.3-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  26,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.5",
-                      "title":  "Three-layer permission model",
-                      "description":  "Design the base, department, and approval permission model and related tables.",
-                      "openspec_change":  "epic-2-story-2-5-permission-model",
-                      "steps":  [
-                                    "Define roles, permissions, user_roles, and role_permissions",
-                                    "Define three permission layers",
-                                    "Define resource mapping and permission names",
-                                    "Seed default roles and permissions"
-                                ],
-                      "frs_covered":  [
-                                          "FR29",
-                                          "FR30"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005",
-                                           "ADR-017"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.3-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  27,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.5",
-                      "title":  "Permission center UI",
-                      "description":  "Build role list, permission matrix, and role authorization flows.",
-                      "openspec_change":  "epic-2-story-2-5-permission-center-ui",
-                      "steps":  [
-                                    "Create role management page",
-                                    "Build grouped permission matrix",
-                                    "Show permission sources for a role",
-                                    "Save role permission changes"
-                                ],
-                      "frs_covered":  [
-                                          "FR29",
-                                          "FR30"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.5-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  28,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.6",
-                      "title":  "Fine-grained permission overrides",
-                      "description":  "Implement user-level permission overrides, data scope rules, and field-level restrictions.",
-                      "openspec_change":  "epic-2-story-2-6-fine-grained-permissions",
-                      "steps":  [
-                                    "Design user_permission_overrides",
-                                    "Support department-scope and self-scope data access",
-                                    "Support field hide and read-only rules",
-                                    "Extend permission calculation"
-                                ],
-                      "frs_covered":  [
-                                          "FR31",
-                                          "FR32"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-018"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.5-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  29,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.6",
-                      "title":  "Fine-grained permission UI",
-                      "description":  "Build the user-level permission override page and data-scope configuration flows.",
-                      "openspec_change":  "epic-2-story-2-6-fine-grained-ui",
-                      "steps":  [
-                                    "Create user override page",
-                                    "Show inherited role permissions versus user overrides",
-                                    "Configure data scopes and field-level restrictions",
-                                    "Add confirmation and explanation UI"
-                                ],
-                      "frs_covered":  [
-                                          "FR31",
-                                          "FR32"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.6-01",
-                                           "E2-S2.5-02"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  30,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.7",
-                      "title":  "Backend permission gateway",
-                      "description":  "Implement the backend permission gateway for tenant, role, scope, and field-level checks.",
-                      "openspec_change":  "epic-2-story-2-7-permission-gateway",
-                      "steps":  [
-                                    "Build auth and permission middleware",
-                                    "Add tenant isolation checks",
-                                    "Add resource permission checks",
-                                    "Return the standard 403 response contract"
-                                ],
-                      "frs_covered":  [
-                                          "FR29",
-                                          "FR30",
-                                          "FR31",
-                                          "FR32"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.6-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  31,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.7",
-                      "title":  "Forbidden feedback UI",
-                      "description":  "Build unified frontend forbidden feedback including guard components, 403 pages, and apply entry points.",
-                      "openspec_change":  "epic-2-story-2-7-forbidden-feedback-ui",
-                      "steps":  [
-                                    "Create 403 page and no-permission empty state",
-                                    "Add permission guard components",
-                                    "Show denial reason and required permission",
-                                    "Add apply-for-permission entry placeholder"
-                                ],
-                      "frs_covered":  [
-                                          "FR29",
-                                          "FR31",
-                                          "FR32"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.7-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  32,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.8",
-                      "title":  "Org chart view",
-                      "description":  "Build the org chart page, department detail panel, and employee relation visualization.",
-                      "openspec_change":  "epic-2-story-2-8-org-chart-ui",
-                      "steps":  [
-                                    "Create org chart page",
-                                    "Show department and employee hierarchy",
-                                    "Show department detail and owner info",
-                                    "Handle folding and large-tree performance"
-                                ],
-                      "frs_covered":  [
-                                          "FR106"
-                                      ],
-                      "nfrs_covered":  [
-
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-03",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.3-02",
-                                           "E2-S2.4-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  33,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.9",
-                      "title":  "Import preview and conflict detection",
-                      "description":  "Implement user import parsing, preview generation, and conflict detection.",
-                      "openspec_change":  "epic-2-story-2-9-import-preview",
-                      "steps":  [
-                                    "Define import template and field mapping",
-                                    "Parse uploaded files and validate structure",
-                                    "Detect duplicate accounts, employee codes, and org mapping conflicts",
-                                    "Generate preview report"
-                                ],
-                      "frs_covered":  [
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.2-01",
-                                           "E2-S2.3-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  34,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.9",
-                      "title":  "Import commit and receipt",
-                      "description":  "Implement confirmed import execution, result receipts, failure details, and idempotency control.",
-                      "openspec_change":  "epic-2-story-2-9-import-commit",
-                      "steps":  [
-                                    "Implement commit endpoint after preview approval",
-                                    "Add import_batch_id idempotency control",
-                                    "Return success and failure details",
-                                    "Write bulk import audit logs"
-                                ],
-                      "frs_covered":  [
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR14",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.9-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  35,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.9",
-                      "title":  "Import and export UI",
-                      "description":  "Build the import upload flow, preview UI, conflict prompt UI, and export range selection flow.",
-                      "openspec_change":  "epic-2-story-2-9-import-export-ui",
-                      "steps":  [
-                                    "Create import and export page",
-                                    "Show preview report and conflict list",
-                                    "Support confirm action and result download",
-                                    "Support export by current permission scope"
-                                ],
-                      "frs_covered":  [
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.9-01",
-                                           "E2-S2.9-02"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  36,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.10",
-                      "title":  "Session model and timeout engine",
-                      "description":  "Build the cloud session model, idle timeout rules, and session state changes.",
-                      "openspec_change":  "epic-2-story-2-10-session-domain",
-                      "steps":  [
-                                    "Define sessions table and states",
-                                    "Update last_active_at during protected requests",
-                                    "Implement 30-minute idle timeout rules",
-                                    "Support session listing"
-                                ],
-                      "frs_covered":  [
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  37,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.10",
-                      "title":  "Force logout and expiry handling",
-                      "description":  "Implement admin force logout, frontend session expiry handling, and automatic return to login.",
-                      "openspec_change":  "epic-2-story-2-10-session-revoke",
-                      "steps":  [
-                                    "Implement session revoke API",
-                                    "Implement session check or realtime notification",
-                                    "Clear auth state and local cache on invalid session",
-                                    "Show session expired and force logout messages"
-                                ],
-                      "frs_covered":  [
-                                          "FR27"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR12"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001",
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.10-01",
-                                           "E2-S2.1-03",
-                                           "E2-S2.1-04"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  38,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.11",
-                      "title":  "Structured audit log model",
-                      "description":  "Define the audit_logs data model and audit writer wrapper for auth, permission, and bulk actions.",
-                      "openspec_change":  "epic-2-story-2-11-audit-model",
-                      "steps":  [
-                                    "Define audit_logs table",
-                                    "Build audit logger wrapper",
-                                    "Define event_type, resource, and result fields",
-                                    "Attach trace_id and operator_id"
-                                ],
-                      "frs_covered":  [
-                                          "FR28",
-                                          "FR29",
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR14"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-01"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  39,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.11",
-                      "title":  "Audit event integration",
-                      "description":  "Attach audit writing to login results, permission changes, session revoke, and import or export actions.",
-                      "openspec_change":  "epic-2-story-2-11-audit-events",
-                      "steps":  [
-                                    "Attach audit to auth APIs",
-                                    "Attach audit to permission change APIs",
-                                    "Attach audit to session revoke APIs",
-                                    "Attach audit to import and export flows"
-                                ],
-                      "frs_covered":  [
-                                          "FR27",
-                                          "FR29",
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR14"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.11-01",
-                                           "E2-S2.1-02",
-                                           "E2-S2.7-01",
-                                           "E2-S2.9-02",
-                                           "E2-S2.10-02"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  40,
-                      "epic":  "Epic 2",
-                      "story":  "Story 2.11",
-                      "title":  "Audit query and export UI",
-                      "description":  "Build the audit page with filters, table view, and export support.",
-                      "openspec_change":  "epic-2-story-2-11-audit-ui",
-                      "steps":  [
-                                    "Create audit list page",
-                                    "Add filters for user, event type, and time range",
-                                    "Show resource, result, source, and trace_id",
-                                    "Support audit export"
-                                ],
-                      "frs_covered":  [
-                                          "FR28",
-                                          "FR29",
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR14"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-02",
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.11-02"
-                                       ],
-                      "passes":  true
-                  },
-                  {
-                      "id":  41,
-                      "epic":  "Epic 2",
-                      "story":  "Cross-Story",
-                      "title":  "API contracts and shared types",
-                      "description":  "Align Epic 2 API DTOs, error codes, permission response contracts, and frontend TypeScript types.",
-                      "openspec_change":  "epic-2-cross-api-contracts",
-                      "steps":  [
-                                    "Define request and response DTOs",
-                                    "Define standard error codes and 403 contract",
-                                    "Define pagination and filter contracts",
-                                    "Sync TypeScript API types"
-                                ],
-                      "frs_covered":  [
-                                          "FR27",
-                                          "FR28",
-                                          "FR29",
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR9",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-004",
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-01"
-                                       ],
-                      "passes":  true`
-                  },
-                  {
-                      "id":  42,
-                      "epic":  "Epic 2",
-                      "story":  "Cross-Story",
-                      "title":  "Integration and E2E coverage",
-                      "description":  "Cover login, session expiry, user admin, permission denial, import or export, and audit query flows.",
-                      "openspec_change":  "epic-2-cross-test-plan",
-                      "steps":  [
-                                    "Write Go API tests",
-                                    "Write permission gateway integration tests",
-                                    "Write frontend E2E auth and permission tests",
-                                    "Cover import, export, and audit regression scenarios"
-                                ],
-                      "frs_covered":  [
-                                          "FR27",
-                                          "FR28",
-                                          "FR29",
-                                          "FR33"
-                                      ],
-                      "nfrs_covered":  [
-                                           "NFR12",
-                                           "NFR14",
-                                           "NFR16"
-                                       ],
-                      "arch_covered":  [
-                                           "ADR-001",
-                                           "ADR-005"
-                                       ],
-                      "ux_covered":  [
-                                         "UX-04"
-                                     ],
-                      "dependencies":  [
-                                           "E2-S2.1-03",
-                                           "E2-S2.2-02",
-                                           "E2-S2.7-02",
-                                           "E2-S2.9-03",
-                                           "E2-S2.10-02",
-                                           "E2-S2.11-03"
-                                       ],
-                      "passes":  true`
-                  }
-              ]
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-22",
+  "tasks": [
+    {
+      "id": 1,
+      "epic": "Epic 1",
+      "story": "Story 1.1",
+      "title": "Tauri桌面应用初始化",
+      "description": "创建基于Tauri的桌面应用基础框架，使应用可以在Windows和macOS上运行。",
+      "openspec_change": "epic-1-story-1-tauri-project-init",
+      "steps": [
+        "创建 Tauri 项目",
+        "配置前端框架",
+        "集成 Tailwind CSS",
+        "集成 Shadcn/ui",
+        "创建 Rust 后端结构",
+        "配置 Tauri 窗口",
+        "创建初始化脚本",
+        "创建基础组件",
+        "配置环境变量",
+        "创建基础文档"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR5",
+        "FR8"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR5",
+        "NFR6",
+        "NFR36",
+        "NFR37",
+        "NFR38"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-002"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 2,
+      "epic": "Epic 1",
+      "story": "Story 1.2",
+      "title": "系统托盘集成",
+      "description": "实现系统托盘集成，用户可以通过系统托盘快速唤起应用。",
+      "openspec_change": "epic-1-story-2-system-tray",
+      "steps": [
+        "启用 Tauri Tray 特性",
+        "创建托盘图标资源",
+        "实现托盘模块",
+        "实现托盘菜单",
+        "实现单击唤起",
+        "实现最小化到托盘",
+        "创建前端托盘 Hook",
+        "更新配置"
+      ],
+      "frs_covered": [
+        "FR3",
+        "FR8"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR5"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 3,
+      "epic": "Epic 1",
+      "story": "Story 1.3",
+      "title": "全局快捷键支持",
+      "description": "实现全局快捷键功能，用户可以设置和使用系统级快捷键快速执行常用操作。",
+      "openspec_change": "epic-1-story-3-global-shortcuts",
+      "steps": [
+        "添加 Global Shortcut 插件",
+        "创建快捷键模块",
+        "实现默认快捷键注册",
+        "实现快捷键更新命令",
+        "实现快捷键冲突检测",
+        "创建快捷键设置组件",
+        "实现快捷键持久化",
+        "创建快捷键 Hook"
+      ],
+      "frs_covered": [
+        "FR4"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.1",
+        "Story 1.2"
+      ],
+      "passes": true
+    },
+    {
+      "id": 4,
+      "epic": "Epic 1",
+      "story": "Story 1.4",
+      "title": "类VSCode四栏布局",
+      "description": "实现类VSCode风格的四栏布局界面，包括活动栏、侧边栏、工作区和AI对话面板。",
+      "openspec_change": "epic-1-story-4-vscode-layout",
+      "steps": [
+        "创建布局组件结构",
+        "实现活动栏组件",
+        "实现侧边栏组件",
+        "实现工作区组件",
+        "实现 AI 对话面板组件",
+        "实现状态栏组件",
+        "实现面板拖拽调整",
+        "创建布局状态管理",
+        "实现布局持久化",
+        "集成到应用"
+      ],
+      "frs_covered": [
+        "FR2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-03",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 5,
+      "epic": "Epic 1",
+      "story": "Story 1.5",
+      "title": "面板布局自定义",
+      "description": "实现面板布局自定义功能，用户可以根据自己的使用习惯调整界面布局。",
+      "openspec_change": "epic-1-story-5-panel-customization",
+      "steps": [
+        "完善布局状态管理",
+        "优化 ResizablePanel",
+        "添加布局重置功能",
+        "创建布局设置组件",
+        "防抖保存优化"
+      ],
+      "frs_covered": [
+        "FR2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-03"
+      ],
+      "dependencies": [
+        "Story 1.4"
+      ],
+      "passes": true
+    },
+    {
+      "id": 6,
+      "epic": "Epic 1",
+      "story": "Story 1.6",
+      "title": "Go云端后端项目初始化",
+      "description": "创建Go语言云端后端项目基础框架，为认证、租户管理、数据同步提供服务基础。",
+      "openspec_change": "epic-1-story-6-go-backend-init",
+      "steps": [
+        "创建 Go 项目结构",
+        "集成 Gin Web 框架",
+        "集成 GORM 数据库 ORM",
+        "配置 Viper 环境变量管理",
+        "集成 Zap 日志系统",
+        "配置 Swagger API 文档",
+        "实现热重载开发模式",
+        "创建 Docker 配置"
+      ],
+      "frs_covered": [
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR10",
+        "NFR11",
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 7,
+      "epic": "Epic 1",
+      "story": "Story 1.7",
+      "title": "PostgreSQL数据库初始化",
+      "description": "初始化云端数据库并创建核心表结构，为用户认证、租户管理提供数据存储。",
+      "openspec_change": "epic-1-story-7-postgresql-init",
+      "steps": [
+        "创建数据库连接模块",
+        "创建租户表 (tenants)",
+        "创建用户表 (users)",
+        "创建角色权限表 (roles, permissions, user_roles, role_permissions)",
+        "创建部门表 (departments)",
+        "创建会话表 (sessions)",
+        "实现数据库迁移管理",
+        "实现多租户 Schema 隔离",
+        "创建种子数据脚本"
+      ],
+      "frs_covered": [
+        "FR27",
+        "FR28",
+        "FR29",
+        "FR30",
+        "FR34",
+        "FR35",
+        "FR36"
+      ],
+      "nfrs_covered": [
+        "NFR10",
+        "NFR13"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.6"
+      ],
+      "passes": true
+    },
+    {
+      "id": 8,
+      "epic": "Epic 1",
+      "story": "Story 1.8",
+      "title": "SQLite本地存储初始化",
+      "description": "初始化本地SQLite数据库，支持离线模式、会话管理、记忆存储。",
+      "openspec_change": "epic-1-story-8-sqlite-init",
+      "steps": [
+        "创建 SQLite 连接模块",
+        "创建本地会话表 (sessions)",
+        "创建消息记录表 (messages)",
+        "创建同步队列表 (sync_queue)",
+        "创建记忆事实表 (memory_facts)",
+        "创建检查点元数据表 (checkpoints)",
+        "创建上下文摘要表 (context_summaries)",
+        "实现数据库版本迁移",
+        "实现租户数据隔离"
+      ],
+      "frs_covered": [
+        "FR5",
+        "FR38",
+        "FR39",
+        "FR42"
+      ],
+      "nfrs_covered": [
+        "NFR5",
+        "NFR10"
+      ],
+      "arch_covered": [
+        "ADR-003",
+        "ADR-024",
+        "ADR-030"
+      ],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 9,
+      "epic": "Epic 1",
+      "story": "Story 1.9",
+      "title": "向量数据库初始化",
+      "description": "初始化向量数据库支持，为知识库RAG、记忆层系统提供向量检索能力。",
+      "openspec_change": "epic-1-story-9-vector-db-init",
+      "steps": [
+        "创建向量存储抽象接口",
+        "实现 sqlite-vec 本地向量存储",
+        "实现 Qdrant 云端向量存储适配器",
+        "创建向量嵌入服务（OpenAI兼容）",
+        "实现混合搜索（向量 + BM25）",
+        "实现 RRF 融合搜索算法",
+        "创建向量存储配置管理"
+      ],
+      "frs_covered": [
+        "FR14-8",
+        "FR14-11",
+        "FR250",
+        "FR251",
+        "FR273",
+        "FR285",
+        "FR286",
+        "FR287"
+      ],
+      "nfrs_covered": [
+        "NFR8-1",
+        "NFR8-2",
+        "NFR28-3"
+      ],
+      "arch_covered": [
+        "ADR-014"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.8"
+      ],
+      "passes": true
+    },
+    {
+      "id": 10,
+      "epic": "Epic 1",
+      "story": "Story 1.10",
+      "title": "前后端通信架构",
+      "description": "建立前后端通信架构，使Tauri桌面端可以与云端服务通信。",
+      "openspec_change": "epic-1-story-10-communication-arch",
+      "steps": [
+        "创建 REST API 客户端封装",
+        "实现 WebSocket 实时通信模块",
+        "完善 Tauri IPC 通信接口",
+        "实现请求拦截器（Token 注入）",
+        "实现响应拦截器（错误处理、Token 刷新）",
+        "实现离线请求队列",
+        "创建 API 类型定义",
+        "实现网络状态监控"
+      ],
+      "frs_covered": [
+        "FR9",
+        "FR44",
+        "FR46"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-004"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.6",
+        "Story 1.8"
+      ],
+      "passes": true
+    },
+    {
+      "id": 11,
+      "epic": "Epic 1",
+      "story": "Story 1.11",
+      "title": "用户登录功能",
+      "description": "实现用户登录功能，用户可以使用账号密码登录系统，访问个人工作空间。",
+      "openspec_change": "epic-1-story-11-user-login",
+      "steps": [
+        "创建登录页面",
+        "创建登录表单组件",
+        "实现认证状态管理",
+        "实现后端认证模块",
+        "实现路由守卫",
+        "实现记住我功能",
+        "添加忘记密码入口"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR11",
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.6",
+        "Story 1.7",
+        "Story 1.10"
+      ],
+      "passes": true
+    },
+    {
+      "id": 12,
+      "epic": "Epic 1",
+      "story": "Story 1.12",
+      "title": "离线模式支持",
+      "description": "实现离线模式支持，用户可以在离线状态下使用本地功能。",
+      "openspec_change": "epic-1-story-12-offline-mode",
+      "steps": [
+        "创建网络状态 Hook",
+        "创建离线提示组件",
+        "实现同步队列",
+        "创建同步数据库表",
+        "实现网络状态检测命令",
+        "创建同步状态组件",
+        "集成到应用"
+      ],
+      "frs_covered": [
+        "FR5"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR5"
+      ],
+      "arch_covered": [
+        "ADR-003"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.8",
+        "Story 1.10",
+        "Story 1.11"
+      ],
+      "passes": true
+    },
+    {
+      "id": 13,
+      "epic": "Epic 1",
+      "story": "Story 1.13",
+      "title": "本地硬件设备调用",
+      "description": "实现本地硬件设备调用功能，用户可以在AI辅助下调用扫描仪、打印机等设备。",
+      "openspec_change": "epic-1-story-13-hardware-integration",
+      "steps": [
+        "创建硬件模块结构",
+        "实现扫描仪枚举",
+        "实现扫描功能",
+        "实现打印机枚举",
+        "实现打印功能",
+        "创建 Tauri 命令",
+        "创建前端 Hook",
+        "创建设备选择组件"
+      ],
+      "frs_covered": [
+        "FR6"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR32"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 14,
+      "epic": "Epic 1",
+      "story": "Story 1.14",
+      "title": "软件更新机制",
+      "description": "实现软件更新机制，用户可以接收软件更新提醒并手动更新。",
+      "openspec_change": "epic-1-story-14-software-updates",
+      "steps": [
+        "添加 Tauri Updater 插件",
+        "实现更新检查命令",
+        "实现下载安装命令",
+        "创建更新 Hook",
+        "创建更新提醒组件",
+        "实现启动时检查更新",
+        "配置更新服务器"
+      ],
+      "frs_covered": [
+        "FR7"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 15,
+      "epic": "Epic 1",
+      "story": "Story 1.15",
+      "title": "设置与偏好基础框架",
+      "description": "提供统一设置入口与基础页面框架，支持快捷键与基础偏好配置持久化。",
+      "openspec_change": "epic-1-story-15-settings-foundation",
+      "steps": [
+        "增加 TopBar 设置入口与路由跳转",
+        "搭建设置页面基础布局与分区导航",
+        "实现通用/快捷键/Agent/更新分区占位内容",
+        "建立设置项持久化与恢复默认机制",
+        "连接快捷键配置与全局快捷键生效逻辑",
+        "补充基础交互校验与可用性检查"
+      ],
+      "frs_covered": [
+        "FR8"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.4"
+      ],
+      "passes": true
+    },
+    {
+      "id": 16,
+      "epic": "Epic 1",
+      "story": "Story 1.16",
+      "title": "基础测试框架搭建",
+      "description": "搭建覆盖单元、集成、E2E、契约、性能、安全、可访问性的测试基座，并建立覆盖率与质量门禁能力。",
+      "openspec_change": "epic-1-story-16-testing-foundation",
+      "steps": [
+        "安装并配置 Vitest",
+        "安装并配置 Playwright",
+        "建立 unit/integration/e2e/contracts/performance/security 分层目录与样例",
+        "建立 fixtures/factories/seeds 测试数据体系",
+        "补充覆盖率阈值检查与质量门禁脚本",
+        "建立选择性测试执行机制并保留 P0 全量执行",
+        "补充统一测试命令与标准化报告输出"
+      ],
+      "frs_covered": [
+        "FR24",
+        "FR25",
+        "FR1186"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR17",
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 1.1",
+        "Story 1.6",
+        "Story 1.10"
+      ],
+      "passes": true
+    },
+    {
+      "id": 17,
+      "epic": "Epic 2",
+      "story": "Story 2.1",
+      "title": "Cloud auth module foundation",
+      "description": "Build the Go cloud auth module foundation for login, logout, token refresh, and session validation.",
+      "openspec_change": "epic-2-story-2-1-cloud-auth-foundation",
+      "steps": [
+        "Create auth service, handler, and repository skeletons",
+        "Define login request and response DTOs",
+        "Define token, session, and password policy interfaces",
+        "Connect logging and standard error handling"
+      ],
+      "frs_covered": [
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR11",
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 18,
+      "epic": "Epic 2",
+      "story": "Story 2.1",
+      "title": "Login API and password policy",
+      "description": "Implement the Go cloud login API, password verification, retry limits, and temporary lock strategy.",
+      "openspec_change": "epic-2-story-2-1-login-password-policy",
+      "steps": [
+        "Implement POST /api/auth/login",
+        "Apply bcrypt password verification and strength rules",
+        "Implement failed login counters and lock rules",
+        "Return token, user info, tenant info, and permission summary"
+      ],
+      "frs_covered": [
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR11",
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 19,
+      "epic": "Epic 2",
+      "story": "Story 2.1",
+      "title": "Frontend login flow enhancement",
+      "description": "Enhance the frontend login flow with permission management, dual token mechanism, and code modularization. Base implementation completed in epic-1-story-11-user-login.",
+      "openspec_change": "epic-2-story-2-1-frontend-login-flow",
+      "steps": [
+        "Create auth.types.ts type definitions",
+        "Create authApi.ts API module",
+        "Extend authStore with permissions and dual token",
+        "Create useAuth Hook",
+        "Refactor LoginForm.tsx to use modular API",
+        "Create LoginError.tsx component (optional)",
+        "Write unit tests",
+        "E2E test verification"
+      ],
+      "frs_covered": [
+        "FR27",
+        "FR29",
+        "FR30"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "epic-1-story-11-user-login",
+        "E2-S2.1-02"
+      ],
+      "passes": true
+    },
+    {
+      "id": 20,
+      "epic": "Epic 2",
+      "story": "Story 2.1",
+      "title": "Local session cache wrapper",
+      "description": "Implement the Tauri local session metadata cache and clear flow without any local password auth fallback.",
+      "openspec_change": "epic-2-story-2-1-local-session-cache",
+      "steps": [
+        "Define safe local session metadata",
+        "Implement save and clear commands",
+        "Block plaintext password storage",
+        "Integrate with frontend auth store"
+      ],
+      "frs_covered": [
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR10",
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-003"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-03"
+      ],
+      "passes": true
+    },
+    {
+      "id": 21,
+      "epic": "Epic 2",
+      "story": "Story 2.2",
+      "title": "User admin APIs",
+      "description": "Create user list, create, update, and enable or disable APIs in the cloud backend.",
+      "openspec_change": "epic-2-story-2-2-user-admin-api",
+      "steps": [
+        "Define user repository and service methods",
+        "Implement pagination and filter support",
+        "Implement create, update, enable, and disable APIs",
+        "Add validation and standard error responses"
+      ],
+      "frs_covered": [
+        "FR28"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 22,
+      "epic": "Epic 2",
+      "story": "Story 2.2",
+      "title": "User admin UI",
+      "description": "Build the user admin list page, filters, create form, and edit form.",
+      "openspec_change": "epic-2-story-2-2-user-admin-ui",
+      "steps": [
+        "Create the user list page",
+        "Add name, employee code, department, and status filters",
+        "Create create and edit forms",
+        "Show base profile and latest status"
+      ],
+      "frs_covered": [
+        "FR28"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.2-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 23,
+      "epic": "Epic 2",
+      "story": "Story 2.3",
+      "title": "Department and position domain model",
+      "description": "Define department tree and position data structures with CRUD APIs.",
+      "openspec_change": "epic-2-story-2-3-org-domain-model",
+      "steps": [
+        "Design departments and positions models",
+        "Implement department tree query",
+        "Implement CRUD for departments and positions",
+        "Define delete and migration constraints"
+      ],
+      "frs_covered": [
+        "FR100",
+        "FR102"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 24,
+      "epic": "Epic 2",
+      "story": "Story 2.3",
+      "title": "Department and position UI",
+      "description": "Build department tree management and position management pages.",
+      "openspec_change": "epic-2-story-2-3-org-ui",
+      "steps": [
+        "Create the department tree view",
+        "Support create, edit, and delete department flows",
+        "Build position list management",
+        "Handle node selection, order, and validation feedback"
+      ],
+      "frs_covered": [
+        "FR100",
+        "FR102"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-03"
+      ],
+      "dependencies": [
+        "E2-S2.3-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 25,
+      "epic": "Epic 2",
+      "story": "Story 2.4",
+      "title": "Direct manager relation",
+      "description": "Add direct manager relation support with cycle checks and legal org constraints.",
+      "openspec_change": "epic-2-story-2-4-manager-relationship",
+      "steps": [
+        "Add direct manager relation to user model",
+        "Build manager lookup API",
+        "Check circular manager chains and illegal cross-tenant links",
+        "Connect manager picker in the user edit form"
+      ],
+      "frs_covered": [
+        "FR101"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.2-01",
+        "E2-S2.3-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 26,
+      "epic": "Epic 2",
+      "story": "Story 2.5",
+      "title": "Three-layer permission model",
+      "description": "Design the base, department, and approval permission model and related tables.",
+      "openspec_change": "epic-2-story-2-5-permission-model",
+      "steps": [
+        "Define roles, permissions, user_roles, and role_permissions",
+        "Define three permission layers",
+        "Define resource mapping and permission names",
+        "Seed default roles and permissions"
+      ],
+      "frs_covered": [
+        "FR29",
+        "FR30"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005",
+        "ADR-017"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.3-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 27,
+      "epic": "Epic 2",
+      "story": "Story 2.5",
+      "title": "Permission center UI",
+      "description": "Build role list, permission matrix, and role authorization flows.",
+      "openspec_change": "epic-2-story-2-5-permission-center-ui",
+      "steps": [
+        "Create role management page",
+        "Build grouped permission matrix",
+        "Show permission sources for a role",
+        "Save role permission changes"
+      ],
+      "frs_covered": [
+        "FR29",
+        "FR30"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.5-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 28,
+      "epic": "Epic 2",
+      "story": "Story 2.6",
+      "title": "Fine-grained permission overrides",
+      "description": "Implement user-level permission overrides, data scope rules, and field-level restrictions.",
+      "openspec_change": "epic-2-story-2-6-fine-grained-permissions",
+      "steps": [
+        "Design user_permission_overrides",
+        "Support department-scope and self-scope data access",
+        "Support field hide and read-only rules",
+        "Extend permission calculation"
+      ],
+      "frs_covered": [
+        "FR31",
+        "FR32"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-018"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.5-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 29,
+      "epic": "Epic 2",
+      "story": "Story 2.6",
+      "title": "Fine-grained permission UI",
+      "description": "Build the user-level permission override page and data-scope configuration flows.",
+      "openspec_change": "epic-2-story-2-6-fine-grained-ui",
+      "steps": [
+        "Create user override page",
+        "Show inherited role permissions versus user overrides",
+        "Configure data scopes and field-level restrictions",
+        "Add confirmation and explanation UI"
+      ],
+      "frs_covered": [
+        "FR31",
+        "FR32"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.6-01",
+        "E2-S2.5-02"
+      ],
+      "passes": true
+    },
+    {
+      "id": 30,
+      "epic": "Epic 2",
+      "story": "Story 2.7",
+      "title": "Backend permission gateway",
+      "description": "Implement the backend permission gateway for tenant, role, scope, and field-level checks.",
+      "openspec_change": "epic-2-story-2-7-permission-gateway",
+      "steps": [
+        "Build auth and permission middleware",
+        "Add tenant isolation checks",
+        "Add resource permission checks",
+        "Return the standard 403 response contract"
+      ],
+      "frs_covered": [
+        "FR29",
+        "FR30",
+        "FR31",
+        "FR32"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.6-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 31,
+      "epic": "Epic 2",
+      "story": "Story 2.7",
+      "title": "Forbidden feedback UI",
+      "description": "Build unified frontend forbidden feedback including guard components, 403 pages, and apply entry points.",
+      "openspec_change": "epic-2-story-2-7-forbidden-feedback-ui",
+      "steps": [
+        "Create 403 page and no-permission empty state",
+        "Add permission guard components",
+        "Show denial reason and required permission",
+        "Add apply-for-permission entry placeholder"
+      ],
+      "frs_covered": [
+        "FR29",
+        "FR31",
+        "FR32"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.7-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 32,
+      "epic": "Epic 2",
+      "story": "Story 2.8",
+      "title": "Org chart view",
+      "description": "Build the org chart page, department detail panel, and employee relation visualization.",
+      "openspec_change": "epic-2-story-2-8-org-chart-ui",
+      "steps": [
+        "Create org chart page",
+        "Show department and employee hierarchy",
+        "Show department detail and owner info",
+        "Handle folding and large-tree performance"
+      ],
+      "frs_covered": [
+        "FR106"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-03",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.3-02",
+        "E2-S2.4-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 33,
+      "epic": "Epic 2",
+      "story": "Story 2.9",
+      "title": "Import preview and conflict detection",
+      "description": "Implement user import parsing, preview generation, and conflict detection.",
+      "openspec_change": "epic-2-story-2-9-import-preview",
+      "steps": [
+        "Define import template and field mapping",
+        "Parse uploaded files and validate structure",
+        "Detect duplicate accounts, employee codes, and org mapping conflicts",
+        "Generate preview report"
+      ],
+      "frs_covered": [
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.2-01",
+        "E2-S2.3-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 34,
+      "epic": "Epic 2",
+      "story": "Story 2.9",
+      "title": "Import commit and receipt",
+      "description": "Implement confirmed import execution, result receipts, failure details, and idempotency control.",
+      "openspec_change": "epic-2-story-2-9-import-commit",
+      "steps": [
+        "Implement commit endpoint after preview approval",
+        "Add import_batch_id idempotency control",
+        "Return success and failure details",
+        "Write bulk import audit logs"
+      ],
+      "frs_covered": [
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.9-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 35,
+      "epic": "Epic 2",
+      "story": "Story 2.9",
+      "title": "Import and export UI",
+      "description": "Build the import upload flow, preview UI, conflict prompt UI, and export range selection flow.",
+      "openspec_change": "epic-2-story-2-9-import-export-ui",
+      "steps": [
+        "Create import and export page",
+        "Show preview report and conflict list",
+        "Support confirm action and result download",
+        "Support export by current permission scope"
+      ],
+      "frs_covered": [
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.9-01",
+        "E2-S2.9-02"
+      ],
+      "passes": true
+    },
+    {
+      "id": 36,
+      "epic": "Epic 2",
+      "story": "Story 2.10",
+      "title": "Session model and timeout engine",
+      "description": "Build the cloud session model, idle timeout rules, and session state changes.",
+      "openspec_change": "epic-2-story-2-10-session-domain",
+      "steps": [
+        "Define sessions table and states",
+        "Update last_active_at during protected requests",
+        "Implement 30-minute idle timeout rules",
+        "Support session listing"
+      ],
+      "frs_covered": [
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 37,
+      "epic": "Epic 2",
+      "story": "Story 2.10",
+      "title": "Force logout and expiry handling",
+      "description": "Implement admin force logout, frontend session expiry handling, and automatic return to login.",
+      "openspec_change": "epic-2-story-2-10-session-revoke",
+      "steps": [
+        "Implement session revoke API",
+        "Implement session check or realtime notification",
+        "Clear auth state and local cache on invalid session",
+        "Show session expired and force logout messages"
+      ],
+      "frs_covered": [
+        "FR27"
+      ],
+      "nfrs_covered": [
+        "NFR12"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.10-01",
+        "E2-S2.1-03",
+        "E2-S2.1-04"
+      ],
+      "passes": true
+    },
+    {
+      "id": 38,
+      "epic": "Epic 2",
+      "story": "Story 2.11",
+      "title": "Structured audit log model",
+      "description": "Define the audit_logs data model and audit writer wrapper for auth, permission, and bulk actions.",
+      "openspec_change": "epic-2-story-2-11-audit-model",
+      "steps": [
+        "Define audit_logs table",
+        "Build audit logger wrapper",
+        "Define event_type, resource, and result fields",
+        "Attach trace_id and operator_id"
+      ],
+      "frs_covered": [
+        "FR28",
+        "FR29",
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 39,
+      "epic": "Epic 2",
+      "story": "Story 2.11",
+      "title": "Audit event integration",
+      "description": "Attach audit writing to login results, permission changes, session revoke, and import or export actions.",
+      "openspec_change": "epic-2-story-2-11-audit-events",
+      "steps": [
+        "Attach audit to auth APIs",
+        "Attach audit to permission change APIs",
+        "Attach audit to session revoke APIs",
+        "Attach audit to import and export flows"
+      ],
+      "frs_covered": [
+        "FR27",
+        "FR29",
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.11-01",
+        "E2-S2.1-02",
+        "E2-S2.7-01",
+        "E2-S2.9-02",
+        "E2-S2.10-02"
+      ],
+      "passes": true
+    },
+    {
+      "id": 40,
+      "epic": "Epic 2",
+      "story": "Story 2.11",
+      "title": "Audit query and export UI",
+      "description": "Build the audit page with filters, table view, and export support.",
+      "openspec_change": "epic-2-story-2-11-audit-ui",
+      "steps": [
+        "Create audit list page",
+        "Add filters for user, event type, and time range",
+        "Show resource, result, source, and trace_id",
+        "Support audit export"
+      ],
+      "frs_covered": [
+        "FR28",
+        "FR29",
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.11-02"
+      ],
+      "passes": true
+    },
+    {
+      "id": 41,
+      "epic": "Epic 2",
+      "story": "Cross-Story",
+      "title": "API contracts and shared types",
+      "description": "Align Epic 2 API DTOs, error codes, permission response contracts, and frontend TypeScript types.",
+      "openspec_change": "epic-2-cross-api-contracts",
+      "steps": [
+        "Define request and response DTOs",
+        "Define standard error codes and 403 contract",
+        "Define pagination and filter contracts",
+        "Sync TypeScript API types"
+      ],
+      "frs_covered": [
+        "FR27",
+        "FR28",
+        "FR29",
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-004",
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "E2-S2.1-01"
+      ],
+      "passes": true
+    },
+    {
+      "id": 42,
+      "epic": "Epic 2",
+      "story": "Cross-Story",
+      "title": "Integration and E2E coverage",
+      "description": "Cover login, session expiry, user admin, permission denial, import or export, and audit query flows.",
+      "openspec_change": "epic-2-cross-test-plan",
+      "steps": [
+        "Write Go API tests",
+        "Write permission gateway integration tests",
+        "Write frontend E2E auth and permission tests",
+        "Cover import, export, and audit regression scenarios"
+      ],
+      "frs_covered": [
+        "FR27",
+        "FR28",
+        "FR29",
+        "FR33"
+      ],
+      "nfrs_covered": [
+        "NFR12",
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "E2-S2.1-03",
+        "E2-S2.2-02",
+        "E2-S2.7-02",
+        "E2-S2.9-03",
+        "E2-S2.10-02",
+        "E2-S2.11-03"
+      ],
+      "passes": true
+    },
+    {
+      "id": 43,
+      "epic": "Epic 41",
+      "story": "Story 41.1",
+      "title": "Workbench Host Foundation",
+      "description": "Upgrade Workbench into a unified page host supporting static, dynamic, and editor views.",
+      "openspec_change": "epic-41-story-41-1-workbench-host-foundation",
+      "steps": [
+        "Define page host interface",
+        "Support static/dynamic/editor mode switching",
+        "Add host lifecycle and error boundary",
+        "Keep compatibility with existing fixed pages"
+      ],
+      "frs_covered": [
+        "FR1213"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-018",
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 1.4",
+        "Story 1.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 44,
+      "epic": "Epic 41",
+      "story": "Story 41.2",
+      "title": "Route Containerization",
+      "description": "Route to page containers instead of binding routes directly to page components.",
+      "openspec_change": "epic-41-story-41-2-route-containerization",
+      "steps": [
+        "Create unified route container entry",
+        "Define page context contract",
+        "Apply permission check at container level",
+        "Support route mapping for static and dynamic pages"
+      ],
+      "frs_covered": [
+        "FR1214"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 41.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 45,
+      "epic": "Epic 41",
+      "story": "Story 41.3",
+      "title": "Sidebar Resource Entry Model",
+      "description": "Upgrade Sidebar to support fixed navigation, dynamic resources, and editor entries.",
+      "openspec_change": "epic-41-story-41-3-sidebar-resource-entry",
+      "steps": [
+        "Keep fixed navigation entries",
+        "Add dynamic resource entry model",
+        "Add editor entries and recent items",
+        "Open all resources through host protocol"
+      ],
+      "frs_covered": [
+        "FR1215"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-03"
+      ],
+      "dependencies": [
+        "Story 41.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 46,
+      "epic": "Epic 41",
+      "story": "Story 41.4",
+      "title": "Page Open Mode and Context Contract",
+      "description": "Define static/dynamic/editor open modes and a unified page context contract.",
+      "openspec_change": "epic-41-story-41-4-page-open-mode-context-contract",
+      "steps": [
+        "Define page open mode protocol",
+        "Define page context shape",
+        "Define data source and permission context fields",
+        "Define host lifecycle callbacks"
+      ],
+      "frs_covered": [
+        "FR1216"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-035",
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 41.1",
+        "Story 41.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 47,
+      "epic": "Epic 39",
+      "story": "Story 39.1",
+      "title": "Built-in Text Editor Capability",
+      "description": "Provide built-in text and rich-text editor baseline capability.",
+      "openspec_change": "epic-39-story-39-1-builtin-text-editor",
+      "steps": [
+        "Implement load/save for text content",
+        "Provide baseline toolbar",
+        "Support read-only and editable modes",
+        "Hook into unified save state indicator"
+      ],
+      "frs_covered": [
+        "FR1180"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 41.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 48,
+      "epic": "Epic 39",
+      "story": "Story 39.2",
+      "title": "Structured Document and Table Editing",
+      "description": "Provide table editing and structured document block editing.",
+      "openspec_change": "epic-39-story-39-2-structured-document-table-editor",
+      "steps": [
+        "Support table rendering and cell editing",
+        "Support baseline structured blocks",
+        "Track document content changes",
+        "Use unified save entry"
+      ],
+      "frs_covered": [
+        "FR1181"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 39.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 49,
+      "epic": "Epic 39",
+      "story": "Story 39.3",
+      "title": "Editor Host Integration",
+      "description": "Integrate built-in editors into Workbench host and tab model.",
+      "openspec_change": "epic-39-story-39-3-editor-host-integration",
+      "steps": [
+        "Support editor tab open",
+        "Show save status",
+        "Support editor instance switching",
+        "Hook into host lifecycle"
+      ],
+      "frs_covered": [
+        "FR1182"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 41.1",
+        "Story 39.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 50,
+      "epic": "Epic 40",
+      "story": "Story 40.1",
+      "title": "Editor Registry and Resolver",
+      "description": "Build editor registry and resolver to select editors by resource type.",
+      "openspec_change": "epic-40-story-40-1-editor-registry-resolver",
+      "steps": [
+        "Define EditorDescriptor contract",
+        "Implement EditorRegistry registration",
+        "Implement resource-to-editor resolver",
+        "Implement fallback and conflict rule"
+      ],
+      "frs_covered": [
+        "FR1213",
+        "FR1214"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 41.4",
+        "Story 39.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 51,
+      "epic": "Epic 40",
+      "story": "Story 40.2",
+      "title": "Schema Renderer Foundation",
+      "description": "Build a minimum viable schema renderer for dynamic pages.",
+      "openspec_change": "epic-40-story-40-2-schema-renderer-foundation",
+      "steps": [
+        "Define baseline page schema shape",
+        "Render layout and baseline component nodes",
+        "Implement renderer error boundary",
+        "Expose renderer debug metadata"
+      ],
+      "frs_covered": [
+        "FR1215",
+        "FR1216"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 40.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 52,
+      "epic": "Epic 40",
+      "story": "Story 40.3",
+      "title": "Data Binding and Conditional Rendering",
+      "description": "Support data binding, conditional display, and list rendering.",
+      "openspec_change": "epic-40-story-40-3-data-binding-conditional-rendering",
+      "steps": [
+        "Implement data source binding",
+        "Implement expression and conditional display",
+        "Implement list rendering",
+        "Support permission-context-aware rendering"
+      ],
+      "frs_covered": [
+        "FR1217",
+        "FR1218"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 40.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 53,
+      "epic": "Epic 40",
+      "story": "Story 40.4",
+      "title": "Template Permission and Safety Boundary",
+      "description": "Add whitelist, permission checks, and audit boundary for template runtime.",
+      "openspec_change": "epic-40-story-40-4-template-permission-safety-boundary",
+      "steps": [
+        "Implement component whitelist",
+        "Implement data source access control",
+        "Implement action permission checks",
+        "Emit template runtime audit events"
+      ],
+      "frs_covered": [
+        "FR1219",
+        "FR1220"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-018",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 40.2",
+        "Story 2.6"
+      ],
+      "passes": false
+    },
+    {
+      "id": 54,
+      "epic": "Epic 40",
+      "story": "Story 40.5",
+      "title": "Template Version and Publish Baseline",
+      "description": "Provide template versioning, publish, and rollback baseline capability.",
+      "openspec_change": "epic-40-story-40-5-template-version-publish-baseline",
+      "steps": [
+        "Define template version and status model",
+        "Implement publish action",
+        "Implement rollback action",
+        "Support default template selection"
+      ],
+      "frs_covered": [
+        "FR1221",
+        "FR1222"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-036",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 40.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 55,
+      "epic": "Epic 42",
+      "story": "Story 42.1",
+      "title": "Dynamic Form Field Contract",
+      "description": "Define metadata contract for dynamic form fields.",
+      "openspec_change": "epic-42-story-42-1-dynamic-form-field-schema",
+      "steps": [
+        "Define field types and layout props",
+        "Define default value and validation rules",
+        "Define visibility and editability rules",
+        "Define field-level permission mapping"
+      ],
+      "frs_covered": [
+        "FR1223",
+        "FR1224"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-018",
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 40.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 56,
+      "epic": "Epic 42",
+      "story": "Story 42.2",
+      "title": "Dynamic Form Renderer",
+      "description": "Render submit-ready forms from dynamic form field contracts.",
+      "openspec_change": "epic-42-story-42-2-dynamic-form-renderer",
+      "steps": [
+        "Map contracts to controls",
+        "Implement validation and feedback",
+        "Implement submit action binding",
+        "Support read-only rendering"
+      ],
+      "frs_covered": [
+        "FR1225",
+        "FR1226"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 42.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 57,
+      "epic": "Epic 42",
+      "story": "Story 42.3",
+      "title": "Dynamic Detail Section Renderer",
+      "description": "Render dynamic sections for detail page main content.",
+      "openspec_change": "epic-42-story-42-3-dynamic-detail-section-renderer",
+      "steps": [
+        "Define detail section contract",
+        "Render field sections",
+        "Render attachment and relation sections",
+        "Support section-level conditional display"
+      ],
+      "frs_covered": [
+        "FR1227",
+        "FR1228"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 40.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 58,
+      "epic": "Epic 42",
+      "story": "Story 42.4",
+      "title": "Dynamic Approval Content Rendering",
+      "description": "Render approval detail content dynamically while keeping action area fixed.",
+      "openspec_change": "epic-42-story-42-4-approval-content-dynamic-rendering",
+      "steps": [
+        "Integrate dynamic sections into approval detail",
+        "Keep action area fixed",
+        "Bind flow state and field behavior",
+        "Add approval permission checks"
+      ],
+      "frs_covered": [
+        "FR1229",
+        "FR1230"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-018",
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 42.2",
+        "Story 42.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 59,
+      "epic": "Epic 42",
+      "story": "Story 42.5",
+      "title": "Dynamic Card Layout for Workbench Content",
+      "description": "Upgrade home and department workbench content areas to dynamic card layout.",
+      "openspec_change": "epic-42-story-42-5-dashboard-content-card-composition",
+      "steps": [
+        "Define card layout contract",
+        "Render chart and todo cards",
+        "Render quick entry sections",
+        "Load workbench content configuration"
+      ],
+      "frs_covered": [
+        "FR1231",
+        "FR1232"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-036"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 42.3"
+      ],
+      "passes": false
+    }
+  ]
 }
-

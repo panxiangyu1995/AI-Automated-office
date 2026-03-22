@@ -1,0 +1,16 @@
+name: epic-41-story-41-4-page-open-mode-context-contract
+status: pending
+created_at: 2026-03-22
+epic: 41
+story: Story 41.4
+title: Page Open Mode and Context Contract
+mapping:
+  frs:
+    - FR1216
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-035
+    - ADR-036
+  ux:
+    - UX-04

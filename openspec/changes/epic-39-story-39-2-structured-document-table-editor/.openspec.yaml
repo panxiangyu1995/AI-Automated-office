@@ -1,0 +1,15 @@
+name: epic-39-story-39-2-structured-document-table-editor
+status: pending
+created_at: 2026-03-22
+epic: 39
+story: Story 39.2
+title: Structured Document and Table Editing
+mapping:
+  frs:
+    - FR1181
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-035
+  ux:
+    - UX-02
