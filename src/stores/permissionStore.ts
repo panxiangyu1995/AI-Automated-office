@@ -1,14 +1,6 @@
-/**
- * 权限状态管理 Store
- *
- * @module permissionStore
- * @description 管理用户权限缓存、403 弹窗状态和防重复弹出机制
- */
-
 import { create } from 'zustand'
 import type { PermissionState } from '@/features/permission/types/permission.types'
 
-/** 同一资源禁止重复弹窗的时间窗口（毫秒） */
 const FORBIDDEN_COOLDOWN_MS = 5 * 60 * 1000
 
 export const usePermissionStore = create<PermissionState>((set, get) => ({
@@ -26,16 +18,21 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
 
   hasPermission: (permission) => {
     const { permissions } = get()
-    if (Array.isArray(permission)) {
-      return permission.some((p) => permissions.has(p))
+
+    if (permissions.has('*')) {
+      return true
     }
+
+    if (Array.isArray(permission)) {
+      return permission.some((item) => permissions.has(item))
+    }
+
     return permissions.has(permission)
   },
 
   showForbidden: (data) => {
     const { shownForbiddenResources } = get()
 
-    // 同一资源在冷却期内不重复弹出
     if (shownForbiddenResources.has(data.resource)) {
       return
     }
@@ -45,7 +42,6 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
       shownForbiddenResources: new Set([...shownForbiddenResources, data.resource]),
     })
 
-    // 冷却期后清除记录，允许再次弹出
     setTimeout(() => {
       get().clearForbiddenRecord(data.resource)
     }, FORBIDDEN_COOLDOWN_MS)
@@ -58,8 +54,8 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
 
   clearForbiddenRecord: (resource) => {
     const { shownForbiddenResources } = get()
-    const newSet = new Set(shownForbiddenResources)
-    newSet.delete(resource)
-    set({ shownForbiddenResources: newSet })
+    const nextResources = new Set(shownForbiddenResources)
+    nextResources.delete(resource)
+    set({ shownForbiddenResources: nextResources })
   },
 }))

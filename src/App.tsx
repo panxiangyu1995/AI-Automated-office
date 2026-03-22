@@ -14,14 +14,13 @@ import { Button } from './components/ui/button'
 import { LoginPage } from './features/auth/pages/LoginPage'
 import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
-import { UserListPage, UserCreatePage, UserEditPage, OrganizationPage, OrgChartPage, ImportExportPage } from './features/admin/pages'
-import { PermissionCenter, FineGrainedPermissionPage } from './features/permission'
-import { AuditPage } from './features/audit'
 import { ForbiddenPage, ForbiddenModal } from './components/permission'
 import { Toaster } from './components/ui/toaster'
 import { setForbiddenHandler, setUnauthorizedHandler } from './lib/api/interceptors'
+import { createWorkbenchRouteObjects } from './routes/workbenchRoutes'
 
 function App() {
+  const workbenchRouteObjects = createWorkbenchRouteObjects()
   const { setInitialized } = useAppStore()
   const { restoreSession, isAuthenticated } = useAuthStore()
   const showForbidden = usePermissionStore((state) => state.showForbidden)
@@ -187,21 +186,9 @@ function App() {
             </AuthGuard>
           }
         >
-          {/* Admin routes - rendered via Outlet in Workbench */}
-          <Route path="admin/users" element={<UserListPage />} />
-          <Route path="admin/users/create" element={<UserCreatePage />} />
-          <Route path="admin/users/:id/edit" element={<UserEditPage />} />
-          <Route path="admin/organization" element={<OrganizationPage />} />
-          {/* Org chart visualization route */}
-          <Route path="admin/org-chart" element={<OrgChartPage />} />
-          {/* Permission center route */}
-          <Route path="admin/permissions" element={<PermissionCenter />} />
-          {/* Fine-grained permission configuration route */}
-          <Route path="admin/permissions/fine-grained" element={<FineGrainedPermissionPage />} />
-          {/* User import/export route */}
-          <Route path="admin/import-export" element={<ImportExportPage />} />
-          {/* Audit log route */}
-          <Route path="admin/audit" element={<AuditPage />} />
+          {workbenchRouteObjects.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
         </Route>
       </Routes>
       <UpdateDialog

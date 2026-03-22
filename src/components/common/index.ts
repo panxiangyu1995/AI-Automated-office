@@ -4,6 +4,7 @@ export { TopBar } from './TopBar'
 export { ActivityBar } from './ActivityBar'
 export { Sidebar } from './Sidebar'
 export { Workbench } from './Workbench'
+export { RouteContainer } from './RouteContainer'
 export { WorkbenchHostErrorBoundary, WorkbenchHostRenderer } from './workbenchHost'
 export type {
   WorkbenchFieldPermission,
@@ -12,6 +13,7 @@ export type {
   WorkbenchPageContext,
   WorkbenchPermissionContext,
 } from './workbenchHost'
+export type { WorkbenchRouteDefinition } from './RouteContainer'
 export { AiChatPanel } from './AiChatPanel'
 export { BottomPanel } from './BottomPanel'
 export { StatusBar } from './StatusBar'

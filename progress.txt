@@ -1241,4 +1241,25 @@
 
 ### Notes:
 - init.sh 在当前 Windows 会话中因 Git Bash signal pipe 权限错误无法直接执行，已按仓库必需步骤完成等价初始化与验证
-- task.json 文件整体存在历史编码/引号损坏，但 Story 41.1 对应 passes 已按文本安全更新为 true
+- task.json 文件整体存在历史编码/引号损坏，但 Story 41.1 对应 passes 已按文本安全更新为 true## [2026-03-22] - Task: Route Containerization
+
+### 铁律合规检查：
+- PRD 合规: [FR1214]
+- 架构合规: 对齐 ADR-001、ADR-035，引入统一路由容器入口与容器层权限守卫
+- UX 合规: 保持既有四栏工作区结构，仅替换路由装配方式
+- Epic 合规: Epic 41, Story 41.2
+
+### What was done:
+- 新增 RouteContainer 与 workbenchRoutes 路由定义表，路由不再直接绑定页面组件
+- 在容器层统一生成页面上下文并衔接 WorkbenchHostRenderer
+- 将权限校验前移到路由容器层，未授权时直接渲染 ForbiddenPage
+- 为权限系统补充 * 通配权限支持，兼容开发绕过认证与管理员场景
+- 新增 route-container 集成测试，覆盖 static、dynamic 与未授权访问三种情况
+
+### Testing:
+- npx.cmd vitest run --config vitest.config.ts tests/integration/route-container.test.tsx: pass
+- npm.cmd run lint: pass
+- npm.cmd run build: pass
+
+### Notes:
+- 当前应用路由已切换到统一 workbench route objects，后续 Story 41.3/41.4 可继续在此基础上扩展资源入口与上下文契约
