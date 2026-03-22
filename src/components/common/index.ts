@@ -4,6 +4,14 @@ export { TopBar } from './TopBar'
 export { ActivityBar } from './ActivityBar'
 export { Sidebar } from './Sidebar'
 export { Workbench } from './Workbench'
+export { WorkbenchHostErrorBoundary, WorkbenchHostRenderer } from './workbenchHost'
+export type {
+  WorkbenchFieldPermission,
+  WorkbenchHostDescriptor,
+  WorkbenchHostMode,
+  WorkbenchPageContext,
+  WorkbenchPermissionContext,
+} from './workbenchHost'
 export { AiChatPanel } from './AiChatPanel'
 export { BottomPanel } from './BottomPanel'
 export { StatusBar } from './StatusBar'

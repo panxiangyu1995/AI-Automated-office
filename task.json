@@ -6,8 +6,8 @@
       "id": 1,
       "epic": "Epic 1",
       "story": "Story 1.1",
-      "title": "Tauri桌面应用初始化",
-      "description": "创建基于Tauri的桌面应用基础框架，使应用可以在Windows和macOS上运行。",
+      "title": "Tauri桌面应用初始�?,
+      "description": "创建基于Tauri的桌面应用基础框架，使应用可以在Windows和macOS上运行�?,
       "openspec_change": "epic-1-story-1-tauri-project-init",
       "steps": [
         "创建 Tauri 项目",
@@ -16,7 +16,7 @@
         "集成 Shadcn/ui",
         "创建 Rust 后端结构",
         "配置 Tauri 窗口",
-        "创建初始化脚本",
+        "创建初始化脚�?,
         "创建基础组件",
         "配置环境变量",
         "创建基础文档"
@@ -50,15 +50,15 @@
       "epic": "Epic 1",
       "story": "Story 1.2",
       "title": "系统托盘集成",
-      "description": "实现系统托盘集成，用户可以通过系统托盘快速唤起应用。",
+      "description": "实现系统托盘集成，用户可以通过系统托盘快速唤起应用�?,
       "openspec_change": "epic-1-story-2-system-tray",
       "steps": [
-        "启用 Tauri Tray 特性",
+        "启用 Tauri Tray 特�?,
         "创建托盘图标资源",
         "实现托盘模块",
         "实现托盘菜单",
         "实现单击唤起",
-        "实现最小化到托盘",
+        "实现最小化到托�?,
         "创建前端托盘 Hook",
         "更新配置"
       ],
@@ -86,18 +86,18 @@
       "id": 3,
       "epic": "Epic 1",
       "story": "Story 1.3",
-      "title": "全局快捷键支持",
-      "description": "实现全局快捷键功能，用户可以设置和使用系统级快捷键快速执行常用操作。",
+      "title": "全局快捷键支�?,
+      "description": "实现全局快捷键功能，用户可以设置和使用系统级快捷键快速执行常用操作�?,
       "openspec_change": "epic-1-story-3-global-shortcuts",
       "steps": [
         "添加 Global Shortcut 插件",
-        "创建快捷键模块",
-        "实现默认快捷键注册",
-        "实现快捷键更新命令",
-        "实现快捷键冲突检测",
-        "创建快捷键设置组件",
+        "创建快捷键模�?,
+        "实现默认快捷键注�?,
+        "实现快捷键更新命�?,
+        "实现快捷键冲突检�?,
+        "创建快捷键设置组�?,
         "实现快捷键持久化",
-        "创建快捷键 Hook"
+        "创建快捷�?Hook"
       ],
       "frs_covered": [
         "FR4"
@@ -123,19 +123,19 @@
       "epic": "Epic 1",
       "story": "Story 1.4",
       "title": "类VSCode四栏布局",
-      "description": "实现类VSCode风格的四栏布局界面，包括活动栏、侧边栏、工作区和AI对话面板。",
+      "description": "实现类VSCode风格的四栏布局界面，包括活动栏、侧边栏、工作区和AI对话面板�?,
       "openspec_change": "epic-1-story-4-vscode-layout",
       "steps": [
         "创建布局组件结构",
-        "实现活动栏组件",
-        "实现侧边栏组件",
-        "实现工作区组件",
+        "实现活动栏组�?,
+        "实现侧边栏组�?,
+        "实现工作区组�?,
         "实现 AI 对话面板组件",
         "实现状态栏组件",
         "实现面板拖拽调整",
-        "创建布局状态管理",
-        "实现布局持久化",
-        "集成到应用"
+        "创建布局状态管�?,
+        "实现布局持久�?,
+        "集成到应�?
       ],
       "frs_covered": [
         "FR2"
@@ -161,11 +161,11 @@
       "id": 5,
       "epic": "Epic 1",
       "story": "Story 1.5",
-      "title": "面板布局自定义",
-      "description": "实现面板布局自定义功能，用户可以根据自己的使用习惯调整界面布局。",
+      "title": "面板布局自定�?,
+      "description": "实现面板布局自定义功能，用户可以根据自己的使用习惯调整界面布局�?,
       "openspec_change": "epic-1-story-5-panel-customization",
       "steps": [
-        "完善布局状态管理",
+        "完善布局状态管�?,
         "优化 ResizablePanel",
         "添加布局重置功能",
         "创建布局设置组件",
@@ -193,17 +193,17 @@
       "id": 6,
       "epic": "Epic 1",
       "story": "Story 1.6",
-      "title": "Go云端后端项目初始化",
-      "description": "创建Go语言云端后端项目基础框架，为认证、租户管理、数据同步提供服务基础。",
+      "title": "Go云端后端项目初始�?,
+      "description": "创建Go语言云端后端项目基础框架，为认证、租户管理、数据同步提供服务基础�?,
       "openspec_change": "epic-1-story-6-go-backend-init",
       "steps": [
         "创建 Go 项目结构",
         "集成 Gin Web 框架",
-        "集成 GORM 数据库 ORM",
+        "集成 GORM 数据�?ORM",
         "配置 Viper 环境变量管理",
         "集成 Zap 日志系统",
         "配置 Swagger API 文档",
-        "实现热重载开发模式",
+        "实现热重载开发模�?,
         "创建 Docker 配置"
       ],
       "frs_covered": [
@@ -227,17 +227,17 @@
       "epic": "Epic 1",
       "story": "Story 1.7",
       "title": "PostgreSQL数据库初始化",
-      "description": "初始化云端数据库并创建核心表结构，为用户认证、租户管理提供数据存储。",
+      "description": "初始化云端数据库并创建核心表结构，为用户认证、租户管理提供数据存储�?,
       "openspec_change": "epic-1-story-7-postgresql-init",
       "steps": [
-        "创建数据库连接模块",
-        "创建租户表 (tenants)",
-        "创建用户表 (users)",
-        "创建角色权限表 (roles, permissions, user_roles, role_permissions)",
-        "创建部门表 (departments)",
-        "创建会话表 (sessions)",
-        "实现数据库迁移管理",
-        "实现多租户 Schema 隔离",
+        "创建数据库连接模�?,
+        "创建租户�?(tenants)",
+        "创建用户�?(users)",
+        "创建角色权限�?(roles, permissions, user_roles, role_permissions)",
+        "创建部门�?(departments)",
+        "创建会话�?(sessions)",
+        "实现数据库迁移管�?,
+        "实现多租�?Schema 隔离",
         "创建种子数据脚本"
       ],
       "frs_covered": [
@@ -266,18 +266,18 @@
       "id": 8,
       "epic": "Epic 1",
       "story": "Story 1.8",
-      "title": "SQLite本地存储初始化",
-      "description": "初始化本地SQLite数据库，支持离线模式、会话管理、记忆存储。",
+      "title": "SQLite本地存储初始�?,
+      "description": "初始化本地SQLite数据库，支持离线模式、会话管理、记忆存储�?,
       "openspec_change": "epic-1-story-8-sqlite-init",
       "steps": [
         "创建 SQLite 连接模块",
-        "创建本地会话表 (sessions)",
-        "创建消息记录表 (messages)",
-        "创建同步队列表 (sync_queue)",
-        "创建记忆事实表 (memory_facts)",
+        "创建本地会话�?(sessions)",
+        "创建消息记录�?(messages)",
+        "创建同步队列�?(sync_queue)",
+        "创建记忆事实�?(memory_facts)",
         "创建检查点元数据表 (checkpoints)",
         "创建上下文摘要表 (context_summaries)",
-        "实现数据库版本迁移",
+        "实现数据库版本迁�?,
         "实现租户数据隔离"
       ],
       "frs_covered": [
@@ -304,14 +304,14 @@
       "epic": "Epic 1",
       "story": "Story 1.9",
       "title": "向量数据库初始化",
-      "description": "初始化向量数据库支持，为知识库RAG、记忆层系统提供向量检索能力。",
+      "description": "初始化向量数据库支持，为知识库RAG、记忆层系统提供向量检索能力�?,
       "openspec_change": "epic-1-story-9-vector-db-init",
       "steps": [
         "创建向量存储抽象接口",
         "实现 sqlite-vec 本地向量存储",
-        "实现 Qdrant 云端向量存储适配器",
-        "创建向量嵌入服务（OpenAI兼容）",
-        "实现混合搜索（向量 + BM25）",
+        "实现 Qdrant 云端向量存储适配�?,
+        "创建向量嵌入服务（OpenAI兼容�?,
+        "实现混合搜索（向�?+ BM25�?,
         "实现 RRF 融合搜索算法",
         "创建向量存储配置管理"
       ],
@@ -344,17 +344,17 @@
       "epic": "Epic 1",
       "story": "Story 1.10",
       "title": "前后端通信架构",
-      "description": "建立前后端通信架构，使Tauri桌面端可以与云端服务通信。",
+      "description": "建立前后端通信架构，使Tauri桌面端可以与云端服务通信�?,
       "openspec_change": "epic-1-story-10-communication-arch",
       "steps": [
-        "创建 REST API 客户端封装",
+        "创建 REST API 客户端封�?,
         "实现 WebSocket 实时通信模块",
         "完善 Tauri IPC 通信接口",
-        "实现请求拦截器（Token 注入）",
-        "实现响应拦截器（错误处理、Token 刷新）",
+        "实现请求拦截器（Token 注入�?,
+        "实现响应拦截器（错误处理、Token 刷新�?,
         "实现离线请求队列",
         "创建 API 类型定义",
-        "实现网络状态监控"
+        "实现网络状态监�?
       ],
       "frs_covered": [
         "FR9",
@@ -380,15 +380,15 @@
       "epic": "Epic 1",
       "story": "Story 1.11",
       "title": "用户登录功能",
-      "description": "实现用户登录功能，用户可以使用账号密码登录系统，访问个人工作空间。",
+      "description": "实现用户登录功能，用户可以使用账号密码登录系统，访问个人工作空间�?,
       "openspec_change": "epic-1-story-11-user-login",
       "steps": [
         "创建登录页面",
         "创建登录表单组件",
-        "实现认证状态管理",
+        "实现认证状态管�?,
         "实现后端认证模块",
         "实现路由守卫",
-        "实现记住我功能",
+        "实现记住我功�?,
         "添加忘记密码入口"
       ],
       "frs_covered": [
@@ -419,16 +419,16 @@
       "epic": "Epic 1",
       "story": "Story 1.12",
       "title": "离线模式支持",
-      "description": "实现离线模式支持，用户可以在离线状态下使用本地功能。",
+      "description": "实现离线模式支持，用户可以在离线状态下使用本地功能�?,
       "openspec_change": "epic-1-story-12-offline-mode",
       "steps": [
-        "创建网络状态 Hook",
+        "创建网络状�?Hook",
         "创建离线提示组件",
         "实现同步队列",
         "创建同步数据库表",
-        "实现网络状态检测命令",
-        "创建同步状态组件",
-        "集成到应用"
+        "实现网络状态检测命�?,
+        "创建同步状态组�?,
+        "集成到应�?
       ],
       "frs_covered": [
         "FR5"
@@ -456,13 +456,13 @@
       "epic": "Epic 1",
       "story": "Story 1.13",
       "title": "本地硬件设备调用",
-      "description": "实现本地硬件设备调用功能，用户可以在AI辅助下调用扫描仪、打印机等设备。",
+      "description": "实现本地硬件设备调用功能，用户可以在AI辅助下调用扫描仪、打印机等设备�?,
       "openspec_change": "epic-1-story-13-hardware-integration",
       "steps": [
         "创建硬件模块结构",
-        "实现扫描仪枚举",
+        "实现扫描仪枚�?,
         "实现扫描功能",
-        "实现打印机枚举",
+        "实现打印机枚�?,
         "实现打印功能",
         "创建 Tauri 命令",
         "创建前端 Hook",
@@ -492,16 +492,16 @@
       "epic": "Epic 1",
       "story": "Story 1.14",
       "title": "软件更新机制",
-      "description": "实现软件更新机制，用户可以接收软件更新提醒并手动更新。",
+      "description": "实现软件更新机制，用户可以接收软件更新提醒并手动更新�?,
       "openspec_change": "epic-1-story-14-software-updates",
       "steps": [
         "添加 Tauri Updater 插件",
-        "实现更新检查命令",
+        "实现更新检查命�?,
         "实现下载安装命令",
         "创建更新 Hook",
         "创建更新提醒组件",
-        "实现启动时检查更新",
-        "配置更新服务器"
+        "实现启动时检查更�?,
+        "配置更新服务�?
       ],
       "frs_covered": [
         "FR7"
@@ -527,15 +527,15 @@
       "epic": "Epic 1",
       "story": "Story 1.15",
       "title": "设置与偏好基础框架",
-      "description": "提供统一设置入口与基础页面框架，支持快捷键与基础偏好配置持久化。",
+      "description": "提供统一设置入口与基础页面框架，支持快捷键与基础偏好配置持久化�?,
       "openspec_change": "epic-1-story-15-settings-foundation",
       "steps": [
-        "增加 TopBar 设置入口与路由跳转",
-        "搭建设置页面基础布局与分区导航",
-        "实现通用/快捷键/Agent/更新分区占位内容",
-        "建立设置项持久化与恢复默认机制",
+        "增加 TopBar 设置入口与路由跳�?,
+        "搭建设置页面基础布局与分区导�?,
+        "实现通用/快捷�?Agent/更新分区占位内容",
+        "建立设置项持久化与恢复默认机�?,
         "连接快捷键配置与全局快捷键生效逻辑",
-        "补充基础交互校验与可用性检查"
+        "补充基础交互校验与可用性检�?
       ],
       "frs_covered": [
         "FR8"
@@ -560,12 +560,12 @@
       "epic": "Epic 1",
       "story": "Story 1.16",
       "title": "基础测试框架搭建",
-      "description": "搭建覆盖单元、集成、E2E、契约、性能、安全、可访问性的测试基座，并建立覆盖率与质量门禁能力。",
+      "description": "搭建覆盖单元、集成、E2E、契约、性能、安全、可访问性的测试基座，并建立覆盖率与质量门禁能力�?,
       "openspec_change": "epic-1-story-16-testing-foundation",
       "steps": [
-        "安装并配置 Vitest",
-        "安装并配置 Playwright",
-        "建立 unit/integration/e2e/contracts/performance/security 分层目录与样例",
+        "安装并配�?Vitest",
+        "安装并配�?Playwright",
+        "建立 unit/integration/e2e/contracts/performance/security 分层目录与样�?,
         "建立 fixtures/factories/seeds 测试数据体系",
         "补充覆盖率阈值检查与质量门禁脚本",
         "建立选择性测试执行机制并保留 P0 全量执行",
@@ -1445,7 +1445,7 @@
         "Story 1.4",
         "Story 1.5"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 44,

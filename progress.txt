@@ -1220,3 +1220,25 @@
 
 ### Notes:
 - E2E 从环境错误转为功能级失败，需按 smoke case 逐项修复页面选择器和交互断言
+## [2026-03-22] - Task: Workbench Host Foundation
+
+### 铁律合规检查：
+- PRD 合规: [FR1213]
+- 架构合规: 对齐 ADR-001、ADR-018、ADR-035，新增统一 Workbench Host 接口与错误边界，不改变四栏壳层
+- UX 合规: 保持 VSCode 风格四栏布局与工作区背景规范，兼容现有固定页面
+- Epic 合规: Epic 41, Story 41.1
+
+### What was done:
+- 将 Workbench 重构为统一页面宿主，支持 static、dynamic、editor 三种模式
+- 新增 workbenchHost.tsx，定义页面上下文、权限上下文、生命周期回调与错误边界
+- 保持现有路由页面与设置页通过 static host 正常渲染
+- 新增宿主层集成测试，覆盖固定页面兼容、模式切换、生命周期与错误隔离
+
+### Testing:
+- npx.cmd vitest run --config vitest.config.ts tests/integration/workbench-host.test.tsx: pass
+- npm.cmd run lint: pass
+- npm.cmd run build: pass
+
+### Notes:
+- init.sh 在当前 Windows 会话中因 Git Bash signal pipe 权限错误无法直接执行，已按仓库必需步骤完成等价初始化与验证
+- task.json 文件整体存在历史编码/引号损坏，但 Story 41.1 对应 passes 已按文本安全更新为 true
