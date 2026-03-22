@@ -90,6 +90,9 @@ pub async fn verify_startup(tenant_id: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::verify_startup;
+    use std::env;
+    use std::fs;
+    use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     #[tokio::test]
@@ -99,7 +102,11 @@ mod tests {
             .map(|duration| duration.as_nanos())
             .unwrap_or(0);
         let tenant_id = format!("test-tenant-{}", suffix);
+        let base_dir: PathBuf = env::temp_dir().join("ai-office-storage-tests");
+        let _ = fs::create_dir_all(&base_dir);
+        env::set_var("AI_OFFICE_DATA_DIR", &base_dir);
         let result = verify_startup(&tenant_id).await;
+        env::remove_var("AI_OFFICE_DATA_DIR");
         assert!(result.is_ok());
     }
 }

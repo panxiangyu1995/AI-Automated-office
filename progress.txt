@@ -1171,3 +1171,52 @@
 - 所有测试使用 Playwright 框架
 - 使用 route mocking 模拟 API 响应
 - 测试覆盖认证、用户管理、权限、审计、导入导出核心流程
+## [2026-03-22] - Task: Epic 2 OpenSpec test acceptance run
+
+### 铁律合规检查：
+- PRD 合规: Epic 2 权限/组织/会话/审计相关测试验收执行
+- 架构合规: 按 cloud-server + src-tauri + frontend + e2e 分层执行测试
+- UX 合规: 覆盖 UI/E2E 验收项
+- Epic 合规: Epic 2 全量 openspec 变更（26项）
+
+### What was done:
+- 执行一轮自动化测试命令：build/lint、Rust unit+integration、Go unit+integration、Playwright E2E
+- 将测试结果批量回填到 to-test.json（Epic 2 全部 26 项）
+- 失败详情记录到 debug.txt
+
+### Testing:
+- npm.cmd run build: pass
+- npm.cmd run lint: fail
+- cargo test --lib: fail
+- cargo test --test '*': pass
+- go test ./... -v: fail
+- go test -tags=integration ./...: fail
+- npx.cmd playwright test: fail
+
+### Notes:
+- init.sh 在当前环境无法直接执行（权限与 bash 运行问题）
+- Playwright 需提权后可运行，但大部分用例因 localStorage SecurityError 失败
+## [2026-03-22] - Task: Epic 2 second validation round after fixes
+
+### 铁律合规检查：
+- PRD 合规: Epic 2 认证/权限/组织/审计相关验收命令已完整二次执行
+- 架构合规: cloud-server + src-tauri + frontend + playwright 分层验证
+- UX 合规: UI/E2E 冒烟回归执行
+- Epic 合规: Epic 2 全部 openspec 项目回填
+
+### What was done:
+- 修复 Rust 启动测试环境路径问题
+- 修复 Go session repository 集成测试字段不一致
+- 修复 Playwright helper localStorage origin 问题
+- 修复 lint 阻塞项并通过 lint
+- 执行第二轮全量测试并更新 to-test.json
+
+### Testing:
+- lint: pass
+- build: pass
+- rust unit/integration: pass
+- go unit/integration: pass
+- e2e full: fail (18 pass / 34 fail / 8 skip)
+
+### Notes:
+- E2E 从环境错误转为功能级失败，需按 smoke case 逐项修复页面选择器和交互断言

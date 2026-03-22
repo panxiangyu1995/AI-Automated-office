@@ -5,7 +5,7 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { testUsers, apiEndpoints } from '../../fixtures/test-data'
+import { testUsers } from '../../fixtures/test-data'
 import {
   mockLogin,
   clearAuthState,

@@ -1,32 +1,44 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2026-03-20",
+  "lastUpdated": "2026-03-22",
   "description": "测试验收清单 - AI Agent 和开发者按此清单进行测试验收",
   "testCategories": {
     "unit": {
       "name": "单元测试",
       "description": "Rust/Go 后端模块的单元测试",
-      "commands": ["cd src-tauri && cargo test --lib", "cd cloud-server && go test ./..."]
+      "commands": [
+        "cd src-tauri && cargo test --lib",
+        "cd cloud-server && go test ./..."
+      ]
     },
     "integration": {
       "name": "集成测试",
       "description": "后端集成测试",
-      "commands": ["cd src-tauri && cargo test --test '*'", "cd cloud-server && go test -tags=integration ./..."]
+      "commands": [
+        "cd src-tauri && cargo test --test '*'",
+        "cd cloud-server && go test -tags=integration ./..."
+      ]
     },
     "e2e": {
       "name": "E2E 测试",
       "description": "前端 Playwright E2E 测试",
-      "commands": ["npx playwright test"]
+      "commands": [
+        "npx playwright test"
+      ]
     },
     "frontend": {
       "name": "前端构建测试",
       "description": "前端 TypeScript 编译和构建",
-      "commands": ["npm run build"]
+      "commands": [
+        "npm run build"
+      ]
     },
     "lint": {
       "name": "代码检查",
       "description": "ESLint 代码检查",
-      "commands": ["npm run lint"]
+      "commands": [
+        "npm run lint"
+      ]
     }
   },
   "tasks": [
@@ -37,7 +49,7 @@
       "title": "Cloud auth module foundation",
       "openspec_change": "epic-2-story-2-1-cloud-auth-foundation",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "go单元测试": {
           "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/auth/... -v",
@@ -97,9 +109,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -146,9 +167,24 @@
               "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "认证模块基础架构已完成，骨架代码编译通过"
     },
     {
@@ -158,7 +194,7 @@
       "title": "Login API and password policy",
       "openspec_change": "epic-2-story-2-1-login-password-policy",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "go单元测试": {
           "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/auth/... -v",
@@ -228,9 +264,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -302,9 +347,24 @@
               "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "登录 API 和密码策略已完成，单元测试和集成测试通过"
     },
     {
@@ -314,14 +374,14 @@
       "title": "Frontend login flow enhancement",
       "openspec_change": "epic-2-story-2-1-frontend-login-flow",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./...",
           "items": []
         },
         "e2e测试": {
-          "status": "pass",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/auth/login-enhancement.spec.ts",
           "items": [
             {
@@ -413,9 +473,19 @@
               "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "前端登录流程增强完成，代码模块化重构成功"
     },
     {
@@ -425,7 +495,7 @@
       "title": "Local session cache wrapper",
       "openspec_change": "epic-2-story-2-1-local-session-cache",
       "test验收": {
-        "status": "partial",
+        "status": "fail",
         "rust单元测试": {
           "status": "pass",
           "command": "cd src-tauri && cargo test --lib session",
@@ -521,7 +591,7 @@
           ]
         },
         "e2e测试": {
-          "status": "partial",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/resilience/session-cache.spec.ts",
           "items": [
             {
@@ -551,16 +621,16 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
           "items": [
             {
               "name": "TypeScript 编译无错误",
-              "status": "not_run"
+              "status": "pass"
             },
             {
               "name": "build 构建成功",
-              "status": "not_run"
+              "status": "pass"
             }
           ]
         },
@@ -635,9 +705,19 @@
               "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
+        },
+        "go集成测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test -tags=integration ./...",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "Rust 单元测试和集成测试已通过，E2E 测试需要 Tauri 运行时环境"
     },
     {
@@ -647,7 +727,7 @@
       "title": "User admin APIs",
       "openspec_change": "epic-2-story-2-2-user-admin-api",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "go单元测试": {
           "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/admin/... -v",
@@ -712,9 +792,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -765,9 +854,24 @@
               "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "用户管理 API 完成，单元测试和集成测试通过"
     },
     {
@@ -777,9 +881,9 @@
       "title": "User admin UI",
       "openspec_change": "epic-2-story-2-2-user-admin-ui",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "e2e测试": {
-          "status": "partial",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/user-admin.spec.ts",
           "items": [
             {
@@ -878,7 +982,7 @@
           ]
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "用户管理 UI 完成，lint 和 build 通过"
     },
     {
@@ -888,7 +992,7 @@
       "title": "Department and position domain model",
       "openspec_change": "epic-2-story-2-3-org-domain-model",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "go单元测试": {
           "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/admin/... -v -run Department",
@@ -953,9 +1057,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -993,9 +1106,14 @@
               "status": "pass"
             }
           ]
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "部门和岗位领域模型完成"
     },
     {
@@ -1005,9 +1123,9 @@
       "title": "Department and position UI",
       "openspec_change": "epic-2-story-2-3-org-ui",
       "test验收": {
-        "status": "pass",
+        "status": "fail",
         "e2e测试": {
-          "status": "partial",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/org.spec.ts",
           "items": [
             {
@@ -1090,9 +1208,19 @@
               "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
         }
       },
-      "passes": true,
+      "passes": false,
       "notes": "部门和岗位 UI 完成"
     },
     {
@@ -1102,9 +1230,9 @@
       "title": "Direct manager relation",
       "openspec_change": "epic-2-story-2-4-manager-relationship",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/admin/... -run Manager",
           "items": [
             {
@@ -1125,7 +1253,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/admin/...",
           "items": [
             {
@@ -1141,14 +1269,23 @@
           ]
         },
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/manager.spec.ts",
           "items": []
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1173,12 +1310,12 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "用户模型扩展",
               "check": "添加 direct_manager_id 字段",
-              "status": "pending"
+              "status": "pass"
             }
           ]
         }
@@ -1193,9 +1330,9 @@
       "title": "Three-layer permission model",
       "openspec_change": "epic-2-story-2-5-permission-model",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/auth/... -run Permission",
           "items": [
             {
@@ -1216,7 +1353,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/auth/...",
           "items": [
             {
@@ -1237,9 +1374,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1277,19 +1423,34 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "数据库迁移",
               "check": "roles/permissions/user_roles/role_permissions 表",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "权限缓存",
               "check": "实现权限缓存机制",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -1302,9 +1463,9 @@
       "title": "Permission center UI",
       "openspec_change": "epic-2-story-2-5-permission-center-ui",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/permission-center.spec.ts",
           "items": [
             {
@@ -1325,9 +1486,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1352,14 +1522,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "组件实现",
               "check": "RoleManagement/PermissionMatrix 组件",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
+        },
+        "go集成测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test -tags=integration ./...",
+          "items": []
         }
       },
       "passes": false,
@@ -1372,9 +1552,9 @@
       "title": "Fine-grained permission overrides",
       "openspec_change": "epic-2-story-2-6-fine-grained-permissions",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/auth/... -run Override",
           "items": [
             {
@@ -1395,7 +1575,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/auth/...",
           "items": [
             {
@@ -1411,9 +1591,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1442,14 +1631,29 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "数据库迁移",
               "check": "user_permission_overrides 表",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -1462,9 +1666,9 @@
       "title": "Fine-grained permission UI",
       "openspec_change": "epic-2-story-2-6-fine-grained-ui",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/fine-grained-permission.spec.ts",
           "items": [
             {
@@ -1485,9 +1689,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1512,12 +1725,12 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "组件实现",
               "check": "UserOverride/DataScopeConfig 组件",
-              "status": "pending"
+              "status": "pass"
             }
           ]
         }
@@ -1532,9 +1745,9 @@
       "title": "Backend permission gateway",
       "openspec_change": "epic-2-story-2-7-permission-gateway",
       "test验收": {
-        "status": "pending",
+        "status": "partial",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/middleware/... -v",
           "items": [
             {
@@ -1560,7 +1773,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/middleware/...",
           "items": [
             {
@@ -1586,9 +1799,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1626,17 +1848,17 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "中间件链",
               "check": "Tenant -> Auth -> Permission 中间件顺序",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "公开路由白名单",
               "check": "/api/auth/login 等公开路由",
-              "status": "pending"
+              "status": "pass"
             }
           ]
         }
@@ -1651,9 +1873,9 @@
       "title": "Forbidden feedback UI",
       "openspec_change": "epic-2-story-2-7-forbidden-feedback-ui",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/auth/forbidden.spec.ts",
           "items": [
             {
@@ -1674,9 +1896,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1701,12 +1932,12 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "组件实现",
               "check": "ForbiddenPage/PermissionGuard 组件",
-              "status": "pending"
+              "status": "pass"
             }
           ]
         }
@@ -1721,9 +1952,9 @@
       "title": "Org chart view",
       "openspec_change": "epic-2-story-2-8-org-chart-ui",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/org-chart.spec.ts",
           "items": [
             {
@@ -1744,9 +1975,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1780,14 +2020,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "组件实现",
               "check": "OrgChart/DepartmentDetail 组件",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
+        },
+        "go集成测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test -tags=integration ./...",
+          "items": []
         }
       },
       "passes": false,
@@ -1800,9 +2050,9 @@
       "title": "Import preview and conflict detection",
       "openspec_change": "epic-2-story-2-9-import-preview",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/admin/... -run Import",
           "items": [
             {
@@ -1823,7 +2073,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/admin/...",
           "items": [
             {
@@ -1844,9 +2094,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1892,19 +2151,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "数据库迁移",
               "check": "user_import_batches 表",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "Excel 模板",
               "check": "user_import_template.xlsx",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -1917,9 +2181,9 @@
       "title": "Import commit and receipt",
       "openspec_change": "epic-2-story-2-9-import-commit",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/admin/... -run Commit",
           "items": [
             {
@@ -1940,7 +2204,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/admin/...",
           "items": [
             {
@@ -1956,9 +2220,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -1983,14 +2256,19 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "审计集成",
               "check": "批量导入审计日志",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -2003,9 +2281,9 @@
       "title": "Import and export UI",
       "openspec_change": "epic-2-story-2-9-import-export-ui",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/import-export.spec.ts",
           "items": [
             {
@@ -2031,9 +2309,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2058,14 +2345,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "组件实现",
               "check": "ImportExportPage/PreviewReport 组件",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
+        },
+        "go集成测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test -tags=integration ./...",
+          "items": []
         }
       },
       "passes": false,
@@ -2078,9 +2375,9 @@
       "title": "Session model and timeout engine",
       "openspec_change": "epic-2-story-2-10-session-domain",
       "test验收": {
-        "status": "pending",
+        "status": "partial",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/auth/... -run Session",
           "items": [
             {
@@ -2111,7 +2408,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/auth/...",
           "items": [
             {
@@ -2132,9 +2429,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2172,17 +2478,17 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "数据库迁移",
               "check": "sessions 表",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "会话中间件",
               "check": "session_middleware.go",
-              "status": "pending"
+              "status": "pass"
             }
           ]
         }
@@ -2197,9 +2503,9 @@
       "title": "Force logout and expiry handling",
       "openspec_change": "epic-2-story-2-10-session-revoke",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/auth/... -run Revoke",
           "items": [
             {
@@ -2215,7 +2521,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/auth/...",
           "items": [
             {
@@ -2231,7 +2537,7 @@
           ]
         },
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/auth/session-expiry.spec.ts",
           "items": [
             {
@@ -2252,9 +2558,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2283,14 +2598,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "实时通知",
               "check": "WebSocket 或轮询机制",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "rust单元测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --lib",
+          "items": []
+        },
+        "rust集成测试": {
+          "status": "pass",
+          "command": "cd src-tauri && cargo test --test '*'",
+          "items": []
         }
       },
       "passes": false,
@@ -2303,9 +2628,9 @@
       "title": "Structured audit log model",
       "openspec_change": "epic-2-story-2-11-audit-model",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./internal/module/audit/... -v",
           "items": [
             {
@@ -2336,7 +2661,7 @@
           ]
         },
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./internal/module/audit/...",
           "items": [
             {
@@ -2352,9 +2677,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2388,19 +2722,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "数据库迁移",
               "check": "audit_logs 表",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "审计中间件",
               "check": "audit_middleware.go",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -2413,9 +2752,9 @@
       "title": "Audit event integration",
       "openspec_change": "epic-2-story-2-11-audit-events",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./...",
           "items": [
             {
@@ -2441,9 +2780,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2472,14 +2820,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "审计集成点",
               "check": "各 API 模块集成审计调用",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -2492,9 +2850,9 @@
       "title": "Audit query and export UI",
       "openspec_change": "epic-2-story-2-11-audit-ui",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/admin/audit.spec.ts",
           "items": [
             {
@@ -2520,9 +2878,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2551,14 +2918,24 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "组件实现",
               "check": "AuditListPage/AuditFilters 组件",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
+        },
+        "go集成测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test -tags=integration ./...",
+          "items": []
         }
       },
       "passes": false,
@@ -2571,9 +2948,9 @@
       "title": "API contracts and shared types",
       "openspec_change": "epic-2-cross-api-contracts",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go单元测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test ./pkg/errors/... -v",
           "items": [
             {
@@ -2589,12 +2966,12 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
           "items": [
             {
               "name": "TypeScript 类型编译",
-              "status": "not_run"
+              "status": "pass"
             }
           ]
         },
@@ -2625,24 +3002,34 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "OpenAPI 文档",
               "check": "cloud-server/docs/api/openapi.yaml",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "TypeScript 类型定义",
               "check": "src/types/api.types.ts",
-              "status": "pending"
+              "status": "pass"
             },
             {
               "name": "API 客户端封装",
               "check": "src/lib/api-client.ts",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go集成测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test -tags=integration ./...",
+          "items": []
+        },
+        "e2e测试": {
+          "status": "fail",
+          "command": "npx playwright test",
+          "items": []
         }
       },
       "passes": false,
@@ -2655,9 +3042,9 @@
       "title": "Integration and E2E coverage",
       "openspec_change": "epic-2-cross-test-plan",
       "test验收": {
-        "status": "pending",
+        "status": "fail",
         "go集成测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "cd cloud-server && go test -tags=integration ./...",
           "items": [
             {
@@ -2688,7 +3075,7 @@
           ]
         },
         "e2e测试": {
-          "status": "not_run",
+          "status": "fail",
           "command": "npx playwright test tests/e2e/",
           "items": [
             {
@@ -2719,9 +3106,18 @@
           ]
         },
         "前端构建测试": {
-          "status": "not_run",
+          "status": "pass",
           "command": "npm run build",
-          "items": []
+          "items": [
+            {
+              "name": "TypeScript compile",
+              "status": "pass"
+            },
+            {
+              "name": "build success",
+              "status": "pass"
+            }
+          ]
         },
         "手动测试检查项": {
           "status": "pending",
@@ -2754,14 +3150,19 @@
           ]
         },
         "代码质量检查": {
-          "status": "pending",
+          "status": "pass",
           "items": [
             {
               "name": "测试覆盖率",
               "check": "Go > 80%, E2E 覆盖核心流程",
-              "status": "pending"
+              "status": "pass"
             }
           ]
+        },
+        "go单元测试": {
+          "status": "pass",
+          "command": "cd cloud-server && go test ./... -v",
+          "items": []
         }
       },
       "passes": false,

@@ -1,5 +1,5 @@
 # AI-Automated-office - Claude AI 工作指南
-
+## 使用UTF-8格式进行编码
 ## 项目概述
 
 **AI-Automated-office** 是一款**AI赋能的ERP系统**，采用部门化架构设计。核心价值在于：

@@ -5,7 +5,6 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { apiEndpoints, testUsers } from '../../fixtures/test-data'
 import { mockLogin } from '../../helpers/auth'
 
 test.describe('Import/Export Page', () => {

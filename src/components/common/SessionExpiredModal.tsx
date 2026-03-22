@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, Clock, ShieldAlert, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -67,7 +67,7 @@ export function SessionExpiredModal({ open, reason, message, onConfirm }: Sessio
 
   const config = reasonConfig[reason] || reasonConfig.unknown
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     setIsClearing(true)
     try {
       await clearAuth()
@@ -79,7 +79,7 @@ export function SessionExpiredModal({ open, reason, message, onConfirm }: Sessio
     } finally {
       setIsClearing(false)
     }
-  }
+  }, [clearAuth, navigate, onConfirm])
 
   // 自动跳转（5秒后）
   useEffect(() => {
@@ -90,7 +90,7 @@ export function SessionExpiredModal({ open, reason, message, onConfirm }: Sessio
 
       return () => clearTimeout(timer)
     }
-  }, [open])
+  }, [open, handleConfirm])
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -116,3 +116,4 @@ export function SessionExpiredModal({ open, reason, message, onConfirm }: Sessio
     </Dialog>
   )
 }
+

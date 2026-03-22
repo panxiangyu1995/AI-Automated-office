@@ -39,7 +39,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-项目共定义439个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统、知识库RAG、统一消息系统）和8个业务部门模块（人事管理、财务OCR、数据看板、销售自动化、售后工单、仓库管理、标书制定）。核心架构围绕AI Agent能力展开，包括工具调用、MCP服务接入、会话管理、记忆管理、子代理协作、跨部门协作、三层记忆架构和ClawHub生态兼容性。
+项目共定义854个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统、知识库RAG、统一消息系统、LLM/MCP配置、Sub-Agent体系、多知识库配置、数据访问白名单）和8个业务部门模块，并新增“编辑器系统与动态模板渲染”能力。核心架构围绕AI Agent能力展开，同时延伸到可扩展编辑器注册、模板运行时、Canvas即时渲染、模板设计器与部门模板资产管理，支撑“动态模板驱动UI”的产品方向。
 
 **Non-Functional Requirements:**
 - 性能：本地操作<100ms，云端<3s，空闲内存<500MB
@@ -52,7 +52,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 - Primary domain: Desktop App + 后端平台 + AI Agent框架
 - Complexity level: 高
-- Estimated architectural components: 15-20个核心组件
+- Estimated architectural components: 20-25个核心组件
 
 ### Technical Constraints & Dependencies
 
@@ -117,6 +117,9 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-032 | 压缩触发阈值为上下文窗口的80%（可配置） | Party Mode讨论 2026-03-14 |
 | ADR-033 | 压缩过程对用户透明，仅在完成后显示简洁通知 | Party Mode讨论 2026-03-14 |
 | ADR-034 | 关键事实自动提取到L1个人记忆层持久保存 | Party Mode讨论 2026-03-14 |
+| ADR-035 | 编辑器系统采用“注册表 + 解析器 + 编辑器宿主”三段式架构，统一管理内置与扩展编辑器 | PRD对齐 2026-03-22 |
+| ADR-036 | 动态模板运行时采用“模板Schema + 数据绑定层 + Canvas渲染层”分层设计，模板格式统一为JSON/YAML声明式定义 | PRD对齐 2026-03-22 |
+| ADR-037 | 模板设计器与模板库归属于平台公共能力，部门插件仅通过模板资产和扩展API接入，不直接耦合渲染内核 | PRD对齐 2026-03-22 |
 
 ### Recommended Architecture
 
@@ -6143,6 +6146,214 @@ api_endpoint = "https://api.example.com"
 ws_endpoint = "wss://ws.example.com"
 ```
 
+## Editor and Dynamic Template Runtime Architecture
+
+### Architecture Positioning
+
+新增的编辑器系统与动态模板渲染能力属于平台公共基础设施，位于 Presentation Layer 与 Plugin Layer 之间，并由 Agent Core 协同驱动：
+
+- Presentation Layer 负责编辑器宿主、设计器界面、模板预览与用户交互
+- Agent Core Layer 负责 AI 模板生成、数据填充、意图理解与模板调整建议
+- Plugin Layer 提供部门专属模板、数据源适配器和自定义编辑器扩展
+- Data Layer 负责模板定义、模板版本、用户偏好与渲染快照的本地优先存储
+
+### Core Components
+
+| 组件 | 职责 | 所在层 |
+|------|------|------|
+| Editor Registry | 注册内置/扩展编辑器，维护元信息、优先级、生命周期 | Presentation Layer |
+| Editor Resolver | 基于 Glob、优先级和用户偏好解析文件对应编辑器 | Presentation Layer |
+| Editor Host | 承载文本、Markdown、媒体、Canvas、自定义Webview编辑器 | Presentation Layer |
+| Canvas Render Engine | 负责图形绘制、图层管理、按需重绘、导出 | Presentation Layer |
+| Template Runtime | 解析模板Schema、执行条件/循环渲染、管理数据绑定 | Agent Core + Presentation |
+| Template Designer | 低代码可视化设计器，支持拖拽、属性面板、图层面板 | Presentation Layer |
+| Template Library Service | 管理部门模板库、标签、版本、发布审核与权限 | Plugin Layer + Data Layer |
+| Editor Extension API | 向部门插件暴露生命周期、文档、UI集成与Webview能力 | Plugin Layer |
+
+### Runtime Flow
+
+1. 用户打开文件或模板资产，Editor Resolver 根据注册表、Glob 和偏好选择编辑器。
+2. 若为模板类资源，Template Runtime 加载 JSON/YAML Schema，并解析画布、图层和占位符定义。
+3. Agent Core 根据模板语义查询业务数据，执行占位符填充、条件渲染和循环渲染。
+4. Canvas Render Engine 仅对变更图层重绘，并向设计器/预览面板回传可视结果。
+5. 用户可手动微调样式、布局和数据值，覆盖记录写入模板版本历史。
+6. 模板成品可发布到部门模板库，或通过扩展API交由部门插件专用编辑器继续处理。
+
+### Storage and Isolation
+
+| 数据对象 | 存储位置 | 说明 |
+|------|------|------|
+| 编辑器注册信息 | 本地配置 + 插件清单 | 支持声明式和编程式注册 |
+| 用户编辑器偏好 | 本地SQLite/配置文件 | 按用户维度持久化 |
+| 模板Schema与版本 | 本地SQLite + 文件资产目录 | 本地优先，支持版本回退 |
+| 模板预览快照 | 本地缓存目录 | 用于快速恢复和预览 |
+| 部门模板库元数据 | 租户隔离数据空间 | 部门可见性与审核状态受控 |
+
+### Security and Boundary Rules
+
+- 自定义编辑器扩展必须经 Editor Registry 注册，禁止绕过宿主直接访问平台内部状态。
+- Webview 型编辑器通过受控桥接访问文档、UI 与工具能力，敏感操作继续走统一审批与审计链路。
+- 模板数据绑定仅允许访问已授权的部门数据源，并受数据访问白名单与字段脱敏规则约束。
+- 模板库按租户、部门和可见范围隔离，管理员审核后才能发布到共享模板空间。
+
+## UI 分层与模块矩阵
+
+### 分层策略
+
+系统前端采用三层划分：
+
+1. `固定 UI`：平台级、强约束、强安全、强一致性的系统控制面。
+2. `混合 UI`：固定页面壳层承载动态业务内容区，是主要业务页面形态。
+3. `动态 UI`：企业差异大、变更频繁的业务表单、看板、流程视图和文档模板。
+
+### 判断标准
+
+| 判断维度 | 固定 UI | 混合 UI | 动态 UI |
+|----------|---------|---------|---------|
+| 业务差异性 | 低 | 中 | 高 |
+| 交互稳定性要求 | 高 | 高 | 中 |
+| 安全/审计要求 | 高 | 高 | 中 |
+| 模板化必要性 | 低 | 中 | 高 |
+| 典型对象 | 登录、设置、权限、插件治理 | 工作台、审批页、详情页、编辑器宿主 | 表单、看板、流程图、文档模板 |
+
+### 固定 UI 模块
+
+#### 平台壳层
+
+- TopBar
+- ActivityBar
+- Sidebar 外壳
+- Workbench 容器外壳
+- AI Chat Panel 外壳
+- StatusBar
+- Command Palette
+- 全局 Dialog / Toast / Confirm
+
+#### 身份与账户
+
+- 登录页
+- 找回密码 / 重置密码页
+- 租户选择页
+- 首次初始化向导
+- 账号中心
+- 个人偏好设置
+
+#### 权限与治理
+
+- 用户管理页
+- 角色管理页
+- 权限矩阵页
+- 部门管理页
+- 组织架构管理页
+- 租户管理页
+- 数据访问白名单管理页
+- 敏感字段脱敏规则页
+- 审计日志页
+
+#### 平台配置与运行治理
+
+- 系统设置
+- 模型配置页
+- API Key 管理页
+- MCP 服务管理页
+- Skill 管理页
+- Sub-Agent 管理页
+- 插件市场页
+- 已安装插件页
+- 插件权限授权页
+- 插件设置页
+- 系统消息中心
+- 通知设置页
+- 错误中心 / 诊断页
+- 同步状态页
+- 系统更新页
+- 关于页
+
+### 混合 UI 模块
+
+| 页面/区域 | 固定部分 | 动态部分 |
+|-----------|----------|----------|
+| 首页工作台 | 标题、时间范围、筛选、通用操作 | 指标卡、待办卡、图表、部门区块 |
+| 部门首页 | 页头、导航、权限提示、常用入口 | KPI 卡片、工作队列、分析面板 |
+| 列表页 | 筛选框架、分页、批量操作壳 | 列配置、数据摘要卡、局部扩展区 |
+| 详情页 | 返回、状态、操作栏、审批动作 | 字段区、附件区、上下游关系区、分析区 |
+| 审批中心 | 列表框架、动作按钮、轨迹壳 | 审批单内容、流程节点详情、表单显示区 |
+| 编辑器工作区 | 顶部工具栏、标签栏、属性面板壳 | 画布内容、图层树、模板节点内容 |
+| 部门模块容器页 | 模块导航、面包屑、权限边界提示 | 业务卡片、表格、流程图、模板内容 |
+
+### 动态 UI 模块
+
+#### 业务表单
+
+- 请假单
+- 报销单
+- 采购申请单
+- 入库单
+- 出库单
+- 盘点单
+- 客户录入单
+- 报价单
+- 合同录入页
+- 工单页
+- 资质录入页
+- 标书信息页
+
+#### 业务详情主体
+
+- 客户详情主体
+- 合同详情主体
+- 订单详情主体
+- 发票详情主体
+- 库存详情主体
+- 工单详情主体
+- 标书详情主体
+
+#### 业务看板与报表
+
+- 销售漏斗
+- 财务台账看板
+- 回款分析
+- 库存热力图
+- 工单状态看板
+- 招投标进度看板
+- 管理层经营驾驶舱
+- 部门 KPI 大盘
+
+#### 业务流程与文档模板
+
+- 审批流程图
+- 仓储流转图
+- 客户跟进流程图
+- 工单升级流程图
+- 投标里程碑流程图
+- 报价模板
+- 合同模板
+- 发票整理模板
+- 标书模板
+- 财务报表模板
+- 业务分析报告模板
+- 审批模板
+
+### 部门模块矩阵
+
+| 部门/模块 | 固定 UI | 混合 UI | 动态 UI |
+|-----------|---------|---------|---------|
+| 人事部 | 组织管理、权限边界、基础设置 | 人事工作台、员工详情容器 | 入转调离表单、绩效看板、档案模板 |
+| 审批中心 | 审批动作、流程壳、审计入口 | 审批列表、审批详情页壳 | 审批单内容、流程节点详情、规则化表单 |
+| 销售部 | 客户配置、权限与集成设置 | 销售首页、客户详情壳 | 跟进表单、报价单、销售漏斗、合同模板 |
+| 财务部 | 财务规则、发票接口配置 | 财务工作台、单据详情壳 | OCR 后整理表单、回款分析、财务报表模板 |
+| 仓储部 | 仓储规则、同步策略设置 | 仓储首页、库存详情壳 | 入出库单、库存看板、流转图 |
+| 售后服务 | 服务配置、SLA 规则设置 | 工单中心壳、客户服务页壳 | 工单表单、升级流程、服务分析卡片 |
+| 招投标 | 模块配置、文档权限设置 | 招投标首页、项目详情壳 | 标书模板、资质表单、里程碑视图 |
+| 管理层 | 角色范围、驾驶舱访问控制 | 高管工作台壳、分析容器页 | 经营驾驶舱、综合经营分析大盘 |
+
+### 架构落地要求
+
+1. 所有动态页面必须运行在固定的 Workbench、Editor Host、审批壳或详情壳中，不得绕过平台壳层直接接管全局布局。
+2. 动态 UI 必须绑定细粒度权限模型，至少支持页面级、区块级、字段级、动作级、数据源级访问控制。
+3. 模板运行时必须复用统一组件协议、统一事件协议和统一审计链路，不允许部门插件各自实现不兼容渲染框架。
+4. 已完成固定页面无需整体返工，但业务承载区应逐步改造为页面容器和动态渲染宿主。
+
 ## Architecture Validation Results
 
 ### Coherence Validation ✅
@@ -6170,7 +6381,7 @@ ws_endpoint = "wss://ws.example.com"
 
 ### Requirements Coverage Validation ✅
 
-**功能需求覆盖（共439个）:**
+**功能需求覆盖（共854个）:**
 
 | FR类别 | 需求编号范围 | 数量 | 架构支持 | 状态 |
 |--------|-------------|------|---------|------|
@@ -6186,11 +6397,26 @@ ws_endpoint = "wss://ws.example.com"
 | 新手引导与帮助 | FR87-FR89 | 3 | 引导系统 | ✅ |
 | 核心部门功能 | FR99-FR209 | 62 | Plugin目录结构 + 插件API | ✅ |
 | 扩展部门功能 | FR220-FR244 | 13 | Plugin Layer | ✅ |
-| 知识库RAG | FR250-FR254 | 5 | 记忆层架构 | ✅ |
+| 知识库RAG基础 | FR250-FR254 | 5 | 记忆层架构 | ✅ |
 | 记忆层功能 | FR260-FR334 | 75 | 三层记忆架构 | ✅ |
 | **AI Agent核心功能** | FR400-FR505 | 62 | Agent Core Layer | ✅ |
 | **ClawHub生态兼容性** | FR700-FR755 | 56 | 兼容适配层 | ✅ |
-| **总计** | | **439** | | ✅ |
+| **LLM提供商管理** | FR800-FR809 | 10 | LLM Adapter Registry + Provider Config | ✅ |
+| **MCP服务管理** | FR810-FR820 | 11 | MCP Client Manager + Service Registry | ✅ |
+| **MCP工具Approve策略** | FR825-FR832 | 8 | Tool Policy Engine + Approval Workflow | ✅ |
+| **Skill配置管理** | FR835-FR840 | 6 | Skill Registry + Plugin Governance | ✅ |
+| **系统提示词管理** | FR850-FR860 | 11 | Prompt Store + Versioning + Audit | ✅ |
+| **Rules规则管理** | FR865-FR875 | 11 | Rule Engine + Priority Resolver | ✅ |
+| **提示词调试功能** | FR880-FR888 | 9 | Prompt Sandbox + Token Analyzer | ✅ |
+| **Sub-Agent管理** | FR890-FR900 | 11 | Sub-Agent Registry + Lifecycle Manager | ✅ |
+| **Sub-Agent角色配置** | FR905-FR914 | 10 | Persona Config + AI Prompt Builder | ✅ |
+| **Sub-Agent工具权限** | FR915-FR925 | 11 | Capability Binding + Permission Guard | ✅ |
+| **Sub-Agent调用机制** | FR930-FR938 | 9 | Delegation Router + Execution Trace | ✅ |
+| **多知识库配置功能** | FR940-FR960 | 21 | Knowledge Source Manager + Access Control | ✅ |
+| **数据访问白名单功能** | FR965-FR974 | 10 | Query Guard + Masking Policy | ✅ |
+| **缺失功能补充（新增）** | FR1000-FR1212 | 169 | 平台治理、运维、编辑器基础设施、可观测性与容错子系统 | ✅ |
+| **编辑器系统与动态模板渲染** | FR1213-FR1302 | 90 | Editor Registry + Template Runtime + Canvas Renderer + Template Library | ✅ |
+| **总计** | | **854** | | ✅ |
 
 **非功能需求覆盖:**
 

@@ -18,7 +18,7 @@ func TestSessionRepositoryCreate(t *testing.T) {
 			if !strings.Contains(query, "INSERT INTO sessions") {
 				t.Fatalf("unexpected query: %s", query)
 			}
-			if len(args) != 11 {
+			if len(args) != 12 {
 				t.Fatalf("unexpected args length: %d", len(args))
 			}
 			return driver.RowsAffected(1), nil
@@ -60,11 +60,12 @@ func TestSessionRepositoryFindByTokenHash(t *testing.T) {
 			return &stubRows{
 				cols: []string{
 					"id", "user_id", "tenant_id", "token_hash", "refresh_token_hash", "device_info",
-					"ip_address", "user_agent", "expires_at", "created_at", "last_activity_at", "deleted_at",
+					"ip_address", "user_agent", "status", "revoked_at", "revoked_reason",
+					"expires_at", "created_at", "last_activity_at", "deleted_at",
 				},
 				vals: [][]driver.Value{{
 					"session-1", "user-1", "tenant-a", "token-hash", "refresh-hash", []byte(`{}`),
-					"", "", now.Add(30 * time.Minute), now, now, nil,
+					"", "", "active", nil, "", now.Add(30 * time.Minute), now, now, nil,
 				}},
 			}, nil
 		},

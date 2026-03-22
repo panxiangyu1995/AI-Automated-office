@@ -44,7 +44,7 @@ function calculateTreeLayout(
 
       // 计算子节点
       let totalWidth = config.nodeWidth
-      let childPositions: Array<{ width: number; x: number }> = []
+      const childPositions: Array<{ width: number; x: number }> = []
 
       if (hasChildren && node.children) {
         let currentX = 0

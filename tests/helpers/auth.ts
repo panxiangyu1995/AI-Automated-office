@@ -18,6 +18,13 @@ export interface LoginResult {
   }
 }
 
+async function ensureOrigin(page: Page): Promise<void> {
+  const url = page.url()
+  if (!url || url.startsWith('about:')) {
+    await page.goto('/')
+  }
+}
+
 /**
  * Login helper - authenticates a user via API
  */
@@ -26,6 +33,7 @@ export async function login(
   username: string = testUsers.admin.username,
   password: string = testUsers.admin.password
 ): Promise<LoginResult> {
+  await ensureOrigin(page)
   const response = await page.request.post(apiEndpoints.login, {
     data: { username, password },
   })
@@ -64,6 +72,7 @@ export async function login(
  * Logout helper - clears auth state
  */
 export async function logout(page: Page): Promise<void> {
+  await ensureOrigin(page)
   await page.evaluate(() => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
@@ -85,6 +94,7 @@ export async function mockLogin(
     permissions?: string[]
   } = testUsers.admin
 ): Promise<void> {
+  await ensureOrigin(page)
   await page.evaluate((userData) => {
     const authState = {
       state: {
@@ -155,6 +165,7 @@ export async function navigateAsUser(
  * Clear all auth state
  */
 export async function clearAuthState(page: Page): Promise<void> {
+  await ensureOrigin(page)
   await page.evaluate(() => {
     localStorage.clear()
     sessionStorage.clear()
@@ -165,6 +176,7 @@ export async function clearAuthState(page: Page): Promise<void> {
  * Check if user is authenticated
  */
 export async function isAuthenticated(page: Page): Promise<boolean> {
+  await ensureOrigin(page)
   return await page.evaluate(() => {
     const auth = localStorage.getItem('auth-storage')
     if (!auth) return false

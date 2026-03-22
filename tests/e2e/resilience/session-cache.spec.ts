@@ -15,19 +15,6 @@
 
 import { test, expect } from '@playwright/test'
 
-// Mock data for testing (not using real credentials)
-const mockSessionMetadata = {
-  user_id: 'test-user-123',
-  username: 'testuser',
-  display_name: 'Test User',
-  tenant_id: 'default-tenant',
-  tenant_name: 'Default Tenant',
-  refresh_token: 'mock-refresh-token-12345',
-  expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
-  last_active_at: Math.floor(Date.now() / 1000),
-  created_at: Math.floor(Date.now() / 1000),
-}
-
 // ==================== UI Flow Tests ====================
 // These tests can run with just Vite dev server
 
@@ -60,7 +47,7 @@ test.describe('Session Cache UI Flow', () => {
 // [TAURI-ONLY] - Requires Tauri IPC
 
 test.describe('Session Cache Integration (requires Tauri runtime)', () => {
-  test.skip('save session metadata on login with rememberMe', async ({ page }) => {
+  test.skip('save session metadata on login with rememberMe', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // 1. Login with rememberMe: true
     // 2. Verify saveSessionMetadata was called with correct data
@@ -68,7 +55,7 @@ test.describe('Session Cache Integration (requires Tauri runtime)', () => {
     test.skip(true, 'Requires Tauri runtime for IPC commands')
   })
 
-  test.skip('restore session on app start', async ({ page }) => {
+  test.skip('restore session on app start', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // 1. User was previously logged in with rememberMe
     // 2. App restarts
@@ -77,7 +64,7 @@ test.describe('Session Cache Integration (requires Tauri runtime)', () => {
     test.skip(true, 'Requires Tauri runtime for IPC commands')
   })
 
-  test.skip('clear session cache on logout', async ({ page }) => {
+  test.skip('clear session cache on logout', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // 1. User is logged in
     // 2. User clicks logout
@@ -86,7 +73,7 @@ test.describe('Session Cache Integration (requires Tauri runtime)', () => {
     test.skip(true, 'Requires Tauri runtime for IPC commands')
   })
 
-  test.skip('do not save session when rememberMe is false', async ({ page }) => {
+  test.skip('do not save session when rememberMe is false', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // 1. Login with rememberMe: false
     // 2. Verify clearSessionCache is called instead of saveSessionMetadata
@@ -98,14 +85,14 @@ test.describe('Session Cache Integration (requires Tauri runtime)', () => {
 // These tests verify security checks - requires Tauri runtime
 
 test.describe('Session Cache Security', () => {
-  test.skip('security: password field is never logged or stored', async ({ page }) => {
+  test.skip('security: password field is never logged or stored', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // Verify that when login fails due to wrong password,
     // the password is not stored in any cache or logs
     test.skip(true, 'Requires Tauri runtime for IPC commands')
   })
 
-  test.skip('security: access_token is never stored locally', async ({ page }) => {
+  test.skip('security: access_token is never stored locally', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // Verify that access_token is only in memory (authStore)
     // and never saved to session cache
@@ -117,7 +104,7 @@ test.describe('Session Cache Security', () => {
 // These tests verify session expiry handling
 
 test.describe('Session Expiry', () => {
-  test.skip('expired session is automatically cleared', async ({ page }) => {
+  test.skip('expired session is automatically cleared', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // 1. Create session metadata with expires_at in the past
     // 2. Call getSessionMetadata
@@ -126,7 +113,7 @@ test.describe('Session Expiry', () => {
     test.skip(true, 'Requires Tauri runtime for IPC commands')
   })
 
-  test.skip('redirect to login when restoring expired session', async ({ page }) => {
+  test.skip('redirect to login when restoring expired session', async ({ page: _page }) => {
     // [TAURI-ONLY]
     // 1. Session cache has expired session
     // 2. App starts
