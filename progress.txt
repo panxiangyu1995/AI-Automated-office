@@ -1,3 +1,37 @@
+## [2026-03-23] - Task: Structured Planner (Story 44.2)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - Structured Planner
+- 架构合规：ADR-001, ADR-037 - 分层架构，结构化规划器
+- UX 合规：UX-01, UX-04 - 计划生成支持
+
+### What was done:
+- 创建 structuredPlanner.ts - 结构化规划器
+  - 计划输出 schema（Plan, PlanStep 类型定义）
+  - 线性多步骤计划生成
+  - 工具和确认步骤标记
+  - 计划持久化（localStorage 和 InMemoryPlanStorage）
+  - 8 种步骤类型：action, tool_call, confirmation, permission, decision, parallel, wait, subtask
+  - 步骤依赖关系管理
+
+- 创建 plannerContext.tsx - React 规划器上下文
+  - PlannerProvider 组件
+  - usePlan/usePlanGeneration/usePlanExecution hooks
+  - useStepManagement/usePlanHelpers hooks
+  - 工厂函数支持不同宿主类型
+
+### Testing:
+- 55 个单元测试覆盖计划生成、步骤管理、持久化
+- TypeScript check passed
+- Build succeeded
+
+### Notes:
+- 依赖 Story 44.1 (Agent Runtime State Machine) 已完成
+- 为 Agent 运行时提供完整的计划生成支持
+- 支持计划审计和回放
+
+---
+
 ## [2026-03-23] - Task: Agent Runtime State Machine (Story 44.1)
 
 ### 铁律合规检查：
