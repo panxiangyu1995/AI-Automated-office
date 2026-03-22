@@ -89,4 +89,37 @@ describe('Schema renderer data binding and conditional rendering', () => {
       'Node missing-condition has unresolved visibleWhen path: flags.notExists',
     ])
   })
+
+  it('enforces whitelist, binding access, and action permissions with audit events', () => {
+    const auditEvents: { type: string; nodeId: string }[] = []
+    const document: SchemaDocument = {
+      id: 'doc-security',
+      nodes: [
+        { id: 'allowed-text', type: 'text', bind: 'profile.name' },
+        { id: 'denied-bind', type: 'text', bind: 'secret.token' },
+        { id: 'denied-action', type: 'text', content: 'action', action: { id: 'approve' } },
+        { id: 'denied-type', type: 'divider' },
+      ],
+    }
+
+    render(
+      <SchemaRenderer
+        document={document}
+        runtimeData={{ profile: { name: 'Lin' }, secret: { token: 'x' } }}
+        permissionContext={{ canView: true, canEdit: true, allowedActions: ['read'] }}
+        securityPolicy={{ allowedBindings: ['profile'], allowedNodeTypes: ['text'], allowedActions: ['read'] }}
+        onAuditEvent={(event) => auditEvents.push({ type: event.type, nodeId: event.nodeId })}
+      />
+    )
+
+    expect(screen.getByText('Lin')).toBeInTheDocument()
+    expect(screen.queryByText('action')).not.toBeInTheDocument()
+    expect(auditEvents).toEqual(
+      expect.arrayContaining([
+        { type: 'binding_denied', nodeId: 'denied-bind' },
+        { type: 'action_denied', nodeId: 'denied-action' },
+        { type: 'whitelist_denied', nodeId: 'denied-type' },
+      ])
+    )
+  })
 })

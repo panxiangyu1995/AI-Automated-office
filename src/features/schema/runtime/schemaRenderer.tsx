@@ -2,6 +2,11 @@ import { Component, Fragment, type ErrorInfo, type ReactNode } from 'react'
 
 export type SchemaNodeType = 'stack' | 'text' | 'card' | 'divider'
 
+export interface SchemaAction {
+  id: string
+  permission?: string
+}
+
 export interface SchemaNode {
   id: string
   type: SchemaNodeType | string
@@ -13,6 +18,7 @@ export interface SchemaNode {
   visibleWhen?: string
   repeat?: string
   requiredPermission?: 'view' | 'edit'
+  action?: SchemaAction
 }
 
 export interface SchemaDocument {
@@ -28,14 +34,29 @@ export interface SchemaRendererDebugMetadata {
   validationErrors: string[]
 }
 
+export interface SchemaRendererAuditEvent {
+  type: 'whitelist_denied' | 'binding_denied' | 'action_denied'
+  nodeId: string
+  detail: string
+}
+
+export interface SchemaRendererSecurityPolicy {
+  allowedNodeTypes?: SchemaNodeType[]
+  allowedBindings?: string[]
+  allowedActions?: string[]
+}
+
 interface SchemaRendererProps {
   document: SchemaDocument
   runtimeData?: Record<string, unknown>
   permissionContext?: {
     canView: boolean
     canEdit: boolean
+    allowedActions?: string[]
   }
+  securityPolicy?: SchemaRendererSecurityPolicy
   onDebugMetadata?: (metadata: SchemaRendererDebugMetadata) => void
+  onAuditEvent?: (event: SchemaRendererAuditEvent) => void
 }
 
 interface SchemaRendererErrorBoundaryProps {
@@ -53,8 +74,8 @@ function collectNodeIds(nodes: SchemaNode[]): string[] {
   return nodes.flatMap((node) => [node.id, ...collectNodeIds(node.children ?? [])])
 }
 
-function isWhitelistedNodeType(type: string): type is SchemaNodeType {
-  return WHITELIST_NODE_TYPES.includes(type as SchemaNodeType)
+function isWhitelistedNodeType(type: string, allowedTypes: SchemaNodeType[]): type is SchemaNodeType {
+  return allowedTypes.includes(type as SchemaNodeType)
 }
 
 function getPathValue(data: unknown, path: string): unknown {
@@ -99,13 +120,68 @@ function canRenderByPermission(
   return permissionContext.canView
 }
 
+function isBindingAllowed(path: string, allowedBindings: string[]): boolean {
+  return allowedBindings.some((allowed) => path === allowed || path.startsWith(`${allowed}.`))
+}
+
+function isActionAllowed(
+  action: SchemaAction,
+  permissionContext: NonNullable<SchemaRendererProps['permissionContext']>,
+  securityPolicy: SchemaRendererSecurityPolicy
+): boolean {
+  const allowedActions = permissionContext.allowedActions ?? securityPolicy.allowedActions ?? []
+  if (allowedActions.length === 0) {
+    return true
+  }
+
+  if (action.permission) {
+    return allowedActions.includes(action.permission)
+  }
+
+  return allowedActions.includes(action.id)
+}
+
 function renderSchemaNode(
   node: SchemaNode,
   data: unknown,
-  permissionContext: NonNullable<SchemaRendererProps['permissionContext']>
+  permissionContext: NonNullable<SchemaRendererProps['permissionContext']>,
+  securityPolicy: SchemaRendererSecurityPolicy,
+  onAuditEvent?: (event: SchemaRendererAuditEvent) => void
 ): ReactNode {
   if (!canRenderByPermission(node, permissionContext)) {
     return null
+  }
+
+  if (node.action && !isActionAllowed(node.action, permissionContext, securityPolicy)) {
+    onAuditEvent?.({
+      type: 'action_denied',
+      nodeId: node.id,
+      detail: `Action ${node.action.id} denied`,
+    })
+    return null
+  }
+
+  if (node.bind && securityPolicy.allowedBindings?.length) {
+    if (!isBindingAllowed(node.bind, securityPolicy.allowedBindings)) {
+      onAuditEvent?.({
+        type: 'binding_denied',
+        nodeId: node.id,
+        detail: `Bind path ${node.bind} denied`,
+      })
+      return null
+    }
+  }
+
+  if (node.visibleWhen && securityPolicy.allowedBindings?.length) {
+    const normalized = node.visibleWhen.startsWith('!') ? node.visibleWhen.slice(1) : node.visibleWhen
+    if (normalized && !isBindingAllowed(normalized, securityPolicy.allowedBindings)) {
+      onAuditEvent?.({
+        type: 'binding_denied',
+        nodeId: node.id,
+        detail: `VisibleWhen path ${node.visibleWhen} denied`,
+      })
+      return null
+    }
   }
 
   if (node.visibleWhen && !evaluateVisibility(node.visibleWhen, data)) {
@@ -113,6 +189,15 @@ function renderSchemaNode(
   }
 
   if (node.repeat) {
+    if (securityPolicy.allowedBindings?.length && !isBindingAllowed(node.repeat, securityPolicy.allowedBindings)) {
+      onAuditEvent?.({
+        type: 'binding_denied',
+        nodeId: node.id,
+        detail: `Repeat path ${node.repeat} denied`,
+      })
+      return null
+    }
+
     const collection = getPathValue(data, node.repeat)
     if (!Array.isArray(collection)) {
       return null
@@ -126,13 +211,19 @@ function renderSchemaNode(
             id: `${node.id}-${index}`,
             repeat: undefined,
           }
-          return renderSchemaNode(repeatedNode, item, permissionContext)
+          return renderSchemaNode(repeatedNode, item, permissionContext, securityPolicy, onAuditEvent)
         })}
       </Fragment>
     )
   }
 
-  if (!isWhitelistedNodeType(node.type)) {
+  const allowedNodeTypes = securityPolicy.allowedNodeTypes ?? WHITELIST_NODE_TYPES
+  if (!isWhitelistedNodeType(node.type, allowedNodeTypes)) {
+    onAuditEvent?.({
+      type: 'whitelist_denied',
+      nodeId: node.id,
+      detail: `Node type ${node.type} not allowed`,
+    })
     return (
       <div
         key={node.id}
@@ -184,7 +275,9 @@ function renderSchemaNode(
         data-schema-node-type={node.type}
         className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
       >
-        <div className="space-y-2">{(node.children ?? []).map((child) => renderSchemaNode(child, data, permissionContext))}</div>
+        <div className="space-y-2">
+          {(node.children ?? []).map((child) => renderSchemaNode(child, data, permissionContext, securityPolicy, onAuditEvent))}
+        </div>
       </section>
     )
   }
@@ -197,7 +290,7 @@ function renderSchemaNode(
       data-schema-node-type={node.type}
       className={`flex gap-3 ${stackClass}`}
     >
-      {(node.children ?? []).map((child) => renderSchemaNode(child, data, permissionContext))}
+      {(node.children ?? []).map((child) => renderSchemaNode(child, data, permissionContext, securityPolicy, onAuditEvent))}
     </div>
   )
 }
@@ -244,9 +337,11 @@ export function SchemaRenderer({
     canView: true,
     canEdit: true,
   },
+  securityPolicy = {},
   onDebugMetadata,
+  onAuditEvent,
 }: SchemaRendererProps) {
-  const validationErrors = collectSchemaBindingErrors(document, runtimeData)
+  const validationErrors = collectSchemaBindingErrors(document, runtimeData, securityPolicy)
   const renderedNodeIds = collectNodeIds(document.nodes)
   onDebugMetadata?.({
     documentId: document.id,
@@ -257,7 +352,13 @@ export function SchemaRenderer({
 
   return (
     <SchemaRendererErrorBoundary document={document}>
-      <SchemaRendererContent document={document} runtimeData={runtimeData} permissionContext={permissionContext} />
+      <SchemaRendererContent
+        document={document}
+        runtimeData={runtimeData}
+        permissionContext={permissionContext}
+        securityPolicy={securityPolicy}
+        onAuditEvent={onAuditEvent}
+      />
     </SchemaRendererErrorBoundary>
   )
 }
@@ -266,21 +367,32 @@ function SchemaRendererContent({
   document,
   runtimeData,
   permissionContext,
+  securityPolicy,
+  onAuditEvent,
 }: {
   document: SchemaDocument
   runtimeData: unknown
   permissionContext: NonNullable<SchemaRendererProps['permissionContext']>
+  securityPolicy: SchemaRendererSecurityPolicy
+  onAuditEvent?: (event: SchemaRendererAuditEvent) => void
 }) {
   return (
     <div className="space-y-3" data-schema-document-id={document.id}>
       {document.title && <h3 className="text-base font-semibold text-slate-900">{document.title}</h3>}
-      {document.nodes.map((node) => renderSchemaNode(node, runtimeData, permissionContext))}
+      {document.nodes.map((node) =>
+        renderSchemaNode(node, runtimeData, permissionContext, securityPolicy, onAuditEvent)
+      )}
     </div>
   )
 }
 
-function collectSchemaBindingErrors(document: SchemaDocument, runtimeData: unknown): string[] {
+function collectSchemaBindingErrors(
+  document: SchemaDocument,
+  runtimeData: unknown,
+  securityPolicy: SchemaRendererSecurityPolicy
+): string[] {
   const errors: string[] = []
+  const allowedBindings = securityPolicy.allowedBindings ?? []
 
   const visitNode = (node: SchemaNode) => {
     const checkPath = (path: string | undefined, field: 'bind' | 'repeat' | 'visibleWhen') => {
@@ -290,6 +402,11 @@ function collectSchemaBindingErrors(document: SchemaDocument, runtimeData: unkno
 
       const normalized = field === 'visibleWhen' && path.startsWith('!') ? path.slice(1) : path
       if (!normalized) {
+        return
+      }
+
+      if (allowedBindings.length > 0 && !isBindingAllowed(normalized, allowedBindings)) {
+        errors.push(`Node ${node.id} has denied ${field} path: ${path}`)
         return
       }
 

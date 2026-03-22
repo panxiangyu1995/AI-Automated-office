@@ -1478,3 +1478,29 @@
 
 ### Notes:
 - 当前表达式能力为轻量路径判断，后续可在 Story 40.4/40.5 按安全边界扩展更严格表达式语法。
+
+## [2026-03-23] - Task: Template Permission and Safety Boundary (Epic 40, Story 40.4)
+
+### 铁律合规检查：
+- PRD 合规：[FR1220]
+- 架构合规：[在 ADR-036 渲染器上叠加安全边界，含组件白名单、数据绑定访问控制、动作权限校验与审计事件输出]
+- UX 合规：[安全失败以可预测方式隐藏/阻断，不破坏既有 UI 结构]
+- Epic 合规：[Epic 40, Story 40.4]
+
+### What was done:
+- 扩展 `SchemaRenderer` 安全策略：
+  - `SchemaRendererSecurityPolicy` 定义组件白名单、允许的数据绑定路径、允许动作列表
+  - 在渲染期拦截不在白名单的节点类型
+  - 对 `bind`/`repeat`/`visibleWhen` 绑定路径做访问控制
+  - 对 `action` 进行权限校验（permissionContext.allowedActions / securityPolicy.allowedActions）
+  - `onAuditEvent` 回调输出运行时安全事件
+- 更新 data-binding 测试覆盖安全边界与审计事件。
+- 更新 OpenSpec Story 40.4 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx tests/integration/schema-renderer-data-binding.test.tsx` 通过（8/8）。
+
+### Notes:
+- 目前 action 权限按 allow-list 兜底，后续可在 Story 40.5/40.6 对接更细粒度权限网关。
