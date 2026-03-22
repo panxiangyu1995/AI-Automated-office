@@ -1,3 +1,47 @@
+## [2026-03-23] - Task: Tool Descriptor and Registry (Story 45.1)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - Tool Descriptor and Registry
+- 架构合规：ADR-018, ADR-037 - 工具描述符和注册表
+- UX 合规：UX-01, UX-04 - 工具管理支持
+
+### What was done:
+- 创建 toolDescriptor.ts - 工具描述符模块
+  - ToolDescriptor 类型定义：id, name, description, category, parameters, returnType, executionMode, capabilities, permissions, dependencies, contextRequirements, metadata
+  - ToolCategory: core, plugin, mcp, builtin, external
+  - ToolExecutionMode: sync, async, streaming, batch
+  - ToolParameter 工厂函数: stringParam, numberParam, booleanParam, objectParam, arrayParam
+  - ToolDescriptorBuilder 类：流式 API 构建工具描述符
+  - validateToolDescriptor/validateParameters 验证函数
+  - descriptorToJsonSchema 转换函数
+
+- 创建 toolRegistry.ts - 工具注册表
+  - ToolRegistry 类：注册、查找、验证工具
+  - 索引管理：categoryIndex, tagIndex, capabilityIndex
+  - 过滤查找：lookup(filter)
+  - 状态管理：enable/disable
+  - 统计信息：getStatistics()
+  - 监听器系统：addListener/removeListener
+  - 全局注册表单例：getToolRegistry()
+
+- 创建 index.ts - 模块导出
+
+- 创建 toolDescriptor.test.ts - 27 个单元测试
+- 创建 toolRegistry.test.ts - 33 个单元测试
+
+### Testing:
+- 60 个单元测试通过
+- TypeScript check passed
+- All 452 unit tests passed
+
+### Notes:
+- 依赖 Story 44.2 (Structured Planner) 已完成
+- 支持工具描述符验证和参数验证
+- 支持按类别、标签、能力查找工具
+- 为 Agent 运行时提供完整的工具注册支持
+
+---
+
 ## [2026-03-23] - Task: Replan and Failure Strategy (Story 44.4)
 
 ### 铁律合规检查：
