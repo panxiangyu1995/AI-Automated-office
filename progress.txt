@@ -1420,3 +1420,33 @@
 
 ### Notes:
 - 当前 registry 先服务 core editors；后续 Story 可通过 `register()` 暴露插件编辑器接入点。
+
+## [2026-03-22] - Task: Schema Renderer Baseline (Epic 40, Story 40.2)
+
+### 铁律合规检查：
+- PRD 合规：[FR1218]
+- 架构合规：[遵循 ADR-036，建立 schema node 模型与白名单渲染器，提供渲染错误隔离与 debug 元数据输出]
+- UX 合规：[保持动态渲染层的可解释性，异常可见、debug 可追踪，不改变四栏主布局]
+- Epic 合规：[Epic 40, Story 40.2]
+
+### What was done:
+- 新增 `SchemaRenderer` 基础运行时：
+  - schema 文档与节点模型定义（stack/text/card/divider）
+  - 基线布局与内容节点渲染
+  - 非白名单节点 fallback 输出
+  - `SchemaRendererErrorBoundary` 错误边界隔离
+  - debug 元数据输出（documentId、nodeCount、renderedNodeIds）
+- 新增测试 `tests/integration/schema-renderer-foundation.test.tsx` 覆盖：
+  - 正常渲染
+  - fallback 行为
+  - error boundary 行为
+  - debug metadata 回调
+- 更新 OpenSpec Story 40.2 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/schema-renderer-foundation.test.tsx` 通过（4/4）。
+
+### Notes:
+- 当前为 renderer foundation，后续 Story 40.3/40.4 可在此基础继续扩展 binding、条件渲染和权限安全边界。
