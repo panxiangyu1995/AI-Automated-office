@@ -10,7 +10,7 @@ import {
 } from '@/features/admin/pages'
 import { PermissionCenter, FineGrainedPermissionPage } from '@/features/permission'
 import { AuditPage } from '@/features/audit'
-import { BuiltinTextEditorPage } from '@/features/editor/pages'
+import { BuiltinMarkdownEditorPage, BuiltinTextEditorPage } from '@/features/editor/pages'
 
 export const workbenchRoutes: WorkbenchRouteDefinition[] = [
   {
@@ -104,7 +104,13 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
       id: `builtin-text-editor:${context.params.docId ?? 'untitled'}`,
       title: `Text Editor · ${context.params.docId ?? 'untitled.txt'}`,
       mode: 'editor',
-      render: () => <BuiltinTextEditorPage context={context} />,
+      render: () => {
+        const docId = decodeURIComponent(context.params.docId ?? '')
+        if (/\.md$/i.test(docId)) {
+          return <BuiltinMarkdownEditorPage context={context} />
+        }
+        return <BuiltinTextEditorPage context={context} />
+      },
     }),
   },
 ]

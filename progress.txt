@@ -1330,3 +1330,32 @@
 
 ### Notes:
 - Playwright 初次失败由顶部提示浮层拦截点击导致，已在用例中通过 `addInitScript` 预设 `topbar-hint-dismissed=true` 规避，测试稳定通过。
+
+## [2026-03-22] - Task: Builtin Markdown Editor (Epic 39, Story 39.2)
+
+### 铁律合规检查：
+- PRD 合规：[FR1181]
+- 架构合规：[遵循 ADR-035，在统一 editor host 下按资源扩展名分派 Markdown 编辑器，并复用统一保存状态契约]
+- UX 合规：[沿用 VSCode 风格四栏与状态栏体系，使用 Shadcn/ui 与 Lucide 组件，保持透明可控的编辑/预览交互]
+- Epic 合规：[Epic 39, Story 39.2]
+
+### What was done:
+- 新增 Markdown 编辑页面 `BuiltinMarkdownEditorPage`，支持：
+  - Markdown 源码编辑（textarea）
+  - 实时预览（标题/段落/列表/表格）
+  - 表格区单元格编辑并回写 Markdown 源文档
+  - 脏状态检测、只读模式、关闭确认
+- 扩展本地文档存储模块，新增 markdown 文档的 load/save/index 能力，复用与文本编辑器一致的保存契约。
+- 更新编辑器路由分派逻辑：`/editor/:docId` 根据扩展名自动选择内置 Markdown 或 Text 编辑器。
+- 新增集成测试 `tests/integration/builtin-markdown-editor.test.tsx`。
+- 新增浏览器烟测 `tests/e2e/smoke/builtin-markdown-editor.spec.ts`。
+- 更新 OpenSpec Story 39.2 任务勾选完成。
+
+### Testing:
+- `npm run lint` 通过。
+- `npm run build` 通过。
+- `npx vitest run --config vitest.config.ts tests/integration/builtin-markdown-editor.test.tsx` 通过（2/2）。
+- `npx playwright test tests/e2e/smoke/builtin-markdown-editor.spec.ts --project=smoke` 通过（1/1）。
+
+### Notes:
+- Story 39.2 的 `task.json` 变更名与当前 openspec 目录命名存在差异（markdown vs structured-document-table），本次实现覆盖 markdown 编辑 + 结构化表格编辑两侧能力，并同步按 Story 39.2 完成验收。

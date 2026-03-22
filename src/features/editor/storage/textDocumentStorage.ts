@@ -1,5 +1,7 @@
-const STORAGE_PREFIX = 'editor:text:'
-const STORAGE_INDEX_KEY = 'editor:text:index'
+const TEXT_STORAGE_PREFIX = 'editor:text:'
+const TEXT_STORAGE_INDEX_KEY = 'editor:text:index'
+const MARKDOWN_STORAGE_PREFIX = 'editor:markdown:'
+const MARKDOWN_STORAGE_INDEX_KEY = 'editor:markdown:index'
 
 export interface TextDocumentSnapshot {
   id: string
@@ -12,8 +14,8 @@ interface StoredTextDocument {
   updatedAt: string
 }
 
-function readDocument(id: string): StoredTextDocument | null {
-  const raw = localStorage.getItem(`${STORAGE_PREFIX}${id}`)
+function readDocument(storagePrefix: string, id: string): StoredTextDocument | null {
+  const raw = localStorage.getItem(`${storagePrefix}${id}`)
   if (!raw) {
     return null
   }
@@ -25,12 +27,12 @@ function readDocument(id: string): StoredTextDocument | null {
   }
 }
 
-function writeDocument(id: string, payload: StoredTextDocument) {
-  localStorage.setItem(`${STORAGE_PREFIX}${id}`, JSON.stringify(payload))
+function writeDocument(storagePrefix: string, id: string, payload: StoredTextDocument) {
+  localStorage.setItem(`${storagePrefix}${id}`, JSON.stringify(payload))
 }
 
-function readIndex(): string[] {
-  const raw = localStorage.getItem(STORAGE_INDEX_KEY)
+function readIndex(storageIndexKey: string): string[] {
+  const raw = localStorage.getItem(storageIndexKey)
   if (!raw) {
     return []
   }
@@ -43,12 +45,12 @@ function readIndex(): string[] {
   }
 }
 
-function writeIndex(next: string[]) {
-  localStorage.setItem(STORAGE_INDEX_KEY, JSON.stringify(next))
+function writeIndex(storageIndexKey: string, next: string[]) {
+  localStorage.setItem(storageIndexKey, JSON.stringify(next))
 }
 
-export function loadTextDocument(id: string): TextDocumentSnapshot {
-  const stored = readDocument(id)
+function loadDocument(storagePrefix: string, id: string): TextDocumentSnapshot {
+  const stored = readDocument(storagePrefix, id)
   if (!stored) {
     return {
       id,
@@ -64,13 +66,13 @@ export function loadTextDocument(id: string): TextDocumentSnapshot {
   }
 }
 
-export function saveTextDocument(id: string, content: string): TextDocumentSnapshot {
+function saveDocument(storagePrefix: string, storageIndexKey: string, id: string, content: string): TextDocumentSnapshot {
   const updatedAt = new Date().toISOString()
-  writeDocument(id, { content, updatedAt })
+  writeDocument(storagePrefix, id, { content, updatedAt })
 
-  const index = readIndex()
+  const index = readIndex(storageIndexKey)
   if (!index.includes(id)) {
-    writeIndex([id, ...index])
+    writeIndex(storageIndexKey, [id, ...index])
   }
 
   return {
@@ -80,7 +82,26 @@ export function saveTextDocument(id: string, content: string): TextDocumentSnaps
   }
 }
 
-export function listTextDocuments(): TextDocumentSnapshot[] {
-  return readIndex().map((id) => loadTextDocument(id))
+export function loadTextDocument(id: string): TextDocumentSnapshot {
+  return loadDocument(TEXT_STORAGE_PREFIX, id)
 }
 
+export function saveTextDocument(id: string, content: string): TextDocumentSnapshot {
+  return saveDocument(TEXT_STORAGE_PREFIX, TEXT_STORAGE_INDEX_KEY, id, content)
+}
+
+export function listTextDocuments(): TextDocumentSnapshot[] {
+  return readIndex(TEXT_STORAGE_INDEX_KEY).map((id) => loadTextDocument(id))
+}
+
+export function loadMarkdownDocument(id: string): TextDocumentSnapshot {
+  return loadDocument(MARKDOWN_STORAGE_PREFIX, id)
+}
+
+export function saveMarkdownDocument(id: string, content: string): TextDocumentSnapshot {
+  return saveDocument(MARKDOWN_STORAGE_PREFIX, MARKDOWN_STORAGE_INDEX_KEY, id, content)
+}
+
+export function listMarkdownDocuments(): TextDocumentSnapshot[] {
+  return readIndex(MARKDOWN_STORAGE_INDEX_KEY).map((id) => loadMarkdownDocument(id))
+}
