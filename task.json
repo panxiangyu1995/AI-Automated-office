@@ -854,7 +854,7 @@
                                            "Story 45.2",
                                            "Story 45.3"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  72,
@@ -892,7 +892,7 @@
                                            "Story 45.2",
                                            "Story 2.7"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },
                   {
                       "id":  73,
