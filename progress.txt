@@ -1,3 +1,46 @@
+## [2026-03-23] - Task: Streaming Output and Status Sync (Story 43.3)
+
+### 铁律合规检查：
+- PRD 合规：FR-P2-01, FR-P2-02
+- 架构合规：ADR-001, ADR-037 - 分层架构，运行时事件系统
+- UX 合规：UX-01, UX-04 - 流式输出支持
+
+### What was done:
+- 创建 runtimeEvents.ts - 有序运行时事件发射器
+  - 12 种事件类型：session_start/end, message_start/end, part_start/delta/end, tool_call/result, error, warning, debug
+  - 事件缓冲和序列号管理
+  - 监听器系统支持通配符和过滤
+  
+- 创建 syncEngine.ts - 消息部件同步引擎
+  - SyncEngine 类管理前端同步
+  - 消费者注册和过滤机制
+  - 批量处理和延迟发送
+  - 状态监听和统计信息
+  
+- 创建 reconnectHandler.ts - 重连和回放处理器
+  - ReconnectHandler 类管理会话重连
+  - 指数退避重试策略
+  - 事件存储和回放
+  - 状态持久化支持
+  
+- 创建 streamingHostContext.tsx - React 流式上下文
+  - StreamingProvider 组件
+  - useStreamingContext/useStreamChunks/useRuntimeEvents hooks
+  - useMessageStream/usePartStream hooks
+  - useStreamingControl/useReconnectState hooks
+
+### Testing:
+- 53 个单元测试覆盖所有核心功能
+- TypeScript check passed
+- Build succeeded
+
+### Notes:
+- 基于已完成的 Story 43.2 (Message and Part Model)
+- 为前端流式渲染提供完整支持
+- 支持断线重连和事件回放
+
+---
+
 ## [2026-03-23] - Task: Message and Part Model (epic-43-story-43-2)
 
 ### 铁律合规检查：
