@@ -18,13 +18,22 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
 
   const pageContext = useMemo<WorkbenchPageContext>(
     () => ({
+      routeId: `workbench:${location.pathname || '/'}`,
+      resourceId: location.pathname || '/',
+      openMode: 'static',
       route: location.pathname,
       params,
       searchParams: new URLSearchParams(location.search),
+      dataSource: {
+        sourceType: 'route',
+        sourceId: location.pathname || '/',
+        query: Object.fromEntries(new URLSearchParams(location.search)),
+      },
       activeActivityItem,
       permission: {
         canView: true,
         canEdit: true,
+        requiredPermissions: [],
         fieldPermissions: {},
       },
     }),

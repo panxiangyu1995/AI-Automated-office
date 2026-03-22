@@ -3,21 +3,41 @@ import { AlertTriangle, FileCog, LayoutTemplate } from 'lucide-react'
 import type { ActivityBarItem } from '../../stores/uiStore'
 
 export type WorkbenchHostMode = 'static' | 'dynamic' | 'editor'
+export type WorkbenchPageOpenMode = WorkbenchHostMode
 
 export type WorkbenchFieldPermission = 'hidden' | 'readonly' | 'editable'
+
+export interface WorkbenchDataSourceContext {
+  sourceType: 'route' | 'api' | 'memory' | 'plugin'
+  sourceId: string
+  query: Record<string, string>
+}
 
 export interface WorkbenchPermissionContext {
   canView: boolean
   canEdit: boolean
+  requiredPermissions: string[]
   fieldPermissions: Record<string, WorkbenchFieldPermission>
 }
 
 export interface WorkbenchPageContext {
+  routeId: string
+  resourceId: string
+  openMode: WorkbenchPageOpenMode
   route: string
   params: Readonly<Record<string, string | undefined>>
   searchParams: URLSearchParams
+  dataSource: WorkbenchDataSourceContext
   activeActivityItem: ActivityBarItem
   permission: WorkbenchPermissionContext
+}
+
+export interface WorkbenchHostLifecycleCallbacks {
+  onBeforeOpen?: (context: WorkbenchPageContext) => void
+  onAfterOpen?: (context: WorkbenchPageContext) => void
+  onBeforeClose?: (context: WorkbenchPageContext) => void
+  onAfterClose?: (context: WorkbenchPageContext) => void
+  onError?: (error: Error, context: WorkbenchPageContext) => void
 }
 
 export interface WorkbenchHostDescriptor {
@@ -25,6 +45,7 @@ export interface WorkbenchHostDescriptor {
   title: string
   mode: WorkbenchHostMode
   render?: (context: WorkbenchPageContext) => ReactNode
+  lifecycle?: WorkbenchHostLifecycleCallbacks
   onMount?: (context: WorkbenchPageContext) => void
   onUnmount?: (context: WorkbenchPageContext) => void
   onError?: (error: Error, context: WorkbenchPageContext) => void
@@ -56,6 +77,7 @@ export class WorkbenchHostErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, _errorInfo: ErrorInfo) {
+    this.props.descriptor.lifecycle?.onError?.(error, this.props.context)
     this.props.descriptor.onError?.(error, this.props.context)
   }
 
@@ -76,10 +98,14 @@ export class WorkbenchHostErrorBoundary extends Component<
 
 export function WorkbenchHostRenderer({ descriptor, context }: WorkbenchHostRendererProps) {
   useEffect(() => {
+    descriptor.lifecycle?.onBeforeOpen?.(context)
     descriptor.onMount?.(context)
+    descriptor.lifecycle?.onAfterOpen?.(context)
 
     return () => {
+      descriptor.lifecycle?.onBeforeClose?.(context)
       descriptor.onUnmount?.(context)
+      descriptor.lifecycle?.onAfterClose?.(context)
     }
   }, [descriptor, context])
 

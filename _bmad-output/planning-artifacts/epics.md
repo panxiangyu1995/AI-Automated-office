@@ -6838,6 +6838,164 @@ Epic 1 / Epic 2
 
 **Phase 2 衔接说明：** 通用 Agent Runtime 完成后，优先通过 Epic 42 将 Agent 的任务结果映射到动态表单、动态详情页和工作台内容区，实现“统一 Agent 覆盖多业务场景”的产品目标。
 
+## Epic 43: Agent Session 与消息分片引擎
+
+**Epic目标：** 建立通用 Agent 的会话载体、消息持久化模型和分片事件流，为后续 Planner、Tool Runtime、Permission Gate 和 UI Writeback 提供统一的运行时基础。
+
+**定位说明：** Epic 43 是通用 Agent Runtime MVP 的底座。它定义 `session -> message -> part` 的核心数据模型，并为流式输出、中断恢复、断点续跑和执行追踪提供统一事件骨架。
+
+**建议 Stories：**
+
+- `Story 43.1` Session 生命周期管理
+- `Story 43.2` Message / Part 分片模型
+- `Story 43.3` 流式输出与状态同步
+- `Story 43.4` 中断、重试与断点恢复
+
+**关键验收方向：**
+
+1. 一个完整任务必须可记录为 `session -> message -> part`。
+2. `part` 至少支持 `text`、`reasoning`、`tool_call`、`tool_result`、`confirmation`、`error`、`ui_patch`。
+3. 会话支持创建、继续、取消、中断和恢复。
+4. 流式消息与最终结果保持一致，不出现状态漂移。
+
+## Epic 44: Agent Runtime 与 Planner
+
+**Epic目标：** 建立通用 Agent 的任务状态机、结构化计划生成能力和步骤执行框架，使自然语言任务可以被拆解为可审计、可执行、可恢复的标准步骤。
+
+**定位说明：** Epic 44 定义通用 Agent 的“怎么想、怎么跑”。它不负责具体工具实现，而负责将用户目标转换为步骤序列，并驱动后续 Tool Runtime 执行。
+
+**建议 Stories：**
+
+- `Story 44.1` Agent Runtime 状态机
+- `Story 44.2` Planner 结构化计划生成
+- `Story 44.3` Step Executor 步骤执行器
+- `Story 44.4` 失败处理与计划调整
+
+**关键验收方向：**
+
+1. 任务状态至少覆盖 `planning`、`running`、`waiting_confirm`、`completed`、`failed`、`interrupted`。
+2. Planner 输出为结构化步骤，而不是不可追踪的纯文本推理。
+3. Runtime 支持线性多步执行和有限次重新规划。
+4. 失败重试和中断恢复进入统一状态机，不出现旁路逻辑。
+
+## Epic 45: 统一 Tool Runtime
+
+**Epic目标：** 将核心工具、插件工具和 MCP 工具统一纳入同一套注册、校验、执行和结果标准化体系，形成通用 Agent 的工具执行基础设施。
+
+**定位说明：** Epic 45 解决“Agent 如何安全调用能力”。通用 Agent 不直接耦合业务模块，而是通过 Tool Runtime 调度各类能力。
+
+**建议 Stories：**
+
+- `Story 45.1` Tool Descriptor 与 Registry
+- `Story 45.2` Tool Executor 与参数校验
+- `Story 45.3` Core / Plugin / MCP Tools 统一接入
+- `Story 45.4` Tool Result 标准化输出
+
+**关键验收方向：**
+
+1. 所有工具必须有统一的描述、输入 schema、权限声明和执行入口。
+2. 工具执行前完成参数校验和上下文注入。
+3. Core Tools、Plugin Tools、MCP Tools 使用同一注册与执行协议。
+4. 工具结果可被 Planner、Audit、UI Writeback 共同消费。
+
+## Epic 46: Permission Gate 与 Human-in-the-loop
+
+**Epic目标：** 为通用 Agent 建立统一的权限拦截、风险分级、人工确认和执行放行机制，保证 Agent 对真实业务对象的操作始终透明、可控、可审计。
+
+**定位说明：** Epic 46 是 Agent 可进入企业业务流程的前提。没有这一层，通用 Agent 只能做建议生成，不能安全覆盖业务执行。
+
+**建议 Stories：**
+
+- `Story 46.1` 工具调用前权限检查
+- `Story 46.2` 敏感动作识别与拦截
+- `Story 46.3` 人工确认卡片与确认流
+- `Story 46.4` 字段级 / 动作级 / 数据源级权限接入
+
+**关键验收方向：**
+
+1. 高风险操作必须先经过 Permission Gate 判断。
+2. 敏感字段、敏感工具和敏感数据源不能绕过确认流程。
+3. 用户确认结果要进入审计链路并影响后续执行。
+4. 权限模型应复用 Epic 2 的细粒度权限能力。
+
+## Epic 47: Context Assembler 与 Memory MVP
+
+**Epic目标：** 为通用 Agent 组装最小但足够的执行上下文，并提供会话记忆和知识检索能力，使同一 Agent 可以覆盖不同部门业务场景。
+
+**定位说明：** Epic 47 解决“Agent 为什么知道当前任务相关信息”。它不追求一开始就实现完整图记忆，而是先把用户、租户、页面、资源和知识上下文打通。
+
+**建议 Stories：**
+
+- `Story 47.1` 用户 / 租户 / 部门上下文注入
+- `Story 47.2` 当前页面 / 资源上下文注入
+- `Story 47.3` Session Memory 摘要与关键事实
+- `Story 47.4` Knowledge Retrieval 最小接入
+
+**关键验收方向：**
+
+1. Agent 执行时可获取当前用户、租户、部门和页面上下文。
+2. 上下文注入遵循最小必要原则，不进行无差别全量注入。
+3. 会话支持摘要压缩和关键事实提取。
+4. 指定知识库可被检索并注入执行链路。
+
+## Epic 48: Audit、Trace 与可观测性 MVP
+
+**Epic目标：** 为通用 Agent 建立从计划、步骤、工具、确认到结果的执行追踪与可观测性能力，支持问题定位、合规追溯和运行质量优化。
+
+**定位说明：** Epic 48 是 Agent 工程化落地的运营底座。它保证 Runtime 不是黑盒，而是可以被审查、调试和度量。
+
+**建议 Stories：**
+
+- `Story 48.1` Trace ID 与执行链记录
+- `Story 48.2` 工具调用审计日志
+- `Story 48.3` 任务结果与失败原因记录
+- `Story 48.4` 基础运行指标与调试视图
+
+**关键验收方向：**
+
+1. 一次任务执行可串联完整 trace。
+2. 工具调用的输入摘要、结果摘要和状态可追溯。
+3. 失败原因能定位到具体 step 或 tool。
+4. 至少提供成功率、耗时、重试次数、确认次数等基础指标。
+
+## Epic 49: Agent 与动态 UI 写回层
+
+**Epic目标：** 将通用 Agent 的结构化结果安全写回动态表单、详情页、工作台和编辑器宿主，形成“对话驱动执行，界面承载结果”的闭环。
+
+**定位说明：** Epic 49 是 Agent 覆盖业务的最后一跳。它要求 Agent 不能直接操纵前端组件状态，而必须通过动态 UI Runtime 和宿主协议完成结果写回。
+
+**建议 Stories：**
+
+- `Story 49.1` 表单字段写回适配器
+- `Story 49.2` 详情页区块写回适配器
+- `Story 49.3` 工作台卡片生成与写回
+- `Story 49.4` 编辑器 / 模板内容写回
+
+**关键验收方向：**
+
+1. Agent 结果可写入 Epic 42 提供的动态表单与详情区。
+2. 工作台内容区支持 Agent 生成卡片并受权限控制。
+3. 编辑器和模板宿主支持 Agent 填充与更新内容。
+4. 所有写回动作均进入统一审计链路。
+
+## Epic 50: 业务试点接入
+
+**Epic目标：** 以统一 Agent Runtime 为核心，将审批、销售、财务等典型业务场景接入同一套运行时，验证通用 Agent 的跨业务覆盖能力。
+
+**定位说明：** Epic 50 不创建新的“部门专用 Agent 内核”，而是验证同一个通用 Agent 通过上下文、工具和模板差异化覆盖多部门流程。
+
+**建议 Stories：**
+
+- `Story 50.1` 审批场景接入
+- `Story 50.2` 销售场景接入
+- `Story 50.3` 财务场景接入
+
+**关键验收方向：**
+
+1. 审批、销售、财务共享同一 Runtime、Tool、Permission 和 Audit 主链路。
+2. 场景差异主要由上下文、工具集和动态 UI 模板承载。
+3. Agent 可在至少三个业务场景中完成“读取分析、生成填充、确认后执行”闭环。
+
 ## 总结
 
 ### Epic统计
@@ -6852,7 +7010,9 @@ Epic 1 / Epic 2
 | Phase 6: 扩展部门模块 | 3 | 15 |
 | Phase 7: 平台治理与运维 | 16 | 31 |
 | Phase 8: 体验与效率提升 | 3 | 16 |
-| **总计** | **40** | **231** |
+| Phase 9: 动态 UI 承载基础设施 | 2 | 9 |
+| Phase 10: 通用 Agent Runtime MVP | 8 | 31 |
+| **总计** | **50** | **271** |
 
 ### FR覆盖率
 

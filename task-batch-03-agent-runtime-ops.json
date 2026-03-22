@@ -1,0 +1,279 @@
+{
+    "version":  "1.0.0",
+    "lastUpdated":  "2026-03-22",
+    "scope":  "Pending execution batch",
+    "batch":  "Batch 3",
+    "range":  "Task 76-83",
+    "tasks":  [
+                  {
+                      "id":  76,
+                      "epic":  "Epic 47",
+                      "story":  "Story 47.1",
+                      "title":  "User Tenant and Department Context",
+                      "description":  "Assemble user, tenant, and department context for common runtime execution.",
+                      "openspec_change":  "epic-47-story-47-1-user-tenant-and-department-context",
+                      "steps":  [
+                                    "Define context envelope for user, tenant, and department",
+                                    "Inject identity and organizational data into runtime context",
+                                    "Normalize context payloads across departments",
+                                    "Reuse existing permission model identifiers"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-017"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-001",
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 44.1",
+                                           "Story 2.7"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  77,
+                      "epic":  "Epic 47",
+                      "story":  "Story 47.2",
+                      "title":  "Page and Resource Context",
+                      "description":  "Inject current page and resource context into the common runtime.",
+                      "openspec_change":  "epic-47-story-47-2-page-and-resource-context",
+                      "steps":  [
+                                    "Define page context contract from host runtime",
+                                    "Attach active resource references to runtime context",
+                                    "Resolve context per static dynamic and editor modes",
+                                    "Expose context safely to planner and tool runtime"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-018"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-035",
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 41.4",
+                                           "Story 47.1"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  78,
+                      "epic":  "Epic 47",
+                      "story":  "Story 47.3",
+                      "title":  "Session Memory Summary",
+                      "description":  "Provide memory summary and key fact extraction for active sessions.",
+                      "openspec_change":  "epic-47-story-47-3-session-memory-summary",
+                      "steps":  [
+                                    "Summarize recent session history into reusable memory entries",
+                                    "Extract key facts for future steps",
+                                    "Store summary artifacts with the session",
+                                    "Refresh memory after important runtime milestones"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-019"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 43.2",
+                                           "Story 47.1"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  79,
+                      "epic":  "Epic 47",
+                      "story":  "Story 47.4",
+                      "title":  "Knowledge Retrieval Baseline",
+                      "description":  "Connect the runtime to baseline knowledge retrieval for scoped business context.",
+                      "openspec_change":  "epic-47-story-47-4-knowledge-retrieval-baseline",
+                      "steps":  [
+                                    "Define retrieval request contract",
+                                    "Resolve scoped knowledge sources by tenant and department",
+                                    "Inject retrieval results into runtime context",
+                                    "Keep retrieval references available for audit"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-020"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 47.1",
+                                           "Story 47.2"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  80,
+                      "epic":  "Epic 48",
+                      "story":  "Story 48.1",
+                      "title":  "Trace and Step Log",
+                      "description":  "Create trace identifiers and step logs across runtime execution.",
+                      "openspec_change":  "epic-48-story-48-1-trace-and-step-log",
+                      "steps":  [
+                                    "Generate trace ids for runtime tasks",
+                                    "Link trace ids to session and step execution",
+                                    "Persist step status and timestamps",
+                                    "Expose trace lookup for debugging"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-021"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 43.2",
+                                           "Story 44.1"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  81,
+                      "epic":  "Epic 48",
+                      "story":  "Story 48.2",
+                      "title":  "Tool Audit Log",
+                      "description":  "Record normalized audit events for all tool calls.",
+                      "openspec_change":  "epic-48-story-48-2-tool-audit-log",
+                      "steps":  [
+                                    "Persist audit entries for each tool call",
+                                    "Record input and result summaries",
+                                    "Link permission and confirmation outcomes to tool events",
+                                    "Make audit events available for future governance views"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-022"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR8",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-002",
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 45.4",
+                                           "Story 46.3",
+                                           "Story 48.1"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  82,
+                      "epic":  "Epic 48",
+                      "story":  "Story 48.3",
+                      "title":  "Failure and Result Recording",
+                      "description":  "Persist runtime results and failure causes for task-level analysis.",
+                      "openspec_change":  "epic-48-story-48-3-failure-and-result-recording",
+                      "steps":  [
+                                    "Record final result summary for each task",
+                                    "Persist failure reasons and impacted step ids",
+                                    "Store retry and replan outcomes",
+                                    "Expose records for recovery and analysis flows"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-023"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 44.4",
+                                           "Story 48.1"
+                                       ],
+                      "passes":  false
+                  },
+                  {
+                      "id":  83,
+                      "epic":  "Epic 48",
+                      "story":  "Story 48.4",
+                      "title":  "Runtime Metrics and Debug View",
+                      "description":  "Provide baseline runtime metrics and a debug inspection view.",
+                      "openspec_change":  "epic-48-story-48-4-runtime-metrics-and-debug-view",
+                      "steps":  [
+                                    "Collect runtime success and latency metrics",
+                                    "Track retry and confirmation counts",
+                                    "Expose a minimal debug inspection view",
+                                    "Support filtering by trace or session id"
+                                ],
+                      "frs_covered":  [
+                                          "FR-P2-024"
+                                      ],
+                      "nfrs_covered":  [
+                                           "NFR1",
+                                           "NFR16"
+                                       ],
+                      "arch_covered":  [
+                                           "ADR-037"
+                                       ],
+                      "ux_covered":  [
+                                         "UX-01",
+                                         "UX-02"
+                                     ],
+                      "dependencies":  [
+                                           "Story 48.1",
+                                           "Story 48.2",
+                                           "Story 48.3"
+                                       ],
+                      "passes":  false
+                  }
+              ]
+}

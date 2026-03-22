@@ -1,0 +1,18 @@
+name: epic-44-story-44-1-agent-runtime-state-machine
+status: pending
+created_at: 2026-03-22
+epic: 44
+story: Story 44.1
+title: Agent Runtime State Machine
+mapping:
+  frs:
+    - FR-P2-005
+  nfrs:
+    - NFR1
+    - NFR16
+  arch:
+    - ADR-001
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-02

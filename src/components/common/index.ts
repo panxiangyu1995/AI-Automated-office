@@ -7,9 +7,12 @@ export { Workbench } from './Workbench'
 export { RouteContainer } from './RouteContainer'
 export { WorkbenchHostErrorBoundary, WorkbenchHostRenderer } from './workbenchHost'
 export type {
+  WorkbenchDataSourceContext,
   WorkbenchFieldPermission,
   WorkbenchHostDescriptor,
+  WorkbenchHostLifecycleCallbacks,
   WorkbenchHostMode,
+  WorkbenchPageOpenMode,
   WorkbenchPageContext,
   WorkbenchPermissionContext,
 } from './workbenchHost'

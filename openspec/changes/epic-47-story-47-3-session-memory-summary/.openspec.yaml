@@ -1,0 +1,17 @@
+name: epic-47-story-47-3-session-memory-summary
+status: pending
+created_at: 2026-03-22
+epic: 47
+story: Story 47.3
+title: Session Memory Summary
+mapping:
+  frs:
+    - FR-P2-019
+  nfrs:
+    - NFR1
+    - NFR16
+  arch:
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-02

@@ -1,0 +1,18 @@
+name: epic-45-story-45-3-unified-core-plugin-mcp-tool-adapters
+status: pending
+created_at: 2026-03-22
+epic: 45
+story: Story 45.3
+title: Unified Core Plugin and MCP Tool Adapters
+mapping:
+  frs:
+    - FR-P2-011
+  nfrs:
+    - NFR1
+    - NFR16
+  arch:
+    - ADR-018
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-02

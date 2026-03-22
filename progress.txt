@@ -1282,4 +1282,25 @@
 - npm.cmd run build: pass
 
 ### Notes:
-- 当前 dynamic/editor 入口模型已可被后续 Story 39/40/41.4 复用，真实条目来源将在后续编辑器注册与资源解析阶段接入
+- 当前 dynamic/editor 入口模型已可被后续 Story 39/40/41.4 复用，真实条目来源将在后续编辑器注册与资源解析阶段接入## [2026-03-22] - Task: Page Open Mode and Context Contract
+
+### 铁律合规检查：
+- PRD 合规: [FR1216]
+- 架构合规: 对齐 ADR-035、ADR-036，完善 host 协议与统一上下文字段契约
+- UX 合规: 仅增强页面上下文协议，不改变现有四栏布局与交互主路径
+- Epic 合规: Epic 41, Story 41.4
+
+### What was done:
+- 在 workbenchHost 中定义 page open mode 协议、data source context、permission requiredPermissions 字段
+- 新增 host lifecycle callbacks 契约（before/after open, before/after close, error）并在 renderer 中接入
+- 在 Workbench 与 RouteContainer 中统一注入 routeId/resourceId/openMode/dataSource/permission 上下文
+- 优化 RouteContainer 的 store 订阅粒度，避免最近项写入导致的多余重渲染
+- 新增 page-context-contract 集成测试，验证上下文字段与生命周期回调
+
+### Testing:
+- npx.cmd vitest run --config vitest.config.ts tests/integration/workbench-host.test.tsx tests/integration/route-container.test.tsx tests/integration/page-context-contract.test.tsx: pass
+- npm.cmd run lint: pass
+- npm.cmd run build: pass
+
+### Notes:
+- 协议层已稳定，后续 Story 40/42 可直接复用 openMode + dataSource + permission + lifecycle contract
