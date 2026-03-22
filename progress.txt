@@ -1597,11 +1597,70 @@
 - UX 合规：[UX-01, UX-02]
 
 ### What was done:
-- 读取 task.json 正确解析任务描述和验收标准
-- 准备执行 ./init.sh 进行环境初始化
+- 创建 `src/features/forms/runtime/detailSectionSchema.ts`:
+  - DetailBlockType 枚举：field, attachment, relation, timeline, divider, group
+  - DetailBlock 联合类型：FieldBlock, AttachmentBlock, RelationBlock, TimelineBlock, DividerBlock, GroupBlock
+  - DetailSection, DetailSectionSchema 类型定义
+  - resolveBlockPermission, evaluateBlockVisibility 权限和可见性解析函数
+  - buildDetailSectionRuntimeContract, validateDetailSectionSchema 工具函数
+- 创建 `src/features/forms/runtime/DetailSectionRenderer.tsx`:
+  - 支持所有 block 类型渲染（field, attachment, relation, timeline, divider, group）
+  - 权限控制：read-only, hidden, masked
+  - 条件可见性评估
+  - 响应式布局（grid/flex）
+  - 数据绑定和空值处理
+- 更新 `src/features/forms/runtime/index.ts` 统一导出
+- 创建集成测试 `tests/integration/detail-section-renderer.test.tsx`（14/14通过）
 
 ### Testing:
-- 未执行，环境初始化失败
+- `npm run lint` 通过
+- `npm run build` 通过
+- `npx vitest run tests/integration/detail-section-renderer.test.tsx` 通过（14/14通过）
 
 ### Notes:
-- 尝试在 PowerShell 或 Git Bash 中执行 ./init.sh 均失败：Win32 error 5 / 拒绝访问
+- 支持 field/attachment/relation/timeline/divider/group 六种 block 类型
+- 权限系统支持 read-only/hidden/masked 三种模式
+- 支持基于表达式的条件可见性评估
+
+## [2026-03-23] - Task: Approval Content Dynamic Rendering (Epic 42, Story 42.3)
+
+### 铁律合规检查：
+- PRD 合规：[FR1225 - 审批内容动态渲染]
+- 架构合规：[ADR-035, ADR-036, ADR-037]
+- UX 合规：[UX-01, UX-02, UX-04]
+- Epic 合规：Epic 42, Story 42.3
+
+### What was done:
+- 创建 `src/features/approval/types/approval.types.ts`:
+  - ApprovalStatus, ApprovalNodeType, ApprovalActionType 枚举
+  - ApprovalNode, ApprovalFlow 实体类型
+  - ApprovalInstance 实例类型（含 contentSchema）
+  - ApprovalPermissionContext 权限上下文
+  - resolveApprovalPermission, getApprovalFieldPermission 权限解析函数
+  - validateApprovalActionRequest 操作验证函数
+- 创建 `src/features/approval/components/ApprovalActionPanel.tsx`:
+  - Approve/Reject/Withdraw/Delegate/Transfer/Comment 操作按钮
+  - 操作对话框（Comment 输入、Delegate 用户选择）
+  - 提交状态管理
+  - 权限上下文驱动按钮可见性
+- 创建 `src/features/approval/components/ApprovalContentRenderer.tsx`:
+  - 包装 DetailSectionRenderer 提供审批上下文
+  - 审批级权限校验
+  - 表单数据绑定
+- 创建 `src/features/approval/components/ApprovalDetailPage.tsx`:
+  - 页面布局：Header → Flow Progress → Dynamic Content → Action Panel
+  - ApprovalFlowProgress 审批进度条组件
+  - ApprovalDetailPageShell 加载骨架
+  - 状态徽章（pending/approved/rejected/withdrawn/cancelled）
+- 创建 `src/features/approval/components/index.ts` 和 `src/features/approval/index.ts` 导出
+- 创建集成测试 `tests/integration/approval-content-dynamic-rendering.test.tsx`（16/16通过）
+
+### Testing:
+- `npx eslint src/features/approval tests/integration/approval-content-dynamic-rendering.test.tsx --max-warnings=0` 通过
+- `npm run build` 通过
+- `npx vitest run tests/integration/approval-content-dynamic-rendering.test.tsx` 通过（16/16通过）
+
+### Notes:
+- 审批流程状态机支持 start/approval/cc/end 四种节点类型
+- 权限上下文包含 canApprove/canReject/canWithdraw/canDelegate/canTransfer/canComment 等权限
+- 操作面板固定在页面底部，内容区域可滚动
