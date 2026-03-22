@@ -1,3 +1,55 @@
+## [2026-03-23] - Task: Message and Part Model (epic-43-story-43-2)
+
+### 铁律合规检查：
+- PRD 合规：[PRD-P2-01, PRD-P2-02 - Message and Part Model]
+- 架构合规：[ADR-001 分层微内核架构, ADR-037 模板设计器归属]
+- UX 合规：[UX-01, UX-04]
+- Epic 合规：Epic 43 / Story 43.2 Message and Part Model
+
+### What was done:
+
+**类型定义：**
+- `src/features/message/runtime/messageModel.ts`
+  - PartType: 7 种类型 (text, reasoning, tool_call, tool_result, confirmation, error, ui_patch)
+  - Part 类型: TextPart, ReasoningPart, ToolCallPart, ToolResultPart, ConfirmationPart, ErrorPart, UIPatchPart
+  - Message 类型: id, sessionId, role, status, parts[], metadata
+  - MessageRole: user, assistant, system, tool
+  - MessageStatus: pending, streaming, complete, error, cancelled
+  - StreamChunk: 流式传输数据块
+  - SerializedMessage/Part: 序列化格式
+
+**消息存储：**
+- `src/features/message/runtime/messageStore.ts`
+  - messageStore: Zustand 状态管理
+  - createMessage/getMessage/getSessionMessages/deleteMessage
+  - addPart/updatePart/removePart
+  - startStreaming/streamPartDelta/endStreaming
+  - 监听器: addStateListener, addStreamListener
+
+**API 服务：**
+- `src/features/message/runtime/messageApi.ts`
+  - MessageApi 类：封装所有消息操作
+  - 单例模式: getMessageApi
+  - 便捷函数: createMessage, addTextPart, addToolCallPart 等
+
+**序列化：**
+- serializeMessage/serializePart: 转换为可传输格式
+- deserializeMessage/deserializePart: 从传输格式还原
+
+**测试：**
+- `tests/unit/features/message/messageModel.test.ts`
+  - 34 个单元测试覆盖 Part 创建、Message 创建、序列化、验证、工具函数
+
+### Testing:
+- pnpm run build - 构建成功
+- 34 个单元测试通过
+- TypeScript check passed
+
+### Notes:
+- 支持 7 种消息部件类型，满足 Agent 对话结构化需求
+- 流式传输支持：message_start -> part_start -> part_delta -> part_end -> message_end
+- 序列化合同支持前端流式渲染
+
 ## [2026-03-23] - Task: Session Lifecycle Management (epic-43-story-43-1)
 
 ### 铁律合规检查：
