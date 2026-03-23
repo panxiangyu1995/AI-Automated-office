@@ -48,3 +48,5 @@ export type {
   ToolCallStatusDisplayProps,
   ToolCallStatusStreamProps,
 } from './components/ToolCallStatusDisplay'
+export { ToolCallDetailDialog } from './components/ToolCallDetailDialog'
+export type { ToolCallDetailDialogProps } from './components/ToolCallDetailDialog'

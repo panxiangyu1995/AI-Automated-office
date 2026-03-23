@@ -1,4 +1,33 @@
 
+## [2026-03-24] - Task: Tool Call Detail (Story 5.3)
+
+### 铁律合规检查：
+- PRD 合规：FR70 - 工具调用详情查看
+- 架构合规：ADR-017, ADR-037 - 工具系统架构
+- NFR 合规：NFR8-11 - 可观测性
+- UX 合规：UX-01, UX-04 - VSCode风格、Shadcn/ui
+
+### What was done:
+- 创建 ToolCallDetailDialog.tsx 组件：
+  - 工具调用详情对话框
+  - 四个标签页：输入参数、输出结果、执行时间线、元数据
+  - ParameterTable: 参数表格组件，支持展开/折叠复杂对象
+  - ResultDisplay: 结果展示组件，支持结构化/原始视图切换
+  - EventTimeline: 事件时间线组件
+
+  - 功能特性：
+    - 显示规范化工具输入摘要和原始详情
+    - 渲染结构化结果和原始输出引用
+    - 支持复制和追踪导航
+
+### Testing:
+- npm run build 成功通过
+
+### Notes:
+- 复用 ToolCallPart, ToolResultPart 消息模型
+- 集成 ToolCallLifecycleEvent 生命周期事件
+- 支持 onTraceNavigate 和 onViewRawOutput 回调
+
 ## [2026-03-24] - Task: Tool Call Status Display (Story 5.2)
 
 ### 铁律合规检查：
