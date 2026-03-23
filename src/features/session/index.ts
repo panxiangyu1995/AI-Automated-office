@@ -120,3 +120,17 @@ export type {
   BlacklistStatus,
   AuditRecord,
 } from './components/OperationBlacklist'
+export { 
+  ToolPermissionCheck, 
+  createExamplePermissionCheckResult,
+  createExamplePermissionHistory,
+} from './components/ToolPermissionCheck'
+export type {
+  ToolPermissionCheckProps,
+  PermissionCheckResult,
+  PermissionRequirement,
+  PermissionCheckItem,
+  PermissionHistoryRecord,
+  PermissionStatus,
+  PermissionType,
+} from './components/ToolPermissionCheck'
