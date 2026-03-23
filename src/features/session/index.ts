@@ -97,3 +97,17 @@ export type {
   DowngradeBehavior,
   DowngradeTrigger,
 } from './components/ToolDowngradePolicy'
+export { 
+  SensitiveOperationConfirmation, 
+  createExampleSensitiveOperation,
+  createExampleRiskDetail,
+} from './components/SensitiveOperationConfirmation'
+export type {
+  SensitiveOperationConfirmationProps,
+  SensitiveOperation,
+  RiskDetail,
+  ConfirmationConfig,
+  RiskLevel,
+  SensitiveOperationType,
+  ConfirmationResult,
+} from './components/SensitiveOperationConfirmation'
