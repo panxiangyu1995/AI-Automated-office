@@ -1268,7 +1268,7 @@
                                            "Story 48.2",
                                            "Story 48.3"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },{
                       "id":  84,
                       "epic":  "Epic 49",

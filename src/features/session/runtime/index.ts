@@ -578,3 +578,90 @@ export {
   formatExecutionRecord,
   formatExecutionStatistics,
 } from './failureRecording'
+
+// Runtime Metrics and Debug View (Task 83: Story 48.4)
+export {
+  // Types
+  type MetricSeverity,
+  type MetricCategory,
+  type MetricPoint,
+  type MetricAggregation,
+  type RuntimeMetric,
+  type LatencyMetrics,
+  type SuccessMetrics,
+  type RetryMetrics,
+  type ConfirmationMetrics,
+  type RuntimeMetricsSummary,
+  type DebugViewEntry,
+  type DebugViewFilter,
+  type DebugViewStore,
+  type MetricsStore,
+  type SerializableMetricsStore,
+  type SerializableDebugViewStore,
+
+  // Constants
+  METRIC_ID_PREFIX,
+  DEBUG_ENTRY_ID_PREFIX,
+  METRIC_CATEGORIES,
+  METRIC_SEVERITIES,
+  DEBUG_LEVELS,
+
+  // ID Generation
+  generateMetricId,
+  generateDebugEntryId,
+  isValidMetricId,
+  isValidDebugEntryId,
+
+  // Metric Point Functions
+  createMetricPoint,
+  calculateMetricAggregation,
+
+  // Runtime Metric Functions
+  createRuntimeMetric,
+  addMetricPoint,
+  addMetricPoints,
+
+  // Metrics Summary Functions
+  createEmptyLatencyMetrics,
+  createEmptySuccessMetrics,
+  createEmptyRetryMetrics,
+  createEmptyConfirmationMetrics,
+  createRuntimeMetricsSummary,
+  updateLatencyMetrics,
+  updateSuccessMetrics,
+  updateRetryMetrics,
+  updateConfirmationMetrics,
+  addCustomMetric,
+
+  // Debug View Functions
+  createDebugEntry,
+  createDebugViewStore,
+  addDebugEntry,
+  getDebugEntry,
+  queryDebugEntries,
+  getSessionDebugEntries,
+  getTraceDebugEntries,
+  getEntriesByLevel,
+
+  // Metrics Store Functions
+  createMetricsStore,
+  addMetric,
+  getMetric,
+  getSessionMetrics,
+  getMetricsByCategory,
+
+  // Serialization
+  serializeRuntimeMetric,
+  deserializeRuntimeMetric,
+  serializeMetricsStore,
+  deserializeMetricsStore,
+  serializeDebugEntry,
+  deserializeDebugEntry,
+  serializeDebugViewStore,
+  deserializeDebugViewStore,
+
+  // Debug Formatting
+  formatRuntimeMetric,
+  formatDebugEntry,
+  formatMetricsSummary,
+} from './runtimeMetrics'

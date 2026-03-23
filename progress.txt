@@ -1,4 +1,48 @@
 
+## [2026-03-23] - Task: Runtime Metrics and Debug View (Story 48.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 运行时指标和调试视图
+- 架构合规：ADR-037 - 运行时追踪
+- UX 合规：UX-04 - 调试支持
+
+### What was done:
+- 创建 runtimeMetrics.ts - 运行时指标和调试视图模块
+  - MetricPoint: 指标数据点
+  - MetricAggregation: 指标聚合统计
+  - RuntimeMetric: 运行时指标
+  - LatencyMetrics: 延迟指标
+  - SuccessMetrics: 成功率指标
+  - RetryMetrics: 重试指标
+  - ConfirmationMetrics: 确认指标
+  - RuntimeMetricsSummary: 运行时指标汇总
+  - DebugViewEntry: 调试视图条目
+  - DebugViewStore: 调试视图存储
+  - MetricsStore: 指标存储
+
+- 功能实现：
+  - ID 生成 (generateMetricId, generateDebugEntryId, isValidMetricId, isValidDebugEntryId)
+  - 指标点函数 (createMetricPoint, calculateMetricAggregation)
+  - 运行时指标函数 (createRuntimeMetric, addMetricPoint, addMetricPoints)
+  - 指标汇总函数 (createEmptyLatencyMetrics, createEmptySuccessMetrics, createEmptyRetryMetrics, createEmptyConfirmationMetrics, createRuntimeMetricsSummary)
+  - 更新函数 (updateLatencyMetrics, updateSuccessMetrics, updateRetryMetrics, updateConfirmationMetrics, addCustomMetric)
+  - 调试视图函数 (createDebugEntry, createDebugViewStore, addDebugEntry, getDebugEntry, queryDebugEntries, getSessionDebugEntries, getTraceDebugEntries, getEntriesByLevel)
+  - 指标存储函数 (createMetricsStore, addMetric, getMetric, getSessionMetrics, getMetricsByCategory)
+  - 序列化 (serializeRuntimeMetric, deserializeRuntimeMetric, serializeMetricsStore, deserializeMetricsStore, serializeDebugEntry, deserializeDebugEntry, serializeDebugViewStore, deserializeDebugViewStore)
+  - 调试格式化 (formatRuntimeMetric, formatDebugEntry, formatMetricsSummary)
+
+### Testing:
+- 72 个单元测试通过 (runtimeMetrics.test.ts)
+- 所有 557 个运行时测试通过
+- TypeScript 编译通过
+- Build 成功
+
+### Notes:
+- 支持指标点聚合 (min, max, avg, p50, p95, p99)
+- 支持延迟、成功率、重试、确认四大类指标
+- 调试视图支持按 session/trace/level/category 筛选
+- 支持按严重程度和类别标记指标
+
 ## [2026-03-23] - Task: Failure and Result Recording (Story 48.3)
 
 ### 铁律合规检查：
