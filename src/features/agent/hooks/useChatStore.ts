@@ -1,17 +1,21 @@
 /**
  * useChatStore - 聊天状态管理 Hook
  * Story 4.1 - AI对话界面实现
+ * Story 4.7 - 检查点自动创建
  * 
  * 管理聊天会话、消息、流式传输状态
+ * 在消息提交时自动创建检查点
  * 
  * 铁律合规：
  * - ARCH: 分层架构，复用消息模型
  * - ARCH-037: 使用 Zustand 进行状态管理
+ * - NFR-23: 检查点可靠性
  */
 
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type { Message, TextPart, Part, MessageStatus, MessageRole } from '../../message/runtime/messageModel'
+import { useCheckpointStore } from './useCheckpointStore'
 
 // ==================== Helper Functions ====================
 
@@ -175,6 +179,30 @@ export const useChatStore = create<ChatStoreState>()(
       const state = get()
       const session = state.sessions[sessionId]
       if (!session) return null
+      
+      // 在添加消息前创建检查点（Story 4.7）
+      const checkpointStore = useCheckpointStore.getState()
+      if (checkpointStore.autoCheckpointEnabled) {
+        const messageIndex = session.messages.length
+        const lastMessage = session.messages[session.messages.length - 1]
+        
+        checkpointStore.createCheckpoint({
+          sessionId,
+          type: 'auto',
+          messageIndex,
+          messageSnapshot: {
+            messageIds: session.messages.map(m => m.id),
+            lastMessageContent: lastMessage?.parts
+              .filter((p): p is TextPart => p.type === 'text')
+              .map(p => p.content)
+              .join('\n') || undefined,
+          },
+          metadata: {
+            triggerMessageId: 'pending', // 将在消息创建后更新
+          },
+          label: `消息提交前`,
+        })
+      }
       
       const textPart = createTextPart(content)
       const message = createMessage(sessionId, 'user', [textPart], 'complete')

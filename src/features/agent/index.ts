@@ -3,6 +3,7 @@
  * Story 4.1 - AI对话界面实现
  * Story 4.2 - 会话管理功能
  * Story 4.3 - 历史对话管理
+ * Story 4.7 - 检查点自动创建
  * 
  * 导出 Agent 相关的组件和 Hooks
  */
@@ -15,6 +16,7 @@ export { MessageList } from './components/MessageList'
 export { SessionList } from './components/SessionList'
 export { SessionPanel } from './components/SessionPanel'
 export { HistoryPanel } from './components/HistoryPanel'
+export { CheckpointMarker, CheckpointList } from './components/CheckpointMarker'
 
 // Hooks
 export { 
@@ -35,3 +37,18 @@ export {
   type HistoryFilter,
   type ArchivedSession
 } from './hooks/useHistoryStore'
+
+export {
+  useCheckpointStore,
+  useSessionCheckpoints,
+  useLatestCheckpoint,
+  useAutoCheckpointEnabled,
+  useCheckpointCount,
+  type Checkpoint,
+  type CheckpointType,
+  type CheckpointStatus,
+  type WorkingStateSnapshot,
+  type CheckpointMetadata,
+  type CheckpointStoreState,
+  type CreateCheckpointParams
+} from './hooks/useCheckpointStore'

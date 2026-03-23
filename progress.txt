@@ -1,4 +1,44 @@
 
+## [2026-03-23] - Task: Checkpoint Auto Create (Story 4.7)
+
+### 铁律合规检查：
+- PRD 合规：FR17-1, FR17-2, FR17-4 - 检查点自动创建
+- 架构合规：ADR-037 - Agent 运行时追踪
+- NFR 合规：NFR-23 - 检查点可靠性
+
+### What was done:
+- 创建 useCheckpointStore.ts Hook：
+  - Checkpoint 类型定义（auto/manual/pre_action）
+  - WorkingStateSnapshot 工作状态快照
+  - CheckpointMetadata 元数据（触发消息、用户上下文、设备信息）
+  - 检查点 CRUD 操作（创建、删除、恢复、归档）
+  - 自动清理旧检查点（每会话最多 10 个）
+  - 持久化存储（localStorage）
+
+- 更新 useChatStore.ts：
+  - 在 addUserMessage 中集成检查点创建
+  - 消息提交前自动创建检查点（可配置）
+  - 捕获消息快照和工作状态
+
+- 创建 CheckpointMarker.tsx 组件：
+  - 检查点标记显示（书签图标、类型、时间、状态）
+  - 展开/折叠详情
+  - 恢复检查点操作（带确认）
+  - 删除检查点操作（带确认）
+  - CheckpointList 列表组件
+
+- 更新 agent/index.ts 导出新组件和 hooks
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- 检查点类型：auto（自动）、manual（手动）、pre_action（操作前）
+- 检查点状态：active（有效）、restored（已恢复）、archived（已归档）
+- 默认每会话最多保留 10 个检查点
+- 自动检查点可通过 autoCheckpointEnabled 配置开关
+
 ## [2026-03-23] - Task: Task Retry UI (Story 4.6)
 
 ### 铁律合规检查：
