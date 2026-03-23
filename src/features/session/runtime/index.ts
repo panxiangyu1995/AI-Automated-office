@@ -237,3 +237,57 @@ export {
   clonePageContext,
   createMinimalPageContext,
 } from './pageContext'
+
+// Session Memory Summary (Task 78: Story 47.3)
+export {
+  // Types
+  type MemoryEntryType,
+  type MemoryImportance,
+  type MemoryEntry,
+  type KeyFact,
+  type SessionMemorySummary,
+  type SummaryOptions,
+  type MemoryRefreshTrigger,
+  type RefreshConfig,
+
+  // ID generation
+  generateMemoryId,
+  generateSummaryId,
+  generateFactId,
+
+  // Creation functions
+  createMemoryEntry,
+  createKeyFact,
+  createSessionMemorySummary,
+
+  // Extraction functions
+  extractMemoryFromMessage,
+  extractMemoryFromPart,
+  extractKeyFacts,
+
+  // Summary functions
+  summarizeSession,
+
+  // Memory management
+  addMemoryEntry,
+  removeMemoryEntry,
+  touchMemoryEntry,
+  pruneExpiredEntries,
+  mergeSummaries,
+
+  // Refresh functions
+  shouldRefreshMemory,
+  refreshMemorySummary,
+
+  // Query functions
+  getEntriesByType,
+  getEntriesByImportance,
+  searchEntries,
+  getFactsByCategory,
+  getVerifiedFacts,
+
+  // Serialization
+  serializeSummary,
+  deserializeSummary,
+  validateSummary,
+} from './sessionMemorySummary'

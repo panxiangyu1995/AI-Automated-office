@@ -1,4 +1,38 @@
 
+## [2026-03-23] - Task: Session Memory Summary (Story 47.3)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 会话记忆摘要
+- 架构合规：ADR-037 - 运行时上下文
+- UX 合规：UX-01, UX-04 - 上下文传递
+
+### What was done:
+- 创建 sessionMemorySummary.ts - 会话记忆摘要模块
+  - MemoryEntry: 记忆条目类型
+  - KeyFact: 关键事实类型
+  - SessionMemorySummary: 会话记忆摘要
+  - RefreshConfig: 刷新配置
+  - SummaryOptions: 摘要选项
+
+- 功能实现：
+  - 记忆条目创建 (createMemoryEntry, createKeyFact)
+  - 消息提取 (extractMemoryFromMessage, extractMemoryFromPart)
+  - 关键事实提取 (extractKeyFacts)
+  - 摘要生成 (summarizeSession, createSessionMemorySummary)
+  - 记忆管理 (addMemoryEntry, removeMemoryEntry, touchMemoryEntry, pruneExpiredEntries, mergeSummaries)
+  - 刷新逻辑 (shouldRefreshMemory, refreshMemorySummary)
+  - 查询功能 (getEntriesByType, getEntriesByImportance, searchEntries, getFactsByCategory, getVerifiedFacts)
+  - 序列化 (serializeSummary, deserializeSummary, validateSummary)
+
+### Testing:
+- 58 个单元测试通过 (sessionMemorySummary.test.ts)
+- Build 成功
+
+### Notes:
+- 记忆条目支持 fact, preference, context, decision, action_result, summary 类型
+- 关键事实自动去重和排序
+- 支持基于消息数、工具完成、错误恢复、时间间隔的刷新触发
+
 ## [2026-03-23] - Task: Page and Resource Context (Story 47.2)
 
 ### 铁律合规检查：
