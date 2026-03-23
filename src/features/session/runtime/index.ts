@@ -665,3 +665,106 @@ export {
   formatDebugEntry,
   formatMetricsSummary,
 } from './runtimeMetrics'
+
+// Form Writeback Adapter (Task 84: Story 49.1)
+export {
+  // Types
+  type FieldDataType,
+  type WritebackPermission,
+  type FieldUpdateStatus,
+  type WritebackStatus,
+  type FieldReference,
+  type FieldPermissionResult,
+  type FieldUpdate,
+  type WritebackAction,
+  type WritebackContract,
+  type FieldValidationRule,
+  type NormalizedResult,
+  type ResultToFieldMapping,
+  type WritebackTraceEntry,
+  type WritebackAdapterStore,
+  type WritebackOptions,
+  type WritebackResult,
+  type SerializableWritebackContract,
+  type SerializableWritebackAction,
+  type SerializableWritebackAdapterStore,
+
+  // Constants
+  UPDATE_ID_PREFIX,
+  ACTION_ID_PREFIX,
+  MAPPING_ID_PREFIX,
+  TRACE_ENTRY_ID_PREFIX,
+  CONTRACT_ID_PREFIX,
+  FIELD_DATA_TYPES,
+  WRITEBACK_PERMISSIONS,
+  FIELD_UPDATE_STATUSES,
+  WRITEBACK_STATUSES,
+
+  // ID Generation
+  generateUpdateId,
+  generateActionId,
+  generateMappingId,
+  generateTraceEntryId,
+  generateContractId,
+  isValidUpdateId,
+  isValidActionId,
+  isValidMappingId,
+  isValidTraceEntryId,
+
+  // Factory Functions
+  createFieldReference,
+  createFieldPermissionResult,
+  createFieldUpdate,
+  createWritebackAction,
+  createWritebackContract,
+  createValidationRule,
+  createResultToFieldMapping,
+  createWritebackTraceEntry,
+  createWritebackAdapterStore,
+
+  // Permission Checking
+  isFieldAllowed,
+  getFieldPermission,
+  canWriteField,
+  checkFieldPermissions,
+
+  // Validation
+  validateValueAgainstRule,
+  validateFieldUpdate,
+  validateFieldUpdates,
+
+  // Result Mapping
+  extractValueByPath,
+  mapResultToUpdates,
+
+  // Writeback Execution
+  updateFieldStatus,
+  updateWritebackStatus,
+  executeWriteback,
+
+  // Store Operations
+  registerContract,
+  addAction,
+  addTraceEntries,
+  getContract,
+  getAction,
+  getTraceEntries,
+  getActionsByForm,
+  getActionsBySession,
+  getActionsByStatus,
+
+  // Serialization
+  serializeContract,
+  deserializeContract,
+  serializeAction,
+  deserializeAction,
+  serializeWritebackStore,
+  deserializeWritebackStore,
+
+  // Debug Formatting
+  formatFieldReference,
+  formatFieldUpdate,
+  formatWritebackAction,
+  formatWritebackResult,
+  formatTraceEntry,
+} from './formWritebackAdapter'

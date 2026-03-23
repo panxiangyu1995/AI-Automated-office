@@ -1,4 +1,45 @@
 
+## [2026-03-23] - Task: Form Writeback Adapter (Story 49.1)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02, PRD-P2-03 - 表单回写适配器
+- 架构合规：ADR-035, ADR-037 - 动态表单、运行时追踪
+- UX 合规：UX-01, UX-02, UX-04 - 交互、表单、调试
+
+### What was done:
+- 创建 formWritebackAdapter.ts - 表单回写适配器模块
+  - FieldReference: 字段引用
+  - FieldUpdate: 字段更新
+  - WritebackAction: 回写动作
+  - WritebackContract: 回写契约
+  - ResultToFieldMapping: 结果到字段映射
+  - WritebackAdapterStore: 回写适配器存储
+
+- 功能实现：
+  - ID 生成 (generateUpdateId, generateActionId, generateMappingId, generateTraceEntryId, generateContractId)
+  - 工厂函数 (createFieldReference, createFieldUpdate, createWritebackAction, createWritebackContract, createValidationRule, createResultToFieldMapping)
+  - 权限检查 (isFieldAllowed, getFieldPermission, canWriteField, checkFieldPermissions)
+  - 验证 (validateValueAgainstRule, validateFieldUpdate, validateFieldUpdates)
+  - 结果映射 (extractValueByPath, mapResultToUpdates)
+  - 回写执行 (updateFieldStatus, updateWritebackStatus, executeWriteback)
+  - 存储操作 (registerContract, addAction, addTraceEntries, getContract, getAction, getActionsByForm, getActionsBySession, getActionsByStatus)
+  - 序列化 (serializeContract, deserializeContract, serializeAction, deserializeAction, serializeWritebackStore, deserializeWritebackStore)
+  - 调试格式化 (formatFieldReference, formatFieldUpdate, formatWritebackAction, formatWritebackResult, formatTraceEntry)
+
+### Testing:
+- 83 个单元测试通过 (formWritebackAdapter.test.ts)
+- 所有 640 个运行时测试通过
+- TypeScript 编译通过
+- Build 成功
+
+### Notes:
+- 支持权限检查 (edit/admin/read-only)
+- 支持字段验证 (required, type-check, format, range, custom)
+- 支持结果到字段的映射
+- 支持 dry run 模式
+- 支持 skipPermissionCheck 和 skipValidation 选项
+- 记录回写动作的完整追踪轨迹
+
 ## [2026-03-23] - Task: Runtime Metrics and Debug View (Story 48.4)
 
 ### 铁律合规检查：
