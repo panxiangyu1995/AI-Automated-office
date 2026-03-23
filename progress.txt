@@ -1,4 +1,49 @@
 
+## [2026-03-24] - Task: Token Usage Indicator (Story 4.13)
+
+### 铁律合规检查：
+- PRD 合规：FR-CTX-1, FR-CTX-6 - Token占用指示器
+- 架构合规：ADR-043 - 记忆系统、上下文管理
+- NFR 合规：NFR3 - 性能要求
+
+### What was done:
+- 创建 TokenUsageIndicator.tsx 组件：
+  - TokenBreakdown 接口（总token、用户、助手、系统、工具分类）
+  - MessageTokenInfo 接口（每条消息的token信息）
+  - TokenUsageIndicatorProps 接口（组件属性）
+  - estimateTokens 函数（token估算）
+  - formatTokenCount 函数（格式化显示）
+  - getStatusColor/getStatusBgColor/getProgressColorClass 函数（状态颜色）
+  - useTokenBreakdown hook（计算token分布）
+  - StatusBadgeComponent 子组件（状态徽章）
+  - TokenStatItem 子组件（统计项）
+  - MessageTokenRow 子组件（消息token行）
+  - TokenDetailDialog 子组件（详情对话框）
+  - 主组件支持：
+    - 紧凑模式显示
+    - 详细统计（用户/助手/系统/工具分类）
+    - 可展开详情面板
+    - 阈值状态关联
+    - 导出报告功能
+    - 状态警告提示
+
+- 安装 Shadcn/ui 组件：
+  - collapsible.tsx
+  - separator.tsx
+
+- 更新 agent/index.ts 导出新组件
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- Token估算：中文约1.5字符/token，英文约4字符/token
+- 支持四种角色：用户、助手、系统、工具
+- 支持导出JSON格式的token使用报告
+- 与压缩阈值状态自动关联
+- 品牌色：#1E3A5F
+
 ## [2026-03-24] - Task: Context Compression (Story 4.12)
 
 ### 铁律合规检查：

@@ -32,6 +32,7 @@ export {
   CompressionHistoryList 
 } from './components/CompressionStatusIndicator'
 export { CompressionConfigPanel } from './components/CompressionConfigPanel'
+export { TokenUsageIndicator } from './components/TokenUsageIndicator'
 
 // Hooks
 export { 
