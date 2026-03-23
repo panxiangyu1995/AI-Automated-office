@@ -1,4 +1,33 @@
 
+## [2026-03-24] - Task 25: Story 5.11 - 工具调用权限检查
+
+### 铁律合规检查：
+- PRD 合规：FR470, FR471
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 ToolPermissionCheck.tsx 组件
+  - 权限检查结果展示
+  - 支持4种权限状态：已授权、已拒绝、部分授权、未知
+  - 支持6种权限类型：执行、读取、写入、删除、管理、敏感操作
+  - 显示权限检查详情列表
+  - 显示缺失权限和申请入口
+  - 显示授权来源信息
+  - 支持权限检查历史记录
+  - 支持刷新权限检查
+- 定义 PermissionCheckResult 和 PermissionHistoryRecord 类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 遵循分层架构设计
+
+---
+
 ## [2026-03-24] - Task 24: Story 5.10 - 操作黑名单管理
 
 ### 铁律合规检查：
