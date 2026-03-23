@@ -1,4 +1,36 @@
 
+## [2026-03-23] - Task: Scheduled Task Setup (Story 4.5)
+
+### 铁律合规检查：
+- PRD 合规：FR15 - 定时任务功能
+- 架构合规：ADR-048 - 定时任务调度
+- NFR 合规：NFR-22 - 任务可靠性
+
+### What was done:
+- 创建 useSchedulerStore.ts Hook：
+  - 定时任务数据模型
+  - 创建/更新/删除任务
+  - 重复执行模式（单次/每天/每周/每月/自定义）
+  - 下次执行时间计算
+  - 任务状态管理（pending/running/completed/failed/cancelled）
+
+- 创建 ScheduledTaskPanel.tsx 组件：
+  - 任务列表显示（按时间排序）
+  - 即将执行任务高亮
+  - 任务创建表单（名称/提示词/时间/重复方式）
+  - 任务取消/删除功能
+  - 任务详情展开查看
+
+- 创建 scheduler/index.ts 导出模块
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- 任务存储在 localStorage 中
+- 实际执行需要后端调度器配合
+
 ## [2026-03-23] - Task: Model Provider Settings (Story 4.4)
 
 ### 铁律合规检查：
