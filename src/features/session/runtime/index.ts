@@ -954,3 +954,104 @@ export {
   formatDetailWritebackOutcome,
   formatDetailTrace,
 } from './detailSectionWriteback'
+
+// Workbench Card Writeback (Task 86: Story 49.3)
+export {
+  // Types
+  type CardSize,
+  type CardVisibility,
+  type CardStatus,
+  type CardContainerReference,
+  type CardReference,
+  type CardContentType,
+  type MetricCardContent,
+  type ChartCardContent,
+  type ListCardContent,
+  type TableCardContent,
+  type TextCardContent,
+  type ActionCardContent,
+  type ImageCardContent,
+  type CustomCardContent,
+  type WorkbenchCard,
+  type CardUpdateOperation,
+  type CardWritebackAction,
+  type CardWritebackContract,
+  type CardWritebackResult,
+  type CardWritebackOutcome,
+  type CardWritebackTrace,
+  type CardWritebackStore,
+  type ListItem,
+
+  // ID Generation
+  generateCardId,
+  generateCardOperationId,
+  generateCardActionId,
+  generateCardContractId,
+  generateCardTraceId,
+
+  // Factory Functions
+  createCardContainerReference,
+  createCardReference,
+  createMetricCardContent,
+  createChartCardContent,
+  createListCardContent,
+  createTableCardContent,
+  createTextCardContent,
+  createActionCardContent,
+  createImageCardContent,
+  createCustomCardContent,
+  createWorkbenchCard,
+  createCardUpdateOperation,
+  createCardWritebackAction,
+  createCardWritebackContract,
+
+  // Permission Checking
+  isContentTypeAllowed,
+  checkCardPermission,
+  checkVisibilityPermission,
+  checkPlacementPermission,
+
+  // Writeback Execution
+  executeCardOperation,
+  executeCardWriteback,
+
+  // Store Operations
+  createCardWritebackStore,
+  registerCardContract,
+  getCardContract,
+  addCardToStore,
+  getCardFromStore,
+  getCardsByContainer,
+  addCardAction,
+  getCardAction,
+  getCardActionsBySession,
+  addCardOutcome,
+  getCardOutcome,
+  addCardTraces,
+  getCardTraces,
+
+  // Serialization
+  serializeCardContainerRef,
+  deserializeCardContainerRef,
+  serializeCardRef,
+  deserializeCardRef,
+  serializeWorkbenchCard,
+  deserializeWorkbenchCard,
+  serializeCardAction,
+  deserializeCardAction,
+  serializeCardContract,
+  deserializeCardContract,
+  serializeCardOutcome,
+  deserializeCardOutcome,
+  serializeCardWritebackStore,
+  deserializeCardWritebackStore,
+
+  // Debug Formatting
+  formatCardContainerRef,
+  formatCardRef,
+  formatCardContent,
+  formatWorkbenchCard,
+  formatCardWritebackResult,
+  formatCardWritebackOutcome,
+  formatCardTrace,
+} from './workbenchCardWriteback'

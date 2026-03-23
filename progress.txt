@@ -1,5 +1,67 @@
 
 
+## [2026-03-23] - Task: Workbench Card Writeback (Story 49.3)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02, PRD-P2-03 - 工作台卡片回写
+- 架构合规：ADR-035, ADR-037 - 动态表单、运行时追踪
+- UX 合规：UX-01, UX-02, UX-04 - 交互、表单、调试
+
+### What was done:
+- 创建 workbenchCardWriteback.ts - 工作台卡片回写模块
+  - CardSize: 卡片尺寸 (small, medium, large, xlarge, custom)
+  - CardVisibility: 卡片可见性 (private, team, department, company, public)
+  - CardStatus: 卡片状态 (active, archived, draft, hidden)
+  - CardContainerReference: 卡片容器引用
+  - CardReference: 卡片引用
+  - CardContentType: 卡片内容类型 (metric, chart, list, table, text, action, image, custom)
+  - MetricCardContent: 指标卡片内容
+  - ChartCardContent: 图表卡片内容
+  - ListCardContent: 列表卡片内容
+  - TableCardContent: 表格卡片内容
+  - TextCardContent: 文本卡片内容
+  - ActionCardContent: 操作卡片内容
+  - ImageCardContent: 图片卡片内容
+  - CustomCardContent: 自定义卡片内容
+  - WorkbenchCard: 工作台卡片
+  - CardUpdateOperation: 卡片更新操作
+  - CardWritebackAction: 卡片回写动作
+  - CardWritebackContract: 卡片回写契约
+  - CardWritebackResult: 卡片回写结果
+  - CardWritebackOutcome: 卡片回写结果摘要
+  - CardWritebackTrace: 卡片回写追踪
+  - CardWritebackStore: 卡片回写存储
+
+- 功能实现：
+  - ID 生成 (generateCardId, generateCardOperationId, generateCardActionId, generateCardContractId, generateCardTraceId)
+  - 工厂函数 (createCardContainerReference, createCardReference, createMetricCardContent, createChartCardContent, createListCardContent, createTableCardContent, createTextCardContent, createActionCardContent, createImageCardContent, createCustomCardContent, createWorkbenchCard, createCardUpdateOperation, createCardWritebackAction, createCardWritebackContract)
+  - 权限检查 (isContentTypeAllowed, checkCardPermission, checkVisibilityPermission, checkPlacementPermission)
+  - 回写执行 (executeCardOperation, executeCardWriteback)
+  - 存储操作 (createCardWritebackStore, registerCardContract, getCardContract, addCardToStore, getCardFromStore, getCardsByContainer, addCardAction, getCardAction, getCardActionsBySession, addCardOutcome, getCardOutcome, addCardTraces, getCardTraces)
+  - 序列化 (serializeCardContainerRef, deserializeCardContainerRef, serializeCardRef, deserializeCardRef, serializeWorkbenchCard, deserializeWorkbenchCard, serializeCardAction, deserializeCardAction, serializeCardContract, deserializeCardContract, serializeCardOutcome, deserializeCardOutcome, serializeCardWritebackStore, deserializeCardWritebackStore)
+  - 调试格式化 (formatCardContainerRef, formatCardRef, formatCardContent, formatWorkbenchCard, formatCardWritebackResult, formatCardWritebackOutcome, formatCardTrace)
+
+- 更新 index.ts 导出：
+  - 添加 workbenchCardWriteback 所有导出
+
+### Testing:
+- 66 个单元测试通过 (workbenchCardWriteback.test.ts)
+- 所有 841 个运行时测试通过
+- TypeScript 编译通过
+- Build 成功
+
+### Notes:
+- 支持 8 种卡片内容类型 (metric, chart, list, table, text, action, image, custom)
+- 支持 5 种卡片操作 (create, update, delete, move, reorder)
+- 支持 5 种卡片尺寸 (small, medium, large, xlarge, custom)
+- 支持 5 种可见性级别 (private, team, department, company, public)
+- 支持 4 种卡片状态 (active, archived, draft, hidden)
+- 支持卡片内容类型级别的权限控制
+- 支持位置和可见性权限检查
+- 支持 dry run 模式
+- 支持 skipPermissionCheck 选项
+- 记录卡片回写动作的完整追踪轨迹
+
 ## [2026-03-23] - Task: Detail Section Writeback Adapter (Story 49.2)
 
 ### 铁律合规检查：
@@ -2865,3 +2927,28 @@
 - 审批流程状态机支持 start/approval/cc/end 四种节点类型
 - 权限上下文包含 canApprove/canReject/canWithdraw/canDelegate/canTransfer/canComment 等权限
 - 操作面板固定在页面底部，内容区域可滚动
+## [2026-03-23] - Task: Remotion 产品价值演示动画
+
+### 铁律合规检查：
+- PRD 合规：[AI 赋能 ERP、部门化模块、销售自动化、财务 OCR、管理层驾驶舱]
+- 架构合规：[桌面端四栏布局表达、统一 Agent 与跨部门数据联动、动态内容承载方向]
+- UX 合规：[VSCode 风格四栏布局、品牌色 #1E3A5F、AI 即入口、透明可控]
+- Epic 合规：[Epic 42 / Epic 49 / Epic 50 相关方向，用演示动画承接动态卡片、写回与业务试点价值]
+
+### What was done:
+- 新增 `src/remotion` 独立视频入口，不影响现有前端运行时
+- 新增 4 个产品演示场景：
+- `ProductPositioning`
+- `SalesDepartmentFlow`
+- `FinanceAutomation`
+- `ExecutiveCockpit`
+- 为 `package.json` 增加 Remotion 预览与渲染脚本
+- 新增 `docs/remotion-scenes.md` 说明为什么这 4 个场景最值得做
+
+### Testing:
+- `pnpm.cmd exec tsc --noEmit --pretty false` 通过
+- `pnpm.cmd build` 在沙箱内触发 `esbuild spawn EPERM`，需提权重跑
+- Remotion 渲染待在提权后执行验证
+
+### Notes:
+- 当前仓库存在与本次改动无关的既有 lint 问题，未在本次任务中顺手修改
