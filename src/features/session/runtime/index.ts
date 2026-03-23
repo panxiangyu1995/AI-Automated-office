@@ -865,3 +865,92 @@ export {
   formatAuthDecision,
   formatAuditEntry as formatAuthAuditEntry,
 } from './fieldActionAuthorization'
+
+// Detail Section Writeback (Task 85: Story 49.2)
+export {
+  // Types
+  type DetailBlockType,
+  type DetailSectionReference,
+  type DetailBlockReference,
+  type FieldBlockContent,
+  type AttachmentBlockContent,
+  type RelationBlockContent,
+  type TimelineEvent,
+  type TimelineBlockContent,
+  type SummaryBlockContent,
+  type ActionBlockContent,
+  type DetailBlockContent,
+  type DetailBlockUpdate,
+  type DetailWritebackAction,
+  type DetailWritebackContract,
+  type DetailValidationRule,
+  type DetailWritebackResult,
+  type DetailWritebackOutcome,
+  type DetailWritebackTrace,
+  type DetailWritebackStore,
+
+  // ID Generation
+  generateUpdateId as generateDetailUpdateId,
+  generateDetailActionId,
+  generateDetailContractId,
+  generateDetailTraceId,
+  generateTimelineEventId,
+
+  // Factory Functions
+  createDetailSectionReference,
+  createDetailBlockReference,
+  createFieldBlockContent,
+  createAttachmentBlockContent,
+  createRelationBlockContent,
+  createTimelineEvent,
+  createTimelineBlockContent,
+  createSummaryBlockContent,
+  createActionBlockContent,
+  createDetailBlockUpdate,
+  createDetailWritebackAction,
+  createDetailWritebackContract,
+
+  // Permission Checking
+  checkDetailPermission,
+  isBlockTypeAllowed,
+  validateDetailBlockContent,
+
+  // Writeback Execution
+  executeDetailBlockUpdate,
+  executeDetailWriteback,
+
+  // Store Operations
+  createDetailWritebackStore,
+  registerDetailContract,
+  getDetailContract,
+  addDetailAction,
+  getDetailAction,
+  getDetailActionsBySection,
+  getDetailActionsBySession,
+  addDetailOutcome,
+  getDetailOutcome,
+  addDetailTraces,
+  getDetailTraces,
+
+  // Serialization
+  serializeDetailSectionRef,
+  deserializeDetailSectionRef,
+  serializeDetailBlockRef,
+  deserializeDetailBlockRef,
+  serializeDetailAction,
+  deserializeDetailAction,
+  serializeDetailContract,
+  deserializeDetailContract,
+  serializeDetailOutcome,
+  deserializeDetailOutcome,
+  serializeDetailWritebackStore,
+  deserializeDetailWritebackStore,
+
+  // Debug Formatting
+  formatDetailSectionRef,
+  formatDetailBlockRef,
+  formatDetailBlockContent,
+  formatDetailWritebackResult,
+  formatDetailWritebackOutcome,
+  formatDetailTrace,
+} from './detailSectionWriteback'
