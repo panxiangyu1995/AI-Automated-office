@@ -111,3 +111,12 @@ export type {
   SensitiveOperationType,
   ConfirmationResult,
 } from './components/SensitiveOperationConfirmation'
+export { OperationBlacklist, createDefaultBlacklistConfig } from './components/OperationBlacklist'
+export type {
+  OperationBlacklistProps,
+  BlacklistEntry,
+  BlacklistConfig,
+  BlacklistScope,
+  BlacklistStatus,
+  AuditRecord,
+} from './components/OperationBlacklist'
