@@ -61,7 +61,7 @@
       "arch_covered": ["ADR-037"],
       "ux_covered": ["UX-01", "UX-04"],
       "dependencies": ["Story 4.2"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,

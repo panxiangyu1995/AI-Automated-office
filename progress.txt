@@ -1,4 +1,43 @@
 
+## [2026-03-23] - Task: History Management (Story 4.3)
+
+### 铁律合规检查：
+- PRD 合规：FR11 - 历史对话管理功能
+- 架构合规：ADR-037 - 分层架构，复用 common runtime
+- UX 合规：UX-01 (Shadcn/ui), UX-02 (品牌色 #1E3A5F), UX-04 (对话驱动交互)
+
+### What was done:
+- 创建 useHistoryStore.ts Hook：
+  - 历史过滤状态管理
+  - 关键词搜索功能
+  - 时间范围过滤（今天/昨天/本周/本月/更早）
+  - 归档/恢复功能
+  - 安全删除（带确认）
+
+- 创建 HistoryPanel.tsx 组件：
+  - 搜索输入框（实时搜索）
+  - 时间范围下拉筛选
+  - 会话列表（带高亮匹配）
+  - 归档/恢复操作
+  - 安全删除功能
+  - 空状态展示
+
+- 更新 SessionPanel.tsx：
+  - 添加"历史"标签页
+  - 集成 HistoryPanel 组件
+  - 标签页切换功能
+
+- 更新 index.ts 导出新组件和 Hook
+
+### Testing:
+- lint 检查通过 (agent 相关文件无错误)
+- build 成功
+
+### Notes:
+- 支持关键词在标题和消息内容中搜索
+- 归档会话可从"已归档"列表恢复
+- 删除操作需要用户确认
+
 ## [2026-03-23] - Task: Session Management UI (Story 4.2)
 
 ### 铁律合规检查：
