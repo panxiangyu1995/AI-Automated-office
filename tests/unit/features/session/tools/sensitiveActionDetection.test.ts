@@ -18,14 +18,29 @@ import {
 // ==================== Test Fixtures ====================
 
 function createTestStep(overrides: Partial<PlanStep> = {}): PlanStep {
-  return {
+  // Extract tool-related fields and nest them in toolRequirement
+  const { toolId, toolCategory, parameters, ...rest } = overrides as Record<string, unknown>
+  
+  const step: PlanStep = {
     id: 'step-1',
     name: 'Test Step',
     type: 'action',
     status: 'pending',
     order: 0,
-    ...overrides,
+    ...rest,
   }
+  
+  // Build toolRequirement if any tool-related fields are provided
+  if (toolId || toolCategory || parameters) {
+    step.toolRequirement = {
+      toolId: (toolId as string) ?? 'default_tool',
+      toolName: (toolId as string) ?? 'Default Tool',
+      category: toolCategory as string,
+      parameters: parameters as Record<string, unknown>,
+    }
+  }
+  
+  return step
 }
 
 // ==================== SensitiveActionDetector Tests ====================

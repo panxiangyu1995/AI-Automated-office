@@ -1,4 +1,44 @@
 
+## [2026-03-23] - Task: User Tenant and Department Context (Story 47.1)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 用户租户和部门上下文
+- 架构合规：ADR-001, ADR-037 - 运行时上下文注入
+- UX 合规：UX-01, UX-04 - 上下文传递
+
+### What was done:
+- 创建 userContext.ts - 用户租户部门上下文模块
+  - UserContextEnvelope: 完整上下文信封
+  - NormalizedContextPayload: 标准化上下文载荷
+  - UserIdentity: 用户身份信息
+  - UserRoleContext: 用户角色上下文
+  - OrganizationContext: 组织上下文（租户、部门）
+  - TenantInfo: 租户信息
+  - DepartmentInfo: 部门信息
+
+- 功能实现：
+  - 上下文信封创建 (createUserContextEnvelope)
+  - 上下文标准化 (normalizeContextPayload, normalizeForDepartment)
+  - 上下文验证 (isContextValid, validateContext, isContextExpired)
+  - 权限合并 (mergePermissions, mergeDataScopes)
+  - 权限模型标识符复用 (PermissionModelIdentifiers)
+  - 运行时注入 (injectContextToRuntime, safeInjectContext)
+
+- 同时修复了：
+  - sensitiveActionDetection.ts 中 PlanStep 属性访问问题
+  - confirmationFlow.ts 中 PlanStep 属性访问问题和未使用参数警告
+  - 更新测试用例以使用正确的 PlanStep 结构
+
+### Testing:
+- 44 个单元测试通过 (userContext.test.ts)
+- 35 个单元测试通过 (sensitiveActionDetection.test.ts)
+- 37 个单元测试通过 (confirmationFlow.test.ts)
+- Build 成功
+
+### Notes:
+- PlanStep 的 toolId 和 parameters 属性应通过 toolRequirement 访问
+- 测试用例需使用正确的 toolRequirement 嵌套结构
+
 ## [2026-03-23] - Task: Confirmation Flow (Story 46.3)
 
 ### 铁律合规检查：

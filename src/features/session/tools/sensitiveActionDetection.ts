@@ -5,7 +5,6 @@
  * This module detects high-risk actions that require additional runtime control.
  */
 
-import type { ToolDescriptor, ToolCategory } from './toolDescriptor'
 import type { PlanStep } from '../planner/structuredPlanner'
 
 // ==================== Sensitive Action Types ====================
@@ -366,13 +365,13 @@ export class SensitiveActionDetector {
     // Get value based on condition type
     switch (condition.type) {
       case 'tool_id':
-        value = step.toolId
+        value = step.toolRequirement?.toolId
         break
       case 'tool_category':
-        value = (context?.toolCategory as string) ?? (step as unknown as { toolCategory?: string }).toolCategory
+        value = (context?.toolCategory as string) ?? step.toolRequirement?.category
         break
       case 'field_name':
-        value = Object.keys(step.parameters ?? {})
+        value = Object.keys(step.toolRequirement?.parameters ?? {})
         break
       case 'resource_type':
         value = (context?.resourceType as string) ?? (step as unknown as { resourceType?: string }).resourceType

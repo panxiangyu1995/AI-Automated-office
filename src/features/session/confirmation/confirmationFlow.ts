@@ -490,7 +490,7 @@ export class ConfirmationFlowManager {
   /**
    * Build confirmation message
    */
-  private buildMessage(step: PlanStep, assessment: RiskAssessment): string {
+  private buildMessage(_step: PlanStep, assessment: RiskAssessment): string {
     const riskMessages: Record<RiskLevel, string> = {
       low: 'This action requires your confirmation.',
       medium: 'This action may have significant effects. Please review before proceeding.',
@@ -559,7 +559,7 @@ export class ConfirmationFlowManager {
    * Estimate affected items
    */
   private estimateAffectedItems(step: PlanStep): number | undefined {
-    const params = step.parameters as Record<string, unknown> | undefined
+    const params = step.toolRequirement?.parameters as Record<string, unknown> | undefined
     
     if (params?.ids && Array.isArray(params.ids)) {
       return params.ids.length

@@ -126,3 +126,57 @@ export {
   useRuntimeError,
   useRuntimeStateName,
 } from './runtimeStateContext'
+
+// User Context (Task 76: Story 47.1)
+export {
+  // Types
+  type DepartmentInfo,
+  type TenantInfo,
+  type TenantLimits,
+  type UserIdentity,
+  type UserRoleContext,
+  type OrganizationContext,
+  type UserContextEnvelope,
+  type NormalizedContextPayload,
+  type ContextInjectionOptions,
+  
+  // Factory functions
+  createUserIdentity,
+  createUserRoleContext,
+  createOrganizationContext,
+  generateContextId,
+  createUserContextEnvelope,
+  
+  // Normalization functions
+  normalizeContextPayload,
+  normalizeForDepartment,
+  
+  // Validation functions
+  isContextExpired,
+  isContextValid,
+  validateContext,
+  
+  // Merge functions
+  mergePermissions,
+  mergeDataScopes,
+  
+  // Permission model
+  PermissionModelIdentifiers,
+  isRolePermission,
+  isDepartmentPermission,
+  isFeaturePermission,
+  extractRoleFromPermission,
+  extractDepartmentFromPermission,
+  createRolePermission,
+  createDepartmentPermission,
+  createFeaturePermission,
+  
+  // Injection functions
+  injectContextToRuntime,
+  safeInjectContext,
+  
+  // Helper factories
+  createDefaultTenantInfo,
+  createDefaultDepartmentInfo,
+  createMinimalContextEnvelope,
+} from './userContext'
