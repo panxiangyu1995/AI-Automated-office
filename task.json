@@ -1003,7 +1003,7 @@
                                            "Story 47.2",
                                            "Story 49.1"
                                        ],
-                      "passes":  false
+                      "passes":  true
                   },{
                       "id":  76,
                       "epic":  "Epic 47",

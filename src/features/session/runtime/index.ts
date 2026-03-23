@@ -768,3 +768,100 @@ export {
   formatWritebackResult,
   formatTraceEntry,
 } from './formWritebackAdapter'
+
+// Field Action and Datasource Authorization (Task 75: Story 46.4)
+export {
+  // Types
+  type AuthorizationOutcome,
+  type AuthorizationScope,
+  type PermissionLevel,
+  type ActionType,
+  type DatasourceType,
+  type FieldAuthReference,
+  type ActionAuthReference,
+  type DatasourceAuthReference,
+  type AuthorizationContext,
+  type AuthorizationDecision,
+  type FieldAuthRule,
+  type FieldAuthCondition,
+  type ActionAuthRule,
+  type DatasourceAuthRule,
+  type AuthorizationAuditEntry,
+  type AuthorizationStore,
+  type SerializableAuthorizationContext,
+  type SerializableAuthorizationDecision,
+  type SerializableAuthorizationStore,
+
+  // Constants
+  DECISION_ID_PREFIX,
+  RULE_ID_PREFIX,
+  AUDIT_ENTRY_ID_PREFIX,
+  AUTHORIZATION_OUTCOMES,
+  AUTHORIZATION_SCOPES,
+  PERMISSION_LEVELS,
+  ACTION_TYPES,
+  DATASOURCE_TYPES,
+  PERMISSION_HIERARCHY,
+
+  // ID Generation
+  generateDecisionId,
+  generateRuleId,
+  generateAuditEntryId,
+  isValidDecisionId,
+  isValidRuleId,
+
+  // Factory Functions
+  createFieldAuthReference,
+  createActionAuthReference,
+  createDatasourceAuthReference,
+  createAuthorizationContext,
+  createAuthorizationDecision,
+  createFieldAuthRule,
+  createActionAuthRule,
+  createDatasourceAuthRule,
+  createAuthorizationAuditEntry,
+  createAuthorizationStore,
+
+  // Permission Utilities
+  comparePermissions,
+  permissionSatisfies,
+  getHighestPermission,
+  hasRequiredRole,
+
+  // Field Authorization
+  getFieldRule,
+  checkFieldAccess,
+
+  // Action Authorization
+  getActionRule,
+  checkActionAuthorization,
+
+  // Datasource Authorization
+  getDatasourceRule,
+  checkDatasourceAuthorization,
+
+  // Store Operations
+  registerFieldRule,
+  registerActionRule,
+  registerDatasourceRule,
+  recordDecision,
+  addAuditEntry as addAuthAuditEntry,
+  getDecision,
+  getAuditEntriesByUser,
+  getAuditEntriesBySession,
+  getAuditEntriesByOutcome,
+
+  // Serialization
+  serializeAuthContext,
+  deserializeAuthContext,
+  serializeAuthDecision,
+  deserializeAuthDecision,
+  serializeAuthStore,
+  deserializeAuthStore,
+
+  // Debug Formatting
+  formatAuthOutcome,
+  formatPermissionLevel,
+  formatAuthDecision,
+  formatAuditEntry as formatAuthAuditEntry,
+} from './fieldActionAuthorization'

@@ -1,4 +1,52 @@
 
+## [2026-03-23] - Task: Field Action and Datasource Authorization (Story 46.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02, PRD-P2-03 - 字段操作授权
+- 架构合规：ADR-002, ADR-037 - 权限系统、运行时追踪
+- UX 合规：UX-01, UX-02, UX-04 - 交互、表单、调试
+
+### What was done:
+- 创建 fieldActionAuthorization.ts - 字段操作授权模块
+  - AuthorizationOutcome: 授权结果 (allowed/denied/restricted/requires-approval)
+  - AuthorizationScope: 授权范围 (field/action/datasource)
+  - PermissionLevel: 权限级别 (none/read/write/delete/admin)
+  - FieldAuthReference: 字段授权引用
+  - ActionAuthReference: 动作授权引用
+  - DatasourceAuthReference: 数据源授权引用
+  - AuthorizationContext: 授权上下文
+  - AuthorizationDecision: 授权决策
+  - FieldAuthRule: 字段授权规则
+  - ActionAuthRule: 动作授权规则
+  - DatasourceAuthRule: 数据源授权规则
+  - AuthorizationAuditEntry: 授权审计条目
+  - AuthorizationStore: 授权存储
+
+- 功能实现：
+  - ID 生成 (generateDecisionId, generateRuleId, generateAuditEntryId)
+  - 工厂函数 (createFieldAuthReference, createActionAuthReference, createDatasourceAuthReference, createAuthorizationContext, createAuthorizationDecision, createFieldAuthRule, createActionAuthRule, createDatasourceAuthRule, createAuthorizationAuditEntry, createAuthorizationStore)
+  - 权限工具 (comparePermissions, permissionSatisfies, getHighestPermission, hasRequiredRole)
+  - 字段授权 (getFieldRule, checkFieldAccess)
+  - 动作授权 (getActionRule, checkActionAuthorization)
+  - 数据源授权 (getDatasourceRule, checkDatasourceAuthorization)
+  - 存储操作 (registerFieldRule, registerActionRule, registerDatasourceRule, recordDecision, addAuditEntry, getDecision, getAuditEntriesByUser, getAuditEntriesBySession, getAuditEntriesByOutcome)
+  - 序列化 (serializeAuthContext, deserializeAuthContext, serializeAuthDecision, deserializeAuthDecision, serializeAuthStore, deserializeAuthStore)
+  - 调试格式化 (formatAuthOutcome, formatPermissionLevel, formatAuthDecision, formatAuditEntry)
+
+### Testing:
+- 62 个单元测试通过 (fieldActionAuthorization.test.ts)
+- 所有 702 个运行时测试通过
+- TypeScript 编译通过
+- Build 成功
+
+### Notes:
+- 支持权限层级比较 (none < read < write < delete < admin)
+- 支持字段访问检查 (无规则拒绝、角色检查、部门检查、权限检查)
+- 支持动作授权检查 (需要审批流程、风险级别)
+- 支持数据源授权检查 (速率限制、IP范围限制)
+- 记录授权决策的审计日志
+- 导出别名处理 (addAuthAuditEntry, formatAuthAuditEntry) 避免与 toolAuditLog 模块冲突
+
 ## [2026-03-23] - Task: Form Writeback Adapter (Story 49.1)
 
 ### 铁律合规检查：
