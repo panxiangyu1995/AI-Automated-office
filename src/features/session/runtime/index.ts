@@ -418,3 +418,71 @@ export {
   formatStepLogEntry,
   formatTraceSummary,
 } from './traceAndStepLog'
+
+// Tool Audit Log (Task 81: Story 48.2)
+export {
+  // Types
+  type AuditStatus,
+  type PermissionOutcome,
+  type ConfirmationOutcome,
+  type ToolInputSummary,
+  type ToolResultSummary,
+  type ToolAuditEntry,
+  type AuditLogStore,
+  type AuditQueryOptions,
+  type AuditStatistics,
+  type SerializableAuditLogStore,
+
+  // ID Generation
+  generateToolAuditId,
+  isValidAuditId,
+
+  // Input/Output Summary
+  isSensitiveParameter,
+  createInputSummary,
+  createResultSummary,
+
+  // Permission and Confirmation
+  createPermissionOutcome,
+  createConfirmationOutcome,
+
+  // Audit Entry Functions
+  createToolAuditEntry,
+  markExecuting,
+  markSuccess,
+  markFailure,
+  markPermissionDenied,
+  markConfirmationRejected,
+  markTimeout,
+  markCancelled,
+
+  // Audit Store Functions
+  createAuditLogStore,
+  addAuditEntry,
+  updateAuditEntry,
+
+  // Query Functions
+  getAuditEntry,
+  getSessionAuditEntries,
+  getTraceAuditEntries,
+  getToolAuditEntries,
+  queryAuditEntries,
+  getEntriesByStatus,
+
+  // Statistics
+  calculateAuditStatistics,
+
+  // Governance
+  getGovernanceTaggedEntries,
+  getEntriesByRetentionCategory,
+
+  // Serialization
+  serializeAuditEntry,
+  deserializeAuditEntry,
+  serializeAuditLogStore,
+  deserializeAuditLogStore,
+
+  // Debug
+  formatAuditEntry,
+  formatAuditStatistics,
+} from './toolAuditLog'

@@ -1,4 +1,44 @@
 
+## [2026-03-23] - Task: Tool Audit Log (Story 48.2)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 工具审计日志
+- 架构合规：ADR-037 - 运行时追踪
+- UX 合规：UX-04 - 调试支持
+
+### What was done:
+- 创建 toolAuditLog.ts - 工具审计日志模块
+  - AuditStatus: 审计状态 (pending, executing, success, failure, permission_denied, confirmation_rejected, timeout, cancelled)
+  - PermissionOutcome: 权限结果
+  - ConfirmationOutcome: 确认结果
+  - ToolInputSummary: 工具输入摘要
+  - ToolResultSummary: 工具结果摘要
+  - ToolAuditEntry: 工具审计条目
+  - AuditLogStore: 审计日志存储
+
+- 功能实现：
+  - ID 生成 (generateToolAuditId, isValidAuditId)
+  - 输入摘要 (isSensitiveParameter, createInputSummary)
+  - 结果摘要 (createResultSummary)
+  - 权限和确认结果 (createPermissionOutcome, createConfirmationOutcome)
+  - 审计条目 (createToolAuditEntry, markExecuting, markSuccess, markFailure, markPermissionDenied, markConfirmationRejected, markTimeout, markCancelled)
+  - 审计存储 (createAuditLogStore, addAuditEntry, updateAuditEntry)
+  - 查询功能 (getAuditEntry, getSessionAuditEntries, getTraceAuditEntries, getToolAuditEntries, queryAuditEntries, getEntriesByStatus)
+  - 统计 (calculateAuditStatistics)
+  - 序列化 (serializeAuditEntry, deserializeAuditEntry, serializeAuditStore, deserializeAuditStore)
+  - 调试格式化 (formatAuditEntry, formatAuditStatistics)
+
+### Testing:
+- 51 个单元测试通过 (toolAuditLog.test.ts)
+- 所有运行时测试 315 个通过
+- Build 成功
+
+### Notes:
+- generateToolAuditId 与 knowledgeRetrieval.ts 中的 generateAuditId 区分命名
+- 支持敏感参数检测（password, secret, token 等）
+- 支持权限和确认结果记录
+- 支持按状态、会话、追踪、工具查询审计条目
+
 ## [2026-03-23] - Task: Trace and Step Log (Story 48.1)
 
 ### 铁律合规检查：
