@@ -1,4 +1,32 @@
 
+## [2026-03-24] - Task 20: Story 5.6 - 部门模块状态监控
+
+### 铁律合规检查：
+- PRD 合规：FR74, FR75
+- 架构合规：ADR-017
+- UX 合规：UX-01, UX-02
+
+### What was done:
+- 创建 ModuleCapabilityStatus.tsx 组件
+  - ModuleStatusCard: 模块状态卡片
+  - HealthIndicator: 健康状态指示器
+  - HandshakeIndicator: 握手状态指示器
+  - CapabilityBar: 能力统计进度条
+- 支持模块能力状态总览
+- 支持显示工具、技能、MCP 计数和健康状态
+- 支持显示与主 Agent 的握手状态
+- 支持重连功能
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 遵循分层架构设计
+
+---
+
 ## [2026-03-24] - Task 19: Story 5.5 - 结果编辑与纠偏
 
 ### 铁律合规检查：

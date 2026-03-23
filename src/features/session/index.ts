@@ -71,3 +71,13 @@ export type {
   CorrectionRule,
   CorrectionType,
 } from './components/ResultCorrection'
+export { ModuleCapabilityStatus, ModuleStatusCard } from './components/ModuleCapabilityStatus'
+export type {
+  ModuleCapabilityStatusProps,
+  ModuleStatusCardProps,
+  ModuleCapabilityState,
+  CapabilityStats,
+  ModuleHealthStatus,
+  HandshakeStatus,
+  CapabilityType,
+} from './components/ModuleCapabilityStatus'
