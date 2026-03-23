@@ -1376,3 +1376,122 @@ export {
   formatCustomerSummary,
   formatToolExecutionRecord as formatSalesToolExecutionRecord,
 } from './salesPilot'
+
+// Finance Pilot Integration (Task 90: Story 50.3)
+export {
+  // Types
+  type InvoiceStatus,
+  type InvoiceType,
+  type ExpenseStatus,
+  type ExpenseCategory,
+  type BudgetStatus,
+  type BudgetPeriod,
+  type PaymentStatus,
+  type PaymentMethod,
+  type FinanceToolType,
+  type InvoiceContext,
+  type InvoiceLineItem,
+  type ExpenseContext,
+  type BudgetContext,
+  type BudgetCategory,
+  type BudgetAlert,
+  type PaymentContext,
+  type FinanceTool,
+  type FinanceValidationRule,
+  type FinanceToolInput,
+  type FinanceToolOutput,
+  type FinanceSummary,
+  type FinanceSummaryField,
+  type FinanceWritebackAction,
+  type FinanceToolExecutionRecord,
+  type FinancePilotContract,
+  type FinancePilotState,
+
+  // ID Generation
+  generateInvoiceId,
+  generateExpenseId,
+  generateBudgetId,
+  generatePaymentId,
+  generateFinanceSummaryId,
+  generateFinanceToolId,
+  generateFinanceRecordId,
+  generateFinanceWritebackId,
+
+  // Context Factory
+  createInvoiceContext,
+  createExpenseContext,
+  createBudgetContext,
+  createPaymentContext,
+
+  // Tool Factory
+  createFinanceTool,
+
+  // Contract and State Factory
+  createFinancePilotContract,
+  createFinancePilotState,
+
+  // Tool Registration
+  getDefaultFinanceTools,
+  registerTool as registerFinanceTool,
+  registerDefaultTools as registerDefaultFinanceTools,
+  getTool as getFinanceTool,
+  getToolByType as getFinanceToolByType,
+
+  // Permission and Validation
+  checkToolPermission as checkFinanceToolPermission,
+  checkInvoiceStatus,
+  checkExpenseStatus,
+  checkBudgetStatus,
+  checkPaymentStatus,
+  validateToolInput as validateFinanceToolInput,
+
+  // Tool Execution
+  executeFinanceTool,
+
+  // Summary Generation
+  generateInvoiceSummary,
+  generateExpenseSummary,
+  generateBudgetSummary,
+  generatePaymentSummary,
+
+  // Writeback Integration
+  createFinanceWritebackAction,
+  prepareInvoiceWriteback,
+  prepareExpenseWriteback,
+  prepareBudgetWriteback,
+  preparePaymentWriteback,
+  prepareStatusWriteback as prepareFinanceStatusWriteback,
+
+  // Serialization
+  serializeInvoiceContext,
+  deserializeInvoiceContext,
+  serializeExpenseContext,
+  deserializeExpenseContext,
+  serializeBudgetContext,
+  deserializeBudgetContext,
+  serializePaymentContext,
+  deserializePaymentContext,
+  serializeFinanceTool,
+  deserializeFinanceTool,
+  serializeFinanceSummary,
+  deserializeFinanceSummary,
+  serializeFinancePilotState,
+  deserializeFinancePilotState,
+
+  // Debug Formatting
+  getInvoiceStatusName,
+  getInvoiceTypeName,
+  getExpenseStatusName,
+  getExpenseCategoryName,
+  getBudgetStatusName,
+  getBudgetPeriodName,
+  getPaymentStatusName,
+  getPaymentMethodName,
+  formatInvoiceContext,
+  formatExpenseContext,
+  formatBudgetContext,
+  formatPaymentContext,
+  formatFinanceTool,
+  formatFinanceSummary,
+  formatToolExecutionRecord as formatFinanceToolExecutionRecord,
+} from './financePilot'
