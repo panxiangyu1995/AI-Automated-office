@@ -1,4 +1,39 @@
 
+## [2026-03-23] - Task: Model Provider Settings (Story 4.4)
+
+### 铁律合规检查：
+- PRD 合规：FR18, FR19 - AI模型提供商配置
+- 架构合规：ADR-037 - 分层架构，本地优先存储
+- UX 合规：UX-02 (设置界面), UX-04 (配置交互)
+
+### What was done:
+- 创建 useModelConfig.ts Hook：
+  - 多提供商支持（OpenAI, Anthropic, 阿里云百炼, 智谱AI, DeepSeek, Minimax, 自定义）
+  - API 密钥管理（本地加密存储）
+  - 自定义 API 端点配置
+  - 连接测试功能
+  - 模型选择（含功能标识）
+
+- 创建 ModelProviderSettings.tsx 组件：
+  - 提供商选择（网格布局）
+  - 模型下拉选择
+  - API 密钥输入（可显示/隐藏）
+  - API 端点配置（按提供商条件显示）
+  - 连接测试按钮和状态显示
+
+- 更新 SettingsPanel.tsx：
+  - 集成 ModelProviderSettings 到 Agent 设置标签
+
+- 创建 settings/index.ts 导出模块
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- API 密钥使用 Zustand persist 存储在 localStorage
+- 连接测试为模拟实现，实际需要调用后端验证
+
 ## [2026-03-23] - Task: History Management (Story 4.3)
 
 ### 铁律合规检查：

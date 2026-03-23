@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/button'
 import { Switch } from '../../../components/ui/switch'
 import { Label } from '../../../components/ui/label'
 import { useUIStore } from '../../../stores/uiStore'
+import { ModelProviderSettings } from './ModelProviderSettings'
 
 type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
@@ -277,7 +278,7 @@ export function SettingsPanel() {
         {active === 'agent' && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-slate-800">Agent 设置</h2>
-            <p className="text-slate-600 text-sm">后续将提供模型配置与密钥管理。</p>
+            <ModelProviderSettings />
           </div>
         )}
 
