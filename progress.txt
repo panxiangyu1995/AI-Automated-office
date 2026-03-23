@@ -1,4 +1,42 @@
 
+## [2026-03-23] - Task: Page and Resource Context (Story 47.2)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 页面和资源上下文
+- 架构合规：ADR-035, ADR-037 - 运行时上下文注入
+- UX 合规：UX-01, UX-04 - 上下文传递
+
+### What was done:
+- 创建 pageContext.ts - 页面资源上下文模块
+  - PageContext: 完整页面上下文
+  - ResourceReference: 资源引用
+  - PageLocation: 页面位置
+  - EditorContext: 编辑器上下文
+  - DynamicContext: 动态上下文
+  - PageContextEnvelope: 页面上下文信封
+
+- 功能实现：
+  - 资源引用创建 (createResourceReference)
+  - 页面位置创建 (createPageLocation)
+  - 页面上下文创建 (createPageContext)
+  - 上下文信封创建 (createPageContextEnvelope)
+  - 上下文解析 (resolvePageContext, resolveStaticContext, resolveDynamicContext, resolveEditorContext)
+  - 资源附加/分离 (attachResource, attachResources, detachResource)
+  - 主资源设置 (setPrimaryResource)
+  - 安全校验 (exposeToPlanner, exposeToToolRuntime, isValidForToolExecution)
+  - 验证函数 (validatePageContext, isPageContextExpired, isPageContextStale)
+  - 资源查询 (getActiveResources, getResourcesByType, getResourcesByState, getDirtyResources)
+  - 上下文合并/克隆 (mergePageContexts, clonePageContext)
+  - 最小上下文创建 (createMinimalPageContext)
+
+### Testing:
+- 45 个单元测试通过 (pageContext.test.ts)
+- Build 成功
+
+### Notes:
+- 资源的 isActive 默认值为 true，需显式设为 false 才会被过滤
+- 错误状态的资源需 isActive: true 才能被正确检测
+
 ## [2026-03-23] - Task: User Tenant and Department Context (Story 47.1)
 
 ### 铁律合规检查：

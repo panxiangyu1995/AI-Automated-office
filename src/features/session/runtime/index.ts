@@ -180,3 +180,60 @@ export {
   createDefaultDepartmentInfo,
   createMinimalContextEnvelope,
 } from './userContext'
+
+// Page Context (Task 77: Story 47.2)
+export {
+  // Types
+  type PageMode,
+  type ResourceType,
+  type ResourceState,
+  type ResourceReference,
+  type PageLocation,
+  type EditorContext,
+  type DynamicContext,
+  type PageContext,
+  type PageContextEnvelope,
+  type ResolutionMode,
+  type ContextResolutionOptions,
+  type ResolvedPageContext,
+  
+  // Factory functions
+  generatePageContextId,
+  createResourceReference,
+  createPageLocation,
+  createEditorContext,
+  createDynamicContext,
+  createPageContext,
+  createPageContextEnvelope,
+  
+  // Context resolution functions
+  resolvePageContext,
+  resolveStaticContext,
+  resolveDynamicContext,
+  resolveEditorContext,
+  
+  // Context attachment functions
+  attachResource,
+  attachResources,
+  detachResource,
+  setPrimaryResource,
+  
+  // Context exposure functions
+  exposeToPlanner,
+  exposeToToolRuntime,
+  isValidForToolExecution,
+  
+  // Validation functions
+  validatePageContext,
+  isPageContextExpired,
+  isPageContextStale,
+  
+  // Utility functions
+  getActiveResources,
+  getResourcesByType,
+  getResourcesByState,
+  getDirtyResources,
+  mergePageContexts,
+  clonePageContext,
+  createMinimalPageContext,
+} from './pageContext'
