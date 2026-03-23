@@ -163,3 +163,21 @@ export {
   isPermissionDenied,
   extractPermissionRequirements,
 } from './toolPermissionPrecheck'
+
+// Sensitive Action Detection
+export type {
+  RiskLevel,
+  SensitivityCategory,
+  SensitiveActionRule,
+  RuleCondition,
+  DetectedSensitiveAction,
+  RiskAssessment,
+  SensitiveActionConfig,
+} from './sensitiveActionDetection'
+
+export {
+  SensitiveActionDetector,
+  createSensitiveActionDetector,
+  isSensitiveAction,
+  getActionRiskLevel,
+} from './sensitiveActionDetection'
