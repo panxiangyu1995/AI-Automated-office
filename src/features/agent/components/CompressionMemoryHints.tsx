@@ -17,7 +17,6 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  Eye,
   EyeOff,
   Info,
   Lightbulb,
@@ -272,7 +271,7 @@ export function CompressionNotification({
             </div>
 
             {/* 保留的关键内容 */}
-            {latestCompression.retainedFacts && latestCompression.retainedFacts.length > 0 && (
+            {latestCompression.keyFacts && latestCompression.keyFacts.length > 0 && (
               <div className="space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Brain className="h-3.5 w-3.5" />
@@ -280,7 +279,7 @@ export function CompressionNotification({
                 </div>
                 <ScrollArea className="max-h-[120px]">
                   <div className="space-y-1">
-                    {latestCompression.retainedFacts.map((fact, index) => (
+                    {latestCompression.keyFacts.map((fact: string, index: number) => (
                       <div
                         key={index}
                         className="flex items-start gap-2 p-2 rounded-md bg-background/50"
@@ -309,8 +308,8 @@ export function CompressionNotification({
 
             {/* 配置信息 */}
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-              <span>压缩策略: {config.compressionStrategy}</span>
-              <span>保留最近 {config.recentMessagesToKeep} 条消息</span>
+              <span>压缩策略: {config.strategy}</span>
+              <span>保留最近 {config.preserveRecentCount} 条消息</span>
             </div>
           </div>
         </CollapsibleContent>
@@ -345,8 +344,8 @@ export function MemoryHints({
     
     // 从最近的压缩记录中提取保留的事实
     for (const record of history) {
-      if (record.retainedFacts) {
-        for (const fact of record.retainedFacts) {
+      if (record.keyFacts) {
+        for (const fact of record.keyFacts) {
           hints.push({
             id: `hint-${record.id}-${hints.length}`,
             type: 'fact',
@@ -560,14 +559,14 @@ export function CompressionSummary({
           </div>
 
           {/* 保留的事实 */}
-          {record.retainedFacts && record.retainedFacts.length > 0 && (
+          {record.keyFacts && record.keyFacts.length > 0 && (
             <div>
               <div className="flex items-center gap-2 text-sm font-medium mb-2">
                 <Brain className="h-4 w-4" style={{ color: BRAND_COLOR }} />
                 保留的关键信息
               </div>
               <div className="space-y-1">
-                {record.retainedFacts.map((fact, index) => (
+                {record.keyFacts.map((fact: string, index: number) => (
                   <div
                     key={index}
                     className="flex items-start gap-2 p-2 rounded-md bg-background/50"
