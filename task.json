@@ -609,7 +609,7 @@
       "dependencies": [
         "Story 5.4"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 20,

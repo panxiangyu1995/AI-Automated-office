@@ -1,4 +1,32 @@
 
+## [2026-03-24] - Task 19: Story 5.5 - 结果编辑与纠偏
+
+### 铁律合规检查：
+- PRD 合规：FR73, FR81, FR82, FR83, FR85, FR86
+- 架构合规：ADR-043, ADR-044
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 ResultCorrection.tsx 组件
+  - InlineResultEditor: 内联结果编辑器
+  - CorrectionRationaleDialog: 纠偏原因对话框
+  - CorrectionHistory: 纠偏历史记录
+  - RuleSuggestion: 规则建议
+- 支持内联编辑生成的输出
+- 支持捕获用户纠偏原因
+- 支持将纠偏规则写入记忆和提示管道
+- 定义 CorrectionRecord 和 CorrectionRule 类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 遵循分层架构设计
+
+---
+
 ## [2026-03-24] - Task 18: Story 5.4 - 工具调用失败处理
 
 ### 铁律合规检查：

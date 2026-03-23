@@ -62,3 +62,12 @@ export type {
   FallbackResultInputProps,
   BatchFailureHandlingProps,
 } from './components/ToolFailureHandling'
+export { ResultCorrection, InlineResultEditor, CorrectionRationaleDialog } from './components/ResultCorrection'
+export type {
+  ResultCorrectionProps,
+  InlineResultEditorProps,
+  CorrectionRationaleDialogProps,
+  CorrectionRecord,
+  CorrectionRule,
+  CorrectionType,
+} from './components/ResultCorrection'
