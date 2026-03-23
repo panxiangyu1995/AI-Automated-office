@@ -1,4 +1,47 @@
 
+## [2026-03-24] - Task: Checkpoint Management (Story 4.11)
+
+### 铁律合规检查：
+- PRD 合规：FR17-19, FR17-20, FR17-21, FR17-22, FR17-23 - 检查点管理功能
+- 架构合规：ADR-037 - Agent 运行时追踪
+- NFR 合规：NFR-17 - 存储效率
+
+### What was done:
+- 扩展 useCheckpointStore.ts：
+  - 添加 RetentionType 类型定义（none/temporary/permanent）
+  - 添加 CleanupPolicy 接口（清理策略配置）
+  - 在 Checkpoint 类型中添加 retention 字段
+  - 实现 markRetention 方法（设置保留标记）
+  - 实现 clearRetention 方法（清除保留标记）
+  - 实现 getRetainedCheckpoints 方法（获取保留的检查点）
+  - 实现 batchDeleteCheckpoints 方法（批量删除，跳过永久保留）
+  - 实现 setCleanupPolicy 方法（设置清理策略）
+  - 实现 runCleanup 方法（执行清理）
+  - 实现 getExpiredCheckpoints 方法（获取过期检查点）
+  - 添加 useCleanupPolicy/useRetainedCheckpoints/useExpiredCheckpoints/useAllCheckpoints/useCheckpointStats hooks
+  - 更新 partialize 配置持久化清理策略
+
+- 创建 CheckpointManagementPanel.tsx 组件：
+  - 检查点列表展示（状态、类型、时间、消息预览）
+  - 保留标记功能（无保留/临时保留/永久保留）
+  - 批量选择和删除
+  - 清理策略配置（启用/保留天数/最大数量/清理间隔）
+  - 过期检查点自动清理
+  - 状态筛选和保留筛选
+  - 统计信息展示
+
+- 更新 agent/index.ts 导出新组件和类型
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- 永久保留的检查点不能被删除
+- 临时保留在过期后可被清理
+- 清理策略支持自动和手动两种模式
+- 清理策略持久化存储到 localStorage
+
 ## [2026-03-23] - Task: Git Checkpoint Integration (Story 4.10)
 
 ### 铁律合规检查：

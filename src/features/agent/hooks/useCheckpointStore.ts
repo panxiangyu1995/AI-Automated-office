@@ -31,6 +31,29 @@ export type CheckpointType = 'auto' | 'manual' | 'pre_action'
 export type CheckpointStatus = 'active' | 'restored' | 'archived'
 
 /**
+ * 保留标记类型
+ */
+export type RetentionType = 'none' | 'temporary' | 'permanent'
+
+/**
+ * 清理策略
+ */
+export interface CleanupPolicy {
+  // 自动清理开关
+  enabled: boolean
+  // 保留天数
+  retentionDays: number
+  // 最大检查点数量（全局）
+  maxTotalCheckpoints: number
+  // 是否自动清理已恢复的检查点
+  cleanupRestored: boolean
+  // 清理间隔（天）
+  cleanupIntervalDays: number
+  // 上次清理时间
+  lastCleanupAt?: number
+}
+
+/**
  * 恢复模式
  */
 export type RestoreMode = 'conversation_only' | 'conversation_plus_content'
@@ -160,6 +183,13 @@ export interface Checkpoint {
     branch?: string
     hasUncommittedChanges?: boolean
   }
+  // 保留标记（Story 4.11）
+  retention?: {
+    type: RetentionType
+    markedAt?: number
+    expiresAt?: number // 仅对 temporary 有效
+    reason?: string
+  }
 }
 
 /**
@@ -182,15 +212,28 @@ export interface CheckpointStoreState {
   autoCheckpointEnabled: boolean
   // 最大检查点数量（每个会话）
   maxCheckpointsPerSession: number
+  // 清理策略（Story 4.11）
+  cleanupPolicy: CleanupPolicy
   
   // Checkpoint Actions
   createCheckpoint: (params: CreateCheckpointParams) => Checkpoint
-  deleteCheckpoint: (checkpointId: string) => void
+  deleteCheckpoint: (checkpointId: string) => boolean
   restoreCheckpoint: (checkpointId: string, mode: RestoreMode, previousMessageCount: number) => RestoreRecord | null
   archiveCheckpoint: (checkpointId: string) => void
   getSessionCheckpoints: (sessionId: string) => Checkpoint[]
   getLatestCheckpoint: (sessionId: string) => Checkpoint | null
   getRestoreHistory: (sessionId: string) => RestoreRecord[]
+  
+  // Retention Actions (Story 4.11)
+  markRetention: (checkpointId: string, type: RetentionType, reason?: string, temporaryDays?: number) => void
+  clearRetention: (checkpointId: string) => void
+  getRetainedCheckpoints: () => Checkpoint[]
+  batchDeleteCheckpoints: (checkpointIds: string[]) => { deleted: string[]; retained: string[] }
+  
+  // Cleanup Actions (Story 4.11)
+  setCleanupPolicy: (policy: Partial<CleanupPolicy>) => void
+  runCleanup: () => { deleted: string[]; retained: string[] }
+  getExpiredCheckpoints: () => Checkpoint[]
   
   // Branch Actions (Story 4.9)
   createBranch: (params: CreateBranchParams) => BranchRecord
@@ -303,6 +346,13 @@ const initialState = {
   activeBranches: {},
   autoCheckpointEnabled: true,
   maxCheckpointsPerSession: 10,
+  cleanupPolicy: {
+    enabled: true,
+    retentionDays: 30,
+    maxTotalCheckpoints: 100,
+    cleanupRestored: false,
+    cleanupIntervalDays: 7,
+  } as CleanupPolicy,
 }
 
 // ==================== Store ====================
@@ -366,10 +416,15 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
       // ==================== Delete Checkpoint ====================
       
       deleteCheckpoint: (checkpointId: string) => {
+        const checkpoint = get().checkpoints[checkpointId]
+        if (!checkpoint) return false
+        
+        // 检查保留标记
+        if (checkpoint.retention?.type === 'permanent') {
+          return false // 永久保留的检查点不能删除
+        }
+        
         set((state) => {
-          const checkpoint = state.checkpoints[checkpointId]
-          if (!checkpoint) return state
-          
           // 从 checkpoints 中删除
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [checkpointId]: _deleted, ...remainingCheckpoints } = state.checkpoints
@@ -392,6 +447,8 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
             sessionCheckpoints: newSessionCheckpoints,
           }
         })
+        
+        return true
       },
       
       // ==================== Restore Checkpoint ====================
@@ -460,6 +517,219 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
             },
           }
         })
+      },
+      
+      // ==================== Retention Actions (Story 4.11) ====================
+      
+      markRetention: (checkpointId: string, type: RetentionType, reason?: string, temporaryDays?: number) => {
+        set((state) => {
+          const checkpoint = state.checkpoints[checkpointId]
+          if (!checkpoint) return state
+          
+          const now = Date.now()
+          let retention: Checkpoint['retention']
+          
+          if (type === 'none') {
+            retention = undefined
+          } else if (type === 'permanent') {
+            retention = {
+              type: 'permanent',
+              markedAt: now,
+              reason,
+            }
+          } else {
+            // temporary
+            const expiresAt = temporaryDays 
+              ? now + temporaryDays * 24 * 60 * 60 * 1000
+              : undefined
+            retention = {
+              type: 'temporary',
+              markedAt: now,
+              expiresAt,
+              reason,
+            }
+          }
+          
+          const updatedCheckpoint: Checkpoint = {
+            ...checkpoint,
+            retention,
+          }
+          
+          return {
+            checkpoints: {
+              ...state.checkpoints,
+              [checkpointId]: updatedCheckpoint,
+            },
+          }
+        })
+      },
+      
+      clearRetention: (checkpointId: string) => {
+        set((state) => {
+          const checkpoint = state.checkpoints[checkpointId]
+          if (!checkpoint || !checkpoint.retention) return state
+          
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { retention: _retention, ...rest } = checkpoint
+          const updatedCheckpoint: Checkpoint = rest
+          
+          return {
+            checkpoints: {
+              ...state.checkpoints,
+              [checkpointId]: updatedCheckpoint,
+            },
+          }
+        })
+      },
+      
+      getRetainedCheckpoints: () => {
+        const state = get()
+        return Object.values(state.checkpoints)
+          .filter(cp => cp.retention && cp.retention.type !== 'none')
+          .sort((a, b) => (b.retention?.markedAt || 0) - (a.retention?.markedAt || 0))
+      },
+      
+      batchDeleteCheckpoints: (checkpointIds: string[]) => {
+        const state = get()
+        const deleted: string[] = []
+        const retained: string[] = []
+        
+        checkpointIds.forEach(id => {
+          const checkpoint = state.checkpoints[id]
+          if (!checkpoint) return
+          
+          // 永久保留的不能删除
+          if (checkpoint.retention?.type === 'permanent') {
+            retained.push(id)
+            return
+          }
+          
+          // 临时保留的检查是否过期
+          if (checkpoint.retention?.type === 'temporary' && checkpoint.retention.expiresAt) {
+            if (Date.now() < checkpoint.retention.expiresAt) {
+              retained.push(id)
+              return
+            }
+          }
+          
+          // 可以删除
+          get().deleteCheckpoint(id)
+          deleted.push(id)
+        })
+        
+        return { deleted, retained }
+      },
+      
+      // ==================== Cleanup Actions (Story 4.11) ====================
+      
+      setCleanupPolicy: (policy: Partial<CleanupPolicy>) => {
+        set((state) => ({
+          cleanupPolicy: {
+            ...state.cleanupPolicy,
+            ...policy,
+          },
+        }))
+      },
+      
+      runCleanup: () => {
+        const state = get()
+        const { cleanupPolicy } = state
+        
+        if (!cleanupPolicy.enabled) {
+          return { deleted: [], retained: [] }
+        }
+        
+        const now = Date.now()
+        const cutoffTime = now - cleanupPolicy.retentionDays * 24 * 60 * 60 * 1000
+        const expiredCheckpoints = get().getExpiredCheckpoints()
+        const deleted: string[] = []
+        const retained: string[] = []
+        
+        // 删除过期的检查点
+        expiredCheckpoints.forEach(cp => {
+          // 跳过保留标记的
+          if (cp.retention?.type === 'permanent') {
+            retained.push(cp.id)
+            return
+          }
+          
+          if (cp.retention?.type === 'temporary' && cp.retention.expiresAt) {
+            if (now < cp.retention.expiresAt) {
+              retained.push(cp.id)
+              return
+            }
+          }
+          
+          // 跳过已恢复的（如果配置不清理）
+          if (!cleanupPolicy.cleanupRestored && cp.status === 'restored') {
+            retained.push(cp.id)
+            return
+          }
+          
+          // 检查是否超过保留时间
+          if (cp.createdAt >= cutoffTime) {
+            retained.push(cp.id)
+            return
+          }
+          
+          // 删除
+          get().deleteCheckpoint(cp.id)
+          deleted.push(cp.id)
+        })
+        
+        // 检查是否超过最大数量
+        const allCheckpoints = Object.values(state.checkpoints)
+        if (allCheckpoints.length > cleanupPolicy.maxTotalCheckpoints) {
+          // 按创建时间排序，删除最旧的
+          const sortedByTime = allCheckpoints
+            .filter(cp => !cp.retention?.type || cp.retention.type === 'none')
+            .sort((a, b) => a.createdAt - b.createdAt)
+          
+          const toDeleteCount = allCheckpoints.length - cleanupPolicy.maxTotalCheckpoints
+          for (let i = 0; i < toDeleteCount && i < sortedByTime.length; i++) {
+            get().deleteCheckpoint(sortedByTime[i].id)
+            deleted.push(sortedByTime[i].id)
+          }
+        }
+        
+        // 更新清理时间
+        set((state) => ({
+          cleanupPolicy: {
+            ...state.cleanupPolicy,
+            lastCleanupAt: now,
+          },
+        }))
+        
+        return { deleted, retained }
+      },
+      
+      getExpiredCheckpoints: () => {
+        const state = get()
+        const { cleanupPolicy } = state
+        
+        if (!cleanupPolicy.enabled) return []
+        
+        const now = Date.now()
+        const cutoffTime = now - cleanupPolicy.retentionDays * 24 * 60 * 60 * 1000
+        
+        return Object.values(state.checkpoints)
+          .filter(cp => {
+            // 永久保留的不算过期
+            if (cp.retention?.type === 'permanent') return false
+            
+            // 临时保留的检查是否过期
+            if (cp.retention?.type === 'temporary' && cp.retention.expiresAt) {
+              if (now < cp.retention.expiresAt) return false
+            }
+            
+            // 已恢复的根据配置
+            if (!cleanupPolicy.cleanupRestored && cp.status === 'restored') {
+              return false
+            }
+            
+            return cp.createdAt < cutoffTime
+          })
+          .sort((a, b) => a.createdAt - b.createdAt)
       },
       
       // ==================== Query Actions ====================
@@ -722,6 +992,7 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
         activeBranches: state.activeBranches,
         autoCheckpointEnabled: state.autoCheckpointEnabled,
         maxCheckpointsPerSession: state.maxCheckpointsPerSession,
+        cleanupPolicy: state.cleanupPolicy,
       }),
     }
   )
@@ -790,6 +1061,67 @@ export function useActiveBranch(sessionId: string): BranchRecord | null {
  */
 export function useOriginalMessage(checkpointId: string): string | null {
   return useCheckpointStore((state) => state.getOriginalMessage(checkpointId))
+}
+
+/**
+ * 获取清理策略 (Story 4.11)
+ */
+export function useCleanupPolicy(): CleanupPolicy {
+  return useCheckpointStore((state) => state.cleanupPolicy)
+}
+
+/**
+ * 获取保留的检查点列表 (Story 4.11)
+ */
+export function useRetainedCheckpoints(): Checkpoint[] {
+  return useCheckpointStore((state) => state.getRetainedCheckpoints())
+}
+
+/**
+ * 获取过期的检查点列表 (Story 4.11)
+ */
+export function useExpiredCheckpoints(): Checkpoint[] {
+  return useCheckpointStore((state) => state.getExpiredCheckpoints())
+}
+
+/**
+ * 获取所有检查点（跨会话）(Story 4.11)
+ */
+export function useAllCheckpoints(): Checkpoint[] {
+  return useCheckpointStore((state) => 
+    Object.values(state.checkpoints).sort((a, b) => b.createdAt - a.createdAt)
+  )
+}
+
+/**
+ * 获取检查点统计信息 (Story 4.11)
+ */
+export function useCheckpointStats(): {
+  total: number
+  active: number
+  restored: number
+  archived: number
+  retained: number
+  expired: number
+} {
+  return useCheckpointStore((state) => {
+    const checkpoints = Object.values(state.checkpoints)
+    const now = Date.now()
+    const cutoffTime = now - state.cleanupPolicy.retentionDays * 24 * 60 * 60 * 1000
+    
+    return {
+      total: checkpoints.length,
+      active: checkpoints.filter(cp => cp.status === 'active').length,
+      restored: checkpoints.filter(cp => cp.status === 'restored').length,
+      archived: checkpoints.filter(cp => cp.status === 'archived').length,
+      retained: checkpoints.filter(cp => cp.retention && cp.retention.type !== 'none').length,
+      expired: checkpoints.filter(cp => {
+        if (cp.retention?.type === 'permanent') return false
+        if (cp.retention?.type === 'temporary' && cp.retention.expiresAt && now < cp.retention.expiresAt) return false
+        return cp.createdAt < cutoffTime
+      }).length,
+    }
+  })
 }
 
 // ==================== Export ====================
