@@ -1,4 +1,54 @@
 
+## [2026-03-24] - Task: Compression Memory Hints (Story 4.14)
+
+### 铁律合规检查：
+- PRD 合规：FR-CTX-6, FR-CTX-7, FR14-2 - 压缩通知与记忆提示
+- 架构合规：ADR-043, ADR-044 - 记忆系统、上下文管理
+- NFR 合规：NFR1 - 可用性
+
+### What was done:
+- 创建 CompressionMemoryHints.tsx 组件：
+  - CompressionNotification 组件：
+    - 在会话流中显示压缩通知
+    - 显示压缩统计（消息数、Token数）
+    - 显示保留的关键信息
+    - 显示压缩摘要
+    - 支持展开/折叠详情
+    - 自动隐藏非最近的压缩通知
+
+  - MemoryHints 组件：
+    - 在输入区域附近显示记忆的关键事实
+    - 从压缩历史中提取记忆提示
+    - 按重要性排序显示
+    - 支持刷新和隐藏控制
+    - 类型标识（事实/偏好/上下文/操作）
+
+  - CompressionSummary 组件：
+    - 单个压缩记录的详细摘要
+    - 显示压缩前后对比
+    - 显示保留事实和摘要
+
+  - MemoryHint 类型定义：
+    - id: 唯一标识
+    - type: 事实/偏好/上下文/操作
+    - content: 内容
+    - importance: 高/中/低
+    - source: 用户/助手/系统
+    - timestamp: 时间戳
+
+- 更新 agent/index.ts 导出新组件
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- 压缩通知在5分钟内的显示"新"标签
+- 非最近的压缩通知30秒后自动隐藏
+- 记忆提示按重要性排序显示
+- 支持外部传入的 hints 覆盖自动提取
+- 品牌色：#1E3A5F
+
 ## [2026-03-24] - Task: Token Usage Indicator (Story 4.13)
 
 ### 铁律合规检查：
