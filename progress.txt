@@ -1,4 +1,49 @@
 
+## [2026-03-23] - Task: Approval Pilot Integration (Story 50.1)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02, PRD-P2-03 - 审批场景运行时验证
+- 架构合规：ADR-035, ADR-037, ADR-038 - 动态表单、运行时追踪、审计日志
+- UX 合规：UX-01, UX-02, UX-04 - 交互、表单、调试
+
+### What was done:
+- 创建 approvalPilot.ts - 审批场景 Pilot 集成模块
+  - ApprovalType: 审批类型 (leave, expense, purchase, contract, travel, overtime, recruitment, resignation, custom)
+  - ApprovalStatus: 审批状态 (draft, submitted, pending, approved, rejected, cancelled, withdrawn)
+  - ApprovalPriority: 审批优先级 (low, normal, high, urgent)
+  - ApprovalToolType: 审批工具类型 (submit, approve, reject, return, transfer, withdraw, comment, query, summary)
+  - ApprovalContext: 审批上下文
+  - ApprovalHistoryEntry: 审批历史条目
+  - ApprovalTool: 审批工具定义
+  - ApprovalToolInput/Output: 工具输入输出
+  - ApprovalSummary: 审批摘要
+
+- 功能实现：
+  - ID 生成 (generateApprovalId, generateToolId, generateSummaryId, generateHistoryEntryId, generateToolRecordId, generateWritebackId)
+  - 工厂函数 (createApprovalContext, createApprovalTool, createApprovalHistoryEntry, createApprovalKeyField, createApprovalPilotContract, createApprovalPilotState)
+  - 工具注册 (getDefaultApprovalTools, registerTool, registerDefaultTools, getTool, getToolByType)
+  - 权限验证 (checkToolPermission, checkApprovalType, validateToolInput)
+  - 工具执行 (executeApprovalTool) - 支持 9 种审批工具
+  - 摘要生成 (generateApprovalSummary) - 支持 brief/detailed/full 三种模式
+  - 回写集成 (createApprovalWritebackAction, prepareSummaryWriteback, prepareStatusWriteback, prepareFormWriteback, prepareHistoryWriteback)
+  - 审计集成 (createApprovalAuditEntry, addAuditEntryToState)
+  - 序列化 (serializeApprovalContext, deserializeApprovalContext, serializeApprovalTool, deserializeApprovalTool, serializeApprovalSummary, deserializeApprovalSummary, serializeApprovalPilotState, deserializeApprovalPilotState)
+  - 调试格式化 (formatApprovalContext, formatApprovalTool, formatApprovalSummary, formatToolExecutionRecord)
+
+### Testing:
+- 71 个单元测试通过 (approvalPilot.test.ts)
+- 所有 1598 个单元测试通过
+- TypeScript 编译通过
+- Build 成功
+
+### Notes:
+- 支持 9 种审批类型 (leave, expense, purchase, contract, travel, overtime, recruitment, resignation, custom)
+- 支持 9 种审批工具 (submit, approve, reject, return, transfer, withdraw, comment, query, summary)
+- 支持 7 种审批状态 (draft, submitted, pending, approved, rejected, cancelled, withdrawn)
+- 支持确认机制 - 高风险操作需用户确认
+- 支持 dry run 模式 - 预览操作结果
+- 支持摘要生成 - 自动提取关键信息字段
+- 记录完整的工具执行历史和审计日志
 
 ## [2026-03-23] - Task: Editor and Template Writeback (Story 49.4)
 

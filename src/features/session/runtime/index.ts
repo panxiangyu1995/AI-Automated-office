@@ -1198,3 +1198,87 @@ export {
   formatEditorTrace,
   formatTemplateTrace,
 } from './editorTemplateWriteback'
+
+// Approval Pilot Integration (Task 88: Story 50.1)
+export {
+  // Types
+  type ApprovalType,
+  type ApprovalStatus,
+  type ApprovalPriority,
+  type ApprovalDecision,
+  type ApprovalToolType,
+  type ApprovalContext,
+  type ApprovalHistoryEntry,
+  type ApprovalAttachment,
+  type ApprovalTool,
+  type ApprovalToolInput,
+  type ApprovalToolOutput,
+  type ApprovalSummary,
+  type ApprovalKeyField,
+  type ApprovalSummaryOptions,
+  type ApprovalWritebackAction,
+  type ApprovalPilotState,
+  type ApprovalToolExecutionRecord,
+  type ApprovalPilotContract,
+
+  // ID Generation
+  generateApprovalId,
+  generateToolId,
+  generateSummaryId as generateApprovalSummaryId,
+  generateHistoryEntryId as generateApprovalHistoryEntryId,
+  generateToolRecordId,
+  generateWritebackId as generateApprovalWritebackId,
+
+  // Factory Functions
+  createApprovalContext,
+  createApprovalTool,
+  createApprovalHistoryEntry,
+  createApprovalKeyField,
+  createApprovalPilotContract,
+  createApprovalPilotState,
+
+  // Tool Registration
+  getDefaultApprovalTools,
+  registerTool,
+  registerDefaultTools,
+  getTool,
+  getToolByType,
+
+  // Permission and Validation
+  checkToolPermission,
+  checkApprovalType,
+  validateToolInput,
+
+  // Tool Execution
+  executeApprovalTool,
+
+  // Summary Generation
+  generateApprovalSummary,
+
+  // Writeback Integration
+  createApprovalWritebackAction,
+  prepareSummaryWriteback,
+  prepareStatusWriteback,
+  prepareFormWriteback,
+  prepareHistoryWriteback,
+
+  // Audit Integration
+  createApprovalAuditEntry,
+  addAuditEntryToState,
+
+  // Serialization
+  serializeApprovalContext,
+  deserializeApprovalContext,
+  serializeApprovalTool,
+  deserializeApprovalTool,
+  serializeApprovalSummary,
+  deserializeApprovalSummary,
+  serializeApprovalPilotState,
+  deserializeApprovalPilotState,
+
+  // Debug Formatting
+  formatApprovalContext,
+  formatApprovalTool,
+  formatApprovalSummary,
+  formatToolExecutionRecord,
+} from './approvalPilot'
