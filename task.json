@@ -23,7 +23,7 @@
       "arch_covered": ["ADR-037"],
       "ux_covered": ["UX-01", "UX-04"],
       "dependencies": [],
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,

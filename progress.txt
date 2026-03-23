@@ -1,4 +1,58 @@
 
+## [2026-03-23] - Task: AI Chat Interface Implementation (Story 4.1)
+
+### 铁律合规检查：
+- PRD 合规：FR9 - AI Agent 核心功能，对话界面
+- 架构合规：ADR-037 - 四层架构，Zustand 状态管理
+- UX 合规：UX-01 (Shadcn/ui), UX-02 (品牌色 #1E3A5F), UX-04 (对话为主要交互)
+
+### What was done:
+- 创建 src/features/agent/ 模块结构
+  - components/: AgentChatPanel, ChatMessage, MessageInput, MessageList
+  - hooks/: useChatStore (聊天状态管理)
+  - index.ts: 统一导出
+
+- useChatStore.ts 核心功能：
+  - 会话管理 (createSession, deleteSession, setActiveSession)
+  - 消息管理 (addUserMessage, addAssistantMessage, appendPartToMessage)
+  - 流式传输 (startStreaming, updateStreamingContent, finalizeStreamingMessage)
+  - Selector hooks (useActiveChatSession, useActiveMessages, useStreamingStatus)
+
+- ChatMessage.tsx 核心功能：
+  - 用户/助手消息渲染
+  - SimpleMarkdown 渲染器 (支持标题、粗体、代码块、列表等)
+  - Tool Call/Result 卡片
+  - Error 卡片
+  - 流式内容显示
+
+- MessageInput.tsx 核心功能：
+  - 自适应高度文本框
+  - 发送/停止按钮
+  - 快捷键支持 (Enter 发送, Shift+Enter 换行)
+
+- MessageList.tsx 核心功能：
+  - 消息列表渲染
+  - 自动滚动
+  - 空状态展示
+  - 快速操作按钮
+
+- AgentChatPanel.tsx 核心功能：
+  - 集成所有子组件
+  - 新对话按钮
+  - 模拟响应功能 (测试用)
+
+- 更新 AiChatPanel.tsx 使用新组件
+
+### Testing:
+- lint 检查通过 (agent 相关文件无错误)
+- build 成功
+- 单元测试通过 (1200+ tests)
+
+### Notes:
+- SimpleMarkdown 是简化实现，后续可替换为 react-markdown + remark-gfm
+- 流式传输使用 Zustand 状态管理，可扩展连接实际 Runtime
+- 使用 crypto.randomUUID() 生成 ID，无需额外依赖
+
 ## [2026-03-23] - Task: Finance Pilot Integration (Story 50.3)
 
 ### 铁律合规检查：
