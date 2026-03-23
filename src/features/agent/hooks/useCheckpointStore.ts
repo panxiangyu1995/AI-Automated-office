@@ -154,6 +154,12 @@ export interface Checkpoint {
   restoredAt?: number
   // 描述/标签
   label?: string
+  // Git 元数据（Story 4.10）
+  gitMetadata?: {
+    commitSha?: string
+    branch?: string
+    hasUncommittedChanges?: boolean
+  }
 }
 
 /**

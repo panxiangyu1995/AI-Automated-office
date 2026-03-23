@@ -3,10 +3,12 @@
  * Story 4.7 - 检查点自动创建
  * Story 4.8 - 检查点回滚功能
  * Story 4.9 - 检查点编辑重试功能
+ * Story 4.10 - Git工具集成
  * 
  * 在对话流中显示检查点标记，支持恢复到检查点
  * 支持选择恢复模式（仅对话 / 对话+内容）
  * 支持编辑检查点消息并创建分支重试
+ * 支持 Git 绑定状态显示
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
@@ -15,7 +17,7 @@
  */
 
 import { useState } from 'react'
-import { Bookmark, RotateCcw, Trash2, ChevronDown, ChevronUp, Clock, Edit3, GitBranch } from 'lucide-react'
+import { Bookmark, RotateCcw, Trash2, ChevronDown, ChevronUp, Clock, Edit3, GitBranch, GitCommit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
   useSessionCheckpoints,
@@ -25,8 +27,14 @@ import {
   type CheckpointType,
   type RestoreMode
 } from '../hooks/useCheckpointStore'
+import { 
+  useGitStatus,
+  useCheckpointGitBinding,
+  useGitIntegrationEnabled
+} from '../hooks/useGitStore'
 import { RestoreDialog } from './RestoreDialog'
 import { EditRetryDialog } from './EditRetryDialog'
+import { GitBadge } from './GitStatusIndicator'
 
 // ==================== Types ====================
 
@@ -112,6 +120,11 @@ export function CheckpointMarker({
   // Get original message from checkpoint
   const originalMessage = checkpoint.messageSnapshot.lastMessageContent || ''
   
+  // Git integration (Story 4.10)
+  const gitStatus = useGitStatus()
+  const gitIntegrationEnabled = useGitIntegrationEnabled()
+  const gitBinding = useCheckpointGitBinding(checkpoint.id)
+  
   const handleRestoreClick = () => {
     setShowRestoreDialog(true)
     setShowConfirmDelete(false)
@@ -149,6 +162,9 @@ export function CheckpointMarker({
     setShowConfirmDelete(false)
   }
   
+  // Check if has Git metadata
+  const hasGitMetadata = checkpoint.gitMetadata?.commitSha || gitBinding
+  
   return (
     <div className="my-2">
       {/* Main Marker */}
@@ -171,6 +187,10 @@ export function CheckpointMarker({
         <span className={`px-1.5 py-0.5 rounded text-[10px] ${getStatusColor(checkpoint.status)}`}>
           {getStatusLabel(checkpoint.status)}
         </span>
+        {/* Git Badge (Story 4.10) */}
+        {gitIntegrationEnabled && hasGitMetadata && (
+          <GitBadge gitStatus={gitStatus} binding={gitBinding} />
+        )}
         {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </div>
       
@@ -199,6 +219,37 @@ export function CheckpointMarker({
               <p>
                 <span className="font-medium text-slate-600">恢复时间:</span> {formatTimestamp(checkpoint.restoredAt)}
               </p>
+            )}
+            {/* Git Metadata (Story 4.10) */}
+            {gitIntegrationEnabled && hasGitMetadata && (
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <p className="font-medium text-slate-600 mb-1 flex items-center gap-1">
+                  <GitCommit size={10} />
+                  Git 绑定
+                </p>
+                {gitBinding && (
+                  <>
+                    <p>
+                      <span className="font-medium text-slate-600">提交:</span>{' '}
+                      <code className="bg-slate-100 px-1 rounded text-[10px]">{gitBinding.commit.shortSha}</code>
+                    </p>
+                    <p>
+                      <span className="font-medium text-slate-600">分支:</span> {gitBinding.branch}
+                    </p>
+                    {gitBinding.commit.isUnpushed && (
+                      <p className="text-amber-600">未推送到远程</p>
+                    )}
+                  </>
+                )}
+                {checkpoint.gitMetadata?.commitSha && !gitBinding && (
+                  <p>
+                    <span className="font-medium text-slate-600">提交:</span>{' '}
+                    <code className="bg-slate-100 px-1 rounded text-[10px]">
+                      {checkpoint.gitMetadata.commitSha.slice(0, 7)}
+                    </code>
+                  </p>
+                )}
+              </div>
             )}
           </div>
           

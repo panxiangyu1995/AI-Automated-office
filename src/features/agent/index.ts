@@ -6,6 +6,7 @@
  * Story 4.7 - 检查点自动创建
  * Story 4.8 - 检查点回滚功能
  * Story 4.9 - 检查点编辑重试功能
+ * Story 4.10 - Git工具集成
  * 
  * 导出 Agent 相关的组件和 Hooks
  */
@@ -21,6 +22,7 @@ export { HistoryPanel } from './components/HistoryPanel'
 export { CheckpointMarker, CheckpointList } from './components/CheckpointMarker'
 export { RestoreDialog } from './components/RestoreDialog'
 export { EditRetryDialog } from './components/EditRetryDialog'
+export { GitStatusIndicator, GitBadge } from './components/GitStatusIndicator'
 
 // Hooks
 export { 
@@ -65,3 +67,17 @@ export {
   type BranchRecord,
   type CreateBranchParams
 } from './hooks/useCheckpointStore'
+
+export {
+  useGitStore,
+  useGitStatus,
+  useRepoState,
+  useCheckpointGitBinding,
+  useGitIntegrationEnabled,
+  useAutoCommitEnabled,
+  type GitStatus as GitStatusType,
+  type GitCommitMetadata,
+  type CheckpointGitBinding,
+  type GitRepoState,
+  type GitStoreState
+} from './hooks/useGitStore'

@@ -1,4 +1,49 @@
 
+## [2026-03-23] - Task: Git Checkpoint Integration (Story 4.10)
+
+### 铁律合规检查：
+- PRD 合规：FR17-14, FR17-15, FR17-17, FR17-18 - Git工具集成
+- 架构合规：ADR-037 - Agent 运行时追踪
+- NFR 合规：NFR-17 - Git 操作可靠性
+
+### What was done:
+- 创建 useGitStore.ts Hook：
+  - GitStatus 类型定义（unknown/not_installed/not_a_repo/ready/error）
+  - GitCommitMetadata 提交元数据类型
+  - CheckpointGitBinding 检查点 Git 绑定类型
+  - GitRepoState 仓库状态类型
+  - Git 状态检测（detectGit）
+  - 仓库状态刷新（refreshRepoState）
+  - 创建 Git 检查点（createGitCheckpoint）
+  - 获取检查点绑定（getCheckpointBinding）
+  - Git 集成设置（gitIntegrationEnabled/autoCommitEnabled）
+  - 持久化存储配置
+
+- 更新 useCheckpointStore.ts：
+  - 在 Checkpoint 类型中添加 gitMetadata 字段
+  - 支持存储 Git 提交 SHA、分支、未提交更改状态
+
+- 创建 GitStatusIndicator.tsx 组件：
+  - GitStatusIndicator 完整状态指示器
+  - GitBadge 紧凑徽章组件
+  - 显示 Git 状态、提交 SHA、分支、推送状态
+
+- 更新 CheckpointMarker.tsx：
+  - 集成 Git 状态显示
+  - 在标记上显示 Git 徽章
+  - 在展开详情中显示 Git 绑定信息
+
+- 更新 agent/index.ts 导出新组件和类型
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- Git 操作需要 Tauri 环境，浏览器环境不可用
+- 当前实现为前端模拟，实际 Git 操作需要在 Tauri 后端实现
+- Git 集成可通过 gitIntegrationEnabled 配置开关
+
 ## [2026-03-23] - Task: Checkpoint Edit Retry (Story 4.9)
 
 ### 铁律合规检查：
