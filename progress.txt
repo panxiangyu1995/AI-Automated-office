@@ -1,4 +1,48 @@
 
+## [2026-03-23] - Task: Failure and Result Recording (Story 48.3)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 失败和结果记录
+- 架构合规：ADR-037 - 运行时追踪
+- UX 合规：UX-04 - 调试支持
+
+### What was done:
+- 创建 failureRecording.ts - 失败和结果记录模块
+  - ResultStatus: 结果状态 (success, partial_success, failure, cancelled, timeout, replan_triggered)
+  - FailureCategory: 失败类别 (tool_failure, permission_denied, confirmation_rejected, validation_error, etc.)
+  - RetryOutcome: 重试结果
+  - ReplanOutcome: 重规划结果
+  - TaskExecutionRecord: 任务执行记录
+  - ExecutionRecordStore: 执行记录存储
+
+- 功能实现：
+  - ID 生成 (generateRecordId, generateOutcomeId, isValidRecordId, isValidOutcomeId)
+  - 工厂函数 (createImpactedStep, createFailureReason, createExecutionResultSummary, createRetryOutcome, createReplanOutcome, createTaskExecutionRecord)
+  - 状态更新 (markExecutionSuccess, markExecutionPartialSuccess, markExecutionFailure, markExecutionCancelled, markExecutionTimeout, markReplanTriggered)
+  - 受影响步骤管理 (addImpactedStep, addImpactedSteps)
+  - 重试管理 (addRetryOutcome, updateRetryOutcome, markRetrySucceeded, markRetryFailed, markRetryExhausted)
+  - 重规划管理 (addReplanOutcome, updateReplanOutcome, markReplanSucceeded, markReplanFailed, markReplanExhausted)
+  - 存储函数 (createExecutionRecordStore, addExecutionRecord, updateExecutionRecord, getSessionRecords, getTraceRecords, getTaskRecords, queryExecutionRecords)
+  - 统计计算 (calculateExecutionStatistics)
+  - 序列化 (serializeExecutionRecord, deserializeExecutionRecord, serializeExecutionStore, deserializeExecutionStore)
+  - 调试格式化 (formatExecutionRecord, formatExecutionStatistics)
+
+### Testing:
+- 76 个单元测试通过 (failureRecording.test.ts)
+- 所有 391 个运行时测试通过
+- Build 成功
+
+### Notes:
+- 重命名函数以避免与 toolAuditLog.ts 冲突:
+  - createResultSummary -> createExecutionResultSummary
+  - markSuccess -> markExecutionSuccess
+  - markFailure -> markExecutionFailure
+  - markCancelled -> markExecutionCancelled
+  - markTimeout -> markExecutionTimeout
+- 支持按状态、失败类别、时间范围查询记录
+- 支持可恢复失败的筛选
+- 提供成功率、失败率、重试成功率、重规划成功率统计
+
 ## [2026-03-23] - Task: Tool Audit Log (Story 48.2)
 
 ### 铁律合规检查：

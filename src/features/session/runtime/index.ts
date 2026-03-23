@@ -486,3 +486,95 @@ export {
   formatAuditEntry,
   formatAuditStatistics,
 } from './toolAuditLog'
+
+// Failure and Result Recording (Task 82: Story 48.3)
+export {
+  // Types
+  type ResultStatus,
+  type FailureCategory,
+  type RetryOutcomeStatus,
+  type ReplanOutcomeStatus,
+  type ImpactedStep,
+  type FailureReason,
+  type ResultSummary,
+  type RetryOutcome,
+  type ReplanOutcome,
+  type TaskExecutionRecord,
+  type ExecutionRecordStore,
+  type ExecutionQueryOptions,
+  type ExecutionStatistics,
+  type SerializableExecutionRecordStore,
+
+  // Constants
+  RECORD_ID_PREFIX,
+  OUTCOME_ID_PREFIX,
+  FAILURE_CATEGORIES,
+  RESULT_STATUSES,
+  RECOVERABLE_FAILURES,
+
+  // ID Generation
+  generateRecordId,
+  generateOutcomeId,
+  isValidRecordId,
+  isValidOutcomeId,
+
+  // Factory Functions
+  createImpactedStep,
+  createFailureReason,
+  createExecutionResultSummary,
+  createRetryOutcome,
+  createReplanOutcome,
+  createTaskExecutionRecord,
+
+  // Status Update Functions
+  markExecutionSuccess,
+  markExecutionPartialSuccess,
+  markExecutionFailure,
+  markExecutionCancelled,
+  markExecutionTimeout,
+  markReplanTriggered,
+
+  // Impacted Steps Management
+  addImpactedStep,
+  addImpactedSteps,
+
+  // Retry Management
+  addRetryOutcome,
+  updateRetryOutcome,
+  markRetrySucceeded,
+  markRetryFailed,
+  markRetryExhausted,
+
+  // Replan Management
+  addReplanOutcome,
+  updateReplanOutcome,
+  markReplanSucceeded,
+  markReplanFailed,
+  markReplanExhausted,
+
+  // Store Functions
+  createExecutionRecordStore,
+  addExecutionRecord,
+  updateExecutionRecord,
+  getExecutionRecord,
+  getSessionRecords,
+  getTraceRecords,
+  getTaskRecords,
+  queryExecutionRecords,
+  getRecordsByStatus,
+  getFailedRecords,
+  getRecoverableFailures,
+
+  // Statistics
+  calculateExecutionStatistics,
+
+  // Serialization
+  serializeExecutionRecord,
+  deserializeExecutionRecord,
+  serializeExecutionStore,
+  deserializeExecutionStore,
+
+  // Debug Formatting
+  formatExecutionRecord,
+  formatExecutionStatistics,
+} from './failureRecording'
