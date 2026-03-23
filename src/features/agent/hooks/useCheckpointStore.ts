@@ -1,9 +1,11 @@
 /**
  * useCheckpointStore - 检查点状态管理 Hook
  * Story 4.7 - 检查点自动创建
+ * Story 4.8 - 检查点回滚功能
  * 
  * 管理会话检查点，支持在消息提交时自动创建检查点
  * 捕获会话元数据和工作状态，支持后续恢复
+ * 支持多种恢复模式，记录恢复历史
  * 
  * 铁律合规：
  * - ARCH: 分层架构，复用消息模型
@@ -25,6 +27,34 @@ export type CheckpointType = 'auto' | 'manual' | 'pre_action'
  * 检查点状态
  */
 export type CheckpointStatus = 'active' | 'restored' | 'archived'
+
+/**
+ * 恢复模式
+ */
+export type RestoreMode = 'conversation_only' | 'conversation_plus_content'
+
+/**
+ * 恢复记录
+ */
+export interface RestoreRecord {
+  id: string
+  checkpointId: string
+  sessionId: string
+  mode: RestoreMode
+  restoredAt: number
+  // 恢复前的状态（用于撤销）
+  previousState: {
+    messageCount: number
+    hadWorkingState: boolean
+  }
+  // 恢复后的状态
+  resultState: {
+    messageCount: number
+    restoredWorkingState: boolean
+  }
+  // 用户确认
+  userConfirmed: boolean
+}
 
 /**
  * 工作状态快照
@@ -104,6 +134,8 @@ export interface CheckpointStoreState {
   checkpoints: Record<string, Checkpoint>
   // 每个会话的检查点 ID 列表
   sessionCheckpoints: Record<string, string[]>
+  // 恢复历史记录
+  restoreHistory: RestoreRecord[]
   // 自动创建检查点设置
   autoCheckpointEnabled: boolean
   // 最大检查点数量（每个会话）
@@ -112,14 +144,16 @@ export interface CheckpointStoreState {
   // Actions
   createCheckpoint: (params: CreateCheckpointParams) => Checkpoint
   deleteCheckpoint: (checkpointId: string) => void
-  restoreCheckpoint: (checkpointId: string) => Checkpoint | null
+  restoreCheckpoint: (checkpointId: string, mode: RestoreMode, previousMessageCount: number) => RestoreRecord | null
   archiveCheckpoint: (checkpointId: string) => void
   getSessionCheckpoints: (sessionId: string) => Checkpoint[]
   getLatestCheckpoint: (sessionId: string) => Checkpoint | null
+  getRestoreHistory: (sessionId: string) => RestoreRecord[]
   setAutoCheckpointEnabled: (enabled: boolean) => void
   setMaxCheckpointsPerSession: (max: number) => void
   clearSessionCheckpoints: (sessionId: string) => void
   clearAllCheckpoints: () => void
+  clearRestoreHistory: (sessionId?: string) => void
 }
 
 /**
@@ -135,10 +169,23 @@ export interface CreateCheckpointParams {
   label?: string
 }
 
+/**
+ * 恢复检查点参数
+ */
+export interface RestoreCheckpointParams {
+  checkpointId: string
+  mode: RestoreMode
+  previousMessageCount: number
+}
+
 // ==================== Helper Functions ====================
 
 function generateCheckpointId(): string {
   return `cp_${crypto.randomUUID()}`
+}
+
+function generateRestoreId(): string {
+  return `restore_${crypto.randomUUID()}`
 }
 
 /**
@@ -179,6 +226,7 @@ function pruneOldCheckpoints(
 const initialState = {
   checkpoints: {},
   sessionCheckpoints: {},
+  restoreHistory: [],
   autoCheckpointEnabled: true,
   maxCheckpointsPerSession: 10,
 }
@@ -274,16 +322,37 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
       
       // ==================== Restore Checkpoint ====================
       
-      restoreCheckpoint: (checkpointId: string) => {
+      restoreCheckpoint: (checkpointId: string, mode: RestoreMode, previousMessageCount: number) => {
         const checkpoint = get().checkpoints[checkpointId]
         if (!checkpoint || checkpoint.status !== 'active') return null
+        
+        const restoreId = generateRestoreId()
+        const now = Date.now()
+        
+        // 创建恢复记录
+        const restoreRecord: RestoreRecord = {
+          id: restoreId,
+          checkpointId,
+          sessionId: checkpoint.sessionId,
+          mode,
+          restoredAt: now,
+          previousState: {
+            messageCount: previousMessageCount,
+            hadWorkingState: false, // 由调用方提供
+          },
+          resultState: {
+            messageCount: checkpoint.messageIndex,
+            restoredWorkingState: mode === 'conversation_plus_content' && !!checkpoint.workingState,
+          },
+          userConfirmed: true,
+        }
         
         set((state) => {
           // 更新检查点状态
           const updatedCheckpoint: Checkpoint = {
             ...checkpoint,
             status: 'restored',
-            restoredAt: Date.now(),
+            restoredAt: now,
           }
           
           return {
@@ -291,10 +360,11 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
               ...state.checkpoints,
               [checkpointId]: updatedCheckpoint,
             },
+            restoreHistory: [...state.restoreHistory, restoreRecord],
           }
         })
         
-        return get().checkpoints[checkpointId] || null
+        return restoreRecord
       },
       
       // ==================== Archive Checkpoint ====================
@@ -343,6 +413,13 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
         return checkpoints[0] || null
       },
       
+      getRestoreHistory: (sessionId: string) => {
+        const state = get()
+        return state.restoreHistory
+          .filter(record => record.sessionId === sessionId)
+          .sort((a, b) => b.restoredAt - a.restoredAt)
+      },
+      
       // ==================== Settings ====================
       
       setAutoCheckpointEnabled: (enabled: boolean) => {
@@ -379,6 +456,18 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
         set({
           checkpoints: {},
           sessionCheckpoints: {},
+          restoreHistory: [],
+        })
+      },
+      
+      clearRestoreHistory: (sessionId?: string) => {
+        set((state) => {
+          if (sessionId) {
+            return {
+              restoreHistory: state.restoreHistory.filter(r => r.sessionId !== sessionId),
+            }
+          }
+          return { restoreHistory: [] }
         })
       },
     }),
@@ -388,6 +477,7 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
       partialize: (state) => ({
         checkpoints: state.checkpoints,
         sessionCheckpoints: state.sessionCheckpoints,
+        restoreHistory: state.restoreHistory,
         autoCheckpointEnabled: state.autoCheckpointEnabled,
         maxCheckpointsPerSession: state.maxCheckpointsPerSession,
       }),
@@ -423,6 +513,20 @@ export function useAutoCheckpointEnabled(): boolean {
  */
 export function useCheckpointCount(): number {
   return useCheckpointStore((state) => Object.keys(state.checkpoints).length)
+}
+
+/**
+ * 获取指定会话的恢复历史
+ */
+export function useRestoreHistory(sessionId: string): RestoreRecord[] {
+  return useCheckpointStore((state) => state.getRestoreHistory(sessionId))
+}
+
+/**
+ * 获取所有恢复历史
+ */
+export function useAllRestoreHistory(): RestoreRecord[] {
+  return useCheckpointStore((state) => state.restoreHistory)
 }
 
 // ==================== Export ====================

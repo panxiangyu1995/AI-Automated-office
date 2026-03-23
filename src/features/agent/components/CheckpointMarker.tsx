@@ -1,8 +1,10 @@
 /**
  * CheckpointMarker - 检查点标记组件
  * Story 4.7 - 检查点自动创建
+ * Story 4.8 - 检查点回滚功能
  * 
  * 在对话流中显示检查点标记，支持恢复到检查点
+ * 支持选择恢复模式（仅对话 / 对话+内容）
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
@@ -17,14 +19,17 @@ import {
   useSessionCheckpoints,
   useCheckpointStore,
   type Checkpoint, 
-  type CheckpointType 
+  type CheckpointType,
+  type RestoreMode
 } from '../hooks/useCheckpointStore'
+import { RestoreDialog } from './RestoreDialog'
 
 // ==================== Types ====================
 
 interface CheckpointMarkerProps {
   checkpoint: Checkpoint
-  onRestore?: (checkpoint: Checkpoint) => void
+  currentMessageCount: number
+  onRestore?: (checkpointId: string, mode: RestoreMode) => void
   onDelete?: (checkpointId: string) => void
   isExpanded?: boolean
   onToggleExpand?: () => void
@@ -84,22 +89,23 @@ function getStatusColor(status: Checkpoint['status']): string {
 
 export function CheckpointMarker({
   checkpoint,
+  currentMessageCount,
   onRestore,
   onDelete,
   isExpanded = false,
   onToggleExpand,
 }: CheckpointMarkerProps) {
-  const [showConfirmRestore, setShowConfirmRestore] = useState(false)
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   
-  const handleRestore = () => {
-    if (showConfirmRestore) {
-      onRestore?.(checkpoint)
-      setShowConfirmRestore(false)
-    } else {
-      setShowConfirmRestore(true)
-      setShowConfirmDelete(false)
-    }
+  const handleRestoreClick = () => {
+    setShowRestoreDialog(true)
+    setShowConfirmDelete(false)
+  }
+  
+  const handleRestore = (checkpointId: string, mode: RestoreMode) => {
+    onRestore?.(checkpointId, mode)
+    setShowRestoreDialog(false)
   }
   
   const handleDelete = () => {
@@ -108,12 +114,11 @@ export function CheckpointMarker({
       setShowConfirmDelete(false)
     } else {
       setShowConfirmDelete(true)
-      setShowConfirmRestore(false)
+      setShowRestoreDialog(false)
     }
   }
   
   const handleCancel = () => {
-    setShowConfirmRestore(false)
     setShowConfirmDelete(false)
   }
   
@@ -173,38 +178,15 @@ export function CheckpointMarker({
           {/* Actions */}
           <div className="flex items-center gap-2">
             {checkpoint.status === 'active' && (
-              <>
-                {showConfirmRestore ? (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={handleRestore}
-                      className="h-7 text-xs"
-                    >
-                      确认恢复
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCancel}
-                      className="h-7 text-xs"
-                    >
-                      取消
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRestore}
-                    className="h-7 text-xs gap-1"
-                  >
-                    <RotateCcw size={12} />
-                    恢复到此检查点
-                  </Button>
-                )}
-              </>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRestoreClick}
+                className="h-7 text-xs gap-1"
+              >
+                <RotateCcw size={12} />
+                恢复到此检查点
+              </Button>
             )}
             
             {showConfirmDelete ? (
@@ -239,6 +221,16 @@ export function CheckpointMarker({
           </div>
         </div>
       )}
+      
+      {/* Restore Dialog */}
+      {showRestoreDialog && (
+        <RestoreDialog
+          checkpoint={checkpoint}
+          currentMessageCount={currentMessageCount}
+          onRestore={handleRestore}
+          onCancel={() => setShowRestoreDialog(false)}
+        />
+      )}
     </div>
   )
 }
@@ -247,10 +239,11 @@ export function CheckpointMarker({
 
 interface CheckpointListProps {
   sessionId: string
-  onRestore?: (checkpoint: Checkpoint) => void
+  currentMessageCount: number
+  onRestore?: (checkpointId: string, mode: RestoreMode) => void
 }
 
-export function CheckpointList({ sessionId, onRestore }: CheckpointListProps) {
+export function CheckpointList({ sessionId, currentMessageCount, onRestore }: CheckpointListProps) {
   const checkpoints = useSessionCheckpoints(sessionId)
   const deleteCheckpoint = useCheckpointStore((state) => state.deleteCheckpoint)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -269,6 +262,7 @@ export function CheckpointList({ sessionId, onRestore }: CheckpointListProps) {
         <CheckpointMarker
           key={checkpoint.id}
           checkpoint={checkpoint}
+          currentMessageCount={currentMessageCount}
           onRestore={onRestore}
           onDelete={handleDelete}
           isExpanded={expandedId === checkpoint.id}

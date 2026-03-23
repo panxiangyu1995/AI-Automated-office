@@ -1,4 +1,43 @@
 
+## [2026-03-23] - Task: Checkpoint Restore (Story 4.8)
+
+### 铁律合规检查：
+- PRD 合规：FR17-6, FR17-7, FR17-8, FR17-9 - 检查点回滚功能
+- 架构合规：ADR-037 - Agent 运行时追踪
+- NFR 合规：NFR-23 - 检查点可靠性
+
+### What was done:
+- 更新 useCheckpointStore.ts：
+  - 添加 RestoreMode 类型（conversation_only / conversation_plus_content）
+  - 添加 RestoreRecord 接口（恢复记录跟踪）
+  - 更新 restoreCheckpoint 方法签名
+  - 添加 getRestoreHistory / clearRestoreHistory 方法
+  - 添加 useRestoreHistory / useAllRestoreHistory 选择器
+  - 更新持久化配置包含 restoreHistory
+
+- 创建 RestoreDialog.tsx 组件：
+  - 恢复模式选择（仅对话 / 对话+工作状态）
+  - 显示将要删除的消息数量
+  - 显示恢复后的预期结果
+  - 警告提示（不可逆操作）
+
+- 更新 CheckpointMarker.tsx：
+  - 更新 props 接口支持 currentMessageCount
+  - 集成 RestoreDialog 组件
+  - 更新恢复操作流程
+
+- 更新 CheckpointList 组件支持新的恢复签名
+
+### Testing:
+- lint 检查通过（现有警告不影响）
+- build 成功
+
+### Notes:
+- 恢复模式说明：
+  - conversation_only：仅恢复消息，删除检查点之后的消息
+  - conversation_plus_content：恢复消息+工作状态
+- 恢复记录保存在 restoreHistory 中，可用于审计和统计
+
 ## [2026-03-23] - Task: Checkpoint Auto Create (Story 4.7)
 
 ### 铁律合规检查：
