@@ -1,4 +1,48 @@
 
+## [2026-03-23] - Task: Knowledge Retrieval Baseline (Story 47.4)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 知识检索基线
+- 架构合规：ADR-037 - 运行时上下文
+- UX 合规：UX-01, UX-04 - 上下文传递
+
+### What was done:
+- 创建 knowledgeRetrieval.ts - 知识检索基线模块
+  - KnowledgeSourceType: 知识源类型 (document, database, api, vector_store, rule_set, template, knowledge_graph)
+  - KnowledgeScope: 知识范围 (tenant, department, user, session, global)
+  - RetrievalStatus: 检索状态 (pending, querying, success, partial, failed, cancelled)
+  - KnowledgeSourceRef: 知识源引用
+  - RetrievalRequest: 检索请求
+  - RetrievalOptions: 检索选项
+  - RetrievalFilter: 检索过滤器
+  - RetrievedItem: 检索结果项
+  - RetrievalResult: 检索结果
+  - RetrievalAuditEntry: 检索审计条目
+  - KnowledgeContextInjection: 知识上下文注入
+
+- 功能实现：
+  - ID 生成 (generateRequestId, generateItemId, generateAuditId, generateInjectionId)
+  - 知识源管理 (createKnowledgeSource, filterSourcesByScope, sortSourcesByPriority)
+  - 检索请求 (createRetrievalRequest, validateRetrievalRequest)
+  - 检索结果 (createRetrievedItem, createRetrievalResult, filterByMinScore, sortByScore, rankItems, limitResults)
+  - 审计功能 (createAuditEntry)
+  - 上下文注入 (createContextInjection, formatForRuntimeContext, formatForPlannerContext, formatForToolRuntime)
+  - 查询功能 (getItemsBySource, getItemsBySourceType, getItemsAboveScore, searchItemsByContent)
+  - 序列化 (serializeRequest, deserializeRequest, serializeResult, deserializeResult, validateRetrievalResult)
+  - Mock检索 (mockRetrieve) 用于测试
+
+### Testing:
+- 65 个单元测试通过 (knowledgeRetrieval.test.ts)
+- 212 个运行时模块测试全部通过
+- TypeScript 检查通过
+- Build 成功
+
+### Notes:
+- 按租户和部门过滤知识源
+- 支持多种排序策略 (relevance, recency, priority, hybrid)
+- 提供运行时、规划器和工具三种上下文格式
+- 审计条目支持完整的生命周期追踪
+
 ## [2026-03-23] - Task: Session Memory Summary (Story 47.3)
 
 ### 铁律合规检查：

@@ -291,3 +291,67 @@ export {
   deserializeSummary,
   validateSummary,
 } from './sessionMemorySummary'
+
+// Knowledge Retrieval Baseline (Task 79: Story 47.4)
+export {
+  // Types
+  type KnowledgeSourceType,
+  type KnowledgeScope,
+  type RetrievalStatus,
+  type KnowledgeSourceRef,
+  type RetrievalRequest,
+  type RetrievalOptions,
+  type RetrievalFilter,
+  type RetrievedItem,
+  type RetrievalResult,
+  type RetrievalAuditEntry,
+  type KnowledgeContextInjection,
+
+  // ID generation
+  generateRequestId,
+  generateItemId,
+  generateAuditId,
+  generateInjectionId,
+
+  // Knowledge source functions
+  createKnowledgeSource,
+  filterSourcesByScope,
+  sortSourcesByPriority,
+
+  // Retrieval request functions
+  createRetrievalRequest,
+  validateRetrievalRequest,
+
+  // Retrieval result functions
+  createRetrievedItem,
+  createRetrievalResult,
+  filterByMinScore,
+  sortByScore,
+  rankItems,
+  limitResults,
+
+  // Audit functions
+  createAuditEntry,
+
+  // Context injection functions
+  createContextInjection,
+  formatForRuntimeContext,
+  formatForPlannerContext,
+  formatForToolRuntime,
+
+  // Query functions
+  getItemsBySource,
+  getItemsBySourceType,
+  getItemsAboveScore,
+  searchItemsByContent,
+
+  // Serialization
+  serializeRequest,
+  deserializeRequest,
+  serializeResult,
+  deserializeResult,
+  validateRetrievalResult,
+
+  // Mock
+  mockRetrieve,
+} from './knowledgeRetrieval'
