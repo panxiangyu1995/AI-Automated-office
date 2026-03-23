@@ -1,4 +1,33 @@
 
+## [2026-03-24] - Task 18: Story 5.4 - 工具调用失败处理
+
+### 铁律合规检查：
+- PRD 合规：FR71, FR72
+- 架构合规：ADR-017, ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 ToolFailureHandling.tsx 组件
+  - ErrorReasonDisplay: 规范化错误原因显示
+  - FailureGuidance: 下一步操作指引
+  - FallbackResultInput: 用户后备结果输入
+  - RetryHistory: 重试历史记录
+  - FailureSummaryCard: 失败摘要卡片
+- 支持错误类型检测和分类
+- 支持自动和手动重试
+- 支持用户后备结果输入
+- 支持错误原因规范化和下一步指引
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 遵循分层架构设计
+
+---
+
 ## [2026-03-24] - Task: Tool Call Detail (Story 5.3)
 
 ### 铁律合规检查：

@@ -50,3 +50,15 @@ export type {
 } from './components/ToolCallStatusDisplay'
 export { ToolCallDetailDialog } from './components/ToolCallDetailDialog'
 export type { ToolCallDetailDialogProps } from './components/ToolCallDetailDialog'
+export {
+  ToolFailureHandling,
+  ToolFailureCard,
+  BatchFailureHandling,
+  ErrorType,
+} from './components/ToolFailureHandling'
+export type {
+  ToolFailureHandlingProps,
+  FailureGuidanceProps,
+  FallbackResultInputProps,
+  BatchFailureHandlingProps,
+} from './components/ToolFailureHandling'
