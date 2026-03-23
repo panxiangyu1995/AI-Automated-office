@@ -81,3 +81,11 @@ export type {
   HandshakeStatus,
   CapabilityType,
 } from './components/ModuleCapabilityStatus'
+export { ToolRetryPolicy } from './components/ToolRetryPolicy'
+export type {
+  ToolRetryPolicyProps,
+  RetryPolicyConfig,
+  ErrorRetryConfig,
+  RetryableErrorType,
+  BackoffStrategy,
+} from './components/ToolRetryPolicy'
