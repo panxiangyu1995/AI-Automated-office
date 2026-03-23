@@ -89,3 +89,11 @@ export type {
   RetryableErrorType,
   BackoffStrategy,
 } from './components/ToolRetryPolicy'
+export { ToolDowngradePolicy, createDefaultToolDowngradePolicy } from './components/ToolDowngradePolicy'
+export type {
+  ToolDowngradePolicyProps,
+  ToolDowngradePolicyConfig,
+  DowngradeConfig,
+  DowngradeBehavior,
+  DowngradeTrigger,
+} from './components/ToolDowngradePolicy'
