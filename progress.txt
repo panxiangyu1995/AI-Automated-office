@@ -1,4 +1,44 @@
 
+## [2026-03-24] - Task: Tool Call Status Display (Story 5.2)
+
+### 铁律合规检查：
+- PRD 合规：FR69 - 工具调用状态展示
+- 架构合规：ADR-017, ADR-037 - 工具系统架构
+- NFR 合规：NFR8-11 - 可观测性
+- UX 合规：UX-01, UX-04 - VSCode风格、Shadcn/ui
+
+### What was done:
+- 创建 ToolCallStatusDisplay.tsx 组件：
+  - ToolCallStatusDisplay: 工具调用状态卡片组件
+    - 显示工具调用开始和运行状态
+    - 成功或失败时更新卡片
+    - 保持状态与流式运行时事件同步
+    - 支持重试、取消、查看详情操作
+    - 参数展示和结果展示
+    - 执行进度实时显示
+
+  - ToolCallStatusStream: 多工具调用状态流组件
+    - 按状态排序显示
+    - 支持最大显示数量限制
+
+  - ToolCallCard: 简化的工具调用卡片
+
+  - ExecutionProgress: 执行进度子组件
+  - ExecutionResult: 执行结果子组件
+
+- 修复的问题：
+  - 修复 TypeScript 类型推断问题（unknown 类型）
+  - 安装 dropdown-menu Shadcn 组件
+  - 修复 toolCallId 到 executionId 属性名称
+
+### Testing:
+- npm run build 成功通过
+
+### Notes:
+- 复用 ToolCallPart, ToolResultPart 消息模型
+- 集成 ToolCallLifecycleEvent 生命周期事件
+- 使用三元运算符避免 && 短路类型问题
+
 ## [2026-03-24] - Task: Tool Registry Management (Story 5.1)
 
 ### 铁律合规检查：

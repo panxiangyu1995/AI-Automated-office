@@ -39,3 +39,12 @@ export {
 // Components
 export { ToolRegistryPanel } from './components/ToolRegistryPanel'
 export type { ToolRegistryPanelProps } from './components/ToolRegistryPanel'
+export {
+  ToolCallStatusDisplay,
+  ToolCallStatusStream,
+  ToolCallCard,
+} from './components/ToolCallStatusDisplay'
+export type {
+  ToolCallStatusDisplayProps,
+  ToolCallStatusStreamProps,
+} from './components/ToolCallStatusDisplay'
