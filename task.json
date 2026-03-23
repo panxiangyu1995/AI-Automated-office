@@ -18,10 +18,19 @@
         "Render user and assistant messages with streaming updates",
         "Support markdown and code display in responses"
       ],
-      "frs_covered": ["FR9"],
-      "nfrs_covered": ["NFR3"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
+      "frs_covered": [
+        "FR9"
+      ],
+      "nfrs_covered": [
+        "NFR3"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
       "dependencies": [],
       "passes": true
     },
@@ -37,11 +46,22 @@
         "Support rename and delete actions for sessions",
         "Bind UI state to the persisted runtime session store"
       ],
-      "frs_covered": ["FR10"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.1"],
+      "frs_covered": [
+        "FR10"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.1"
+      ],
       "passes": true
     },
     {
@@ -56,11 +76,22 @@
         "Support keyword and time-based lookup",
         "Allow safe deletion of archived conversations"
       ],
-      "frs_covered": ["FR11"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.2"],
+      "frs_covered": [
+        "FR11"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.2"
+      ],
       "passes": true
     },
     {
@@ -75,11 +106,23 @@
         "Support API key and relay mode selection",
         "Allow connection test from the UI"
       ],
-      "frs_covered": ["FR18", "FR19"],
-      "nfrs_covered": ["NFR29"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 4.3"],
+      "frs_covered": [
+        "FR18",
+        "FR19"
+      ],
+      "nfrs_covered": [
+        "NFR29"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.3"
+      ],
       "passes": true
     },
     {
@@ -94,11 +137,22 @@
         "Capture execution time and recurrence options",
         "Persist scheduled task definitions for later runtime execution"
       ],
-      "frs_covered": ["FR15"],
-      "nfrs_covered": ["NFR22"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.4"],
+      "frs_covered": [
+        "FR15"
+      ],
+      "nfrs_covered": [
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.4"
+      ],
       "passes": true
     },
     {
@@ -113,11 +167,22 @@
         "Render retry count and backoff behavior in execution history",
         "Provide clear terminal failure explanation to users"
       ],
-      "frs_covered": ["FR16"],
-      "nfrs_covered": ["NFR22"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.5"],
+      "frs_covered": [
+        "FR16"
+      ],
+      "nfrs_covered": [
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.5"
+      ],
       "passes": true
     },
     {
@@ -132,11 +197,24 @@
         "Capture session metadata and related working state",
         "Display checkpoint markers in the conversation stream"
       ],
-      "frs_covered": ["FR17-1", "FR17-2", "FR17-4"],
-      "nfrs_covered": ["NFR23"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.6"],
+      "frs_covered": [
+        "FR17-1",
+        "FR17-2",
+        "FR17-4"
+      ],
+      "nfrs_covered": [
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.6"
+      ],
       "passes": true
     },
     {
@@ -151,11 +229,25 @@
         "Support conversation-only and conversation-plus-content restore modes",
         "Record restore decisions into runtime history"
       ],
-      "frs_covered": ["FR17-6", "FR17-7", "FR17-8", "FR17-9"],
-      "nfrs_covered": ["NFR23"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.7"],
+      "frs_covered": [
+        "FR17-6",
+        "FR17-7",
+        "FR17-8",
+        "FR17-9"
+      ],
+      "nfrs_covered": [
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.7"
+      ],
       "passes": true
     },
     {
@@ -170,11 +262,24 @@
         "Create branch execution from the selected checkpoint",
         "Preserve original branch for comparison"
       ],
-      "frs_covered": ["FR17-11", "FR17-12", "FR17-13"],
-      "nfrs_covered": ["NFR23"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.8"],
+      "frs_covered": [
+        "FR17-11",
+        "FR17-12",
+        "FR17-13"
+      ],
+      "nfrs_covered": [
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.8"
+      ],
       "passes": true
     },
     {
@@ -189,11 +294,25 @@
         "Bind checkpoint operations to Git-backed history",
         "Store commit metadata for checkpoint inspection"
       ],
-      "frs_covered": ["FR17-14", "FR17-15", "FR17-17", "FR17-18"],
-      "nfrs_covered": ["NFR17"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 4.9"],
+      "frs_covered": [
+        "FR17-14",
+        "FR17-15",
+        "FR17-17",
+        "FR17-18"
+      ],
+      "nfrs_covered": [
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.9"
+      ],
       "passes": true
     },
     {
@@ -208,11 +327,26 @@
         "Allow deletion and retention marking",
         "Support automatic cleanup policy display and control"
       ],
-      "frs_covered": ["FR17-19", "FR17-20", "FR17-21", "FR17-22", "FR17-23"],
-      "nfrs_covered": ["NFR17"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.10"],
+      "frs_covered": [
+        "FR17-19",
+        "FR17-20",
+        "FR17-21",
+        "FR17-22",
+        "FR17-23"
+      ],
+      "nfrs_covered": [
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.10"
+      ],
       "passes": true
     },
     {
@@ -227,12 +361,28 @@
         "Trigger structured summary generation and recent-history retention",
         "Store compression output into session memory"
       ],
-      "frs_covered": ["FR-CTX-1", "FR-CTX-2", "FR-CTX-3", "FR-CTX-4", "FR-CTX-5"],
-      "nfrs_covered": ["NFR8-1"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.11"],
-      "passes": false
+      "frs_covered": [
+        "FR-CTX-1",
+        "FR-CTX-2",
+        "FR-CTX-3",
+        "FR-CTX-4",
+        "FR-CTX-5"
+      ],
+      "nfrs_covered": [
+        "NFR8-1"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.11"
+      ],
+      "passes": true
     },
     {
       "id": 13,
@@ -246,11 +396,23 @@
         "Display detailed token counts on demand",
         "Link the indicator to compression threshold status"
       ],
-      "frs_covered": ["FR-CTX-1", "FR-CTX-6"],
-      "nfrs_covered": ["NFR3"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.12"],
+      "frs_covered": [
+        "FR-CTX-1",
+        "FR-CTX-6"
+      ],
+      "nfrs_covered": [
+        "NFR3"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.12"
+      ],
       "passes": false
     },
     {
@@ -265,11 +427,25 @@
         "Render remembered key facts near the input surface",
         "Keep the hints consistent with actual stored memory state"
       ],
-      "frs_covered": ["FR-CTX-6", "FR-CTX-7", "FR14-2"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.13"],
+      "frs_covered": [
+        "FR-CTX-6",
+        "FR-CTX-7",
+        "FR14-2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.13"
+      ],
       "passes": false
     },
     {
@@ -284,11 +460,25 @@
         "Show tool descriptor metadata and availability",
         "Keep the management surface aligned with the common tool runtime"
       ],
-      "frs_covered": ["FR12", "FR13"],
-      "nfrs_covered": ["NFR8-6"],
-      "arch_covered": ["ADR-010", "ADR-017", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 4.14"],
+      "frs_covered": [
+        "FR12",
+        "FR13"
+      ],
+      "nfrs_covered": [
+        "NFR8-6"
+      ],
+      "arch_covered": [
+        "ADR-010",
+        "ADR-017",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 4.14"
+      ],
       "passes": false
     },
     {
@@ -303,11 +493,23 @@
         "Update cards on success or failure",
         "Keep status synchronized with streamed runtime events"
       ],
-      "frs_covered": ["FR69"],
-      "nfrs_covered": ["NFR8-11"],
-      "arch_covered": ["ADR-017", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.1"],
+      "frs_covered": [
+        "FR69"
+      ],
+      "nfrs_covered": [
+        "NFR8-11"
+      ],
+      "arch_covered": [
+        "ADR-017",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.1"
+      ],
       "passes": false
     },
     {
@@ -322,11 +524,23 @@
         "Render structured result and raw output references",
         "Support copy and trace navigation from the UI"
       ],
-      "frs_covered": ["FR70"],
-      "nfrs_covered": ["NFR8-11"],
-      "arch_covered": ["ADR-017", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.2"],
+      "frs_covered": [
+        "FR70"
+      ],
+      "nfrs_covered": [
+        "NFR8-11"
+      ],
+      "arch_covered": [
+        "ADR-017",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.2"
+      ],
       "passes": false
     },
     {
@@ -341,11 +555,24 @@
         "Allow user-supplied fallback result entry where permitted",
         "Show normalized error reasons and next-step guidance"
       ],
-      "frs_covered": ["FR71", "FR72"],
-      "nfrs_covered": ["NFR22"],
-      "arch_covered": ["ADR-017", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.3"],
+      "frs_covered": [
+        "FR71",
+        "FR72"
+      ],
+      "nfrs_covered": [
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-017",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.3"
+      ],
       "passes": false
     },
     {
@@ -360,11 +587,28 @@
         "Capture correction rationale from the user",
         "Write correction rules into the memory and prompt pipeline"
       ],
-      "frs_covered": ["FR73", "FR81", "FR82", "FR83", "FR85", "FR86"],
-      "nfrs_covered": ["NFR8-3"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.4"],
+      "frs_covered": [
+        "FR73",
+        "FR81",
+        "FR82",
+        "FR83",
+        "FR85",
+        "FR86"
+      ],
+      "nfrs_covered": [
+        "NFR8-3"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.4"
+      ],
       "passes": false
     },
     {
@@ -379,11 +623,23 @@
         "Show tool, skill, and MCP counts and health state",
         "Display handshake state with the main Agent"
       ],
-      "frs_covered": ["FR74", "FR75"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-017"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 5.5"],
+      "frs_covered": [
+        "FR74",
+        "FR75"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-017"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 5.5"
+      ],
       "passes": false
     },
     {
@@ -398,11 +654,22 @@
         "Support per-error-type retry handling",
         "Persist retry settings for runtime enforcement"
       ],
-      "frs_covered": ["FR76"],
-      "nfrs_covered": ["NFR22"],
-      "arch_covered": ["ADR-017"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 5.6"],
+      "frs_covered": [
+        "FR76"
+      ],
+      "nfrs_covered": [
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-017"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.6"
+      ],
       "passes": false
     },
     {
@@ -417,11 +684,22 @@
         "Expose downgrade hints for the user",
         "Persist downgrade rules for runtime use"
       ],
-      "frs_covered": ["FR77"],
-      "nfrs_covered": ["NFR35"],
-      "arch_covered": ["ADR-017"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 5.7"],
+      "frs_covered": [
+        "FR77"
+      ],
+      "nfrs_covered": [
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-017"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.7"
+      ],
       "passes": false
     },
     {
@@ -436,11 +714,30 @@
         "Render confirmation cards with risk detail",
         "Support approve, modify, or cancel outcomes"
       ],
-      "frs_covered": ["FR470", "FR480", "FR481", "FR482", "FR484", "FR486", "FR487"],
-      "nfrs_covered": ["NFR8-7", "NFR23-5"],
-      "arch_covered": ["ADR-019", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.8"],
+      "frs_covered": [
+        "FR470",
+        "FR480",
+        "FR481",
+        "FR482",
+        "FR484",
+        "FR486",
+        "FR487"
+      ],
+      "nfrs_covered": [
+        "NFR8-7",
+        "NFR23-5"
+      ],
+      "arch_covered": [
+        "ADR-019",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.8"
+      ],
       "passes": false
     },
     {
@@ -455,11 +752,25 @@
         "Block blacklisted operations before execution",
         "Show block reason and audit trail to users and admins"
       ],
-      "frs_covered": ["FR493", "FR494", "FR495", "FR498"],
-      "nfrs_covered": ["NFR23-6"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 5.9"],
+      "frs_covered": [
+        "FR493",
+        "FR494",
+        "FR495",
+        "FR498"
+      ],
+      "nfrs_covered": [
+        "NFR23-6"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.9"
+      ],
       "passes": false
     },
     {
@@ -474,11 +785,24 @@
         "Explain missing permission conditions to the user",
         "Keep permission decisions visible in execution history"
       ],
-      "frs_covered": ["FR470", "FR471"],
-      "nfrs_covered": ["NFR16", "NFR23-5"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.10"],
+      "frs_covered": [
+        "FR470",
+        "FR471"
+      ],
+      "nfrs_covered": [
+        "NFR16",
+        "NFR23-5"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.10"
+      ],
       "passes": false
     },
     {
@@ -493,11 +817,23 @@
         "Show status, latency, and retention information",
         "Support trace and detail navigation from the history view"
       ],
-      "frs_covered": ["FR79", "FR80"],
-      "nfrs_covered": ["NFR23-8"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.11"],
+      "frs_covered": [
+        "FR79",
+        "FR80"
+      ],
+      "nfrs_covered": [
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.11"
+      ],
       "passes": false
     },
     {
@@ -512,11 +848,27 @@
         "Provide tenant-level usage statistics for admins",
         "Allow report export for review and governance"
       ],
-      "frs_covered": ["FR500", "FR502", "FR504", "FR505"],
-      "nfrs_covered": ["NFR8-11", "NFR23-8"],
-      "arch_covered": ["ADR-023", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.12"],
+      "frs_covered": [
+        "FR500",
+        "FR502",
+        "FR504",
+        "FR505"
+      ],
+      "nfrs_covered": [
+        "NFR8-11",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-023",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.12"
+      ],
       "passes": false
     },
     {
@@ -531,11 +883,25 @@
         "Restore memory state when sessions resume",
         "Display session memory continuity in the UI"
       ],
-      "frs_covered": ["FR14-2", "FR260"],
-      "nfrs_covered": ["NFR8-1", "NFR16-1"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 5.13"],
+      "frs_covered": [
+        "FR14-2",
+        "FR260"
+      ],
+      "nfrs_covered": [
+        "NFR8-1",
+        "NFR16-1"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 5.13"
+      ],
       "passes": false
     },
     {
@@ -550,11 +916,24 @@
         "Apply preferences during generation",
         "Provide preference editing UI"
       ],
-      "frs_covered": ["FR14-1", "FR261"],
-      "nfrs_covered": ["NFR16-1"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 6.1"],
+      "frs_covered": [
+        "FR14-1",
+        "FR261"
+      ],
+      "nfrs_covered": [
+        "NFR16-1"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 6.1"
+      ],
       "passes": false
     },
     {
@@ -569,11 +948,24 @@
         "Resolve conflicts against existing memory state",
         "Update summaries and cognitive state after session stop"
       ],
-      "frs_covered": ["FR262", "FR263", "FR264"],
-      "nfrs_covered": ["NFR8-4"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-04"],
-      "dependencies": ["Story 6.2"],
+      "frs_covered": [
+        "FR262",
+        "FR263",
+        "FR264"
+      ],
+      "nfrs_covered": [
+        "NFR8-4"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 6.2"
+      ],
       "passes": false
     },
     {
@@ -588,11 +980,26 @@
         "Expose retrieval results in the product UI",
         "Enable `agent_cognitive_tunnel_state` reconstruction behind audit"
       ],
-      "frs_covered": ["FR265", "FR266", "FR267"],
-      "nfrs_covered": ["NFR8-1", "NFR28-1"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 6.3"],
+      "frs_covered": [
+        "FR265",
+        "FR266",
+        "FR267"
+      ],
+      "nfrs_covered": [
+        "NFR8-1",
+        "NFR28-1"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 6.3"
+      ],
       "passes": false
     },
     {
@@ -607,11 +1014,26 @@
         "Manage access scope for documents and collections",
         "Support hybrid retrieval over enterprise knowledge"
       ],
-      "frs_covered": ["FR280", "FR281", "FR282", "FR283"],
-      "nfrs_covered": ["NFR8-2", "NFR27"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 6.4"],
+      "frs_covered": [
+        "FR280",
+        "FR281",
+        "FR282",
+        "FR283"
+      ],
+      "nfrs_covered": [
+        "NFR8-2",
+        "NFR27"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 6.4"
+      ],
       "passes": false
     },
     {
@@ -626,11 +1048,29 @@
         "Extract structured correction rules",
         "Inject applicable rules into future execution"
       ],
-      "frs_covered": ["FR83", "FR84", "FR85", "FR86", "FR87", "FR88"],
-      "nfrs_covered": ["NFR8-3", "NFR16-3"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 6.5"],
+      "frs_covered": [
+        "FR83",
+        "FR84",
+        "FR85",
+        "FR86",
+        "FR87",
+        "FR88"
+      ],
+      "nfrs_covered": [
+        "NFR8-3",
+        "NFR16-3"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 6.5"
+      ],
       "passes": false
     },
     {
@@ -645,11 +1085,26 @@
         "Support edit, delete, export, and backup actions",
         "Show history and ownership boundaries for memory records"
       ],
-      "frs_covered": ["FR268", "FR269", "FR270"],
-      "nfrs_covered": ["NFR16-1", "NFR16-2"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 6.6"],
+      "frs_covered": [
+        "FR268",
+        "FR269",
+        "FR270"
+      ],
+      "nfrs_covered": [
+        "NFR16-1",
+        "NFR16-2"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 6.6"
+      ],
       "passes": false
     },
     {
@@ -664,11 +1119,27 @@
         "Configure auto-extraction, retention, and hook capture policy",
         "Configure enterprise knowledge access scope controls"
       ],
-      "frs_covered": ["FR330", "FR331", "FR332", "FR333", "FR334"],
-      "nfrs_covered": ["NFR28-3"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 6.7"],
+      "frs_covered": [
+        "FR330",
+        "FR331",
+        "FR332",
+        "FR333",
+        "FR334"
+      ],
+      "nfrs_covered": [
+        "NFR28-3"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 6.7"
+      ],
       "passes": false
     },
     {
@@ -683,11 +1154,24 @@
         "Detect ambiguity and request clarification when needed",
         "Feed structured intent into planner and tool selection flows"
       ],
-      "frs_covered": ["FR400", "FR401", "FR402"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 6.8"],
+      "frs_covered": [
+        "FR400",
+        "FR401",
+        "FR402"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 6.8"
+      ],
       "passes": false
     },
     {
@@ -702,11 +1186,23 @@
         "Extract structured content from supported file types",
         "Bind results into planner and memory pipelines"
       ],
-      "frs_covered": ["FR403", "FR404"],
-      "nfrs_covered": ["NFR4"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.1"],
+      "frs_covered": [
+        "FR403",
+        "FR404"
+      ],
+      "nfrs_covered": [
+        "NFR4"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.1"
+      ],
       "passes": false
     },
     {
@@ -721,11 +1217,24 @@
         "Capture dependency and ordering information for steps",
         "Present plan output before or during execution when required"
       ],
-      "frs_covered": ["FR410", "FR411", "FR414"],
-      "nfrs_covered": ["NFR8-8"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.2"],
+      "frs_covered": [
+        "FR410",
+        "FR411",
+        "FR414"
+      ],
+      "nfrs_covered": [
+        "NFR8-8"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.2"
+      ],
       "passes": false
     },
     {
@@ -740,11 +1249,23 @@
         "Record tool selection rationale",
         "Expose selection outcomes for debugging and audit"
       ],
-      "frs_covered": ["FR412"],
-      "nfrs_covered": ["NFR8-6"],
-      "arch_covered": ["ADR-017", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.3"],
+      "frs_covered": [
+        "FR412"
+      ],
+      "nfrs_covered": [
+        "NFR8-6"
+      ],
+      "arch_covered": [
+        "ADR-017",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.3"
+      ],
       "passes": false
     },
     {
@@ -759,11 +1280,23 @@
         "Replan within bounded policy limits",
         "Explain plan changes to the user"
       ],
-      "frs_covered": ["FR413", "FR415"],
-      "nfrs_covered": ["NFR22"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.4"],
+      "frs_covered": [
+        "FR413",
+        "FR415"
+      ],
+      "nfrs_covered": [
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.4"
+      ],
       "passes": false
     },
     {
@@ -778,11 +1311,23 @@
         "Interrupt execution on loop threshold",
         "Show loop reason and recovery path"
       ],
-      "frs_covered": ["FR420"],
-      "nfrs_covered": ["NFR8-5", "NFR23-2"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.5"],
+      "frs_covered": [
+        "FR420"
+      ],
+      "nfrs_covered": [
+        "NFR8-5",
+        "NFR23-2"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.5"
+      ],
       "passes": false
     },
     {
@@ -797,11 +1342,24 @@
         "Support user interruption entry points",
         "Show boundary termination causes in runtime history"
       ],
-      "frs_covered": ["FR421", "FR422", "FR423"],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.6"],
+      "frs_covered": [
+        "FR421",
+        "FR422",
+        "FR423"
+      ],
+      "nfrs_covered": [
+        "NFR23-1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.6"
+      ],
       "passes": false
     },
     {
@@ -816,11 +1374,24 @@
         "Create sub-agent execution branches under the common runtime",
         "Show sub-agent state and results to the user"
       ],
-      "frs_covered": ["FR416", "FR450", "FR453"],
-      "nfrs_covered": ["NFR8-12"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.7"],
+      "frs_covered": [
+        "FR416",
+        "FR450",
+        "FR453"
+      ],
+      "nfrs_covered": [
+        "NFR8-12"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.7"
+      ],
       "passes": false
     },
     {
@@ -835,11 +1406,23 @@
         "Resume sub-agent execution after restart or interruption",
         "Keep parent-child execution history consistent"
       ],
-      "frs_covered": ["FR454", "FR455"],
-      "nfrs_covered": ["NFR23-4"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 7.8"],
+      "frs_covered": [
+        "FR454",
+        "FR455"
+      ],
+      "nfrs_covered": [
+        "NFR23-4"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.8"
+      ],
       "passes": false
     },
     {
@@ -854,11 +1437,27 @@
         "Store provider credentials securely",
         "Test provider connectivity from the control plane"
       ],
-      "frs_covered": ["FR800", "FR801", "FR802", "FR803", "FR804"],
-      "nfrs_covered": ["NFR29", "NFR15"],
-      "arch_covered": ["ADR-038"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 7.9"],
+      "frs_covered": [
+        "FR800",
+        "FR801",
+        "FR802",
+        "FR803",
+        "FR804"
+      ],
+      "nfrs_covered": [
+        "NFR29",
+        "NFR15"
+      ],
+      "arch_covered": [
+        "ADR-038"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 7.9"
+      ],
       "passes": false
     },
     {
@@ -873,11 +1472,26 @@
         "Support model parameter configuration",
         "Persist effective default selection"
       ],
-      "frs_covered": ["FR805", "FR806", "FR807", "FR808", "FR809"],
-      "nfrs_covered": ["NFR29"],
-      "arch_covered": ["ADR-038"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.1"],
+      "frs_covered": [
+        "FR805",
+        "FR806",
+        "FR807",
+        "FR808",
+        "FR809"
+      ],
+      "nfrs_covered": [
+        "NFR29"
+      ],
+      "arch_covered": [
+        "ADR-038"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.1"
+      ],
       "passes": false
     },
     {
@@ -892,11 +1506,26 @@
         "Support args, env, and runtime policy settings",
         "Persist MCP service records for later discovery"
       ],
-      "frs_covered": ["FR810", "FR811", "FR812", "FR813"],
-      "nfrs_covered": ["NFR30"],
-      "arch_covered": ["ADR-015", "ADR-039"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.2"],
+      "frs_covered": [
+        "FR810",
+        "FR811",
+        "FR812",
+        "FR813"
+      ],
+      "nfrs_covered": [
+        "NFR30"
+      ],
+      "arch_covered": [
+        "ADR-015",
+        "ADR-039"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.2"
+      ],
       "passes": false
     },
     {
@@ -911,11 +1540,26 @@
         "Allow reconnect and disable operations",
         "Persist service health and last-check information"
       ],
-      "frs_covered": ["FR814", "FR815", "FR816", "FR817"],
-      "nfrs_covered": ["NFR30"],
-      "arch_covered": ["ADR-015", "ADR-039"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.3"],
+      "frs_covered": [
+        "FR814",
+        "FR815",
+        "FR816",
+        "FR817"
+      ],
+      "nfrs_covered": [
+        "NFR30"
+      ],
+      "arch_covered": [
+        "ADR-015",
+        "ADR-039"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.3"
+      ],
       "passes": false
     },
     {
@@ -930,11 +1574,25 @@
         "Enable or disable individual MCP tools",
         "Bind tool state into the common runtime registry"
       ],
-      "frs_covered": ["FR818", "FR819", "FR820"],
-      "nfrs_covered": ["NFR30"],
-      "arch_covered": ["ADR-015", "ADR-039"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.4"],
+      "frs_covered": [
+        "FR818",
+        "FR819",
+        "FR820"
+      ],
+      "nfrs_covered": [
+        "NFR30"
+      ],
+      "arch_covered": [
+        "ADR-015",
+        "ADR-039"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.4"
+      ],
       "passes": false
     },
     {
@@ -949,11 +1607,25 @@
         "Apply defaults and per-tool overrides",
         "Expose effective policy to the runtime and UI"
       ],
-      "frs_covered": ["FR825", "FR826", "FR827", "FR828"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-039"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.5"],
+      "frs_covered": [
+        "FR825",
+        "FR826",
+        "FR827",
+        "FR828"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-039"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.5"
+      ],
       "passes": false
     },
     {
@@ -968,11 +1640,26 @@
         "Apply shared policy or state changes in bulk",
         "Record bulk change operations for audit"
       ],
-      "frs_covered": ["FR829", "FR830", "FR831", "FR832"],
-      "nfrs_covered": ["NFR16", "NFR23-8"],
-      "arch_covered": ["ADR-039"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.6"],
+      "frs_covered": [
+        "FR829",
+        "FR830",
+        "FR831",
+        "FR832"
+      ],
+      "nfrs_covered": [
+        "NFR16",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-039"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.6"
+      ],
       "passes": false
     },
     {
@@ -987,11 +1674,25 @@
         "Show approve decisions and result summaries",
         "Support export for audit review"
       ],
-      "frs_covered": ["FR818", "FR831"],
-      "nfrs_covered": ["NFR14", "NFR23-8"],
-      "arch_covered": ["ADR-039", "ADR-037"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.7"],
+      "frs_covered": [
+        "FR818",
+        "FR831"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-039",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.7"
+      ],
       "passes": false
     },
     {
@@ -1006,11 +1707,27 @@
         "Configure Skill parameters and enablement",
         "Show progressive loading and downgrade behavior"
       ],
-      "frs_covered": ["FR835", "FR836", "FR837", "FR838", "FR839", "FR840"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-046"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.8"],
+      "frs_covered": [
+        "FR835",
+        "FR836",
+        "FR837",
+        "FR838",
+        "FR839",
+        "FR840"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.8"
+      ],
       "passes": false
     },
     {
@@ -1025,11 +1742,26 @@
         "Display L1, L2, and L3 load composition",
         "Show source labels for governance traceability"
       ],
-      "frs_covered": ["FR850", "FR851", "FR861", "FR862"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-038", "ADR-040"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.9"],
+      "frs_covered": [
+        "FR850",
+        "FR851",
+        "FR861",
+        "FR862"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-040"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.9"
+      ],
       "passes": false
     },
     {
@@ -1044,11 +1776,25 @@
         "Apply templates to Agent and department scope",
         "Persist template assignment and defaults"
       ],
-      "frs_covered": ["FR852", "FR853", "FR854"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-038", "ADR-040"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.10"],
+      "frs_covered": [
+        "FR852",
+        "FR853",
+        "FR854"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-040"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.10"
+      ],
       "passes": false
     },
     {
@@ -1063,11 +1809,25 @@
         "Show current variable values and missing inputs",
         "Estimate token usage and cost before execution"
       ],
-      "frs_covered": ["FR855", "FR856", "FR857"],
-      "nfrs_covered": ["NFR3"],
-      "arch_covered": ["ADR-038", "ADR-040"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.11"],
+      "frs_covered": [
+        "FR855",
+        "FR856",
+        "FR857"
+      ],
+      "nfrs_covered": [
+        "NFR3"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-040"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.11"
+      ],
       "passes": false
     },
     {
@@ -1082,11 +1842,27 @@
         "Allow rollback to earlier versions",
         "Control session knowledge accumulation writeback"
       ],
-      "frs_covered": ["FR858", "FR859", "FR860", "FR863"],
-      "nfrs_covered": ["NFR14"],
-      "arch_covered": ["ADR-038", "ADR-040", "ADR-044"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.12"],
+      "frs_covered": [
+        "FR858",
+        "FR859",
+        "FR860",
+        "FR863"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-040",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.12"
+      ],
       "passes": false
     },
     {
@@ -1101,11 +1877,25 @@
         "Support enable, disable, and reorder actions",
         "Persist runtime composition order"
       ],
-      "frs_covered": ["FR865", "FR866", "FR867", "FR868"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-041"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.13"],
+      "frs_covered": [
+        "FR865",
+        "FR866",
+        "FR867",
+        "FR868"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-041"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.13"
+      ],
       "passes": false
     },
     {
@@ -1120,11 +1910,28 @@
         "Support conditions and priority configuration",
         "Persist rule records for runtime use"
       ],
-      "frs_covered": ["FR869", "FR870", "FR871", "FR872", "FR873", "FR874", "FR875"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-041"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.14"],
+      "frs_covered": [
+        "FR869",
+        "FR870",
+        "FR871",
+        "FR872",
+        "FR873",
+        "FR874",
+        "FR875"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-041"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.14"
+      ],
       "passes": false
     },
     {
@@ -1139,11 +1946,32 @@
         "Show triggered rules and prompt impact",
         "Display safety blocks and convergence strategy hits"
       ],
-      "frs_covered": ["FR880", "FR881", "FR882", "FR883", "FR884", "FR885", "FR886", "FR887", "FR888"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-040", "ADR-041", "ADR-042"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.15"],
+      "frs_covered": [
+        "FR880",
+        "FR881",
+        "FR882",
+        "FR883",
+        "FR884",
+        "FR885",
+        "FR886",
+        "FR887",
+        "FR888"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-040",
+        "ADR-041",
+        "ADR-042"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.15"
+      ],
       "passes": false
     },
     {
@@ -1158,11 +1986,32 @@
         "Provide template-based Sub-Agent creation",
         "Persist registry and status metadata"
       ],
-      "frs_covered": ["FR890", "FR891", "FR892", "FR893", "FR894", "FR895", "FR896", "FR897", "FR898", "FR899", "FR900"],
-      "nfrs_covered": ["NFR8-12"],
-      "arch_covered": ["ADR-042"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.16"],
+      "frs_covered": [
+        "FR890",
+        "FR891",
+        "FR892",
+        "FR893",
+        "FR894",
+        "FR895",
+        "FR896",
+        "FR897",
+        "FR898",
+        "FR899",
+        "FR900"
+      ],
+      "nfrs_covered": [
+        "NFR8-12"
+      ],
+      "arch_covered": [
+        "ADR-042"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.16"
+      ],
       "passes": false
     },
     {
@@ -1177,11 +2026,32 @@
         "Support trigger keywords and conditions",
         "Apply SOUL-backed template policy with audit for persistent edits"
       ],
-      "frs_covered": ["FR905", "FR906", "FR907", "FR908", "FR909", "FR910", "FR911", "FR912", "FR913", "FR914"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-042", "ADR-047"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.17"],
+      "frs_covered": [
+        "FR905",
+        "FR906",
+        "FR907",
+        "FR908",
+        "FR909",
+        "FR910",
+        "FR911",
+        "FR912",
+        "FR913",
+        "FR914"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-042",
+        "ADR-047"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.17"
+      ],
       "passes": false
     },
     {
@@ -1196,11 +2066,27 @@
         "Bind allowed Skills and effective approve policy",
         "Persist scoped capability selection"
       ],
-      "frs_covered": ["FR915", "FR916", "FR917", "FR918", "FR919"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-042", "ADR-046"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.18"],
+      "frs_covered": [
+        "FR915",
+        "FR916",
+        "FR917",
+        "FR918",
+        "FR919"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-042",
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.18"
+      ],
       "passes": false
     },
     {
@@ -1215,11 +2101,28 @@
         "Bind knowledge access scope to Sub-Agents",
         "Enforce isolation and visibility in runtime execution"
       ],
-      "frs_covered": ["FR920", "FR921", "FR922", "FR923", "FR924", "FR925"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-042", "ADR-043"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.19"],
+      "frs_covered": [
+        "FR920",
+        "FR921",
+        "FR922",
+        "FR923",
+        "FR924",
+        "FR925"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-042",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.19"
+      ],
       "passes": false
     },
     {
@@ -1234,11 +2137,24 @@
         "Set model parameters and limits",
         "Persist execution defaults for each Sub-Agent"
       ],
-      "frs_covered": ["FR905", "FR909", "FR910"],
-      "nfrs_covered": ["NFR29"],
-      "arch_covered": ["ADR-042"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.20"],
+      "frs_covered": [
+        "FR905",
+        "FR909",
+        "FR910"
+      ],
+      "nfrs_covered": [
+        "NFR29"
+      ],
+      "arch_covered": [
+        "ADR-042"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.20"
+      ],
       "passes": false
     },
     {
@@ -1253,11 +2169,30 @@
         "Recommend or auto-select a Sub-Agent",
         "Track routing decisions in execution history"
       ],
-      "frs_covered": ["FR930", "FR931", "FR932", "FR933", "FR934", "FR935", "FR936", "FR937", "FR938"],
-      "nfrs_covered": ["NFR8-12"],
-      "arch_covered": ["ADR-042"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.21"],
+      "frs_covered": [
+        "FR930",
+        "FR931",
+        "FR932",
+        "FR933",
+        "FR934",
+        "FR935",
+        "FR936",
+        "FR937",
+        "FR938"
+      ],
+      "nfrs_covered": [
+        "NFR8-12"
+      ],
+      "arch_covered": [
+        "ADR-042"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.21"
+      ],
       "passes": false
     },
     {
@@ -1272,11 +2207,24 @@
         "List historical runs and outcomes",
         "Link sub-agent traces back to the main Agent session"
       ],
-      "frs_covered": ["FR938", "FR924"],
-      "nfrs_covered": ["NFR23-4"],
-      "arch_covered": ["ADR-042", "ADR-037"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 21.22"],
+      "frs_covered": [
+        "FR938",
+        "FR924"
+      ],
+      "nfrs_covered": [
+        "NFR23-4"
+      ],
+      "arch_covered": [
+        "ADR-042",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 21.22"
+      ],
       "passes": false
     },
     {
@@ -1291,11 +2239,24 @@
         "Track parsing and indexing state",
         "Manage lifecycle for uploaded knowledge assets"
       ],
-      "frs_covered": ["FR280", "FR281", "FR282"],
-      "nfrs_covered": ["NFR8-2"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 21.23"],
+      "frs_covered": [
+        "FR280",
+        "FR281",
+        "FR282"
+      ],
+      "nfrs_covered": [
+        "NFR8-2"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 21.23"
+      ],
       "passes": false
     },
     {
@@ -1310,11 +2271,24 @@
         "Inject cited knowledge into Agent answers",
         "Expose answer source details in the UI"
       ],
-      "frs_covered": ["FR283", "FR284", "FR285"],
-      "nfrs_covered": ["NFR8-2"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 9.1"],
+      "frs_covered": [
+        "FR283",
+        "FR284",
+        "FR285"
+      ],
+      "nfrs_covered": [
+        "NFR8-2"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 9.1"
+      ],
       "passes": false
     },
     {
@@ -1329,11 +2303,24 @@
         "Generate structured draft knowledge entries",
         "Route generated entries into the review flow"
       ],
-      "frs_covered": ["FR286", "FR287"],
-      "nfrs_covered": ["NFR27"],
-      "arch_covered": ["ADR-043", "ADR-044"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 9.2"],
+      "frs_covered": [
+        "FR286",
+        "FR287"
+      ],
+      "nfrs_covered": [
+        "NFR27"
+      ],
+      "arch_covered": [
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 9.2"
+      ],
       "passes": false
     },
     {
@@ -1348,11 +2335,23 @@
         "Support approve, reject, edit, and merge operations",
         "Track review actions and entry history"
       ],
-      "frs_covered": ["FR288", "FR289"],
-      "nfrs_covered": ["NFR14"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 9.3"],
+      "frs_covered": [
+        "FR288",
+        "FR289"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 9.3"
+      ],
       "passes": false
     },
     {
@@ -1367,11 +2366,23 @@
         "Enforce role and department visibility rules",
         "Apply effective knowledge scope to Agent execution"
       ],
-      "frs_covered": ["FR290", "FR291"],
-      "nfrs_covered": ["NFR16-2"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 9.4"],
+      "frs_covered": [
+        "FR290",
+        "FR291"
+      ],
+      "nfrs_covered": [
+        "NFR16-2"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 9.4"
+      ],
       "passes": false
     },
     {
@@ -1386,11 +2397,21 @@
         "Recommend updates for stale or weak entries",
         "Use quality signals in retrieval ranking"
       ],
-      "frs_covered": ["FR292"],
-      "nfrs_covered": ["NFR27"],
-      "arch_covered": ["ADR-043"],
-      "ux_covered": ["UX-02"],
-      "dependencies": ["Story 9.5"],
+      "frs_covered": [
+        "FR292"
+      ],
+      "nfrs_covered": [
+        "NFR27"
+      ],
+      "arch_covered": [
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 9.5"
+      ],
       "passes": false
     },
     {
@@ -1405,11 +2426,30 @@
         "Map Skill capabilities into the internal runtime model",
         "Register imported Skills into the control plane"
       ],
-      "frs_covered": ["FR700", "FR701", "FR702", "FR703", "FR706", "FR707", "FR708", "FR709", "FR710"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-046"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 9.6"],
+      "frs_covered": [
+        "FR700",
+        "FR701",
+        "FR702",
+        "FR703",
+        "FR706",
+        "FR707",
+        "FR708",
+        "FR709",
+        "FR710"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 9.6"
+      ],
       "passes": false
     },
     {
@@ -1424,11 +2464,31 @@
         "Apply read-only-by-default behavior with confirmed persistent edits",
         "Record version and audit history for template changes"
       ],
-      "frs_covered": ["FR721", "FR722", "FR723", "FR724", "FR725", "FR726", "FR727", "FR728", "FR729"],
-      "nfrs_covered": ["NFR14", "NFR16"],
-      "arch_covered": ["ADR-047"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 10.1"],
+      "frs_covered": [
+        "FR721",
+        "FR722",
+        "FR723",
+        "FR724",
+        "FR725",
+        "FR726",
+        "FR727",
+        "FR728",
+        "FR729"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-047"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 10.1"
+      ],
       "passes": false
     },
     {
@@ -1443,11 +2503,30 @@
         "Apply sandbox and capability restrictions",
         "Expose adapted Plugin state in the control plane"
       ],
-      "frs_covered": ["FR711", "FR712", "FR713", "FR714", "FR715", "FR716", "FR717", "FR718", "FR719", "FR720"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-046"],
-      "ux_covered": ["UX-02"],
-      "dependencies": ["Story 10.2"],
+      "frs_covered": [
+        "FR711",
+        "FR712",
+        "FR713",
+        "FR714",
+        "FR715",
+        "FR716",
+        "FR717",
+        "FR718",
+        "FR719",
+        "FR720"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 10.2"
+      ],
       "passes": false
     },
     {
@@ -1462,11 +2541,30 @@
         "Inspect details and installable packages",
         "Route installs through security and governance checks"
       ],
-      "frs_covered": ["FR730", "FR731", "FR732", "FR738", "FR739", "FR741", "FR743", "FR744"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-046", "ADR-047"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 10.3"],
+      "frs_covered": [
+        "FR730",
+        "FR731",
+        "FR732",
+        "FR738",
+        "FR739",
+        "FR741",
+        "FR743",
+        "FR744"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-046",
+        "ADR-047"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 10.3"
+      ],
       "passes": false
     },
     {
@@ -1481,11 +2579,28 @@
         "Upload and review private resources",
         "Keep private and public resource spaces isolated"
       ],
-      "frs_covered": ["FR733", "FR734", "FR735", "FR736", "FR737", "FR740", "FR742", "FR745"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-046"],
-      "ux_covered": ["UX-02"],
-      "dependencies": ["Story 10.4"],
+      "frs_covered": [
+        "FR733",
+        "FR734",
+        "FR735",
+        "FR736",
+        "FR737",
+        "FR740",
+        "FR742",
+        "FR745"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 10.4"
+      ],
       "passes": false
     },
     {
@@ -1500,11 +2615,30 @@
         "Run static checks and policy-based security scanning",
         "Gate risky installs behind admin approval"
       ],
-      "frs_covered": ["FR746", "FR747", "FR748", "FR749", "FR750", "FR753", "FR754", "FR755"],
-      "nfrs_covered": ["NFR14", "NFR16"],
-      "arch_covered": ["ADR-046", "ADR-047"],
-      "ux_covered": ["UX-02"],
-      "dependencies": ["Story 10.5"],
+      "frs_covered": [
+        "FR746",
+        "FR747",
+        "FR748",
+        "FR749",
+        "FR750",
+        "FR753",
+        "FR754",
+        "FR755"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-046",
+        "ADR-047"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 10.5"
+      ],
       "passes": false
     },
     {
@@ -1519,11 +2653,27 @@
         "Alert on abnormal execution patterns",
         "Support audit lookup and export"
       ],
-      "frs_covered": ["FR751", "FR752", "FR754", "FR755"],
-      "nfrs_covered": ["NFR14", "NFR23-8"],
-      "arch_covered": ["ADR-046", "ADR-047"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 10.6"],
+      "frs_covered": [
+        "FR751",
+        "FR752",
+        "FR754",
+        "FR755"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-046",
+        "ADR-047"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 10.6"
+      ],
       "passes": false
     },
     {
@@ -1538,11 +2688,26 @@
         "Support OAuth, API key, and certificate modes",
         "Persist connector configuration for runtime use"
       ],
-      "frs_covered": ["FR1080", "FR1081", "FR1082", "FR1083"],
-      "nfrs_covered": ["NFR29", "NFR35"],
-      "arch_covered": ["ADR-015"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 10.7"],
+      "frs_covered": [
+        "FR1080",
+        "FR1081",
+        "FR1082",
+        "FR1083"
+      ],
+      "nfrs_covered": [
+        "NFR29",
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-015"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 10.7"
+      ],
       "passes": false
     },
     {
@@ -1557,11 +2722,25 @@
         "Apply retry and downgrade policies",
         "Expose connector incidents and recovery status"
       ],
-      "frs_covered": ["FR1084", "FR1085", "FR1086"],
-      "nfrs_covered": ["NFR35"],
-      "arch_covered": ["ADR-015", "ADR-048"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 30.1"],
+      "frs_covered": [
+        "FR1084",
+        "FR1085",
+        "FR1086"
+      ],
+      "nfrs_covered": [
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-015",
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 30.1"
+      ],
       "passes": false
     },
     {
@@ -1576,11 +2755,23 @@
         "Show directory entries under permission scope",
         "Prepare participant selection for chat and Agent collaboration"
       ],
-      "frs_covered": ["FR90", "FR91"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 30.2"],
+      "frs_covered": [
+        "FR90",
+        "FR91"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 30.2"
+      ],
       "passes": false
     },
     {
@@ -1595,11 +2786,23 @@
         "Display available contact and collaboration actions",
         "Respect visibility boundaries for sensitive fields"
       ],
-      "frs_covered": ["FR601", "FR602"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 11.1"],
+      "frs_covered": [
+        "FR601",
+        "FR602"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 11.1"
+      ],
       "passes": false
     },
     {
@@ -1614,11 +2817,26 @@
         "Persist delivery and read states",
         "Support history search and filtering"
       ],
-      "frs_covered": ["FR92", "FR93", "FR611", "FR612", "FR622"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.2"],
+      "frs_covered": [
+        "FR92",
+        "FR93",
+        "FR611",
+        "FR612",
+        "FR622"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.2"
+      ],
       "passes": false
     },
     {
@@ -1633,11 +2851,24 @@
         "Persist group-level permissions and roles",
         "Support group message history and unread state"
       ],
-      "frs_covered": ["FR94", "FR619", "FR620"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.3"],
+      "frs_covered": [
+        "FR94",
+        "FR619",
+        "FR620"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.3"
+      ],
       "passes": false
     },
     {
@@ -1652,11 +2883,33 @@
         "Display AI identity markers and speaking rules",
         "Support mention-driven and event-driven participation"
       ],
-      "frs_covered": ["FR619", "FR620", "FR621", "FR639", "FR640", "FR641", "FR642", "FR643", "FR644", "FR645", "FR646", "FR649"],
-      "nfrs_covered": ["NFR16"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.4"],
+      "frs_covered": [
+        "FR619",
+        "FR620",
+        "FR621",
+        "FR639",
+        "FR640",
+        "FR641",
+        "FR642",
+        "FR643",
+        "FR644",
+        "FR645",
+        "FR646",
+        "FR649"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.4"
+      ],
       "passes": false
     },
     {
@@ -1671,11 +2924,23 @@
         "Track read state and notice visibility",
         "Integrate notices with the unified messaging center"
       ],
-      "frs_covered": ["FR44", "FR45"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-02"],
-      "dependencies": ["Story 11.5"],
+      "frs_covered": [
+        "FR44",
+        "FR45"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 11.5"
+      ],
       "passes": false
     },
     {
@@ -1690,11 +2955,28 @@
         "Respect user preference and do-not-disturb settings",
         "Track delivery and reminder state"
       ],
-      "frs_covered": ["FR46", "FR47", "FR48", "FR95", "FR96", "FR97", "FR98"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.6"],
+      "frs_covered": [
+        "FR46",
+        "FR47",
+        "FR48",
+        "FR95",
+        "FR96",
+        "FR97",
+        "FR98"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.6"
+      ],
       "passes": false
     },
     {
@@ -1709,11 +2991,39 @@
         "Enforce communication permissions and content constraints",
         "Record all Agent-to-Agent exchanges for audit"
       ],
-      "frs_covered": ["FR59", "FR60", "FR61", "FR62", "FR63", "FR64", "FR65", "FR66", "FR67", "FR68", "FR603", "FR604", "FR605", "FR606", "FR615", "FR616", "FR618"],
-      "nfrs_covered": ["NFR14", "NFR16"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.7"],
+      "frs_covered": [
+        "FR59",
+        "FR60",
+        "FR61",
+        "FR62",
+        "FR63",
+        "FR64",
+        "FR65",
+        "FR66",
+        "FR67",
+        "FR68",
+        "FR603",
+        "FR604",
+        "FR605",
+        "FR606",
+        "FR615",
+        "FR616",
+        "FR618"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.7"
+      ],
       "passes": false
     },
     {
@@ -1728,11 +3038,25 @@
         "Support card actions with result feedback",
         "Allow Agent-generated work-card delivery"
       ],
-      "frs_covered": ["FR607", "FR608", "FR609", "FR610"],
-      "nfrs_covered": ["NFR1"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.8"],
+      "frs_covered": [
+        "FR607",
+        "FR608",
+        "FR609",
+        "FR610"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.8"
+      ],
       "passes": false
     },
     {
@@ -1747,11 +3071,30 @@
         "Support pinning, favorites, and export",
         "Track delivery, read, and reminder status consistently"
       ],
-      "frs_covered": ["FR611", "FR612", "FR613", "FR614", "FR622", "FR623", "FR624", "FR626", "FR630"],
-      "nfrs_covered": ["NFR14"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 11.9"],
+      "frs_covered": [
+        "FR611",
+        "FR612",
+        "FR613",
+        "FR614",
+        "FR622",
+        "FR623",
+        "FR624",
+        "FR626",
+        "FR630"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.9"
+      ],
       "passes": false
     },
     {
@@ -1766,11 +3109,29 @@
         "Support offline queue and re-delivery strategy",
         "Record channel events for audit and tracing"
       ],
-      "frs_covered": ["FR1170", "FR1171", "FR1172", "FR1173", "FR1174", "FR1175", "FR1176", "FR1177"],
-      "nfrs_covered": ["NFR35"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 11.10"],
+      "frs_covered": [
+        "FR1170",
+        "FR1171",
+        "FR1172",
+        "FR1173",
+        "FR1174",
+        "FR1175",
+        "FR1176",
+        "FR1177"
+      ],
+      "nfrs_covered": [
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 11.10"
+      ],
       "passes": false
     },
     {
@@ -1785,11 +3146,29 @@
         "Isolate unstable plugins and auto-disable on repeated failure",
         "Generate diagnostic output for recovery"
       ],
-      "frs_covered": ["FR1178", "FR1179", "FR1180", "FR1181", "FR1182", "FR1183", "FR1184", "FR1185", "FR1186"],
-      "nfrs_covered": ["NFR35"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-02"],
-      "dependencies": ["Story 37.1"],
+      "frs_covered": [
+        "FR1178",
+        "FR1179",
+        "FR1180",
+        "FR1181",
+        "FR1182",
+        "FR1183",
+        "FR1184",
+        "FR1185",
+        "FR1186"
+      ],
+      "nfrs_covered": [
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02"
+      ],
+      "dependencies": [
+        "Story 37.1"
+      ],
       "passes": false
     },
     {
@@ -1804,11 +3183,26 @@
         "Show core runtime metrics and health indicators",
         "Support filtering and export from the log center"
       ],
-      "frs_covered": ["FR1100", "FR1102", "FR1103"],
-      "nfrs_covered": ["NFR14", "NFR23-8"],
-      "arch_covered": ["ADR-023", "ADR-048"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 37.2"],
+      "frs_covered": [
+        "FR1100",
+        "FR1102",
+        "FR1103"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-023",
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 37.2"
+      ],
       "passes": false
     },
     {
@@ -1823,11 +3217,26 @@
         "Show latency distribution and bottlenecks",
         "Support drill-down from product events to runtime details"
       ],
-      "frs_covered": ["FR1101", "FR1104", "FR1105", "FR1106"],
-      "nfrs_covered": ["NFR23-8"],
-      "arch_covered": ["ADR-023", "ADR-048"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 32.1"],
+      "frs_covered": [
+        "FR1101",
+        "FR1104",
+        "FR1105",
+        "FR1106"
+      ],
+      "nfrs_covered": [
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-023",
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 32.1"
+      ],
       "passes": false
     },
     {
@@ -1842,11 +3251,29 @@
         "Run precheck for activity, context budget, and availability",
         "Return `HEARTBEAT_OK` silently when no action is needed"
       ],
-      "frs_covered": ["FR1127", "FR1128", "FR1129", "FR1130", "FR1131", "FR1132", "FR1133", "FR1134"],
-      "nfrs_covered": ["NFR14"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 32.2"],
+      "frs_covered": [
+        "FR1127",
+        "FR1128",
+        "FR1129",
+        "FR1130",
+        "FR1131",
+        "FR1132",
+        "FR1133",
+        "FR1134"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 32.2"
+      ],
       "passes": false
     },
     {
@@ -1861,11 +3288,32 @@
         "Apply retry, backoff, timeout, and mutex policy",
         "Enforce confirmation or approval on high-risk scheduled actions"
       ],
-      "frs_covered": ["FR1135", "FR1136", "FR1137", "FR1138", "FR1139", "FR1140", "FR1141", "FR1142", "FR1143", "FR1144", "FR1145"],
-      "nfrs_covered": ["NFR22"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-02", "UX-04"],
-      "dependencies": ["Story 35.1"],
+      "frs_covered": [
+        "FR1135",
+        "FR1136",
+        "FR1137",
+        "FR1138",
+        "FR1139",
+        "FR1140",
+        "FR1141",
+        "FR1142",
+        "FR1143",
+        "FR1144",
+        "FR1145"
+      ],
+      "nfrs_covered": [
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 35.1"
+      ],
       "passes": false
     },
     {
@@ -1880,11 +3328,30 @@
         "Desensitize error output before display",
         "Attach recovery suggestions and fallback hints"
       ],
-      "frs_covered": ["FR1146", "FR1147", "FR1148", "FR1149", "FR1150", "FR1151", "FR1152", "FR1153", "FR1154"],
-      "nfrs_covered": ["NFR17"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 35.2"],
+      "frs_covered": [
+        "FR1146",
+        "FR1147",
+        "FR1148",
+        "FR1149",
+        "FR1150",
+        "FR1151",
+        "FR1152",
+        "FR1153",
+        "FR1154"
+      ],
+      "nfrs_covered": [
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 35.2"
+      ],
       "passes": false
     },
     {
@@ -1899,11 +3366,37 @@
         "Repair session and context corruption with diff summary",
         "Record failover and repair actions for audit and diagnosis"
       ],
-      "frs_covered": ["FR1155", "FR1156", "FR1157", "FR1158", "FR1159", "FR1160", "FR1161", "FR1162", "FR1163", "FR1164", "FR1165", "FR1166", "FR1167", "FR1168", "FR1169"],
-      "nfrs_covered": ["NFR17", "NFR22"],
-      "arch_covered": ["ADR-048"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 36.1"],
+      "frs_covered": [
+        "FR1155",
+        "FR1156",
+        "FR1157",
+        "FR1158",
+        "FR1159",
+        "FR1160",
+        "FR1161",
+        "FR1162",
+        "FR1163",
+        "FR1164",
+        "FR1165",
+        "FR1166",
+        "FR1167",
+        "FR1168",
+        "FR1169"
+      ],
+      "nfrs_covered": [
+        "NFR17",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 36.1"
+      ],
       "passes": false
     },
     {
@@ -1918,11 +3411,25 @@
         "Support read, generate, confirm, and execute loop for approval work",
         "Verify audit and permission behavior in the scenario"
       ],
-      "frs_covered": ["FR410", "FR470", "FR496"],
-      "nfrs_covered": ["NFR23-1", "NFR23-8"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 36.2"],
+      "frs_covered": [
+        "FR410",
+        "FR470",
+        "FR496"
+      ],
+      "nfrs_covered": [
+        "NFR23-1",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 36.2"
+      ],
       "passes": false
     },
     {
@@ -1937,11 +3444,25 @@
         "Support read, generate, confirm, and execute loop for sales work",
         "Verify that no department-specific runtime fork is introduced"
       ],
-      "frs_covered": ["FR410", "FR412", "FR464"],
-      "nfrs_covered": ["NFR23-1", "NFR23-7"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 50.1"],
+      "frs_covered": [
+        "FR410",
+        "FR412",
+        "FR464"
+      ],
+      "nfrs_covered": [
+        "NFR23-1",
+        "NFR23-7"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 50.1"
+      ],
       "passes": false
     },
     {
@@ -1956,11 +3477,27 @@
         "Support read, analyze, confirm, and execute loop for finance work",
         "Verify cross-scenario reuse of the same runtime, audit, and permission chain"
       ],
-      "frs_covered": ["FR410", "FR412", "FR470", "FR496"],
-      "nfrs_covered": ["NFR23-1", "NFR23-7", "NFR23-8"],
-      "arch_covered": ["ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 50.2"],
+      "frs_covered": [
+        "FR410",
+        "FR412",
+        "FR470",
+        "FR496"
+      ],
+      "nfrs_covered": [
+        "NFR23-1",
+        "NFR23-7",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 50.2"
+      ],
       "passes": false
     }
   ]

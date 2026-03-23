@@ -8,6 +8,7 @@
  * Story 4.9 - 检查点编辑重试功能
  * Story 4.10 - Git工具集成
  * Story 4.11 - 检查点管理功能
+ * Story 4.12 - 上下文自动压缩
  * 
  * 导出 Agent 相关的组件和 Hooks
  */
@@ -25,6 +26,12 @@ export { RestoreDialog } from './components/RestoreDialog'
 export { EditRetryDialog } from './components/EditRetryDialog'
 export { GitStatusIndicator, GitBadge } from './components/GitStatusIndicator'
 export { CheckpointManagementPanel } from './components/CheckpointManagementPanel'
+export { 
+  CompressionStatusIndicator, 
+  CompressionHistoryItem,
+  CompressionHistoryList 
+} from './components/CompressionStatusIndicator'
+export { CompressionConfigPanel } from './components/CompressionConfigPanel'
 
 // Hooks
 export { 
@@ -90,3 +97,20 @@ export {
   type GitRepoState,
   type GitStoreState
 } from './hooks/useGitStore'
+
+export {
+  useContextCompression,
+  useCompressionConfig,
+  useSessionCompressionState,
+  useThresholdStatus,
+  useCompressionStatus,
+  useCompressionHistory,
+  type CompressionStatus,
+  type ThresholdStatus,
+  type CompressionStrategy,
+  type CompressionConfig,
+  type CompressionRecord,
+  type TokenStats,
+  type SessionCompressionState,
+  type ContextCompressionState
+} from './hooks/useContextCompression'
