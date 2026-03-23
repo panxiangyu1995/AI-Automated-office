@@ -1,4 +1,52 @@
 
+## [2026-03-23] - Task: Checkpoint Edit Retry (Story 4.9)
+
+### 铁律合规检查：
+- PRD 合规：FR17-11, FR17-12, FR17-13 - 检查点编辑重试功能
+- 架构合规：ADR-037 - Agent 运行时追踪
+- NFR 合规：NFR-23 - 检查点可靠性
+
+### What was done:
+- 更新 useCheckpointStore.ts：
+  - 添加 BranchRecord 类型定义（分支记录）
+  - 添加 CreateBranchParams 参数类型
+  - 添加 branches/sessionBranches/activeBranches 状态
+  - 实现 createBranch 方法（创建分支）
+  - 实现 updateBranch 方法（更新分支）
+  - 实现 abandonBranch 方法（放弃分支）
+  - 实现 mergeBranch 方法（合并分支）
+  - 实现 getSessionBranches 方法（获取会话分支）
+  - 实现 getActiveBranch 方法（获取活跃分支）
+  - 实现 getOriginalMessage 方法（获取原始消息）
+  - 添加 useSessionBranches/useActiveBranch/useOriginalMessage hooks
+  - 更新 partialize 配置持久化分支状态
+
+- 创建 EditRetryDialog.tsx 组件：
+  - 预填充历史消息到编辑器
+  - 支持编辑消息内容
+  - 支持设置分支标签（可选）
+  - 显示现有分支信息
+  - 显示操作预览
+  - 支持 Ctrl+Enter 快捷键发送
+
+- 更新 CheckpointMarker.tsx：
+  - 添加 onEditRetry 回调属性
+  - 添加编辑重试按钮
+  - 显示分支数量指示器
+  - 集成 EditRetryDialog 对话框
+  - 更新 CheckpointList 支持 onEditRetry
+
+- 更新 agent/index.ts 导出新组件和类型
+
+### Testing:
+- lint 检查通过
+- build 成功
+
+### Notes:
+- 分支状态：active（活跃）、abandoned（已放弃）、merged（已合并）
+- 编辑重试会创建新分支，保留原始分支供比较
+- 分支记录持久化存储到 localStorage
+
 ## [2026-03-23] - Task: Checkpoint Restore (Story 4.8)
 
 ### 铁律合规检查：

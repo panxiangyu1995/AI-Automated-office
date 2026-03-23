@@ -2,10 +2,12 @@
  * useCheckpointStore - 检查点状态管理 Hook
  * Story 4.7 - 检查点自动创建
  * Story 4.8 - 检查点回滚功能
+ * Story 4.9 - 检查点编辑重试功能
  * 
  * 管理会话检查点，支持在消息提交时自动创建检查点
  * 捕获会话元数据和工作状态，支持后续恢复
  * 支持多种恢复模式，记录恢复历史
+ * 支持从检查点编辑重试，创建分支执行
  * 
  * 铁律合规：
  * - ARCH: 分层架构，复用消息模型
@@ -34,6 +36,11 @@ export type CheckpointStatus = 'active' | 'restored' | 'archived'
 export type RestoreMode = 'conversation_only' | 'conversation_plus_content'
 
 /**
+ * 分支状态
+ */
+export type BranchStatus = 'active' | 'merged' | 'abandoned'
+
+/**
  * 恢复记录
  */
 export interface RestoreRecord {
@@ -54,6 +61,29 @@ export interface RestoreRecord {
   }
   // 用户确认
   userConfirmed: boolean
+}
+
+/**
+ * 分支记录 - 用于编辑重试
+ */
+export interface BranchRecord {
+  id: string
+  sessionId: string
+  sourceCheckpointId: string
+  // 分支名称/描述
+  label: string
+  // 原始消息内容（用于预填充编辑）
+  originalMessage: string
+  // 编辑后的消息内容
+  editedMessage?: string
+  // 分支状态
+  status: BranchStatus
+  // 创建时间
+  createdAt: number
+  // 分支的消息 ID 列表
+  messageIds: string[]
+  // 父分支 ID（用于嵌套分支）
+  parentBranchId?: string
 }
 
 /**
@@ -136,12 +166,18 @@ export interface CheckpointStoreState {
   sessionCheckpoints: Record<string, string[]>
   // 恢复历史记录
   restoreHistory: RestoreRecord[]
+  // 分支记录
+  branches: Record<string, BranchRecord>
+  // 每个会话的分支 ID 列表
+  sessionBranches: Record<string, string[]>
+  // 当前活跃分支（每个会话）
+  activeBranches: Record<string, string>
   // 自动创建检查点设置
   autoCheckpointEnabled: boolean
   // 最大检查点数量（每个会话）
   maxCheckpointsPerSession: number
   
-  // Actions
+  // Checkpoint Actions
   createCheckpoint: (params: CreateCheckpointParams) => Checkpoint
   deleteCheckpoint: (checkpointId: string) => void
   restoreCheckpoint: (checkpointId: string, mode: RestoreMode, previousMessageCount: number) => RestoreRecord | null
@@ -149,11 +185,25 @@ export interface CheckpointStoreState {
   getSessionCheckpoints: (sessionId: string) => Checkpoint[]
   getLatestCheckpoint: (sessionId: string) => Checkpoint | null
   getRestoreHistory: (sessionId: string) => RestoreRecord[]
+  
+  // Branch Actions (Story 4.9)
+  createBranch: (params: CreateBranchParams) => BranchRecord
+  updateBranch: (branchId: string, updates: Partial<BranchRecord>) => void
+  abandonBranch: (branchId: string) => void
+  mergeBranch: (branchId: string) => void
+  getSessionBranches: (sessionId: string) => BranchRecord[]
+  getActiveBranch: (sessionId: string) => BranchRecord | null
+  getOriginalMessage: (checkpointId: string) => string | null
+  
+  // Settings
   setAutoCheckpointEnabled: (enabled: boolean) => void
   setMaxCheckpointsPerSession: (max: number) => void
+  
+  // Clear Actions
   clearSessionCheckpoints: (sessionId: string) => void
   clearAllCheckpoints: () => void
   clearRestoreHistory: (sessionId?: string) => void
+  clearSessionBranches: (sessionId: string) => void
 }
 
 /**
@@ -178,6 +228,17 @@ export interface RestoreCheckpointParams {
   previousMessageCount: number
 }
 
+/**
+ * 创建分支参数
+ */
+export interface CreateBranchParams {
+  sessionId: string
+  sourceCheckpointId: string
+  originalMessage: string
+  label?: string
+  parentBranchId?: string
+}
+
 // ==================== Helper Functions ====================
 
 function generateCheckpointId(): string {
@@ -186,6 +247,10 @@ function generateCheckpointId(): string {
 
 function generateRestoreId(): string {
   return `restore_${crypto.randomUUID()}`
+}
+
+function generateBranchId(): string {
+  return `branch_${crypto.randomUUID()}`
 }
 
 /**
@@ -227,6 +292,9 @@ const initialState = {
   checkpoints: {},
   sessionCheckpoints: {},
   restoreHistory: [],
+  branches: {},
+  sessionBranches: {},
+  activeBranches: {},
   autoCheckpointEnabled: true,
   maxCheckpointsPerSession: 10,
 }
@@ -470,6 +538,171 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
           return { restoreHistory: [] }
         })
       },
+      
+      clearSessionBranches: (sessionId: string) => {
+        set((state) => {
+          const branchIds = state.sessionBranches[sessionId] || []
+          const newBranches = { ...state.branches }
+          
+          branchIds.forEach(id => {
+            delete newBranches[id]
+          })
+          
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [sessionId]: _removed, ...remainingSessionBranches } = state.sessionBranches
+          const typedRemainingSessionBranches: Record<string, string[]> = remainingSessionBranches
+          
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [sessionId]: _removedActive, ...remainingActiveBranches } = state.activeBranches
+          const typedRemainingActiveBranches: Record<string, string> = remainingActiveBranches
+          
+          return {
+            branches: newBranches,
+            sessionBranches: typedRemainingSessionBranches,
+            activeBranches: typedRemainingActiveBranches,
+          }
+        })
+      },
+      
+      // ==================== Branch Actions (Story 4.9) ====================
+      
+      createBranch: (params: CreateBranchParams) => {
+        const branchId = generateBranchId()
+        const now = Date.now()
+        
+        const branch: BranchRecord = {
+          id: branchId,
+          sessionId: params.sessionId,
+          sourceCheckpointId: params.sourceCheckpointId,
+          label: params.label || `分支 ${now}`,
+          originalMessage: params.originalMessage,
+          status: 'active',
+          createdAt: now,
+          messageIds: [],
+          parentBranchId: params.parentBranchId,
+        }
+        
+        set((state) => {
+          const sessionBranchIds = state.sessionBranches[params.sessionId] || []
+          
+          return {
+            branches: {
+              ...state.branches,
+              [branchId]: branch,
+            },
+            sessionBranches: {
+              ...state.sessionBranches,
+              [params.sessionId]: [...sessionBranchIds, branchId],
+            },
+            activeBranches: {
+              ...state.activeBranches,
+              [params.sessionId]: branchId,
+            },
+          }
+        })
+        
+        return branch
+      },
+      
+      updateBranch: (branchId: string, updates: Partial<BranchRecord>) => {
+        set((state) => {
+          const branch = state.branches[branchId]
+          if (!branch) return state
+          
+          return {
+            branches: {
+              ...state.branches,
+              [branchId]: {
+                ...branch,
+                ...updates,
+              },
+            },
+          }
+        })
+      },
+      
+      abandonBranch: (branchId: string) => {
+        set((state) => {
+          const branch = state.branches[branchId]
+          if (!branch) return state
+          
+          const updatedBranch: BranchRecord = {
+            ...branch,
+            status: 'abandoned',
+          }
+          
+          // 如果是当前活跃分支，清除活跃状态
+          const activeBranchId = state.activeBranches[branch.sessionId]
+          const newActiveBranches = activeBranchId === branchId
+            ? { ...state.activeBranches }
+            : state.activeBranches
+          
+          if (activeBranchId === branchId) {
+            delete newActiveBranches[branch.sessionId]
+          }
+          
+          return {
+            branches: {
+              ...state.branches,
+              [branchId]: updatedBranch,
+            },
+            activeBranches: newActiveBranches,
+          }
+        })
+      },
+      
+      mergeBranch: (branchId: string) => {
+        set((state) => {
+          const branch = state.branches[branchId]
+          if (!branch) return state
+          
+          const updatedBranch: BranchRecord = {
+            ...branch,
+            status: 'merged',
+          }
+          
+          // 如果是当前活跃分支，清除活跃状态
+          const activeBranchId = state.activeBranches[branch.sessionId]
+          const newActiveBranches = activeBranchId === branchId
+            ? { ...state.activeBranches }
+            : state.activeBranches
+          
+          if (activeBranchId === branchId) {
+            delete newActiveBranches[branch.sessionId]
+          }
+          
+          return {
+            branches: {
+              ...state.branches,
+              [branchId]: updatedBranch,
+            },
+            activeBranches: newActiveBranches,
+          }
+        })
+      },
+      
+      getSessionBranches: (sessionId: string) => {
+        const state = get()
+        const branchIds = state.sessionBranches[sessionId] || []
+        return branchIds
+          .map(id => state.branches[id])
+          .filter((branch): branch is BranchRecord => branch !== undefined)
+          .sort((a, b) => b.createdAt - a.createdAt)
+      },
+      
+      getActiveBranch: (sessionId: string) => {
+        const state = get()
+        const branchId = state.activeBranches[sessionId]
+        if (!branchId) return null
+        return state.branches[branchId] || null
+      },
+      
+      getOriginalMessage: (checkpointId: string) => {
+        const state = get()
+        const checkpoint = state.checkpoints[checkpointId]
+        if (!checkpoint) return null
+        return checkpoint.messageSnapshot.lastMessageContent || null
+      },
     }),
     {
       name: 'checkpoint-store',
@@ -478,6 +711,9 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
         checkpoints: state.checkpoints,
         sessionCheckpoints: state.sessionCheckpoints,
         restoreHistory: state.restoreHistory,
+        branches: state.branches,
+        sessionBranches: state.sessionBranches,
+        activeBranches: state.activeBranches,
         autoCheckpointEnabled: state.autoCheckpointEnabled,
         maxCheckpointsPerSession: state.maxCheckpointsPerSession,
       }),
@@ -527,6 +763,27 @@ export function useRestoreHistory(sessionId: string): RestoreRecord[] {
  */
 export function useAllRestoreHistory(): RestoreRecord[] {
   return useCheckpointStore((state) => state.restoreHistory)
+}
+
+/**
+ * 获取指定会话的分支列表
+ */
+export function useSessionBranches(sessionId: string): BranchRecord[] {
+  return useCheckpointStore((state) => state.getSessionBranches(sessionId))
+}
+
+/**
+ * 获取指定会话的活跃分支
+ */
+export function useActiveBranch(sessionId: string): BranchRecord | null {
+  return useCheckpointStore((state) => state.getActiveBranch(sessionId))
+}
+
+/**
+ * 获取检查点的原始消息
+ */
+export function useOriginalMessage(checkpointId: string): string | null {
+  return useCheckpointStore((state) => state.getOriginalMessage(checkpointId))
 }
 
 // ==================== Export ====================

@@ -4,6 +4,8 @@
  * Story 4.2 - 会话管理功能
  * Story 4.3 - 历史对话管理
  * Story 4.7 - 检查点自动创建
+ * Story 4.8 - 检查点回滚功能
+ * Story 4.9 - 检查点编辑重试功能
  * 
  * 导出 Agent 相关的组件和 Hooks
  */
@@ -17,6 +19,8 @@ export { SessionList } from './components/SessionList'
 export { SessionPanel } from './components/SessionPanel'
 export { HistoryPanel } from './components/HistoryPanel'
 export { CheckpointMarker, CheckpointList } from './components/CheckpointMarker'
+export { RestoreDialog } from './components/RestoreDialog'
+export { EditRetryDialog } from './components/EditRetryDialog'
 
 // Hooks
 export { 
@@ -44,11 +48,20 @@ export {
   useLatestCheckpoint,
   useAutoCheckpointEnabled,
   useCheckpointCount,
+  useRestoreHistory,
+  useAllRestoreHistory,
+  useSessionBranches,
+  useActiveBranch,
+  useOriginalMessage,
   type Checkpoint,
   type CheckpointType,
   type CheckpointStatus,
   type WorkingStateSnapshot,
   type CheckpointMetadata,
   type CheckpointStoreState,
-  type CreateCheckpointParams
+  type CreateCheckpointParams,
+  type RestoreMode,
+  type RestoreRecord,
+  type BranchRecord,
+  type CreateBranchParams
 } from './hooks/useCheckpointStore'

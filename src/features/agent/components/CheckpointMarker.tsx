@@ -2,9 +2,11 @@
  * CheckpointMarker - 检查点标记组件
  * Story 4.7 - 检查点自动创建
  * Story 4.8 - 检查点回滚功能
+ * Story 4.9 - 检查点编辑重试功能
  * 
  * 在对话流中显示检查点标记，支持恢复到检查点
  * 支持选择恢复模式（仅对话 / 对话+内容）
+ * 支持编辑检查点消息并创建分支重试
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
@@ -13,16 +15,18 @@
  */
 
 import { useState } from 'react'
-import { Bookmark, RotateCcw, Trash2, ChevronDown, ChevronUp, Clock } from 'lucide-react'
+import { Bookmark, RotateCcw, Trash2, ChevronDown, ChevronUp, Clock, Edit3, GitBranch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
   useSessionCheckpoints,
   useCheckpointStore,
+  useSessionBranches,
   type Checkpoint, 
   type CheckpointType,
   type RestoreMode
 } from '../hooks/useCheckpointStore'
 import { RestoreDialog } from './RestoreDialog'
+import { EditRetryDialog } from './EditRetryDialog'
 
 // ==================== Types ====================
 
@@ -31,6 +35,7 @@ interface CheckpointMarkerProps {
   currentMessageCount: number
   onRestore?: (checkpointId: string, mode: RestoreMode) => void
   onDelete?: (checkpointId: string) => void
+  onEditRetry?: (checkpointId: string, editedMessage: string, branchLabel?: string) => void
   isExpanded?: boolean
   onToggleExpand?: () => void
 }
@@ -92,20 +97,41 @@ export function CheckpointMarker({
   currentMessageCount,
   onRestore,
   onDelete,
+  onEditRetry,
   isExpanded = false,
   onToggleExpand,
 }: CheckpointMarkerProps) {
   const [showRestoreDialog, setShowRestoreDialog] = useState(false)
+  const [showEditRetryDialog, setShowEditRetryDialog] = useState(false)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  
+  // Get branches for this checkpoint's session
+  const branches = useSessionBranches(checkpoint.sessionId)
+  const existingBranches = branches.filter(b => b.sourceCheckpointId === checkpoint.id)
+  
+  // Get original message from checkpoint
+  const originalMessage = checkpoint.messageSnapshot.lastMessageContent || ''
   
   const handleRestoreClick = () => {
     setShowRestoreDialog(true)
     setShowConfirmDelete(false)
+    setShowEditRetryDialog(false)
   }
   
   const handleRestore = (checkpointId: string, mode: RestoreMode) => {
     onRestore?.(checkpointId, mode)
     setShowRestoreDialog(false)
+  }
+  
+  const handleEditRetryClick = () => {
+    setShowEditRetryDialog(true)
+    setShowConfirmDelete(false)
+    setShowRestoreDialog(false)
+  }
+  
+  const handleEditRetry = (checkpointId: string, editedMessage: string, branchLabel?: string) => {
+    onEditRetry?.(checkpointId, editedMessage, branchLabel)
+    setShowEditRetryDialog(false)
   }
   
   const handleDelete = () => {
@@ -115,6 +141,7 @@ export function CheckpointMarker({
     } else {
       setShowConfirmDelete(true)
       setShowRestoreDialog(false)
+      setShowEditRetryDialog(false)
     }
   }
   
@@ -176,17 +203,39 @@ export function CheckpointMarker({
           </div>
           
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {checkpoint.status === 'active' && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleRestoreClick}
-                className="h-7 text-xs gap-1"
-              >
-                <RotateCcw size={12} />
-                恢复到此检查点
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleRestoreClick}
+                  className="h-7 text-xs gap-1"
+                >
+                  <RotateCcw size={12} />
+                  恢复
+                </Button>
+                
+                {originalMessage && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleEditRetryClick}
+                    className="h-7 text-xs gap-1"
+                    style={{ borderColor: '#1E3A5F', color: '#1E3A5F' }}
+                  >
+                    <Edit3 size={12} />
+                    编辑重试
+                  </Button>
+                )}
+                
+                {existingBranches.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <GitBranch size={10} />
+                    <span>{existingBranches.length} 个分支</span>
+                  </div>
+                )}
+              </>
             )}
             
             {showConfirmDelete ? (
@@ -231,6 +280,17 @@ export function CheckpointMarker({
           onCancel={() => setShowRestoreDialog(false)}
         />
       )}
+      
+      {/* Edit Retry Dialog */}
+      {showEditRetryDialog && (
+        <EditRetryDialog
+          checkpoint={checkpoint}
+          originalMessage={originalMessage}
+          existingBranches={existingBranches}
+          onEditRetry={handleEditRetry}
+          onCancel={() => setShowEditRetryDialog(false)}
+        />
+      )}
     </div>
   )
 }
@@ -241,9 +301,10 @@ interface CheckpointListProps {
   sessionId: string
   currentMessageCount: number
   onRestore?: (checkpointId: string, mode: RestoreMode) => void
+  onEditRetry?: (checkpointId: string, editedMessage: string, branchLabel?: string) => void
 }
 
-export function CheckpointList({ sessionId, currentMessageCount, onRestore }: CheckpointListProps) {
+export function CheckpointList({ sessionId, currentMessageCount, onRestore, onEditRetry }: CheckpointListProps) {
   const checkpoints = useSessionCheckpoints(sessionId)
   const deleteCheckpoint = useCheckpointStore((state) => state.deleteCheckpoint)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -264,6 +325,7 @@ export function CheckpointList({ sessionId, currentMessageCount, onRestore }: Ch
           checkpoint={checkpoint}
           currentMessageCount={currentMessageCount}
           onRestore={onRestore}
+          onEditRetry={onEditRetry}
           onDelete={handleDelete}
           isExpanded={expandedId === checkpoint.id}
           onToggleExpand={() => setExpandedId(expandedId === checkpoint.id ? null : checkpoint.id)}
