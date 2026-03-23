@@ -1,4 +1,39 @@
 
+## [2026-03-23] - Task: Trace and Step Log (Story 48.1)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02 - 追踪和步骤日志
+- 架构合规：ADR-037 - 运行时追踪
+- UX 合规：UX-04 - 调试支持
+
+### What was done:
+- 创建 traceAndStepLog.ts - 追踪和步骤日志模块
+  - TraceId: 追踪标识符
+  - TraceStepStatus: 步骤状态
+  - StepLogEntry: 步骤日志条目
+  - TraceContext: 追踪上下文
+  - TraceSummary: 追踪摘要
+  - TraceStore: 追踪存储
+
+- 功能实现：
+  - ID 生成 (generateTraceId, generateStepId, isValidTraceId, isValidStepId)
+  - 追踪上下文 (createTraceContext, touchTraceContext)
+  - 步骤日志 (createStepLogEntry, startStep, completeStep, failStep, skipStep, cancelStep)
+  - 追踪存储 (createTraceStore, registerTrace, addStepLog, updateStepLog)
+  - 查询功能 (getTraceContext, getSessionTraces, getTraceSteps, getStepById, getStepsByStatus, getStepsByType)
+  - 摘要生成 (generateTraceSummary, getTraceChain)
+  - 序列化 (serializeTraceContext, deserializeTraceContext, serializeStepLogEntry, deserializeStepLogEntry, serializeTraceStore, deserializeTraceStore)
+  - 调试格式化 (formatTraceContext, formatStepLogEntry, formatTraceSummary)
+
+### Testing:
+- 52 个单元测试通过 (traceAndStepLog.test.ts)
+- Build 成功
+
+### Notes:
+- TraceStepStatus 与 runtimeStateMachine.ts 中的 StepStatus 区分命名
+- 支持追踪链（从根到当前）和摘要生成
+- 支持按状态和类型筛选步骤
+
 ## [2026-03-23] - Task: Knowledge Retrieval Baseline (Story 47.4)
 
 ### 铁律合规检查：

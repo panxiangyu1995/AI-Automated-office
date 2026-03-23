@@ -355,3 +355,66 @@ export {
   // Mock
   mockRetrieve,
 } from './knowledgeRetrieval'
+
+// Trace and Step Log (Task 80: Story 48.1)
+export {
+  // Types
+  type TraceId,
+  type TraceStepStatus,
+  type StepLogEntry,
+  type TraceContext,
+  type TraceSummary,
+  type TraceStore,
+  type SerializableTraceContext,
+  type SerializableStepLogEntry,
+  type SerializableTraceStore,
+
+  // ID Generation
+  generateTraceId,
+  generateStepId,
+  isValidTraceId,
+  isValidStepId,
+
+  // Trace Context
+  createTraceContext,
+  touchTraceContext,
+
+  // Step Log
+  createStepLogEntry,
+  startStep,
+  completeStep,
+  failStep,
+  skipStep,
+  cancelStep,
+
+  // Trace Store
+  createTraceStore,
+  registerTrace,
+  addStepLog,
+  updateStepLog,
+
+  // Lookup
+  getTraceContext,
+  getSessionTraces,
+  getTraceSteps,
+  getStepById,
+  getStepsByStatus,
+  getStepsByType,
+
+  // Summary
+  generateTraceSummary,
+  getTraceChain,
+
+  // Serialization
+  serializeTraceContext,
+  deserializeTraceContext,
+  serializeStepLogEntry,
+  deserializeStepLogEntry,
+  serializeTraceStore,
+  deserializeTraceStore,
+
+  // Debug
+  formatTraceContext,
+  formatStepLogEntry,
+  formatTraceSummary,
+} from './traceAndStepLog'
