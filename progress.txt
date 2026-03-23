@@ -1,4 +1,37 @@
 
+## [2026-03-23] - Task: Task Retry UI (Story 4.6)
+
+### 铁律合规检查：
+- PRD 合规：FR16 - 任务失败自动重试
+- 架构合规：ADR-037 - Agent 运行时追踪
+- NFR 合规：NFR-22 - 任务可靠性
+
+### What was done:
+- 更新 useSchedulerStore.ts：
+  - 添加 RetryAttempt 类型定义
+  - 添加 retryCount, maxRetries, retryHistory, lastError, nextRetryAt 字段到 ScheduledTask
+  - 添加 TaskStatus 'retrying' 状态
+  - 添加 calculateBackoff 函数（指数退避 + 抖动）
+  - 添加 useFailedTasks 和 useRetryableTasks 选择器 hooks
+  - 添加 startTaskRetry 方法
+
+- 更新 ScheduledTaskPanel.tsx：
+  - StatusBadge 显示重试次数 (1/3)
+  - TaskItem 显示重试历史和错误信息
+  - 添加重试按钮用于失败任务
+  - Footer 显示失败任务数量
+
+- 更新 scheduler/index.ts 导出新类型和 hooks
+
+### Testing:
+- lint 检查通过 (ScheduledTaskPanel 无错误)
+- build 成功
+
+### Notes:
+- 指数退避公式: baseDelay * 2^(attempt-1) + jitter
+- 最大退避时间: 60 秒
+- 默认最大重试次数: 3
+
 ## [2026-03-23] - Task: Scheduled Task Setup (Story 4.5)
 
 ### 铁律合规检查：

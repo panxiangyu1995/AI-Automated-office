@@ -1,6 +1,7 @@
 /**
  * ScheduledTaskPanel - 定时任务管理面板
  * Story 4.5 - 定时任务功能
+ * Story 4.6 - 任务失败自动重试
  * 
  * 提供定时任务的创建、查看、管理界面
  * 
@@ -14,7 +15,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { 
   Clock, Plus, Pause, Trash2, Calendar, 
   CheckCircle, XCircle, Loader2,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, RefreshCw, AlertCircle
 } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Label } from '../../../components/ui/label'
@@ -23,6 +24,7 @@ import {
   useSchedulerStore, 
   usePendingTasks, 
   useUpcomingTasks,
+  useFailedTasks,
   type ScheduledTask,
   type RecurrenceType,
   type TaskStatus 
@@ -36,21 +38,32 @@ interface ScheduledTaskPanelProps {
 
 // ==================== Status Badge ====================
 
-function StatusBadge({ status }: { status: TaskStatus }) {
-  const config = {
+function StatusBadge({ status, retryCount, maxRetries }: { 
+  status: TaskStatus
+  retryCount?: number
+  maxRetries?: number 
+}) {
+  const config: Record<TaskStatus, { label: string; color: string; icon: typeof Clock }> = {
     pending: { label: '待执行', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
     running: { label: '执行中', color: 'bg-blue-100 text-blue-700', icon: Loader2 },
     completed: { label: '已完成', color: 'bg-green-100 text-green-700', icon: CheckCircle },
     failed: { label: '失败', color: 'bg-red-100 text-red-700', icon: XCircle },
     cancelled: { label: '已取消', color: 'bg-slate-100 text-slate-700', icon: Pause },
+    retrying: { label: '重试中', color: 'bg-orange-100 text-orange-700', icon: RefreshCw },
   }
   
   const { label, color, icon: Icon } = config[status]
+  const showRetryInfo = status === 'retrying' || status === 'failed'
   
   return (
     <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium', color)}>
-      <Icon size={12} className={status === 'running' ? 'animate-spin' : undefined} />
+      <Icon size={12} className={status === 'running' || status === 'retrying' ? 'animate-spin' : undefined} />
       {label}
+      {showRetryInfo && retryCount !== undefined && (
+        <span className="ml-1 opacity-75">
+          ({retryCount}/{maxRetries ?? 3})
+        </span>
+      )}
     </span>
   )
 }
@@ -79,9 +92,10 @@ interface TaskItemProps {
   task: ScheduledTask
   onCancel: () => void
   onDelete: () => void
+  onRetry?: () => void
 }
 
-function TaskItem({ task, onCancel, onDelete }: TaskItemProps) {
+function TaskItem({ task, onCancel, onDelete, onRetry }: TaskItemProps) {
   const [expanded, setExpanded] = useState(false)
   
   const formatTime = (timestamp: number) => {
@@ -94,14 +108,21 @@ function TaskItem({ task, onCancel, onDelete }: TaskItemProps) {
   }
   
   const getNextRunLabel = () => {
-    if (!task.nextRunAt) return null
-    const diff = task.nextRunAt - Date.now()
+    const nextTime = task.nextRunAt || task.nextRetryAt
+    if (!nextTime) return null
+    const diff = nextTime - Date.now()
     
     if (diff < 0) return '已到期'
     if (diff < 60 * 1000) return '即将执行'
     if (diff < 60 * 60 * 1000) return `${Math.floor(diff / 60000)} 分钟后`
     if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / 3600000)} 小时后`
-    return formatTime(task.nextRunAt)
+    return formatTime(nextTime)
+  }
+  
+  const formatBackoff = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`
+    if (ms < 60000) return `${Math.round(ms / 1000)}秒`
+    return `${Math.round(ms / 60000)}分钟`
   }
   
   return (
@@ -113,15 +134,25 @@ function TaskItem({ task, onCancel, onDelete }: TaskItemProps) {
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex-shrink-0">
-            <StatusBadge status={task.status} />
+            <StatusBadge 
+              status={task.status} 
+              retryCount={task.retryCount}
+              maxRetries={task.maxRetries}
+            />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-slate-800 truncate">{task.name}</p>
             <div className="flex items-center gap-2 mt-0.5">
               <RecurrenceBadge recurrence={task.recurrence} />
-              {task.nextRunAt && task.status === 'pending' && (
+              {(task.nextRunAt || task.nextRetryAt) && (task.status === 'pending' || task.status === 'retrying') && (
                 <span className="text-xs text-primary" style={{ color: '#1E3A5F' }}>
                   {getNextRunLabel()}
+                </span>
+              )}
+              {task.status === 'failed' && task.lastError && (
+                <span className="text-xs text-red-500 flex items-center gap-1">
+                  <AlertCircle size={10} />
+                  执行失败
                 </span>
               )}
             </div>
@@ -136,6 +167,15 @@ function TaskItem({ task, onCancel, onDelete }: TaskItemProps) {
               title="取消任务"
             >
               <Pause size={14} />
+            </button>
+          )}
+          {task.status === 'failed' && onRetry && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onRetry() }}
+              className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded"
+              title="重试任务"
+            >
+              <RefreshCw size={14} />
             </button>
           )}
           <button
@@ -155,6 +195,29 @@ function TaskItem({ task, onCancel, onDelete }: TaskItemProps) {
           {task.description && (
             <p className="text-slate-600 mb-2">{task.description}</p>
           )}
+          
+          {/* Error Message */}
+          {task.status === 'failed' && task.lastError && (
+            <div className="mb-2 p-2 bg-red-50 border border-red-100 rounded text-xs text-red-700">
+              <p className="font-medium">错误信息:</p>
+              <p className="mt-1">{task.lastError}</p>
+            </div>
+          )}
+          
+          {/* Retry History */}
+          {task.retryHistory && task.retryHistory.length > 0 && (
+            <div className="mb-2 p-2 bg-slate-100 rounded text-xs">
+              <p className="font-medium text-slate-600 mb-1">重试历史:</p>
+              {task.retryHistory.map((attempt, index) => (
+                <div key={index} className="flex justify-between text-slate-500 py-0.5">
+                  <span>第 {attempt.attemptNumber} 次</span>
+                  <span>退避: {formatBackoff(attempt.backoffMs)}</span>
+                  <span>{formatTime(attempt.timestamp)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          
           <div className="space-y-1 text-xs text-slate-500">
             <p><span className="font-medium">提示词:</span> {task.prompt}</p>
             <p><span className="font-medium">创建时间:</span> {formatTime(task.createdAt)}</p>
@@ -165,6 +228,7 @@ function TaskItem({ task, onCancel, onDelete }: TaskItemProps) {
             {task.maxRuns && (
               <p><span className="font-medium">最大执行:</span> {task.maxRuns} 次</p>
             )}
+            <p><span className="font-medium">重试次数:</span> {task.retryCount}/{task.maxRetries ?? 3}</p>
           </div>
         </div>
       )}
@@ -299,7 +363,8 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const pendingTasks = usePendingTasks()
   const upcomingTasks = useUpcomingTasks()
-  const { tasks, cancelTask, deleteTask } = useSchedulerStore()
+  const failedTasks = useFailedTasks()
+  const { tasks, cancelTask, deleteTask, retryTask } = useSchedulerStore()
   
   const allTasks = useMemo(() => {
     return Object.values(tasks).sort((a, b) => b.createdAt - a.createdAt)
@@ -316,6 +381,12 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
       deleteTask(taskId)
     }
   }, [deleteTask])
+  
+  const handleRetryTask = useCallback((taskId: string) => {
+    if (window.confirm('确定要重试这个任务吗？')) {
+      retryTask(taskId)
+    }
+  }, [retryTask])
   
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -344,6 +415,27 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
           </div>
         ) : (
           <>
+            {/* Failed Tasks */}
+            {failedTasks.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-xs font-medium text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <AlertCircle size={12} />
+                  失败任务 ({failedTasks.length})
+                </h4>
+                <div className="space-y-2">
+                  {failedTasks.map((task) => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      onCancel={() => handleCancelTask(task.id)}
+                      onDelete={() => handleDeleteTask(task.id)}
+                      onRetry={() => handleRetryTask(task.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* Upcoming Tasks */}
             {upcomingTasks.length > 0 && (
               <div className="mb-4">
@@ -388,6 +480,7 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
                       task={task}
                       onCancel={() => handleCancelTask(task.id)}
                       onDelete={() => handleDeleteTask(task.id)}
+                      onRetry={task.status === 'failed' ? () => handleRetryTask(task.id) : undefined}
                     />
                   ))}
                 </div>
@@ -398,8 +491,12 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
       </div>
       
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-slate-200 text-xs text-slate-400">
-        待执行: {pendingTasks.length} | 共 {allTasks.length} 个任务
+      <div className="px-4 py-2 border-t border-slate-200 text-xs text-slate-400 flex justify-between">
+        <span>待执行: {pendingTasks.length}</span>
+        {failedTasks.length > 0 && (
+          <span className="text-red-500">失败: {failedTasks.length}</span>
+        )}
+        <span>共 {allTasks.length} 个任务</span>
       </div>
     </div>
   )
