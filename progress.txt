@@ -1,4 +1,33 @@
 
+## [2026-03-24] - Task 22: Story 5.8 - 工具调用降级方案
+
+### 铁律合规检查：
+- PRD 合规：FR77
+- 架构合规：ADR-017
+- UX 合规：UX-02, UX-04
+
+### What was done:
+- 创建 ToolDowngradePolicy.tsx 组件
+  - 降级策略配置面板
+  - 支持6种降级行为：备选工具、缓存响应、默认值、优雅错误、请求用户输入、跳过操作
+  - 支持6种触发条件：工具不可用、超时、限流、权限拒绝、验证失败、运行时错误
+  - 支持全局启用/禁用开关
+  - 支持默认降级行为配置
+  - 支持通知用户和日志记录选项
+  - 支持优先级配置
+- 定义 ToolDowngradePolicyConfig 和 DowngradeConfig 类型
+- 创建 createDefaultToolDowngradePolicy 工厂函数
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 遵循分层架构设计
+
+---
+
 ## [2026-03-24] - Task 21: Story 5.7 - 工具调用重试策略配置
 
 ### 铁律合规检查：
