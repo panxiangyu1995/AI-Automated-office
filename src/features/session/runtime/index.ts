@@ -1282,3 +1282,97 @@ export {
   formatApprovalSummary,
   formatToolExecutionRecord,
 } from './approvalPilot'
+
+// Sales Pilot Integration (Task 89: Story 50.2)
+export {
+  // Types
+  type CustomerStatus,
+  type CustomerPriority,
+  type LeadStatus,
+  type LeadSource,
+  type OpportunityStatus,
+  type FollowUpType,
+  type FollowUpStatus,
+  type SalesToolType,
+  type CustomerContext,
+  type CustomerContact,
+  type LeadContext,
+  type OpportunityContext,
+  type FollowUpContext,
+  type SalesTool,
+  type SalesToolInput,
+  type SalesToolOutput,
+  type CustomerSummary,
+  type SalesSummaryOptions,
+  type SalesWritebackAction,
+  type SalesPilotState,
+  type SalesToolExecutionRecord,
+  type SalesPilotContract,
+
+  // ID Generation
+  generateCustomerId,
+  generateLeadId,
+  generateOpportunityId,
+  generateFollowUpId,
+  generateContactId,
+  generateToolId as generateSalesToolId,
+  generateSalesSummaryId,
+  generateToolRecordId as generateSalesToolRecordId,
+  generateSalesWritebackId,
+  generateSalesAuditId,
+
+  // Factory Functions
+  createCustomerContext,
+  createCustomerContact,
+  createSalesTool,
+  createSalesPilotContract,
+  createSalesPilotState,
+
+  // Tool Registration
+  getDefaultSalesTools,
+  registerTool as registerSalesTool,
+  registerDefaultTools as registerDefaultSalesTools,
+  getTool as getSalesTool,
+  getToolByType as getSalesToolByType,
+
+  // Permission and Validation
+  checkToolPermission as checkSalesToolPermission,
+  checkCustomerStatus,
+  checkLeadStatus,
+  validateToolInput as validateSalesToolInput,
+
+  // Tool Execution
+  executeSalesTool,
+
+  // Summary Generation
+  generateCustomerSummary,
+  generateLeadSummaryContext,
+  generateOpportunitySummaryContext,
+  generateFollowUpSummaryContext,
+
+  // Writeback Integration
+  createSalesWritebackAction,
+  prepareCustomerSummaryWriteback,
+  prepareFollowUpFormWriteback,
+  prepareWorkbenchCardWriteback,
+
+  // Audit Integration
+  createSalesAuditEntry,
+  addAuditEntryToState as addSalesAuditEntryToState,
+
+  // Serialization
+  serializeCustomerContext,
+  deserializeCustomerContext,
+  serializeSalesTool,
+  deserializeSalesTool,
+  serializeCustomerSummary,
+  deserializeCustomerSummary,
+  serializeSalesPilotState,
+  deserializeSalesPilotState,
+
+  // Debug Formatting
+  formatCustomerContext,
+  formatSalesTool,
+  formatCustomerSummary,
+  formatToolExecutionRecord as formatSalesToolExecutionRecord,
+} from './salesPilot'

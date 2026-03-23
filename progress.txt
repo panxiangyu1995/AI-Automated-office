@@ -1,4 +1,52 @@
 
+## [2026-03-23] - Task: Sales Pilot Integration (Story 50.2)
+
+### 铁律合规检查：
+- PRD 合规：PRD-P2-02, PRD-P2-03 - 销售场景运行时验证
+- 架构合规：ADR-037 - Agent 运行时追踪
+- UX 合规：UX-01, UX-02, UX-04 - 交互、表单、调试
+
+### What was done:
+- 创建 salesPilot.ts - 销售场景 Pilot 集成模块
+  - CustomerStatus: 客户状态 (potential, new, active, inactive, churned)
+  - LeadStatus: 线索状态 (new, contacted, qualified, proposal, negotiation, won, lost, disqualified)
+  - OpportunityStatus: 商机状态 (prospecting, qualification, analysis, proposal, negotiation, closed_won, closed_lost)
+  - FollowUpType: 跟进类型 (call, email, meeting, visit, demo, other)
+  - FollowUpStatus: 跟进状态 (pending, in_progress, completed, cancelled)
+  - SalesToolType: 销售工具类型 (16 种)
+  - CustomerContext, LeadContext, OpportunityContext, FollowUpContext: 上下文类型
+  - SalesTool: 销售工具定义
+  - SalesToolInput/Output: 工具输入输出
+  - SalesSummary: 销售摘要
+
+- 功能实现：
+  - ID 生成 (generateToolId, generateSalesSummaryId, generateToolRecordId, generateSalesWritebackId)
+  - 工厂函数 (createCustomerContext, createLeadContext, createOpportunityContext, createFollowUpContext, createSalesTool, createSalesPilotContract, createSalesPilotState)
+  - 工具注册 (getDefaultSalesTools, registerTool, registerDefaultTools, getTool, getToolByType)
+  - 权限验证 (checkToolPermission, checkCustomerStatus, checkLeadStatus, validateToolInput)
+  - 工具执行 (executeSalesTool) - 支持 16 种销售工具
+  - 摘要生成 (generateCustomerSummary, generateLeadSummary, generateOpportunitySummary, generateFollowUpSummary, generateSalesSummary)
+  - 回写集成 (createSalesWritebackAction, prepareCustomerWriteback, prepareLeadWriteback, prepareOpportunityWriteback, prepareFollowUpWriteback)
+  - 序列化 (serializeCustomerContext, deserializeCustomerContext, serializeLeadContext, deserializeLeadContext, serializeOpportunityContext, deserializeOpportunityContext, serializeFollowUpContext, deserializeFollowUpContext, serializeSalesPilotState, deserializeSalesPilotState)
+  - 调试格式化 (formatCustomerContext, formatSalesTool, formatSalesSummary, formatToolExecutionRecord)
+
+- 修复的问题：
+  - 工具 ID 生成添加随机后缀以确保唯一性 (避免同一毫秒内生成相同 ID)
+
+### Testing:
+- 71 个单元测试通过 (salesPilot.test.ts)
+- 所有 1886 个单元测试通过 (8 个现有集成测试失败与本次修改无关)
+- TypeScript 编译通过
+- Build 成功
+
+### Notes:
+- 支持 16 种销售工具 (create/update/delete customer, create/update/convert lead, create/update opportunity, create/update/complete followup, query customer/lead/opportunity, generate summary, fill followup form)
+- 支持 5 种客户状态、8 种线索状态、7 种商机状态、6 种跟进类型、4 种跟进状态
+- 支持确认机制 - 高风险操作需用户确认
+- 支持 dry run 模式 - 预览操作结果
+- 支持摘要生成 - 自动提取关键信息字段
+- 记录完整的工具执行历史
+
 ## [2026-03-23] - Task: Approval Pilot Integration (Story 50.1)
 
 ### 铁律合规检查：
