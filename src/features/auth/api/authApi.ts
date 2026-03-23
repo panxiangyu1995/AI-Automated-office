@@ -10,7 +10,7 @@ import type {
 } from '../types/auth.types'
 
 const REQUEST_TIMEOUT_MS = 10000
-const AUTH_API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8080').replace(/\/+$/, '')
+const AUTH_API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
 
 let refreshTokenInFlight: Promise<TokenPair> | null = null
 

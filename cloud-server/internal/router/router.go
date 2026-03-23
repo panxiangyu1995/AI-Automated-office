@@ -47,8 +47,9 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		SQLDB:   sqlDB,
 	}
 	authHandler := &handler.AuthHandler{
-		SQLDB: sqlDB,
-		JWT:   cfg.JWT,
+		SQLDB:      sqlDB,
+		JWT:        cfg.JWT,
+		BypassAuth: cfg.Server.BypassAuth,
 	}
 
 	// 初始化 audit 模块
@@ -153,8 +154,9 @@ func NewRouterWithMiddleware(
 		SQLDB:   sqlDB,
 	}
 	authHandler := &handler.AuthHandler{
-		SQLDB: sqlDB,
-		JWT:   cfg.JWT,
+		SQLDB:      sqlDB,
+		JWT:        cfg.JWT,
+		BypassAuth: cfg.Server.BypassAuth,
 	}
 
 	// 初始化 audit 模块

@@ -2,6 +2,9 @@
 import { ApiClient } from '@/lib/api/client'
 import { useAuthStore } from '@/stores/authStore'
 
+// 开发模式下是否启用模拟认证
+const DEV_MODE_BYPASS_AUTH = import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === 'true'
+
 interface SessionStatus {
   valid: boolean
   session_id?: string
@@ -41,6 +44,11 @@ export function useSessionCheck(options: UseSessionCheckOptions = {}) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const checkSession = useCallback(async () => {
+    // 开发模式下跳过会话检查
+    if (DEV_MODE_BYPASS_AUTH) {
+      return
+    }
+
     if (checkInProgress.current || !isAuthenticated) {
       return
     }

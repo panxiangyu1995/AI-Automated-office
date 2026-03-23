@@ -22,8 +22,9 @@ import (
 const passwordCost = 12
 
 type AuthHandler struct {
-	SQLDB *sql.DB
-	JWT   config.JWTConfig
+	SQLDB      *sql.DB
+	JWT        config.JWTConfig
+	BypassAuth bool
 }
 
 type loginRequest struct {
@@ -66,6 +67,26 @@ type forgotPasswordResponse struct {
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	if h.SQLDB == nil {
+		// 开发模式绕过认证
+		if h.BypassAuth {
+			mockUser := authUser{
+				ID:         "dev-user-001",
+				Username:   "dev@example.com",
+				Name:       "开发用户",
+				Department: "技术部",
+				Role:       "admin",
+			}
+			token, err := h.createToken(mockUser.ID, false)
+			if err != nil {
+				response.Error(c, http.StatusInternalServerError, "ERR_TOKEN", "登录失败", nil)
+				return
+			}
+			response.Success(c, loginResponse{
+				User:  mockUser,
+				Token: token,
+			}, "登录成功 (开发模式)")
+			return
+		}
 		response.Error(c, http.StatusServiceUnavailable, "ERR_AUTH_UNAVAILABLE", "认证服务不可用", nil)
 		return
 	}

@@ -14,6 +14,7 @@ type ServerConfig struct {
 	Mode         string        `mapstructure:"mode"`
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
+	BypassAuth   bool          `mapstructure:"bypass_auth"`
 }
 
 type DatabaseConfig struct {
@@ -46,6 +47,7 @@ type CorsConfig struct {
 	AllowedOrigins []string `mapstructure:"allowed_origins"`
 	AllowedMethods []string `mapstructure:"allowed_methods"`
 	AllowedHeaders []string `mapstructure:"allowed_headers"`
+	ExposedHeaders []string `mapstructure:"exposed_headers"`
 }
 
 type Config struct {
@@ -79,6 +81,7 @@ func Load() (Config, error) {
 	viper.SetDefault("cors.allowed_origins", []string{"http://localhost:1420", "tauri://localhost"})
 	viper.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "DELETE"})
 	viper.SetDefault("cors.allowed_headers", []string{"Authorization", "Content-Type"})
+	viper.SetDefault("cors.exposed_headers", []string{"Content-Length", "Content-Type"})
 
 	viper.SetConfigFile("configs/config.yaml")
 	if _, err := os.Stat("configs/config.yaml"); err == nil {

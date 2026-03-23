@@ -4,6 +4,25 @@ inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/architecture.md
   - _bmad-output/planning-artifacts/ux-design-specification.md
+  - docs/memory-fusion-pdf-draft.md
+  - docs/memory-fusion-architecture-draft.md
+  - _bmad-output/soul/00-overview.md
+  - _bmad-output/soul/01-soul-md-mechanism.md
+  - _bmad-output/soul/02-skill-progressive-loading.md
+  - _bmad-output/soul/03-heartbeat-mechanism.md
+  - _bmad-output/soul/04-cron-scheduling-mechanism.md
+  - _bmad-output/soul/README.md
+  - _bmad-output/opencode/00-overview.md
+  - _bmad-output/opencode/01-architecture.md
+  - _bmad-output/opencode/02-agent-system.md
+  - _bmad-output/opencode/03-tool-system.md
+  - _bmad-output/opencode/04-session-management.md
+  - _bmad-output/opencode/05-mcp-integration.md
+  - _bmad-output/opencode/06-frontend-architecture.md
+  - _bmad-output/opencode/07-backend-api.md
+  - _bmad-output/opencode/08-tech-stack.md
+  - _bmad-output/opencode/09-reference-recommendations.md
+  - _bmad-output/opencode/10-skill-progressive-loading.md
   - _bmad-output/planning-artifacts/pencil-new.pen
 ---
 
@@ -1142,7 +1161,7 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 | **FR810-FR820** | **Epic 21** | **MCP服务管理** |
 | **FR825-FR832** | **Epic 21** | **MCP工具Approve策略** |
 | **FR835-FR840** | **Epic 21** | **Skill配置管理** |
-| **FR850-FR860** | **Epic 21** | **系统提示词管理** |
+| **FR850-FR863** | **Epic 21** | **系统提示词管理** |
 | **FR865-FR875** | **Epic 21** | **Rules规则管理** |
 | **FR880-FR888** | **Epic 21** | **提示词调试功能** |
 | **FR890-FR900** | **Epic 21** | **Sub-Agent管理** |
@@ -1205,7 +1224,7 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 
 **Epic 21: LLM提供商与MCP配置管理**
 用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，管理提示词和规则，创建和配置Sub-Agent（支持AI辅助生成提示词），确保Agent应用的核心能力可配置、可控制、可审计。
-**FRs covered:** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR860, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938
+**FRs covered:** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR863, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938
 
 ### Phase 3: 企业级能力层
 
@@ -2775,6 +2794,12 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 **Phase:** Phase 2 - AI Agent核心层
 
+**融合实施基线（并入铁律）：**
+- 采纳 Hook 无感机制：SessionStart / UserPromptSubmit / PostToolUse / Stop / SessionEnd。
+- 保持三层业务记忆模型不变，允许四层技术实现拆分用于工程落地。
+- MVP 主路径采用 Rust-First 与本地优先存储，默认 SQLite + FTS5 + sqlite-vec。
+- 认知状态重建能力（tunnel_state）纳入实施范围，但必须通过权限与审计链路。
+
 ---
 
 ### Story 6.1: 会话记忆管理
@@ -2795,6 +2820,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **When** 用户重新打开
 **Then** 可恢复之前中断的会话
 **And** 继续之前的对话
+**And** SessionStart Hook 会加载最近摘要与领域状态用于上下文恢复
 
 ---
 
@@ -2831,6 +2857,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 支持四种操作类型：ADD/UPDATE/DELETE/NONE
 **And** 当新信息与已有记忆冲突时自动更新
 **And** 用户可关闭自动提取改为手动
+**And** Stop Hook 结束阶段会生成会话摘要并更新认知状态
 
 ---
 
@@ -2848,6 +2875,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **And** 支持BM25关键词检索
 **And** 采用混合搜索返回结果
 **And** 响应时间 < 200ms
+**And** 支持通过 `agent_cognitive_tunnel_state` 重建领域认知状态
 
 ---
 
@@ -2925,6 +2953,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 可配置向量数据库部署模式（本地/云端）
 **And** 可配置记忆自动提取开关
 **And** 可配置会话记忆保留时长
+**And** 可配置 Hook 自动采集开关与敏感数据剥离策略
 
 **Given** 管理员配置企业知识库
 **When** 设置访问权限
@@ -3405,6 +3434,8 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 提取人设定义
 **And** 转换为Agent人设模板
 **And** 用户可选择应用该人设
+**And** 默认以只读方式应用模板；涉及持久化修改时需用户确认并记录版本审计
+**And** 人设模板不得绕过现有权限、审批与审计机制
 
 ---
 
@@ -5165,6 +5196,16 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 **Phase:** Phase 2 - AI Agent核心层
 
+**OpenCode全量参考采纳基线（并入铁律）：**
+- `_bmad-output/opencode` 全部文档纳入 Epic 21 设计参考输入。
+- 实施采用 Direct / Adapt / Reserve 三档：直接采纳工具收敛与 Skill 渐进加载；其余按现有技术栈改造采纳。
+- 任何引用 OpenCode 的实现必须通过本项目权限、审批、审计链路验证后方可进入交付范围。
+
+**SOUL研究对齐基线（并入铁律）：**
+- Skill 采用按需渐进加载，超出上下文预算时降级为摘要与索引，不阻断主流程。
+- SOUL 作为人设模板默认只读，编辑/覆盖需用户确认并记录审计日志。
+- 任何自动执行能力不得绕过敏感操作确认策略。
+
 ---
 
 ### Story 21.1: LLM提供商添加与配置
@@ -5361,6 +5402,8 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **When** 配置Skill参数
 **Then** 显示Skill可配置选项
 **And** 保存配置后生效
+**And** Skill引用资源采用按需加载策略，不在未触发时预加载
+**And** 当上下文预算不足时自动降级为摘要/索引加载，并给出加载来源说明
 
 ---
 
@@ -5382,6 +5425,12 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 支持变量占位符（{{user_name}}、{{department}}等）
 **And** 可保存为新模板
 **And** 可恢复默认提示词
+
+**Given** 用户配置提示词加载策略
+**When** 保存配置
+**Then** 支持L1基础规范默认加载、L2引用文档按需加载、L3运行时检索动态加载
+**And** 支持按租户/部门覆盖默认策略
+**And** 可查看加载来源标记（Direct/Adapt/Reserve）用于治理追踪
 
 ---
 
@@ -5444,6 +5493,11 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 提示词恢复到该版本
 **And** 记录回滚操作日志
 
+**Given** 会话被标记为可学习
+**When** 会话结束并触发知识累积
+**Then** 仅提取“非显而易见且可复用”的经验条目
+**And** 按作用域写回分层知识库并记录版本历史
+
 ---
 
 ### Story 21.14: Rules规则列表管理
@@ -5505,6 +5559,12 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **When** 临时修改提示词
 **Then** 可测试修改效果
 **And** 可选择保存或放弃修改
+
+**Given** 命中禁止清单或幻觉红旗
+**When** 调试执行到高风险步骤
+**Then** 阻断执行并展示阻断原因与证据来源
+**And** 记录安全审计日志并提示人工确认路径
+**And** 工具选择结果可展示“收敛策略命中”说明（避免工具爆炸）
 
 ---
 
@@ -5684,7 +5744,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 | 指标 | 数量 |
 |------|------|
 | **Story总数** | 23 |
-| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR860, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938 |
+| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR863, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938 |
 
 ---
 
@@ -6241,6 +6301,8 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 根据清单执行检查
 **And** 无事项时返回静默结果
 **And** 支持时区与活动时段配置
+**And** 执行前完成预检查（用户状态、活跃时段、上下文预算、资源可用性），不满足条件时跳过并记录原因
+**And** 无待办时返回 `HEARTBEAT_OK` 且默认不打扰用户
 
 ---
 
@@ -6257,6 +6319,8 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 支持失败重试与退避
 **And** 支持暂停/恢复/取消
 **And** 提供执行历史与告警
+**And** Cron任务在隔离执行上下文中运行，配置超时与并发互斥策略
+**And** 涉及敏感操作时必须走确认或审批流，不得自动越权执行
 
 ---
 
@@ -7012,11 +7076,11 @@ Epic 1 / Epic 2
 | Phase 8: 体验与效率提升 | 3 | 16 |
 | Phase 9: 动态 UI 承载基础设施 | 2 | 9 |
 | Phase 10: 通用 Agent Runtime MVP | 8 | 31 |
-| **总计** | **50** | **271** |
+| **总计** | **50** | **274** |
 
 ### FR覆盖率
 
-- **总FR数量：** 583个
+- **总FR数量：** 586个
 - **已覆盖FR：** 全部覆盖
 - **覆盖率：** 100%
 
@@ -7033,7 +7097,7 @@ Epic 1 / Epic 2
 > - MCP服务管理（FR810-FR820）：添加/配置/连接MCP服务
 > - MCP工具Approve策略（FR825-FR832）：控制工具执行确认机制
 > - Skill配置管理（FR835-FR840）：管理已安装Skill的启用和配置
-> - **系统提示词管理（FR850-FR860）：查看/编辑/模板管理/版本控制**
+> - **系统提示词管理（FR850-FR863）：查看/编辑/模板管理/版本控制/分层加载/安全护栏/知识累积**
 > - **Rules规则管理（FR865-FR875）：规则列表/自定义规则/优先级管理**
 > - **提示词调试功能（FR880-FR888）：预览/测试/Token统计/效果评估**
 > - **Sub-Agent管理（FR890-FR900）：创建/编辑/删除/启用/禁用/模板管理**

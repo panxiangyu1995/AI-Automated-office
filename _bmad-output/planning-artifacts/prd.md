@@ -1,6 +1,25 @@
 ---
 stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-02b-vision', 'step-02c-executive-summary', 'step-03-success', 'step-04-journeys', 'step-05-domain-skipped', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish', 'step-e-01-discovery', 'step-e-02-review', 'step-e-03-edit']
-inputDocuments: []
+inputDocuments:
+  - docs/memory-fusion-pdf-draft.md
+  - docs/memory-fusion-architecture-draft.md
+  - _bmad-output/opencode/00-overview.md
+  - _bmad-output/opencode/01-architecture.md
+  - _bmad-output/opencode/02-agent-system.md
+  - _bmad-output/opencode/03-tool-system.md
+  - _bmad-output/opencode/04-session-management.md
+  - _bmad-output/opencode/05-mcp-integration.md
+  - _bmad-output/opencode/06-frontend-architecture.md
+  - _bmad-output/opencode/07-backend-api.md
+  - _bmad-output/opencode/08-tech-stack.md
+  - _bmad-output/opencode/09-reference-recommendations.md
+  - _bmad-output/opencode/10-skill-progressive-loading.md
+  - _bmad-output/soul/00-overview.md
+  - _bmad-output/soul/01-soul-md-mechanism.md
+  - _bmad-output/soul/02-skill-progressive-loading.md
+  - _bmad-output/soul/03-heartbeat-mechanism.md
+  - _bmad-output/soul/04-cron-scheduling-mechanism.md
+  - _bmad-output/soul/README.md
 workflowType: 'prd'
 documentCounts:
   briefs: 0
@@ -46,7 +65,7 @@ editHistory:
 | [Non-Functional Requirements](#non-functional-requirements) | 性能、安全、可靠性、可扩展性需求 |
 | [AI Agent 核心功能需求](#ai-agent-核心功能需求) | Agent工具调用、Sub-Agent等 |
 | [LLM提供商与MCP配置管理](#llm提供商与mcp配置管理) | 模型提供商、MCP服务、提示词管理 |
-| [功能需求统计](#功能需求统计) | 需求分类统计（共854条） |
+| [功能需求统计](#功能需求统计) | 需求分类统计（共857条） |
 
 ---
 
@@ -1290,6 +1309,15 @@ SOUL.md 用于定义 Agent 的人设（Persona），可直接作为 Agent 人设
 | FR728 | 系统预置常用SOUL模板 | 预置模板 |
 | FR729 | SOUL模板支持版本更新与回滚 | 版本管理 |
 
+#### SOUL/Skill 实施基线（并入铁律，不新增FR）
+
+> 本节用于并入 `_bmad-output/soul/` 研究成果，作为 FR700-729 的实施约束，不改变既有 FR 编号与范围。
+
+- SOUL 作为 Agent 人设模板能力：支持导入与覆盖合成，但默认只读；涉及模板持久化修改必须用户确认并记录版本审计。
+- Skill 采用渐进式加载：默认按会话上下文按需加载，控制首轮上下文体积；超出预算时降级为摘要与索引，不阻断主流程。
+- SOUL/Skill 仅定义“人格与能力提示边界”，不得绕过现有权限系统、工具白名单与审计链路。
+- OpenClaw 的 Node/CLI 运行细节仅作参考，不直接复制到本项目运行时；本项目仍以 Tauri + Rust + React + TypeScript 技术栈实现。
+
 **市场集成（FR730-745）**
 
 | 编号 | 需求 | 说明 |
@@ -1668,6 +1696,15 @@ SOUL.md 用于定义 Agent 的人设（Persona），可直接作为 Agent 人设
 - FR1143: 支持任务暂停、恢复与取消
 - FR1144: 支持任务模板与一键复用
 - FR1145: 支持任务异常告警与通知
+
+#### Heartbeat/Cron 实施基线（并入铁律，不新增FR）
+
+> 本节用于并入 `_bmad-output/soul/03-heartbeat-mechanism.md` 与 `_bmad-output/soul/04-cron-scheduling-mechanism.md` 的治理模式，作为 FR1127-FR1145 的实施约束。
+
+- Heartbeat 执行前必须通过预检查（用户状态、活跃时段、上下文预算、资源可用性）；不满足条件时跳过并记录原因。
+- 心跳在无待办时返回 `HEARTBEAT_OK` 并静默处理；默认不打扰用户，通知策略遵循免打扰与角色权限。
+- Cron 任务采用隔离执行上下文，支持超时、重试与退避；失败路径必须可观测并可审计。
+- Heartbeat 与 Cron 的自动执行不得绕过敏感操作确认策略，涉及高风险动作必须走人工确认或审批流。
 
 ### 错误分类与用户提示
 
@@ -2919,11 +2956,21 @@ interface WorkCard {
 
 | 要求项 | 说明 |
 |--------|------|
-| **向量数据库** | 支持Qdrant本地嵌入式和云端独立服务两种模式 |
+| **向量数据库** | 支持本地嵌入式向量实现（MVP默认sqlite-vec，可扩展Qdrant等）与云端独立向量服务 |
 | **嵌入模型** | 复用主Agent的LLM配置，统一管理 |
 | **存储优先级** | 本地优先，有云端时增量同步备份 |
 | **检索性能** | 单次检索 < 200ms |
 | **数据隔离** | 个人记忆用户隔离，企业知识库租户隔离 |
+
+#### 记忆融合实施基线（对齐草案，不新增FR）
+
+> 本节用于将 `docs/memory-fusion-pdf-draft.md` 与 `docs/memory-fusion-architecture-draft.md` 并入 PRD 实施约束，不改变既有 FR 编号。
+
+- 记忆能力继续遵循三层业务模型（L1个人记忆 / L2企业知识库 / L3图记忆）。
+- 可采用四层技术实现拆分（Raw/Vector/Summary/Cognitive），但不得改变三层权限边界。
+- MVP 生命周期采集采用 Hook 无感机制：`SessionStart`、`UserPromptSubmit`、`PostToolUse`、`Stop`、`SessionEnd`。
+- 向量实现允许多实现映射：MVP 可采用 `sqlite-vec` 作为本地嵌入式实现，云端独立模式可映射到 Qdrant 等实现。
+- 认知状态重建能力（如 `tunnel_state`）作为记忆层高级能力纳入实施范围，需满足审计与权限要求。
 
 ---
 
@@ -3007,7 +3054,7 @@ interface WorkCard {
 | NFR28 | 水平扩展 | 云服务支持水平扩展，按需扩容 |
 | NFR28-1 | 个人记忆容量 | 单用户记忆条目 ≥ 10万条 |
 | NFR28-2 | 错题集容量 | 单用户纠偏规则 ≥ 1000条 |
-| NFR28-3 | 向量数据库支持 | 支持本地Qdrant和云端Qdrant两种部署模式 |
+| NFR28-3 | 向量数据库支持 | 支持本地嵌入式向量实现（MVP默认sqlite-vec）与云端独立向量服务（如Qdrant） |
 
 ### 集成需求
 
@@ -3477,7 +3524,7 @@ Agent分析后弹出确认卡片：
 
 > **设计背景：** Agent的系统提示词（System Prompt）和规则（Rules）直接影响Agent的行为和输出质量。用户需要能够查看、编辑和调试提示词，以优化Agent表现。
 
-#### 系统提示词管理（FR850-860）
+#### 系统提示词管理（FR850-863）
 
 | 编号 | 需求 | 说明 |
 |-----|------|------|
@@ -3492,6 +3539,19 @@ Agent分析后弹出确认卡片：
 | FR858 | 管理员可以设置企业级默认提示词 | 全局控制 |
 | FR859 | 用户可以导入导出提示词配置 | 配置共享 |
 | FR860 | 提示词支持多语言版本 | 国际化支持 |
+| FR861 | 系统支持提示词分层加载策略（L1基础规范/L2按需引用/L3运行时检索） | 上下文效率 |
+| FR862 | 系统提供提示词安全三层护栏（禁止清单/需确认事项/幻觉红旗阻断） | 安全防护 |
+| FR863 | 系统支持会话知识累积写回（仅沉淀非显而易见且可复用经验） | 持续优化 |
+
+#### OpenCode参考实施基线（全量参考，不新增FR）
+
+> 本节用于将 `_bmad-output/opencode` 全部研究文档并入提示词与工具设计参考范围，不改变 FR 编号体系。
+
+- 全量参考：`opencode` 全部文档纳入实施参考输入。  
+- 分级采纳：采用 Direct / Adapt / Reserve 三档治理，防止无边界照搬。  
+- Direct 范围：工具收敛与参数化、Skill 渐进加载、工具权限与审计链路。  
+- Adapt 范围：Agent/Session 组织方式、MCP编排、接口分层思想（需映射至本项目技术栈）。  
+- Reserve 范围：与 MVP 主路径冲突或复杂度过高方案，保留为 Post-MVP 储备。  
 
 **系统提示词配置界面示意：**
 ```
@@ -3965,7 +4025,7 @@ Agent分析后弹出确认卡片：
 | **MCP服务管理** | **FR810-FR820** | **11** |
 | **MCP工具Approve策略** | **FR825-FR832** | **8** |
 | **Skill配置管理** | **FR835-FR840** | **6** |
-| **系统提示词管理** | **FR850-FR860** | **11** |
+| **系统提示词管理** | **FR850-FR863** | **14** |
 | **Rules规则管理** | **FR865-FR875** | **11** |
 | **提示词调试功能** | **FR880-FR888** | **9** |
 | **Sub-Agent管理** | **FR890-FR900** | **11** |
@@ -3976,13 +4036,13 @@ Agent分析后弹出确认卡片：
 | **数据访问白名单功能** | **FR965-FR974** | **10** |
 | **缺失功能补充（新增）** | **FR1000-FR1212** | **169** |
 | **编辑器系统与动态模板渲染** | **FR1213-FR1302** | **90** |
-| **总计** | | **854** |
+| **总计** | | **857** |
 
 > **说明：** 
 > - 统一消息系统整合了原有的"消息与通知"、"企业通讯与协作"、"AI Agent通信机制"三个模块，并新增 FR600-662 系列增强需求（含群聊协作、员工通讯录），共99条。
 > - ClawHub生态兼容性支持Skills、Plugins、SOULs等资源的兼容适配，共56条需求。
 > - **新增LLM提供商与MCP配置管理模块**，包含LLM提供商管理、MCP服务管理、MCP工具Approve策略、Skill配置管理，共35条需求。
-> - **新增Agent提示词与Rules规则管理模块**，包含系统提示词管理、Rules规则管理、提示词调试功能，共31条需求。
+> - **新增Agent提示词与Rules规则管理模块**，包含系统提示词管理、Rules规则管理、提示词调试功能，共34条需求。
 > - **新增Sub-Agent配置管理模块**，包含Sub-Agent管理、角色配置（含AI辅助生成提示词）、工具权限、调用机制，共41条需求。这是实现多Agent协作的核心能力。
 > - **新增多知识库配置功能**，包含知识库管理、Agent绑定、AI权限与审核控制，共21条需求。
 > - **新增数据访问白名单功能**，包含白名单配置、脱敏规则、安全控制，共10条需求。

@@ -6,6 +6,31 @@ status: 'complete'
 completedAt: '2026-03-11'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
+  - docs/memory-fusion-pdf-draft.md
+  - docs/memory-fusion-architecture-draft.md
+  - _bmad-output/opencode/00-overview.md
+  - _bmad-output/opencode/01-architecture.md
+  - _bmad-output/opencode/02-agent-system.md
+  - _bmad-output/opencode/03-tool-system.md
+  - _bmad-output/opencode/04-session-management.md
+  - _bmad-output/opencode/05-mcp-integration.md
+  - _bmad-output/opencode/06-frontend-architecture.md
+  - _bmad-output/opencode/07-backend-api.md
+  - _bmad-output/opencode/08-tech-stack.md
+  - _bmad-output/opencode/09-reference-recommendations.md
+  - _bmad-output/opencode/10-skill-progressive-loading.md
+  - _bmad-output/soul/00-overview.md
+  - _bmad-output/soul/01-soul-md-mechanism.md
+  - _bmad-output/soul/02-skill-progressive-loading.md
+  - _bmad-output/soul/03-heartbeat-mechanism.md
+  - _bmad-output/soul/04-cron-scheduling-mechanism.md
+  - _bmad-output/soul/README.md
+  - _bmad-output/提示词/00-总览.md
+  - _bmad-output/提示词/01-opencode设计分析.md
+  - _bmad-output/提示词/02-openclaw设计分析.md
+  - _bmad-output/提示词/03-设计模式总结.md
+  - _bmad-output/提示词/04-应用建议.md
+  - _bmad-output/提示词/05-模板参考.md
   - _bmad-output/agent/README.md
   - _bmad-output/agent/01-架构总览.md
   - _bmad-output/agent/02-感知层架构.md
@@ -120,6 +145,17 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-035 | 编辑器系统采用“注册表 + 解析器 + 编辑器宿主”三段式架构，统一管理内置与扩展编辑器 | PRD对齐 2026-03-22 |
 | ADR-036 | 动态模板运行时采用“模板Schema + 数据绑定层 + Canvas渲染层”分层设计，模板格式统一为JSON/YAML声明式定义 | PRD对齐 2026-03-22 |
 | ADR-037 | 模板设计器与模板库归属于平台公共能力，部门插件仅通过模板资产和扩展API接入，不直接耦合渲染内核 | PRD对齐 2026-03-22 |
+| ADR-038 | 提示词体系采用分层知识架构：项目级AGENTS.md + 模块级AGENTS.md + Agent/Skill局部指令，按作用域加载上下文 | 提示词研究结论 2026-03-23 |
+| ADR-039 | Agent/Skill采用元数据驱动配置：使用YAML Frontmatter统一声明模型、工具白名单、权限策略与执行模式 | 提示词研究结论 2026-03-23 |
+| ADR-040 | 提示词加载采用渐进式上下文策略：基础规范默认加载，任务级与引用文档按需加载，避免上下文膨胀 | 提示词研究结论 2026-03-23 |
+| ADR-041 | 提示词安全采用三层护栏：禁止清单 + 需确认事项 + 幻觉红旗阻断，并纳入统一审计链路 | 提示词研究结论 2026-03-23 |
+| ADR-042 | 引入会话知识累积机制：仅沉淀“非显而易见且可复用”的经验规则，分层写回AGENTS知识库 | 提示词研究结论 2026-03-23 |
+| ADR-043 | 记忆系统融合采用“Hook无感摄入 + 认知状态重建”模式：采纳 SessionStart/UserPromptSubmit/PostToolUse/Stop/SessionEnd 生命周期并支持 tunnel_state | 记忆融合草案对齐 2026-03-23 |
+| ADR-044 | 记忆层实现遵循 Rust-First 与本地优先：MVP 默认 SQLite + FTS5 + sqlite-vec，LanceDB 仅 Post-MVP 可选扩展 | 记忆融合草案对齐 2026-03-23 |
+| ADR-045 | OpenCode 工具系统作为全量参考并分级采纳：直接采纳“工具收敛+参数化”与“权限审计链路”，其余按现有技术栈改造采纳 | OpenCode研究对齐 2026-03-23 |
+| ADR-046 | OpenCode Skill 渐进式加载作为全量参考并分级采纳：默认加载基础规范，任务与引用资源按需加载，维持上下文预算控制 | OpenCode研究对齐 2026-03-23 |
+| ADR-047 | SOUL 机制作为人格模板能力并入：支持多源导入与优先级覆盖，但默认只读，修改需用户确认并记录版本审计 | SOUL研究对齐 2026-03-23 |
+| ADR-048 | Heartbeat/Cron 机制作为运行治理能力并入：采用预检查、隔离执行、静默确认与重试超时控制，避免打扰与成本失控 | SOUL研究对齐 2026-03-23 |
 
 ### Recommended Architecture
 
@@ -204,6 +240,91 @@ Agent框架采用**四层标准架构**设计，遵循感知-决策-执行-记�
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### 提示词系统架构（直接采用）
+
+> 本节将 `_bmad-output/提示词` 目录中的研究结论直接固化为架构约束，作为 Agent Runtime 的一等能力。
+
+#### 1) 分层知识架构（ADR-038）
+
+- 项目级：根 `AGENTS.md` 只放全局铁律、安全规则、统一命名与测试要求。
+- 模块级：`src/*/AGENTS.md` 只放模块边界、关键文件、常见陷阱。
+- 任务级：`agents/*.md`、`skills/*/SKILL.md` 仅放单一职责指令与流程，不重复全局规则。
+- 原则：知识就近、单点定义、禁止跨层重复粘贴。
+
+#### 2) 元数据驱动配置（ADR-039）
+
+统一采用 YAML Frontmatter：
+
+```yaml
+name: hr-analyst
+description: "人事分析与报表生成"
+model: smart
+mode: primary
+tools:
+  "*": false
+  "hr_employee_query": true
+  "hr_employee_export": true
+permission:
+  export_sensitive_data: require-approval
+```
+
+- 工具命名必须继续遵循 `ADR-017`：`{plugin}_{entity}_{action}`。
+- `permission` 与字段级权限（ADR-018）联动，高风险动作必须二次确认（ADR-019）。
+- Agent/Skill 不允许声明未注册工具，防止“幽灵能力”。
+
+#### 3) 渐进式上下文加载（ADR-040）
+
+- L1（默认加载）：项目级规则、当前模块规则、当前任务指令。
+- L2（按需加载）：被明确引用的 `references/*` 文档或流程文件。
+- L3（动态加载）：运行时检索结果（知识库、历史会话摘要、模板Schema片段）。
+- 控制目标：优先保证上下文有效密度，避免一次性注入大段无关说明。
+
+#### 4) 安全护栏三层机制（ADR-041）
+
+- 第一层（禁止清单）：绝对禁止动作，如绕过审批直接执行敏感写操作。
+- 第二层（需确认事项）：删除、外发、越权访问、批量变更等必须显式确认。
+- 第三层（幻觉红旗）：当“结论与仓库事实不一致/无证据”时阻断执行并要求核验。
+- 所有命中记录进入统一审计事件流，对齐可观测性与审计架构。
+
+#### 5) 会话知识累积机制（ADR-042）
+
+- 仅提取以下内容：
+  - 隐式依赖关系与非直观执行路径
+  - 排障中的关键突破与可复用策略
+  - 文档未覆盖但已被验证的工程约束
+- 明确排除：
+  - 文档已有事实
+  - 通用语言/框架常识
+  - 会话一次性细节
+- 写回策略：按作用域写入对应层级 AGENTS 文件，条目保持简洁（1-3行），避免污染。
+
+#### 6) 与现有架构的耦合边界
+
+- 提示词系统属于 Agent Core 的“决策层能力”，不直接越权访问执行层资源。
+- 动态 UI 与模板运行时仅接收结构化输出（意图、字段值、动作建议），不接受自由文本指令直改状态。
+- 插件仅通过 Tool Registry 与 Extension API 暴露能力，提示词不得绕过插件边界直接操作底层存储。
+
+### OpenCode 参考分级采纳基线（全量参考）
+
+> `_bmad-output/opencode` 目录全部纳入参考范围，采用 Direct / Adapt / Reserve 三档治理，避免“全量参考”演变为“无边界照搬”。
+
+#### Direct（直接采纳）
+
+- 工具收敛原则：每模块核心工具数量受控，优先参数化扩展（对齐 ADR-025）。
+- 工具调用治理：统一走权限检查、审批确认、审计记录链路（对齐 ADR-018/019/021）。
+- Skill 渐进加载：基础规范默认加载，任务级与引用资源按需加载（对齐 ADR-040/046）。
+
+#### Adapt（改造采纳）
+
+- Agent/Session 组织方式：保留可复用模式，但映射到本项目 `Tauri + Rust + React` 分层。
+- MCP 与工具编排策略：保留协议与策略思想，具体实现遵循本项目安全边界与命名规范。
+- 前后端接口形式：保留接口分层思想，落地时遵循现有 IPC + API 约束。
+
+#### Reserve（储备采纳）
+
+- 与当前主路径冲突或复杂度过高的实现暂列 Post-MVP 储备，不影响当前迭代交付节奏。
+- 储备项需在实施前补充成本、风险和兼容性评审，不得直接进入 MVP 范围。
 
 ### 会话Key格式设计 (ADR-011)
 
@@ -3691,6 +3812,34 @@ SOUL.md 用于定义 Agent 的人设（Persona），可直接作为 Agent 人设
 | FR727 | 用户可以创建和分享自己的SOUL模板 | 模板分享 |
 | FR728 | 系统预置常用SOUL模板 | 预置模板 |
 
+#### SOUL/Skill/Heartbeat/Cron 实施基线（并入铁律）
+
+> 依据 `_bmad-output/soul` 研究文档，以下为可执行架构约束：
+
+1. SOUL（人格模板）：
+- 作为 Agent Persona 模板导入，支持多源加载与优先级覆盖。
+- 默认只读，不允许自动静默改写；修改必须经用户确认并写入版本审计。
+- 注入时遵循系统指令优先级，不得覆盖安全、权限、合规硬规则。
+
+2. Skill 渐进式加载：
+- 保持按需加载策略：基础规则默认加载，任务与引用资源动态加载。
+- 必须实施数量限制、字符预算、超预算降级（compact）机制。
+- 加载来源可追踪（Direct/Adapt/Reserve），便于治理与回溯。
+
+3. Heartbeat 主动机制：
+- 采用五层预检查：启用状态、活跃时段、队列占用、触发原因、清单门控。
+- 无事项时返回 `HEARTBEAT_OK` 并静默处理，避免无意义通知。
+- 默认低频或按业务白名单触发，优先用于审批超时、阻塞、异常恢复提示。
+
+4. Cron 调度机制：
+- 支持 `cron/every/once/at` 四类调度表达。
+- 任务执行必须隔离上下文，具备超时、重试、幂等和失败回退能力。
+- 所有调度执行及投递结果必须进入统一审计链路。
+
+5. 技术落地边界：
+- 仅采纳机制思想，不照搬 OpenClaw Node/TS 代码路径与 CLI 命令。
+- 本项目主路径继续遵循 `Tauri + Rust + React` 技术栈与安全边界。
+
 **市场集成（FR730-745）**
 
 | 编号 | 需求 | 说明 |
@@ -3730,6 +3879,17 @@ SOUL.md 用于定义 Agent 的人设（Persona），可直接作为 Agent 人设
 ## 三层记忆层架构
 
 > **架构说明：** 记忆层采用三层架构设计，分别服务于不同范围的数据存储和检索需求。
+
+### 记忆融合实施基线（并入铁律）
+
+> 依据 `docs/memory-fusion-pdf-draft.md` 与 `docs/memory-fusion-architecture-draft.md`，以下内容作为记忆层实施约束：
+
+1. 业务分层不变：继续遵循 PRD 三层记忆模型（L1 个人 / L2 企业知识库 / L3 图记忆 Post-MVP）。
+2. 技术实现允许四层拆分：Raw / Vector / Summary / Cognitive 仅用于实现分解，不改变权限边界。
+3. 生命周期摄入标准化：MVP 必须实现 `SessionStart`、`UserPromptSubmit`、`PostToolUse`、`Stop`、`SessionEnd` 五类 Hook。
+4. 技术主路径：记忆核心能力在 Rust 侧实现，MVP 默认 `SQLite + FTS5 + sqlite-vec`，LanceDB 为 Post-MVP 可选扩展。
+5. 工具命名与权限：记忆工具需遵循 `ADR-017` 命名规范和 `ADR-018/019` 权限与确认链路。
+6. 多租户与隔离：所有记忆读写必须带 `tenant_id + plugin_id + session_key + user_id` 约束，个人记忆仅本人可见。
 
 ### 分层设计
 

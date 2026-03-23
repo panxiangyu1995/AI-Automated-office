@@ -17,6 +17,7 @@ func CORSMiddleware(cfg config.CorsConfig) gin.HandlerFunc {
 
 	allowedMethods := strings.Join(cfg.AllowedMethods, ", ")
 	allowedHeaders := strings.Join(cfg.AllowedHeaders, ", ")
+	exposedHeaders := strings.Join(cfg.ExposedHeaders, ", ")
 
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
@@ -28,7 +29,11 @@ func CORSMiddleware(cfg config.CorsConfig) gin.HandlerFunc {
 		}
 		c.Header("Access-Control-Allow-Methods", allowedMethods)
 		c.Header("Access-Control-Allow-Headers", allowedHeaders)
+		if exposedHeaders != "" {
+			c.Header("Access-Control-Expose-Headers", exposedHeaders)
+		}
 		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Max-Age", "86400")
 
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(http.StatusNoContent)

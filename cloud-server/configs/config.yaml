@@ -1,8 +1,9 @@
 server:
-  port: 8080
+  port: 3000
   mode: debug
   read_timeout: 30s
   write_timeout: 30s
+  bypass_auth: true
 
 database:
   driver: postgres
@@ -30,12 +31,22 @@ jwt:
 cors:
   allowed_origins:
     - "http://localhost:1420"
+    - "http://127.0.0.1:1420"
     - "tauri://localhost"
+    - "https://tauri.localhost"
   allowed_methods:
     - GET
     - POST
     - PUT
     - DELETE
+    - PATCH
+    - OPTIONS
   allowed_headers:
     - Authorization
+    - Content-Type
+    - Accept
+    - Origin
+    - X-Requested-With
+  exposed_headers:
+    - Content-Length
     - Content-Type

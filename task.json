@@ -1,1538 +1,1967 @@
 {
-  "version": "1.0.0",
-  "lastUpdated": "2026-03-22",
-  "scope": "Current execution batch",
-  "batch": "Batch 1",
-  "range": "Task 47-59",
+  "version": "2.0.0",
+  "lastUpdated": "2026-03-23",
+  "scope": "Remaining agent-first execution plan",
+  "batch": "Agent Master Plan",
+  "range": "Task 1-103",
+  "roadmap": "docs/agent-implementation-roadmap.md",
   "tasks": [
     {
-      "id": 47,
-      "epic": "Epic 39",
-      "story": "Story 39.1",
-      "title": "Builtin Text Editor",
-      "description": "Provide a native text editor baseline that can open plain text content inside the unified editor host.",
-      "openspec_change": "epic-39-story-39-1-builtin-text-editor",
+      "id": 1,
+      "epic": "Epic 4",
+      "story": "Story 4.1",
+      "title": "AI对话界面实现",
+      "description": "Build the product-facing chat panel on top of the completed common Agent runtime.",
+      "openspec_change": "epic-4-story-4-1-agent-chat-ui",
       "steps": [
-        "Register the text editor with the host",
-        "Support file open and save lifecycle",
-        "Render plain text editing surface",
-        "Handle dirty state and close confirmation"
+        "Integrate the common runtime session stream into the AI panel",
+        "Render user and assistant messages with streaming updates",
+        "Support markdown and code display in responses"
       ],
-      "frs_covered": [
-        "FR1180"
+      "frs_covered": ["FR9"],
+      "nfrs_covered": ["NFR3"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 2,
+      "epic": "Epic 4",
+      "story": "Story 4.2",
+      "title": "会话管理功能",
+      "description": "Expose session creation, listing, rename, and deletion through the Agent UI.",
+      "openspec_change": "epic-4-story-4-2-session-management-ui",
+      "steps": [
+        "Build session list and new session entry points",
+        "Support rename and delete actions for sessions",
+        "Bind UI state to the persisted runtime session store"
       ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
+      "frs_covered": ["FR10"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.1"],
+      "passes": false
+    },
+    {
+      "id": 3,
+      "epic": "Epic 4",
+      "story": "Story 4.3",
+      "title": "历史对话管理",
+      "description": "Provide searchable history management for persisted Agent conversations.",
+      "openspec_change": "epic-4-story-4-3-history-management",
+      "steps": [
+        "Create history browsing and filtering UI",
+        "Support keyword and time-based lookup",
+        "Allow safe deletion of archived conversations"
       ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-035"
+      "frs_covered": ["FR11"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.2"],
+      "passes": false
+    },
+    {
+      "id": 4,
+      "epic": "Epic 4",
+      "story": "Story 4.4",
+      "title": "AI模型提供商配置",
+      "description": "Bridge core provider selection into the product settings surface before the full control plane arrives.",
+      "openspec_change": "epic-4-story-4-4-model-provider-settings",
+      "steps": [
+        "Expose current provider and model configuration in settings",
+        "Support API key and relay mode selection",
+        "Allow connection test from the UI"
       ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
+      "frs_covered": ["FR18", "FR19"],
+      "nfrs_covered": ["NFR29"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 4.3"],
+      "passes": false
+    },
+    {
+      "id": 5,
+      "epic": "Epic 4",
+      "story": "Story 4.5",
+      "title": "定时任务功能",
+      "description": "Create the user-facing flow for scheduling recurring Agent tasks.",
+      "openspec_change": "epic-4-story-4-5-scheduled-task-setup",
+      "steps": [
+        "Add task scheduling entry from chat and task views",
+        "Capture execution time and recurrence options",
+        "Persist scheduled task definitions for later runtime execution"
       ],
-      "dependencies": [
-        "Story 41.1",
-        "Story 41.4"
+      "frs_covered": ["FR15"],
+      "nfrs_covered": ["NFR22"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.4"],
+      "passes": false
+    },
+    {
+      "id": 6,
+      "epic": "Epic 4",
+      "story": "Story 4.6",
+      "title": "任务失败自动重试",
+      "description": "Expose retry behavior and failure explanation in the Agent task UI.",
+      "openspec_change": "epic-4-story-4-6-task-retry-ui",
+      "steps": [
+        "Show retry status for failed tasks",
+        "Render retry count and backoff behavior in execution history",
+        "Provide clear terminal failure explanation to users"
       ],
-      "passes": true
+      "frs_covered": ["FR16"],
+      "nfrs_covered": ["NFR22"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.5"],
+      "passes": false
+    },
+    {
+      "id": 7,
+      "epic": "Epic 4",
+      "story": "Story 4.7",
+      "title": "检查点自动创建",
+      "description": "Connect message send flow to checkpoint creation in the common runtime.",
+      "openspec_change": "epic-4-story-4-7-checkpoint-auto-create",
+      "steps": [
+        "Create checkpoints on message submission",
+        "Capture session metadata and related working state",
+        "Display checkpoint markers in the conversation stream"
+      ],
+      "frs_covered": ["FR17-1", "FR17-2", "FR17-4"],
+      "nfrs_covered": ["NFR23"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.6"],
+      "passes": false
+    },
+    {
+      "id": 8,
+      "epic": "Epic 4",
+      "story": "Story 4.8",
+      "title": "检查点回滚功能",
+      "description": "Support rollback to previous conversation or workspace state from checkpoints.",
+      "openspec_change": "epic-4-story-4-8-checkpoint-restore",
+      "steps": [
+        "Add checkpoint restore actions in the session UI",
+        "Support conversation-only and conversation-plus-content restore modes",
+        "Record restore decisions into runtime history"
+      ],
+      "frs_covered": ["FR17-6", "FR17-7", "FR17-8", "FR17-9"],
+      "nfrs_covered": ["NFR23"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.7"],
+      "passes": false
+    },
+    {
+      "id": 9,
+      "epic": "Epic 4",
+      "story": "Story 4.9",
+      "title": "检查点编辑重试功能",
+      "description": "Allow editing a previous checkpoint input and branching execution from that point.",
+      "openspec_change": "epic-4-story-4-9-checkpoint-edit-retry",
+      "steps": [
+        "Prefill historical input into the composer",
+        "Create branch execution from the selected checkpoint",
+        "Preserve original branch for comparison"
+      ],
+      "frs_covered": ["FR17-11", "FR17-12", "FR17-13"],
+      "nfrs_covered": ["NFR23"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.8"],
+      "passes": false
+    },
+    {
+      "id": 10,
+      "epic": "Epic 4",
+      "story": "Story 4.10",
+      "title": "Git工具集成",
+      "description": "Complete the Git-backed checkpoint support required by the Agent workflow.",
+      "openspec_change": "epic-4-story-4-10-git-checkpoint-integration",
+      "steps": [
+        "Detect or provision Git runtime support",
+        "Bind checkpoint operations to Git-backed history",
+        "Store commit metadata for checkpoint inspection"
+      ],
+      "frs_covered": ["FR17-14", "FR17-15", "FR17-17", "FR17-18"],
+      "nfrs_covered": ["NFR17"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 4.9"],
+      "passes": false
+    },
+    {
+      "id": 11,
+      "epic": "Epic 4",
+      "story": "Story 4.11",
+      "title": "检查点管理功能",
+      "description": "Provide a management surface for checkpoint review, cleanup, and retention.",
+      "openspec_change": "epic-4-story-4-11-checkpoint-management",
+      "steps": [
+        "List checkpoints with summary metadata",
+        "Allow deletion and retention marking",
+        "Support automatic cleanup policy display and control"
+      ],
+      "frs_covered": ["FR17-19", "FR17-20", "FR17-21", "FR17-22", "FR17-23"],
+      "nfrs_covered": ["NFR17"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.10"],
+      "passes": false
+    },
+    {
+      "id": 12,
+      "epic": "Epic 4",
+      "story": "Story 4.12",
+      "title": "上下文自动压缩",
+      "description": "Productize automatic context compression on top of the existing runtime summary capabilities.",
+      "openspec_change": "epic-4-story-4-12-context-compression",
+      "steps": [
+        "Detect token threshold crossing in active sessions",
+        "Trigger structured summary generation and recent-history retention",
+        "Store compression output into session memory"
+      ],
+      "frs_covered": ["FR-CTX-1", "FR-CTX-2", "FR-CTX-3", "FR-CTX-4", "FR-CTX-5"],
+      "nfrs_covered": ["NFR8-1"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.11"],
+      "passes": false
+    },
+    {
+      "id": 13,
+      "epic": "Epic 4",
+      "story": "Story 4.13",
+      "title": "Token占用指示器",
+      "description": "Add token usage visibility to active Agent sessions.",
+      "openspec_change": "epic-4-story-4-13-token-usage-indicator",
+      "steps": [
+        "Show session token usage and threshold state",
+        "Display detailed token counts on demand",
+        "Link the indicator to compression threshold status"
+      ],
+      "frs_covered": ["FR-CTX-1", "FR-CTX-6"],
+      "nfrs_covered": ["NFR3"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.12"],
+      "passes": false
+    },
+    {
+      "id": 14,
+      "epic": "Epic 4",
+      "story": "Story 4.14",
+      "title": "压缩通知与记忆提示",
+      "description": "Show users what was retained after compression and what the Agent remembered.",
+      "openspec_change": "epic-4-story-4-14-compression-memory-hints",
+      "steps": [
+        "Display compression notifications in the session stream",
+        "Render remembered key facts near the input surface",
+        "Keep the hints consistent with actual stored memory state"
+      ],
+      "frs_covered": ["FR-CTX-6", "FR-CTX-7", "FR14-2"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.13"],
+      "passes": false
+    },
+    {
+      "id": 15,
+      "epic": "Epic 5",
+      "story": "Story 5.1",
+      "title": "工具注册与管理",
+      "description": "Productize the unified tool registry for user and admin visibility.",
+      "openspec_change": "epic-5-story-5-1-tool-registry-management",
+      "steps": [
+        "Expose registered core, plugin, and MCP tools",
+        "Show tool descriptor metadata and availability",
+        "Keep the management surface aligned with the common tool runtime"
+      ],
+      "frs_covered": ["FR12", "FR13"],
+      "nfrs_covered": ["NFR8-6"],
+      "arch_covered": ["ADR-010", "ADR-017", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 4.14"],
+      "passes": false
+    },
+    {
+      "id": 16,
+      "epic": "Epic 5",
+      "story": "Story 5.2",
+      "title": "工具调用状态展示",
+      "description": "Render real-time tool invocation cards in the Agent conversation stream.",
+      "openspec_change": "epic-5-story-5-2-tool-call-status-display",
+      "steps": [
+        "Show tool call start and running state",
+        "Update cards on success or failure",
+        "Keep status synchronized with streamed runtime events"
+      ],
+      "frs_covered": ["FR69"],
+      "nfrs_covered": ["NFR8-11"],
+      "arch_covered": ["ADR-017", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.1"],
+      "passes": false
+    },
+    {
+      "id": 17,
+      "epic": "Epic 5",
+      "story": "Story 5.3",
+      "title": "工具调用详情查看",
+      "description": "Provide detailed parameter and result inspection for tool calls.",
+      "openspec_change": "epic-5-story-5-3-tool-call-detail",
+      "steps": [
+        "Show normalized tool input summary and raw details",
+        "Render structured result and raw output references",
+        "Support copy and trace navigation from the UI"
+      ],
+      "frs_covered": ["FR70"],
+      "nfrs_covered": ["NFR8-11"],
+      "arch_covered": ["ADR-017", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.2"],
+      "passes": false
+    },
+    {
+      "id": 18,
+      "epic": "Epic 5",
+      "story": "Story 5.4",
+      "title": "工具调用失败处理",
+      "description": "Support manual retry and fallback handling for failed tool executions.",
+      "openspec_change": "epic-5-story-5-4-tool-failure-handling",
+      "steps": [
+        "Provide retry controls for failed tool calls",
+        "Allow user-supplied fallback result entry where permitted",
+        "Show normalized error reasons and next-step guidance"
+      ],
+      "frs_covered": ["FR71", "FR72"],
+      "nfrs_covered": ["NFR22"],
+      "arch_covered": ["ADR-017", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.3"],
+      "passes": false
+    },
+    {
+      "id": 19,
+      "epic": "Epic 5",
+      "story": "Story 5.5",
+      "title": "结果编辑与纠偏",
+      "description": "Let users correct Agent outputs and turn corrections into reusable guidance.",
+      "openspec_change": "epic-5-story-5-5-result-correction",
+      "steps": [
+        "Allow inline editing of generated output",
+        "Capture correction rationale from the user",
+        "Write correction rules into the memory and prompt pipeline"
+      ],
+      "frs_covered": ["FR73", "FR81", "FR82", "FR83", "FR85", "FR86"],
+      "nfrs_covered": ["NFR8-3"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.4"],
+      "passes": false
+    },
+    {
+      "id": 20,
+      "epic": "Epic 5",
+      "story": "Story 5.6",
+      "title": "部门模块状态监控",
+      "description": "Show module-level Tools, Skills, MCP, and handshake status to users.",
+      "openspec_change": "epic-5-story-5-6-module-capability-status",
+      "steps": [
+        "Build module capability status overview",
+        "Show tool, skill, and MCP counts and health state",
+        "Display handshake state with the main Agent"
+      ],
+      "frs_covered": ["FR74", "FR75"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-017"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 5.5"],
+      "passes": false
+    },
+    {
+      "id": 21,
+      "epic": "Epic 5",
+      "story": "Story 5.7",
+      "title": "工具调用重试策略配置",
+      "description": "Expose retry policy configuration for tool calls.",
+      "openspec_change": "epic-5-story-5-7-tool-retry-policy",
+      "steps": [
+        "Allow retry count and backoff policy configuration",
+        "Support per-error-type retry handling",
+        "Persist retry settings for runtime enforcement"
+      ],
+      "frs_covered": ["FR76"],
+      "nfrs_covered": ["NFR22"],
+      "arch_covered": ["ADR-017"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 5.6"],
+      "passes": false
+    },
+    {
+      "id": 22,
+      "epic": "Epic 5",
+      "story": "Story 5.8",
+      "title": "工具调用降级方案",
+      "description": "Support admin-defined downgrade paths when tools are unavailable.",
+      "openspec_change": "epic-5-story-5-8-tool-downgrade-policy",
+      "steps": [
+        "Define fallback tool or fallback behavior options",
+        "Expose downgrade hints for the user",
+        "Persist downgrade rules for runtime use"
+      ],
+      "frs_covered": ["FR77"],
+      "nfrs_covered": ["NFR35"],
+      "arch_covered": ["ADR-017"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 5.7"],
+      "passes": false
+    },
+    {
+      "id": 23,
+      "epic": "Epic 5",
+      "story": "Story 5.9",
+      "title": "敏感操作确认机制",
+      "description": "Complete sensitive-operation confirmation cards in the chat execution flow.",
+      "openspec_change": "epic-5-story-5-9-sensitive-operation-confirmation",
+      "steps": [
+        "Identify high-risk tool operations in the conversation flow",
+        "Render confirmation cards with risk detail",
+        "Support approve, modify, or cancel outcomes"
+      ],
+      "frs_covered": ["FR470", "FR480", "FR481", "FR482", "FR484", "FR486", "FR487"],
+      "nfrs_covered": ["NFR8-7", "NFR23-5"],
+      "arch_covered": ["ADR-019", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.8"],
+      "passes": false
+    },
+    {
+      "id": 24,
+      "epic": "Epic 5",
+      "story": "Story 5.10",
+      "title": "操作黑名单管理",
+      "description": "Provide blacklist definition and enforcement visibility for blocked operations.",
+      "openspec_change": "epic-5-story-5-10-operation-blacklist",
+      "steps": [
+        "Create personal and tenant-level blacklist controls",
+        "Block blacklisted operations before execution",
+        "Show block reason and audit trail to users and admins"
+      ],
+      "frs_covered": ["FR493", "FR494", "FR495", "FR498"],
+      "nfrs_covered": ["NFR23-6"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 5.9"],
+      "passes": false
+    },
+    {
+      "id": 25,
+      "epic": "Epic 5",
+      "story": "Story 5.11",
+      "title": "工具调用权限检查",
+      "description": "Show permission precheck behavior through user-facing tool execution flows.",
+      "openspec_change": "epic-5-story-5-11-tool-permission-check",
+      "steps": [
+        "Validate tool access before execution",
+        "Explain missing permission conditions to the user",
+        "Keep permission decisions visible in execution history"
+      ],
+      "frs_covered": ["FR470", "FR471"],
+      "nfrs_covered": ["NFR16", "NFR23-5"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.10"],
+      "passes": false
+    },
+    {
+      "id": 26,
+      "epic": "Epic 5",
+      "story": "Story 5.12",
+      "title": "工具调用历史追溯",
+      "description": "Provide searchable history and statistics for tool execution records.",
+      "openspec_change": "epic-5-story-5-12-tool-history",
+      "steps": [
+        "List historical tool executions with filters",
+        "Show status, latency, and retention information",
+        "Support trace and detail navigation from the history view"
+      ],
+      "frs_covered": ["FR79", "FR80"],
+      "nfrs_covered": ["NFR23-8"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.11"],
+      "passes": false
+    },
+    {
+      "id": 27,
+      "epic": "Epic 5",
+      "story": "Story 5.13",
+      "title": "Agent可观测性面板",
+      "description": "Expose task, token, and tool execution metrics to users and admins.",
+      "openspec_change": "epic-5-story-5-13-agent-observability-panel",
+      "steps": [
+        "Show session-level token and tool metrics",
+        "Provide tenant-level usage statistics for admins",
+        "Allow report export for review and governance"
+      ],
+      "frs_covered": ["FR500", "FR502", "FR504", "FR505"],
+      "nfrs_covered": ["NFR8-11", "NFR23-8"],
+      "arch_covered": ["ADR-023", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.12"],
+      "passes": false
+    },
+    {
+      "id": 28,
+      "epic": "Epic 6",
+      "story": "Story 6.1",
+      "title": "会话记忆管理",
+      "description": "Complete session memory storage and recovery behavior at the product layer.",
+      "openspec_change": "epic-6-story-6-1-session-memory-management",
+      "steps": [
+        "Persist session context and extracted facts",
+        "Restore memory state when sessions resume",
+        "Display session memory continuity in the UI"
+      ],
+      "frs_covered": ["FR14-2", "FR260"],
+      "nfrs_covered": ["NFR8-1", "NFR16-1"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 5.13"],
+      "passes": false
+    },
+    {
+      "id": 29,
+      "epic": "Epic 6",
+      "story": "Story 6.2",
+      "title": "用户偏好记忆",
+      "description": "Productize long-term user preference capture and application.",
+      "openspec_change": "epic-6-story-6-2-user-preference-memory",
+      "steps": [
+        "Store user preferences by scene and type",
+        "Apply preferences during generation",
+        "Provide preference editing UI"
+      ],
+      "frs_covered": ["FR14-1", "FR261"],
+      "nfrs_covered": ["NFR16-1"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 6.1"],
+      "passes": false
+    },
+    {
+      "id": 30,
+      "epic": "Epic 6",
+      "story": "Story 6.3",
+      "title": "记忆智能更新",
+      "description": "Support intelligent ADD, UPDATE, DELETE, and NONE decisions for memory updates.",
+      "openspec_change": "epic-6-story-6-3-memory-update-decisioning",
+      "steps": [
+        "Classify memory write actions from extracted information",
+        "Resolve conflicts against existing memory state",
+        "Update summaries and cognitive state after session stop"
+      ],
+      "frs_covered": ["FR262", "FR263", "FR264"],
+      "nfrs_covered": ["NFR8-4"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-04"],
+      "dependencies": ["Story 6.2"],
+      "passes": false
+    },
+    {
+      "id": 31,
+      "epic": "Epic 6",
+      "story": "Story 6.4",
+      "title": "记忆检索功能",
+      "description": "Provide hybrid memory retrieval and cognitive state reconstruction to the user experience.",
+      "openspec_change": "epic-6-story-6-4-memory-retrieval",
+      "steps": [
+        "Support vector and keyword retrieval for user memory",
+        "Expose retrieval results in the product UI",
+        "Enable `agent_cognitive_tunnel_state` reconstruction behind audit"
+      ],
+      "frs_covered": ["FR265", "FR266", "FR267"],
+      "nfrs_covered": ["NFR8-1", "NFR28-1"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 6.3"],
+      "passes": false
+    },
+    {
+      "id": 32,
+      "epic": "Epic 6",
+      "story": "Story 6.5",
+      "title": "企业知识库管理",
+      "description": "Support enterprise knowledge ingestion, segmentation, and retrieval management.",
+      "openspec_change": "epic-6-story-6-5-enterprise-knowledge-base",
+      "steps": [
+        "Upload and process enterprise documents",
+        "Manage access scope for documents and collections",
+        "Support hybrid retrieval over enterprise knowledge"
+      ],
+      "frs_covered": ["FR280", "FR281", "FR282", "FR283"],
+      "nfrs_covered": ["NFR8-2", "NFR27"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 6.4"],
+      "passes": false
+    },
+    {
+      "id": 33,
+      "epic": "Epic 6",
+      "story": "Story 6.6",
+      "title": "错题集功能",
+      "description": "Create a durable correction-rule learning pipeline for the Agent.",
+      "openspec_change": "epic-6-story-6-6-correction-rule-learning",
+      "steps": [
+        "Capture corrected outputs and reasons",
+        "Extract structured correction rules",
+        "Inject applicable rules into future execution"
+      ],
+      "frs_covered": ["FR83", "FR84", "FR85", "FR86", "FR87", "FR88"],
+      "nfrs_covered": ["NFR8-3", "NFR16-3"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 6.5"],
+      "passes": false
+    },
+    {
+      "id": 34,
+      "epic": "Epic 6",
+      "story": "Story 6.7",
+      "title": "记忆数据管理界面",
+      "description": "Provide end-user and admin surfaces for memory visibility and control.",
+      "openspec_change": "epic-6-story-6-7-memory-data-management-ui",
+      "steps": [
+        "List memory items by type and scope",
+        "Support edit, delete, export, and backup actions",
+        "Show history and ownership boundaries for memory records"
+      ],
+      "frs_covered": ["FR268", "FR269", "FR270"],
+      "nfrs_covered": ["NFR16-1", "NFR16-2"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 6.6"],
+      "passes": false
+    },
+    {
+      "id": 35,
+      "epic": "Epic 6",
+      "story": "Story 6.8",
+      "title": "记忆层配置",
+      "description": "Expose memory behavior controls, deployment mode, and capture policy configuration.",
+      "openspec_change": "epic-6-story-6-8-memory-configuration",
+      "steps": [
+        "Configure local or cloud-backed memory deployment mode",
+        "Configure auto-extraction, retention, and hook capture policy",
+        "Configure enterprise knowledge access scope controls"
+      ],
+      "frs_covered": ["FR330", "FR331", "FR332", "FR333", "FR334"],
+      "nfrs_covered": ["NFR28-3"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 6.7"],
+      "passes": false
+    },
+    {
+      "id": 36,
+      "epic": "Epic 7",
+      "story": "Story 7.1",
+      "title": "自然语言意图解析",
+      "description": "Complete intent parsing and parameter extraction at the Agent product layer.",
+      "openspec_change": "epic-7-story-7-1-intent-parsing",
+      "steps": [
+        "Parse user intent and key parameters from chat input",
+        "Detect ambiguity and request clarification when needed",
+        "Feed structured intent into planner and tool selection flows"
+      ],
+      "frs_covered": ["FR400", "FR401", "FR402"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 6.8"],
+      "passes": false
+    },
+    {
+      "id": 37,
+      "epic": "Epic 7",
+      "story": "Story 7.2",
+      "title": "多模态输入处理",
+      "description": "Support image and PDF understanding through the Agent interaction surface.",
+      "openspec_change": "epic-7-story-7-2-multimodal-input",
+      "steps": [
+        "Accept images and PDFs in the chat input flow",
+        "Extract structured content from supported file types",
+        "Bind results into planner and memory pipelines"
+      ],
+      "frs_covered": ["FR403", "FR404"],
+      "nfrs_covered": ["NFR4"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.1"],
+      "passes": false
+    },
+    {
+      "id": 38,
+      "epic": "Epic 7",
+      "story": "Story 7.3",
+      "title": "任务分解与规划",
+      "description": "Expose structured planning and user-visible execution plans in the product UI.",
+      "openspec_change": "epic-7-story-7-3-task-planning",
+      "steps": [
+        "Generate visible multi-step plans for complex tasks",
+        "Capture dependency and ordering information for steps",
+        "Present plan output before or during execution when required"
+      ],
+      "frs_covered": ["FR410", "FR411", "FR414"],
+      "nfrs_covered": ["NFR8-8"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.2"],
+      "passes": false
+    },
+    {
+      "id": 39,
+      "epic": "Epic 7",
+      "story": "Story 7.4",
+      "title": "工具选择决策",
+      "description": "Make tool selection reasoning visible and measurable within the runtime.",
+      "openspec_change": "epic-7-story-7-4-tool-selection-decision",
+      "steps": [
+        "Rank candidate tools against task intent",
+        "Record tool selection rationale",
+        "Expose selection outcomes for debugging and audit"
+      ],
+      "frs_covered": ["FR412"],
+      "nfrs_covered": ["NFR8-6"],
+      "arch_covered": ["ADR-017", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.3"],
+      "passes": false
+    },
+    {
+      "id": 40,
+      "epic": "Epic 7",
+      "story": "Story 7.5",
+      "title": "动态计划调整",
+      "description": "Support bounded replanning with user-visible reason codes during execution.",
+      "openspec_change": "epic-7-story-7-5-dynamic-replanning",
+      "steps": [
+        "Detect plan drift from step outcomes",
+        "Replan within bounded policy limits",
+        "Explain plan changes to the user"
+      ],
+      "frs_covered": ["FR413", "FR415"],
+      "nfrs_covered": ["NFR22"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.4"],
+      "passes": false
+    },
+    {
+      "id": 41,
+      "epic": "Epic 7",
+      "story": "Story 7.6",
+      "title": "任务循环检测",
+      "description": "Expose loop detection and interruption behavior in the Agent runtime UX.",
+      "openspec_change": "epic-7-story-7-6-loop-detection",
+      "steps": [
+        "Detect repeated runtime states and tool loops",
+        "Interrupt execution on loop threshold",
+        "Show loop reason and recovery path"
+      ],
+      "frs_covered": ["FR420"],
+      "nfrs_covered": ["NFR8-5", "NFR23-2"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.5"],
+      "passes": false
+    },
+    {
+      "id": 42,
+      "epic": "Epic 7",
+      "story": "Story 7.7",
+      "title": "任务边界控制",
+      "description": "Add execution boundaries for iterations, timeout, and user interruption.",
+      "openspec_change": "epic-7-story-7-7-task-boundary-control",
+      "steps": [
+        "Apply iteration and timeout bounds to runtime execution",
+        "Support user interruption entry points",
+        "Show boundary termination causes in runtime history"
+      ],
+      "frs_covered": ["FR421", "FR422", "FR423"],
+      "nfrs_covered": ["NFR23-1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.6"],
+      "passes": false
+    },
+    {
+      "id": 43,
+      "epic": "Epic 7",
+      "story": "Story 7.8",
+      "title": "子代理管理",
+      "description": "Expose automatic sub-agent creation behavior through the core Agent execution surface.",
+      "openspec_change": "epic-7-story-7-8-sub-agent-runtime-baseline",
+      "steps": [
+        "Detect when subtasks require sub-agent delegation",
+        "Create sub-agent execution branches under the common runtime",
+        "Show sub-agent state and results to the user"
+      ],
+      "frs_covered": ["FR416", "FR450", "FR453"],
+      "nfrs_covered": ["NFR8-12"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.7"],
+      "passes": false
+    },
+    {
+      "id": 44,
+      "epic": "Epic 7",
+      "story": "Story 7.9",
+      "title": "子代理状态持久化",
+      "description": "Persist sub-agent execution state and recovery behavior.",
+      "openspec_change": "epic-7-story-7-9-sub-agent-persistence",
+      "steps": [
+        "Persist sub-agent execution state to local storage",
+        "Resume sub-agent execution after restart or interruption",
+        "Keep parent-child execution history consistent"
+      ],
+      "frs_covered": ["FR454", "FR455"],
+      "nfrs_covered": ["NFR23-4"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 7.8"],
+      "passes": false
+    },
+    {
+      "id": 45,
+      "epic": "Epic 21",
+      "story": "Story 21.1",
+      "title": "LLM提供商添加与配置",
+      "description": "Create the provider registry and add-provider UI for the Agent control plane.",
+      "openspec_change": "epic-21-story-21-1-llm-provider-add-config",
+      "steps": [
+        "Support preset and custom OpenAI-compatible providers",
+        "Store provider credentials securely",
+        "Test provider connectivity from the control plane"
+      ],
+      "frs_covered": ["FR800", "FR801", "FR802", "FR803", "FR804"],
+      "nfrs_covered": ["NFR29", "NFR15"],
+      "arch_covered": ["ADR-038"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 7.9"],
+      "passes": false
+    },
+    {
+      "id": 46,
+      "epic": "Epic 21",
+      "story": "Story 21.2",
+      "title": "LLM提供商默认设置",
+      "description": "Allow default provider and model selection across sessions and agents.",
+      "openspec_change": "epic-21-story-21-2-llm-provider-defaults",
+      "steps": [
+        "Set global and session-level defaults",
+        "Support model parameter configuration",
+        "Persist effective default selection"
+      ],
+      "frs_covered": ["FR805", "FR806", "FR807", "FR808", "FR809"],
+      "nfrs_covered": ["NFR29"],
+      "arch_covered": ["ADR-038"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.1"],
+      "passes": false
+    },
+    {
+      "id": 47,
+      "epic": "Epic 21",
+      "story": "Story 21.3",
+      "title": "MCP服务添加与配置",
+      "description": "Build the MCP service registry entry flow for the Agent control plane.",
+      "openspec_change": "epic-21-story-21-3-mcp-service-add-config",
+      "steps": [
+        "Add MCP service definition and command configuration",
+        "Support args, env, and runtime policy settings",
+        "Persist MCP service records for later discovery"
+      ],
+      "frs_covered": ["FR810", "FR811", "FR812", "FR813"],
+      "nfrs_covered": ["NFR30"],
+      "arch_covered": ["ADR-015", "ADR-039"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.2"],
+      "passes": false
     },
     {
       "id": 48,
-      "epic": "Epic 39",
-      "story": "Story 39.2",
-      "title": "Builtin Markdown Editor",
-      "description": "Add a markdown editor experience with preview-ready structure inside the common editor host.",
-      "openspec_change": "epic-39-story-39-2-builtin-markdown-editor",
+      "epic": "Epic 21",
+      "story": "Story 21.4",
+      "title": "MCP服务连接管理",
+      "description": "Expose MCP service connection, health, and state management.",
+      "openspec_change": "epic-21-story-21-4-mcp-service-connection-management",
       "steps": [
-        "Register markdown editor type",
-        "Support markdown content editing",
-        "Provide preview-ready content pipeline",
-        "Reuse host lifecycle and save contract"
+        "Show service online, offline, and error states",
+        "Allow reconnect and disable operations",
+        "Persist service health and last-check information"
       ],
-      "frs_covered": [
-        "FR1181"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-035"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 39.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR814", "FR815", "FR816", "FR817"],
+      "nfrs_covered": ["NFR30"],
+      "arch_covered": ["ADR-015", "ADR-039"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.3"],
+      "passes": false
     },
     {
       "id": 49,
-      "epic": "Epic 39",
-      "story": "Story 39.3",
-      "title": "Builtin JSON Editor",
-      "description": "Provide a structured JSON editor baseline for template and configuration content managed by the editor host.",
-      "openspec_change": "epic-39-story-39-3-builtin-json-editor",
+      "epic": "Epic 21",
+      "story": "Story 21.5",
+      "title": "MCP工具发现与管理",
+      "description": "Allow discovery, enablement, and control of MCP-provided tools.",
+      "openspec_change": "epic-21-story-21-5-mcp-tool-discovery-management",
       "steps": [
-        "Register JSON editor type",
-        "Support JSON formatting and validation hooks",
-        "Reuse open/save lifecycle",
-        "Integrate with template and config workflows"
+        "Discover tools from connected MCP services",
+        "Enable or disable individual MCP tools",
+        "Bind tool state into the common runtime registry"
       ],
-      "frs_covered": [
-        "FR1182"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-035"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 39.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR818", "FR819", "FR820"],
+      "nfrs_covered": ["NFR30"],
+      "arch_covered": ["ADR-015", "ADR-039"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.4"],
+      "passes": false
     },
     {
       "id": 50,
-      "epic": "Epic 40",
-      "story": "Story 40.1",
-      "title": "Editor Registry and Resolver",
-      "description": "Create a unified editor registry and resolver so resources open in the correct editor host.",
-      "openspec_change": "epic-40-story-40-1-editor-registry-resolver",
+      "epic": "Epic 21",
+      "story": "Story 21.6",
+      "title": "MCP工具Approve策略配置",
+      "description": "Configure per-tool approve policies for MCP tool execution.",
+      "openspec_change": "epic-21-story-21-6-mcp-approve-policy",
       "steps": [
-        "Define editor descriptor schema",
-        "Implement resource-to-editor resolution",
-        "Support fallback editor resolution",
-        "Expose registration hooks for core and plugin editors"
+        "Support auto, confirm, and deny policies",
+        "Apply defaults and per-tool overrides",
+        "Expose effective policy to the runtime and UI"
       ],
-      "frs_covered": [
-        "FR1217"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-035"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 41.4",
-        "Story 39.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR825", "FR826", "FR827", "FR828"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-039"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.5"],
+      "passes": false
     },
     {
       "id": 51,
-      "epic": "Epic 40",
-      "story": "Story 40.2",
-      "title": "Schema Renderer Baseline",
-      "description": "Implement the baseline schema renderer for dynamic content areas and template-backed views.",
-      "openspec_change": "epic-40-story-40-2-schema-renderer-baseline",
+      "epic": "Epic 21",
+      "story": "Story 21.7",
+      "title": "MCP工具批量配置",
+      "description": "Provide bulk configuration operations for MCP tools.",
+      "openspec_change": "epic-21-story-21-7-mcp-bulk-config",
       "steps": [
-        "Define schema node model",
-        "Render core layout and content primitives",
-        "Handle renderer fallback and validation",
-        "Support secure component whitelist"
+        "Select multiple MCP tools in the control plane",
+        "Apply shared policy or state changes in bulk",
+        "Record bulk change operations for audit"
       ],
-      "frs_covered": [
-        "FR1218"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 40.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR829", "FR830", "FR831", "FR832"],
+      "nfrs_covered": ["NFR16", "NFR23-8"],
+      "arch_covered": ["ADR-039"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.6"],
+      "passes": false
     },
     {
       "id": 52,
-      "epic": "Epic 40",
-      "story": "Story 40.3",
-      "title": "Data Binding and Conditional Rendering",
-      "description": "Add data binding, conditional visibility, and repeatable content support to the schema runtime.",
-      "openspec_change": "epic-40-story-40-3-data-binding-conditional-rendering",
+      "epic": "Epic 21",
+      "story": "Story 21.8",
+      "title": "工具执行日志与审计",
+      "description": "Build tool execution log browsing and export in the Agent control plane.",
+      "openspec_change": "epic-21-story-21-8-tool-log-audit",
       "steps": [
-        "Bind schema fields to runtime data",
-        "Support conditional visibility expressions",
-        "Support repeatable sections and collections",
-        "Validate bindings before render execution"
+        "List tool execution records with filters",
+        "Show approve decisions and result summaries",
+        "Support export for audit review"
       ],
-      "frs_covered": [
-        "FR1219"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 40.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR818", "FR831"],
+      "nfrs_covered": ["NFR14", "NFR23-8"],
+      "arch_covered": ["ADR-039", "ADR-037"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.7"],
+      "passes": false
     },
     {
       "id": 53,
-      "epic": "Epic 40",
-      "story": "Story 40.4",
-      "title": "Template Permission and Safety Boundary",
-      "description": "Enforce template runtime safety, permission checks, and restricted component access.",
-      "openspec_change": "epic-40-story-40-4-template-permission-safety-boundary",
+      "epic": "Epic 21",
+      "story": "Story 21.9",
+      "title": "Skill配置管理",
+      "description": "Manage installed Skills with progressive loading and governance visibility.",
+      "openspec_change": "epic-21-story-21-9-skill-configuration",
       "steps": [
-        "Restrict component and action whitelist",
-        "Run permission checks before template action execution",
-        "Prevent unsafe schema access to unauthorized fields",
-        "Record runtime safety decisions for audit"
+        "List installed Skills and their status",
+        "Configure Skill parameters and enablement",
+        "Show progressive loading and downgrade behavior"
       ],
-      "frs_covered": [
-        "FR1220"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 40.2",
-        "Story 40.3",
-        "Story 2.7"
-      ],
-      "passes": true
+      "frs_covered": ["FR835", "FR836", "FR837", "FR838", "FR839", "FR840"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-046"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.8"],
+      "passes": false
     },
     {
       "id": 54,
-      "epic": "Epic 40",
-      "story": "Story 40.5",
-      "title": "Template Publish and Version Baseline",
-      "description": "Create the minimum publish and version flow for dynamic templates used by runtime hosts.",
-      "openspec_change": "epic-40-story-40-5-template-publish-version-baseline",
+      "epic": "Epic 21",
+      "story": "Story 21.10",
+      "title": "系统提示词查看与编辑",
+      "description": "Create the system prompt editor with layered loading visibility.",
+      "openspec_change": "epic-21-story-21-10-system-prompt-editor",
       "steps": [
-        "Define template version metadata",
-        "Support draft and published states",
-        "Resolve active version by host context",
-        "Keep change history for runtime rollback"
+        "Edit system prompts with variable support",
+        "Display L1, L2, and L3 load composition",
+        "Show source labels for governance traceability"
       ],
-      "frs_covered": [
-        "FR1221"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 40.2",
-        "Story 40.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR850", "FR851", "FR861", "FR862"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-038", "ADR-040"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.9"],
+      "passes": false
     },
     {
       "id": 55,
-      "epic": "Epic 42",
-      "story": "Story 42.1",
-      "title": "Dynamic Form Field Schema",
-      "description": "Define the field schema and runtime contract for dynamic business forms.",
-      "openspec_change": "epic-42-story-42-1-dynamic-form-field-schema",
+      "epic": "Epic 21",
+      "story": "Story 21.11",
+      "title": "提示词模板管理",
+      "description": "Provide prompt template CRUD and default assignment flows.",
+      "openspec_change": "epic-21-story-21-11-prompt-template-management",
       "steps": [
-        "Define field schema for input, select, date, attachment, and computed fields",
-        "Support default values, visibility, editability, and validation rules",
-        "Map field permissions to runtime contract",
-        "Expose stable schema versioning rules"
+        "Manage built-in and custom prompt templates",
+        "Apply templates to Agent and department scope",
+        "Persist template assignment and defaults"
       ],
-      "frs_covered": [
-        "FR1222"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 40.2",
-        "Story 40.3",
-        "Story 40.4"
-      ],
-      "passes": true
+      "frs_covered": ["FR852", "FR853", "FR854"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-038", "ADR-040"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.10"],
+      "passes": false
     },
     {
       "id": 56,
-      "epic": "Epic 42",
-      "story": "Story 42.2",
-      "title": "Dynamic Form Renderer",
-      "description": "Build the renderer that turns approved field schema into dynamic form UI inside the page host.",
-      "openspec_change": "epic-42-story-42-2-dynamic-form-renderer",
+      "epic": "Epic 21",
+      "story": "Story 21.12",
+      "title": "提示词变量预览",
+      "description": "Support full rendered prompt preview with token estimation.",
+      "openspec_change": "epic-21-story-21-12-prompt-variable-preview",
       "steps": [
-        "Render field schema into form controls",
-        "Apply validation and permission rules at runtime",
-        "Support section layout and nested groups",
-        "Expose form state change events to the host"
+        "Render variable-substituted prompt preview",
+        "Show current variable values and missing inputs",
+        "Estimate token usage and cost before execution"
       ],
-      "frs_covered": [
-        "FR1223"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 42.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR855", "FR856", "FR857"],
+      "nfrs_covered": ["NFR3"],
+      "arch_covered": ["ADR-038", "ADR-040"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.11"],
+      "passes": false
     },
     {
       "id": 57,
-      "epic": "Epic 42",
-      "story": "Story 42.3",
-      "title": "Dynamic Detail Section Renderer",
-      "description": "Render dynamic detail sections for business entities using schema-driven blocks.",
-      "openspec_change": "epic-42-story-42-3-dynamic-detail-section-renderer",
+      "epic": "Epic 21",
+      "story": "Story 21.13",
+      "title": "提示词版本管理",
+      "description": "Add version history, rollback, and knowledge accumulation writeback controls for prompts.",
+      "openspec_change": "epic-21-story-21-13-prompt-versioning",
       "steps": [
-        "Define detail section block schema",
-        "Render fields, attachments, relations, and timeline blocks",
-        "Support conditional sections and ordering",
-        "Integrate read-only permission checks"
+        "Store prompt versions and diffs",
+        "Allow rollback to earlier versions",
+        "Control session knowledge accumulation writeback"
       ],
-      "frs_covered": [
-        "FR1224"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 40.2",
-        "Story 40.3",
-        "Story 40.4"
-      ],
-      "passes": true
+      "frs_covered": ["FR858", "FR859", "FR860", "FR863"],
+      "nfrs_covered": ["NFR14"],
+      "arch_covered": ["ADR-038", "ADR-040", "ADR-044"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.12"],
+      "passes": false
     },
     {
       "id": 58,
-      "epic": "Epic 42",
-      "story": "Story 42.4",
-      "title": "Approval Content Dynamicization",
-      "description": "Convert approval content bodies into dynamic schema-driven documents while keeping actions fixed.",
-      "openspec_change": "epic-42-story-42-4-approval-content-dynamicization",
+      "epic": "Epic 21",
+      "story": "Story 21.14",
+      "title": "Rules规则列表管理",
+      "description": "Provide grouped rule visibility, ordering, and enablement.",
+      "openspec_change": "epic-21-story-21-14-rules-list-management",
       "steps": [
-        "Keep approval actions in fixed UI shell",
-        "Render approval body content through schema runtime",
-        "Respect action, field, and data permissions",
-        "Preserve approval trace and auditability"
+        "List rules by category and priority",
+        "Support enable, disable, and reorder actions",
+        "Persist runtime composition order"
       ],
-      "frs_covered": [
-        "FR1225"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 42.2",
-        "Story 42.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR865", "FR866", "FR867", "FR868"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-041"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.13"],
+      "passes": false
     },
     {
       "id": 59,
-      "epic": "Epic 42",
-      "story": "Story 42.5",
-      "title": "Dashboard Content Card Composition",
-      "description": "Support dynamic workbench cards and dashboard content blocks as Agent-ready runtime targets.",
-      "openspec_change": "epic-42-story-42-5-dashboard-content-card-composition",
+      "epic": "Epic 21",
+      "story": "Story 21.15",
+      "title": "自定义规则添加",
+      "description": "Allow users and admins to create custom Agent rules.",
+      "openspec_change": "epic-21-story-21-15-custom-rule-addition",
       "steps": [
-        "Define card block schema for workbench content",
-        "Render cards inside the page host content region",
-        "Support card-level permissions and visibility",
-        "Prepare card containers for Agent writeback"
+        "Create custom rule authoring form",
+        "Support conditions and priority configuration",
+        "Persist rule records for runtime use"
       ],
-      "frs_covered": [
-        "FR1226"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02"
-      ],
-      "dependencies": [
-        "Story 41.1",
-        "Story 42.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR869", "FR870", "FR871", "FR872", "FR873", "FR874", "FR875"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-041"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.14"],
+      "passes": false
     },
     {
       "id": 60,
-      "epic": "Epic 43",
-      "story": "Story 43.1",
-      "title": "Session Lifecycle Management",
-      "description": "Create the session lifecycle baseline for the common Agent runtime.",
-      "openspec_change": "epic-43-story-43-1-session-lifecycle-management",
+      "epic": "Epic 21",
+      "story": "Story 21.16",
+      "title": "提示词调试模式",
+      "description": "Create a debug console for prompt, rule, and safety behavior verification.",
+      "openspec_change": "epic-21-story-21-16-prompt-debug-mode",
       "steps": [
-        "Define session states and transitions",
-        "Create session create/resume/close APIs",
-        "Persist session ownership and runtime metadata",
-        "Integrate session lifecycle with host context"
+        "Run test prompts against the Agent in debug mode",
+        "Show triggered rules and prompt impact",
+        "Display safety blocks and convergence strategy hits"
       ],
-      "frs_covered": [
-        "PRD-P2-01",
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 41.1",
-        "Story 41.4"
-      ],
-      "passes": true
+      "frs_covered": ["FR880", "FR881", "FR882", "FR883", "FR884", "FR885", "FR886", "FR887", "FR888"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-040", "ADR-041", "ADR-042"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.15"],
+      "passes": false
     },
     {
       "id": 61,
-      "epic": "Epic 43",
-      "story": "Story 43.2",
-      "title": "Message and Part Model",
-      "description": "Implement the message and part model for structured Agent conversation records.",
-      "openspec_change": "epic-43-story-43-2-message-and-part-model",
+      "epic": "Epic 21",
+      "story": "Story 21.17",
+      "title": "Sub-Agent创建与管理",
+      "description": "Create the product surface for Sub-Agent CRUD and lifecycle control.",
+      "openspec_change": "epic-21-story-21-17-sub-agent-registry",
       "steps": [
-        "Define message and part schemas",
-        "Support text, reasoning, tool_call, tool_result, confirmation, error, and ui_patch parts",
-        "Persist ordered parts per message",
-        "Expose serialization contract for frontend streaming"
+        "Support create, edit, enable, disable, and delete",
+        "Provide template-based Sub-Agent creation",
+        "Persist registry and status metadata"
       ],
-      "frs_covered": [
-        "PRD-P2-01",
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR890", "FR891", "FR892", "FR893", "FR894", "FR895", "FR896", "FR897", "FR898", "FR899", "FR900"],
+      "nfrs_covered": ["NFR8-12"],
+      "arch_covered": ["ADR-042"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.16"],
+      "passes": false
     },
     {
       "id": 62,
-      "epic": "Epic 43",
-      "story": "Story 43.3",
-      "title": "Streaming Output and Status Sync",
-      "description": "Support streaming runtime output and synchronized session status updates.",
-      "openspec_change": "epic-43-story-43-3-streaming-output-status-sync",
+      "epic": "Epic 21",
+      "story": "Story 21.18",
+      "title": "Sub-Agent角色提示词配置",
+      "description": "Configure Sub-Agent persona, trigger conditions, and SOUL-backed prompt behavior.",
+      "openspec_change": "epic-21-story-21-18-sub-agent-persona-config",
       "steps": [
-        "Emit ordered runtime events during execution",
-        "Sync message parts to frontend consumers",
-        "Keep final state aligned with streamed events",
-        "Handle reconnect and replay for active sessions"
+        "Edit role prompt and invocation description",
+        "Support trigger keywords and conditions",
+        "Apply SOUL-backed template policy with audit for persistent edits"
       ],
-      "frs_covered": [
-        "PRD-P2-01",
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR905", "FR906", "FR907", "FR908", "FR909", "FR910", "FR911", "FR912", "FR913", "FR914"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-042", "ADR-047"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.17"],
+      "passes": false
     },
     {
       "id": 63,
-      "epic": "Epic 43",
-      "story": "Story 43.4",
-      "title": "Interrupt Retry and Checkpoint Recovery",
-      "description": "Add interrupt, retry, and checkpoint recovery to the session runtime.",
-      "openspec_change": "epic-43-story-43-4-interrupt-retry-checkpoint-recovery",
+      "epic": "Epic 21",
+      "story": "Story 21.19",
+      "title": "Sub-Agent工具绑定",
+      "description": "Bind scoped MCP tools and Skills to each Sub-Agent.",
+      "openspec_change": "epic-21-story-21-19-sub-agent-tool-binding",
       "steps": [
-        "Support runtime interruption requests",
-        "Persist step checkpoints for resume",
-        "Allow controlled retry from checkpoint or step start",
-        "Record recovery decisions in runtime history"
+        "Bind allowed MCP tools to a Sub-Agent",
+        "Bind allowed Skills and effective approve policy",
+        "Persist scoped capability selection"
       ],
-      "frs_covered": [
-        "PRD-P2-01",
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.1",
-        "Story 43.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR915", "FR916", "FR917", "FR918", "FR919"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-042", "ADR-046"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.18"],
+      "passes": false
     },
     {
       "id": 64,
-      "epic": "Epic 44",
-      "story": "Story 44.1",
-      "title": "Agent Runtime State Machine",
-      "description": "Implement the common runtime state machine for planning, running, confirmation, completion, and failure.",
-      "openspec_change": "epic-44-story-44-1-agent-runtime-state-machine",
+      "epic": "Epic 21",
+      "story": "Story 21.20",
+      "title": "Sub-Agent权限配置",
+      "description": "Configure data, department, and knowledge access boundaries for Sub-Agents.",
+      "openspec_change": "epic-21-story-21-20-sub-agent-permission-config",
       "steps": [
-        "Define runtime state model",
-        "Enforce valid state transitions",
-        "Expose state changes to session events",
-        "Persist step and task status consistently"
+        "Define department and data boundaries",
+        "Bind knowledge access scope to Sub-Agents",
+        "Enforce isolation and visibility in runtime execution"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.1",
-        "Story 43.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR920", "FR921", "FR922", "FR923", "FR924", "FR925"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-042", "ADR-043"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.19"],
+      "passes": false
     },
     {
       "id": 65,
-      "epic": "Epic 44",
-      "story": "Story 44.2",
-      "title": "Structured Planner",
-      "description": "Generate structured plans from user goals for the common Agent runtime.",
-      "openspec_change": "epic-44-story-44-2-structured-planner",
+      "epic": "Epic 21",
+      "story": "Story 21.21",
+      "title": "Sub-Agent模型配置",
+      "description": "Allow per-Sub-Agent model and parameter selection.",
+      "openspec_change": "epic-21-story-21-21-sub-agent-model-config",
       "steps": [
-        "Define plan output schema",
-        "Generate linear multi-step plans",
-        "Mark steps that require tools or confirmation",
-        "Persist plans for audit and replay"
+        "Choose provider and model per Sub-Agent",
+        "Set model parameters and limits",
+        "Persist execution defaults for each Sub-Agent"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 44.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR905", "FR909", "FR910"],
+      "nfrs_covered": ["NFR29"],
+      "arch_covered": ["ADR-042"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.20"],
+      "passes": false
     },
     {
       "id": 66,
-      "epic": "Epic 44",
-      "story": "Story 44.3",
-      "title": "Step Executor",
-      "description": "Execute planner steps through a common runtime executor.",
-      "openspec_change": "epic-44-story-44-3-step-executor",
+      "epic": "Epic 21",
+      "story": "Story 21.22",
+      "title": "Sub-Agent调用路由",
+      "description": "Create automatic and manual routing from the main Agent to Sub-Agents.",
+      "openspec_change": "epic-21-story-21-22-sub-agent-routing",
       "steps": [
-        "Map plan steps to runtime actions",
-        "Invoke tool runtime through executor contracts",
-        "Handle synchronous and streaming step results",
-        "Update state and message parts after each step"
+        "Match messages against trigger conditions",
+        "Recommend or auto-select a Sub-Agent",
+        "Track routing decisions in execution history"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 44.1",
-        "Story 44.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR930", "FR931", "FR932", "FR933", "FR934", "FR935", "FR936", "FR937", "FR938"],
+      "nfrs_covered": ["NFR8-12"],
+      "arch_covered": ["ADR-042"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.21"],
+      "passes": false
     },
     {
       "id": 67,
-      "epic": "Epic 44",
-      "story": "Story 44.4",
-      "title": "Replan and Failure Strategy",
-      "description": "Support bounded replanning and standardized failure handling in the Agent runtime.",
-      "openspec_change": "epic-44-story-44-4-replan-and-failure-strategy",
+      "epic": "Epic 21",
+      "story": "Story 21.23",
+      "title": "Sub-Agent执行监控",
+      "description": "Provide execution status, history, and monitoring for Sub-Agent runs.",
+      "openspec_change": "epic-21-story-21-23-sub-agent-execution-monitoring",
       "steps": [
-        "Define bounded replanning rules",
-        "Handle tool or permission failures with runtime decisions",
-        "Record replan attempts and outcomes",
-        "Surface actionable failure states to the host"
+        "Show current Sub-Agent execution state",
+        "List historical runs and outcomes",
+        "Link sub-agent traces back to the main Agent session"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 44.2",
-        "Story 44.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR938", "FR924"],
+      "nfrs_covered": ["NFR23-4"],
+      "arch_covered": ["ADR-042", "ADR-037"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 21.22"],
+      "passes": false
     },
     {
       "id": 68,
-      "epic": "Epic 45",
-      "story": "Story 45.1",
-      "title": "Tool Descriptor and Registry",
-      "description": "Create the unified descriptor and registry model for all runtime tools.",
-      "openspec_change": "epic-45-story-45-1-tool-descriptor-and-registry",
+      "epic": "Epic 9",
+      "story": "Story 9.1",
+      "title": "知识文档上传与管理",
+      "description": "Build the end-user and admin surface for knowledge document ingestion.",
+      "openspec_change": "epic-9-story-9-1-knowledge-doc-upload-management",
       "steps": [
-        "Define tool descriptor schema",
-        "Register core, plugin, and MCP tool metadata",
-        "Support lookup by tool id and capability",
-        "Validate registry uniqueness and availability"
+        "Upload and organize knowledge documents",
+        "Track parsing and indexing state",
+        "Manage lifecycle for uploaded knowledge assets"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 44.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR280", "FR281", "FR282"],
+      "nfrs_covered": ["NFR8-2"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 21.23"],
+      "passes": false
     },
     {
       "id": 69,
-      "epic": "Epic 45",
-      "story": "Story 45.2",
-      "title": "Tool Executor and Validation",
-      "description": "Execute tools through a unified executor with input validation and runtime context.",
-      "openspec_change": "epic-45-story-45-2-tool-executor-and-validation",
+      "epic": "Epic 9",
+      "story": "Story 9.2",
+      "title": "知识问答检索",
+      "description": "Productize knowledge-backed Q&A retrieval for the Agent.",
+      "openspec_change": "epic-9-story-9-2-knowledge-qa-retrieval",
       "steps": [
-        "Validate tool input against descriptor schema",
-        "Inject runtime context before execution",
-        "Normalize execution errors into runtime results",
-        "Track tool call lifecycle in the session stream"
+        "Run hybrid retrieval over configured knowledge bases",
+        "Inject cited knowledge into Agent answers",
+        "Expose answer source details in the UI"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 45.1",
-        "Story 44.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR283", "FR284", "FR285"],
+      "nfrs_covered": ["NFR8-2"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 9.1"],
+      "passes": false
     },
     {
       "id": 70,
-      "epic": "Epic 45",
-      "story": "Story 45.3",
-      "title": "Unified Core Plugin and MCP Tool Adapters",
-      "description": "Expose core, plugin, and MCP tools through one execution protocol.",
-      "openspec_change": "epic-45-story-45-3-unified-core-plugin-mcp-tool-adapters",
+      "epic": "Epic 9",
+      "story": "Story 9.3",
+      "title": "工单知识自动生成",
+      "description": "Convert operational outcomes into governed knowledge entries.",
+      "openspec_change": "epic-9-story-9-3-ticket-knowledge-generation",
       "steps": [
-        "Bridge core tools into the registry",
-        "Bridge plugin tools into the registry",
-        "Bridge MCP tools into the registry",
-        "Keep adapter outputs consistent across tool sources"
+        "Capture candidate knowledge from relevant workflows",
+        "Generate structured draft knowledge entries",
+        "Route generated entries into the review flow"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 45.1",
-        "Story 45.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR286", "FR287"],
+      "nfrs_covered": ["NFR27"],
+      "arch_covered": ["ADR-043", "ADR-044"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 9.2"],
+      "passes": false
     },
     {
       "id": 71,
-      "epic": "Epic 45",
-      "story": "Story 45.4",
-      "title": "Tool Result Normalization",
-      "description": "Standardize tool results so they can be consumed by planner, audit, and UI writeback layers.",
-      "openspec_change": "epic-45-story-45-4-tool-result-normalization",
+      "epic": "Epic 9",
+      "story": "Story 9.4",
+      "title": "知识条目管理",
+      "description": "Allow review, edit, merge, and lifecycle management of knowledge entries.",
+      "openspec_change": "epic-9-story-9-4-knowledge-entry-management",
       "steps": [
-        "Define normalized success and failure result envelopes",
-        "Map tool outputs into structured result payloads",
-        "Preserve raw output references where needed",
-        "Expose normalized results to downstream runtime layers"
+        "List and inspect generated and uploaded entries",
+        "Support approve, reject, edit, and merge operations",
+        "Track review actions and entry history"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 45.2",
-        "Story 45.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR288", "FR289"],
+      "nfrs_covered": ["NFR14"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 9.3"],
+      "passes": false
     },
     {
       "id": 72,
-      "epic": "Epic 46",
-      "story": "Story 46.1",
-      "title": "Tool Permission Precheck",
-      "description": "Check permissions before any runtime tool call is executed.",
-      "openspec_change": "epic-46-story-46-1-tool-permission-precheck",
+      "epic": "Epic 9",
+      "story": "Story 9.5",
+      "title": "知识库权限控制",
+      "description": "Complete role, department, and scope-based access control for knowledge bases.",
+      "openspec_change": "epic-9-story-9-5-knowledge-base-access-control",
       "steps": [
-        "Resolve required permissions from tool descriptors",
-        "Check user, department, and tenant permissions before execution",
-        "Block unauthorized tool calls before runtime execution",
-        "Publish permission decisions into the runtime stream"
+        "Define access scope per knowledge base",
+        "Enforce role and department visibility rules",
+        "Apply effective knowledge scope to Agent execution"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 45.1",
-        "Story 45.2",
-        "Story 2.7"
-      ],
-      "passes": true
+      "frs_covered": ["FR290", "FR291"],
+      "nfrs_covered": ["NFR16-2"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 9.4"],
+      "passes": false
     },
     {
       "id": 73,
-      "epic": "Epic 46",
-      "story": "Story 46.2",
-      "title": "Sensitive Action Detection",
-      "description": "Detect high-risk actions that require additional runtime control.",
-      "openspec_change": "epic-46-story-46-2-sensitive-action-detection",
+      "epic": "Epic 9",
+      "story": "Story 9.6",
+      "title": "知识质量评估",
+      "description": "Add quality scoring and maintenance guidance for knowledge assets.",
+      "openspec_change": "epic-9-story-9-6-knowledge-quality-evaluation",
       "steps": [
-        "Define sensitive action classification rules",
-        "Flag runtime steps that target protected tools or fields",
-        "Attach risk metadata to planned steps",
-        "Prevent automatic execution of high-risk actions"
+        "Score knowledge quality based on usage and freshness",
+        "Recommend updates for stale or weak entries",
+        "Use quality signals in retrieval ranking"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 46.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR292"],
+      "nfrs_covered": ["NFR27"],
+      "arch_covered": ["ADR-043"],
+      "ux_covered": ["UX-02"],
+      "dependencies": ["Story 9.5"],
+      "passes": false
     },
     {
       "id": 74,
-      "epic": "Epic 46",
-      "story": "Story 46.3",
-      "title": "Confirmation Flow",
-      "description": "Add human confirmation flow for high-risk or policy-gated runtime steps.",
-      "openspec_change": "epic-46-story-46-3-confirmation-flow",
+      "epic": "Epic 10",
+      "story": "Story 10.1",
+      "title": "SKILL.md格式解析",
+      "description": "Implement direct Skill ingestion into the governed Agent platform.",
+      "openspec_change": "epic-10-story-10-1-skill-md-parsing",
       "steps": [
-        "Emit confirmation parts for gated steps",
-        "Pause runtime until confirmation decision is provided",
-        "Support approve reject and cancel outcomes",
-        "Resume or terminate execution based on confirmation result"
+        "Parse SKILL.md metadata, tools, and triggers",
+        "Map Skill capabilities into the internal runtime model",
+        "Register imported Skills into the control plane"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 46.2",
-        "Story 43.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR700", "FR701", "FR702", "FR703", "FR706", "FR707", "FR708", "FR709", "FR710"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-046"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 9.6"],
+      "passes": false
     },
     {
       "id": 75,
-      "epic": "Epic 46",
-      "story": "Story 46.4",
-      "title": "Field Action and Datasource Authorization",
-      "description": "Extend authorization checks to fields, actions, and data sources used by runtime results.",
-      "openspec_change": "epic-46-story-46-4-field-action-datasource-authorization",
+      "epic": "Epic 10",
+      "story": "Story 10.2",
+      "title": "SOUL.md格式解析",
+      "description": "Implement SOUL persona import with read-only governance and versioned audit.",
+      "openspec_change": "epic-10-story-10-2-soul-md-parsing",
       "steps": [
-        "Map field-level access into runtime decisions",
-        "Check action-level authorization before writeback or execution",
-        "Restrict unauthorized data source resolution",
-        "Expose authorization outcomes to audit logs"
+        "Parse SOUL persona structure into Agent persona templates",
+        "Apply read-only-by-default behavior with confirmed persistent edits",
+        "Record version and audit history for template changes"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 46.1",
-        "Story 47.2",
-        "Story 49.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR721", "FR722", "FR723", "FR724", "FR725", "FR726", "FR727", "FR728", "FR729"],
+      "nfrs_covered": ["NFR14", "NFR16"],
+      "arch_covered": ["ADR-047"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 10.1"],
+      "passes": false
     },
     {
       "id": 76,
-      "epic": "Epic 47",
-      "story": "Story 47.1",
-      "title": "User Tenant and Department Context",
-      "description": "Assemble user, tenant, and department context for common runtime execution.",
-      "openspec_change": "epic-47-story-47-1-user-tenant-and-department-context",
+      "epic": "Epic 10",
+      "story": "Story 10.3",
+      "title": "Plugin适配转换",
+      "description": "Adapt compatible Plugin resources into the governed tool and module layer.",
+      "openspec_change": "epic-10-story-10-3-plugin-adaptation",
       "steps": [
-        "Define context envelope for user, tenant, and department",
-        "Inject identity and organizational data into runtime context",
-        "Normalize context payloads across departments",
-        "Reuse existing permission model identifiers"
+        "Map Plugin tools into the internal runtime contract",
+        "Apply sandbox and capability restrictions",
+        "Expose adapted Plugin state in the control plane"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 44.1",
-        "Story 2.7"
-      ],
-      "passes": true
+      "frs_covered": ["FR711", "FR712", "FR713", "FR714", "FR715", "FR716", "FR717", "FR718", "FR719", "FR720"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-046"],
+      "ux_covered": ["UX-02"],
+      "dependencies": ["Story 10.2"],
+      "passes": false
     },
     {
       "id": 77,
-      "epic": "Epic 47",
-      "story": "Story 47.2",
-      "title": "Page and Resource Context",
-      "description": "Inject current page and resource context into the common runtime.",
-      "openspec_change": "epic-47-story-47-2-page-and-resource-context",
+      "epic": "Epic 10",
+      "story": "Story 10.4",
+      "title": "ClawHub市场集成",
+      "description": "Integrate the external resource marketplace for compatible Agent assets.",
+      "openspec_change": "epic-10-story-10-4-clawhub-marketplace",
       "steps": [
-        "Define page context contract from host runtime",
-        "Attach active resource references to runtime context",
-        "Resolve context per static dynamic and editor modes",
-        "Expose context safely to planner and tool runtime"
+        "Browse and search compatible external resources",
+        "Inspect details and installable packages",
+        "Route installs through security and governance checks"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 41.4",
-        "Story 47.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR730", "FR731", "FR732", "FR738", "FR739", "FR741", "FR743", "FR744"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-046", "ADR-047"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 10.3"],
+      "passes": false
     },
     {
       "id": 78,
-      "epic": "Epic 47",
-      "story": "Story 47.3",
-      "title": "Session Memory Summary",
-      "description": "Provide memory summary and key fact extraction for active sessions.",
-      "openspec_change": "epic-47-story-47-3-session-memory-summary",
+      "epic": "Epic 10",
+      "story": "Story 10.5",
+      "title": "私有市场配置",
+      "description": "Support enterprise-private resource market configuration and isolation.",
+      "openspec_change": "epic-10-story-10-5-private-market-config",
       "steps": [
-        "Summarize recent session history into reusable memory entries",
-        "Extract key facts for future steps",
-        "Store summary artifacts with the session",
-        "Refresh memory after important runtime milestones"
+        "Configure private market endpoints and policies",
+        "Upload and review private resources",
+        "Keep private and public resource spaces isolated"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.2",
-        "Story 47.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR733", "FR734", "FR735", "FR736", "FR737", "FR740", "FR742", "FR745"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-046"],
+      "ux_covered": ["UX-02"],
+      "dependencies": ["Story 10.4"],
+      "passes": false
     },
     {
       "id": 79,
-      "epic": "Epic 47",
-      "story": "Story 47.4",
-      "title": "Knowledge Retrieval Baseline",
-      "description": "Connect the runtime to baseline knowledge retrieval for scoped business context.",
-      "openspec_change": "epic-47-story-47-4-knowledge-retrieval-baseline",
+      "epic": "Epic 10",
+      "story": "Story 10.6",
+      "title": "资源安全管理",
+      "description": "Create resource validation, scanning, and approval controls for imported assets.",
+      "openspec_change": "epic-10-story-10-6-resource-security-management",
       "steps": [
-        "Define retrieval request contract",
-        "Resolve scoped knowledge sources by tenant and department",
-        "Inject retrieval results into runtime context",
-        "Keep retrieval references available for audit"
+        "Validate source and signatures where available",
+        "Run static checks and policy-based security scanning",
+        "Gate risky installs behind admin approval"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 47.1",
-        "Story 47.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR746", "FR747", "FR748", "FR749", "FR750", "FR753", "FR754", "FR755"],
+      "nfrs_covered": ["NFR14", "NFR16"],
+      "arch_covered": ["ADR-046", "ADR-047"],
+      "ux_covered": ["UX-02"],
+      "dependencies": ["Story 10.5"],
+      "passes": false
     },
     {
       "id": 80,
-      "epic": "Epic 48",
-      "story": "Story 48.1",
-      "title": "Trace and Step Log",
-      "description": "Create trace identifiers and step logs across runtime execution.",
-      "openspec_change": "epic-48-story-48-1-trace-and-step-log",
+      "epic": "Epic 10",
+      "story": "Story 10.7",
+      "title": "资源执行审计",
+      "description": "Provide execution audit trails for imported Skills, SOULs, and Plugins.",
+      "openspec_change": "epic-10-story-10-7-resource-execution-audit",
       "steps": [
-        "Generate trace ids for runtime tasks",
-        "Link trace ids to session and step execution",
-        "Persist step status and timestamps",
-        "Expose trace lookup for debugging"
+        "Record resource execution actions and outcomes",
+        "Alert on abnormal execution patterns",
+        "Support audit lookup and export"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.2",
-        "Story 44.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR751", "FR752", "FR754", "FR755"],
+      "nfrs_covered": ["NFR14", "NFR23-8"],
+      "arch_covered": ["ADR-046", "ADR-047"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 10.6"],
+      "passes": false
     },
     {
       "id": 81,
-      "epic": "Epic 48",
-      "story": "Story 48.2",
-      "title": "Tool Audit Log",
-      "description": "Record normalized audit events for all tool calls.",
-      "openspec_change": "epic-48-story-48-2-tool-audit-log",
+      "epic": "Epic 30",
+      "story": "Story 30.1",
+      "title": "连接器框架与认证",
+      "description": "Build the external connector framework and auth configuration surface.",
+      "openspec_change": "epic-30-story-30-1-connector-framework-auth",
       "steps": [
-        "Persist audit entries for each tool call",
-        "Record input and result summaries",
-        "Link permission and confirmation outcomes to tool events",
-        "Make audit events available for future governance views"
+        "Define connector registry and auth schemes",
+        "Support OAuth, API key, and certificate modes",
+        "Persist connector configuration for runtime use"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-002",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 45.4",
-        "Story 46.3",
-        "Story 48.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR1080", "FR1081", "FR1082", "FR1083"],
+      "nfrs_covered": ["NFR29", "NFR35"],
+      "arch_covered": ["ADR-015"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 10.7"],
+      "passes": false
     },
     {
       "id": 82,
-      "epic": "Epic 48",
-      "story": "Story 48.3",
-      "title": "Failure and Result Recording",
-      "description": "Persist runtime results and failure causes for task-level analysis.",
-      "openspec_change": "epic-48-story-48-3-failure-and-result-recording",
+      "epic": "Epic 30",
+      "story": "Story 30.2",
+      "title": "连接器健康与重试",
+      "description": "Add connector monitoring, retry, and downgrade handling.",
+      "openspec_change": "epic-30-story-30-2-connector-health-retry",
       "steps": [
-        "Record final result summary for each task",
-        "Persist failure reasons and impacted step ids",
-        "Store retry and replan outcomes",
-        "Expose records for recovery and analysis flows"
+        "Monitor connector health and recent failures",
+        "Apply retry and downgrade policies",
+        "Expose connector incidents and recovery status"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 44.4",
-        "Story 48.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR1084", "FR1085", "FR1086"],
+      "nfrs_covered": ["NFR35"],
+      "arch_covered": ["ADR-015", "ADR-048"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 30.1"],
+      "passes": false
     },
     {
       "id": 83,
-      "epic": "Epic 48",
-      "story": "Story 48.4",
-      "title": "Runtime Metrics and Debug View",
-      "description": "Provide baseline runtime metrics and a debug inspection view.",
-      "openspec_change": "epic-48-story-48-4-runtime-metrics-and-debug-view",
+      "epic": "Epic 11",
+      "story": "Story 11.1",
+      "title": "员工通讯录界面",
+      "description": "Create the contact directory foundation required for Agent collaboration surfaces.",
+      "openspec_change": "epic-11-story-11-1-directory-ui",
       "steps": [
-        "Collect runtime success and latency metrics",
-        "Track retry and confirmation counts",
-        "Expose a minimal debug inspection view",
-        "Support filtering by trace or session id"
+        "Build searchable employee directory UI",
+        "Show directory entries under permission scope",
+        "Prepare participant selection for chat and Agent collaboration"
       ],
-      "frs_covered": [
-        "PRD-P2-02"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 48.1",
-        "Story 48.2",
-        "Story 48.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR90", "FR91"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 30.2"],
+      "passes": false
     },
     {
       "id": 84,
-      "epic": "Epic 49",
-      "story": "Story 49.1",
-      "title": "Form Writeback Adapter",
-      "description": "Write normalized Agent results into approved dynamic form targets.",
-      "openspec_change": "epic-49-story-49-1-form-writeback-adapter",
+      "epic": "Epic 11",
+      "story": "Story 11.2",
+      "title": "员工名片查看",
+      "description": "Provide a detail surface for user and participant identity inspection.",
+      "openspec_change": "epic-11-story-11-2-user-card-view",
       "steps": [
-        "Define writeback contract for form fields",
-        "Map normalized runtime results into field updates",
-        "Check form field permissions before writeback",
-        "Record writeback actions in the runtime trace"
+        "Show employee profile and role details",
+        "Display available contact and collaboration actions",
+        "Respect visibility boundaries for sensitive fields"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 42.2",
-        "Story 45.4",
-        "Story 46.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR601", "FR602"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 11.1"],
+      "passes": false
     },
     {
       "id": 85,
-      "epic": "Epic 49",
-      "story": "Story 49.2",
-      "title": "Detail Section Writeback Adapter",
-      "description": "Write normalized Agent results into approved dynamic detail sections.",
-      "openspec_change": "epic-49-story-49-2-detail-section-writeback-adapter",
+      "epic": "Epic 11",
+      "story": "Story 11.3",
+      "title": "私聊消息功能",
+      "description": "Enable direct user-to-user messaging and message history management.",
+      "openspec_change": "epic-11-story-11-3-direct-messaging",
       "steps": [
-        "Define writeback contract for detail blocks",
-        "Support field relation attachment and timeline updates",
-        "Enforce read and write permissions for detail content",
-        "Persist writeback trace and outcome metadata"
+        "Create private chat UI and message send flow",
+        "Persist delivery and read states",
+        "Support history search and filtering"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 42.3",
-        "Story 45.4",
-        "Story 46.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR92", "FR93", "FR611", "FR612", "FR622"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.2"],
+      "passes": false
     },
     {
       "id": 86,
-      "epic": "Epic 49",
-      "story": "Story 49.3",
-      "title": "Workbench Card Writeback",
-      "description": "Generate and update workbench cards through the dynamic host runtime.",
-      "openspec_change": "epic-49-story-49-3-workbench-card-writeback",
+      "epic": "Epic 11",
+      "story": "Story 11.4",
+      "title": "群组创建与管理",
+      "description": "Provide group creation, member management, and group chat baseline.",
+      "openspec_change": "epic-11-story-11-4-group-management",
       "steps": [
-        "Define card writeback payload for dashboard content",
-        "Create or update cards within approved containers",
-        "Check visibility and placement permissions",
-        "Expose card writeback events to the host"
+        "Create group threads and manage members",
+        "Persist group-level permissions and roles",
+        "Support group message history and unread state"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 42.5",
-        "Story 45.4",
-        "Story 46.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR94", "FR619", "FR620"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.3"],
+      "passes": false
     },
     {
       "id": 87,
-      "epic": "Epic 49",
-      "story": "Story 49.4",
-      "title": "Editor and Template Writeback",
-      "description": "Write Agent output into editor and template hosts through controlled contracts.",
-      "openspec_change": "epic-49-story-49-4-editor-and-template-writeback",
+      "epic": "Epic 11",
+      "story": "Story 11.5",
+      "title": "Agent群聊参与",
+      "description": "Enable governed Agent participation in group conversations.",
+      "openspec_change": "epic-11-story-11-5-agent-group-participation",
       "steps": [
-        "Define editor writeback contract",
-        "Support template content updates through host APIs",
-        "Preserve dirty state and version boundaries",
-        "Record writeback decisions for audit and rollback"
+        "Allow Agent presence inside group chats under policy",
+        "Display AI identity markers and speaking rules",
+        "Support mention-driven and event-driven participation"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 39.1",
-        "Story 40.5",
-        "Story 45.4"
-      ],
-      "passes": true
+      "frs_covered": ["FR619", "FR620", "FR621", "FR639", "FR640", "FR641", "FR642", "FR643", "FR644", "FR645", "FR646", "FR649"],
+      "nfrs_covered": ["NFR16"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.4"],
+      "passes": false
     },
     {
       "id": 88,
-      "epic": "Epic 50",
-      "story": "Story 50.1",
-      "title": "Approval Pilot Integration",
-      "description": "Validate the common Agent runtime in the approval scenario.",
-      "openspec_change": "epic-50-story-50-1-approval-pilot-integration",
+      "epic": "Epic 11",
+      "story": "Story 11.6",
+      "title": "系统公告功能",
+      "description": "Provide a unified notice surface for system and Agent-related announcements.",
+      "openspec_change": "epic-11-story-11-6-system-announcements",
       "steps": [
-        "Bind approval tools and context into the common runtime",
-        "Support approval summary generation and structured content fill",
-        "Require confirmation for approval execution actions",
-        "Verify end-to-end audit and writeback behavior"
+        "Publish and render system notices",
+        "Track read state and notice visibility",
+        "Integrate notices with the unified messaging center"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 46.3",
-        "Story 49.2",
-        "Story 48.2"
-      ],
-      "passes": true
+      "frs_covered": ["FR44", "FR45"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-02"],
+      "dependencies": ["Story 11.5"],
+      "passes": false
     },
     {
       "id": 89,
-      "epic": "Epic 50",
-      "story": "Story 50.2",
-      "title": "Sales Pilot Integration",
-      "description": "Validate the common Agent runtime in the sales scenario.",
-      "openspec_change": "epic-50-story-50-2-sales-pilot-integration",
+      "epic": "Epic 11",
+      "story": "Story 11.7",
+      "title": "任务通知推送",
+      "description": "Send governed task and status notifications through the unified message system.",
+      "openspec_change": "epic-11-story-11-7-task-notifications",
       "steps": [
-        "Bind sales tools and context into the common runtime",
-        "Support customer summary and follow-up form fill workflows",
-        "Write approved results into workbench and detail views",
-        "Verify shared runtime behavior without a dedicated sales-only agent core"
+        "Push task completion and pending notifications",
+        "Respect user preference and do-not-disturb settings",
+        "Track delivery and reminder state"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 47.2",
-        "Story 49.1",
-        "Story 49.3"
-      ],
-      "passes": true
+      "frs_covered": ["FR46", "FR47", "FR48", "FR95", "FR96", "FR97", "FR98"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.6"],
+      "passes": false
     },
     {
       "id": 90,
+      "epic": "Epic 11",
+      "story": "Story 11.8",
+      "title": "Agent间消息通信",
+      "description": "Implement governed Agent-to-Agent communication and related permission controls.",
+      "openspec_change": "epic-11-story-11-8-agent-to-agent-messaging",
+      "steps": [
+        "Allow Agents to send work-related messages to other Agents",
+        "Enforce communication permissions and content constraints",
+        "Record all Agent-to-Agent exchanges for audit"
+      ],
+      "frs_covered": ["FR59", "FR60", "FR61", "FR62", "FR63", "FR64", "FR65", "FR66", "FR67", "FR68", "FR603", "FR604", "FR605", "FR606", "FR615", "FR616", "FR618"],
+      "nfrs_covered": ["NFR14", "NFR16"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.7"],
+      "passes": false
+    },
+    {
+      "id": 91,
+      "epic": "Epic 11",
+      "story": "Story 11.9",
+      "title": "工作卡片消息",
+      "description": "Support structured work-card generation and action handling in messaging.",
+      "openspec_change": "epic-11-story-11-9-work-card-messages",
+      "steps": [
+        "Render structured work-card messages in chat",
+        "Support card actions with result feedback",
+        "Allow Agent-generated work-card delivery"
+      ],
+      "frs_covered": ["FR607", "FR608", "FR609", "FR610"],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.8"],
+      "passes": false
+    },
+    {
+      "id": 92,
+      "epic": "Epic 11",
+      "story": "Story 11.10",
+      "title": "消息搜索与管理",
+      "description": "Add search, filter, pin, export, and history management to the unified message center.",
+      "openspec_change": "epic-11-story-11-10-message-search-management",
+      "steps": [
+        "Search and filter historical messages",
+        "Support pinning, favorites, and export",
+        "Track delivery, read, and reminder status consistently"
+      ],
+      "frs_covered": ["FR611", "FR612", "FR613", "FR614", "FR622", "FR623", "FR624", "FR626", "FR630"],
+      "nfrs_covered": ["NFR14"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 11.9"],
+      "passes": false
+    },
+    {
+      "id": 93,
+      "epic": "Epic 37",
+      "story": "Story 37.1",
+      "title": "通道与网关管理",
+      "description": "Create channel access, routing, and gateway governance for multi-channel Agent operation.",
+      "openspec_change": "epic-37-story-37-1-channel-gateway-management",
+      "steps": [
+        "Configure channel authentication and routing",
+        "Support offline queue and re-delivery strategy",
+        "Record channel events for audit and tracing"
+      ],
+      "frs_covered": ["FR1170", "FR1171", "FR1172", "FR1173", "FR1174", "FR1175", "FR1176", "FR1177"],
+      "nfrs_covered": ["NFR35"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 11.10"],
+      "passes": false
+    },
+    {
+      "id": 94,
+      "epic": "Epic 37",
+      "story": "Story 37.2",
+      "title": "插件运行质量与自愈",
+      "description": "Add plugin health, isolation, and self-healing controls for stable Agent operation.",
+      "openspec_change": "epic-37-story-37-2-plugin-runtime-self-healing",
+      "steps": [
+        "Monitor plugin health and fault rate",
+        "Isolate unstable plugins and auto-disable on repeated failure",
+        "Generate diagnostic output for recovery"
+      ],
+      "frs_covered": ["FR1178", "FR1179", "FR1180", "FR1181", "FR1182", "FR1183", "FR1184", "FR1185", "FR1186"],
+      "nfrs_covered": ["NFR35"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-02"],
+      "dependencies": ["Story 37.1"],
+      "passes": false
+    },
+    {
+      "id": 95,
+      "epic": "Epic 32",
+      "story": "Story 32.1",
+      "title": "日志与指标中心",
+      "description": "Expand the baseline runtime metrics into a unified operational log and metrics center.",
+      "openspec_change": "epic-32-story-32-1-log-metrics-center",
+      "steps": [
+        "Aggregate Agent, tool, plugin, and sync logs",
+        "Show core runtime metrics and health indicators",
+        "Support filtering and export from the log center"
+      ],
+      "frs_covered": ["FR1100", "FR1102", "FR1103"],
+      "nfrs_covered": ["NFR14", "NFR23-8"],
+      "arch_covered": ["ADR-023", "ADR-048"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 37.2"],
+      "passes": false
+    },
+    {
+      "id": 96,
+      "epic": "Epic 32",
+      "story": "Story 32.2",
+      "title": "任务链路追踪",
+      "description": "Add trace-level execution inspection for tasks, steps, and tools.",
+      "openspec_change": "epic-32-story-32-2-task-trace-analysis",
+      "steps": [
+        "Link tasks, steps, and tool calls under a common trace",
+        "Show latency distribution and bottlenecks",
+        "Support drill-down from product events to runtime details"
+      ],
+      "frs_covered": ["FR1101", "FR1104", "FR1105", "FR1106"],
+      "nfrs_covered": ["NFR23-8"],
+      "arch_covered": ["ADR-023", "ADR-048"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 32.1"],
+      "passes": false
+    },
+    {
+      "id": 97,
+      "epic": "Epic 35",
+      "story": "Story 35.1",
+      "title": "心跳机制与检查清单",
+      "description": "Implement heartbeat execution with precheck, quiet mode, and checklist governance.",
+      "openspec_change": "epic-35-story-35-1-heartbeat-checklist",
+      "steps": [
+        "Load HEARTBEAT checklist and evaluate execution window",
+        "Run precheck for activity, context budget, and availability",
+        "Return `HEARTBEAT_OK` silently when no action is needed"
+      ],
+      "frs_covered": ["FR1127", "FR1128", "FR1129", "FR1130", "FR1131", "FR1132", "FR1133", "FR1134"],
+      "nfrs_covered": ["NFR14"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 32.2"],
+      "passes": false
+    },
+    {
+      "id": 98,
+      "epic": "Epic 35",
+      "story": "Story 35.2",
+      "title": "定时任务中心",
+      "description": "Create the unified Cron and scheduled task control center for the Agent platform.",
+      "openspec_change": "epic-35-story-35-2-scheduled-task-center",
+      "steps": [
+        "Manage scheduled tasks and Cron definitions",
+        "Apply retry, backoff, timeout, and mutex policy",
+        "Enforce confirmation or approval on high-risk scheduled actions"
+      ],
+      "frs_covered": ["FR1135", "FR1136", "FR1137", "FR1138", "FR1139", "FR1140", "FR1141", "FR1142", "FR1143", "FR1144", "FR1145"],
+      "nfrs_covered": ["NFR22"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-02", "UX-04"],
+      "dependencies": ["Story 35.1"],
+      "passes": false
+    },
+    {
+      "id": 99,
+      "epic": "Epic 36",
+      "story": "Story 36.1",
+      "title": "错误分类与用户提示",
+      "description": "Provide unified error classification and actionable recovery guidance.",
+      "openspec_change": "epic-36-story-36-1-error-classification-guidance",
+      "steps": [
+        "Define user-facing error classes and codes",
+        "Desensitize error output before display",
+        "Attach recovery suggestions and fallback hints"
+      ],
+      "frs_covered": ["FR1146", "FR1147", "FR1148", "FR1149", "FR1150", "FR1151", "FR1152", "FR1153", "FR1154"],
+      "nfrs_covered": ["NFR17"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 35.2"],
+      "passes": false
+    },
+    {
+      "id": 100,
+      "epic": "Epic 36",
+      "story": "Story 36.2",
+      "title": "Failover与会话修复",
+      "description": "Implement provider failover, recovery, and session repair operations.",
+      "openspec_change": "epic-36-story-36-2-failover-session-repair",
+      "steps": [
+        "Switch providers and auth profiles on controlled failure conditions",
+        "Repair session and context corruption with diff summary",
+        "Record failover and repair actions for audit and diagnosis"
+      ],
+      "frs_covered": ["FR1155", "FR1156", "FR1157", "FR1158", "FR1159", "FR1160", "FR1161", "FR1162", "FR1163", "FR1164", "FR1165", "FR1166", "FR1167", "FR1168", "FR1169"],
+      "nfrs_covered": ["NFR17", "NFR22"],
+      "arch_covered": ["ADR-048"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 36.1"],
+      "passes": false
+    },
+    {
+      "id": 101,
+      "epic": "Epic 50",
+      "story": "Story 50.1",
+      "title": "审批场景接入",
+      "description": "Validate the common Agent platform in the approval scenario without introducing a separate runtime.",
+      "openspec_change": "epic-50-story-50-1-approval-pilot-integration",
+      "steps": [
+        "Bind approval context, tools, and dynamic UI targets to the common runtime",
+        "Support read, generate, confirm, and execute loop for approval work",
+        "Verify audit and permission behavior in the scenario"
+      ],
+      "frs_covered": ["FR410", "FR470", "FR496"],
+      "nfrs_covered": ["NFR23-1", "NFR23-8"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 36.2"],
+      "passes": false
+    },
+    {
+      "id": 102,
+      "epic": "Epic 50",
+      "story": "Story 50.2",
+      "title": "销售场景接入",
+      "description": "Validate the common Agent platform in the sales scenario using the same runtime chain.",
+      "openspec_change": "epic-50-story-50-2-sales-pilot-integration",
+      "steps": [
+        "Bind sales context, tools, and writeback targets to the common runtime",
+        "Support read, generate, confirm, and execute loop for sales work",
+        "Verify that no department-specific runtime fork is introduced"
+      ],
+      "frs_covered": ["FR410", "FR412", "FR464"],
+      "nfrs_covered": ["NFR23-1", "NFR23-7"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 50.1"],
+      "passes": false
+    },
+    {
+      "id": 103,
       "epic": "Epic 50",
       "story": "Story 50.3",
-      "title": "Finance Pilot Integration",
-      "description": "Validate the common Agent runtime in the finance scenario.",
+      "title": "财务场景接入",
+      "description": "Validate the common Agent platform in the finance scenario as the final agent-first pilot.",
       "openspec_change": "epic-50-story-50-3-finance-pilot-integration",
       "steps": [
-        "Bind finance tools and context into the common runtime",
-        "Support structured document understanding and field fill workflows",
-        "Require confirmation for high-risk finance actions",
-        "Verify shared runtime behavior across a third business domain"
+        "Bind finance context, tools, and writeback targets to the common runtime",
+        "Support read, analyze, confirm, and execute loop for finance work",
+        "Verify cross-scenario reuse of the same runtime, audit, and permission chain"
       ],
-      "frs_covered": [
-        "PRD-P2-02",
-        "PRD-P2-03"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR8",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-02",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 46.3",
-        "Story 47.4",
-        "Story 49.1"
-      ],
-      "passes": true
+      "frs_covered": ["FR410", "FR412", "FR470", "FR496"],
+      "nfrs_covered": ["NFR23-1", "NFR23-7", "NFR23-8"],
+      "arch_covered": ["ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 50.2"],
+      "passes": false
     }
   ]
 }
