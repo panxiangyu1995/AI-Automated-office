@@ -134,3 +134,12 @@ export type {
   PermissionStatus,
   PermissionType,
 } from './components/ToolPermissionCheck'
+
+// ToolHistory
+export { ToolHistory } from './components/ToolHistory'
+export type {
+  ToolExecutionStatus,
+  ToolHistoryCategory,
+  ToolHistoryEntry,
+  ToolHistoryStats,
+} from './components/ToolHistory'

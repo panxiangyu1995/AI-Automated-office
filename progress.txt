@@ -1,4 +1,35 @@
 
+## [2026-03-24] - Task 26: Story 5.12 - 工具调用历史追溯
+
+### 铁律合规检查：
+- PRD 合规：FR79, FR80
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 ToolHistory.tsx 组件
+  - 可搜索的工具执行历史列表
+  - 支持7种执行状态：success、failed、timeout、cancelled、pending、running、retrying
+  - 支持7种工具类别：file、network、database、system、agent、external、custom
+  - 显示状态、延迟、保留信息
+  - 支持按状态、类别、时间范围过滤
+  - 支持搜索工具名或关联ID
+  - 详情面板显示策略追踪、输入输出、错误信息
+  - 统计卡片显示总调用、成功率、平均延迟、错误/超时数
+  - 热门工具排行
+- 定义 ToolHistoryEntry 和 ToolHistoryStats 类型
+- 修复 ToolCategory 类型重复问题，重命名为 ToolHistoryCategory
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 支持追踪导航和详情查看
+
+---
+
 ## [2026-03-24] - Task 25: Story 5.11 - 工具调用权限检查
 
 ### 铁律合规检查：
