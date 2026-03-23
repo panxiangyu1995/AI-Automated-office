@@ -586,6 +586,7 @@ describe('硬件集成 - TopBar 菜单集成测试', () => {
     // 验证 TopBar 组件存在且有打印菜单
     // 这个测试检查 TopBar 中"文件"菜单是否包含"打印..."选项
     const { TopBar } = await import('@/components/common/TopBar')
+    const { BrowserRouter } = await import('react-router-dom')
 
     // 渲染 TopBar
     const mockProps = {
@@ -593,7 +594,11 @@ describe('硬件集成 - TopBar 菜单集成测试', () => {
       onToggle: vi.fn(),
     }
 
-    const { container } = render(<TopBar {...mockProps} />)
+    const { container } = render(
+      <BrowserRouter>
+        <TopBar {...mockProps} />
+      </BrowserRouter>
+    )
 
     // 验证菜单渲染
     await waitFor(
@@ -635,13 +640,18 @@ describe('硬件集成 - TopBar 菜单集成测试', () => {
     const consoleSpy = vi.spyOn(console, 'log')
 
     const { TopBar } = await import('@/components/common/TopBar')
+    const { BrowserRouter } = await import('react-router-dom')
 
     const mockProps = {
       visible: true,
       onToggle: vi.fn(),
     }
 
-    render(<TopBar {...mockProps} />)
+    render(
+      <BrowserRouter>
+        <TopBar {...mockProps} />
+      </BrowserRouter>
+    )
 
     // 点击打印菜单（模拟）
     // 当前代码只是 handleMenuAction('File: Print') 输出日志

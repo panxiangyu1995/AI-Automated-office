@@ -75,3 +75,13 @@ class CustomEventMock extends Event {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.CustomEvent = CustomEventMock as any
+
+// Mock ResizeObserver
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+global.ResizeObserver = ResizeObserverMock as any
