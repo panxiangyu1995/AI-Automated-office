@@ -1,0 +1,21 @@
+﻿name: epic-21-story-21-19-sub-agent-tool-binding
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.19
+title: Sub Agent Tool Binding
+mapping:
+  frs:
+    - FR915
+    - FR916
+    - FR917
+    - FR918
+    - FR919
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-042
+    - ADR-046
+  ux:
+    - UX-02
+    - UX-04

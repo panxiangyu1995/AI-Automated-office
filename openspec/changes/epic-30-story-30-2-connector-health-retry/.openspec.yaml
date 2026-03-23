@@ -1,0 +1,19 @@
+﻿name: epic-30-story-30-2-connector-health-retry
+status: pending
+created_at: 2026-03-23
+epic: 30
+story: Story 30.2
+title: Connector Health Retry
+mapping:
+  frs:
+    - FR1084
+    - FR1085
+    - FR1086
+  nfrs:
+    - NFR35
+  arch:
+    - ADR-015
+    - ADR-048
+  ux:
+    - UX-02
+    - UX-04

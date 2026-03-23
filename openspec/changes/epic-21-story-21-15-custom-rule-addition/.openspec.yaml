@@ -1,0 +1,22 @@
+﻿name: epic-21-story-21-15-custom-rule-addition
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.15
+title: Custom Rule Addition
+mapping:
+  frs:
+    - FR869
+    - FR870
+    - FR871
+    - FR872
+    - FR873
+    - FR874
+    - FR875
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-041
+  ux:
+    - UX-02
+    - UX-04

@@ -1,0 +1,23 @@
+﻿name: epic-35-story-35-1-heartbeat-checklist
+status: pending
+created_at: 2026-03-23
+epic: 35
+story: Story 35.1
+title: Heartbeat Checklist
+mapping:
+  frs:
+    - FR1127
+    - FR1128
+    - FR1129
+    - FR1130
+    - FR1131
+    - FR1132
+    - FR1133
+    - FR1134
+  nfrs:
+    - NFR14
+  arch:
+    - ADR-048
+  ux:
+    - UX-02
+    - UX-04

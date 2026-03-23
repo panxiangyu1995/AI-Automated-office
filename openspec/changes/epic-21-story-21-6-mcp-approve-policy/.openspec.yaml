@@ -1,0 +1,19 @@
+﻿name: epic-21-story-21-6-mcp-approve-policy
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.6
+title: Mcp Approve Policy
+mapping:
+  frs:
+    - FR825
+    - FR826
+    - FR827
+    - FR828
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-039
+  ux:
+    - UX-02
+    - UX-04

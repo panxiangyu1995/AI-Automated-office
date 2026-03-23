@@ -1,0 +1,16 @@
+﻿name: epic-4-story-4-5-scheduled-task-setup
+status: pending
+created_at: 2026-03-23
+epic: 4
+story: Story 4.5
+title: Scheduled Task Setup
+mapping:
+  frs:
+    - FR15
+  nfrs:
+    - NFR22
+  arch:
+    - ADR-048
+  ux:
+    - UX-01
+    - UX-04

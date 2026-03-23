@@ -1,0 +1,19 @@
+﻿name: epic-4-story-4-10-git-checkpoint-integration
+status: pending
+created_at: 2026-03-23
+epic: 4
+story: Story 4.10
+title: Git Checkpoint Integration
+mapping:
+  frs:
+    - FR17-14
+    - FR17-15
+    - FR17-17
+    - FR17-18
+  nfrs:
+    - NFR17
+  arch:
+    - ADR-037
+  ux:
+    - UX-02
+    - UX-04

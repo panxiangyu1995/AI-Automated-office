@@ -1,0 +1,20 @@
+﻿name: epic-21-story-21-4-mcp-service-connection-management
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.4
+title: Mcp Service Connection Management
+mapping:
+  frs:
+    - FR814
+    - FR815
+    - FR816
+    - FR817
+  nfrs:
+    - NFR30
+  arch:
+    - ADR-015
+    - ADR-039
+  ux:
+    - UX-02
+    - UX-04

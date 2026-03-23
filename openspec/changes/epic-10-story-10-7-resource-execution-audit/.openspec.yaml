@@ -1,0 +1,21 @@
+﻿name: epic-10-story-10-7-resource-execution-audit
+status: pending
+created_at: 2026-03-23
+epic: 10
+story: Story 10.7
+title: Resource Execution Audit
+mapping:
+  frs:
+    - FR751
+    - FR752
+    - FR754
+    - FR755
+  nfrs:
+    - NFR14
+    - NFR23-8
+  arch:
+    - ADR-046
+    - ADR-047
+  ux:
+    - UX-02
+    - UX-04

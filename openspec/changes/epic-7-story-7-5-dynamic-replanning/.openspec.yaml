@@ -1,0 +1,17 @@
+﻿name: epic-7-story-7-5-dynamic-replanning
+status: pending
+created_at: 2026-03-23
+epic: 7
+story: Story 7.5
+title: Dynamic Replanning
+mapping:
+  frs:
+    - FR413
+    - FR415
+  nfrs:
+    - NFR22
+  arch:
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-04

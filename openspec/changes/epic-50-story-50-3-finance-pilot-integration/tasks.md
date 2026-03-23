@@ -1,18 +1,24 @@
-## 1. Preparation
-- [ ] 1.1 Confirm dependency stories are complete
-- [ ] 1.2 Confirm FR/NFR/ARCH/UX mapping
+﻿# Tasks
 
-## 2. Implementation
-- [ ] 2.1 Bind finance tools and context into the common runtime
-- [ ] 2.2 Support structured document understanding and field fill workflows
-- [ ] 2.3 Require confirmation for high-risk finance actions
-- [ ] 2.4 Verify shared runtime behavior across a third business domain
+## 1. Alignment
+- [ ] 1.1 Confirm mapped FR/NFR/ARCH/UX references are still valid
+- [ ] 1.2 Confirm dependencies are complete and common runtime contract is stable
 
-## 3. Verification
-- [ ] 3.1 Unit/integration tests updated
-- [ ] 3.2 Lint/build pass
-- [ ] 3.3 Acceptance criteria verified
+## 2. Build
+- [ ] 2.1 Implement scenario adapter bindings for context/tools/writeback
+- [ ] 2.2 Integrate scenario flow into shared runtime execution pipeline
+- [ ] 2.3 Implement conformance checks and unified audit instrumentation
 
-## 4. Documentation
-- [ ] 4.1 Update progress.txt
-- [ ] 4.2 Update task.json passes when done
+## 3. Acceptance Mapping
+- [ ] 3.x Bind finance context, tools, and writeback targets to the common runtime
+- [ ] 3.x Support read, analyze, confirm, and execute loop for finance work
+- [ ] 3.x Verify cross-scenario reuse of the same runtime, audit, and permission chain
+
+## 4. Verification
+- [ ] 4.1 Unit and integration tests updated and passing
+- [ ] 4.2 Lint and build pass
+- [ ] 4.3 Scenario checks in `specs/spec.md` verified
+
+## 5. Documentation
+- [ ] 5.1 Update progress tracking
+- [ ] 5.2 Keep task status unchanged until all checks pass

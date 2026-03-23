@@ -1,0 +1,19 @@
+﻿name: epic-11-story-11-9-work-card-messages
+status: pending
+created_at: 2026-03-23
+epic: 11
+story: Story 11.9
+title: Work Card Messages
+mapping:
+  frs:
+    - FR607
+    - FR608
+    - FR609
+    - FR610
+  nfrs:
+    - NFR1
+  arch:
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-04

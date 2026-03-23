@@ -1,0 +1,19 @@
+﻿name: epic-21-story-21-5-mcp-tool-discovery-management
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.5
+title: Mcp Tool Discovery Management
+mapping:
+  frs:
+    - FR818
+    - FR819
+    - FR820
+  nfrs:
+    - NFR30
+  arch:
+    - ADR-015
+    - ADR-039
+  ux:
+    - UX-02
+    - UX-04

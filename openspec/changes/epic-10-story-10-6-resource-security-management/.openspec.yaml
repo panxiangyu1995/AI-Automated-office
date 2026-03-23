@@ -1,0 +1,24 @@
+﻿name: epic-10-story-10-6-resource-security-management
+status: pending
+created_at: 2026-03-23
+epic: 10
+story: Story 10.6
+title: Resource Security Management
+mapping:
+  frs:
+    - FR746
+    - FR747
+    - FR748
+    - FR749
+    - FR750
+    - FR753
+    - FR754
+    - FR755
+  nfrs:
+    - NFR14
+    - NFR16
+  arch:
+    - ADR-046
+    - ADR-047
+  ux:
+    - UX-02

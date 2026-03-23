@@ -1,0 +1,26 @@
+﻿name: epic-21-story-21-18-sub-agent-persona-config
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.18
+title: Sub Agent Persona Config
+mapping:
+  frs:
+    - FR905
+    - FR906
+    - FR907
+    - FR908
+    - FR909
+    - FR910
+    - FR911
+    - FR912
+    - FR913
+    - FR914
+  nfrs:
+    - NFR16
+  arch:
+    - ADR-042
+    - ADR-047
+  ux:
+    - UX-02
+    - UX-04

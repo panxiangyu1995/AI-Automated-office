@@ -1,0 +1,21 @@
+﻿name: epic-6-story-6-8-memory-configuration
+status: pending
+created_at: 2026-03-23
+epic: 6
+story: Story 6.8
+title: Memory Configuration
+mapping:
+  frs:
+    - FR330
+    - FR331
+    - FR332
+    - FR333
+    - FR334
+  nfrs:
+    - NFR28-3
+  arch:
+    - ADR-043
+    - ADR-044
+  ux:
+    - UX-02
+    - UX-04

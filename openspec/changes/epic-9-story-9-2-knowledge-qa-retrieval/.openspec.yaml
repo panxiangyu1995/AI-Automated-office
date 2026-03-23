@@ -1,0 +1,18 @@
+﻿name: epic-9-story-9-2-knowledge-qa-retrieval
+status: pending
+created_at: 2026-03-23
+epic: 9
+story: Story 9.2
+title: Knowledge Qa Retrieval
+mapping:
+  frs:
+    - FR283
+    - FR284
+    - FR285
+  nfrs:
+    - NFR8-2
+  arch:
+    - ADR-043
+  ux:
+    - UX-01
+    - UX-04

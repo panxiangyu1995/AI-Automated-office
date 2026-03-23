@@ -1,0 +1,19 @@
+﻿name: epic-4-story-4-14-compression-memory-hints
+status: pending
+created_at: 2026-03-23
+epic: 4
+story: Story 4.14
+title: Compression Memory Hints
+mapping:
+  frs:
+    - FR-CTX-6
+    - FR-CTX-7
+    - FR14-2
+  nfrs:
+    - NFR1
+  arch:
+    - ADR-043
+    - ADR-044
+  ux:
+    - UX-01
+    - UX-04

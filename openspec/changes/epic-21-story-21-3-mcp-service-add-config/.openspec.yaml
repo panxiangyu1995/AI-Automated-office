@@ -1,0 +1,20 @@
+﻿name: epic-21-story-21-3-mcp-service-add-config
+status: pending
+created_at: 2026-03-23
+epic: 21
+story: Story 21.3
+title: Mcp Service Add Config
+mapping:
+  frs:
+    - FR810
+    - FR811
+    - FR812
+    - FR813
+  nfrs:
+    - NFR30
+  arch:
+    - ADR-015
+    - ADR-039
+  ux:
+    - UX-02
+    - UX-04

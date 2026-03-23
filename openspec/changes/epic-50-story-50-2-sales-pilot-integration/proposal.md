@@ -1,24 +1,38 @@
-# Proposal: Sales Pilot Integration
+﻿# Proposal: Sales Pilot Integration
 
-## Background
-Validate the common Agent runtime in the sales scenario.
+## Problem Statement
+Validate the common Agent platform in the sales scenario using the same runtime chain.
 
-## Scope
-### In Scope
-- Bind sales tools and context into the common runtime
-- Support customer summary and follow-up form fill workflows
-- Write approved results into workbench and detail views
-- Verify shared runtime behavior without a dedicated sales-only agent core
+## Goals
+- Bind sales context, tools, and writeback targets to the common runtime
+- Support read, generate, confirm, and execute loop for sales work
+- Verify that no department-specific runtime fork is introduced
 
-### Out of Scope
-- Cross-tenant behavior changes outside this story
-- Full platform hardening beyond MVP scope
+## Non-Goals
+- Separate runtime forks per department scenario
+- Scenario-specific shortcuts that bypass common policy and audit chain
 
-## Risks
-- Contract drift between runtime layers
-- Regression in host and permission boundaries
+## Scope and Boundaries
+### Included
+- Bind sales context, tools, and writeback targets to the common runtime
+- Support read, generate, confirm, and execute loop for sales work
+- Verify that no department-specific runtime fork is introduced
 
-## Dependencies
-- Story 47.2
-- Story 49.1
-- Story 49.3
+### Excluded
+- Changes that break cross-scenario runtime reuse guarantees
+- Scenario-specific permission behavior inconsistent with global policy model
+
+## Dependency Impact
+- Story 50.1
+
+## Risks and Mitigations
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Scenario coupling drift | Reuse regression across departments | Freeze common runtime contract and run scenario conformance checks |
+| Writeback inconsistency | Data correctness and trust issues | Enforce unified writeback adapter contracts + validation |
+| Audit gap in pilot flows | Incomplete production readiness | Require mandatory audit coverage for all pilot actions |
+
+## Definition of Done
+- Three pilot flows run on same common runtime chain without runtime fork
+- Permission/audit/writeback behavior is consistent and traceable across scenarios
+- Lint/build/integration verification recorded in progress tracking
