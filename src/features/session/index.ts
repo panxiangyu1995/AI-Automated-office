@@ -297,6 +297,17 @@ export {
   type ReplanHistory
 } from './components/DynamicReplanning'
 
+export {
+  LoopDetection,
+  type LoopType,
+  type LoopSeverity,
+  type LoopStatus,
+  type LoopPattern,
+  type LoopDetectionConfig,
+  type InterventionSuggestion,
+  type LoopDetectionState
+} from './components/LoopDetection'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'

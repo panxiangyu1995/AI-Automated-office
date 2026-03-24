@@ -25,6 +25,59 @@
 
 ---
 
+## [2026-03-24] - Task 41: Story 7.6 - 循环检测
+
+### 铁律合规检查：
+- PRD 合规：FR293
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 LoopDetection.tsx 组件
+  - 当前状态视图：循环检测状态、进度条、模式详情
+  - 干预建议：跳过步骤、使用替代方案、请求用户输入、终止任务
+  - 历史记录：统计概览、检测历史列表
+  - 配置面板：最大重复次数、相似度阈值、时间窗口、自动干预开关
+- 定义 LoopType, LoopSeverity, LoopStatus 类型
+- 定义 LoopPattern, LoopDetectionConfig, InterventionSuggestion 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 移除了未使用的 Alert 相关导入
+
+---
+
+## [2026-03-24] - Task 40: Story 7.5 - 动态计划调整
+
+### 铁律合规检查：
+- PRD 合规：FR413, FR415
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 DynamicReplanning.tsx 组件
+  - 计划偏离检测：输出不匹配、步骤失败、超时、资源不可用、依赖变更、用户请求
+  - 有界重规划策略：最大重规划次数限制、剩余次数展示
+  - 变更原因解释：变更类型、影响级别、原因描述
+  - 历史记录：重规划事件列表、成功率、平均执行时间
+  - 偏离检测面板：偏离指标、建议操作
+  - 批准/拒绝操作按钮
+- 定义 DriftType, ReplanChangeType, ReplanStatus 类型
+- 定义 PlanChange, DriftIndicator, ReplanEvent, ReplanHistory 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 类型重命名为 ReplanChangeType 避免与 MemoryDataManagement 模块冲突
+- 支持策略限制提醒和用户确认流程
+
+---
+
 ## [2026-03-24] - Task 39: Story 7.4 - 工具选择决策
 
 ### 铁律合规检查：
