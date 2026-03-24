@@ -118,6 +118,34 @@
 
 ---
 
+## [2026-03-24] - Task 58: Story 21.14 - Rules规则列表管理
+
+### 铁律合规检查：
+- PRD 合规：FR865, FR866, FR867, FR868
+- 架构合规：ADR-041
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 RulesListManagement.tsx 组件
+  - 分组展示：按类别（身份、行为、安全、输出、工具、记忆）分组
+  - 优先级显示：关键、高、中、低四级优先级
+  - 启用/禁用：支持快速切换规则状态
+  - 拖拽排序：支持规则顺序调整
+  - 上移/下移：按钮方式调整规则顺序
+  - 搜索筛选：按名称、描述、标签搜索，按类别和状态筛选
+- 定义 RuleCategory, RulePriority, RuleStatus, Rule, RuleGroup, RuleStats 类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, DropdownMenu, Tooltip, ScrollArea）
+- 支持折叠/展开类别组
+- 规则状态和优先级用不同颜色区分
+
+---
+
 ## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
 
 ### 铁律合规检查：

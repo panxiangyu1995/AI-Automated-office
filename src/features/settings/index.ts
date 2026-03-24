@@ -179,6 +179,16 @@ export type {
   PromptVersioningState
 } from './components/PromptVersioning'
 
+export { RulesListManagement } from './components/RulesListManagement'
+export type {
+  RuleCategory,
+  RulePriority,
+  RuleStatus,
+  Rule,
+  RuleGroup,
+  RuleStats
+} from './components/RulesListManagement'
+
 // Hooks
 export { 
   useModelConfig, 
