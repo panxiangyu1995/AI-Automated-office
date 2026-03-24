@@ -37,6 +37,14 @@ export {
 } from './components/CompressionStatusIndicator'
 export { CompressionConfigPanel } from './components/CompressionConfigPanel'
 export { TokenUsageIndicator } from './components/TokenUsageIndicator'
+export {
+  EmployeeDirectory,
+  type EmployeeStatus,
+  type Employee,
+  type Department,
+  type DirectoryStats,
+  type EmployeeDirectoryProps
+} from './components/EmployeeDirectory'
 
 // Hooks
 export { 

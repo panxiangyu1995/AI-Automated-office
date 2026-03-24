@@ -2772,7 +2772,7 @@
       "dependencies": [
         "Story 30.2"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 84,

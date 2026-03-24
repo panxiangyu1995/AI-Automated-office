@@ -5631,3 +5631,34 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Tabs, Dialog, Table, Switch, Select 等）
 - 使用 Lucide React 图标（AlertTriangle, CheckCircle2, XCircle, RefreshCw, Server 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 83: Story 11.1 - 员工通讯录界面
+
+### 铁律合规检查：
+- PRD 合规：FR90, FR91
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-02
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 EmployeeDirectory.tsx 组件（位于 agent/components）
+  - 统计卡片：总人数/在线人数/部门数
+  - 搜索功能：支持按姓名、部门、职位、邮箱搜索
+  - 部门视图：按部门分组展示，可展开/折叠
+  - 列表视图：表格形式展示所有员工
+  - 只看本部门筛选开关
+  - 选择模式：支持选择参与者用于聊天和 Agent 协作
+  - 人员选择对话框：显示已选人员，可移除
+  - 状态指示器：在线/忙碌/离开/离线状态
+- 创建 Avatar UI 组件（src/components/ui/avatar.tsx）
+- 在 agent/index.ts 中导出 EmployeeDirectory 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Switch, Label, Tabs, Table, Dialog, ScrollArea 等）
+- 使用 Lucide React 图标（Search, Users, Building2, Mail, ChevronRight, ChevronDown, Check, X, UserPlus, MessageSquare 等）
+- Mock 数据实现，待后续对接后端
