@@ -266,6 +266,16 @@ export type {
   IntentParsingStats,
 } from './components/IntentParsing'
 
+// Task Planning
+export { TaskPlanning } from './components/TaskPlanning'
+export type {
+  PlanStepStatus,
+  PlanStepType,
+  PlanStep,
+  TaskPlan,
+  PlanStats,
+} from './components/TaskPlanning'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
