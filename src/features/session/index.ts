@@ -337,6 +337,19 @@ export {
   type SubAgentManagementState
 } from './components/SubAgentManagement'
 
+export {
+  SubAgentPersistence,
+  type PersistenceStatus,
+  type CheckpointType,
+  type ExecutionCheckpoint,
+  type PersistenceRecord,
+  type RestoreOptions,
+  type PersistenceConfig,
+  type ConsistencyResult,
+  type PersistenceStats,
+  type SubAgentPersistenceState
+} from './components/SubAgentPersistence'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
