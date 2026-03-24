@@ -274,6 +274,17 @@ export type {
   SubAgentRoutingProps
 } from './components/SubAgentRouting'
 
+export { SubAgentExecutionMonitor } from './components/SubAgentExecutionMonitor'
+export type {
+  SubAgentExecutionRiskLevel,
+  ExecutionTrace,
+  ExecutionMetrics,
+  SubAgentExecution,
+  ExecutionStep,
+  MonitorStats,
+  SubAgentExecutionMonitorProps
+} from './components/SubAgentExecutionMonitor'
+
 // Hooks
 export { 
   useModelConfig, 

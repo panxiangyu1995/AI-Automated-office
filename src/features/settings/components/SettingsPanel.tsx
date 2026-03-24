@@ -12,8 +12,9 @@ import { SubAgentToolBinding } from './SubAgentToolBinding'
 import { SubAgentPermissionConfig } from './SubAgentPermissionConfig'
 import { SubAgentModelConfig } from './SubAgentModelConfig'
 import { SubAgentRouting } from './SubAgentRouting'
+import { SubAgentExecutionMonitor } from './SubAgentExecutionMonitor'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -235,6 +236,14 @@ export function SettingsPanel() {
         >
           Sub-Agent 调用路由
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'sub-agent-execution' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('sub-agent-execution')}
+        >
+          Sub-Agent 执行监控
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -378,6 +387,10 @@ export function SettingsPanel() {
 
         {active === 'sub-agent-routing' && (
           <SubAgentRouting />
+        )}
+
+        {active === 'sub-agent-execution' && (
+          <SubAgentExecutionMonitor />
         )}
       </section>
     </div>

@@ -5144,3 +5144,33 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, ScrollArea, Tabs 等）
 - 使用 Lucide React 图标（Route, Zap, UserCheck, TrendingUp 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-24] - Task 67: Story 21.23 - Sub-Agent执行监控
+
+### 铁律合规检查：
+- PRD 合规：FR938, FR924
+- 架构合规：ADR-042, ADR-037
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR23-4
+
+### What was done:
+- 创建 SubAgentExecutionMonitor.tsx 组件
+  - 统计卡片：总执行次数/正在运行/今日完成/今日失败/平均耗时/成功率
+  - 活跃执行标签页：显示运行中/待处理的 Sub-Agent 任务
+  - 执行历史标签页：已完成/失败/取消的执行记录
+  - 执行详情面板：显示基本信息/时间信息/性能指标/链路追踪/执行步骤
+  - 状态图标：running(Loader2)/completed(CheckCircle2)/failed(XCircle)/pending(Clock)/cancelled(Square)
+  - 风险等级：低/中/高/极高风险标识
+- 在 settings/index.ts 中导出 SubAgentExecutionMonitor 及相关类型
+- 在 SettingsPanel.tsx 中添加"Sub-Agent 执行监控"导航入口
+- 修复类型命名冲突（ExecutionStatus 已被 ToolExecutionLog 导出）
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（Activity, Play, CheckCircle2, XCircle, Timer 等）
+- Mock 数据实现，待后续对接后端
