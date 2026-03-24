@@ -370,6 +370,23 @@ export type {
   SkillParsingStats
 } from './components/SkillMdParsing'
 
+export { SoulMdParsing } from './components/SoulMdParsing'
+export type {
+  ParsedPersonaStatus,
+  SoulElementType,
+  EditableField,
+  SoulIdentity,
+  SoulValues,
+  SoulBehavior,
+  SoulSpeaking,
+  SoulEmotional,
+  SoulBackground,
+  SoulPersona,
+  AuditEntry,
+  ParsedSoulResult,
+  SoulParsingStats
+} from './components/SoulMdParsing'
+
 // Hooks
 export { 
   useModelConfig, 
