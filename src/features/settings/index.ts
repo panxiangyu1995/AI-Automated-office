@@ -436,6 +436,19 @@ export type {
   ResourceSecurityStats
 } from './components/ResourceSecurityManagement'
 
+export { ResourceExecutionAudit } from './components/ResourceExecutionAudit'
+export type {
+  AuditExecutionStatus,
+  ExecutionPattern,
+  ResourceType,
+  ExecutionRecord,
+  AlertRule,
+  AlertCondition,
+  AlertEvent,
+  AuditExport,
+  AuditStats
+} from './components/ResourceExecutionAudit'
+
 // Hooks
 export { 
   useModelConfig, 
