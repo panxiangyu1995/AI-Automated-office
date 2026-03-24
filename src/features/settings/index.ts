@@ -254,6 +254,15 @@ export type {
   SubAgentPermissionConfigProps
 } from './components/SubAgentPermissionConfig'
 
+export { SubAgentModelConfig } from './components/SubAgentModelConfig'
+export type {
+  ModelProvider,
+  SubAgentModelParameter,
+  ModelConfig,
+  ModelAuditEntry,
+  SubAgentModelConfigProps
+} from './components/SubAgentModelConfig'
+
 // Hooks
 export { 
   useModelConfig, 

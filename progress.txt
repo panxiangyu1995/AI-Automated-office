@@ -5080,3 +5080,36 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, ScrollArea, Tabs 等）
 - 使用 Lucide React 图标
 - 组件遵循现有代码模式和类型定义
+
+---
+
+## [2026-03-24] - Task 65: Story 21.21 - Sub-Agent模型配置
+
+### 铁律合规检查：
+- PRD 合规：FR905, FR909, FR910
+- 架构合规：ADR-042
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR29
+
+### What was done:
+- 创建 SubAgentModelConfig.tsx 组件
+  - Sub-Agent 选择列表：显示所有 Sub-Agent 并支持启用/禁用状态
+  - 提供商选择：支持 OpenAI/智谱AI/百炼/DeepSeek/MiniMax 五种提供商
+  - 模型选择：根据提供商动态显示可用模型列表
+  - 参数配置：Temperature/Max Tokens/Top P/Presence Penalty/Frequency Penalty
+  - 备用方案：启用/禁用备用模型配置
+  - 限制设置：请求超时和最大重试次数
+  - 审计历史：记录创建/更新/应用/回滚操作
+  - 恢复默认参数功能
+- 在 settings/index.ts 中导出 SubAgentModelConfig 及相关类型
+- 在 SettingsPanel.tsx 中添加"Sub-Agent 模型配置"导航入口
+- 修复类型命名冲突（ModelParameter -> SubAgentModelParameter）
+
+### Testing:
+- npm run lint 通过（有一个预先存在的 error 在 CompressionMemoryHints.tsx）
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Input, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标
+- 组件遵循现有代码模式和类型定义

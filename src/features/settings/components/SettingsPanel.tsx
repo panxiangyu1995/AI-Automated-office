@@ -10,8 +10,9 @@ import { SubAgentRegistry } from './SubAgentRegistry'
 import { SubAgentPersonaConfig } from './SubAgentPersonaConfig'
 import { SubAgentToolBinding } from './SubAgentToolBinding'
 import { SubAgentPermissionConfig } from './SubAgentPermissionConfig'
+import { SubAgentModelConfig } from './SubAgentModelConfig'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -217,6 +218,14 @@ export function SettingsPanel() {
         >
           Sub-Agent 权限配置
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'sub-agent-model' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('sub-agent-model')}
+        >
+          Sub-Agent 模型配置
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -352,6 +361,10 @@ export function SettingsPanel() {
 
         {active === 'sub-agent-permission' && (
           <SubAgentPermissionConfig />
+        )}
+
+        {active === 'sub-agent-model' && (
+          <SubAgentModelConfig />
         )}
       </section>
     </div>
