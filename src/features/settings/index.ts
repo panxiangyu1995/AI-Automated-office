@@ -461,6 +461,18 @@ export type {
   ConnectorStats
 } from './components/ConnectorFrameworkAuth'
 
+export { ConnectorHealthMonitor } from './components/ConnectorHealthMonitor'
+export type {
+  ConnectorHealthLevel,
+  RetryStatus,
+  DowngradeLevel,
+  ConnectorHealth,
+  RetryAttempt,
+  Incident,
+  DowngradeEvent,
+  HealthStats
+} from './components/ConnectorHealthMonitor'
+
 // Hooks
 export { 
   useModelConfig, 

@@ -5601,3 +5601,33 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs, Dialog, Table, Switch, Select 等）
 - 使用 Lucide React 图标（Server, Key, Shield, Lock, Unlock, AlertTriangle 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 82: Story 30.2 - 连接器健康与重试
+
+### 铁律合规检查：
+- PRD 合规：FR1084, FR1085, FR1086
+- 架构合规：ADR-015, ADR-048
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR35
+
+### What was done:
+- 创建 ConnectorHealthMonitor.tsx 组件
+  - 统计卡片：健康状态分布/活跃事件/活跃降级/重试统计/平均延迟
+  - 健康标签页：连接器健康状态列表，显示健康度/正常运行时间/延迟/请求数
+  - 事件标签页：活跃事件列表，显示严重程度/类型/消息/持续时间
+  - 重试标签页：重试历史记录，显示状态/错误信息/持续时间
+  - 降级标签页：降级事件和策略配置
+  - 事件详情对话框：查看事件详细信息和处理历史
+- 在 settings/index.ts 中导出 ConnectorHealthMonitor 及相关类型
+- 在 SettingsPanel.tsx 中添加"连接器健康"导航入口
+- 修复 HealthLevel 类型冲突，改名为 ConnectorHealthLevel
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Tabs, Dialog, Table, Switch, Select 等）
+- 使用 Lucide React 图标（AlertTriangle, CheckCircle2, XCircle, RefreshCw, Server 等）
+- Mock 数据实现，待后续对接后端

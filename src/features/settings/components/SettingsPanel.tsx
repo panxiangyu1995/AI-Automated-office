@@ -27,8 +27,9 @@ import { PrivateMarketConfig } from './PrivateMarketConfig'
 import { ResourceSecurityManagement } from './ResourceSecurityManagement'
 import { ResourceExecutionAudit } from './ResourceExecutionAudit'
 import { ConnectorFrameworkAuth } from './ConnectorFrameworkAuth'
+import { ConnectorHealthMonitor } from './ConnectorHealthMonitor'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market' | 'private-market' | 'resource-security' | 'resource-execution-audit' | 'connector-framework'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market' | 'private-market' | 'resource-security' | 'resource-execution-audit' | 'connector-framework' | 'connector-health'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -370,6 +371,14 @@ export function SettingsPanel() {
         >
           连接器框架
         </button>
+        <button
+          className={`w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 ${
+            active === 'connector-health' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('connector-health')}
+        >
+          连接器健康
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -573,6 +582,10 @@ export function SettingsPanel() {
 
         {active === 'connector-framework' && (
           <ConnectorFrameworkAuth />
+        )}
+
+        {active === 'connector-health' && (
+          <ConnectorHealthMonitor />
         )}
       </section>
     </div>
