@@ -5512,3 +5512,33 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs 等）
 - 使用 Lucide React 图标（Server, Upload, Lock, Unlock, CheckCircle2, XCircle 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 79: Story 10.6 - 资源安全管理
+
+### 铁律合规检查：
+- PRD 合规：FR746, FR747, FR748, FR749, FR750, FR753, FR754, FR755
+- 架构合规：ADR-046, ADR-047
+- UX 合规：UX-02
+- NFR 合规：NFR14, NFR16
+
+### What was done:
+- 创建 ResourceSecurityManagement.tsx 组件
+  - 统计卡片：总资源数/风险资源/待审批/签名验证
+  - 签名验证：显示来源、签名类型、验证状态、签名者信息
+  - 安全扫描：扫描级别、风险等级、问题列表、修复建议
+  - 审批队列：待审批资源列表，支持批准/拒绝操作
+  - 安全策略：启用策略、签名要求、扫描级别、自动批准、风险等级限制
+  - 审计日志：记录验证、扫描、批准、拒绝等操作
+- 在 settings/index.ts 中导出 ResourceSecurityManagement 及相关类型
+- 在 SettingsPanel.tsx 中添加"资源安全"导航入口
+- 修复 RiskLevel 类型冲突，改名为 SecurityRiskLevel
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs, Dialog, Table, Switch 等）
+- 使用 Lucide React 图标（Shield, CheckCircle2, XCircle, AlertTriangle, Key, Search 等）
+- Mock 数据实现，待后续对接后端

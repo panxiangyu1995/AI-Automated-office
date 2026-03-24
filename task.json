@@ -2639,7 +2639,7 @@
       "dependencies": [
         "Story 10.5"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 80,

@@ -420,6 +420,22 @@ export type {
   PrivateMarketStats
 } from './components/PrivateMarketConfig'
 
+export { ResourceSecurityManagement } from './components/ResourceSecurityManagement'
+export type {
+  ValidationStatus,
+  ScanLevel,
+  SecurityRiskLevel,
+  ApprovalStatus,
+  SignatureType,
+  SecurityValidation,
+  SecurityScan,
+  SecurityIssue,
+  ApprovalRequest,
+  SecurityAuditEntry,
+  SecurityPolicy,
+  ResourceSecurityStats
+} from './components/ResourceSecurityManagement'
+
 // Hooks
 export { 
   useModelConfig, 
