@@ -227,6 +227,24 @@ export type {
   DataMemoryStats,
 } from './components/MemoryDataManagement'
 
+// Memory Configuration
+export { MemoryConfiguration } from './components/MemoryConfiguration'
+export type {
+  DeploymentMode,
+  ExtractionMode,
+  RetentionPolicy,
+  HookCaptureMode,
+  ConfigAccessScope,
+  SyncMode,
+  MemoryDeploymentConfig,
+  AutoExtractionConfig,
+  ExtractionRule,
+  RetentionConfig,
+  HookCaptureConfig,
+  EnterpriseKnowledgeConfig,
+  MemoryConfig,
+} from './components/MemoryConfiguration'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'

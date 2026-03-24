@@ -1,4 +1,35 @@
 
+## [2026-03-24] - Task 35: Story 6.8 - 记忆层配置
+
+### 铁律合规检查：
+- PRD 合规：FR330, FR331, FR332, FR333, FR334
+- 架构合规：ADR-043, ADR-044
+- UX 合规：UX-02, UX-04
+
+### What was done:
+- 创建 MemoryConfiguration.tsx 组件
+  - 部署模式配置：本地存储/云端存储/混合模式
+  - 同步模式：实时同步/定时同步/手动同步
+  - 安全设置：离线可用、数据加密、数据压缩
+  - 自动提取配置：提取模式、置信度阈值、每会话最大条目数
+  - 提取规则管理：模式匹配、作用域、优先级
+  - 保留策略：保留期限、归档设置、高置信度保留
+  - Hook捕获配置：捕获模式、内容类型过滤、排除/包含规则
+  - 企业知识配置：默认访问范围、跨租户访问、文档设置
+- 定义 DeploymentMode, ExtractionMode, RetentionPolicy, HookCaptureMode 类型
+- 定义 ConfigAccessScope, SyncMode 类型
+- 定义各配置接口：MemoryDeploymentConfig, AutoExtractionConfig, RetentionConfig 等
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 类型重命名为 ConfigAccessScope 避免与其他模块冲突
+- 支持配置的保存和重置功能
+
+---
+
 ## [2026-03-24] - Task 34: Story 6.7 - 记忆数据管理界面
 
 ### 铁律合规检查：
