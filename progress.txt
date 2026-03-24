@@ -1,4 +1,35 @@
 
+## [2026-03-24] - Task 29: Story 6.2 - 用户偏好记忆
+
+### 铁律合规检查：
+- PRD 合规：FR14-1, FR261
+- 架构合规：ADR-043, ADR-044
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 UserPreferenceMemory.tsx 组件
+  - 偏好列表：搜索、筛选、启用/禁用、编辑、删除
+  - 按场景分类：通用设置、代码生成、文档撰写、数据分析、沟通方式、工作流
+  - 应用统计：按场景分布、最近应用的偏好、高频使用偏好
+  - 偏好类型：string/number/boolean/array/object/enum
+  - 来源标记：explicit/inferred/default
+  - 置信度显示（推断偏好）
+  - 导入导出功能
+  - 添加和编辑对话框
+- 定义 PreferenceScene, PreferenceType, PreferenceStatus 类型
+- 定义 UserPreference, PreferenceCategory, PreferenceStats 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 支持按场景、来源筛选
+- 支持搜索偏好键、描述或标签
+
+---
+
 ## [2026-03-24] - Task 28: Story 6.1 - 会话记忆管理
 
 ### 铁律合规检查：

@@ -156,11 +156,17 @@ export type {
   MemoryAuditLog,
 } from './components/SessionMemoryManagement'
 
-// AgentObservabilityPanel
-export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
+// User Preference Memory
+export { UserPreferenceMemory } from './components/UserPreferenceMemory'
 export type {
-  TimeRange,
-  SessionMetrics,
-  TenantStatistics,
-  ReportType,
-} from './components/AgentObservabilityPanel'
+  PreferenceScene,
+  PreferenceType,
+  PreferenceStatus,
+  UserPreference,
+  PreferenceCategory,
+  PreferenceStats,
+} from './components/UserPreferenceMemory'
+
+// Agent Observability Panel
+export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
+export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
