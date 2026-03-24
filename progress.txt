@@ -1,33 +1,35 @@
 
-## [2026-03-24] - Task 31: Story 6.4 - 记忆检索功能
+## [2026-03-24] - Task 33: Story 6.6 - 错题集功能
 
 ### 铁律合规检查：
-- PRD 合规：FR265, FR266, FR267
+- PRD 合规：FR83, FR84, FR85, FR86, FR87, FR88
 - 架构合规：ADR-043, ADR-044
 - UX 合规：UX-01, UX-04
 
 ### What was done:
-- 创建 MemoryRetrieval.tsx 组件
-  - 检索搜索：向量检索、关键词检索、混合检索三种模式
-  - 范围筛选：session/user/tenant/enterprise/all
-  - 相关性分数过滤（可调节滑块）
-  - 最大结果数限制
-  - 检索结果详情查看：向量分数、关键词分数、标签、访问次数
-  - 按模式统计：向量/关键词/混合检索占比分析
-  - 按范围分布：各层级检索次数统计
-  - 认知隧道状态：活跃记忆数、Token预算、记忆层分布
-  - 认知状态详情对话框
-  - 导出检索结果功能
-- 定义 RetrievalMode, RetrievalScope, RelevanceLevel 类型
-- 定义 RetrievalResult, CognitiveTunnelState, RetrievalStats 接口
+- 创建 CorrectionRuleLearning.tsx 组件
+  - 纠正规则管理：创建、编辑、删除、启用/停用规则
+  - 纠正案例捕获：原始输出 vs 纠正后输出对比
+  - 规则类别：output_format/content_accuracy/behavior/safety/performance
+  - 触发类型：keyword/pattern/context/tool_output
+  - 应用范围：global/user/session/tool
+  - 成功率统计和应用次数追踪
+  - 从案例提取规则功能
+  - 统计分析：按类别/状态分布、高频规则、成功率趋势
+- 定义 CorrectionStatus, RuleCategory, TriggerType, ApplicationScope 类型
+- 定义 CorrectionCase, LearningCorrectionRule, RuleStats 接口
 
 ### Testing:
 - npm run build 通过
 
 ### Notes:
 - 使用 Shadcn/ui 组件
-- 支持混合检索模式，结合向量和关键词
-- 实现认知隧道状态可视化
+- 类型重命名为 LearningCorrectionRule 避免与 ResultCorrection 模块冲突
+- 支持规则的优先级和成功率追踪
+
+---
+
+## [2026-03-24] - Task 31: Story 6.4 - 记忆检索功能
 
 ---
 

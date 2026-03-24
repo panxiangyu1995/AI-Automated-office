@@ -202,6 +202,18 @@ export type {
   KnowledgeStats,
 } from './components/EnterpriseKnowledgeBase'
 
+// Correction Rule Learning
+export { CorrectionRuleLearning } from './components/CorrectionRuleLearning'
+export type {
+  CorrectionStatus,
+  RuleCategory,
+  TriggerType,
+  ApplicationScope,
+  CorrectionCase,
+  LearningCorrectionRule,
+  RuleStats,
+} from './components/CorrectionRuleLearning'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
