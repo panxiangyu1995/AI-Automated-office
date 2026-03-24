@@ -321,6 +321,17 @@ export type {
   TicketKnowledgeGenerationProps
 } from './components/TicketKnowledgeGeneration'
 
+export { KnowledgeEntryManagement } from './components/KnowledgeEntryManagement'
+export type {
+  EntryStatus,
+  EntryCategory,
+  AccessScope,
+  KnowledgeEntryItem,
+  EntryAuditRecord,
+  EntryMergeCandidate,
+  KnowledgeEntryManagementProps
+} from './components/KnowledgeEntryManagement'
+
 // Hooks
 export { 
   useModelConfig, 
