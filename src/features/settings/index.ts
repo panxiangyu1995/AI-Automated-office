@@ -211,6 +211,15 @@ export type {
   PromptDebugModeProps
 } from './components/PromptDebugMode'
 
+export { SubAgentRegistry } from './components/SubAgentRegistry'
+export type {
+  SubAgentStatus,
+  SubAgentTemplate,
+  SubAgent,
+  SubAgentTemplateInfo,
+  SubAgentRegistryProps
+} from './components/SubAgentRegistry'
+
 // Hooks
 export { 
   useModelConfig, 

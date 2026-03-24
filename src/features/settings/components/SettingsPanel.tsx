@@ -6,8 +6,9 @@ import { Label } from '../../../components/ui/label'
 import { useUIStore } from '../../../stores/uiStore'
 import { ModelProviderSettings } from './ModelProviderSettings'
 import { PromptDebugMode } from './PromptDebugMode'
+import { SubAgentRegistry } from './SubAgentRegistry'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -181,6 +182,14 @@ export function SettingsPanel() {
         >
           提示词调试
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'sub-agent' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('sub-agent')}
+        >
+          Sub-Agent 管理
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -300,6 +309,10 @@ export function SettingsPanel() {
 
         {active === 'prompt-debug' && (
           <PromptDebugMode />
+        )}
+
+        {active === 'sub-agent' && (
+          <SubAgentRegistry />
         )}
       </section>
     </div>
