@@ -344,6 +344,17 @@ export type {
   AccessControlStats
 } from './components/KnowledgeBaseAccessControl'
 
+export { KnowledgeQualityEvaluation } from './components/KnowledgeQualityEvaluation'
+export type {
+  QualityScore,
+  QualityMetric,
+  UpdatePriority,
+  QualityTrend,
+  QualityScoreResult,
+  QualityStats,
+  KnowledgeQualityEvaluationProps
+} from './components/KnowledgeQualityEvaluation'
+
 // Hooks
 export { 
   useModelConfig, 
