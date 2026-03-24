@@ -63,6 +63,17 @@ export type {
   ServiceConnectionState
 } from './components/MCPServiceConnection'
 
+export { MCPToolDiscovery } from './components/MCPToolDiscovery'
+export type {
+  ToolStatus,
+  ToolCategory,
+  MCPTool,
+  ToolRegistry,
+  ToolBinding,
+  ToolDiscoveryStats,
+  ToolDiscoveryState
+} from './components/MCPToolDiscovery'
+
 // Hooks
 export { 
   useModelConfig, 
