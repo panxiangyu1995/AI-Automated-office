@@ -263,6 +263,17 @@ export type {
   SubAgentModelConfigProps
 } from './components/SubAgentModelConfig'
 
+export { SubAgentRouting } from './components/SubAgentRouting'
+export type {
+  RoutingMode,
+  MatchStrategy,
+  ConfidenceLevel,
+  RoutingRule,
+  RoutingDecision,
+  RoutingStats,
+  SubAgentRoutingProps
+} from './components/SubAgentRouting'
+
 // Hooks
 export { 
   useModelConfig, 
