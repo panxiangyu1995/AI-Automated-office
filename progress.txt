@@ -5206,3 +5206,36 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Progress, Tabs 等）
 - 使用 Lucide React 图标（FileText, Upload, FolderOpen, CheckCircle2 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-24] - Task 69: Story 9.2 - 知识问答检索
+
+### 铁律合规检查：
+- PRD 合规：FR283, FR284, FR285
+- 架构合规：ADR-043
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR8-2
+
+### What was done:
+- 创建 KnowledgeQARetrieval.tsx 组件
+  - 统计卡片：问答总数/平均检索块/平均耗时/满意度/活跃知识库
+  - 知识检索：输入问题进行混合检索
+  - 检索策略：关键词/语义/混合/图谱四种策略
+  - 知识库选择：多选知识库进行检索
+  - 问答历史：显示历史问答记录及引用来源
+  - 检索结果：显示详细检索块和相关度评分
+  - 知识库配置：查看和管理知识库
+  - 置信度标签：高/中/低置信度标识
+- 在 settings/index.ts 中导出 KnowledgeQARetrieval 及相关类型
+- 在 SettingsPanel.tsx 中添加"知识问答检索"导航入口
+- 修复 ConfidenceLevel 类型冲突（重命名为 QAConfidenceLevel）
+- 修复未使用导入和变量错误
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs, ScrollArea 等）
+- 使用 Lucide React 图标（Brain, BookOpen, Search, MessageSquare 等）
+- Mock 数据实现，待后续对接后端

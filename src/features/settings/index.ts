@@ -296,6 +296,19 @@ export type {
   KnowledgeDocUploadProps
 } from './components/KnowledgeDocUpload'
 
+export { KnowledgeQARetrieval } from './components/KnowledgeQARetrieval'
+export type {
+  RetrievalStrategy,
+  QAConfidenceLevel,
+  KnowledgeChunk,
+  RetrievedKnowledge,
+  QAAnswer,
+  Citation,
+  KnowledgeBase,
+  RetrievalStats,
+  KnowledgeQARetrievalProps
+} from './components/KnowledgeQARetrieval'
+
 // Hooks
 export { 
   useModelConfig, 
