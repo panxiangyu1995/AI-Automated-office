@@ -409,6 +409,17 @@ export type {
   MarketplaceStats
 } from './components/ClawHubMarketplace'
 
+export { PrivateMarketConfig } from './components/PrivateMarketConfig'
+export type {
+  MarketStatus,
+  ResourceVisibility,
+  ReviewStatus,
+  MarketEndpoint,
+  UploadedResource,
+  PrivateMarketConfig as PrivateMarketConfigType,
+  PrivateMarketStats
+} from './components/PrivateMarketConfig'
+
 // Hooks
 export { 
   useModelConfig, 

@@ -5483,3 +5483,32 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Progress, ScrollArea 等）
 - 使用 Lucide React 图标（Store, Search, Download, CheckCircle2, Star 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 78: Story 10.5 - 私有市场配置
+
+### 铁律合规检查：
+- PRD 合规：FR733, FR734, FR735, FR736, FR737, FR740, FR742, FR745
+- 架构合规：ADR-046
+- UX 合规：UX-02
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 PrivateMarketConfig.tsx 组件
+  - 统计卡片：私有资源数/待审核/已发布/草稿/总下载/平均评分
+  - 端点管理：添加、编辑、删除、默认设置、同步私有市场端点
+  - 资源上传：拖拽上传、URL导入、资源详情编辑、可见性设置
+  - 审核队列：审核状态筛选、批准/拒绝操作、审核意见记录
+  - 市场设置：启用/禁用开关、自动审批开关、下载控制、公开市场同步
+- 在 settings/index.ts 中导出 PrivateMarketConfig 及相关类型
+- 在 SettingsPanel.tsx 中添加"私有市场"导航入口
+- 修复未使用导入错误（Building, Key, Shield, Eye, EyeOff, Globe, Trash2, Database, Users, AlertTriangle, Progress, ScrollArea, setUploadedResources）
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs 等）
+- 使用 Lucide React 图标（Server, Upload, Lock, Unlock, CheckCircle2, XCircle 等）
+- Mock 数据实现，待后续对接后端

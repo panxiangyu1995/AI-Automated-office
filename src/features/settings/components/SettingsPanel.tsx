@@ -23,8 +23,9 @@ import { SkillMdParsing } from './SkillMdParsing'
 import { SoulMdParsing } from './SoulMdParsing'
 import { PluginAdaptation } from './PluginAdaptation'
 import { ClawHubMarketplace } from './ClawHubMarketplace'
+import { PrivateMarketConfig } from './PrivateMarketConfig'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market' | 'private-market'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -334,6 +335,14 @@ export function SettingsPanel() {
         >
           ClawHub市场
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'private-market' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('private-market')}
+        >
+          私有市场
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -521,6 +530,10 @@ export function SettingsPanel() {
 
         {active === 'clawhub-market' && (
           <ClawHubMarketplace />
+        )}
+
+        {active === 'private-market' && (
+          <PrivateMarketConfig />
         )}
       </section>
     </div>
