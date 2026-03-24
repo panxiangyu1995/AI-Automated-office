@@ -1,4 +1,30 @@
 
+## [2026-03-24] - Task 40: Story 7.5 - 动态计划调整
+
+### 铁律合规检查：
+- PRD 合规：FR413, FR415
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 DynamicReplanning.tsx 组件
+  - 当前重规划：触发原因、计划变更列表、策略限制
+  - 历史记录：重规划统计、事件列表
+  - 偏离检测：偏离类型、严重程度、建议操作
+  - 批准/拒绝操作按钮
+- 定义 DriftType, ReplanChangeType, ReplanStatus 类型
+- 定义 PlanChange, DriftIndicator, ReplanEvent, ReplanHistory 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 类型重命名为 ReplanChangeType 避免与 MemoryDataManagement 模块冲突
+- 支持有界重规划策略限制
+
+---
+
 ## [2026-03-24] - Task 39: Story 7.4 - 工具选择决策
 
 ### 铁律合规检查：

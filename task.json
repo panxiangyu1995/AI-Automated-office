@@ -1277,7 +1277,7 @@
       "openspec_change": "epic-7-story-7-5-dynamic-replanning",
       "steps": [
         "Detect plan drift from step outcomes",
-        "Replan within bounded policy limits",
+        "Replan within bounded policy Limits",
         "Explain plan changes to the user"
       ],
       "frs_covered": [
@@ -1297,7 +1297,7 @@
       "dependencies": [
         "Story 7.4"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 41,

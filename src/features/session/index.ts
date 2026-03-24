@@ -286,6 +286,17 @@ export {
   type SelectionStats
 } from './components/ToolSelection'
 
+export {
+  DynamicReplanning,
+  type DriftType,
+  type ReplanChangeType,
+  type ReplanStatus,
+  type PlanChange,
+  type DriftIndicator,
+  type ReplanEvent,
+  type ReplanHistory
+} from './components/DynamicReplanning'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
