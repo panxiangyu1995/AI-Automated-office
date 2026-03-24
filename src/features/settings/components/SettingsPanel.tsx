@@ -13,8 +13,9 @@ import { SubAgentPermissionConfig } from './SubAgentPermissionConfig'
 import { SubAgentModelConfig } from './SubAgentModelConfig'
 import { SubAgentRouting } from './SubAgentRouting'
 import { SubAgentExecutionMonitor } from './SubAgentExecutionMonitor'
+import { KnowledgeDocUpload } from './KnowledgeDocUpload'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -244,6 +245,14 @@ export function SettingsPanel() {
         >
           Sub-Agent 执行监控
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'knowledge' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('knowledge')}
+        >
+          知识文档管理
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -391,6 +400,10 @@ export function SettingsPanel() {
 
         {active === 'sub-agent-execution' && (
           <SubAgentExecutionMonitor />
+        )}
+
+        {active === 'knowledge' && (
+          <KnowledgeDocUpload />
         )}
       </section>
     </div>

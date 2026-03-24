@@ -285,6 +285,17 @@ export type {
   SubAgentExecutionMonitorProps
 } from './components/SubAgentExecutionMonitor'
 
+export { KnowledgeDocUpload } from './components/KnowledgeDocUpload'
+export type {
+  DocStatus,
+  DocCategory,
+  ViewMode,
+  KnowledgeDocument,
+  UploadTask,
+  KnowledgeStats,
+  KnowledgeDocUploadProps
+} from './components/KnowledgeDocUpload'
+
 // Hooks
 export { 
   useModelConfig, 
