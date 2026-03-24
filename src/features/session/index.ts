@@ -190,6 +190,18 @@ export type {
   RetrievalStats,
 } from './components/MemoryRetrieval'
 
+// Enterprise Knowledge Base
+export { EnterpriseKnowledgeBase } from './components/EnterpriseKnowledgeBase'
+export type {
+  DocumentStatus,
+  AccessScope,
+  DocumentType,
+  CollectionType,
+  KnowledgeDocument,
+  KnowledgeCollection,
+  KnowledgeStats,
+} from './components/EnterpriseKnowledgeBase'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'

@@ -31,6 +31,64 @@
 
 ---
 
+## [2026-03-24] - Task 32: Story 6.5 - 企业知识库管理
+
+### 铁律合规检查：
+- PRD 合规：FR280, FR281, FR282, FR283
+- 架构合规：ADR-043
+- UX 合规：UX-01, UX-02
+
+### What was done:
+- 创建 EnterpriseKnowledgeBase.tsx 组件
+  - 文档管理：上传、查看、编辑、删除文档
+  - 文档类型：policy/procedure/guide/reference/template/other
+  - 访问范围：public/tenant/department/team/private
+  - 文档状态：processing/indexed/error/archived
+  - 集合管理：创建、管理知识文档集合
+  - 统计分析：按类型/范围分布、存储使用、最近活动
+- 定义 DocumentStatus, AccessScope, DocumentType, CollectionType 类型
+- 定义 KnowledgeDocument, KnowledgeCollection, KnowledgeStats 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 支持多种文档处理状态
+- 支持按类型、范围、状态筛选
+- 支持企业知识库的访问权限管理
+
+---
+
+## [2026-03-24] - Task 31: Story 6.4 - 记忆检索功能
+
+### 铁律合规检查：
+- PRD 合规：FR265, FR266, FR267
+- 架构合规：ADR-043, ADR-044
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 MemoryRetrieval.tsx 组件
+  - 检索模式：向量检索、关键词检索、混合检索
+  - 检索范围：会话、用户、租户、企业
+  - 相关性筛选：滑块控制最小相关性
+  - 认知隧道状态：查看 Agent 活跃记忆上下文
+  - 检索结果列表：显示相关性分数、来源、摘要
+  - 统计面板：按模式/范围的检索统计
+  - 导出功能
+- 定义 RetrievalMode, RetrievalScope, RelevanceLevel 类型
+- 定义 RetrievalResult, CognitiveTunnelState, RetrievalStats 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 支持认知隧道状态重构
+- 按相关性分数排序结果
+
+---
+
 ## [2026-03-24] - Task 30: Story 6.3 - 记忆智能更新
 
 ### 铁律合规检查：
