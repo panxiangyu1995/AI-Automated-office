@@ -231,6 +231,17 @@ export type {
   SubAgentPersonaConfigProps
 } from './components/SubAgentPersonaConfig'
 
+export { SubAgentToolBinding } from './components/SubAgentToolBinding'
+export type {
+  ToolBindingStatus,
+  SubAgentToolPolicy,
+  SkillLevel,
+  MCPToolBinding,
+  SkillBinding,
+  ToolBindingAuditEntry,
+  SubAgentToolBindingProps
+} from './components/SubAgentToolBinding'
+
 // Hooks
 export { 
   useModelConfig, 
