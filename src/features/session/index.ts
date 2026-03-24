@@ -179,6 +179,17 @@ export type {
   UpdateStats,
 } from './components/MemoryUpdateDecisioning'
 
+// Memory Retrieval
+export { MemoryRetrieval } from './components/MemoryRetrieval'
+export type {
+  RetrievalMode,
+  RetrievalScope,
+  RelevanceLevel,
+  RetrievalResult,
+  CognitiveTunnelState,
+  RetrievalStats,
+} from './components/MemoryRetrieval'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
