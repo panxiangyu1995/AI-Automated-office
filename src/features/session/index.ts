@@ -322,6 +322,21 @@ export {
   type TaskBoundaryState
 } from './components/TaskBoundaryControl'
 
+export {
+  SubAgentManagement,
+  type SubAgentStatus,
+  type DelegationStrategy,
+  type SubAgentType,
+  type SubAgentCapability,
+  type SubAgentConfig,
+  type SubAgentExecution,
+  type ExecutionStep,
+  type SubAgentResult,
+  type DelegationRequest,
+  type SubAgentStats,
+  type SubAgentManagementState
+} from './components/SubAgentManagement'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
