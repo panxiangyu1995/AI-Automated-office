@@ -144,6 +144,18 @@ export type {
   ToolHistoryStats,
 } from './components/ToolHistory'
 
+// Session Memory Management
+export { SessionMemoryManagement } from './components/SessionMemoryManagement'
+export type {
+  MemoryScope,
+  MemorySource,
+  MemoryStatus,
+  MemoryConfidence,
+  MemoryEntry,
+  MemoryStats,
+  MemoryAuditLog,
+} from './components/SessionMemoryManagement'
+
 // AgentObservabilityPanel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type {
