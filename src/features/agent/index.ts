@@ -74,6 +74,18 @@ export {
   type GroupChatStats,
   type GroupChatProps
 } from './components/GroupChat'
+export {
+  AgentGroupParticipant,
+  type AgentRole,
+  type AgentStatus,
+  type ParticipationMode,
+  type AgentIdentity,
+  type AgentMention,
+  type AgentEvent,
+  type ParticipationPolicy,
+  type AgentGroupParticipantStats,
+  type AgentGroupParticipantProps
+} from './components/AgentGroupParticipant'
 
 // Hooks
 export { 

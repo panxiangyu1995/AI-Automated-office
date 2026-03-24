@@ -5754,3 +5754,35 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Avatar, ScrollArea, Dialog, DropdownMenu 等）
 - 使用 Lucide React 图标（Search, Send, MoreVertical, Check, CheckCheck, Clock, Image, File, X, Trash2, Users, Plus, Settings, UserPlus, UserMinus, Shield, ShieldCheck, Crown, VolumeX, BellOff 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 87: Story 11.5 - Agent群聊参与
+
+### 铁律合规检查：
+- PRD 合规：FR619, FR620, FR621, FR639-FR646, FR649
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 AgentGroupParticipant.tsx 组件（位于 agent/components）
+  - Agent 列表展示：头像/名称/角色/状态/能力标签
+  - Agent 角色：助手/协调员/观察员
+  - Agent 状态：活跃/空闲/处理中/已禁用
+  - 参与模式：提及响应/事件驱动/自动参与/已禁用
+  - 提及功能：@ 提及 Agent
+  - 静音控制：可单独静音某个 Agent
+  - 策略设置对话框：配置参与规则
+  - 提及历史标签页：显示被提及的 Agent
+  - 事件历史标签页：显示 Agent 加入/离开/动作/警报事件
+  - 统计卡片：Agent 总数/活跃数/今日提及/自动响应数
+- 在 agent/index.ts 中导出 AgentGroupParticipant 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Avatar, Switch, Label, ScrollArea, Dialog, DropdownMenu, Tabs 等）
+- 使用 Lucide React 图标（Bot, AtSign, Bell, BellOff, Clock, Zap, Settings, Users, ChevronDown, AlertTriangle, VolumeX 等）
+- Mock 数据实现，待后续对接后端
