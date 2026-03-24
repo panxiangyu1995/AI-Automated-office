@@ -87,6 +87,18 @@ export type {
   ApprovePolicyState
 } from './components/MCPApprovePolicy'
 
+export { MCPBulkConfig } from './components/MCPBulkConfig'
+export type {
+  ToolStatus as BulkToolStatus,
+  BulkAction,
+  RiskLevel,
+  MCPToolItem,
+  BulkOperation,
+  BulkAuditEntry,
+  BulkConfigState,
+  BulkConfigStats
+} from './components/MCPBulkConfig'
+
 // Hooks
 export { 
   useModelConfig, 

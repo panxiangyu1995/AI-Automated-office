@@ -1,37 +1,35 @@
 
-## [2026-03-24] - Task 50: Story 21.6 - MCP工具Approve策略配置
+## [2026-03-24] - Task 51: Story 21.7 - MCP工具批量配置
 
 ### 铁律合规检查：
-- PRD 合规：FR825, FR826, FR827, FR828
+- PRD 合规：FR829, FR830, FR831, FR832
 - 架构合规：ADR-039 (元数据驱动配置)
 - UX 合规：UX-02, UX-04
 
 ### What was done:
-- 创建 MCPApprovePolicy.tsx 组件
-  - 支持 auto, confirm, deny 三种批准策略
-  - 默认策略配置（全局、服务级）
-  - 每个工具的策略覆盖
-  - 有效策略暴露给运行时和 UI
-  - 策略分布可视化
-  - 条件规则管理
-  - 审计日志记录
-- 定义 ApprovePolicy, PolicyScope, PolicySource 类型
-- 定义 ToolApprovePolicy, PolicyCondition, PolicyAuditEntry 接口
-- 定义 DefaultPolicyConfig, PolicyStats, ApprovePolicyState 接口
-- 更新 settings/index.ts 导出新组件和类型
+- 创建 MCPBulkConfig.tsx 组件
+  - 多选 MCP 工具功能
+  - 批量应用策略或状态更改
+  - 记录批量变更操作的审计日志
+  - 工具列表展示（按状态/策略/风险级别/服务筛选）
+  - 批量操作历史记录
+  - 审计日志查看
+  - 配置导出功能
+- 定义 ToolStatus, BulkAction, RiskLevel 类型
+- 定义 MCPToolItem, BulkOperation, BulkAuditEntry 接口
+- 定义 BulkConfigState, BulkConfigStats 接口
 
 ### Testing:
-- npm run lint 通过
 - npm run build 通过
 
 ### Notes:
 - 使用 Shadcn/ui 组件
 - 品牌色 #1E3A5F
-- 支持策略继承链可视化
-- 支持按风险级别、策略类型过滤
+- 支持批量启用/禁用/设置策略/设置风险级别/重置操作
 
 ---
 
+## [2026-03-24] - Task 50: Story 21.6 - MCP工具Approve策略配置
 
 
 ### 铁律合规检查：
