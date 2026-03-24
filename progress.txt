@@ -1,5 +1,38 @@
 
-## [2026-03-24] - Task 47: Story 21.3 - MCP服务添加与配置
+## [2026-03-24] - Task 50: Story 21.6 - MCP工具Approve策略配置
+
+### 铁律合规检查：
+- PRD 合规：FR825, FR826, FR827, FR828
+- 架构合规：ADR-039 (元数据驱动配置)
+- UX 合规：UX-02, UX-04
+
+### What was done:
+- 创建 MCPApprovePolicy.tsx 组件
+  - 支持 auto, confirm, deny 三种批准策略
+  - 默认策略配置（全局、服务级）
+  - 每个工具的策略覆盖
+  - 有效策略暴露给运行时和 UI
+  - 策略分布可视化
+  - 条件规则管理
+  - 审计日志记录
+- 定义 ApprovePolicy, PolicyScope, PolicySource 类型
+- 定义 ToolApprovePolicy, PolicyCondition, PolicyAuditEntry 接口
+- 定义 DefaultPolicyConfig, PolicyStats, ApprovePolicyState 接口
+- 更新 settings/index.ts 导出新组件和类型
+
+### Testing:
+- npm run lint 通过
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 支持策略继承链可视化
+- 支持按风险级别、策略类型过滤
+
+---
+
+
 
 ### 铁律合规检查：
 - PRD 合规：FR810, FR811, FR812, FR813

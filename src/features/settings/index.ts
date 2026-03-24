@@ -74,6 +74,19 @@ export type {
   ToolDiscoveryState
 } from './components/MCPToolDiscovery'
 
+export { MCPApprovePolicy } from './components/MCPApprovePolicy'
+export type {
+  ApprovePolicy,
+  PolicyScope,
+  PolicySource,
+  ToolApprovePolicy,
+  PolicyCondition,
+  PolicyAuditEntry,
+  DefaultPolicyConfig,
+  PolicyStats,
+  ApprovePolicyState
+} from './components/MCPApprovePolicy'
+
 // Hooks
 export { 
   useModelConfig, 
