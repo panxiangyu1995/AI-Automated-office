@@ -5662,3 +5662,33 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Switch, Label, Tabs, Table, Dialog, ScrollArea 等）
 - 使用 Lucide React 图标（Search, Users, Building2, Mail, ChevronRight, ChevronDown, Check, X, UserPlus, MessageSquare 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 84: Story 11.2 - 员工名片查看
+
+### 铁律合规检查：
+- PRD 合规：FR601, FR602
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-02
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 EmployeeCard.tsx 组件（位于 agent/components）
+  - 员工名片卡片：头像/姓名/职位/状态/参与者类型
+  - 快捷联系操作：消息/视频/电话/邮件
+  - 基本信息展示：部门/邮箱/电话/最后活动
+  - 可展开详情：个人简介/技能标签/入职时间
+  - 收藏功能：可标记关注的人员
+  - 详情对话框：更多信息和操作
+  - 隐私设置标签页（仅本人）：控制字段可见性
+  - 成员类型识别：人/Agent/系统/群组
+- 在 agent/index.ts 中导出 EmployeeCard 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Card, Switch, Label, Tabs, Dialog, Separator 等）
+- 使用 Lucide React 图标（Mail, Phone, Building2, Calendar, MessageSquare, Video, PhoneCall, MoreHorizontal, Edit, Shield, Clock, ChevronDown, ChevronUp, QrCode, Star 等）
+- Mock 数据实现，待后续对接后端

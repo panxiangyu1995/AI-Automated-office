@@ -45,6 +45,14 @@ export {
   type DirectoryStats,
   type EmployeeDirectoryProps
 } from './components/EmployeeDirectory'
+export {
+  EmployeeCard,
+  type EmployeeProfile,
+  type ParticipantType,
+  type ContactAction,
+  type VisibilitySettings,
+  type EmployeeCardProps
+} from './components/EmployeeCard'
 
 // Hooks
 export { 
