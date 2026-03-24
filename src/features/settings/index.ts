@@ -220,6 +220,17 @@ export type {
   SubAgentRegistryProps
 } from './components/SubAgentRegistry'
 
+export { SubAgentPersonaConfig } from './components/SubAgentPersonaConfig'
+export type {
+  PersonaStatus,
+  TriggerType,
+  SoulTemplate,
+  TriggerCondition,
+  PersonaConfig,
+  PersonaAuditEntry,
+  SubAgentPersonaConfigProps
+} from './components/SubAgentPersonaConfig'
+
 // Hooks
 export { 
   useModelConfig, 

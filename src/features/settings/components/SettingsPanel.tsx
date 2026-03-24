@@ -7,8 +7,9 @@ import { useUIStore } from '../../../stores/uiStore'
 import { ModelProviderSettings } from './ModelProviderSettings'
 import { PromptDebugMode } from './PromptDebugMode'
 import { SubAgentRegistry } from './SubAgentRegistry'
+import { SubAgentPersonaConfig } from './SubAgentPersonaConfig'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -190,6 +191,14 @@ export function SettingsPanel() {
         >
           Sub-Agent 管理
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'sub-agent-persona' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('sub-agent-persona')}
+        >
+          Sub-Agent 角色配置
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -313,6 +322,10 @@ export function SettingsPanel() {
 
         {active === 'sub-agent' && (
           <SubAgentRegistry />
+        )}
+
+        {active === 'sub-agent-persona' && (
+          <SubAgentPersonaConfig />
         )}
       </section>
     </div>
