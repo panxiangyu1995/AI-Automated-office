@@ -53,6 +53,16 @@ export {
   type VisibilitySettings,
   type EmployeeCardProps
 } from './components/EmployeeCard'
+export {
+  PrivateChat,
+  type MessageStatus,
+  type MessageType,
+  type PrivateMessage,
+  type MessageAttachment,
+  type Conversation,
+  type ChatStats,
+  type PrivateChatProps
+} from './components/PrivateChat'
 
 // Hooks
 export { 

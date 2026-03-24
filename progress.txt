@@ -5692,3 +5692,34 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Card, Switch, Label, Tabs, Dialog, Separator 等）
 - 使用 Lucide React 图标（Mail, Phone, Building2, Calendar, MessageSquare, Video, PhoneCall, MoreHorizontal, Edit, Shield, Clock, ChevronDown, ChevronUp, QrCode, Star 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 85: Story 11.3 - 私聊消息功能
+
+### 铁律合规检查：
+- PRD 合规：FR92, FR93, FR611, FR612, FR622
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1
+
+### What was done:
+- 创建 PrivateChat.tsx 组件（位于 agent/components）
+  - 会话列表：按最近消息时间排序，显示未读数/在线状态
+  - 聊天区域：消息气泡展示（发送方/接收方）
+  - 消息状态：发送中/已发送/已投递/已读/失败
+  - 文件附件支持：文件和图片消息
+  - 快捷操作：语音通话/视频通话
+  - 消息搜索：全局搜索所有会话中的消息
+  - 消息操作：删除消息（右键菜单）
+  - 统计卡片：总消息/未读消息/在线联系人数
+  - 消息输入：支持 Enter 发送，Shift+Enter 换行
+- 在 agent/index.ts 中导出 PrivateChat 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Avatar, ScrollArea, Dialog, DropdownMenu 等）
+- 使用 Lucide React 图标（Search, Send, MoreVertical, Phone, Video, Check, CheckCheck, Clock, Image, File, X, Trash2, MessageSquare, User 等）
+- Mock 数据实现，待后续对接后端
