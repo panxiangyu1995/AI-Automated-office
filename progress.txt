@@ -5453,3 +5453,33 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Tabs, Progress, ScrollArea 等）
 - 使用 Lucide React 图标（Puzzle, Wrench, Shield, Lock, Plug 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 77: Story 10.4 - ClawHub市场集成
+
+### 铁律合规检查：
+- PRD 合规：FR730, FR731, FR732, FR738, FR739, FR741, FR743, FR744
+- 架构合规：ADR-046, ADR-047
+- UX 合规：UX-01, UX-02
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 ClawHubMarketplace.tsx 组件
+  - 统计卡片：资源总数/可安装/已安装/待安装/平均评分
+  - 搜索过滤：搜索框、分类过滤、显示已安装切换
+  - 资源列表：显示资源卡片，支持选择查看详情
+  - 资源详情：描述/统计/兼容性/依赖/安全说明/治理检查
+  - 安装功能：支持安装/更新/已安装状态切换
+  - 治理检查：显示安全扫描、权限审查、安全认证状态
+- 在 settings/index.ts 中导出 ClawHubMarketplace 及相关类型
+- 在 SettingsPanel.tsx 中添加"ClawHub市场"导航入口
+- 修复未使用导入错误（Filter, Tag, User, ExternalLink, ShoppingCart, Unlock）
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Progress, ScrollArea 等）
+- 使用 Lucide React 图标（Store, Search, Download, CheckCircle2, Star 等）
+- Mock 数据实现，待后续对接后端

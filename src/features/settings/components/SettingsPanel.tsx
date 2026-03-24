@@ -22,8 +22,9 @@ import { KnowledgeQualityEvaluation } from './KnowledgeQualityEvaluation'
 import { SkillMdParsing } from './SkillMdParsing'
 import { SoulMdParsing } from './SoulMdParsing'
 import { PluginAdaptation } from './PluginAdaptation'
+import { ClawHubMarketplace } from './ClawHubMarketplace'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -325,6 +326,14 @@ export function SettingsPanel() {
         >
           Plugin适配转换
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'clawhub-market' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('clawhub-market')}
+        >
+          ClawHub市场
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -508,6 +517,10 @@ export function SettingsPanel() {
 
         {active === 'plugin-adaptation' && (
           <PluginAdaptation />
+        )}
+
+        {active === 'clawhub-market' && (
+          <ClawHubMarketplace />
         )}
       </section>
     </div>

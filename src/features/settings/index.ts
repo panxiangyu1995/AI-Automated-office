@@ -398,6 +398,17 @@ export type {
   AdaptationStats
 } from './components/PluginAdaptation'
 
+export { ClawHubMarketplace } from './components/ClawHubMarketplace'
+export type {
+  ResourceStatus,
+  ResourceCategory,
+  SecurityLevel,
+  MarketplaceResource,
+  SecurityCheck,
+  InstallationRequest,
+  MarketplaceStats
+} from './components/ClawHubMarketplace'
+
 // Hooks
 export { 
   useModelConfig, 
