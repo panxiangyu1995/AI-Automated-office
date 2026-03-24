@@ -308,6 +308,20 @@ export {
   type LoopDetectionState
 } from './components/LoopDetection'
 
+export {
+  TaskBoundaryControl,
+  type BoundaryType,
+  type BoundaryStatus,
+  type TerminationReason,
+  type IterationBoundary,
+  type TimeoutBoundary,
+  type ResourceBoundary,
+  type BoundaryViolation,
+  type TerminationRecord,
+  type TaskBoundaryConfig,
+  type TaskBoundaryState
+} from './components/TaskBoundaryControl'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
