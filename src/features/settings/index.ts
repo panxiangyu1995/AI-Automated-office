@@ -99,6 +99,19 @@ export type {
   BulkConfigStats
 } from './components/MCPBulkConfig'
 
+export { ToolExecutionLog } from './components/ToolExecutionLog'
+export type {
+  ExecutionStatus,
+  ApproveDecision,
+  ExecutionToolCategory,
+  RiskLevel as ExecutionRiskLevel,
+  ExportFormat,
+  ToolExecutionRecord,
+  AuditLogEntry,
+  ExecutionStats,
+  LogExportConfig
+} from './components/ToolExecutionLog'
+
 // Hooks
 export { 
   useModelConfig, 

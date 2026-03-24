@@ -1,4 +1,36 @@
 
+## [2026-03-24] - Task 52: Story 21.8 - 工具执行日志与审计
+
+### 铁律合规检查：
+- PRD 合规：FR818, FR831
+- 架构合规：ADR-037
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR14, NFR23-8
+
+### What was done:
+- 创建 ToolExecutionLog.tsx 组件
+  - 工具执行记录浏览：列表展示、状态筛选、搜索功能
+  - 执行详情查看：输入参数、输出结果、错误信息、元数据
+  - 审计日志查看：操作类型、目标对象、结果、原因
+  - 导出功能：支持 JSON/CSV/PDF 格式
+  - 统计分析：执行次数、成功率、平均耗时、错误/超时数
+  - 热门工具排行
+- 定义 ExecutionStatus, ApproveDecision, ExecutionToolCategory, RiskLevel, ExportFormat 类型
+- 定义 ToolExecutionRecord, AuditLogEntry, ExecutionStats, LogExportConfig 接口
+- 修复 ToolCategory 类型冲突，重命名为 ExecutionToolCategory
+- 修复 unknown 类型在 JSX 中的渲染问题
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 支持按状态/类别/风险级别/审批决策/时间范围筛选
+- 支持导出审计日志用于合规审查
+
+---
+
 ## [2026-03-24] - Task 51: Story 21.7 - MCP工具批量配置
 
 ### 铁律合规检查：
