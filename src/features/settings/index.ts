@@ -387,6 +387,17 @@ export type {
   SoulParsingStats
 } from './components/SoulMdParsing'
 
+export { PluginAdaptation } from './components/PluginAdaptation'
+export type {
+  PluginStatus,
+  SandboxLevel,
+  CapabilityType,
+  PluginTool,
+  PluginCapability,
+  PluginAdaptation as PluginAdaptationType,
+  AdaptationStats
+} from './components/PluginAdaptation'
+
 // Hooks
 export { 
   useModelConfig, 
