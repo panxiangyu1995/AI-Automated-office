@@ -143,3 +143,12 @@ export type {
   ToolHistoryEntry,
   ToolHistoryStats,
 } from './components/ToolHistory'
+
+// AgentObservabilityPanel
+export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
+export type {
+  TimeRange,
+  SessionMetrics,
+  TenantStatistics,
+  ReportType,
+} from './components/AgentObservabilityPanel'

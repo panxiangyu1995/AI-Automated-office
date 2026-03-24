@@ -869,7 +869,7 @@
       "dependencies": [
         "Story 5.12"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 28,
