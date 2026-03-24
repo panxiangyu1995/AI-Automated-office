@@ -276,6 +276,16 @@ export type {
   PlanStats,
 } from './components/TaskPlanning'
 
+export {
+  ToolSelection,
+  type SelectionToolCategory,
+  type SelectionStatus,
+  type ToolCandidate,
+  type SelectionContext,
+  type SelectionResult,
+  type SelectionStats
+} from './components/ToolSelection'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'

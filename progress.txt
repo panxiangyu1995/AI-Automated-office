@@ -1,4 +1,32 @@
 
+## [2026-03-24] - Task 39: Story 7.4 - 工具选择决策
+
+### 铁律合规检查：
+- PRD 合规：FR412
+- 架构合规：ADR-017, ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 ToolSelection.tsx 组件
+  - 候选工具排名：得分、排名、状态展示
+  - 工具类别过滤：core/plugin/mcp/builtin
+  - 选择理由记录：选择原因和拒绝原因
+  - 工具详情展开：能力、限制、性能指标
+  - 选择上下文：意图、必需能力、约束条件
+  - 选择审计：审计日志、得分分布图
+- 定义 SelectionToolCategory, SelectionStatus 类型
+- 定义 ToolCandidate, SelectionContext, SelectionResult 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 类型重命名为 SelectionToolCategory 避免与 tools 模块冲突
+- 支持用户覆盖工具选择
+
+---
+
 ## [2026-03-24] - Task 38: Story 7.3 - 任务分解与规划
 
 ### 铁律合规检查：
