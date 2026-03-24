@@ -199,6 +199,18 @@ export type {
   CustomRule
 } from './components/CustomRuleAddition'
 
+export { PromptDebugMode } from './components/PromptDebugMode'
+export type {
+  DebugStatus,
+  SafetyLevel,
+  ConvergenceStrategy,
+  TriggeredRule,
+  SafetyBlock,
+  ConvergenceHit,
+  DebugResult,
+  PromptDebugModeProps
+} from './components/PromptDebugMode'
+
 // Hooks
 export { 
   useModelConfig, 

@@ -5,8 +5,9 @@ import { Switch } from '../../../components/ui/switch'
 import { Label } from '../../../components/ui/label'
 import { useUIStore } from '../../../stores/uiStore'
 import { ModelProviderSettings } from './ModelProviderSettings'
+import { PromptDebugMode } from './PromptDebugMode'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -172,6 +173,14 @@ export function SettingsPanel() {
         >
           更新
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'prompt-debug' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('prompt-debug')}
+        >
+          提示词调试
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -287,6 +296,10 @@ export function SettingsPanel() {
             <h2 className="text-lg font-semibold text-slate-800">更新</h2>
             <p className="text-slate-600 text-sm">后续将提供更新策略与版本信息。</p>
           </div>
+        )}
+
+        {active === 'prompt-debug' && (
+          <PromptDebugMode />
         )}
       </section>
     </div>
