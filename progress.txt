@@ -1,4 +1,33 @@
 
+## [2026-03-24] - Task 30: Story 6.3 - 记忆智能更新
+
+### 铁律合规检查：
+- PRD 合规：FR262, FR263, FR264
+- 架构合规：ADR-043, ADR-044
+- UX 合规：UX-04
+
+### What was done:
+- 创建 MemoryUpdateDecisioning.tsx 组件
+  - 更新决策列表：搜索、筛选、查看详情、批准/拒绝/解决冲突
+  - 操作类型：ADD/UPDATE/DELETE/MERGE/NONE
+  - 状态：pending/applied/rejected/conflict/rolled_back
+  - 置信度显示和平均置信度统计
+  - 冲突解决：手动解决、合并值、选择策略
+  - 冲突规则管理：条件、优先级、解决策略
+  - 按操作分类统计
+- 定义 UpdateAction, ConflictResolution, UpdateSource, UpdateStatus 类型
+- 定义 MemoryUpdateDecision, ConflictRule, UpdateStats 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 支持多种冲突解决策略
+- 支持按操作类型和状态筛选
+
+---
+
 ## [2026-03-24] - Task 29: Story 6.2 - 用户偏好记忆
 
 ### 铁律合规检查：

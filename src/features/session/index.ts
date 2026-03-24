@@ -167,6 +167,18 @@ export type {
   PreferenceStats,
 } from './components/UserPreferenceMemory'
 
+// Memory Update Decisioning
+export { MemoryUpdateDecisioning } from './components/MemoryUpdateDecisioning'
+export type {
+  UpdateAction,
+  ConflictResolution,
+  UpdateSource,
+  UpdateStatus,
+  MemoryUpdateDecision,
+  ConflictRule,
+  UpdateStats,
+} from './components/MemoryUpdateDecisioning'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
