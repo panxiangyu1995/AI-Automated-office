@@ -1,4 +1,35 @@
 
+## [2026-03-24] - Task 37: Story 7.2 - 多模态输入处理
+
+### 铁律合规检查：
+- PRD 合规：FR403, FR404
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 增强 MessageInput.tsx 组件
+  - 支持图片文件：JPEG, PNG, GIF, WebP
+  - 支持 PDF 文件
+  - 拖放文件上传
+  - 粘贴文件上传
+  - 文件预览（图片缩略图、PDF图标）
+  - 文件大小限制（默认10MB）
+  - 内容提取状态追踪：pending/extracting/extracted/failed
+  - 附件管理：添加、移除、预览
+- 定义 MediaType, MediaAttachment 类型
+- 定义提取状态和工作流
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 支持多种文件上传方式：点击选择、拖放、粘贴
+- 文件内容提取为模拟实现，实际应调用后端服务
+- 发送时等待所有附件提取完成
+
+---
+
 ## [2026-03-24] - Task 36: Story 7.1 - 自然语言意图解析
 
 ### 铁律合规检查：

@@ -16,7 +16,11 @@
 // Components
 export { AgentChatPanel } from './components/AgentChatPanel'
 export { ChatMessage } from './components/ChatMessage'
-export { MessageInput } from './components/MessageInput'
+export { 
+  MessageInput,
+  type MediaAttachment,
+  type MediaType
+} from './components/MessageInput'
 export { MessageList } from './components/MessageList'
 export { SessionList } from './components/SessionList'
 export { SessionPanel } from './components/SessionPanel'

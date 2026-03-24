@@ -1203,7 +1203,7 @@
       "dependencies": [
         "Story 7.1"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 38,
