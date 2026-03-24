@@ -61,6 +61,35 @@
 
 ---
 
+## [2026-03-24] - Task 56: Story 21.12 - 提示词变量预览
+
+### 铁律合规检查：
+- PRD 合规：FR855, FR856, FR857
+- 架构合规：ADR-038, ADR-040
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR3
+
+### What was done:
+- 创建 PromptVariablePreview.tsx 组件
+  - 变量提取：自动从模板中提取 {{variable}} 格式变量
+  - 变量状态：已定义/默认值/缺失三种状态显示
+  - 渲染预览：实时显示变量替换后的提示词
+  - Token 估算：基于字符数估算输入/输出/总 Token 数
+  - 成本预估：根据模型配置计算预估成本
+  - 上下文限制：检测是否超出模型最大上下文长度
+  - 模型选择：支持多种 LLM 模型配置
+- 定义 VariableStatus, TokenType, VariableValue, TokenEstimate, PromptPreviewConfig 类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Dialog, ScrollArea, Tooltip）
+- Token 估算采用字符数近似法（中文约2字符/Token，英文约4字符/Token）
+- 支持多模型成本对比
+
+---
+
 ## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
 
 ### 铁律合规检查：

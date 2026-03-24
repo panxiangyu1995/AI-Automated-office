@@ -157,6 +157,16 @@ export type {
   TemplateManagementState
 } from './components/PromptTemplateManagement'
 
+export { PromptVariablePreview } from './components/PromptVariablePreview'
+export type {
+  VariableStatus,
+  TokenType,
+  VariableValue,
+  TokenEstimate,
+  PromptPreviewConfig,
+  PromptPreviewState
+} from './components/PromptVariablePreview'
+
 // Hooks
 export { 
   useModelConfig, 
