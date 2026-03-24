@@ -17,8 +17,9 @@ import { KnowledgeDocUpload } from './KnowledgeDocUpload'
 import { KnowledgeQARetrieval } from './KnowledgeQARetrieval'
 import { TicketKnowledgeGeneration } from './TicketKnowledgeGeneration'
 import { KnowledgeEntryManagement } from './KnowledgeEntryManagement'
+import { KnowledgeBaseAccessControl } from './KnowledgeBaseAccessControl'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -280,6 +281,14 @@ export function SettingsPanel() {
         >
           知识条目管理
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'knowledge-access' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('knowledge-access')}
+        >
+          知识库权限控制
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -443,6 +452,10 @@ export function SettingsPanel() {
 
         {active === 'knowledge-entry' && (
           <KnowledgeEntryManagement />
+        )}
+
+        {active === 'knowledge-access' && (
+          <KnowledgeBaseAccessControl />
         )}
       </section>
     </div>

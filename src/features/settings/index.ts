@@ -332,6 +332,18 @@ export type {
   KnowledgeEntryManagementProps
 } from './components/KnowledgeEntryManagement'
 
+export { KnowledgeBaseAccessControl } from './components/KnowledgeBaseAccessControl'
+export type {
+  RoleType,
+  AccessLevel,
+  ScopeType,
+  RolePermission,
+  DepartmentAccess,
+  UserAccess,
+  KnowledgeBaseACL,
+  AccessControlStats
+} from './components/KnowledgeBaseAccessControl'
+
 // Hooks
 export { 
   useModelConfig, 
