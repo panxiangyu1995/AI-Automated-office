@@ -19,8 +19,9 @@ import { TicketKnowledgeGeneration } from './TicketKnowledgeGeneration'
 import { KnowledgeEntryManagement } from './KnowledgeEntryManagement'
 import { KnowledgeBaseAccessControl } from './KnowledgeBaseAccessControl'
 import { KnowledgeQualityEvaluation } from './KnowledgeQualityEvaluation'
+import { SkillMdParsing } from './SkillMdParsing'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -298,6 +299,14 @@ export function SettingsPanel() {
         >
           知识质量评估
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'skill-parsing' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('skill-parsing')}
+        >
+          SKILL.md解析
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -469,6 +478,10 @@ export function SettingsPanel() {
 
         {active === 'knowledge-quality' && (
           <KnowledgeQualityEvaluation />
+        )}
+
+        {active === 'skill-parsing' && (
+          <SkillMdParsing />
         )}
       </section>
     </div>

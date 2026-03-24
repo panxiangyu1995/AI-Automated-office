@@ -5361,3 +5361,33 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Progress, Tabs, Slider 等）
 - 使用 Lucide React 图标（TrendingUp, TrendingDown, AlertCircle, Star 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 74: Story 10.1 - SKILL.md格式解析
+
+### 铁律合规检查：
+- PRD 合规：FR700, FR701, FR702, FR703, FR706, FR707, FR708, FR709, FR710
+- 架构合规：ADR-046
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 SkillMdParsing.tsx 组件
+  - 统计卡片：技能总数/活跃技能/工具总数/触发器总数/平均工具数
+  - 技能列表：显示已解析的技能，支持选择查看详情
+  - 上传解析：上传和解析 SKILL.md 内容
+  - 依赖关系：显示技能之间的依赖关系
+  - 技能详情：元数据/工具/触发器/依赖信息
+- 在 settings/index.ts 中导出 SkillMdParsing 及相关类型
+- 在 SettingsPanel.tsx 中添加"SKILL.md解析"导航入口
+- 修复类型命名冲突（重命名：ParsedSkillStatus, ParsedTriggerType, ParsedParamType, ParsedSkillParameter）
+- 修复未使用导入错误
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Tabs 等）
+- 使用 Lucide React 图标（FileCode, Package, Wrench, Zap 等）
+- Mock 数据实现，待后续对接后端

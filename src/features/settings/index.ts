@@ -355,6 +355,21 @@ export type {
   KnowledgeQualityEvaluationProps
 } from './components/KnowledgeQualityEvaluation'
 
+export { SkillMdParsing } from './components/SkillMdParsing'
+export type {
+  ParsedSkillStatus,
+  ParsedToolType,
+  ParsedTriggerType,
+  ParsedParamType,
+  SkillMetadata,
+  SkillTool,
+  ParsedSkillParameter,
+  SkillTrigger,
+  ParsedSkill,
+  ParseResult,
+  SkillParsingStats
+} from './components/SkillMdParsing'
+
 // Hooks
 export { 
   useModelConfig, 
