@@ -1,4 +1,34 @@
 
+## [2026-03-24] - Task 47: Story 21.3 - MCP服务添加与配置
+
+### 铁律合规检查：
+- PRD 合规：FR810, FR811, FR812, FR813
+- 架构合规：ADR-015, ADR-039
+- UX 合规：UX-02, UX-04
+
+### What was done:
+- 创建 MCPServiceConfig.tsx 组件
+  - MCP 服务列表展示（服务卡片、状态徽章、能力标签）
+  - 添加/编辑服务对话框
+  - 命令参数配置（args）
+  - 环境变量配置（env，支持加密）
+  - 运行时策略设置（启动策略、超时、日志级别、自动重启）
+  - 操作记录表格（审计追踪）
+  - 统计概览面板
+- 定义 MCPServiceStatus, MCPServiceType, RuntimePolicy, LogLevel 类型
+- 定义 MCPServiceArg, MCPServiceEnv, MCPServiceCapability, MCPServiceConfig 接口
+- 定义 MCPServiceRecord, MCPServiceStats 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 移除了未使用的 RefreshCw, Copy, Textarea, DialogTrigger, Accordion 导入
+- 移除了不存在的 @/components/ui/accordion 模块引用
+
+---
+
 ## [2026-03-24] - Task 40: Story 7.5 - 动态计划调整
 
 ### 铁律合规检查：
@@ -4566,3 +4596,29 @@
 
 ### Notes:
 - 当前仓库存在与本次改动无关的既有 lint 问题，未在本次任务中顺手修改
+
+
+## [2026-03-24] - Task 45: Story 21.1 - LLM提供商添加与配置
+
+### 铁律合规检查：
+- PRD 合规：FR800, FR801, FR802, FR803, FR804
+- 架构合规：ADR-038
+- UX 合规：UX-02, UX-04
+
+### What was done:
+- 创建 LLMProviderConfig.tsx 组件
+  - 提供商注册表：展示所有 LLM 提供商、状态、配置详情
+  - 添加提供商：预设提供商（OpenAI、智谱、百炼、DeepSeek）、自定义提供商
+  - 凭证管理：API Key 存储、安全显示、测试连接
+  - 配置变更：配置历史、变更记录
+- 定义 ProviderType, ProviderStatus, AuthType 类型
+- 定义 ProviderConfig, ConnectionTestResult, ProviderStats 接口
+- 更新 settings/index.ts 导出 LLMProviderConfig
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 移除了未使用的 AlertTriangle, CheckCircle2, Key, Globe, Settings 导入
+- 支持预设和自定义 OpenAI 兼容提供商
