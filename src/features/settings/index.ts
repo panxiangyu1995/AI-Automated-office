@@ -112,6 +112,22 @@ export type {
   LogExportConfig
 } from './components/ToolExecutionLog'
 
+export { SkillConfiguration } from './components/SkillConfiguration'
+export type {
+  SkillStatus,
+  SkillSource,
+  SkillScope,
+  LoadPriority,
+  DowngradeTrigger,
+  ParameterType,
+  SkillParameter,
+  SkillDependency,
+  SkillDowngradeRecord,
+  InstalledSkill,
+  SkillConfigState,
+  SkillStats
+} from './components/SkillConfiguration'
+
 // Hooks
 export { 
   useModelConfig, 
