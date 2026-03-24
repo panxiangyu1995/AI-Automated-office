@@ -189,6 +189,16 @@ export type {
   RuleStats
 } from './components/RulesListManagement'
 
+export { CustomRuleAddition } from './components/CustomRuleAddition'
+export type {
+  ConditionOperator,
+  ConditionType,
+  LogicalOperator,
+  RuleCondition,
+  RuleConditionGroup,
+  CustomRule
+} from './components/CustomRuleAddition'
+
 // Hooks
 export { 
   useModelConfig, 

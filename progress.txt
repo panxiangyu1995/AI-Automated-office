@@ -146,6 +146,35 @@
 
 ---
 
+## [2026-03-24] - Task 59: Story 21.15 - 自定义规则添加
+
+### 铁律合规检查：
+- PRD 合规：FR869, FR870, FR871
+- 架构合规：ADR-041
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 CustomRuleAddition.tsx 组件
+  - 规则基本信息：名称、描述、类别、优先级
+  - 规则内容编辑：文本编辑器
+  - 条件配置：支持意图、实体、上下文、工具、用户、时间等条件类型
+  - 逻辑运算符：AND/OR 组合条件
+  - 条件操作符：等于、包含、开头为、结尾为、匹配正则、存在
+  - 标签和适用范围配置
+  - 已创建规则列表展示
+- 定义 ConditionOperator, ConditionType, LogicalOperator, RuleCondition, RuleConditionGroup, CustomRule 类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Dialog, Input, Select, Textarea, Badge）
+- 支持动态添加/删除条件
+- 条件支持拖拽排序提示
+
+---
+
 ## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
 
 ### 铁律合规检查：
