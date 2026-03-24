@@ -167,6 +167,18 @@ export type {
   PromptPreviewState
 } from './components/PromptVariablePreview'
 
+export { PromptVersioning } from './components/PromptVersioning'
+export type {
+  VersionAction,
+  KnowledgeSource,
+  WritebackStatus,
+  PromptDiff,
+  PromptVersion,
+  KnowledgeEntry,
+  WritebackConfig,
+  PromptVersioningState
+} from './components/PromptVersioning'
+
 // Hooks
 export { 
   useModelConfig, 

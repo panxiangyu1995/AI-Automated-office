@@ -90,6 +90,34 @@
 
 ---
 
+## [2026-03-24] - Task 57: Story 21.13 - 提示词版本管理
+
+### 铁律合规检查：
+- PRD 合规：FR858, FR859, FR860, FR863
+- 架构合规：ADR-038, ADR-040, ADR-044
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR14
+
+### What was done:
+- 创建 PromptVersioning.tsx 组件
+  - 版本历史：存储和展示提示词版本历史
+  - 版本差异：显示每个版本的增删改统计
+  - 回滚功能：支持回滚到历史版本
+  - 知识积累：展示会话知识条目
+  - 写回控制：启用/禁用知识写回、自动应用配置
+  - 知识应用：将知识条目应用到提示词
+- 定义 VersionAction, KnowledgeSource, WritebackStatus, PromptDiff, PromptVersion, KnowledgeEntry, WritebackConfig 类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Dialog, ScrollArea, Tooltip）
+- 版本对比支持并排显示两个版本内容
+- 知识条目来源包括：会话、反馈、手动、自动
+
+---
+
 ## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
 
 ### 铁律合规检查：
