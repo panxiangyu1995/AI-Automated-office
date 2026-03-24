@@ -1,4 +1,64 @@
 
+## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
+
+### 铁律合规检查：
+- PRD 合规：FR850, FR851, FR861, FR862
+- 架构合规：ADR-038, ADR-040
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 SystemPromptEditor.tsx 组件
+  - 分层提示词编辑：L1身份层、L2角色层、L3运行时层
+  - 变量支持：自动提取和显示 {{variable}} 格式变量
+  - 来源标签：显示 identity/persona/runtime/session/user/system 来源
+  - 治理溯源：审计日志记录创建、更新、应用、回滚操作
+  - 完整预览：组合所有层级的完整提示词预览
+  - 分层加载结构可视化：展示加载顺序和组合关系
+- 定义 PromptLayer, PromptSource, PromptStatus, VariableType, ApplyStatus 类型
+- 定义 PromptVariable, PromptSourceLabel, PromptLayerContent, PromptAuditEntry 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Tabs, Dialog, Tooltip, ScrollArea）
+- 品牌色 #1E3A5F
+- 支持编辑模式/预览模式切换
+- 支持一键复制和回滚功能
+
+---
+
+## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
+
+### 铁律合规检查：
+- PRD 合规：FR850, FR851, FR861, FR862
+- 架构合规：ADR-038, ADR-040
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 SystemPromptEditor.tsx 组件
+  - 分层提示词编辑：L1身份层、L2角色层、L3运行时层
+  - 变量支持：自动提取和显示 {{variable}} 格式变量
+  - 来源标签：显示 identity/persona/runtime/session/user/system 来源
+  - 治理溯源：审计日志记录创建、更新、应用、回滚操作
+  - 完整预览：组合所有层级的完整提示词预览
+  - 分层加载结构可视化：展示加载顺序和组合关系
+- 定义 PromptLayer, PromptSource, PromptStatus, VariableType, ApplyStatus 类型
+- 定义 PromptVariable, PromptSourceLabel, PromptLayerContent, PromptAuditEntry 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 品牌色 #1E3A5F
+- 支持预览模式和编辑模式切换
+- 变量点击可复制到剪贴板
+
+---
+
 ## [2026-03-24] - Task 53: Story 21.9 - Skill配置管理
 
 ### 铁律合规检查：

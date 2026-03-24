@@ -128,6 +128,20 @@ export type {
   SkillStats
 } from './components/SkillConfiguration'
 
+export { SystemPromptEditor } from './components/SystemPromptEditor'
+export type {
+  PromptLayer,
+  PromptSource,
+  PromptStatus,
+  VariableType,
+  ApplyStatus,
+  PromptVariable,
+  PromptSourceLabel,
+  PromptLayerContent,
+  PromptAuditEntry,
+  PromptEditorState
+} from './components/SystemPromptEditor'
+
 // Hooks
 export { 
   useModelConfig, 
