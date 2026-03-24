@@ -5723,3 +5723,34 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Avatar, ScrollArea, Dialog, DropdownMenu 等）
 - 使用 Lucide React 图标（Search, Send, MoreVertical, Phone, Video, Check, CheckCheck, Clock, Image, File, X, Trash2, MessageSquare, User 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 86: Story 11.4 - 群组创建与管理
+
+### 铁律合规检查：
+- PRD 合规：FR94, FR619, FR620
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1
+
+### What was done:
+- 创建 GroupChat.tsx 组件（位于 agent/components）
+  - 群组列表：显示已加入的群组，支持创建群组
+  - 群组聊天：消息气泡展示（区分群主/管理员/成员角色）
+  - 成员角色：群主/管理员/成员，不同权限
+  - 成员管理：添加成员/移除成员/修改角色/禁言
+  - 群组消息状态：发送中/已发送/已投递/已读/失败
+  - 消息搜索：全局搜索群组消息
+  - 创建群组对话框：输入群组名称和描述
+  - 成员列表对话框：查看和管理群成员
+  - 统计卡片：已加入群组数/未读消息/总消息数
+- 在 agent/index.ts 中导出 GroupChat 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Avatar, ScrollArea, Dialog, DropdownMenu 等）
+- 使用 Lucide React 图标（Search, Send, MoreVertical, Check, CheckCheck, Clock, Image, File, X, Trash2, Users, Plus, Settings, UserPlus, UserMinus, Shield, ShieldCheck, Crown, VolumeX, BellOff 等）
+- Mock 数据实现，待后续对接后端

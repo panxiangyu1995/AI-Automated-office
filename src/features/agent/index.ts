@@ -63,6 +63,17 @@ export {
   type ChatStats,
   type PrivateChatProps
 } from './components/PrivateChat'
+export {
+  GroupChat,
+  type GroupRole,
+  type GroupMemberStatus,
+  type GroupMember,
+  type GroupMessage,
+  type GroupAttachment,
+  type Group,
+  type GroupChatStats,
+  type GroupChatProps
+} from './components/GroupChat'
 
 // Hooks
 export { 

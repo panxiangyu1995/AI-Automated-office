@@ -30,10 +30,12 @@ classification:
   domain: '平台基础设施（多垂直领域适配）'
   complexity: '高'
   projectContext: 'greenfield'
-lastEdited: '2026-03-21'
+lastEdited: '2026-03-25'
 editHistory:
   - date: '2026-03-21'
     changes: '新增编辑器系统与动态模板渲染模块（FR1213-FR1302，共90条需求），包含：编辑器架构、内置编辑器类型、即时渲染引擎、动态模板系统、模板设计器、模板库与扩展API'
+  - date: '2026-03-25'
+    changes: '新增实现细节补充章节（FR1500-FR1524，共25条需求），包含：流式运行时增强、消息模型增强、定时任务增强、审计日志增强'
 ---
 
 # Product Requirements Document - AI-Automated-office
@@ -4036,7 +4038,8 @@ Agent分析后弹出确认卡片：
 | **数据访问白名单功能** | **FR965-FR974** | **10** |
 | **缺失功能补充（新增）** | **FR1000-FR1212** | **169** |
 | **编辑器系统与动态模板渲染** | **FR1213-FR1302** | **90** |
-| **总计** | | **857** |
+| **实现细节补充** | **FR1500-FR1524** | **25** |
+| **总计** | | **882** |
 
 > **说明：** 
 > - 统一消息系统整合了原有的"消息与通知"、"企业通讯与协作"、"AI Agent通信机制"三个模块，并新增 FR600-662 系列增强需求（含群聊协作、员工通讯录），共99条。
@@ -4048,6 +4051,55 @@ Agent分析后弹出确认卡片：
 > - **新增数据访问白名单功能**，包含白名单配置、脱敏规则、安全控制，共10条需求。
 > - **新增缺失功能补充模块**，覆盖工作区、密钥管理、工具沙箱、身份组织、数据治理、成本配额、发布更新、插件治理、集成迁移、可观测性、通知渠道、运维SLA、心跳监控、定时调度、错误体系、Failover与会话修复、内置编辑器能力，共169条需求。
 > - **新增编辑器系统与动态模板渲染模块**，包含编辑器架构、内置编辑器类型、即时渲染引擎、动态模板系统、模板设计器、模板库与扩展API，共90条需求。这是实现"动态模板驱动UI"的核心能力，用户可通过AI对话设计模板，AI自动填充数据，实现软件适应业务而非业务适应软件。
+
+## 实现细节补充
+
+> **说明：** 本章节记录已实现但PRD早期版本未覆盖的功能细节，作为实现与需求的对齐补充。
+
+### 流式运行时增强需求（FR1500-FR1507）
+
+| 编号 | 需求描述 | 实现文件 |
+|------|----------|----------|
+| FR1500 | 流式输出支持有序事件序列号追踪机制 | streaming/runtime/runtimeEvents.ts |
+| FR1501 | 事件存储支持断连后增量回放 | streaming/runtime/reconnectHandler.ts |
+| FR1502 | 重连采用指数退避策略（baseDelay/maxDelay/multiplier） | streaming/runtime/reconnectHandler.ts |
+| FR1503 | 流式批量处理配置（batchSize/batchTimeout） | streaming/runtime/syncEngine.ts |
+| FR1504 | 自动检查点定时保存（interval/maxPerSession） | streaming/runtime/interruptHandler.ts |
+| FR1505 | 检查点版本管理（created/active/restored/expired/abandoned） | streaming/runtime/interruptHandler.ts |
+| FR1506 | 流式同步统计指标（chunksPerSecond/averageLatency） | streaming/runtime/syncEngine.ts |
+| FR1507 | 前端流式上下文订阅机制 | streaming/runtime/streamingHostContext.tsx |
+
+### 消息模型增强需求（FR1508-FR1514）
+
+| 编号 | 需求描述 | 实现文件 |
+|------|----------|----------|
+| FR1508 | UI Patch分片类型支持（create/update/delete/move/replace） | message/runtime/messageModel.ts |
+| FR1509 | 消息状态管理（pending/streaming/complete/error/cancelled） | message/runtime/messageStore.ts |
+| FR1510 | 分片状态跟踪（pending/running/completed/failed/cancelled） | message/runtime/messageStore.ts |
+| FR1511 | ToolParameter类型定义规范 | message/runtime/messageModel.ts |
+| FR1512 | ConfirmationPart选项结构（id/label/description/isDefault/isDestructive） | message/runtime/messageModel.ts |
+| FR1513 | 错误代码枚举（9种错误类型） | message/runtime/messageModel.ts |
+| FR1514 | 流式消息实时订阅机制 | message/runtime/messageStore.ts |
+
+### 定时任务增强需求（FR1516-FR1520）
+
+| 编号 | 需求描述 | 实现文件 |
+|------|----------|----------|
+| FR1516 | 任务重试历史记录详细退避时间戳和错误信息 | scheduler/hooks/useSchedulerStore.ts |
+| FR1517 | 基于指数退避的下次重试时间计算 | scheduler/hooks/useSchedulerStore.ts |
+| FR1518 | 任务执行窗口配置（startDate/endDate） | scheduler/hooks/useSchedulerStore.ts |
+| FR1519 | 周内执行日期配置（daysOfWeek） | scheduler/hooks/useSchedulerStore.ts |
+| FR1520 | 任务最大执行次数限制（maxRuns） | scheduler/hooks/useSchedulerStore.ts |
+
+### 审计日志增强需求（FR1521-FR1524）
+
+| 编号 | 需求描述 | 实现文件 |
+|------|----------|----------|
+| FR1521 | 审计日志查询过滤字段规范（operator_id/event_type/resource/action/result/time_range） | audit/api/auditApi.ts |
+| FR1522 | 预定义事件类型选项（auth.login/user.created/role.updated等14种） | audit/components/AuditFilterBar.tsx |
+| FR1523 | 审计日志导出格式选项（CSV/Excel/JSON） | audit/components/AuditExportButton.tsx |
+| FR1524 | 审计日志时间范围快捷选项（今天/本周/本月/自定义） | audit/components/AuditFilterBar.tsx |
+
 ## Phase 2 执行主线补充说明
 
 本节用于明确 `Epic 41 / 39 / 40 / 42` 完成后的正式研发主线，作为后续自动化执行和 OpenSpec 拆分的依据。
