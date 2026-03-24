@@ -26,8 +26,9 @@ import { ClawHubMarketplace } from './ClawHubMarketplace'
 import { PrivateMarketConfig } from './PrivateMarketConfig'
 import { ResourceSecurityManagement } from './ResourceSecurityManagement'
 import { ResourceExecutionAudit } from './ResourceExecutionAudit'
+import { ConnectorFrameworkAuth } from './ConnectorFrameworkAuth'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market' | 'private-market' | 'resource-security' | 'resource-execution-audit'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation' | 'knowledge-entry' | 'knowledge-access' | 'knowledge-quality' | 'skill-parsing' | 'soul-parsing' | 'plugin-adaptation' | 'clawhub-market' | 'private-market' | 'resource-security' | 'resource-execution-audit' | 'connector-framework'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -361,6 +362,14 @@ export function SettingsPanel() {
         >
           执行审计
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'connector-framework' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('connector-framework')}
+        >
+          连接器框架
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -560,6 +569,10 @@ export function SettingsPanel() {
 
         {active === 'resource-execution-audit' && (
           <ResourceExecutionAudit />
+        )}
+
+        {active === 'connector-framework' && (
+          <ConnectorFrameworkAuth />
         )}
       </section>
     </div>

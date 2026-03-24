@@ -449,6 +449,18 @@ export type {
   AuditStats
 } from './components/ResourceExecutionAudit'
 
+export { ConnectorFrameworkAuth } from './components/ConnectorFrameworkAuth'
+export type {
+  ConnectorAuthType,
+  ConnectorStatus,
+  HealthStatus,
+  ConnectorAuth,
+  Connector,
+  RetryPolicy,
+  ConnectorLog,
+  ConnectorStats
+} from './components/ConnectorFrameworkAuth'
+
 // Hooks
 export { 
   useModelConfig, 

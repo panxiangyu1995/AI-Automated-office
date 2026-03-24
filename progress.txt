@@ -5572,3 +5572,32 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs, Dialog, Table, Switch, Select 等）
 - 使用 Lucide React 图标（AlertTriangle, CheckCircle2, XCircle, Clock, Search, Download 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 81: Story 30.1 - 连接器框架与认证
+
+### 铁律合规检查：
+- PRD 合规：FR1080, FR1081, FR1082, FR1083
+- 架构合规：ADR-015
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR29, NFR35
+
+### What was done:
+- 创建 ConnectorFrameworkAuth.tsx 组件
+  - 统计卡片：连接器总数/请求统计/平均延迟/认证类型
+  - 连接器列表：名称/类型/端点/认证方式/状态/健康度，支持展开查看详情
+  - 日志：显示连接器日志，包含 info/warning/error 级别
+  - 全局设置：自动健康检查/检查间隔/重试次数/超时/日志级别
+  - 连接器管理：添加/编辑/删除/健康检查
+- 在 settings/index.ts 中导出 ConnectorFrameworkAuth 及相关类型
+- 在 SettingsPanel.tsx 中添加"连接器框架"导航入口
+- 修复 AuthType 类型冲突，改名为 ConnectorAuthType
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs, Dialog, Table, Switch, Select 等）
+- 使用 Lucide React 图标（Server, Key, Shield, Lock, Unlock, AlertTriangle 等）
+- Mock 数据实现，待后续对接后端
