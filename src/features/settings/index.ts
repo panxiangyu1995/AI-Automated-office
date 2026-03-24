@@ -242,6 +242,18 @@ export type {
   SubAgentToolBindingProps
 } from './components/SubAgentToolBinding'
 
+export { SubAgentPermissionConfig } from './components/SubAgentPermissionConfig'
+export type {
+  PermissionBoundary,
+  DataAccessLevel,
+  VisibilityLevel,
+  DepartmentPermission,
+  KnowledgeScope,
+  PermissionConfig,
+  PermissionAuditEntry,
+  SubAgentPermissionConfigProps
+} from './components/SubAgentPermissionConfig'
+
 // Hooks
 export { 
   useModelConfig, 
