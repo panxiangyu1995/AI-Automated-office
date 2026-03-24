@@ -214,6 +214,19 @@ export type {
   RuleStats,
 } from './components/CorrectionRuleLearning'
 
+// Memory Data Management
+export { MemoryDataManagement } from './components/MemoryDataManagement'
+export type {
+  MemoryType,
+  MemoryScopeLevel,
+  MemoryDataType,
+  DataMemoryStatus,
+  ChangeType,
+  MemoryRecord,
+  MemoryChangeHistory,
+  DataMemoryStats,
+} from './components/MemoryDataManagement'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'
