@@ -142,6 +142,21 @@ export type {
   PromptEditorState
 } from './components/SystemPromptEditor'
 
+export { PromptTemplateManagement } from './components/PromptTemplateManagement'
+export type {
+  TemplateType,
+  TemplateScope,
+  TemplateStatus,
+  AssignmentTarget,
+  ExportFormat as TemplateExportFormat,
+  TemplateVariable,
+  PromptTemplate,
+  TemplateAssignment,
+  TemplateCategory,
+  TemplateStats,
+  TemplateManagementState
+} from './components/PromptTemplateManagement'
+
 // Hooks
 export { 
   useModelConfig, 

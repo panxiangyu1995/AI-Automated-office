@@ -29,6 +29,38 @@
 
 ---
 
+## [2026-03-24] - Task 55: Story 21.11 - 提示词模板管理
+
+### 铁律合规检查：
+- PRD 合规：FR852, FR853, FR854
+- 架构合规：ADR-038, ADR-040
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR16
+
+### What was done:
+- 创建 PromptTemplateManagement.tsx 组件
+  - 模板CRUD：创建、编辑、复制、删除模板
+  - 模板类型：系统、部门、Agent、任务、自定义
+  - 模板范围：全局、部门、Agent、任务
+  - 分配功能：将模板分配给Agent或部门
+  - 默认模板：设置范围内的默认模板
+  - 导入/导出：JSON格式的模板导入导出
+  - 变量支持：模板变量定义和类型支持
+  - 标签管理：模板标签分类
+- 定义 TemplateType, TemplateScope, TemplateStatus, AssignmentTarget 类型
+- 定义 TemplateVariable, PromptTemplate, TemplateAssignment, TemplateStats 接口
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Dialog, Select, Input, Textarea, DropdownMenu）
+- 品牌色 #1E3A5F
+- 支持搜索和筛选功能
+- 支持版本管理和使用统计
+
+---
+
 ## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
 
 ### 铁律合规检查：
