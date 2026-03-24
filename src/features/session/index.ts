@@ -245,6 +245,27 @@ export type {
   MemoryConfig,
 } from './components/MemoryConfiguration'
 
+// Intent Parsing
+export { IntentParsing } from './components/IntentParsing'
+export type {
+  IntentCategory,
+  ConfidenceLevel,
+  ParsingStatus,
+  ParameterType,
+  ParameterSource,
+  EntityType,
+  AmbiguityType,
+  ExtractedParameter,
+  IntentEntity,
+  AmbiguityIssue,
+  ParsedIntent,
+  IntentClarification,
+  ParsingStep,
+  PlannerOutput,
+  PlannerStep,
+  IntentParsingStats,
+} from './components/IntentParsing'
+
 // Agent Observability Panel
 export { AgentObservabilityPanel } from './components/AgentObservabilityPanel'
 export type { SessionMetrics, TenantStatistics, ReportType } from './components/AgentObservabilityPanel'

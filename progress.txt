@@ -1,4 +1,32 @@
 
+## [2026-03-24] - Task 36: Story 7.1 - 自然语言意图解析
+
+### 铁律合规检查：
+- PRD 合规：FR400, FR401, FR402
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+
+### What was done:
+- 创建 IntentParsing.tsx 组件
+  - 意图解析器：原始输入、意图识别、置信度评分
+  - 参数提取：实体识别、参数槽位填充
+  - 歧义检测：多种解释、建议澄清问题
+  - 执行计划器：任务分解、执行步骤规划
+- 定义 ParsingStatus, IntentCategory 类型
+- 定义 ParsedIntent, ExtractedParameter, AmbiguityResult, ExecutionStep 接口
+- 实现意图类型分布统计和置信度分布可视化
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 支持多种意图类别：任务执行、信息查询、数据操作、导航、配置、通信、分析、自动化
+- 歧义检测支持多种解释和澄清问题
+- 执行计划支持步骤状态追踪：pending/running/completed/failed/skipped
+
+---
+
 ## [2026-03-24] - Task 35: Story 6.8 - 记忆层配置
 
 ### 铁律合规检查：
