@@ -2,6 +2,9 @@
  * Settings Feature Module
  * Story 4.4 - AI模型提供商配置
  * Story 21.1 - LLM提供商添加与配置
+ * Story 21.2 - LLM提供商默认设置
+ * Story 21.3 - MCP服务添加与配置
+ * Story 21.4 - MCP服务连接管理
  * 
  * 导出设置相关的组件和 Hooks
  */
@@ -48,6 +51,18 @@ export type {
   MCPServiceConfigState
 } from './components/MCPServiceConfig'
 
+export { MCPServiceConnection } from './components/MCPServiceConnection'
+export type {
+  ConnectionStatus,
+  HealthLevel,
+  OperationType,
+  HealthCheck,
+  ServiceConnection,
+  ConnectionOperation,
+  ConnectionStats,
+  ServiceConnectionState
+} from './components/MCPServiceConnection'
+
 // Hooks
 export { 
   useModelConfig, 
@@ -56,6 +71,6 @@ export {
   type ProviderType,
   type ModelInfo,
   type ProviderConfig,
-  type ConnectionStatus,
+  type ConnectionStatus as ModelConnectionStatus,
   type ModelConfigState
 } from './hooks/useModelConfig'
