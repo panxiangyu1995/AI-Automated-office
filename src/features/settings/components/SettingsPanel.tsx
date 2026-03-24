@@ -15,8 +15,9 @@ import { SubAgentRouting } from './SubAgentRouting'
 import { SubAgentExecutionMonitor } from './SubAgentExecutionMonitor'
 import { KnowledgeDocUpload } from './KnowledgeDocUpload'
 import { KnowledgeQARetrieval } from './KnowledgeQARetrieval'
+import { TicketKnowledgeGeneration } from './TicketKnowledgeGeneration'
 
-type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa'
+type SectionKey = 'general' | 'shortcuts' | 'agent' | 'updates' | 'prompt-debug' | 'sub-agent' | 'sub-agent-persona' | 'sub-agent-tool' | 'sub-agent-permission' | 'sub-agent-model' | 'sub-agent-routing' | 'sub-agent-execution' | 'knowledge' | 'knowledge-qa' | 'knowledge-generation'
 type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
 
 const SHORTCUT_STORAGE_KEY = 'shortcuts'
@@ -262,6 +263,14 @@ export function SettingsPanel() {
         >
           知识问答检索
         </button>
+        <button
+          className={`text-left px-3 py-2 rounded-md text-sm ${
+            active === 'knowledge-generation' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+          onClick={() => setActive('knowledge-generation')}
+        >
+          知识自动生成
+        </button>
       </aside>
 
       <section className="flex-1 p-6 overflow-auto" style={{ backgroundColor: '#FFFFFF' }}>
@@ -417,6 +426,10 @@ export function SettingsPanel() {
 
         {active === 'knowledge-qa' && (
           <KnowledgeQARetrieval />
+        )}
+
+        {active === 'knowledge-generation' && (
+          <TicketKnowledgeGeneration />
         )}
       </section>
     </div>

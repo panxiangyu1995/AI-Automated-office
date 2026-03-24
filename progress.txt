@@ -5239,3 +5239,35 @@
 - 使用 Shadcn/ui 组件（Card, Badge, Button, Input, Tabs, ScrollArea 等）
 - 使用 Lucide React 图标（Brain, BookOpen, Search, MessageSquare 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-24] - Task 70: Story 9.3 - 工单知识自动生成
+
+### 铁律合规检查：
+- PRD 合规：FR286, FR287
+- 架构合规：ADR-043, ADR-044
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR27
+
+### What was done:
+- 创建 TicketKnowledgeGeneration.tsx 组件
+  - 统计卡片：已捕获/待生成/审核中/已批准/平均生成时间/已发布
+  - 质量分布：高质量/中等质量/低质量分布图表
+  - 待处理列表：显示待生成的知识条目
+  - 草稿箱：显示草稿状态的知识条目
+  - 审核中：待审核条目，支持批准/拒绝操作
+  - 已批准：已批准条目，支持发布到知识库
+  - 已拒绝：被拒绝条目，支持重新编辑
+  - 条目详情面板：显示完整知识内容、来源工单、标签等
+- 在 settings/index.ts 中导出 TicketKnowledgeGeneration 及相关类型
+- 在 SettingsPanel.tsx 中添加"知识自动生成"导航入口
+- 修复未使用导入错误
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Card, Badge, Button, Progress, Tabs, ScrollArea 等）
+- 使用 Lucide React 图标（Sparkles, Lightbulb, Brain, BookOpen 等）
+- Mock 数据实现，待后续对接后端

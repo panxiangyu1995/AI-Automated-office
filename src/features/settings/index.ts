@@ -309,6 +309,18 @@ export type {
   KnowledgeQARetrievalProps
 } from './components/KnowledgeQARetrieval'
 
+export { TicketKnowledgeGeneration } from './components/TicketKnowledgeGeneration'
+export type {
+  GenerationStatus,
+  WorkflowSource,
+  EntryQuality,
+  SourceTicket,
+  DraftEntry,
+  GenerationTask,
+  KnowledgeGenerationStats,
+  TicketKnowledgeGenerationProps
+} from './components/TicketKnowledgeGeneration'
+
 // Hooks
 export { 
   useModelConfig, 
