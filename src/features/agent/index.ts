@@ -156,6 +156,18 @@ export {
   type HealthIndicator,
   type LogMetricsCenterStats
 } from './components/LogMetricsCenter'
+export {
+  TaskTraceAnalysis,
+  type TaskTraceAnalysisProps,
+  type TraceStatus,
+  type StepStatus,
+  type ToolCallStatus,
+  type TraceSpan,
+  type TraceEvent,
+  type Trace,
+  type LatencyBucket,
+  type TraceStats
+} from './components/TaskTraceAnalysis'
 
 // Hooks
 export { 

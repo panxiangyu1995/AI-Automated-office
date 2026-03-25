@@ -6045,3 +6045,36 @@
 - Mock 数据实现（8条日志/8个指标/5个健康指标）
 - 日志来源：agent/tool/plugin/sync/system
 - 日志级别：debug/info/warning/error/critical
+
+---
+
+## [2026-03-25] - Task 96: Story 32.2 - 任务链路追踪
+
+### 铁律合规检查：
+- PRD 合规：FR1101, FR1104, FR1105, FR1106
+- 架构合规：ADR-023, ADR-048
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR23-8
+
+### What was done:
+- 创建 TaskTraceAnalysis.tsx 组件（位于 agent/components）
+  - 追踪卡片：状态/进度/工具调用数/延迟/Token使用
+  - 追踪树视图：层级展开/步骤类型图标/状态/延迟
+  - 追踪详情对话框：追踪树/时间线/事件 标签页
+  - 延迟分布：柱状图展示各延迟区间分布
+  - 错误分析：失败追踪/失败调用/成功率
+  - 性能摘要：平均步骤数/平均延迟/总Token
+  - 潜在瓶颈：高延迟任务列表
+  - 统计栏：运行中/已完成/失败追踪数/平均时长/工具调用数
+  - 搜索过滤：按名称/ID/状态搜索
+- 在 agent/index.ts 中导出 TaskTraceAnalysis 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Progress 等）
+- 使用 Lucide React 图标（Activity, AlertTriangle, BarChart3, CheckCircle2, ChevronDown, ChevronRight, Clock, Download, ExternalLink, Filter, GitBranch, Hash, Link2, MessageSquare, RefreshCw, Search, Settings, Timer, TrendingDown, Wrench, XCircle 等）
+- Mock 数据实现（3个追踪：已完成/运行中/失败）
+- 追踪状态：running/completed/failed/cancelled
+- 步骤状态：pending/running/completed/failed/skipped
