@@ -5921,3 +5921,34 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Dialog, DropdownMenu, ScrollArea, Avatar 等）
 - 使用 Lucide React 图标（Bot, User, Check, Clock, AlertCircle, AlertTriangle, ArrowRight, MoreVertical, Paperclip, Calendar, FileText, MessageSquare, Settings, ExternalLink, RefreshCw, X, Edit, Trash2, CheckCircle2, XCircle, Loader2 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 92: Story 11.10 - 消息搜索与管理
+
+### 铁律合规检查：
+- PRD 合规：FR611, FR612, FR613, FR614, FR622, FR623, FR624, FR626, FR630
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR14
+
+### What was done:
+- 创建 MessageSearchManager.tsx 组件（位于 agent/components）
+  - 消息搜索：关键词搜索发送者/接收者/内容/标签
+  - 消息筛选：类型/状态/方向/日期范围/置顶/收藏/附件
+  - 快速筛选按钮：置顶/收藏/有附件/未读
+  - 消息排序：按时间/发送者/接收者升序/降序
+  - 标签页：全部/置顶/收藏
+  - 消息操作：置顶/取消置顶/收藏/取消收藏/删除/归档
+  - 批量操作：全选/批量导出/批量删除
+  - 统计信息栏：总数/未读/有附件/各类型数量
+  - 消息行展示：类型图标/方向指示/状态/时间/附件/标签
+- 在 agent/index.ts 中导出 MessageSearchManager 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Checkbox, DropdownMenu, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（Search, Filter, Pin, PinOff, Star, StarOff, Download, Trash2, Clock, CheckCircle2, XCircle, AlertCircle, MessageSquare, Users, Bot, FileText, Image, Paperclip, MoreVertical, X, ArrowUpDown, RefreshCw, Archive, Tag 等）
+- Mock 数据实现，待后续对接后端

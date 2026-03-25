@@ -133,6 +133,15 @@ export {
   type WorkCardMessageProps,
   type WorkCardFeedProps
 } from './components/WorkCardMessage'
+export {
+  MessageSearchManager,
+  type SortOrder,
+  type SortField,
+  type SearchFilter,
+  type MessageItem,
+  type SearchStats,
+  type MessageSearchManagerProps
+} from './components/MessageSearchManager'
 
 // Hooks
 export { 
