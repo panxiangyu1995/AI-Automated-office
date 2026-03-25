@@ -5982,3 +5982,34 @@
 - 使用 Lucide React 图标（Network, Server, Shield, ShieldCheck, ShieldAlert, Lock, Key, Globe, Wifi, RefreshCw, CheckCircle2, XCircle, AlertCircle, Clock, Database, ArrowRight, Plus, Trash2, Pause, Play, Filter, Search 等）
 - Mock 数据实现（WebSocket、HTTP API、MQTT IoT 三个通道）
 - 未导出 AuthType 类型（避免与 LLMProviderConfig 中的 AuthType 重复）
+
+---
+
+## [2026-03-25] - Task 94: Story 37.2 - 插件运行质量与自愈
+
+### 铁律合规检查：
+- PRD 合规：FR1178, FR1179, FR1180, FR1181, FR1182, FR1183, FR1184, FR1185, FR1186
+- 架构合规：ADR-048
+- UX 合规：UX-02
+- NFR 合规：NFR35
+
+### What was done:
+- 创建 PluginRuntimeSelfHealing.tsx 组件（位于 settings/components）
+  - 插件健康卡片：状态图标/故障率/连续失败/熔断状态/资源使用
+  - 插件详情对话框：概览/故障/诊断/恢复 标签页
+  - 健康状态：健康/降级/不健康/已隔离/已禁用
+  - 故障记录：错误代码/严重程度/错误消息/时间戳/可恢复性
+  - 诊断输出：诊断级别/代码/消息/可操作性/执行的操作
+  - 恢复事件：操作类型/触发方式/状态/时间戳
+  - 统计栏：各状态插件数量/自动禁用数/总恢复次数
+  - 搜索过滤：按名称/ID/状态搜索
+- 在 settings/index.ts 中导出 PluginRuntimeSelfHealing 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Progress, Switch 等）
+- 使用 Lucide React 图标（Activity, AlertTriangle, AlertCircle, CheckCircle2, XCircle, Shield, ShieldCheck, ShieldAlert, ShieldX, ShieldOff, Zap, ZapOff, RefreshCw, RefreshCcw, Clock, FileText, Settings, Eye, Filter, Search, Power, PowerOff, Cpu, HardDrive 等）
+- Mock 数据实现（HR Assistant、Finance OCR、Knowledge Base、Warehouse Manager、Sales Automation 五个插件）
+- 使用 ShieldOff 代替 ShieldSlash（lucide-react 中不存在 ShieldSlash）

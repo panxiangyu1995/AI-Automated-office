@@ -488,6 +488,21 @@ export type {
   ChannelGatewayManagerProps
 } from './components/ChannelGatewayManager'
 
+export { PluginRuntimeSelfHealing } from './components/PluginRuntimeSelfHealing'
+export type {
+  PluginHealthStatus,
+  FaultSeverity,
+  IsolationReason,
+  RecoveryAction,
+  DiagnosticLevel,
+  PluginHealthSignal,
+  FaultRecord,
+  DiagnosticEntry,
+  RecoveryEvent,
+  PluginRuntimeSelfHealingStats,
+  PluginRuntimeSelfHealingProps
+} from './components/PluginRuntimeSelfHealing'
+
 // Hooks
 export { 
   useModelConfig, 
