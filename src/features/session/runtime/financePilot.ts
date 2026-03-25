@@ -1116,7 +1116,7 @@ export function executeFinanceTool(
     const warnings: string[] = []
 
     switch (input.toolType) {
-      case 'create_invoice':
+      case 'create_invoice': {
         const newInvoice = createInvoiceContext(
           input.params.invoiceNumber as string,
           (input.params.type as InvoiceType) || 'sales',
@@ -1137,6 +1137,7 @@ export function executeFinanceTool(
         summary = generateInvoiceSummary(newInvoice)
         writebackActions.push(prepareInvoiceWriteback(newInvoice))
         break
+      }
 
       case 'update_invoice':
         if (input.contextType === 'invoice' && input.context) {
@@ -1215,7 +1216,7 @@ export function executeFinanceTool(
         }
         break
 
-      case 'create_expense':
+      case 'create_expense': {
         const newExpense = createExpenseContext(
           input.params.expenseNumber as string,
           input.params.category as ExpenseCategory,
@@ -1238,6 +1239,7 @@ export function executeFinanceTool(
         summary = generateExpenseSummary(newExpense)
         writebackActions.push(prepareExpenseWriteback(newExpense))
         break
+      }
 
       case 'update_expense':
         if (input.contextType === 'expense' && input.context) {
@@ -1305,7 +1307,7 @@ export function executeFinanceTool(
         }
         break
 
-      case 'create_budget':
+      case 'create_budget': {
         const newBudget = createBudgetContext(
           input.params.name as string,
           input.params.totalAmount as number,
@@ -1322,6 +1324,7 @@ export function executeFinanceTool(
         summary = generateBudgetSummary(newBudget)
         writebackActions.push(prepareBudgetWriteback(newBudget))
         break
+      }
 
       case 'update_budget':
         if (input.contextType === 'budget' && input.context) {
@@ -1351,7 +1354,7 @@ export function executeFinanceTool(
         }
         break
 
-      case 'create_payment':
+      case 'create_payment': {
         const newPayment = createPaymentContext(
           input.params.paymentNumber as string,
           input.params.amount as number,
@@ -1374,6 +1377,7 @@ export function executeFinanceTool(
         summary = generatePaymentSummary(newPayment)
         writebackActions.push(preparePaymentWriteback(newPayment))
         break
+      }
 
       case 'process_payment':
         if (input.contextType === 'payment' && input.context) {

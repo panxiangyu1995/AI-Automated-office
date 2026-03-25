@@ -549,7 +549,7 @@ export function ToolRegistryPanel({
 }: ToolRegistryPanelProps) {
   const [filter, setFilter] = useState<ToolLookupFilter>({})
   const [searchQuery, setSearchQuery] = useState('')
-  const [refreshCounter, setRefreshCounter] = useState(0)
+  const [, setRefreshCounter] = useState(0)
   const registry = getToolRegistry()
 
   // 刷新工具列表
@@ -562,7 +562,7 @@ export function ToolRegistryPanel({
   // 获取统计信息
   const statistics = useMemo(
     () => registry.getStatistics(),
-    [registry, refreshCounter]
+    [registry]
   )
 
   // 获取工具列表
@@ -582,7 +582,7 @@ export function ToolRegistryPanel({
     }
 
     return result
-  }, [registry, filter, searchQuery, refreshCounter])
+  }, [registry, filter, searchQuery])
 
   // 按类别分组
   const toolsByCategory = useMemo(() => {

@@ -372,7 +372,7 @@ function ServiceCard({
 
 // Main Component
 export function MCPServiceConfig() {
-  const [services, _setServices] = useState<MCPServiceConfig[]>(generateMockServices())
+  const [services] = useState<MCPServiceConfig[]>(generateMockServices())
   const [records] = useState<MCPServiceRecord[]>(generateMockRecords())
   const [activeTab, setActiveTab] = useState<string>('services')
   const [editDialogOpen, setEditDialogOpen] = useState(false)

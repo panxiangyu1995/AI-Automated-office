@@ -307,7 +307,6 @@ export const usePermissionStore = create<PermissionState>()(
 
         // 如果变更后与原始状态相同，则从 pendingChanges 中移除
         if (newSelected === isCurrentlySelected) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [permissionId]: _, ...rest } = pendingChanges
           set({ pendingChanges: rest })
         } else {

@@ -770,17 +770,19 @@ export function shouldRefreshMemory(
     case 'message_count':
       return messages.length >= (config.threshold ?? 10)
 
-    case 'tool_completion':
+    case 'tool_completion': {
       const recentToolCalls = summary.statistics.toolCallsCount
       return recentToolCalls > 0 && recentToolCalls % (config.threshold ?? 5) === 0
+    }
 
     case 'error_recovery':
       return summary.statistics.errorsCount > 0
 
-    case 'time_interval':
+    case 'time_interval': {
       if (!config.interval) return false
       const timeSinceUpdate = Date.now() - summary.updatedAt
       return timeSinceUpdate >= config.interval
+    }
 
     case 'milestone':
     case 'user_request':

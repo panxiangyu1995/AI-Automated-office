@@ -946,7 +946,7 @@ export function validateToolInput(
       }
       break
 
-    case 'convert_lead':
+    case 'convert_lead': {
       if (input.contextType !== 'lead') {
         errors.push('Lead context is required for conversion')
       }
@@ -955,6 +955,7 @@ export function validateToolInput(
         errors.push('Cannot convert a won or lost lead')
       }
       break
+    }
 
     case 'create_opportunity':
       if (!input.params.name) {
@@ -977,7 +978,7 @@ export function validateToolInput(
       }
       break
 
-    case 'complete_followup':
+    case 'complete_followup': {
       if (input.contextType !== 'followup') {
         errors.push('Follow-up context is required')
       }
@@ -986,6 +987,7 @@ export function validateToolInput(
         errors.push('Follow-up is already completed')
       }
       break
+    }
 
     case 'fill_followup_form':
       if (!input.params.formData) {
@@ -1065,7 +1067,7 @@ export function executeSalesTool(
         updatedContext = executeUpdateCustomer(input)
         break
 
-      case 'delete_customer':
+      case 'delete_customer': {
         // Mark as deleted (soft delete)
         const customerCtx = input.context as CustomerContext
         updatedContext = {
@@ -1075,8 +1077,9 @@ export function executeSalesTool(
         }
         warnings.push('Customer marked as churned')
         break
+      }
 
-      case 'create_lead':
+      case 'create_lead': {
         // Create new lead
         const newLead: LeadContext = {
           leadId: generateLeadId(),
@@ -1098,8 +1101,9 @@ export function executeSalesTool(
         }
         updatedContext = newLead
         break
+      }
 
-      case 'convert_lead':
+      case 'convert_lead': {
         const leadContext = input.context as LeadContext
         // Create opportunity from lead
         const newOpp: OpportunityContext = {
@@ -1123,8 +1127,9 @@ export function executeSalesTool(
         }
         updatedContext = newOpp
         break
+      }
 
-      case 'create_opportunity':
+      case 'create_opportunity': {
         const newOpportunity: OpportunityContext = {
           opportunityId: generateOpportunityId(),
           name: input.params.name as string,
@@ -1146,8 +1151,9 @@ export function executeSalesTool(
         }
         updatedContext = newOpportunity
         break
+      }
 
-      case 'update_opportunity':
+      case 'update_opportunity': {
         const oppContext = input.context as OpportunityContext
         updatedContext = {
           ...oppContext,
@@ -1155,8 +1161,9 @@ export function executeSalesTool(
           updatedAt: new Date().toISOString(),
         } as OpportunityContext
         break
+      }
 
-      case 'create_followup':
+      case 'create_followup': {
         const newFollowUp: FollowUpContext = {
           followUpId: generateFollowUpId(),
           type: input.params.type as FollowUpType,
@@ -1178,8 +1185,9 @@ export function executeSalesTool(
         }
         updatedContext = newFollowUp
         break
+      }
 
-      case 'complete_followup':
+      case 'complete_followup': {
         const followUpContext = input.context as FollowUpContext
         updatedContext = {
           ...followUpContext,
@@ -1191,6 +1199,7 @@ export function executeSalesTool(
           updatedAt: new Date().toISOString(),
         }
         break
+      }
 
       case 'query_customer':
       case 'query_lead':
@@ -1211,7 +1220,7 @@ export function executeSalesTool(
         }
         break
 
-      case 'fill_followup_form':
+      case 'fill_followup_form': {
         const formData = input.params.formData as Record<string, unknown>
         const followUpForForm = input.context as FollowUpContext
         updatedContext = {
@@ -1220,6 +1229,7 @@ export function executeSalesTool(
           updatedAt: new Date().toISOString(),
         }
         break
+      }
     }
 
     // Record execution

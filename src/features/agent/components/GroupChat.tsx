@@ -573,6 +573,8 @@ export function GroupChat({
         prev.map((g) => (g.id === selectedGroupId ? { ...g, unreadCount: 0 } : g))
       )
     }
+    // Intentionally omit onMarkAsRead and selectedGroup from deps to avoid unnecessary re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGroupId])
 
   // Handle send message

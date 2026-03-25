@@ -347,6 +347,8 @@ export function PrivateChat({
         )
       )
     }
+    // Intentionally omit onMarkAsRead and selectedConversation from deps to avoid unnecessary re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConversationId])
 
   // Handle send message

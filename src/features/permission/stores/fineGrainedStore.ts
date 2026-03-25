@@ -292,7 +292,6 @@ export const useFineGrainedStore = create<FineGrainedPermissionState>()(
 
         // 如果新值与当前值相同，移除待处理变更
         if (type === currentType) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [permissionId]: _, ...rest } = pendingOverrides
           set({
             pendingOverrides: rest,
@@ -340,7 +339,6 @@ export const useFineGrainedStore = create<FineGrainedPermissionState>()(
         const isSame = JSON.stringify(scope) === JSON.stringify(currentScope)
 
         if (isSame) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [resource]: _, ...rest } = pendingDataScopes
           set({
             pendingDataScopes: rest,
@@ -379,7 +377,6 @@ export const useFineGrainedStore = create<FineGrainedPermissionState>()(
 
         // 如果该资源没有待处理变更，移除整个资源
         if (Object.keys(newPendingForResource).length === 0) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [resource]: _, ...rest } = pendingFieldRestrictions
           set({
             pendingFieldRestrictions: rest,
@@ -421,7 +418,6 @@ export const useFineGrainedStore = create<FineGrainedPermissionState>()(
         })
 
         if (Object.keys(newPendingForResource).length === 0) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [resource]: _, ...rest } = pendingFieldRestrictions
           set({
             pendingFieldRestrictions: rest,

@@ -205,7 +205,6 @@ export const useSchedulerStore = create<SchedulerState>()(
       
       deleteTask: (taskId) => {
         set((state) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [taskId]: _deleted, ...remaining } = state.tasks
           return { tasks: remaining }
         })

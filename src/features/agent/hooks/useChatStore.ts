@@ -140,7 +140,6 @@ export const useChatStore = create<ChatStoreState>()(
     
     deleteSession: (sessionId: string) => {
       set((state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [sessionId]: _deleted, ...remaining } = state.sessions
         return {
           sessions: remaining,

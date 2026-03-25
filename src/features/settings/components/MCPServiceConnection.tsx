@@ -538,7 +538,7 @@ function ConnectionCard({
 
 // Main Component
 export function MCPServiceConnection() {
-  const [connections, _setConnections] = useState<ServiceConnection[]>(generateMockConnections())
+  const [connections] = useState<ServiceConnection[]>(generateMockConnections())
   const [operations] = useState<ConnectionOperation[]>(generateMockOperations())
   const [activeTab, setActiveTab] = useState<string>('connections')
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)

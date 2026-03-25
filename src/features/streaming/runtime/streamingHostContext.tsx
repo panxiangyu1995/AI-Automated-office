@@ -93,6 +93,7 @@ export function StreamingProvider({
   const [isStreaming, setIsStreaming] = useState(false)
 
   // Initialize instances
+  // eslint-disable react-hooks/exhaustive-deps
   useEffect(() => {
     // Create event emitter
     eventEmitterRef.current = createRuntimeEventEmitter(sessionId)
@@ -130,7 +131,7 @@ export function StreamingProvider({
       reconnectHandlerRef.current?.cleanup()
       syncEngineRef.current?.stop()
     }
-  }, [sessionId])
+  }, [sessionId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Start/stop streaming
   const startStreaming = useCallback(() => {

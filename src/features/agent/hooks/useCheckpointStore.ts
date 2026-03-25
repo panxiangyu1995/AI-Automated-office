@@ -426,7 +426,6 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
         
         set((state) => {
           // 从 checkpoints 中删除
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [checkpointId]: _deleted, ...remainingCheckpoints } = state.checkpoints
           
           // 从 sessionCheckpoints 中移除
@@ -568,8 +567,7 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
         set((state) => {
           const checkpoint = state.checkpoints[checkpointId]
           if (!checkpoint || !checkpoint.retention) return state
-          
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
           const { retention: _retention, ...rest } = checkpoint
           const updatedCheckpoint: Checkpoint = rest
           
@@ -784,8 +782,7 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
           cpIds.forEach(id => {
             delete newCheckpoints[id]
           })
-          
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
           const { [sessionId]: _removed, ...remainingSessionCps } = state.sessionCheckpoints
           const typedRemainingSessionCps: Record<string, string[]> = remainingSessionCps
           
@@ -823,12 +820,10 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
           branchIds.forEach(id => {
             delete newBranches[id]
           })
-          
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
           const { [sessionId]: _removed, ...remainingSessionBranches } = state.sessionBranches
           const typedRemainingSessionBranches: Record<string, string[]> = remainingSessionBranches
-          
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
           const { [sessionId]: _removedActive, ...remainingActiveBranches } = state.activeBranches
           const typedRemainingActiveBranches: Record<string, string> = remainingActiveBranches
           

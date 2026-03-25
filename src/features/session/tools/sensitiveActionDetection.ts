@@ -393,31 +393,35 @@ export class SensitiveActionDetector {
           ? value.some(v => v === condition.value)
           : value === condition.value
         
-      case 'contains':
+      case 'contains': {
         const searchValue = Array.isArray(condition.value) ? condition.value[0] : condition.value
         return Array.isArray(value)
           ? value.some(v => v.includes(searchValue as string))
           : value.includes(searchValue as string)
+      }
         
-      case 'matches':
+      case 'matches': {
         const pattern = condition.value instanceof RegExp
           ? condition.value
           : new RegExp(condition.value as string)
         return Array.isArray(value)
           ? value.some(v => pattern.test(v))
           : pattern.test(value)
+      }
         
-      case 'in':
+      case 'in': {
         const values = Array.isArray(condition.value) ? condition.value : [condition.value]
         return Array.isArray(value)
           ? value.some(v => values.includes(v))
           : values.includes(value)
+      }
         
-      case 'not_in':
+      case 'not_in': {
         const notValues = Array.isArray(condition.value) ? condition.value : [condition.value]
         return Array.isArray(value)
           ? !value.some(v => notValues.includes(v))
           : !notValues.includes(value)
+      }
         
       default:
         return false

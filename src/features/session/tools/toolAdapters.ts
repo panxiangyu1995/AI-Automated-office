@@ -134,7 +134,7 @@ export class CoreToolAdapter implements ToolAdapter {
    * Register all core tools into the registry
    */
   registerTools(registry: ToolRegistry): void {
-    for (const [_id, descriptor] of this.descriptors) {
+    for (const [, descriptor] of this.descriptors) {
       registry.register(descriptor)
     }
   }
@@ -205,7 +205,7 @@ export class PluginToolAdapter implements ToolAdapter {
    * Register all plugin tools into the registry
    */
   registerTools(registry: ToolRegistry): void {
-    for (const [_id, descriptor] of this.descriptors) {
+    for (const [, descriptor] of this.descriptors) {
       registry.register(descriptor)
     }
   }
@@ -303,7 +303,7 @@ export class MCPToolAdapter implements ToolAdapter {
    * Register all MCP tools into the registry
    */
   registerTools(registry: ToolRegistry): void {
-    for (const [_id, descriptor] of this.descriptors) {
+    for (const [, descriptor] of this.descriptors) {
       registry.register(descriptor)
     }
   }

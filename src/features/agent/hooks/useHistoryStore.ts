@@ -192,7 +192,6 @@ export const useHistoryStore = create<HistoryStoreState>()(
       
       // Remove from archive
       set((state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [archiveId]: _removed, ...remaining } = state.archivedSessions
         return { archivedSessions: remaining }
       })
@@ -202,7 +201,6 @@ export const useHistoryStore = create<HistoryStoreState>()(
     
     deleteArchivedSession: (archiveId: string) => {
       set((state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [archiveId]: _removed, ...remaining } = state.archivedSessions
         return { archivedSessions: remaining }
       })

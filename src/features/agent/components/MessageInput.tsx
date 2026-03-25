@@ -105,55 +105,11 @@ export function MessageInput({
       textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`
     }
   }, [inputValue])
-  
-  // 处理文件选择
-  const processFiles = useCallback(async (files: FileList | File[]) => {
-    const fileArray = Array.from(files)
-    
-    for (const file of fileArray) {
-      // 检查文件大小
-      if (file.size > maxFileSize) {
-        console.warn(`文件 ${file.name} 超过大小限制`)
-        continue
-      }
-      
-      // 检查文件类型
-      const fileType = getFileType(file)
-      if (!fileType || !allowedTypes.includes(fileType)) {
-        console.warn(`文件类型 ${file.type} 不支持`)
-        continue
-      }
-      
-      // 创建附件对象
-      const attachment: MediaAttachment = {
-        id: generateId(),
-        type: fileType,
-        name: file.name,
-        size: file.size,
-        file,
-        extractionStatus: 'pending',
-      }
-      
-      // 如果是图片，生成预览
-      if (fileType === 'image') {
-        try {
-          attachment.preview = await readFileAsBase64(file)
-        } catch (err) {
-          console.error('读取图片失败:', err)
-        }
-      }
-      
-      setAttachments(prev => [...prev, attachment])
-      
-      // 模拟内容提取（实际实现应调用后端）
-      simulateContentExtraction(attachment.id, fileType)
-    }
-  }, [maxFileSize, allowedTypes])
-  
+
   // 模拟内容提取
   const simulateContentExtraction = useCallback((attachmentId: string, type: MediaType) => {
-    setAttachments(prev => prev.map(att => 
-      att.id === attachmentId 
+    setAttachments(prev => prev.map(att =>
+      att.id === attachmentId
         ? { ...att, extractionStatus: 'extracting' as const }
         : att
     ))
@@ -175,7 +131,51 @@ export function MessageInput({
       }))
     }, 1000 + Math.random() * 1000)
   }, [])
-  
+
+  // 处理文件选择
+  const processFiles = useCallback(async (files: FileList | File[]) => {
+    const fileArray = Array.from(files)
+
+    for (const file of fileArray) {
+      // 检查文件大小
+      if (file.size > maxFileSize) {
+        console.warn(`文件 ${file.name} 超过大小限制`)
+        continue
+      }
+
+      // 检查文件类型
+      const fileType = getFileType(file)
+      if (!fileType || !allowedTypes.includes(fileType)) {
+        console.warn(`文件类型 ${file.type} 不支持`)
+        continue
+      }
+
+      // 创建附件对象
+      const attachment: MediaAttachment = {
+        id: generateId(),
+        type: fileType,
+        name: file.name,
+        size: file.size,
+        file,
+        extractionStatus: 'pending',
+      }
+
+      // 如果是图片，生成预览
+      if (fileType === 'image') {
+        try {
+          attachment.preview = await readFileAsBase64(file)
+        } catch (err) {
+          console.error('读取图片失败:', err)
+        }
+      }
+
+      setAttachments(prev => [...prev, attachment])
+
+      // 模拟内容提取（实际实现应调用后端）
+      simulateContentExtraction(attachment.id, fileType)
+    }
+  }, [maxFileSize, allowedTypes, simulateContentExtraction])
+
   // 移除附件
   const removeAttachment = useCallback((id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id))

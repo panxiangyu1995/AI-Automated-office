@@ -8,6 +8,8 @@
 import type {
   Message,
   Part,
+  PartType,
+  ErrorCode,
   StreamChunk,
   SerializedMessage,
 } from '../../message/runtime/messageModel'
@@ -301,7 +303,7 @@ export class SyncEngine {
       type: 'error',
       sessionId: this.sessionId,
       messageId: '',
-      error: { code: code as any, message },
+      error: { code: code as ErrorCode, message },
       timestamp: Date.now(),
     })
   }
@@ -533,7 +535,7 @@ export function syncSerializedMessages(
       ...serialized,
       parts: serialized.parts.map(sp => ({
         id: sp.id,
-        type: sp.type as any,
+        type: sp.type as PartType,
         createdAt: sp.createdAt,
         ...sp.data,
         metadata: sp.metadata,

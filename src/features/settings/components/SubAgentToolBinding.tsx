@@ -255,7 +255,7 @@ export function SubAgentToolBinding({ className = '' }: SubAgentToolBindingProps
     } finally {
       setIsSubmitting(false)
     }
-  }, [mcpToolBindings, skillBindings])
+  }, [])
 
   // Get skill level badge variant
   const getSkillLevelBadge = (level: SkillLevel) => {

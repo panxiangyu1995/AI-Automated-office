@@ -251,7 +251,6 @@ describe('useGlobalShortcuts', () => {
     it('应该在 open-ai-chat 事件触发时派发自定义事件', async () => {
       let eventHandler: ((event: { state: string }) => void) | undefined
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockListen.mockImplementation((event: string, handler: any) => {
         // 只捕获 open-ai-chat 事件的处理器
         if (event === 'open-ai-chat') {
