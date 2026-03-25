@@ -226,14 +226,27 @@ export {
   ApprovalPilotIntegration,
   type ApprovalPilotIntegrationProps,
   type ApprovalPhase,
-  type BindingStatus,
-  type ExecutionStatus,
+  type BindingStatus as ApprovalBindingStatus,
+  type ExecutionStatus as ApprovalExecutionStatus,
   type ApprovalContext,
-  type ToolBinding,
-  type RuntimeStep,
-  type AuditEntry,
+  type ToolBinding as ApprovalToolBinding,
+  type RuntimeStep as ApprovalRuntimeStep,
+  type AuditEntry as ApprovalAuditEntry,
   type ApprovalPilotStats
 } from './components/ApprovalPilotIntegration'
+export {
+  SalesPilotIntegration,
+  type SalesPilotIntegrationProps,
+  type SalesPhase,
+  type BindingStatus as SalesBindingStatus,
+  type ExecutionStatus as SalesExecutionStatus,
+  type OpportunityStage,
+  type SalesContext,
+  type SalesToolBinding,
+  type SalesRuntimeStep,
+  type SalesAuditEntry,
+  type SalesPilotStats
+} from './components/SalesPilotIntegration'
 
 // Hooks
 export { 

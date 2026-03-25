@@ -6248,3 +6248,37 @@
 - Mock 数据实现（1个审批上下文/5个工具绑定/5个运行时步骤/5条审计记录）
 - PermissionLevel 类型已由 AgentIntercom 导出，不重复导出
 - 支持跳过/取消/继续执行等操作
+
+---
+
+## [2026-03-25] - Task 102: Story 50.2 - 销售场景接入
+
+### 铁律合规检查：
+- PRD 合规：FR410, FR412, FR464
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR23-1, NFR23-7
+
+### What was done:
+- 创建 SalesPilotIntegration.tsx 组件（位于 agent/components）
+  - 销售上下文卡片：客户名称/联系人/客户类型/阶段/预计金额/概率/产品
+  - 商机阶段：线索/合格/方案/谈判/成交/流失
+  - 执行循环可视化：读取→生成→确认→执行→完成 步骤状态流
+  - 工具绑定管理：工具列表/绑定状态/权限级别/使用统计
+  - 审计日志：时间/参与者/操作/目标/结果/关联ID
+  - 运行时步骤详情：状态图标/结果/耗时
+  - 统计栏：成功执行/失败执行/待确认/管道价值
+  - 标签页：执行流程/工具绑定/审计日志
+  - 工具配置对话框：锁定/重新绑定/释放操作
+  - 执行状态：idle/running/paused/completed/failed/cancelled
+  - 销售阶段：read/generate/confirm/execute/complete/failed
+- 在 agent/index.ts 中导出 SalesPilotIntegration 及相关类型（使用类型别名避免冲突）
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（ArrowRight, Banknote, BarChart3, CheckCircle2, Clock, DollarSign, Filter, History, ListChecks, Lock, Package, Play, RefreshCw, Search, Settings, Shield, SkipForward, Square, TrendingUp, UserCheck, XCircle 等）
+- Mock 数据实现（1个销售上下文/5个工具绑定/5个运行时步骤/5条审计记录）
+- 类型导出使用别名避免与 ApprovalPilotIntegration 冲突（ApprovalBindingStatus/SalesBindingStatus 等）
