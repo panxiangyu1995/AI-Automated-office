@@ -247,6 +247,19 @@ export {
   type SalesAuditEntry,
   type SalesPilotStats
 } from './components/SalesPilotIntegration'
+export {
+  FinancePilotIntegration,
+  type FinancePilotIntegrationProps,
+  type FinancePhase,
+  type BindingStatus as FinanceBindingStatus,
+  type ExecutionStatus as FinanceExecutionStatus,
+  type TransactionType,
+  type FinanceContext,
+  type FinanceToolBinding,
+  type FinanceRuntimeStep,
+  type FinanceAuditEntry,
+  type FinancePilotStats
+} from './components/FinancePilotIntegration'
 
 // Hooks
 export { 

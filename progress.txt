@@ -6282,3 +6282,38 @@
 - 使用 Lucide React 图标（ArrowRight, Banknote, BarChart3, CheckCircle2, Clock, DollarSign, Filter, History, ListChecks, Lock, Package, Play, RefreshCw, Search, Settings, Shield, SkipForward, Square, TrendingUp, UserCheck, XCircle 等）
 - Mock 数据实现（1个销售上下文/5个工具绑定/5个运行时步骤/5条审计记录）
 - 类型导出使用别名避免与 ApprovalPilotIntegration 冲突（ApprovalBindingStatus/SalesBindingStatus 等）
+
+---
+
+## [2026-03-25] - Task 103: Story 50.3 - 财务场景接入
+
+### 铁律合规检查：
+- PRD 合规：FR410, FR412, FR470, FR496
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR23-1, NFR23-7, NFR23-8
+
+### What was done:
+- 创建 FinancePilotIntegration.tsx 组件（位于 agent/components）
+  - 财务上下文卡片：交易类型/金额/币种/部门/描述/提交人/审批人/状态
+  - 交易类型：支出/收入/转账/调整/结算
+  - 执行循环可视化：读取→分析→确认→执行→完成 步骤状态流
+  - 工具绑定管理：工具列表/绑定状态/权限级别/使用统计
+  - 审计日志：时间/参与者/操作/目标/结果/关联ID
+  - 运行时步骤详情：状态图标/结果/耗时
+  - 统计栏：成功执行/失败执行/待确认/处理金额
+  - 标签页：执行流程/工具绑定/审计日志
+  - 工具配置对话框：锁定/重新绑定/释放操作
+  - 执行状态：idle/running/paused/completed/failed/cancelled
+  - 财务阶段：read/analyze/confirm/execute/complete/failed
+- 在 agent/index.ts 中导出 FinancePilotIntegration 及相关类型（使用类型别名避免冲突）
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（ArrowRight, Calculator, CheckCircle2, Clock, DollarSign, Filter, History, Landmark, ListChecks, Lock, Play, RefreshCw, Search, Settings, Shield, SkipForward, Square, TrendingUp, UserCheck, XCircle 等）
+- Mock 数据实现（1个财务上下文/5个工具绑定/5个运行时步骤/5条审计记录）
+- 类型导出使用别名避免冲突（FinanceBindingStatus/FinanceExecutionStatus 等）
+- 这是 Epic 50 的最终 Pilot 场景，完成审批、销售、财务三个场景的接入验证
