@@ -95,6 +95,17 @@ export {
   type AnnouncementStats,
   type SystemAnnouncementsProps
 } from './components/SystemAnnouncements'
+export {
+  TaskNotifications,
+  type NotificationType,
+  type NotificationStatus,
+  type DeliveryChannel,
+  type ReminderStatus,
+  type NotificationPreference,
+  type TaskNotification,
+  type NotificationStats,
+  type TaskNotificationsProps
+} from './components/TaskNotifications'
 
 // Hooks
 export { 

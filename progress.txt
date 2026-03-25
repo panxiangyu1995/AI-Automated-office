@@ -5819,3 +5819,39 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Switch 等）
 - 使用 Lucide React 图标（Bell, BellOff, CheckCheck, Clock, Filter, Pin, PinOff, Search, Settings, Megaphone, Bot, AlertTriangle, Info, X 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 89: Story 11.7 - 任务通知推送
+
+### 铁律合规检查：
+- PRD 合规：FR46, FR47, FR48, FR95, FR96, FR97, FR98
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1
+
+### What was done:
+- 创建 TaskNotifications.tsx 组件（位于 agent/components）
+  - 任务通知列表展示：类型图标/优先级/状态/发送渠道
+  - 通知类型：task_assigned/task_completed/task_overdue/task_reminder/approval_needed/system_alert
+  - 通知状态：pending/delivered/read/acknowledged/failed
+  - 投递渠道：in_app/email/sms/push
+  - 提醒状态：none/scheduled/sent/snoozed
+  - 通知详情对话框：完整内容/关联任务/投递信息/失败原因
+  - 搜索功能：标题/内容/发送者/任务关键词搜索
+  - 标签页筛选：全部/未读/待发/失败
+  - 类型筛选下拉菜单
+  - 统计信息栏：送达率/各类型数量/紧急通知提醒
+  - 通知操作：标记已读/确认/重试/延迟提醒
+  - 偏好设置对话框：按类型启用/禁用通知、选择投递渠道
+  - 勿扰模式支持：遵守用户勿扰设置
+  - 投递重试机制：跟踪重试次数和失败原因
+- 在 agent/index.ts 中导出 TaskNotifications 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Switch, Label 等）
+- 使用 Lucide React 图标（Bell, BellOff, BellRing, Check, CheckCheck, Clock, Filter, Search, Settings, AlertCircle, CheckCircle2, XCircle, Timer, User, Users, Zap, Moon 等）
+- Mock 数据实现，待后续对接后端
