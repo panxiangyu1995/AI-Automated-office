@@ -6317,3 +6317,100 @@
 - Mock 数据实现（1个财务上下文/5个工具绑定/5个运行时步骤/5条审计记录）
 - 类型导出使用别名避免冲突（FinanceBindingStatus/FinanceExecutionStatus 等）
 - 这是 Epic 50 的最终 Pilot 场景，完成审批、销售、财务三个场景的接入验证
+
+---
+
+## [2026-03-25] - Direct Request: 设置页 Phase 1 信息架构收敛
+
+### 铁律合规检查：
+- PRD 合规：FR4, FR18, FR19, FR39, FR48, FR74, FR800-FR960, FR1060-FR1212
+- 架构合规：ADR-003, ADR-018, ADR-021, ADR-041
+- UX 合规：固定 UI 治理页、VSCode Workbench 壳层、设置页集中治理
+- Epic 合规：Epic 21, Epic 23, Epic 24, Epic 26, Epic 28, Epic 29, Epic 32, Epic 36, Epic 37
+
+### What was done:
+- 重写 `src/features/settings/components/SettingsPanel.tsx`
+  - 将原先 20+ 一级平铺入口收敛为 `设置中心 + 8 个治理域`
+  - 新增设置首页，改为“平台治理中心”入口
+  - 为每个治理域增加二级设置导航和统一页头
+  - 保留现有设置子组件，不在 Phase 1 重写具体业务内容
+- 新增 `src/features/settings/settingsRegistry.ts`
+  - 用元数据声明一级治理域、二级设置项、默认入口和设置项类型
+  - 让设置页切换逻辑从硬编码条件分支转向 registry 驱动
+- 补充验证用例
+  - 新增 `tests/integration/settings-panel.test.tsx`
+  - 新增 `tests/e2e/smoke/settings.spec.ts`
+
+### Testing:
+- `npm run lint` 通过
+- `npm run build` 通过
+- `npx vitest run --config vitest.config.ts tests/integration/settings-panel.test.tsx` 通过
+- `npx playwright test tests/e2e/smoke/settings.spec.ts --project=smoke` 通过
+
+### Notes:
+- 本次只实施 Phase 1：信息架构收敛，不扩展新治理功能，不重写各设置子组件
+- 工作区存在其他未提交文件，未在本次修改中处理
+
+---
+
+## [2026-03-26] - Direct Request: 设置页 Phase 2 治理壳层统一
+
+### 铁律合规检查：
+- PRD 合规：FR4, FR18, FR19, FR39, FR48, FR74, FR800-FR960, FR1060-FR1212
+- 架构合规：ADR-018, ADR-021, ADR-041
+- UX 合规：固定治理页、配置/监控/审计分层、设置页集中治理
+- Epic 合规：Epic 21, Epic 23, Epic 24, Epic 26, Epic 28, Epic 29, Epic 32, Epic 36, Epic 37
+
+### What was done:
+- 扩展 `src/features/settings/settingsRegistry.ts`
+  - 为每个二级设置项补充治理元数据：适用对象、风险级别、保存方式、治理说明、变更影响、审计说明
+- 升级 `src/features/settings/components/SettingsPanel.tsx`
+  - 新增统一 `SettingsSectionShell`
+  - 为所有二级页统一展示治理说明、保存状态、风险级别和保存方式
+  - 新增右侧治理辅助区，统一呈现变更影响和审计与可追溯说明
+  - 将快捷键页接入统一脏状态反馈：未保存、保存中、已保存、失败
+  - 在页头补充风险和保存方式徽标，强化配置页/监控页/审计页分层
+- 更新测试
+  - 扩展 `tests/integration/settings-panel.test.tsx`，验证治理壳层和未保存状态
+  - 更新 `tests/e2e/smoke/settings.spec.ts`，验证浏览器中的治理说明与保存状态模块
+
+### Testing:
+- `npm run lint` 通过
+- `npm run build` 通过
+- `npx vitest run --config vitest.config.ts tests/integration/settings-panel.test.tsx` 通过
+- `VITE_BYPASS_AUTH=true npx playwright test tests/e2e/smoke/settings.spec.ts --project=smoke` 通过
+
+### Notes:
+- Phase 2 仍然不重写各具体设置子组件，重点是统一二级页壳层与治理说明
+- 后续如果继续 Phase 3，可在当前壳层上补最近修改、收藏项、全局设置搜索结果页和跨设置项审计入口
+---
+
+## [2026-03-26] - Direct Request: 设置页 Phase 3 快速访问与跨设置搜索
+
+### 铁律合规检查：
+- PRD 合规：FR4, FR18, FR19, FR39, FR48, FR74, FR800-FR960, FR1060-FR1212
+- 架构合规：ADR-018, ADR-021, ADR-041
+- UX 合规：固定治理 UI、VSCode Workbench 壳层、设置中心作为统一治理入口
+- Epic 合规：Epic 21, Epic 23, Epic 24, Epic 26, Epic 28, Epic 29, Epic 32, Epic 36, Epic 37
+
+### What was done:
+- 扩展 `src/features/settings/components/SettingsPanel.tsx`
+  - 新增收藏设置项与最近访问记录，并通过 localStorage 持久化
+  - 为设置首页增加“收藏项”“最近访问”“统一审计入口”快速访问卡片
+  - 将顶部搜索升级为跨设置全局搜索结果页，不再只过滤当前分组按钮
+  - 为统一治理壳层补充“收藏当前设置”和“打开统一审计入口”交互
+- 扩展 `src/features/settings/settingsRegistry.ts`
+  - 补充 `getSettingsSection` 查询接口，支撑 Phase 3 的收藏、最近访问和全局搜索跳转
+- 更新测试
+  - 重写 `tests/integration/settings-panel.test.tsx` 以匹配 Phase 3 搜索结果页与重复入口场景
+  - 更新 `tests/e2e/smoke/settings.spec.ts`，验证真实工作台中的搜索结果页和审计跳转路径
+
+### Testing:
+- `npm run lint` 通过
+- `npm run build` 通过
+- `npx vitest run --config vitest.config.ts tests/integration/settings-panel.test.tsx` 通过
+- `VITE_BYPASS_AUTH=true npx playwright test tests/e2e/smoke/settings.spec.ts --project=smoke` 通过
+
+### Notes:
+- Phase 3 已完成收藏、最近访问、全局搜索结果页和统一审计入口
+- 顺手修复了 `ResourceExecutionAudit.tsx` 中无 key 的列表 Fragment，回归测试已无该 warning

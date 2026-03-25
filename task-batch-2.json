@@ -1,0 +1,728 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-25",
+  "scope": "Batch 2 platform-governance and tenant-foundation plan after the agent-first baseline",
+  "batch": "Batch 2",
+  "range": "Task 104-125",
+  "roadmap": "docs/agent-implementation-roadmap.md",
+  "tasks": [
+    {
+      "id": 104,
+      "epic": "Planning",
+      "story": "Batch 2 Prep",
+      "title": "任务源标准化与批次切分",
+      "description": "Create a canonical valid task source for the next execution wave and stop relying on the broken root task.json.",
+      "openspec_change": "batch-2-task-source-normalization",
+      "steps": [
+        "Audit overlap between task.json and archived task files",
+        "Define the new batch file naming and source-of-truth rule",
+        "Document the archival and rollover rule for future batches"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 105,
+      "epic": "Planning",
+      "story": "Batch 2 Prep",
+      "title": "Epic 57 需求恢复与澄清",
+      "description": "Recover the unreadable Epic 57 and FR1303-FR1329 text before any implementation depending on it is scheduled.",
+      "openspec_change": "batch-2-epic-57-requirement-recovery",
+      "steps": [
+        "Restore readable Epic 57 and FR1303-FR1329 text from source artifacts or version history",
+        "Clarify the boundary between Epic 57, Epic 42, and the common Agent runtime",
+        "Produce story-level task candidates and acceptance criteria for a later batch"
+      ],
+      "frs_covered": [
+        "FR1303-FR1329"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [
+        "ADR-036",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Batch 2 Prep"
+      ],
+      "passes": false
+    },
+    {
+      "id": 106,
+      "epic": "Epic 3",
+      "story": "Story 3.1",
+      "title": "租户数据隔离架构",
+      "description": "Implement the database-level tenant isolation baseline so all later platform and business features run inside a hard tenant boundary.",
+      "openspec_change": "epic-3-story-3-1-tenant-isolation-architecture",
+      "steps": [
+        "Define tenant isolation model for cloud and local data stores",
+        "Enforce tenant_id as the root isolation identifier in APIs and persistence",
+        "Block cross-tenant access and add verification coverage"
+      ],
+      "frs_covered": [
+        "FR36"
+      ],
+      "nfrs_covered": [
+        "NFR13"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "Batch 2 Prep"
+      ],
+      "passes": false
+    },
+    {
+      "id": 107,
+      "epic": "Epic 3",
+      "story": "Story 3.2",
+      "title": "租户注册与初始化",
+      "description": "Create the tenant bootstrap flow so a new enterprise can be initialized with default settings and an administrator account.",
+      "openspec_change": "epic-3-story-3-2-tenant-registration-initialization",
+      "steps": [
+        "Build tenant registration and initialization flow",
+        "Create default tenant configuration and administrator seed data",
+        "Persist tenant bootstrap audit records and confirmation feedback"
+      ],
+      "frs_covered": [
+        "FR34",
+        "FR35"
+      ],
+      "nfrs_covered": [
+        "NFR13"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 108,
+      "epic": "Epic 3",
+      "story": "Story 3.3",
+      "title": "租户管理员用户管理",
+      "description": "Provide tenant-scoped user and role management without leaking or depending on other tenants.",
+      "openspec_change": "epic-3-story-3-3-tenant-admin-user-management",
+      "steps": [
+        "Build tenant-scoped user listing and management entry points",
+        "Limit all user and role operations to the active tenant boundary",
+        "Add guardrails and tests for forbidden cross-tenant operations"
+      ],
+      "frs_covered": [
+        "FR34",
+        "FR36"
+      ],
+      "nfrs_covered": [
+        "NFR13"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.1",
+        "Story 3.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 109,
+      "epic": "Epic 3",
+      "story": "Story 3.4",
+      "title": "租户级部门配置",
+      "description": "Allow tenant administrators to control which department modules are enabled while keeping core departments mandatory.",
+      "openspec_change": "epic-3-story-3-4-tenant-department-configuration",
+      "steps": [
+        "Expose tenant-level department enablement settings",
+        "Keep core departments always enabled and non-removable",
+        "Sync enabled modules to navigation and permission surfaces"
+      ],
+      "frs_covered": [
+        "FR35"
+      ],
+      "nfrs_covered": [
+        "NFR13"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 110,
+      "epic": "Epic 3",
+      "story": "Story 3.5",
+      "title": "租户数据存储配置",
+      "description": "Support tenant-level storage mode selection across local, cloud, and local-first plus cloud-backup modes.",
+      "openspec_change": "epic-3-story-3-5-tenant-storage-configuration",
+      "steps": [
+        "Expose tenant storage mode options and current usage state",
+        "Support local, cloud, and local-first plus cloud-backup configuration",
+        "Persist connection settings and provide connection test feedback"
+      ],
+      "frs_covered": [
+        "FR37"
+      ],
+      "nfrs_covered": [
+        "NFR13"
+      ],
+      "arch_covered": [
+        "ADR-003",
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.1",
+        "Story 3.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 111,
+      "epic": "Epic 3",
+      "story": "Story 3.6",
+      "title": "租户配额与限制管理",
+      "description": "Add tenant-level user, storage, and API usage quotas as the control baseline for later cost and package management.",
+      "openspec_change": "epic-3-story-3-6-tenant-quota-and-limit-management",
+      "steps": [
+        "Define tenant quota model for users, storage, and API usage",
+        "Enforce quota checks at write and provisioning boundaries",
+        "Surface quota status and limit-reached guidance to administrators"
+      ],
+      "frs_covered": [
+        "FR34",
+        "FR37"
+      ],
+      "nfrs_covered": [
+        "NFR13",
+        "NFR24",
+        "NFR25"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.1",
+        "Story 3.2",
+        "Story 3.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 112,
+      "epic": "Epic 23",
+      "story": "Story 23.1",
+      "title": "密钥保管库与审计",
+      "description": "Create the enterprise key vault baseline with encrypted storage, scoped binding, and auditable access records.",
+      "openspec_change": "epic-23-story-23-1-key-vault-and-audit",
+      "steps": [
+        "Implement encrypted key storage for local and cloud contexts",
+        "Support tenant, project, and user scope binding for managed keys",
+        "Record key access and use events into an auditable trail"
+      ],
+      "frs_covered": [
+        "FR1010",
+        "FR1011",
+        "FR1012",
+        "FR1014",
+        "FR1016"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR10",
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 113,
+      "epic": "Epic 23",
+      "story": "Story 23.2",
+      "title": "密钥轮换与吊销",
+      "description": "Add lifecycle control for managed keys through rotation, expiry reminder, connectivity test, and emergency revocation.",
+      "openspec_change": "epic-23-story-23-2-key-rotation-and-revocation",
+      "steps": [
+        "Support rotation policy, expiry reminder, and state transitions",
+        "Provide connection test and permission validation before activation",
+        "Allow one-click revocation and propagate invalidation outcomes safely"
+      ],
+      "frs_covered": [
+        "FR1013",
+        "FR1015",
+        "FR1017"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR10",
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 23.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 114,
+      "epic": "Epic 24",
+      "story": "Story 24.1",
+      "title": "工具权限声明与授权",
+      "description": "Make tool permissions explicit and governable before execution so sensitive operations stay inspectable and policy-bound.",
+      "openspec_change": "epic-24-story-24-1-tool-permission-declaration-and-authorization",
+      "steps": [
+        "Require tools to declare permission scope and risk level",
+        "Support user-level and admin-level authorization strategies",
+        "Expose permission and data-access scope to the user interface"
+      ],
+      "frs_covered": [
+        "FR1020",
+        "FR1021",
+        "FR1026",
+        "FR1027"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-010"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 23.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 115,
+      "epic": "Epic 24",
+      "story": "Story 24.2",
+      "title": "工具沙箱与执行限制",
+      "description": "Add resource, filesystem, network, and timeout boundaries for tool execution to reduce platform risk.",
+      "openspec_change": "epic-24-story-24-2-tool-sandbox-and-execution-limits",
+      "steps": [
+        "Enforce CPU, memory, disk, and timeout limits for tool execution",
+        "Support directory-level and domain-level whitelist policies",
+        "Add force-terminate flow and post-termination audit recording"
+      ],
+      "frs_covered": [
+        "FR1022",
+        "FR1023",
+        "FR1024",
+        "FR1025"
+      ],
+      "nfrs_covered": [
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-010"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 24.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 116,
+      "epic": "Epic 25",
+      "story": "Story 25.1",
+      "title": "单点登录与MFA",
+      "description": "Integrate enterprise identity entry points through SAML, OIDC, MFA, and auditable security policy control.",
+      "openspec_change": "epic-25-story-25-1-sso-and-mfa",
+      "steps": [
+        "Implement SAML and OIDC identity integration entry points",
+        "Support MFA and centralized security policy configuration",
+        "Record login and session activity into audit trails"
+      ],
+      "frs_covered": [
+        "FR1030",
+        "FR1035",
+        "FR1036"
+      ],
+      "nfrs_covered": [
+        "NFR9",
+        "NFR12",
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.2",
+        "Story 23.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 117,
+      "epic": "Epic 25",
+      "story": "Story 25.2",
+      "title": "组织架构同步",
+      "description": "Synchronize organization structure, mapping, and offboarding effects so identity and permissions stay aligned with enterprise reality.",
+      "openspec_change": "epic-25-story-25-2-organization-sync",
+      "steps": [
+        "Integrate SCIM-based joiner and leaver synchronization",
+        "Support department and role mapping with conflict handling",
+        "Automatically revoke permissions and keys during offboarding"
+      ],
+      "frs_covered": [
+        "FR1031",
+        "FR1032",
+        "FR1033",
+        "FR1034"
+      ],
+      "nfrs_covered": [
+        "NFR12",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 25.1",
+        "Story 3.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 118,
+      "epic": "Epic 26",
+      "story": "Story 26.1",
+      "title": "数据分级与脱敏",
+      "description": "Introduce data classification and field-level masking so sensitive information is protected consistently across runtime and admin surfaces.",
+      "openspec_change": "epic-26-story-26-1-data-classification-and-masking",
+      "steps": [
+        "Define sensitivity levels and field-level data labels",
+        "Apply masking rules based on permission and display policy",
+        "Audit sensitive-field access and masking decisions"
+      ],
+      "frs_covered": [
+        "FR1040",
+        "FR1041",
+        "FR1047"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-018"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 24.1",
+        "Story 25.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 119,
+      "epic": "Epic 26",
+      "story": "Story 26.2",
+      "title": "数据保留与审计",
+      "description": "Support retention, deletion approval, residency policy, and exportable compliance audit for governed data lifecycle management.",
+      "openspec_change": "epic-26-story-26-2-data-retention-and-audit",
+      "steps": [
+        "Define retention, deletion, and destruction policy configuration",
+        "Require approval and records for governed deletion flows",
+        "Export compliance audit reports and residency-policy outcomes"
+      ],
+      "frs_covered": [
+        "FR1042",
+        "FR1043",
+        "FR1044",
+        "FR1045",
+        "FR1046"
+      ],
+      "nfrs_covered": [
+        "NFR14"
+      ],
+      "arch_covered": [
+        "ADR-018"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 26.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 120,
+      "epic": "Epic 27",
+      "story": "Story 27.1",
+      "title": "配额与预算管理",
+      "description": "Create multi-level quota and budget controls for tenant, department, and user consumption.",
+      "openspec_change": "epic-27-story-27-1-quota-and-budget-management",
+      "steps": [
+        "Define quota models for tenant, department, and user scopes",
+        "Support budget limits, alerts, and overage policy selection",
+        "Expose quota status and remaining budget to administrators"
+      ],
+      "frs_covered": [
+        "FR1050",
+        "FR1051",
+        "FR1052",
+        "FR1053",
+        "FR1055"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.6",
+        "Story 23.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 121,
+      "epic": "Epic 27",
+      "story": "Story 27.2",
+      "title": "成本归因与预估",
+      "description": "Provide cost attribution and pre-execution estimation so administrators can understand and control runtime spend.",
+      "openspec_change": "epic-27-story-27-2-cost-attribution-and-estimation",
+      "steps": [
+        "Attribute cost by tool, Agent, project, and execution context",
+        "Show estimated cost before high-cost task execution",
+        "Link cost reporting to quota and overage strategy feedback"
+      ],
+      "frs_covered": [
+        "FR1054",
+        "FR1056"
+      ],
+      "nfrs_covered": [
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-023"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 27.1",
+        "Story 32.1",
+        "Story 32.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 122,
+      "epic": "Epic 29",
+      "story": "Story 29.1",
+      "title": "插件权限与审核",
+      "description": "Introduce plugin permission declaration, review flow, and private repository governance before broader business-module expansion.",
+      "openspec_change": "epic-29-story-29-1-plugin-permission-and-review",
+      "steps": [
+        "Require plugins to declare permissions and data-access scope",
+        "Build review and approval flow for plugin publishing and enablement",
+        "Support enterprise private plugin repository governance"
+      ],
+      "frs_covered": [
+        "FR1070",
+        "FR1071",
+        "FR1074",
+        "FR1076"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-002",
+        "ADR-007",
+        "ADR-008"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 24.1",
+        "Story 24.2",
+        "Story 3.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 123,
+      "epic": "Epic 29",
+      "story": "Story 29.2",
+      "title": "插件信誉与依赖治理",
+      "description": "Add plugin reputation, dependency conflict handling, and deprecation guidance to reduce runtime risk.",
+      "openspec_change": "epic-29-story-29-2-plugin-reputation-and-dependency-governance",
+      "steps": [
+        "Detect and surface plugin dependency conflicts with remediation guidance",
+        "Add plugin rating and reputation model for governance views",
+        "Support deprecation, migration hints, and controlled replacement flow"
+      ],
+      "frs_covered": [
+        "FR1072",
+        "FR1073",
+        "FR1075"
+      ],
+      "nfrs_covered": [
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-002",
+        "ADR-007",
+        "ADR-008"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 29.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 124,
+      "epic": "Epic 31",
+      "story": "Story 31.1",
+      "title": "数据迁移向导",
+      "description": "Create the guided migration baseline with field mapping, rehearsal, preview, and incremental import support.",
+      "openspec_change": "epic-31-story-31-1-data-migration-wizard",
+      "steps": [
+        "Build migration wizard with step-by-step flow and saved progress",
+        "Support reusable field-mapping templates and pre-import validation",
+        "Add rehearsal, preview, batch, and incremental migration modes"
+      ],
+      "frs_covered": [
+        "FR1090",
+        "FR1091",
+        "FR1092",
+        "FR1093",
+        "FR1094"
+      ],
+      "nfrs_covered": [
+        "NFR34"
+      ],
+      "arch_covered": [
+        "ADR-003",
+        "ADR-005"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 3.1",
+        "Story 3.2",
+        "Story 25.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 125,
+      "epic": "Epic 31",
+      "story": "Story 31.2",
+      "title": "迁移校验与报告",
+      "description": "Add migration quality reporting, anomaly marking, and exportable migration completion evidence.",
+      "openspec_change": "epic-31-story-31-2-migration-validation-and-reporting",
+      "steps": [
+        "Generate migration quality checks and anomaly classification",
+        "Produce completion report with import summary and exception list",
+        "Link migration reports to logs, trace data, and audit exports"
+      ],
+      "frs_covered": [
+        "FR1092",
+        "FR1095"
+      ],
+      "nfrs_covered": [
+        "NFR14",
+        "NFR34"
+      ],
+      "arch_covered": [
+        "ADR-003",
+        "ADR-005",
+        "ADR-023"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 31.1",
+        "Story 32.1",
+        "Story 32.2"
+      ],
+      "passes": false
+    }
+  ]
+}

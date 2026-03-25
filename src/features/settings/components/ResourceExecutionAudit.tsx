@@ -14,7 +14,7 @@
  * - UX-02, UX-04
  */
 
-import { useState, useMemo } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -633,7 +633,7 @@ export function ResourceExecutionAudit() {
                 </TableHeader>
                 <TableBody>
                   {filteredRecords.map((record) => (
-                    <>
+                    <Fragment key={record.id}>
                       <TableRow key={record.id} className="cursor-pointer" onClick={() => setExpandedRecord(expandedRecord === record.id ? null : record.id)}>
                         <TableCell>
                           {expandedRecord === record.id ? (
@@ -706,7 +706,7 @@ export function ResourceExecutionAudit() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                   ))}
                 </TableBody>
               </Table>
