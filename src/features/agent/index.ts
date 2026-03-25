@@ -198,6 +198,17 @@ export {
   type TaskExecution,
   type ScheduledTaskCenterStats
 } from './components/ScheduledTaskCenter'
+export {
+  ErrorClassificationGuidance,
+  type ErrorClassificationGuidanceProps,
+  type ErrorSeverity,
+  type ErrorCategory,
+  type ErrorClass,
+  type RecoveryStatus,
+  type ErrorCode,
+  type ErrorInstance,
+  type ErrorGuidanceStats
+} from './components/ErrorClassificationGuidance'
 
 // Hooks
 export { 

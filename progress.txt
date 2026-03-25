@@ -6146,3 +6146,37 @@
 - Mock 数据实现（5个任务：daily-backup/health-check/session-cleanup/batch-export/plugin-sync）
 - 重试策略：linear（线性退避）/exponential（指数退避）/fixed（固定延迟）
 - 互斥策略：wait（等待锁释放）/skip（跳过本次）/error（报错）
+
+---
+
+## [2026-03-25] - Task 99: Story 36.1 - 错误分类与用户提示
+
+### 铁律合规检查：
+- PRD 合规：FR1146, FR1147, FR1148, FR1149, FR1150, FR1151, FR1152, FR1153, FR1154
+- 架构合规：ADR-048
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR17
+
+### What was done:
+- 创建 ErrorClassificationGuidance.tsx 组件（位于 agent/components）
+  - 错误列表：错误卡片/严重程度/类别/恢复状态徽章
+  - 错误码定义：可展开的错误码详情/脱敏消息/恢复建议/后备方案
+  - 恢复指南：常见恢复建议/后备方案提示/错误分类说明
+  - 错误详情对话框：完整错误信息/重试/标记已解决/应用修复
+  - 统计栏：严重错误/一般错误/待处理/已解决
+  - 标签页：错误列表/错误码定义/恢复指南
+  - 过滤功能：按类别/严重程度/关键词搜索
+  - 错误类别：transient/permanent/config/resource/runtime/unknown
+  - 错误严重性：info/warning/error/critical
+  - 恢复状态：suggested/attempted/resolved/failed/escalated
+- 在 agent/index.ts 中导出 ErrorClassificationGuidance 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（AlertCircle, AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Clock, Filter, HelpCircle, Info, Lightbulb, Lock, RefreshCw, Search, Shield, XCircle 等）
+- Mock 数据实现（5个错误码定义/5个错误实例）
+- 脱敏处理：原始错误消息转换为用户友好的提示
+- 错误类：transient（瞬时）/permanent（永久）/config（配置）/resource（资源）/runtime（运行时）
