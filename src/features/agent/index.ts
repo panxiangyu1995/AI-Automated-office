@@ -222,6 +222,18 @@ export {
   type SessionRepair,
   type FailoverSessionRepairStats
 } from './components/FailoverSessionRepair'
+export {
+  ApprovalPilotIntegration,
+  type ApprovalPilotIntegrationProps,
+  type ApprovalPhase,
+  type BindingStatus,
+  type ExecutionStatus,
+  type ApprovalContext,
+  type ToolBinding,
+  type RuntimeStep,
+  type AuditEntry,
+  type ApprovalPilotStats
+} from './components/ApprovalPilotIntegration'
 
 // Hooks
 export { 
