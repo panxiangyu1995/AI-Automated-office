@@ -473,6 +473,21 @@ export type {
   HealthStats
 } from './components/ConnectorHealthMonitor'
 
+export { ChannelGatewayManager } from './components/ChannelGatewayManager'
+export type {
+  ChannelStatus,
+  ChannelType,
+  RoutingStrategy,
+  DeliveryMode,
+  QueueStatus,
+  ChannelEndpoint,
+  ChannelQueue,
+  ChannelEvent,
+  Channel,
+  GatewayStats,
+  ChannelGatewayManagerProps
+} from './components/ChannelGatewayManager'
+
 // Hooks
 export { 
   useModelConfig, 

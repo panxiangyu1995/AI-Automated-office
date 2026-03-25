@@ -5952,3 +5952,33 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Checkbox, DropdownMenu, ScrollArea, Tabs 等）
 - 使用 Lucide React 图标（Search, Filter, Pin, PinOff, Star, StarOff, Download, Trash2, Clock, CheckCircle2, XCircle, AlertCircle, MessageSquare, Users, Bot, FileText, Image, Paperclip, MoreVertical, X, ArrowUpDown, RefreshCw, Archive, Tag 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 93: Story 37.1 - 通道与网关管理
+
+### 铁律合规检查：
+- PRD 合规：FR1170, FR1171, FR1172, FR1173, FR1174, FR1175, FR1176, FR1177
+- 架构合规：ADR-048
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR35
+
+### What was done:
+- 创建 ChannelGatewayManager.tsx 组件（位于 settings/components）
+  - 通道卡片展示：类型图标/状态徽章/认证类型/端点数量/队列状态
+  - 通道详情对话框：概览/端点/队列/事件 标签页
+  - 端点管理：健康检查/响应时间/权重配置
+  - 队列管理：状态/消息数/消费者/重新投递策略
+  - 事件日志：时间戳/类型/级别/消息
+  - 统计栏：总通道数/在线/离线/ degrated
+  - 搜索过滤：按名称/类型/状态搜索
+- 在 settings/index.ts 中导出 ChannelGatewayManager 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Progress, Tooltip 等）
+- 使用 Lucide React 图标（Network, Server, Shield, ShieldCheck, ShieldAlert, Lock, Key, Globe, Wifi, RefreshCw, CheckCircle2, XCircle, AlertCircle, Clock, Database, ArrowRight, Plus, Trash2, Pause, Play, Filter, Search 等）
+- Mock 数据实现（WebSocket、HTTP API、MQTT IoT 三个通道）
+- 未导出 AuthType 类型（避免与 LLMProviderConfig 中的 AuthType 重复）
