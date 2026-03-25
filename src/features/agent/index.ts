@@ -168,6 +168,18 @@ export {
   type LatencyBucket,
   type TraceStats
 } from './components/TaskTraceAnalysis'
+export {
+  HeartbeatChecklist,
+  type HeartbeatChecklistProps,
+  type CheckItemStatus,
+  type QuietMode,
+  type HeartbeatStatus,
+  type CheckCategory,
+  type CheckItem,
+  type ChecklistRun,
+  type HeartbeatSchedule,
+  type HeartbeatStats
+} from './components/HeartbeatChecklist'
 
 // Hooks
 export { 

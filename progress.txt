@@ -6078,3 +6078,36 @@
 - Mock 数据实现（3个追踪：已完成/运行中/失败）
 - 追踪状态：running/completed/failed/cancelled
 - 步骤状态：pending/running/completed/failed/skipped
+
+---
+
+## [2026-03-25] - Task 97: Story 35.1 - 心跳机制与检查清单
+
+### 铁律合规检查：
+- PRD 合规：FR1127, FR1128, FR1129, FR1130, FR1131, FR1132, FR1133, FR1134
+- 架构合规：ADR-048
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR14
+
+### What was done:
+- 创建 HeartbeatChecklist.tsx 组件（位于 agent/components）
+  - 心跳状态横幅：状态图标/结果代码/时间/耗时
+  - 检查项列表：状态图标/类别/名称/消息/耗时
+  - 检查项类别：活动/上下文/可用性/健康/安全
+  - 检查状态：pending/running/passed/warning/failed/skipped
+  - 调度卡片：间隔/静默模式/上次运行/下次运行/连续失败
+  - 静默模式：active/paused/disabled
+  - 结果代码：HEARTBEAT_OK/WARNING/FAILED/QUIET_MODE
+  - 统计栏：成功/失败/静默模式/平均耗时/平均检查数/运行时间
+  - 标签页：概览/历史/调度
+  - 历史记录：运行历史列表/状态/耗时
+- 在 agent/index.ts 中导出 HeartbeatChecklist 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Dialog, ScrollArea, Switch, Tabs 等）
+- 使用 Lucide React 图标（Activity, AlertCircle, AlertTriangle, Bell, BellOff, CheckCircle2, Clock, Eye, Heart, ListChecks, Lock, MessageSquare, Play, RefreshCw, Settings, Shield, Timer, Volume2, VolumeX, XCircle 等）
+- Mock 数据实现（10个检查项/3个调度/3条历史记录）
+- 检查类别：activity/context/availability/health/security
