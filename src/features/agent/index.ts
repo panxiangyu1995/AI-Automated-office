@@ -180,6 +180,24 @@ export {
   type HeartbeatSchedule,
   type HeartbeatStats
 } from './components/HeartbeatChecklist'
+export {
+  ScheduledTaskCenter,
+  type ScheduledTaskCenterProps,
+  type TaskStatus,
+  type TaskType,
+  type RetryPolicy,
+  type MutexPolicy,
+  type RiskLevel,
+  type ApprovalStatus,
+  type CronDefinition,
+  type RetryConfig,
+  type TimeoutConfig,
+  type MutexConfig,
+  type TaskPolicy,
+  type ScheduledTask,
+  type TaskExecution,
+  type ScheduledTaskCenterStats
+} from './components/ScheduledTaskCenter'
 
 // Hooks
 export { 

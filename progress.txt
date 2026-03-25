@@ -6111,3 +6111,38 @@
 - 使用 Lucide React 图标（Activity, AlertCircle, AlertTriangle, Bell, BellOff, CheckCircle2, Clock, Eye, Heart, ListChecks, Lock, MessageSquare, Play, RefreshCw, Settings, Shield, Timer, Volume2, VolumeX, XCircle 等）
 - Mock 数据实现（10个检查项/3个调度/3条历史记录）
 - 检查类别：activity/context/availability/health/security
+
+---
+
+## [2026-03-25] - Task 98: Story 35.2 - 定时任务中心
+
+### 铁律合规检查：
+- PRD 合规：FR1135, FR1136, FR1137, FR1138, FR1139, FR1140, FR1141, FR1142, FR1143, FR1144, FR1145
+- 架构合规：ADR-048
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR22
+
+### What was done:
+- 创建 ScheduledTaskCenter.tsx 组件（位于 agent/components）
+  - 任务卡片：状态徽章/风险等级/类型/下次运行/策略标签
+  - 任务状态：active/paused/running/failed/disabled
+  - 任务类型：cron/interval/once/manual
+  - 风险等级：low/medium/high/critical
+  - 策略配置：重试策略（none/linear/exponential/fixed）/互斥策略（none/wait/skip/error）
+  - 审批状态：none/pending/approved/rejected
+  - 执行历史：状态/开始时间/耗时/结果
+  - 统计栏：活动中/已暂停/失败/成功执行/平均耗时
+  - 标签页：任务列表/执行历史
+  - 任务详情对话框：完整策略展示/执行历史/编辑功能
+  - 过滤功能：按状态过滤任务
+- 在 agent/index.ts 中导出 ScheduledTaskCenter 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（AlertCircle, BellOff, Calendar, CheckCircle2, Clock, Edit, Filter, History, ListChecks, Lock, MoreVertical, Pause, Play, Plus, RefreshCw, RotateCcw, Shield, Timer, Trash2, XCircle 等）
+- Mock 数据实现（5个任务：daily-backup/health-check/session-cleanup/batch-export/plugin-sync）
+- 重试策略：linear（线性退避）/exponential（指数退避）/fixed（固定延迟）
+- 互斥策略：wait（等待锁释放）/skip（跳过本次）/error（报错）
