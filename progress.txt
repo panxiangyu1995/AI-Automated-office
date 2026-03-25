@@ -6180,3 +6180,37 @@
 - Mock 数据实现（5个错误码定义/5个错误实例）
 - 脱敏处理：原始错误消息转换为用户友好的提示
 - 错误类：transient（瞬时）/permanent（永久）/config（配置）/resource（资源）/runtime（运行时）
+
+---
+
+## [2026-03-25] - Task 100: Story 36.2 - Failover与会话修复
+
+### 铁律合规检查：
+- PRD 合规：FR1155, FR1156, FR1157, FR1158, FR1159, FR1160, FR1161, FR1162, FR1163, FR1164, FR1165, FR1166, FR1167, FR1168, FR1169
+- 架构合规：ADR-048
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR17, NFR22
+
+### What was done:
+- 创建 FailoverSessionRepair.tsx 组件（位于 agent/components）
+  - Provider 状态：Provider卡片/状态图标/健康度/延迟/故障转移次数
+  - Provider 状态：active/standby/degraded/failed
+  - Provider 类型：openai/zhipu/dashscope/deepseek/custom
+  - 故障转移记录：操作类型/原因/触发器/耗时/状态
+  - 故障转移操作：switch/repair/rollback/isolate/escalate
+  - 会话修复：状态/损坏类型/差异摘要/修复操作
+  - 修复状态：pending/in_progress/completed/failed/rolled_back
+  - 统计栏：活跃Provider/降级故障/故障转移/待处理修复
+  - 标签页：Provider状态/故障转移记录/会话修复
+  - 详情对话框：Provider详情/故障转移详情/修复详情
+- 在 agent/index.ts 中导出 FailoverSessionRepair 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs 等）
+- 使用 Lucide React 图标（AlertCircle, ArrowRight, CheckCircle2, Clock, Diff, Filter, GitBranch, History, Info, Lightbulb, ListChecks, MoreVertical, Pause, RefreshCw, RotateCcw, Search, Settings, Shield, SkipForward, Timer, TrendingUp, XCircle 等）
+- Mock 数据实现（4个Provider/3条故障转移记录/3个会话修复）
+- Provider 状态包括：活跃、待机、降级、故障
+- 支持发起故障转移、配置、回滚修复等操作

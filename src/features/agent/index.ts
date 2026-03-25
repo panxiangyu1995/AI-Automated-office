@@ -209,6 +209,19 @@ export {
   type ErrorInstance,
   type ErrorGuidanceStats
 } from './components/ErrorClassificationGuidance'
+export {
+  FailoverSessionRepair,
+  type FailoverSessionRepairProps,
+  type ProviderStatus,
+  type ProviderType,
+  type FailoverAction,
+  type RepairStatus,
+  type SessionHealth,
+  type Provider,
+  type FailoverRecord,
+  type SessionRepair,
+  type FailoverSessionRepairStats
+} from './components/FailoverSessionRepair'
 
 // Hooks
 export { 
