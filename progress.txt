@@ -5786,3 +5786,36 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Avatar, Switch, Label, ScrollArea, Dialog, DropdownMenu, Tabs 等）
 - 使用 Lucide React 图标（Bot, AtSign, Bell, BellOff, Clock, Zap, Settings, Users, ChevronDown, AlertTriangle, VolumeX 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 88: Story 11.6 - 系统公告功能
+
+### 铁律合规检查：
+- PRD 合规：FR44, FR45
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-02, UX-04
+- NFR 合规：NFR1
+
+### What was done：
+- 创建 SystemAnnouncements.tsx 组件（位于 agent/components）
+  - 系统公告列表展示：类型图标/优先级/已读状态/置顶状态
+  - 公告类型：system/agent/security/update/maintenance
+  - 优先级：urgent/high/normal/low
+  - 公告详情对话框：完整内容/附件/优先级/可见范围
+  - 搜索功能：标题/内容/作者关键词搜索
+  - 标签页筛选：全部/未读/置顶/归档
+  - 类型筛选下拉菜单：按类型和优先级筛选
+  - 统计信息栏：各类型数量/紧急公告提醒
+  - 全部已读功能：一键标记所有公告为已读
+  - 公告操作：标记已读/置顶/取消置顶/归档
+  - 相关公告关联：显示相关公告链接
+- 在 agent/index.ts 中导出 SystemAnnouncements 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Switch 等）
+- 使用 Lucide React 图标（Bell, BellOff, CheckCheck, Clock, Filter, Pin, PinOff, Search, Settings, Megaphone, Bot, AlertTriangle, Info, X 等）
+- Mock 数据实现，待后续对接后端

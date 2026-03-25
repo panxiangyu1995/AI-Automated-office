@@ -86,6 +86,15 @@ export {
   type AgentGroupParticipantStats,
   type AgentGroupParticipantProps
 } from './components/AgentGroupParticipant'
+export {
+  SystemAnnouncements,
+  type Notice,
+  type NoticeType,
+  type NoticeStatus,
+  type NoticePriority,
+  type AnnouncementStats,
+  type SystemAnnouncementsProps
+} from './components/SystemAnnouncements'
 
 // Hooks
 export { 
