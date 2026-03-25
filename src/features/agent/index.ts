@@ -142,6 +142,20 @@ export {
   type SearchStats,
   type MessageSearchManagerProps
 } from './components/MessageSearchManager'
+export {
+  LogMetricsCenter,
+  type LogMetricsCenterProps,
+  type LogFilter,
+  type LogLevel,
+  type LogSource,
+  type MetricType,
+  type HealthStatus,
+  type LogEntry,
+  type MetricValue,
+  type Metric,
+  type HealthIndicator,
+  type LogMetricsCenterStats
+} from './components/LogMetricsCenter'
 
 // Hooks
 export { 

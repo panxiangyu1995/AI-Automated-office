@@ -6013,3 +6013,35 @@
 - 使用 Lucide React 图标（Activity, AlertTriangle, AlertCircle, CheckCircle2, XCircle, Shield, ShieldCheck, ShieldAlert, ShieldX, ShieldOff, Zap, ZapOff, RefreshCw, RefreshCcw, Clock, FileText, Settings, Eye, Filter, Search, Power, PowerOff, Cpu, HardDrive 等）
 - Mock 数据实现（HR Assistant、Finance OCR、Knowledge Base、Warehouse Manager、Sales Automation 五个插件）
 - 使用 ShieldOff 代替 ShieldSlash（lucide-react 中不存在 ShieldSlash）
+
+---
+
+## [2026-03-25] - Task 95: Story 32.1 - 日志与指标中心
+
+### 铁律合规检查：
+- PRD 合规：FR1100, FR1102, FR1103
+- 架构合规：ADR-023, ADR-048
+- UX 合规：UX-02, UX-04
+- NFR 合规：NFR14, NFR23-8
+
+### What was done:
+- 创建 LogMetricsCenter.tsx 组件（位于 agent/components）
+  - 日志列表：级别图标/来源/类别/消息/Trace ID
+  - 日志详情对话框：完整日志信息展示
+  - 指标卡片：指标名称/当前值/变化率/类型
+  - 健康指标：服务名称/状态/值/阈值/消息
+  - 统计栏：总日志/各级别数量/错误率/运行时间
+  - 标签页：日志/指标/健康
+  - 搜索过滤：按级别/来源/关键词搜索
+  - 导出功能：JSON 格式日志导出
+- 在 agent/index.ts 中导出 LogMetricsCenter 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Progress 等）
+- 使用 Lucide React 图标（Activity, AlertCircle, AlertTriangle, BarChart3, CheckCircle2, Download, FileText, Filter, Info, LayoutDashboard, MessageSquare, RefreshCw, Search, Server, Settings, Wrench, XCircle 等）
+- Mock 数据实现（8条日志/8个指标/5个健康指标）
+- 日志来源：agent/tool/plugin/sync/system
+- 日志级别：debug/info/warning/error/critical
