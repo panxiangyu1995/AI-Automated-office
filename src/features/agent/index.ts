@@ -119,6 +119,20 @@ export {
   type IntercomStats,
   type AgentIntercomProps
 } from './components/AgentIntercom'
+export {
+  WorkCardMessage,
+  WorkCardFeed,
+  type CardField,
+  type CardAction,
+  type CardStatus,
+  type CardPriority,
+  type CardActionType,
+  type CardActionStatus,
+  type ResultType,
+  type WorkCard,
+  type WorkCardMessageProps,
+  type WorkCardFeedProps
+} from './components/WorkCardMessage'
 
 // Hooks
 export { 

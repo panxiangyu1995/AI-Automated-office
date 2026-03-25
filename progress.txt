@@ -5888,3 +5888,36 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Textarea, Dialog, DropdownMenu, ScrollArea, Tabs, Switch, Label, Avatar 等）
 - 使用 Lucide React 图标（Bot, Send, Search, Settings, Check, CheckCheck, Clock, Shield, ShieldCheck, ShieldAlert, ShieldX, Lock, Unlock, MessageSquare, Users, AlertCircle, Info, MoreVertical, Paperclip, X 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 91: Story 11.9 - 工作卡片消息
+
+### 铁律合规检查：
+- PRD 合规：FR607, FR608, FR609, FR610
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1
+
+### What was done:
+- 创建 WorkCardMessage.tsx 和 WorkCardFeed.tsx 组件（位于 agent/components）
+  - 工作卡片渲染：标题/描述/状态/优先级/类型
+  - 卡片状态：pending/in_progress/completed/failed/cancelled
+  - 卡片优先级：low/normal/high/urgent
+  - 卡片类型：task/approval/alert/report/summary/custom
+  - 字段展示：text/number/date/status/link/user/currency类型
+  - 卡片操作按钮：approve/reject/edit/delete/confirm/cancel
+  - 操作结果反馈：success/warning/error/info类型结果展示
+  - 卡片详情对话框：完整信息/操作/审计记录
+  - 审计轨迹：操作历史记录追踪
+  - 工作卡片列表组件：WorkCardFeed
+  - 加载更多功能
+- 在 agent/index.ts 中导出 WorkCardMessage/WorkCardFeed 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Dialog, DropdownMenu, ScrollArea, Avatar 等）
+- 使用 Lucide React 图标（Bot, User, Check, Clock, AlertCircle, AlertTriangle, ArrowRight, MoreVertical, Paperclip, Calendar, FileText, MessageSquare, Settings, ExternalLink, RefreshCw, X, Edit, Trash2, CheckCircle2, XCircle, Loader2 等）
+- Mock 数据实现，待后续对接后端
