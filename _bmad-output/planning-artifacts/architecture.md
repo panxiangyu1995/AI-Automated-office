@@ -64,7 +64,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-项目共定义854个功能需求，覆盖平台核心（桌面端、Agent框架、插件系统、权限系统、知识库RAG、统一消息系统、LLM/MCP配置、Sub-Agent体系、多知识库配置、数据访问白名单）和8个业务部门模块，并新增“编辑器系统与动态模板渲染”能力。核心架构围绕AI Agent能力展开，同时延伸到可扩展编辑器注册、模板运行时、Canvas即时渲染、模板设计器与部门模板资产管理，支撑“动态模板驱动UI”的产品方向。
+项目共定义854个功能需求，覆盖平台核心（桌面端、通用Agent Runtime、插件与能力包系统、权限系统、知识库RAG、统一消息系统、LLM/MCP配置、Sub-Agent体系、多知识库配置、数据访问白名单）和8个业务部门模块，并新增“编辑器系统与动态模板渲染”能力。核心架构围绕**一个统一 Agent 内核 + 多部门能力供给**展开，同时延伸到可扩展编辑器注册、模板运行时、Canvas即时渲染、模板设计器与部门模板资产管理，支撑“动态模板驱动UI”的产品方向。
 
 **Non-Functional Requirements:**
 - 性能：本地操作<100ms，云端<3s，空闲内存<500MB
@@ -95,11 +95,13 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 4. **可观测性** - 操作审计日志、任务状态追踪、数据看板监控
 5. **插件隔离** - 错误边界 + 优雅降级（插件全部自研，同进程运行）
 
-### Reference Architecture Insights (OpenClaw)
+### Reference Agent Product Insights
 
-参考架构提供了以下关键设计模式：
-- **工具系统**：声明式工具定义、策略管道、沙箱隔离执行
-- **子代理系统**：层级协作模式、状态持久化、结果通知机制
+参考输入不是单一产品，而是一类主流 Agent 产品的共性范式，包括 Cursor、Claude Code、OpenCode、OpenClaw 等。
+
+- **工具系统**：少量高能力原子工具、声明式工具定义、策略管道、沙箱隔离执行
+- **子代理系统**：每用户主 Agent + 可配置 Sub-Agent、层级协作模式、状态持久化、结果通知机制
+- **审阅写回**：候选改动先暂存到页面或编辑器，再由用户接受或拒绝
 - **错误处理**：分层处理、可恢复性优先、故障隔离、用户友好
 
 ### Architecture Decision Records (ADR)
@@ -159,55 +161,58 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 ### Recommended Architecture
 
+平台主干层级压缩为四层，对外只强调少数稳定边界；更细的实现切片收敛到这些主层级内部，避免“每个概念都是一级层”的膨胀。
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                        │
-│         Desktop Shell (Tauri) │ UI Components                │
+│                    Experience Layer                         │
+│  Desktop Shell │ Fixed UI │ Mixed UI Host │ Dynamic UI Host │
+│  Message Surfaces │ Editor Host │ Workbench Shell           │
 ├─────────────────────────────────────────────────────────────┤
-│                    Agent Core Layer (微内核)                  │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              LLM Adapter Layer                       │    │
-│  │  OpenAICompatibleAdapter + Provider Extensions      │    │
-│  └─────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Tool System (混合模式)                   │    │
-│  │  Core Tools │ MCP Tools │ Plugin Tools              │    │
-│  └─────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Session & Memory                        │    │
-│  │  SessionManager │ MemoryManager │ ContextCompressor │    │
-│  └─────────────────────────────────────────────────────┘    │
+│                    Agent Runtime Layer                      │
+│  Session │ Planner │ Tool Routing │ Permission Gate         │
+│  Memory │ Approval │ Audit Trace │ UI Writeback             │
 ├─────────────────────────────────────────────────────────────┤
-│                    Plugin Layer (同进程模块化)               │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Plugin Manager                          │    │
-│  │  - 依赖解析 │ 生命周期 │ 权限控制 │ 低代码配置        │    │
-│  └─────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Plugin Registry                         │    │
-│  │  HR │ Finance │ Sales │ Dashboard │ ...            │    │
-│  └─────────────────────────────────────────────────────┘    │
+│                    Capability Supply Layer                  │
+│  Core Tools │ MCP Tools │ Skills │ Department Capability    │
+│  Packs │ Templates │ Knowledge Bindings │ Data Adapters      │
 ├─────────────────────────────────────────────────────────────┤
-│                    Data Layer (本地优先)                      │
-│  Local Store (SQLite) │ Sync Engine │ Conflict Resolver     │
-├─────────────────────────────────────────────────────────────┤
-│                    Cloud Layer                               │
-│  Auth │ Tenant Mgmt │ Data Sync │ Object Storage            │
+│              Storage & Tenant Platform Layer                │
+│  Local Store (SQLite) │ Sync │ Cloud Auth │ Tenant Mgmt     │
+│  Object Storage │ Realtime Channels │ Conflict Resolution    │
 └─────────────────────────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────────────────────────┐
-│                    Security Cross-Cutting                    │
-│  RBAC │ Encryption │ Audit │ Error Boundary                 │
+│                  Cross-Cutting Governance                   │
+│  RBAC │ Encryption │ Audit │ Observability │ Error Boundary  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### Layer Compression Mapping
+
+- 旧 `Presentation Layer` 收敛为 `Experience Layer`
+- 旧 `Agent Core Layer` 收敛为 `Agent Runtime Layer`
+- 旧 `Plugin Layer` 以及工具/模板/知识扩展入口收敛为 `Capability Supply Layer`
+- 旧 `Data Layer + Cloud Layer` 收敛为 `Storage & Tenant Platform Layer`
+- 安全、审计、可观测性继续作为跨层治理能力存在，不再单独扩张为新的业务主层
+
+### Capability Supply Principles
+
+`Capability Supply Layer` 不是只承载平台内置功能，而是承载“**内置能力 + 用户可配置扩展能力**”的统一供给面。
+
+- **供给对象统一注册**：内置工具、MCP工具、Skills、插件、模板、知识绑定、数据适配器统一进入 Capability Registry。
+- **来源统一治理**：本地导入、私有市场、外部兼容市场、平台内置资源都走同一套来源校验、签名验证、权限声明和版本管理流程。
+- **作用域统一覆盖**：能力启用状态支持租户、部门、用户、项目/工作区、Sub-Agent 多层作用域覆盖。
+- **执行前再收敛**：Runtime 只从当前作用域允许且权限放行的能力集中选取候选项，而不是把所有已安装能力直接暴露给模型。
+- **开放但不失控**：用户自定义能力是第一类平台能力，但永远不能绕过黑名单、Approve 策略、沙箱、配额、审计和数据权限边界。
+
 ## Agent Framework Core Decisions
 
-> 基于OpenClaw架构研究和四层标准架构设计，以下为Agent框架核心设计决策。
+> 基于OpenClaw架构研究和当前产品方向，平台整体采用“压缩后的四层主干”，而 Agent Runtime 内部继续遵循感知-决策-执行-记忆闭环。
 
-### 四层架构设计
+### Agent Runtime 内部闭环
 
-Agent框架采用**四层标准架构**设计，遵循感知-决策-执行-记忆闭环模型：
+Agent框架内部采用**感知-决策-执行-记忆**闭环模型，但这四段属于 `Agent Runtime Layer` 的内部实现，不再在产品总架构中继续向外膨胀为独立顶层。
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -377,7 +382,7 @@ permission:
 
 ### 子代理系统设计 (ADR-013)
 
-**核心设计：** 沿用OpenClaw子代理系统模式
+**核心设计：** 参考主流 Agent 产品的子代理协作模式，但产品主体采用“每用户一个主 Agent + 可配置多个 Sub-Agent”模型，部门只是上下文、权限和能力边界，不是独立 Agent 实体。
 
 **关键参数：**
 
@@ -1546,7 +1551,7 @@ const defaultSensitiveOperations: SensitiveOperationConfig[] = [
 
 #### 工具实现优先级 (ADR-020)
 
-**MVP内置工具优先：**
+**MVP内置工具优先，遵循 Tool Calling 2.0 分层基线：**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -1554,40 +1559,32 @@ const defaultSensitiveOperations: SensitiveOperationConfig[] = [
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  Phase 1: MVP 内置工具                                          │
-│  ├── 基础工具层                                                 │
+│  ├── Layer 1: 通用高能力原子工具                               │
 │  │   ├── file_read      # 读取文件                             │
 │  │   ├── file_write     # 写入文件                             │
 │  │   ├── file_edit      # 编辑文件                             │
 │  │   ├── dir_list       # 列出目录                             │
 │  │   ├── pattern_search # 模式搜索（基于 ripgrep）             │
-│  │   ├── bash_execute   # Bash 命令执行（沙箱隔离）            │
+│  │   ├── sandbox_execute # 沙箱命令执行                        │
 │  │   ├── web_search     # Web 搜索                             │
 │  │   ├── web_fetch      # Web 内容获取                         │
+│  │   ├── http_request   # HTTP请求                             │
+│  │   ├── browser_interact # 浏览器交互                         │
 │  │   ├── sys_time       # 系统时间                             │
-│  │   └── http_request   # HTTP请求                             │
+│  │   ├── document_parse # 文档解析                             │
+│  │   └── document_convert # 文档转换                           │
 │  │                                                              │
-│  ├── 平台知识库工具层 (Platform Knowledge)                     │
-│  │   ├── knowledge_query   # 知识检索（平台能力）              │
-│  │   │   # 支持多知识库配置，不同 Agent 可绑定不同知识库       │
-│  │   │   # 所有知识库类型均可查询                             │
-│  │   │                                                        │
-│  │   └── knowledge_mutate  # 知识变更（AI可上传更新）          │
-│  │       # AI 可根据用户需求自动整理并上传知识                 │
-│  │       # 审核机制确保知识质量：                              │
-│  │       # - 全局知识库：需要管理员审核                        │
-│  │       # - 部门知识库：需要部门负责人审核                    │
-│  │       # - 个人知识库：无需审核，直接生效                    │
-│  │       # 支持重复检测和智能合并                              │
+│  ├── Layer 2: 企业平台增强工具                                 │
+│  │   ├── resource_query        # 查询云端/工作区资源           │
+│  │   ├── resource_upload       # 上传资料到受控资源空间        │
+│  │   ├── knowledge_query       # 知识检索                      │
+│  │   ├── knowledge_submit_draft # 提交知识草稿                 │
+│  │   ├── message_query         # 查询消息上下文                │
+│  │   ├── message_send          # 发送用户/Agent消息            │
+│  │   ├── workspace_stage_change # 暂存候选改动到页面/编辑器    │
+│  │   └── agent_delegate        # 委派给协作Agent/Sub-Agent     │
 │  │                                                              │
-│  ├── 平台数据工具层 (Platform Database)                         │
-│  │   └── db_query    # 查询数据（只读暴露）                    │
-│  │       # 白名单表限制，仅允许查询非敏感表                    │
-│  │       # 自动注入租户隔离条件                                │
-│  │       # 敏感字段脱敏（手机号、身份证、密码等）              │
-│  │       # 完整审计日志 + 调用频率限制                         │
-│  │       # 所有写操作必须通过业务插件工具执行                  │
-│  │                                                              │
-│  └── 插件业务工具层（通用工具架构）                            │
+│  ├── Layer 3: 部门能力包工具（通用参数化）                     │
 │      ├── hr_query      # 人事查询（员工/部门/考勤）            │
 │      ├── hr_aggregate  # 人事统计聚合                          │
 │      ├── hr_mutate     # 人事数据变更                          │
@@ -1600,11 +1597,19 @@ const defaultSensitiveOperations: SensitiveOperationConfig[] = [
 │      ├── sales_export  # 销售数据导出                          │
 │      └── ...其他插件（遵循相同架构）                           │
 │                                                                 │
+│  Phase 1 Restricted: 受限工具                                   │
+│  └── db_query          # 仅管理员/受控调试/特定私有场景可用    │
+│                                                                 │
 │  Phase 2: Post-MVP 扩展                                         │
 │  └── MCP外部工具：通过MCP协议接入第三方服务                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**边界要求：**
+- 工具数量要尽量少且保持原子化，复杂流程由 Skill 或 Agent 规划组合完成。
+- `accept / reject / rollback / publish` 属于人类审阅动作，不进入 Tool Registry，不作为 AI 可调用工具。
+- `workspace_stage_change` 只负责把候选改动暂存到承载页面，不代表最终生效。
 
 #### 平台工具层详细设计
 
@@ -1715,7 +1720,7 @@ interface KnowledgeQueryResult {
 │                                                             │
 │  AI 权限与审核机制                                          │
 │  ├── AI 可查询所有授权的知识库                              │
-│  ├── AI 可根据用户需求上传更新知识                          │
+│  ├── AI 可根据用户需求整理并提交知识草稿                    │
 │  ├── 全局知识库：需管理员审核                               │
 │  ├── 部门知识库：需部门负责人审核                           │
 │  └── 个人知识库：无需审核，直接生效                         │
@@ -1723,15 +1728,15 @@ interface KnowledgeQueryResult {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-##### 2. 知识库变更工具 (knowledge_mutate)
+##### 2. 知识草稿提交工具 (knowledge_submit_draft)
 
-**设计理念：** AI 可根据用户需求智能整理并上传知识，通过审核机制确保知识质量。
+**设计理念：** AI 可以根据用户需求整理知识草稿并提交到审核或发布流程，但不直接代替用户完成最终发布。
 
 ```typescript
 // 工具定义
 {
-  name: "knowledge_mutate",
-  description: `变更知识库内容（创建/更新/删除）。
+  name: "knowledge_submit_draft",
+  description: `提交知识草稿，进入后续审核或发布流程。
 
 适用场景：
 - 用户要求保存维修经验到知识库
@@ -1750,11 +1755,6 @@ interface KnowledgeQueryResult {
   parameters: {
     type: "object",
     properties: {
-      action: {
-        type: "string",
-        enum: ["create", "update", "delete"],
-        description: "操作类型"
-      },
       knowledge_base_id: {
         type: "string",
         description: "知识库ID"
@@ -1767,24 +1767,16 @@ interface KnowledgeQueryResult {
           tags: { type: "array", items: { type: "string" }, description: "标签" },
           source: { type: "string", description: "来源（如：工单#123）" }
         },
-        description: "知识数据（create/update时必填）"
-      },
-      where: {
-        type: "object",
-        properties: {
-          id: { type: "string", description: "知识条目ID" }
-        },
-        description: "条件（update/delete时必填）"
+        description: "知识草稿数据"
       }
     },
-    required: ["action", "knowledge_base_id"]
+    required: ["knowledge_base_id", "data"]
   }
 }
 
 // 返回结果
-interface KnowledgeMutateResult {
+interface KnowledgeSubmitDraftResult {
   success: boolean;
-  action: string;
   knowledge_base_id: string;
   knowledge_base_name: string;
   status: "pending_review" | "published" | "rejected";
@@ -1849,9 +1841,9 @@ interface KnowledgeMutateResult {
 | 部门知识库 | 部门负责人 | 支持指定部门内审核人 |
 | 个人知识库 | 无需审核 | - |
 
-##### 3. 云端数据查询工具 (db_query)
+##### 3. 受限数据查询工具 (db_query)
 
-**设计理念：** 云端数据工具只读暴露，通过白名单限制访问范围，所有写操作必须通过业务插件工具执行。
+**设计理念：** `db_query` 不是普通用户默认工具，而是受限能力。仅在管理员、受控调试或确无业务工具可覆盖的私有场景下开放，且所有写操作必须通过业务插件工具执行。
 
 ```typescript
 // 工具定义
@@ -2005,15 +1997,15 @@ const TOOL_DESCRIPTION_TEMPLATE = `
 
 > 基于 Anthropic、Vercel、Firecrawl 等最佳实践设计
 
-##### 1. Bash 命令执行工具 (bash_execute)
+##### 1. 沙箱命令执行工具 (sandbox_execute)
 
-**设计理念：** LLM 在训练时已大量接触 Unix/Bash 命令，这是"原生能力"而非"附加技能"。
+**设计理念：** Agent 需要保留强操作能力，但执行必须被限制在受控沙箱内。这里保留的是“命令执行能力”，不是 coding 场景绑定。
 
 ```typescript
 // 工具定义
 {
-  name: "bash_execute",
-  description: `在沙箱环境中执行 Bash/Shell 命令。
+  name: "sandbox_execute",
+  description: `在沙箱环境中执行 Shell 命令。
   
 适用场景：
 - 文件系统操作（复制、移动、删除）
@@ -2030,7 +2022,7 @@ const TOOL_DESCRIPTION_TEMPLATE = `
     properties: {
       command: {
         type: "string",
-        description: "要执行的 Bash 命令"
+        description: "要执行的命令"
       },
       timeout: {
         type: "number",
@@ -2051,7 +2043,7 @@ const TOOL_DESCRIPTION_TEMPLATE = `
 }
 
 // 返回结果
-interface BashResult {
+interface SandboxExecuteResult {
   stdout: string;      // 标准输出
   stderr: string;      // 标准错误
   exit_code: number;   // 退出码
@@ -2413,16 +2405,17 @@ pattern_search({ pattern: "getUserById", fixed_strings: true })
 const TOOL_GROUPS = {
   // 基础工具组
   filesystem: ["file_read", "file_write", "file_edit", "dir_list"],
-  shell: ["bash_execute", "pattern_search"],
-  web: ["web_search", "web_fetch", "http_request"],
-  system: ["sys_time"],
+  shell: ["sandbox_execute", "pattern_search"],
+  web: ["web_search", "web_fetch", "http_request", "browser_interact"],
+  system: ["sys_time", "document_parse", "document_convert"],
   
-  // 平台知识库工具组（平台能力，所有插件可调用）
-  // AI 可查询和上传更新，企业/部门知识库需审核，个人知识库无需审核
-  knowledge: ["knowledge_query", "knowledge_mutate"],
+  // 企业平台增强工具组
+  resource: ["resource_query", "resource_upload"],
+  knowledge: ["knowledge_query", "knowledge_submit_draft"],
+  messaging: ["message_query", "message_send", "agent_delegate"],
+  workspace: ["workspace_stage_change"],
   
-  // 平台数据工具组（只读暴露，白名单限制）
-  // 所有写操作必须通过业务插件工具执行
+  // 受限工具组（非普通用户默认基线）
   database: ["db_query"],
   
   // 业务插件工具组（遵循 plugin-dev-spec/03-tools-spec.md 规范）
@@ -2671,16 +2664,29 @@ export const skills = [
 ];
 ```
 
-##### 内置 Skills 列表
+##### 平台内置 Skills 基线
 
-| 插件 | Skill ID | 功能 | 依赖工具 |
+| 层级 | Skill ID | 功能 | 典型依赖能力 |
+|------|----------|------|-------------|
+| platform | `resource-intake` | 导入并整理本地或云端资料 | `resource_query`, `resource_upload`, `document_parse` |
+| platform | `document-draft` | 按要求起草业务文档 | `knowledge_query`, `workspace_stage_change` |
+| platform | `structure-extract` | 抽取文档结构和规则 | `document_parse`, `pattern_search` |
+| platform | `template-abstract` | 从实例沉淀模板 | `document_parse`, `workspace_stage_change` |
+| platform | `knowledge-summarize-submit` | 总结结果并提交知识草稿 | `knowledge_query`, `knowledge_submit_draft` |
+| platform | `cross-department-brief` | 生成跨部门协作摘要 | `message_query`, `message_send`, `agent_delegate` |
+| platform | `review-change-package` | 将生成结果整理成可审阅变更包 | `workspace_stage_change` |
+| platform | `meeting-followup-summary` | 沉淀纪要、行动项和后续任务 | `message_query`, `knowledge_submit_draft` |
+
+##### 部门能力包内置 Skills 示例
+
+| 能力包 | Skill ID | 功能 | 依赖工具 |
 |------|----------|------|---------|
-| sales | `generate-contract` | AI生成合同 | query, mutate |
-| sales | `generate-quote` | 智能报价 | query, aggregate, mutate |
-| hr | `batch-onboard` | 批量入职 | mutate |
-| hr | `monthly-report` | 月度人事报告 | aggregate, export |
-| finance | `invoice-ocr` | 发票识别入库 | action, mutate |
-| warehouse | `inventory-alert` | 库存预警分析 | aggregate, action |
+| sales | `generate-contract` | AI生成合同 | `sales_query`, `sales_mutate` |
+| sales | `generate-quote` | 智能报价 | `sales_query`, `sales_aggregate`, `sales_mutate` |
+| hr | `batch-onboard` | 批量入职 | `hr_mutate` |
+| hr | `monthly-report` | 月度人事报告 | `hr_aggregate`, `hr_export` |
+| finance | `invoice-ocr` | 发票识别入库 | `finance_action`, `finance_mutate` |
+| warehouse | `inventory-alert` | 库存预警分析 | `warehouse_aggregate`, `warehouse_action` |
 
 #### MCP 层设计规范
 
@@ -3400,8 +3406,8 @@ pub struct TaskAggregate {
 
 ## 部门模块系统架构
 
-> **核心定义：** 部门模块 = UI界面 + 业务功能 + AI Agent调用接口（Tools/Skills/MCP）
-> 每个部门模块不仅是用户可见的UI功能界面，同时集成了可供AI Agent调用的标准化接口。
+> **核心定义：** 部门模块 = UI界面 + 业务功能 + Agent 可调用接口（Tools/Skills/MCP） + 知识/模板绑定。
+> 部门模块首先是能力包和承载资源，不是独立 Agent 内核；用户主 Agent 与其 Sub-Agent 在部门上下文下调用这些标准化接口。
 
 ### 架构设计
 
@@ -3483,28 +3489,34 @@ ui:
         - 订单管理
         - 客户管理
 
-# AI Agent调用接口
+# Agent调用接口
 tools:
-  - name: sales_create_quote
-    description: 创建报价单
+  - name: sales_query
+    description: 查询销售数据
     parameters:
-      customer_id: string
-      products: array
-    returns: quote_id, quote_url
+      entity: string
+      filters: object
+      fields: array
+    returns: total, items
     sensitive: false
     
-  - name: sales_order_create
-    description: 创建销售订单
+  - name: sales_mutate
+    description: 变更销售数据
     parameters:
-      quote_id: string
-    returns: order_id
+      action: string
+      entity: string
+      data: object
+      where: object
+    returns: success, id, affected
     sensitive: false
 
-  - name: sales_contract_sign
-    description: 签订合同
+  - name: sales_action
+    description: 执行销售业务动作
     parameters:
-      contract_id: string
-    returns: signed_url
+      action: string
+      entity: string
+      data: object
+    returns: success, result
     sensitive: true  # 敏感操作，需确认
     
 skills:
@@ -3522,8 +3534,8 @@ mcp:
 
 # 公开工具配置（跨部门协作）
 public_tools:
-  - sales_order_create      # 允许其他部门调用
-  - sales_get_quote         # 允许其他部门查询报价单
+  - sales_query             # 允许其他部门在授权范围内查询
+  - sales_action            # 允许其他部门触发公开业务动作
 ```
 
 ### 工具调用可见性设计
@@ -3541,15 +3553,15 @@ public_tools:
 │ │ 用户: 帮我创建一个报价单给客户A                          │ │
 │ │                                                         │ │
 │ │ AI: 好的，我正在为您创建报价单...                        │ │
-│ │     [调用工具: sales_create_quote]                       │ │
+│ │     [调用工具: sales_mutate]                            │ │
 │ │                                                         │ │
 │ │ 🔧 工具调用卡片（对话框内）                              │ │
-│ │ ▶ 正在调用: sales_create_quote                          │ │
+│ │ ▶ 正在调用: sales_mutate                                │ │
 │ │   类型: Tool                                            │ │
-│ │   参数: {customer_id: "A001", products: [...]}          │ │
+│ │   参数: {action: "create", entity: "quote", data: {...}}│ │
 │ │   状态: ⏳ 执行中...                                     │ │
 │ │                                                         │ │
-│ │ ✅ 已完成: customer_get_info                            │ │
+│ │ ✅ 已完成: sales_query                                  │ │
 │ │   耗时: 0.8s                                            │ │
 │ │   结果: 客户A - XX科技有限公司                           │ │
 │ │   [查看详情]                                            │ │
@@ -4219,7 +4231,7 @@ impl CorrectionManager {
 
 ## 跨部门协作架构
 
-> **设计原则：** 每个部门的Agent只能调用本部门的内部工具，但可以调用其他部门暴露的公开工具。协作支持用户手动触发和Agent自动编排两种模式。
+> **设计原则：** 用户主 Agent 及其 Sub-Agent 在某个部门上下文下只能调用当前权限范围内的部门内部工具，但可以调用其他部门暴露的公开工具。协作支持用户手动触发和 Agent 自动编排两种模式。
 
 ### 协作架构
 
@@ -4237,7 +4249,7 @@ impl CorrectionManager {
 │  │              协作编排器 (Orchestrator)                   │   │
 │  │  • 分析跨部门依赖                                       │   │
 │  │  • 生成执行计划                                         │   │
-│  │  • 协调多部门Agent                                      │   │
+│  │  • 协调多部门上下文任务 / Sub-Agent                     │   │
 │  │  • 汇总执行结果                                         │   │
 │  └─────────────────────────┬───────────────────────────────┘   │
 │                            │                                    │
@@ -4245,11 +4257,10 @@ impl CorrectionManager {
 │         │                  │                  │                │
 │         ▼                  ▼                  ▼                │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
-│  │  销售Agent  │    │  仓储Agent  │    │  财务Agent  │        │
-│  │             │    │             │    │             │        │
-│  │ 内部工具    │    │ 内部工具    │    │ 内部工具    │        │
-│  │ warehouse_* │    │ sales_*     │    │ sales_*     │        │
-│  │ (公开工具)  │    │ (公开工具)  │    │ (公开工具)  │        │
+│  │ 销售上下文  │    │ 仓储上下文  │    │ 财务上下文  │        │
+│  │ 执行单元    │    │ 执行单元    │    │ 执行单元    │        │
+│  │ sales_*     │    │ warehouse_* │    │ finance_*   │        │
+│  │ 公开工具    │    │ 公开工具    │    │ 公开工具    │        │
 │  └─────────────┘    └─────────────┘    └─────────────┘        │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -4278,16 +4289,16 @@ impl CorrectionManager {
 │ Step 3: 生成执行计划                                         │
 │                                                             │
 │ 步骤1 [销售部] 创建订单                                      │
-│        工具: sales_order_create                             │
-│        参数: {customer: "客户A", products: [...]}           │
+│        工具: sales_mutate                                   │
+│        参数: {action: "create", entity: "order", data: {...}}│
 │                                                             │
 │ 步骤2 [仓储部] 确认库存并发货                                 │
-│        工具: warehouse_ship (公开工具)                       │
-│        参数: {order_id: "待生成", address: "..."}            │
+│        工具: warehouse_action (公开工具)                     │
+│        参数: {action: "ship_order", entity: "shipment", data: {...}}│
 │                                                             │
 │ 步骤3 [财务部] 生成应收账款                                   │
-│        工具: finance_receivable_add (公开工具)               │
-│        参数: {order_id: "待生成", amount: "..."}             │
+│        工具: finance_mutate (公开工具)                       │
+│        参数: {action: "create", entity: "receivable", data: {...}}│
 └─────────────────────────────────────────────────────────────┘
      │
      ▼
@@ -4300,7 +4311,7 @@ impl CorrectionManager {
      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ Step 5: 执行并汇总结果                                       │
-│ 依次调用各部门Agent，返回执行结果                             │
+│ 依次调用各部门上下文下的工具或协作 Sub-Agent，返回执行结果     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -4309,18 +4320,18 @@ impl CorrectionManager {
 ```yaml
 # 销售部公开工具配置
 public_tools:
-  - name: sales_order_create
-    description: 创建销售订单
+  - name: sales_mutate
+    description: 创建销售订单（通过参数限制到公开动作）
     allowed_callers:
       - warehouse  # 仓储部可调用
       - finance    # 财务部可调用
       
-  - name: sales_get_quote
+  - name: sales_query
     description: 获取报价单信息
     allowed_callers:
       - finance    # 财务部可调用（用于记账）
       
-  - name: sales_get_contract
+  - name: sales_action
     description: 获取合同信息
     allowed_callers:
       - finance    # 财务部可调用
@@ -4820,7 +4831,7 @@ impl MessageWebSocket {
 **核心定位：**
 - 桌面端应用（Tauri + Rust）
 - AI Agent框架（自研，参考OpenClaw）
-- 部门化架构（核心部门内置 + 扩展部门可安装）
+- 部门能力包架构（核心能力内置 + 扩展能力可安装）
 - 企业级ERP能力（跨部门数据联动、统一数据中台）
 
 ### Technology Stack Decisions
@@ -6310,25 +6321,25 @@ ws_endpoint = "wss://ws.example.com"
 
 ### Architecture Positioning
 
-新增的编辑器系统与动态模板渲染能力属于平台公共基础设施，位于 Presentation Layer 与 Plugin Layer 之间，并由 Agent Core 协同驱动：
+新增的编辑器系统与动态模板渲染能力属于平台公共基础设施，位于 `Experience Layer`、`Agent Runtime Layer` 与 `Capability Supply Layer` 的交界处：
 
-- Presentation Layer 负责编辑器宿主、设计器界面、模板预览与用户交互
-- Agent Core Layer 负责 AI 模板生成、数据填充、意图理解与模板调整建议
-- Plugin Layer 提供部门专属模板、数据源适配器和自定义编辑器扩展
-- Data Layer 负责模板定义、模板版本、用户偏好与渲染快照的本地优先存储
+- `Experience Layer` 负责编辑器宿主、设计器界面、模板预览与用户交互
+- `Agent Runtime Layer` 负责 AI 模板生成、数据填充、意图理解与模板调整建议
+- `Capability Supply Layer` 提供部门专属模板、数据源适配器和自定义编辑器扩展
+- `Storage & Tenant Platform Layer` 负责模板定义、模板版本、用户偏好与渲染快照的本地优先存储
 
 ### Core Components
 
 | 组件 | 职责 | 所在层 |
 |------|------|------|
-| Editor Registry | 注册内置/扩展编辑器，维护元信息、优先级、生命周期 | Presentation Layer |
-| Editor Resolver | 基于 Glob、优先级和用户偏好解析文件对应编辑器 | Presentation Layer |
-| Editor Host | 承载文本、Markdown、媒体、Canvas、自定义Webview编辑器 | Presentation Layer |
-| Canvas Render Engine | 负责图形绘制、图层管理、按需重绘、导出 | Presentation Layer |
-| Template Runtime | 解析模板Schema、执行条件/循环渲染、管理数据绑定 | Agent Core + Presentation |
-| Template Designer | 低代码可视化设计器，支持拖拽、属性面板、图层面板 | Presentation Layer |
-| Template Library Service | 管理部门模板库、标签、版本、发布审核与权限 | Plugin Layer + Data Layer |
-| Editor Extension API | 向部门插件暴露生命周期、文档、UI集成与Webview能力 | Plugin Layer |
+| Editor Registry | 注册内置/扩展编辑器，维护元信息、优先级、生命周期 | Experience Layer |
+| Editor Resolver | 基于 Glob、优先级和用户偏好解析文件对应编辑器 | Experience Layer |
+| Editor Host | 承载文本、Markdown、媒体、Canvas、自定义Webview编辑器 | Experience Layer |
+| Canvas Render Engine | 负责图形绘制、图层管理、按需重绘、导出 | Experience Layer |
+| Template Runtime | 解析模板Schema、执行条件/循环渲染、管理数据绑定 | Agent Runtime Layer + Experience Layer |
+| Template Designer | 低代码可视化设计器，支持拖拽、属性面板、图层面板 | Experience Layer |
+| Template Library Service | 管理部门模板库、标签、版本、发布审核与权限 | Capability Supply Layer + Storage & Tenant Platform Layer |
+| Editor Extension API | 向部门插件暴露生命周期、文档、UI集成与Webview能力 | Capability Supply Layer |
 
 ### Runtime Flow
 
@@ -6526,23 +6537,24 @@ Phase 2 的目标不是为单一部门构建专用 Agent，而是在现有 Agent
 
 ```text
 User Intent
-  -> Agent Runtime
-  -> Planner / Tool Selection / Permission Gate
-  -> Department Tools / MCP / Skills / Plugins
-  -> Dynamic UI Host / Template Runtime / Form Runtime
-  -> Human Confirmation / Audit / Memory
+  -> Experience Layer
+  -> Agent Runtime Layer
+  -> Capability Supply Layer
+  -> Storage & Tenant Platform Layer
+  -> Experience Layer Writeback
 ```
 
 ### 关键组件边界
 
 | 组件 | 职责 | 与 Epic 41/39/40/42 的关系 |
 |------|------|---------------------------|
-| Agent Runtime | 统一任务生命周期、计划拆解、步骤执行、失败恢复 | 通过页面宿主和动态内容区回写结果 |
-| Tool Registry | 统一注册部门工具、插件工具、MCP工具与系统工具 | 结果可进入编辑器、模板、表单、详情页 |
+| Experience Host | 承载固定 UI、混合 UI、动态 UI、编辑器和消息界面 | 对应 Epic 41 / 39 / 40 / 42 的统一入口层 |
+| Agent Runtime | 统一任务生命周期、计划拆解、步骤执行、失败恢复、确认与写回编排 | 通过页面宿主和动态内容区回写结果 |
+| Capability Registry | 统一注册部门工具、能力包、MCP工具、Skills、模板与数据适配器 | 结果可进入编辑器、模板、表单、详情页 |
+| Capability Policy Resolver | 解析租户/部门/用户/项目/Sub-Agent 各层启用状态、来源白名单与风险策略 | 保证“用户可自定义”与“企业级治理”同时成立 |
 | Context Assembler | 组装用户、租户、部门、页面、资源、知识库上下文 | 依赖 Epic 41 的页面上下文协议 |
 | Permission Gate | 校验工具权限、数据权限、字段权限、动作权限 | 依赖 Epic 42 的字段和区块权限承载 |
-| Template Runtime | 渲染 Schema、执行数据绑定、条件/循环渲染 | 依赖 Epic 40 的基础运行时能力 |
-| Editor Host | 承载文档、模板、结构化编辑器实例 | 依赖 Epic 39 和 Epic 41 |
+| Storage & Tenant Platform | 提供本地持久化、同步、租户认证、实时消息和审计归档 | 为 Runtime、消息和写回提供统一底座 |
 
 ### 执行原则
 
@@ -6582,7 +6594,7 @@ Epic 41
 
 **Structure Alignment:**
 项目结构充分支持架构决策：
-- 前端目录结构支持 Agent Core Layer 组件化
+- 前端目录结构支持 Agent Runtime Layer 组件化
 - Rust目录结构支持微内核架构分层
 - 插件目录结构支持同进程模块化运行
 - 测试目录结构支持多层级测试策略
@@ -6594,8 +6606,8 @@ Epic 41
 | FR类别 | 需求编号范围 | 数量 | 架构支持 | 状态 |
 |--------|-------------|------|---------|------|
 | 桌面端UI与系统交互 | FR1-FR8 | 8 | Tauri + React + shadcn/ui | ✅ |
-| AI Agent核心能力 | FR9-FR19 | 11 | Agent Core Layer (Rust) | ✅ |
-| 部门模块系统 | FR20-FR26 | 7 | Plugin Layer + Manager | ✅ |
+| AI Agent核心能力 | FR9-FR19 | 11 | Agent Runtime Layer (Rust) | ✅ |
+| 部门模块系统 | FR20-FR26 | 7 | Capability Supply Layer + Manager | ✅ |
 | 用户与权限管理 | FR27-FR33 | 7 | Auth模块 + RBAC | ✅ |
 | 多租户管理 | FR34-FR37 | 4 | 数据库级隔离 | ✅ |
 | 数据同步与存储 | FR38-FR43 | 6 | Sync Engine + WebSocket | ✅ |
@@ -6603,11 +6615,11 @@ Epic 41
 | 工具调用可见性 | FR69-FR80 | 12 | Tool Panel + 状态监控 | ✅ |
 | AI纠偏反馈学习 | FR81-FR89 | 9 | 错题集架构 | ✅ |
 | 新手引导与帮助 | FR87-FR89 | 3 | 引导系统 | ✅ |
-| 核心部门功能 | FR99-FR209 | 62 | Plugin目录结构 + 插件API | ✅ |
-| 扩展部门功能 | FR220-FR244 | 13 | Plugin Layer | ✅ |
+| 核心部门功能 | FR99-FR209 | 62 | 部门能力包目录结构 + 能力接口 | ✅ |
+| 扩展部门功能 | FR220-FR244 | 13 | Capability Supply Layer | ✅ |
 | 知识库RAG基础 | FR250-FR254 | 5 | 记忆层架构 | ✅ |
 | 记忆层功能 | FR260-FR334 | 75 | 三层记忆架构 | ✅ |
-| **AI Agent核心功能** | FR400-FR505 | 62 | Agent Core Layer | ✅ |
+| **AI Agent核心功能** | FR400-FR505 | 62 | Agent Runtime Layer | ✅ |
 | **ClawHub生态兼容性** | FR700-FR755 | 56 | 兼容适配层 | ✅ |
 | **LLM提供商管理** | FR800-FR809 | 10 | LLM Adapter Registry + Provider Config | ✅ |
 | **MCP服务管理** | FR810-FR820 | 11 | MCP Client Manager + Service Registry | ✅ |

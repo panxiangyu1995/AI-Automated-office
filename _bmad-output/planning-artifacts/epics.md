@@ -32,7 +32,7 @@ inputDocuments:
 
 This document provides the complete epic and story breakdown for AI-Automated-office, decomposing the requirements from the PRD, UX Design, and Architecture requirements into implementable stories.
 
-**项目概述：** AI赋能的ERP系统，采用部门化架构设计。核心价值在于每个部门都有专属AI助手，跨部门数据自动联动，统一数据中台打破数据孤岛。
+**项目概述：** 以通用 Agent Runtime 为核心的企业业务 Agent 工作平台。每个用户拥有一个主 Agent 并可配置多个 Sub-Agent，部门负责上下文、权限、能力和数据边界，跨部门协作通过统一消息、能力包和数据中台完成。
 
 **目标用户：** B2B企业客户，覆盖全员使用场景——从一线员工到管理层。
 
@@ -780,8 +780,8 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 
 | 编号 | 需求 |
 |-----|------|
-| FR460 | 每个部门的Agent只能调用本部门的内部工具 |
-| FR461 | 每个部门的Agent可以调用其他部门暴露的公开工具 |
+| FR460 | 用户主Agent及其Sub-Agent在部门上下文下只能调用本部门的内部工具 |
+| FR461 | 用户主Agent及其Sub-Agent可以调用其他部门暴露的公开工具 |
 | FR462 | 部门管理员可以在后台配置本部门哪些工具对外公开 |
 | FR463 | 用户可以手动触发跨部门任务 |
 | FR464 | Agent可以自动识别跨部门协作需求并编排执行计划 |
@@ -832,7 +832,7 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 |-----|------|
 | FR500 | 用户可以查看当前会话的Token消耗统计 |
 | FR501 | 用户可以查看工具调用的成功率、失败率和平均耗时 |
-| FR502 | 管理员可以查看部门级的Agent使用统计和趋势 |
+| FR502 | 管理员可以查看租户级与部门上下文下的Agent使用统计和趋势 |
 | FR503 | 用户可以对Agent执行的任务进行满意度评分和反馈 |
 | FR504 | 系统可以统计Agent任务的成功率、平均完成时间等指标 |
 | FR505 | 用户可以导出自己的Agent使用报告 |
@@ -1062,7 +1062,7 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 
 **部门模块开发规范：**
 
-- 部门模块 = UI界面 + 业务功能 + AI Agent调用接口（Tools/Skills/MCP）
+- 部门模块 = UI界面 + 业务功能 + Agent调用接口（Tools/Skills/MCP） + 知识/模板绑定
 - 每个部门模块必须实现标准化接口
 - 工具调用透明可见
 - 支持错误处理与用户干预
@@ -1207,11 +1207,11 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 ### Phase 2: AI Agent核心层
 
 **Epic 4: AI Agent框架核心**
-用户可以与AI助手进行多轮对话，创建和管理多个会话，AI可以调用工具执行任务，支持定时任务和断点恢复。
+用户可以与AI助手进行多轮对话，创建和管理多个会话；每个用户拥有一个主 Agent 作为统一入口，并可在后续配置多个 Sub-Agent；AI可以调用工具执行任务，支持定时任务和断点恢复。
 **FRs covered:** FR9-FR19, FR15-FR17, NFR3, NFR22-NFR23
 
 **Epic 5: 工具系统与调用机制**
-AI可以调用注册的工具，用户可以实时看到工具调用状态、参数和结果，支持失败重试、手动干预、敏感操作确认和操作黑名单；管理员可配置db_query白名单和敏感字段脱敏规则。
+AI可以调用分层注册的工具，工具需保持少量、原子化且强能力优先；用户可以实时看到工具调用状态、参数和结果，支持失败重试、手动干预、敏感操作确认和操作黑名单；受限工具如 `db_query` 仅在管理员或受控场景开放。
 **FRs covered:** FR12, FR69-FR80, FR470-FR498, FR59-FR68, FR460-FR468, FR430-FR455, FR500-FR505, FR965-FR974
 
 **Epic 6: 记忆层系统**
@@ -1223,7 +1223,7 @@ AI可以理解用户自然语言请求、处理多模态输入、分解任务、
 **FRs covered:** FR400-FR424, NFR8-5至NFR8-12
 
 **Epic 21: LLM提供商与MCP配置管理**
-用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，管理提示词和规则，创建和配置Sub-Agent（支持AI辅助生成提示词），确保Agent应用的核心能力可配置、可控制、可审计。
+用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，管理提示词、规则、平台内置 Skills 与用户安装 Skills，创建和配置 Sub-Agent（支持AI辅助生成提示词），确保 Agent 应用的核心能力可配置、可控制、可审计。
 **FRs covered:** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR863, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938
 
 ### Phase 3: 企业级能力层
@@ -2542,7 +2542,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 ## Epic 5: 工具系统与调用机制
 
-**Epic目标：** AI可以调用注册的工具，用户可以实时看到工具调用状态、参数和结果，支持失败重试、手动干预、敏感操作确认和操作黑名单；管理员可配置db_query白名单和敏感字段脱敏规则。
+**Epic目标：** AI可以调用分层注册的工具，工具体系保持少量、原子化、强能力优先；用户可以实时看到工具调用状态、参数和结果，支持失败重试、手动干预、敏感操作确认和操作黑名单；受限工具如 `db_query` 仅在管理员或受控场景开放。
 
 **覆盖需求：** FR12, FR69-FR80, FR470-FR498, FR460-FR468, FR430-FR455, FR500-FR505, FR965-FR974
 
@@ -2563,11 +2563,13 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 内置工具自动注册
 **And** MCP工具按配置加载
 **And** 插件工具随插件加载
+**And** 工具按 Layer 1 通用高能力原子工具、Layer 2 企业平台增强工具、Layer 3 部门能力包工具、Layer 4 受限工具进行分组管理
 
 **Given** 工具已注册
 **When** 查看工具列表
 **Then** 显示工具名称、描述、参数schema
 **And** 工具命名遵循`{plugin}_{entity}_{action}`格式
+**And** 相似场景优先参数化扩展，不为单一业务动作继续新增大量专用工具
 
 ---
 
@@ -2584,6 +2586,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 在对话区域显示工具调用卡片
 **And** 显示工具名称和状态（执行中/成功/失败）
 **And** 实时更新执行进度
+**And** 页面变更清单与工具调用卡片分开展示，避免把人类审阅动作误当作工具调用
 
 ---
 
@@ -2701,6 +2704,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **When** 设置敏感操作类型
 **Then** 包括：数据删除、审批通过/驳回、薪资修改、合同签订等
 **And** 可配置是否需要二次确认
+**And** 用户接受/拒绝候选改动属于审阅动作，不计入 AI 工具调用集合
 
 ---
 
@@ -2771,7 +2775,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 **Given** 管理员查看租户级统计
 **When** 进入管理后台
-**Then** 显示部门级的Agent使用统计和趋势
+**Then** 显示租户级与部门上下文下的Agent使用统计和趋势
 **And** 可导出使用报告
 
 ---
@@ -5190,7 +5194,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 ## Epic 21: LLM提供商与MCP配置管理
 
-**Epic目标：** 用户可以配置和管理LLM提供商、MCP服务和工具，设置工具的approve策略，确保Agent应用的核心能力可配置、可控制、可审计。
+**Epic目标：** 用户可以配置和管理 LLM 提供商、MCP 服务和工具，设置工具的 approve 策略，管理平台内置 Skills、用户安装 Skills、提示词、规则和 Sub-Agent，确保 Agent 应用的核心能力可配置、可控制、可审计。
 
 **覆盖需求：** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840
 
@@ -5205,6 +5209,11 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 - Skill 采用按需渐进加载，超出上下文预算时降级为摘要与索引，不阻断主流程。
 - SOUL 作为人设模板默认只读，编辑/覆盖需用户确认并记录审计日志。
 - 任何自动执行能力不得绕过敏感操作确认策略。
+
+**平台内置 Skills 基线（并入铁律）：**
+- 平台必须预置一组可直接使用的默认 Skills，作为零配置起点，而不只是支持 Skill 导入与安装。
+- Skill 来源分为平台内置、部门能力包内置、用户/管理员安装三层，但统一进入同一治理链路。
+- 平台级内置 Skills 在 MVP 阶段优先覆盖资料导入、文档起草、结构抽取、模板沉淀、知识草稿提交、跨部门摘要、变更包整理、纪要总结等高复用场景。
 
 ---
 
@@ -5394,9 +5403,10 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 **Given** 用户进入Skill管理页面
 **When** 查看Skill列表
-**Then** 显示已安装的Skill名称、描述、状态
+**Then** 显示平台内置 Skills、部门能力包内置 Skills 和已安装 Skills 的来源、名称、描述、状态
 **And** 可启用/禁用每个Skill
 **And** 可查看Skill提供的工具和触发器
+**And** 明确区分“平台默认提供”与“用户后装扩展”
 
 **Given** Skill已选择
 **When** 配置Skill参数
@@ -5404,6 +5414,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **And** 保存配置后生效
 **And** Skill引用资源采用按需加载策略，不在未触发时预加载
 **And** 当上下文预算不足时自动降级为摘要/索引加载，并给出加载来源说明
+**And** Skill 不得绕过 Tool Registry、权限检查、Approve 策略和审计链路
 
 ---
 
@@ -5581,6 +5592,7 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 **Then** 输入名称、描述、图标
 **And** 设置调用优先级
 **And** 可从模板快速创建
+**And** 新建的 Sub-Agent 默认隶属于当前用户主 Agent，而不是绑定为某个部门的独立 Agent 实体
 
 **Given** Sub-Agent已创建
 **When** 管理Sub-Agent列表
