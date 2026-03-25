@@ -5855,3 +5855,36 @@
 - 使用 Shadcn/ui 组件（Badge, Button, Input, Dialog, DropdownMenu, ScrollArea, Tabs, Switch, Label 等）
 - 使用 Lucide React 图标（Bell, BellOff, BellRing, Check, CheckCheck, Clock, Filter, Search, Settings, AlertCircle, CheckCircle2, XCircle, Timer, User, Users, Zap, Moon 等）
 - Mock 数据实现，待后续对接后端
+
+---
+
+## [2026-03-25] - Task 90: Story 11.8 - Agent间消息通信
+
+### 铁律合规检查：
+- PRD 合规：FR59, FR60, FR61, FR62, FR63, FR64, FR65, FR66, FR67, FR68, FR603, FR604, FR605, FR606, FR615, FR616, FR618
+- 架构合规：ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR14, NFR16
+
+### What was done:
+- 创建 AgentIntercom.tsx 组件（位于 agent/components）
+  - Agent联系人列表：头像/名称/角色/部门/在线状态/安全级别
+  - 安全级别：trusted/verified/restricted/blocked
+  - 权限级别：none/read/write/admin
+  - 消息气泡：发送/接收/状态图标/审计状态标记
+  - 聊天界面：消息列表/输入框/发送按钮
+  - 通信安全：阻止/解除阻止Agent通信
+  - 权限对话框：通信请求授权/拒绝
+  - 通信设置：自动阻止外部Agent/审计日志/敏感内容过滤
+  - 审计追踪：所有消息记录用于审计
+  - 标签页切换：聊天/联系人/审计
+  - 统计信息栏：今日发送/接收/待审核/已阻止
+- 在 agent/index.ts 中导出 AgentIntercom 及相关类型
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件（Badge, Button, Input, Textarea, Dialog, DropdownMenu, ScrollArea, Tabs, Switch, Label, Avatar 等）
+- 使用 Lucide React 图标（Bot, Send, Search, Settings, Check, CheckCheck, Clock, Shield, ShieldCheck, ShieldAlert, ShieldX, Lock, Unlock, MessageSquare, Users, AlertCircle, Info, MoreVertical, Paperclip, X 等）
+- Mock 数据实现，待后续对接后端

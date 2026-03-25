@@ -106,6 +106,19 @@ export {
   type NotificationStats,
   type TaskNotificationsProps
 } from './components/TaskNotifications'
+export {
+  AgentIntercom,
+  type AgentContact,
+  type AgentMessage,
+  type AgentMessageType,
+  type MessageDirection,
+  type PermissionLevel,
+  type SecurityLevel,
+  type AuditStatus,
+  type ConversationThread,
+  type IntercomStats,
+  type AgentIntercomProps
+} from './components/AgentIntercom'
 
 // Hooks
 export { 
