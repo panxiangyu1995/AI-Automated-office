@@ -871,7 +871,7 @@ describe('Runtime Metrics and Debug View', () => {
 
   describe('formatMetricsSummary', () => {
     it('should format a metrics summary for debugging', () => {
-      let summary = createRuntimeMetricsSummary('session-1')
+      const summary = createRuntimeMetricsSummary('session-1')
       summary.latency = updateLatencyMetrics(summary.latency, 100)
       summary.success = updateSuccessMetrics(summary.success, true)
       summary.retry = updateRetryMetrics(summary.retry, true)

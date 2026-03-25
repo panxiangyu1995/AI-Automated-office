@@ -184,16 +184,16 @@ export function CompressionNotification({
     }
   }, [isRecent, isVisible])
 
+  const handleDismiss = useCallback(() => {
+    setIsVisible(false)
+    onDismiss?.()
+  }, [onDismiss])
+
   if (!latestCompression || !isVisible) return null
 
   const compressionRatio = latestCompression.beforeTokenCount > 0
     ? ((1 - latestCompression.afterTokenCount / latestCompression.beforeTokenCount) * 100).toFixed(1)
     : '0'
-
-  const handleDismiss = useCallback(() => {
-    setIsVisible(false)
-    onDismiss?.()
-  }, [onDismiss])
 
   return (
     <div

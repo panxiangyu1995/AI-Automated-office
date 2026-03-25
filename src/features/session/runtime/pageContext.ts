@@ -491,6 +491,7 @@ export function resolveStaticContext(
   pageContext: PageContext
 ): ResolvedPageContext {
   // Static mode: minimal context, no editor/dynamic
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { editor, dynamic, ...rest } = pageContext
   return resolvePageContext(
     {

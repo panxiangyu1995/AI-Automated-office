@@ -1025,7 +1025,7 @@ export function validateToolInput(
       }
       break
 
-    case 'process_payment':
+    case 'process_payment': {
       if (input.contextType !== 'payment') {
         errors.push('Payment context is required')
       }
@@ -1034,6 +1034,7 @@ export function validateToolInput(
         errors.push('Only pending payments can be processed')
       }
       break
+    }
   }
 
   // Custom validation rules

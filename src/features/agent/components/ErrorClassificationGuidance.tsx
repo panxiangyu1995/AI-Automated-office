@@ -515,7 +515,7 @@ export function ErrorClassificationGuidance({
       system: 0,
     }
 
-    let totalErrors = errors.length
+    const totalErrors = errors.length
     let resolvedCount = 0
     let pendingCount = 0
     let totalResolutionTime = 0

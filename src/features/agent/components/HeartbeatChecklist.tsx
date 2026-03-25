@@ -608,8 +608,6 @@ interface RunDetailDialogProps {
 }
 
 function RunDetailDialog({ run, open, onClose }: RunDetailDialogProps) {
-  if (!run) return null
-
   const checksByCategory = useMemo(() => {
     const grouped: Record<CheckCategory, CheckItem[]> = {
       activity: [],
@@ -618,11 +616,13 @@ function RunDetailDialog({ run, open, onClose }: RunDetailDialogProps) {
       health: [],
       security: [],
     }
-    run.checks.forEach((check) => {
+    run?.checks.forEach((check) => {
       grouped[check.category].push(check)
     })
     return grouped
-  }, [run.checks])
+  }, [run?.checks])
+
+  if (!run) return null
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

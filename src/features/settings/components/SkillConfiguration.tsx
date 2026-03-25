@@ -928,7 +928,7 @@ export function SkillConfiguration() {
                       onCheckedChange={(checked) => setParameterValues(prev => ({ ...prev, [param.name]: checked }))}
                     />
                     <span className="text-sm text-muted-foreground">
-                      {Boolean(parameterValues[param.name]) ? '是' : '否'}
+                      {parameterValues[param.name] ? '是' : '否'}
                     </span>
                   </div>
                 )}

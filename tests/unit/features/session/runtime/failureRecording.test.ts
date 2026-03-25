@@ -636,7 +636,7 @@ describe('Failure and Result Recording', () => {
   describe('updateExecutionRecord', () => {
     it('should update an existing record', () => {
       const store = createExecutionRecordStore()
-      let record = createTaskExecutionRecord('s1', 't1', 'task-1', 'Task')
+      const record = createTaskExecutionRecord('s1', 't1', 'task-1', 'Task')
       let currentStore = addExecutionRecord(store, record)
       
       const updatedRecord = markExecutionSuccess(record)
@@ -910,12 +910,12 @@ describe('Failure and Result Recording', () => {
       let record = createTaskExecutionRecord('s1', 't1', 'task-1', 'Task')
       
       // Add retry outcome
-      let retry = createRetryOutcome(1)
+      const retry = createRetryOutcome(1)
       record = addRetryOutcome(record, retry)
       record = markRetrySucceeded(record, retry.outcomeId)
       
       // Add replan outcome
-      let replan = createReplanOutcome(1)
+      const replan = createReplanOutcome(1)
       record = addReplanOutcome(record, replan)
       record = markReplanFailed(record, replan.outcomeId)
       
