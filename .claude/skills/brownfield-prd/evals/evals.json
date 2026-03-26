@@ -1,0 +1,26 @@
+{
+  "skill_name": "brownfield-prd",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我分析一下 ryl-engineer-back 项目中的任务管理功能，生成一份需求文档",
+      "expected_output": "生成任务管理模块的完整 PRD 文档，包含后端 API、数据库模型、业务流程等",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "prompt": "分析现有代码，看看报价单功能是怎么实现的，写个文档",
+      "expected_output": "生成报价单功能的实现分析文档，包含接口设计、数据结构、业务逻辑",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "prompt": "这是个棕地项目，我想了解一下客户报修的完整业务流程，帮我整理成需求文档",
+      "expected_output": "生成客户报修业务流程的完整 PRD，包含前端页面、后端接口、数据库、业务流程图",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}
