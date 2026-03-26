@@ -17,6 +17,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useGlobalShortcuts } from '../useGlobalShortcuts'
+import { DEFAULT_SHORTCUTS, SHORTCUT_STORAGE_KEY } from '../../lib/shortcutConfig'
 
 // Mock Tauri API
 const mockInvoke = vi.fn()
@@ -44,12 +45,7 @@ describe('useGlobalShortcuts', () => {
     it('应该返回正确的默认快捷键配置', () => {
       const { result } = renderHook(() => useGlobalShortcuts())
 
-      expect(result.current.shortcuts).toEqual({
-        showApp: 'Ctrl+Shift+A',
-        openAiChat: 'Ctrl+Shift+D',
-        quickSearch: 'Ctrl+Shift+F',
-        openSettings: 'CmdOrCtrl+,',
-      })
+      expect(result.current.shortcuts).toEqual(DEFAULT_SHORTCUTS)
     })
   })
 
@@ -66,13 +62,13 @@ describe('useGlobalShortcuts', () => {
 
       act(() => {
         // 直接修改内部状态（绕过 updateShortcut 的验证）
-        localStorage.setItem('shortcuts', JSON.stringify(newShortcuts))
+        localStorage.setItem(SHORTCUT_STORAGE_KEY, JSON.stringify(newShortcuts))
         // 重新渲染以触发 localStorage 读取
         result.current
       })
 
       // 验证 localStorage 已保存
-      expect(localStorage.getItem('shortcuts')).toEqual(
+      expect(localStorage.getItem(SHORTCUT_STORAGE_KEY)).toEqual(
         JSON.stringify(newShortcuts)
       )
     })
@@ -85,7 +81,7 @@ describe('useGlobalShortcuts', () => {
         openSettings: 'CmdOrCtrl+/',
       }
 
-      localStorage.setItem('shortcuts', JSON.stringify(savedShortcuts))
+      localStorage.setItem(SHORTCUT_STORAGE_KEY, JSON.stringify(savedShortcuts))
 
       const { result } = renderHook(() => useGlobalShortcuts())
 
@@ -93,16 +89,24 @@ describe('useGlobalShortcuts', () => {
     })
 
     it('应该处理无效的 localStorage 数据并回退到默认值', () => {
-      localStorage.setItem('shortcuts', 'invalid json')
+      localStorage.setItem(SHORTCUT_STORAGE_KEY, 'invalid json')
 
       const { result } = renderHook(() => useGlobalShortcuts())
 
-      expect(result.current.shortcuts).toEqual({
-        showApp: 'Ctrl+Shift+A',
-        openAiChat: 'Ctrl+Shift+D',
-        quickSearch: 'Ctrl+Shift+F',
-        openSettings: 'CmdOrCtrl+,',
-      })
+      expect(result.current.shortcuts).toEqual(DEFAULT_SHORTCUTS)
+    })
+
+    it('应该迁移旧版 AI 面板快捷键配置', () => {
+      localStorage.setItem(
+        SHORTCUT_STORAGE_KEY,
+        JSON.stringify({
+          openAiChat: 'Ctrl+Shift+D',
+        })
+      )
+
+      const { result } = renderHook(() => useGlobalShortcuts())
+
+      expect(result.current.shortcuts.openAiChat).toBe(DEFAULT_SHORTCUTS.openAiChat)
     })
   })
 

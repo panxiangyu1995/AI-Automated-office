@@ -6500,3 +6500,158 @@
 ### Notes:
 - Context7 最佳实践结论已落成第一批高置信重构，其他低收益或高耦合项暂未扩散到全仓
 - Vitest 在沙箱中因 `esbuild` 子进程 `spawn EPERM` 失败，已按规则提权重跑并通过
+
+---
+
+## [2026-03-26] - Direct Request: 吸收 VSCode 工作台体验模式并更新 PRD
+
+### 铁律合规检查：
+- PRD 合规：保持“通用 Agent 平台而非企业版 IDE”的产品定位，只吸收稳定工作台、命令式导航、恢复与扩展守序等可迁移模式
+- 架构合规：不改变统一 Agent Runtime、固定/混合/动态 UI 分层、能力供给治理链路
+- UX 合规：延续 VSCode-like Workbench 壳层，同时强化 Command Palette、Quick Open、StatusBar、Problems Center 等桌面工作台体验
+- Epic 合规：对齐 Epic 22、Epic 29、Epic 32、Epic 38、Epic 39、Epic 40 的长期方向，不直接引入 IDE 专属模块
+
+### What was done:
+- 更新 `_bmad-output/planning-artifacts/prd.md`
+  - 新增“VSCode工作台体验借鉴（并入铁律，不新增FR）”原则说明
+  - 补充开放能力供给中的受控 UI 贡献点规则
+  - 补充能力配置作用域的“生效解释可见性”要求
+  - 在桌面端 UI 章节加入 Command Palette / Quick Ask、状态栏轻反馈、Bottom Panel 诊断容器、最近历史等要求
+  - 在工作区章节补充 Quick Open / Quick Pick、工作场景恢复、布局预设与平台推荐布局
+  - 在可观测性与通知章节补充 Problems Center 和分层反馈模型
+  - 在人性化体验章节补充能力推荐与布局预设切换
+  - 在编辑器章节补充本地历史快照与恢复
+  - 在扩展 API 章节补充受控贡献点与核心壳层保护边界
+  - 在性能与可靠性章节补充命令中心、工作区恢复、问题中心、本地历史的体验型 NFR 指标
+
+### Testing:
+- `npm.cmd run validate:manifests` 通过
+- 文档锚点与新增编号关键项已人工复查
+
+### Notes:
+- 本次仅更新 PRD 文档与进度记录，不创建新的 OpenSpec change
+- 保持 VSCode 参考为“工作台方法论借鉴”，未把调试器、Git、终端、Remote SSH、Notebook 等 IDE 专属能力纳入核心范围
+
+---
+
+## [2026-03-26] - Direct Request: 修复 PRD 尾部乱码段落
+
+### 铁律合规检查：
+- PRD 合规：恢复 `FR1303-FR1329` 的业务语义，保持字段治理、动态页面与统一 Agent Runtime 的产品边界
+- 架构合规：内容继续对齐动态表单、动态详情、AI 上下文组装和审计治理方向
+- UX 合规：恢复“透明可控 AI”与动态 UI 配置语义，不改变固定壳层结构
+- Epic 合规：继续衔接 Epic 42 动态渲染基础设施与后续字段治理拆分方向
+
+### What was done:
+- 修复 `_bmad-output/planning-artifacts/prd.md` 尾部 4379 行起的乱码内容
+- 将坏段恢复为“自定义字段与 AI 字段感知能力（FR1303-FR1329）”
+- 基于本地草案 `docs/prd/自定义字段与AI字段感知_PRD草案.md` 重建背景、目标、27 条功能需求、影响范围、依赖关系和小结
+
+### Testing:
+- `npm.cmd run validate:manifests` 通过
+- 已人工复查 `FR1303-FR1329` 行号与尾部段落结构
+
+### Notes:
+- 本次只修复 PRD 文档中的乱码段落
+- `architecture.md` 与 `epics.md` 中仍存在同主题的乱码段，如需我可以继续一并修复
+
+---
+
+## [2026-03-26] - Direct Request: 修复其余铁律文档同类乱码
+
+### 铁律合规检查：
+- PRD 合规：继续沿用已恢复的 `FR1303-FR1329` 语义，不新增越界功能
+- 架构合规：补全字段定义、动态渲染、AI 上下文组装与审计链路的架构说明
+- UX 合规：保持字段引用说明与透明可控 AI 的交互方向，不改固定壳层职责
+- Epic 合规：恢复 `Epic 57` 的目标、Stories、依赖与验收方向，并同步修正 FR 覆盖统计
+
+### What was done:
+- 修复 `_bmad-output/planning-artifacts/architecture.md` 尾部“自定义字段与 AI 字段感知”架构补充段
+- 修复 `_bmad-output/planning-artifacts/epics.md` 中的 `Epic 57` 乱码内容
+- 同步更新 `epics.md` 的 FR 总数、Epic 新增说明和汇总统计，使其与 `FR1303-FR1329` 保持一致
+
+### Testing:
+- `npm.cmd run validate:manifests` 通过
+- 已人工复查 `architecture.md` 与 `epics.md` 尾部修复结果
+- 已扫描四份铁律文档，未发现残留同类 `?` 乱码块
+
+### Notes:
+- `ux-design-specification.md` 本轮扫描未发现同类乱码块
+
+---
+
+## [2026-03-26] - Direct Request: 其它铁律文档对齐新增 PRD 需求
+
+### 铁律合规检查：
+- PRD 合规：对齐此前新增的工作台体验增强需求与自定义字段治理方向，不新增超出 PRD 的产品能力
+- 架构合规：补充命令中心、最近上下文、工作场景恢复、受控贡献点与配置来源解释的架构约束
+- UX 合规：补充分层反馈、问题中心、本地历史、布局预设与受控扩展的体验规范
+- Epic 合规：将新增 PRD 子需求映射到 `Epic 1`、`Epic 22`、`Epic 38`、`Epic 39`、`Epic 40` 的目标与验收描述
+
+### What was done:
+- 更新 `_bmad-output/planning-artifacts/architecture.md`，新增 Workbench 交互与恢复架构补充，并补充 ADR 对齐
+- 更新 `_bmad-output/planning-artifacts/ux-design-specification.md`，补齐命令中心、分层反馈、工作场景恢复、本地历史、布局预设、设置来源与受控贡献点规范
+- 更新 `_bmad-output/planning-artifacts/epics.md`，把新增 PRD 需求映射到相关 Epic 与 Story 验收说明中
+
+### Testing:
+- `npm.cmd run validate:manifests` 通过
+- 已人工复查新增需求在三份铁律文档中的映射一致性
+
+### Notes:
+- 本次对齐未创建新的 OpenSpec change
+
+---
+
+## [2026-03-26] - Direct Request: 吸收 OpenAkita / Paperclip 设计并补充 PRD
+
+### 铁律合规检查：
+- PRD 合规：新增需求围绕平台级审批对象、文档资产、Trace/Span、能力治理展开，未改变“一个主 Agent + 用户自有 Sub-Agent + 部门边界 + 人工审阅落地”的产品模型
+- 架构合规：补充内容继续落在统一 Agent Runtime、委派契约、审计链路、能力契约与多租户隔离框架内
+- UX 合规：坚持审阅动作由人类执行，新增 Trace 与审批恢复能力未突破固定 / 混合 / 动态 UI 边界
+- Epic 合规：本次为铁律 PRD 增补，作为后续 OpenSpec 细化的需求来源，不恢复历史冻结任务批次
+
+### What was done:
+- 更新 `_bmad-output/planning-artifacts/prd.md` 的“功能需求统计”，新增 `FR1525-FR1558` 共 34 条需求并同步总数到 916
+- 新增“参考项目吸收后的平台治理补强（FR1525-FR1558）”章节
+- 将建议正式落为四组需求：平台级审批对象模型、文档资产与修订链、Trace 与委派契约、能力治理与改进建议引擎
+- 在需求表述中纳入 `Approval Resume Gate`、`Capability Flight Recorder`、`Capability Fitness Board`、`Document-Approval-Knowledge Graph`、`Principal Membership` 等治理增强概念
+
+### Testing:
+- `npm.cmd run validate:manifests` 通过
+- 已人工复查 `FR1525-FR1558` 编号连续性、统计总数和章节插入位置
+
+### Notes:
+- 本次仅更新 PRD 铁律文档，未改动实现代码
+- 后续如需继续落地，我可以基于这组新增 FR 再拆成 OpenSpec change 或补到 `architecture.md`
+
+---
+
+## [2026-03-26] - Direct Request: 同步对齐其余铁律文档
+
+### 铁律合规检查：
+- PRD 合规：其余铁律文档全部以 `FR1525-FR1558` 为新增来源进行承接，未引入超出 PRD 的新产品模型
+- 架构合规：继续坚持统一 Agent Runtime、Tool Calling 2.0、统一审计与人类审阅边界，只补充审批对象、文档资产、Trace / Span 与能力治理承接
+- UX 合规：新增交互约束继续遵守固定 / 混合 / 动态 UI 分层，治理能力停留在固定壳层
+- Epic 合规：新增 `Epic 58` 用于承接平台治理对象与能力闭环，并明确 `FR1500-FR1524` 为实现细节补充而非新增独立 Epic
+
+### What was done:
+- 更新 `_bmad-output/planning-artifacts/architecture.md`
+  - 将功能需求总量和覆盖表同步到当前 PRD 统计口径
+  - 新增“参考项目吸收后的平台治理架构补充”章节
+  - 补充审批对象、文档资产、Trace / Span、Flight Recorder、Delegation Contract、Capability Contract、Principal Membership 等架构承接
+- 更新 `_bmad-output/planning-artifacts/epics.md`
+  - 在 FR -> Epic 映射表中新增 `FR1303-FR1329 -> Epic 57` 与 `FR1525-FR1558 -> Epic 58`
+  - 新增 `Epic 58: 平台治理对象与能力闭环`
+  - 同步修正 Epic 统计、FR 覆盖率说明与新增需求说明
+  - 明确 `FR1500-FR1524` 作为实现细节补充映射到既有 Epic 的实现深化
+- 更新 `_bmad-output/planning-artifacts/ux-design-specification.md`
+  - 新增“平台治理补强交互对齐”章节
+  - 补充审批恢复状态、文档修订状态、Trace 分层可见性、建议包固定治理页采纳等交互铁律
+
+### Testing:
+- `npm.cmd run validate:manifests` 通过
+- 已人工复查三份铁律文档中的新增章节、统计口径和 Epic 58 承接关系
+
+### Notes:
+- 本次未改动 `legacy-governance.md`，因为新增内容属于现行铁律前向补充，不涉及恢复 superseded legacy change
+- 如需继续推进，我可以下一步把 `Epic 58` 进一步拆成 OpenSpec change 与 tasks
