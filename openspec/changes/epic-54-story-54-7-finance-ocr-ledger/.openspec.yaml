@@ -1,0 +1,20 @@
+name: epic-54-story-54-7-finance-ocr-ledger
+status: pending
+created_at: 2026-03-26
+epic: 54
+story: 54.7
+title: 财务模块 - 发票OCR与台账生成
+mapping:
+  frs:
+    - FR523
+    - FR524
+    - FR525
+  nfrs:
+    - NFR1
+    - NFR16
+  arch:
+    - ADR-025
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-04

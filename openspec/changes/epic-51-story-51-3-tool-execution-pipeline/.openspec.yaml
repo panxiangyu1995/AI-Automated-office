@@ -1,0 +1,24 @@
+name: epic-51-story-51-3-tool-execution-pipeline
+status: pending
+created_at: 2026-03-26
+epic: 51
+story: 51.3
+title: 工具执行管道 - 完整执行链
+mapping:
+  frs:
+    - FR420
+    - FR421
+    - FR422
+    - FR423
+    - FR424
+  nfrs:
+    - NFR1
+    - NFR16
+    - NFR20
+  arch:
+    - ADR-010
+    - ADR-018
+    - ADR-045
+  ux:
+    - UX-01
+    - UX-04

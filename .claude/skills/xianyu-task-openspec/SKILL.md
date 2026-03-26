@@ -1,11 +1,11 @@
 ---
 name: xianyu-task-openspec
-description: 为项目创建基于Epic/Story的OpenSpec变更和task.json任务。使用此skill可以将epics.md中的每个Story转换为符合规范的OpenSpec变更，并同步更新task.json。
+description: 基于Epic/Story自动生成OpenSpec变更和task.json任务。使用此skill可以将epics.md中的Story转换为符合OpenSpec规范的变更，并同步更新task.json。特色：包含测试要点、实现类型标记、依赖追踪。当用户要求为特定Epic或Story生成变更时触发。
 license: MIT
 compatibility: 需要openspec CLI，需要项目存在epics.md和task.json
 metadata:
   author: team
-  version: "1.0"
+  version: "2.0"
   generatedBy: "xianyu-mvp"
 ---
 
@@ -13,7 +13,13 @@ metadata:
 
 ## 概述
 
-此Skill用于根据 `_bmad-output/planning-artifacts/epics.md` 中的 Epic 和 Story 定义，自动生成符合 OpenSpec 规范的变更文档，并同步更新 `task.json`。
+此Skill用于根据 `_bmad-output/planning-artifacts/epics.md` 中的 Epic 和 Story 定义，使用 `openspec` CLI 工具生成符合 OpenSpec 规范的变更文档，并同步更新 `task.json`。
+
+**特色保留：**
+- 测试要点部分
+- 实现类型标记（new/refactor/polish/debug）
+- 依赖追踪
+- spec.md 包含需求来源
 
 ## 核心原则
 
@@ -35,7 +41,7 @@ metadata:
 │  Step 2: 读取 PRD 文档，确认功能需求和验收标准                │
 │  Step 3: 读取架构文档，确认技术方案                           │
 │  Step 4: 读取 UX 设计规范，确认 UI/UX 要求                    │
-│  Step 5: 生成 OpenSpec 变更内容                              │
+│  Step 5: 使用 openspec CLI 生成变更                         │
 │  Step 6: 确保变更内容符合四方约束                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -44,8 +50,8 @@ metadata:
 
 | 参数 | 必填 | 描述 |
 |------|------|------|
-| `epic_id` | 否 | 指定Epic编号（如 1, 2, 3...），不指定则处理所有Epic |
-| `story_id` | 否 | 指定Story编号（如 1.1, 1.2...），需配合epic_id使用 |
+| `epic_id` | 否 | 指定Epic编号（如 51, 52...），不指定则处理所有Epic |
+| `story_id` | 否 | 指定Story编号（如 51.1, 51.2...），需配合epic_id使用 |
 | `mode` | 否 | `single`（单个生成）或 `batch`（批量生成），默认 `single` |
 
 ## 执行步骤
@@ -53,148 +59,99 @@ metadata:
 ### Step 1: 验证前置条件
 
 **必须验证以下文件存在：**
+- `openspec` CLI 工具可用
 - `_bmad-output/planning-artifacts/epics.md` - Epic/Story 定义
-- `_bmad-output/planning-artifacts/prd.md` - PRD 文档
-- `_bmad-output/planning-artifacts/architecture.md` - 架构文档
-- `_bmad-output/planning-artifacts/ux-design-specification.md` - UX 设计规范
 - `task.json` - 任务定义文件
 
-如果任何文件不存在，**停止并报告错误**。
+如果 openspec CLI 不可用，**停止并报告错误**。
 
-### Step 2: 读取并解析 epics.md
-
-从 epics.md 中提取 Story 信息：
-
-```markdown
-### Story X.Y: [Story标题]
-
-As a [角色],
-I want [功能],
-So that [价值]。
-
-**Acceptance Criteria:**
-[验收标准列表]
-```
-
-提取字段：
-- `epic_id`: Epic 编号 (X)
-- `story_id`: Story 编号 (X.Y)
-- `title`: Story 标题
-- `as_a`: 角色
-- `i_want`: 功能描述
-- `so_that`: 价值/目的
-- `acceptance_criteria`: 验收标准列表
-- `frs_covered`: 覆盖的功能需求（从Epic头部获取）
-- `nfrs_covered`: 覆盖的非功能需求（从Epic头部获取）
-- `arch_covered`: 覆盖的架构需求（从Epic头部获取）
-- `ux_covered`: 覆盖的UX需求（从Epic头部获取）
-
-### Step 3: 生成 OpenSpec 变更
+### Step 2: 使用 openspec CLI 创建变更
 
 **变更命名规范：**
 ```
 epic-{X}-story-{Y}-{kebab-case-title}
 ```
 
-示例：`epic-1-story-1-tauri-project-init`
+示例：`epic-51-story-51-1-agent-orchestrator-core`
 
-**变更目录结构：**
-```
-openspec/changes/epic-X-story-Y-<name>/
-├── .openspec.yaml      # OpenSpec 配置
-├── README.md           # 变更概述
-├── proposal.md         # 提案文档
-├── design.md           # 设计文档
-├── tasks.md            # 任务列表
-└── specs/
-    └── spec.md         # 规格说明
+**创建变更：**
+```bash
+openspec new change "<change-name>"
 ```
 
-### Step 4: 创建各文档内容
+### Step 3: 获取 Artifact 构建顺序
 
-#### 4.1 创建 .openspec.yaml
-
-```yaml
-name: epic-X-story-Y-<name>
-status: pending
-created_at: [当前日期]
-epic: X
-story: X.Y
-mapping:
-  frs: [FR编号列表]
-  nfrs: [NFR编号列表]
-  arch: [ARCH编号列表]
-  ux: [UX编号列表]
+```bash
+openspec status --change "<change-name>" --json
 ```
 
-#### 4.2 创建 README.md
+解析 JSON 获取：
+- `applyRequires`: 实施前需要完成的 artifact 列表
+- `artifacts`: 所有 artifact 及其状态和依赖
 
-```markdown
-# Epic X, Story X.Y: [Story标题]
+### Step 4: 创建 Artifacts
 
-## 概述
+使用 **TodoWrite** 工具追踪进度。
 
-[Story的简短描述]
+循环处理 artifacts（按依赖顺序）：
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: [FR编号列表]
-- **NFRs**: [NFR编号列表]
-
-### 架构需求
-- **ARCH**: [ARCH编号列表]
-
-### UX 需求
-- **UX**: [UX编号列表]
-
-## 验收标准
-
-[从epics.md提取的验收标准]
-
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
+**a. 获取 artifact 指令：**
+```bash
+openspec instructions <artifact-id> --change "<change-name>" --json
 ```
 
-#### 4.3 创建 proposal.md
+指令 JSON 包含：
+- `context`: 项目背景（约束，不写入文件）
+- `rules`: artifact 规则（约束，不写入文件）
+- `template`: 输出结构模板
+- `instruction`: Schema 相关指导
+- `outputPath`: 输出路径
+- `dependencies`: 需先读的已完成 artifact
+
+**b. 读取依赖 artifact 获取上下文**
+
+**c. 创建 artifact 文件**
+- 按 `template` 结构填充内容
+- 应用 `context` 和 `rules` 作为约束（不复制到文件）
+
+### Step 5: 特色内容保留
+
+创建 artifacts 时，**必须**保留以下特色内容：
+
+#### 5.1 proposal.md 特色结构
 
 ```markdown
 # Proposal: [Story标题]
 
 ## 变更类型
-- [ ] 新功能
-- [ ] 修复
-- [ ] 优化
-- [ ] 重构
+- [x] 新功能 / [x] 重构 / [x] 优化 / [x] 开发
 
 ## 背景
 
-[从Story的"So that"提取价值说明]
+[从Story提取价值说明]
 
 ## 目标
 
-[从Story的"I want"提取功能描述]
+[从Story提取功能描述]
 
 ## 范围
 
 ### 包含
-- [从Acceptance Criteria提取的功能点]
+- [从Acceptance Criteria提取]
 
 ### 不包含
-- [明确排除的内容]
+- 明确排除的内容
 
 ## 影响范围
 
 ### 前端
-- [受影响的前端模块]
+- 受影响的前端模块
 
 ### 后端
-- [受影响的后端模块]
+- 受影响的后端模块
 
 ### 数据库
-- [受影响的数据表]
+- 受影响的数据表
 
 ## 风险评估
 
@@ -208,85 +165,7 @@ mapping:
 - **后置依赖**: [依赖此Story的其他Story]
 ```
 
-#### 4.4 创建 design.md
-
-```markdown
-# Design: [Story标题]
-
-## 技术方案
-
-### 前端实现
-[详细的前端实现方案，参考架构文档]
-
-### 后端实现
-[详细的后端实现方案，参考架构文档]
-
-### 数据库设计
-[涉及的数据库表结构变更]
-
-## API 设计
-
-### 新增接口
-\`\`\`
-POST /api/xxx
-Request: { ... }
-Response: { ... }
-\`\`\`
-
-### 修改接口
-[如有修改的接口]
-
-## 组件设计
-
-### 新增组件
-- `[组件名]`: [组件描述]
-
-### 修改组件
-- `[组件名]`: [修改内容]
-
-## 状态管理
-
-[涉及的 Pinia store 设计]
-
-## 安全考虑
-
-[安全相关的设计，参考架构文档的安全章节]
-
-## 性能考虑
-
-[性能相关的设计，参考NFR]
-```
-
-#### 4.5 创建 tasks.md
-
-```markdown
-# Tasks: [Story标题]
-
-## 任务列表
-
-### 任务 1: [任务名称]
-- **描述**: [任务描述]
-- **文件**: [涉及的文件]
-- **验收**: [验收标准]
-
-### 任务 2: [任务名称]
-- **描述**: [任务描述]
-- **文件**: [涉及的文件]
-- **验收**: [验收标准]
-
-## 执行顺序
-
-1. [任务1] → 2. [任务2] → ...
-
-## 测试要点
-
-- [ ] 单元测试
-- [ ] 集成测试
-- [ ] E2E 测试
-- [ ] 浏览器测试（如涉及UI）
-```
-
-#### 4.6 创建 specs/spec.md
+#### 5.2 specs/spec.md 特色结构
 
 ```markdown
 # Specification: [Story标题]
@@ -316,11 +195,6 @@ So that [价值]。
 - **WHEN** [触发动作]
 - **THEN** [预期结果]
 
-#### Scenario 2: [场景名称]
-- **GIVEN** [前置条件]
-- **WHEN** [触发动作]
-- **THEN** [预期结果]
-
 ## 数据规格
 
 ### 输入
@@ -345,7 +219,32 @@ So that [价值]。
 | [错误码] | [错误信息] | [处理方式] |
 ```
 
-### Step 5: 更新 task.json
+#### 5.3 tasks.md 特色结构
+
+```markdown
+# Tasks: [Story标题]
+
+## 实现类型
+- **类型**: new / refactor / polish / debug
+- **优先级**: critical / high / medium / low
+- **阶段**: Phase X
+
+## 任务列表
+
+### Task 1: [任务名称]
+- **描述**: [任务描述]
+- **文件**: [涉及的文件]
+- **验收**: [验收标准]
+
+## 测试要点
+
+- [ ] 单元测试
+- [ ] 集成测试
+- [ ] E2E 测试
+- [ ] 浏览器测试（如涉及UI）
+```
+
+### Step 6: 更新 task.json
 
 在 task.json 中添加对应的任务条目：
 
@@ -356,6 +255,7 @@ So that [价值]。
   "story": "Story X.Y",
   "title": "[Story标题]",
   "description": "[Story描述]",
+  "implementationType": "new / refactor / polish / debug",
   "openspec_change": "epic-X-story-Y-<name>",
   "steps": [
     "[从Acceptance Criteria提取的步骤]"
@@ -369,19 +269,12 @@ So that [价值]。
 }
 ```
 
-### Step 6: 批量生成模式
+### Step 7: 验证 artifacts
 
-如果 `mode=batch`，按以下顺序批量生成所有Story的OpenSpec变更：
-
-**Epic 优先级顺序（考虑依赖关系）：**
-1. Epic 1: 项目基础设施与核心框架 (Story 1.1 → 1.9)
-2. Epic 2: 账号管理 (Story 2.1 → 2.5)
-3. Epic 3: 消息中心与系统托盘 (Story 3.1 → 3.5)
-4. Epic 4: AI 智能回复与议价策略 (Story 4.1 → 4.7)
-5. Epic 5: 本地知识库与买家画像 (Story 5.1 → 5.5)
-6. Epic 6: 自动发货与商品管理 (Story 6.1 → 6.6)
-7. Epic 7: 消息推送与数据统计 (Story 7.1 → 7.6)
-8. Epic 8: 系统集成与优化 (Story 8.1 → 8.8)
+创建完每个 artifact 后验证文件存在：
+```bash
+openspec status --change "<change-name>"
+```
 
 ## 输出
 
@@ -394,28 +287,25 @@ Epic X, Story X.Y: [Story标题]
 ├── openspec/changes/epic-X-story-Y-<name>/
 │   ├── .openspec.yaml
 │   ├── README.md
-│   ├── proposal.md
+│   ├── proposal.md (含变更类型、依赖)
 │   ├── design.md
-│   ├── tasks.md
-│   └── specs/spec.md
+│   ├── tasks.md (含测试要点)
+│   └── specs/spec.md (含需求来源)
 └── task.json (已更新)
 
 📊 统计：
 - 新增 OpenSpec 变更: X 个
 - 更新 task.json 任务: X 个
-- 覆盖 FR: X 个
-- 覆盖 NFR: X 个
-- 覆盖 ARCH: X 个
-- 覆盖 UX: X 个
+- 实现类型: new=X, refactor=X, polish=X
 ```
 
 ## Guardrails
 
 - **必须**在生成前完成铁律合规检查
+- **必须**使用 openspec CLI 创建变更
+- **必须**遵循 openspec instructions 获取 artifact 模板
+- **必须**保留测试要点、实现类型、依赖追踪等特色
 - **不得**生成 epics.md 中未定义的 Story
-- **不得**跳过任何已定义的 Story（批量模式）
-- **必须**确保 OpenSpec 变更内容符合四方约束（PRD/架构/UX/Epic）
-- 如发现 epics.md 与 PRD/架构/UX 文档冲突，**必须**停止并报告
 - 生成的 task.json 中 `passes` 初始值必须为 `false`
 
 ## 全自动开发集成
@@ -455,19 +345,17 @@ Epic X, Story X.Y: [Story标题]
 
 ## 示例用法
 
-### 生成单个 Story 的 OpenSpec 变更
-
+### 为特定Story生成OpenSpec变更
 ```
-使用 task-openspec skill，为 Epic 1, Story 1.1 生成 OpenSpec 变更
-```
-
-### 批量生成所有 Story 的 OpenSpec 变更
-
-```
-使用 task-openspec skill，批量生成所有 Epic 和 Story 的 OpenSpec 变更
+使用 xianyu-task-openspec skill，为 Epic 51, Story 51.1 生成 OpenSpec 变更
 ```
 
-### 只生成特定 Epic 的所有 Story
-
+### 批量生成所有Epic的OpenSpec变更
 ```
-使用 task-openspec skill，为 Epic 2 的所有 Story 生成 OpenSpec 变更
+使用 xianyu-task-openspec skill，批量生成所有 Epic 的 OpenSpec 变更
+```
+
+### 只生成特定Epic的所有Story
+```
+使用 xianyu-task-openspec skill，为 Epic 52 的所有 Story 生成 OpenSpec 变更
+```

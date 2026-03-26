@@ -1,0 +1,138 @@
+{
+  "skill_name": "xianyu-task-openspec",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "使用 xianyu-task-openspec skill，为 Epic 51, Story 51.1 生成 OpenSpec 变更和 task.json 条目",
+      "expected_output": "创建 openspec/changes/epic-51-story-51-1-agent-orchestrator-core/ 目录，包含 .openspec.yaml, README.md, proposal.md, design.md, tasks.md, specs/spec.md，并更新 task.json",
+      "files": [
+        "task.json",
+        "_bmad-output/planning-artifacts/epics.md"
+      ],
+      "assertions": [
+        {
+          "text": "创建了 .openspec.yaml 文件",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 proposal.md 包含变更类型字段",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 tasks.md 包含测试要点",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 specs/spec.md 包含需求来源",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "task.json 中添加了对应的任务条目",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "使用了 openspec CLI 创建变更",
+          "passed": false,
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "使用 xianyu-task-openspec skill，批量生成 Epic 52 的所有 Story 的 OpenSpec 变更（Story 52.1 到 52.5）",
+      "expected_output": "为 Epic 52 的 5 个 Story 分别创建对应的 OpenSpec 变更目录和 task.json 条目",
+      "files": [
+        "task.json",
+        "_bmad-output/planning-artifacts/epics.md"
+      ],
+      "assertions": [
+        {
+          "text": "创建了 epic-52-story-52-1-subagent-routing-engine 变更",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 epic-52-story-52-2-subagent-execution-context 变更",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 epic-52-story-52-3-subagent-nested-calls 变更",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 epic-52-story-52-4-subagent-result-return 变更",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 epic-52-story-52-5-subagent-monitoring 变更",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "task.json 中添加了 5 个对应的任务条目",
+          "passed": false,
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "使用 xianyu-task-openspec skill，批量生成所有 OpenSpec 变更（包括 Epic 51-56 的所有 Story）",
+      "expected_output": "为所有定义的 Epic 和 Story 创建对应的 OpenSpec 变更目录和 task.json 条目",
+      "files": [
+        "task.json",
+        "_bmad-output/planning-artifacts/epics.md"
+      ],
+      "assertions": [
+        {
+          "text": "创建了 Epic 51 相关变更（约 4 个 Story）",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 Epic 52 相关变更（约 5 个 Story）",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 Epic 53 相关变更（约 4 个 Story）",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 Epic 54 相关变更（约 8 个 Story）",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 Epic 55 相关变更（约 4 个 Story）",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "创建了 Epic 56 相关变更（约 5 个 Story）",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "每个变更都包含 proposal.md, design.md, tasks.md, specs/spec.md",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "task.json 中添加了所有对应的任务条目",
+          "passed": false,
+          "evidence": ""
+        }
+      ]
+    }
+  ]
+}

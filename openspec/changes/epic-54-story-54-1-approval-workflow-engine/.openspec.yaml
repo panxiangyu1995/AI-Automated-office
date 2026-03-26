@@ -1,0 +1,20 @@
+name: epic-54-story-54-1-approval-workflow-engine
+status: pending
+created_at: 2026-03-26
+epic: 54
+story: 54.1
+title: 审批中心完整实现 - 流程引擎
+mapping:
+  frs:
+    - FR500
+    - FR501
+    - FR502
+  nfrs:
+    - NFR1
+    - NFR16
+  arch:
+    - ADR-025
+    - ADR-037
+  ux:
+    - UX-01
+    - UX-04

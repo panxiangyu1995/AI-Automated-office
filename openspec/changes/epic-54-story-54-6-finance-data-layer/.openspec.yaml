@@ -1,0 +1,20 @@
+name: epic-54-story-54-6-finance-data-layer
+status: pending
+created_at: 2026-03-26
+epic: 54
+story: 54.6
+title: 财务模块数据层 - 数据模型与API
+mapping:
+  frs:
+    - FR520
+    - FR521
+    - FR522
+  nfrs:
+    - NFR1
+    - NFR16
+    - NFR20
+  arch:
+    - ADR-025
+    - ADR-037
+  ux:
+    - UX-01

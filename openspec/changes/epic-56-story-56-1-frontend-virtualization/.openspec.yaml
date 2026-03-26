@@ -1,0 +1,16 @@
+name: epic-56-story-56-1-frontend-virtualization
+status: pending
+created_at: 2026-03-26
+epic: 56
+story: 56.1
+title: 前端性能优化 - 大列表虚拟化
+mapping:
+  frs:
+    []
+  nfrs:
+    - NFR3
+    - NFR16
+  arch:
+    []
+  ux:
+    - UX-01
