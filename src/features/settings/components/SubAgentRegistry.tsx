@@ -50,6 +50,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { SETTINGS_SUB_AGENT_OPTIONS } from './subAgentSettingsFixtures'
 
 // Types
 export type SubAgentStatus = 'active' | 'inactive' | 'creating' | 'error'
@@ -132,6 +133,15 @@ const TEMPLATE_CONFIG: Record<SubAgentTemplate, SubAgentTemplateInfo> = {
   },
 }
 
+TEMPLATE_CONFIG.general.suggestedSkills = ['资料接入', '检索整理', '协作摘要']
+TEMPLATE_CONFIG.general.suggestedTools = ['file_read', 'http_request']
+TEMPLATE_CONFIG.specialist.suggestedSkills = ['文档起草', '结构抽取', '模板抽象']
+TEMPLATE_CONFIG.specialist.suggestedTools = ['document_parse', 'workspace_stage_change']
+TEMPLATE_CONFIG.analyst.suggestedSkills = ['规则校验', '结构抽取', '知识沉淀']
+TEMPLATE_CONFIG.analyst.suggestedTools = ['knowledge_query', 'document_convert']
+TEMPLATE_CONFIG.coordinator.suggestedSkills = ['跨部门摘要', '后续跟进', '知识沉淀']
+TEMPLATE_CONFIG.coordinator.suggestedTools = ['agent_delegate', 'message_send', 'workspace_stage_change']
+
 // Mock data
 const createMockSubAgents = (): SubAgent[] => [
   {
@@ -203,8 +213,29 @@ const createMockSubAgents = (): SubAgent[] => [
   },
 ]
 
+const createCorrectiveSubAgents = (): SubAgent[] =>
+  SETTINGS_SUB_AGENT_OPTIONS.length > 0
+    ? SETTINGS_SUB_AGENT_OPTIONS.map((agent) => ({
+        id: agent.id,
+        name: agent.name,
+        description: agent.description,
+        template: agent.template,
+        status: agent.enabled ? 'active' : 'inactive',
+        role: agent.defaultRole,
+        skills: [...agent.suggestedSkills],
+        tools: [...agent.suggestedTools],
+        mcpTools: [...agent.suggestedMcpTools],
+        permissions: [...agent.suggestedPermissions],
+        createdAt: agent.createdAt,
+        updatedAt: agent.updatedAt,
+        lastUsed: agent.lastUsed,
+        usageCount: agent.usageCount,
+        enabled: agent.enabled,
+      }))
+    : createMockSubAgents()
+
 export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
-  const [subAgents, setSubAgents] = useState<SubAgent[]>(createMockSubAgents)
+  const [subAgents, setSubAgents] = useState<SubAgent[]>(createCorrectiveSubAgents)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'enabled' | 'disabled'>('all')
   const [filterTemplate, setFilterTemplate] = useState<SubAgentTemplate | 'all'>('all')

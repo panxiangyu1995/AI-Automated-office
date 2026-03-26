@@ -1,5 +1,8 @@
 # Proposal: Detail Section Writeback Adapter
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical foundation traceability only. Ongoing implementation for detail-section writeback must route through the corrective staged-review contract and updated iron-law documents.
+
 ## Background
 Write normalized Agent results into approved dynamic detail sections.
 

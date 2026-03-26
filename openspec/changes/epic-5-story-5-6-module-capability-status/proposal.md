@@ -1,5 +1,8 @@
 ﻿# Proposal: Module Capability Status
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for capability status surfaces must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Show module-level Tools, Skills, MCP, and handshake status to users.
 

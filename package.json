@@ -23,6 +23,7 @@
     "test:e2e": "playwright test",
     "test:selective": "node scripts/test/selective-run.mjs",
     "test:gate": "node scripts/test/quality-gate.mjs",
+    "validate:manifests": "node scripts/ops/validate-agent-manifests.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"

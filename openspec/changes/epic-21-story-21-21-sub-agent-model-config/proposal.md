@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Model Config
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-owned Sub-Agent model configuration must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Allow per-Sub-Agent model and parameter selection.
 

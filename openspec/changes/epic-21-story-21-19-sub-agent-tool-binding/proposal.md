@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Tool Binding
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for Tool Calling 2.0 and layered Skill capability supply must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Bind scoped MCP tools and Skills to each Sub-Agent.
 

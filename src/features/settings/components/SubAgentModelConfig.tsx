@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SETTINGS_SUB_AGENT_OPTIONS } from './subAgentSettingsFixtures'
 
 // Types
 export type ModelProvider = 'openai' | 'zhipu' | 'dashscope' | 'deepseek' | 'minimax'
@@ -74,6 +75,9 @@ const MOCK_SUB_AGENTS = [
   { id: 'subagent-003', name: '销售协调员', template: 'coordinator', enabled: true },
   { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
 ]
+
+const CORRECTIVE_SUB_AGENTS =
+  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
 
 // Mock providers with models
 const MOCK_PROVIDERS: { id: ModelProvider; name: string; models: string[] }[] = [
@@ -132,7 +136,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
 
   // Get selected sub-agent info
   const selectedSubAgent = useMemo(() => {
-    return MOCK_SUB_AGENTS.find(a => a.id === selectedSubAgentId)
+    return CORRECTIVE_SUB_AGENTS.find(a => a.id === selectedSubAgentId)
   }, [selectedSubAgentId])
 
   // Get selected provider info
@@ -306,7 +310,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
                 选择 Sub-Agent
               </h3>
               <div className="space-y-2">
-                {MOCK_SUB_AGENTS.map(agent => (
+                {CORRECTIVE_SUB_AGENTS.map(agent => (
                   <button
                     key={agent.id}
                     className={`w-full text-left p-3 rounded-lg border transition-colors ${

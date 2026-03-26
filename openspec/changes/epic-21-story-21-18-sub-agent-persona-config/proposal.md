@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Persona Config
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-owned Sub-Agent persona management must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Configure Sub-Agent persona, trigger conditions, and SOUL-backed prompt behavior.
 

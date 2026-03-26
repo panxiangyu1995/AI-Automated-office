@@ -365,7 +365,7 @@ export function ModuleStatusCard({
             {/* 握手状态 */}
             <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600">Agent 握手</span>
+                <span className="text-sm text-slate-600">运行时绑定</span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
@@ -373,7 +373,7 @@ export function ModuleStatusCard({
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="text-xs">
-                        与主 Agent 的连接状态
+                        当前能力包与通用 Agent Runtime 的绑定状态
                       </div>
                     </TooltipContent>
                   </Tooltip>
@@ -501,7 +501,7 @@ export function ModuleCapabilityStatus({
           <Activity className="h-4 w-4" style={{ color: BRAND_COLOR }} />
           <span className="font-medium text-slate-700">模块能力状态</span>
           <Badge variant="secondary" className="text-xs">
-            {summary.connected}/{summary.total} 连接
+            {summary.connected}/{summary.total} 已绑定
           </Badge>
         </div>
         {onRefresh ? (

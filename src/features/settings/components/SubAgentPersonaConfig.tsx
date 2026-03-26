@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SETTINGS_SUB_AGENT_OPTIONS } from './subAgentSettingsFixtures'
 
 // Types
 export type PersonaStatus = 'draft' | 'pending' | 'applied' | 'failed' | 'rollback'
@@ -103,6 +104,9 @@ const MOCK_SUB_AGENTS = [
   { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
 ]
 
+const CORRECTIVE_SUB_AGENTS =
+  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
+
 // Mock audit history
 const createMockAuditHistory = (): PersonaAuditEntry[] => [
   {
@@ -165,7 +169,7 @@ export function SubAgentPersonaConfig({ className = '' }: SubAgentPersonaConfigP
 
   // Get selected sub-agent info
   const selectedSubAgent = useMemo(() => {
-    return MOCK_SUB_AGENTS.find(a => a.id === selectedSubAgentId)
+    return CORRECTIVE_SUB_AGENTS.find(a => a.id === selectedSubAgentId)
   }, [selectedSubAgentId])
 
   // Trigger condition type options
@@ -402,7 +406,7 @@ ${personaConfig.soulTemplate === 'custom' ? `\n自定义内容:\n${personaConfig
                 选择 Sub-Agent
               </h3>
               <div className="space-y-2">
-                {MOCK_SUB_AGENTS.map(agent => (
+                {CORRECTIVE_SUB_AGENTS.map(agent => (
                   <button
                     key={agent.id}
                     className={`w-full text-left p-3 rounded-lg border transition-colors ${

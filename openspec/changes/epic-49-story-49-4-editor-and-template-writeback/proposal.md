@@ -1,5 +1,8 @@
 # Proposal: Editor and Template Writeback
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical foundation traceability only. Ongoing implementation for editor/template writeback must route through the corrective staged-review contract and updated iron-law documents.
+
 ## Background
 Write Agent output into editor and template hosts through controlled contracts.
 

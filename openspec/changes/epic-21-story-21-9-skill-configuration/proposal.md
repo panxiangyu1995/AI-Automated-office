@@ -1,5 +1,8 @@
 ﻿# Proposal: Skill Configuration
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for Skill capability supply must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Manage installed Skills with progressive loading and governance visibility.
 

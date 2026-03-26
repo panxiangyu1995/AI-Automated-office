@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Persistence
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-owned Sub-Agent persistence must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Persist sub-agent execution state and recovery behavior.
 

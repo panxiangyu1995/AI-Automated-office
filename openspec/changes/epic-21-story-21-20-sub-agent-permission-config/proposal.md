@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Permission Config
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-owned Sub-Agent permission boundaries must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Configure data, department, and knowledge access boundaries for Sub-Agents.
 

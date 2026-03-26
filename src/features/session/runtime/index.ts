@@ -1199,6 +1199,27 @@ export {
   formatTemplateTrace,
 } from './editorTemplateWriteback'
 
+// Staged Review Flow
+export {
+  type ReviewTargetKind,
+  type CandidateChangeStatus,
+  type ReviewPackageStatus,
+  type ReviewActorType,
+  type ReviewActionResult,
+  type CandidateChange,
+  type StagedReviewPackage,
+  type ReviewPackageOptions,
+  type StagedReviewState,
+  normalizeFormWritebackToReviewPackage,
+  normalizeDetailWritebackToReviewPackage,
+  normalizeWorkbenchWritebackToReviewPackage,
+  normalizeEditorWritebackToReviewPackage,
+  normalizeTemplateWritebackToReviewPackage,
+  useStagedReviewStore,
+  useStagedReviewPackages,
+  countPendingCandidateChanges,
+} from './stagedReviewFlow'
+
 // Approval Pilot Integration (Task 88: Story 50.1)
 export {
   // Types

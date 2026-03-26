@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Registry
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-owned Sub-Agent management must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Create the product surface for Sub-Agent CRUD and lifecycle control.
 

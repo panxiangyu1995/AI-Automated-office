@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Execution Monitoring
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-owned Sub-Agent execution monitoring must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Provide execution status, history, and monitoring for Sub-Agent runs.
 

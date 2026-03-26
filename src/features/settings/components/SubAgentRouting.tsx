@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SETTINGS_SUB_AGENT_OPTIONS } from './subAgentSettingsFixtures'
 
 // Types
 export type RoutingMode = 'manual' | 'auto' | 'hybrid'
@@ -76,6 +77,9 @@ const MOCK_SUB_AGENTS = [
   { id: 'subagent-003', name: '销售协调员', template: 'coordinator', enabled: true },
   { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
 ]
+
+const CORRECTIVE_SUB_AGENTS =
+  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
 
 // Mock routing rules
 const createMockRoutingRules = (): RoutingRule[] => [
@@ -180,6 +184,120 @@ const createMockRoutingDecisions = (): RoutingDecision[] => [
   },
 ]
 
+const createCorrectiveRoutingRules = (): RoutingRule[] => createMockRoutingRules().length > 0 ? [
+  {
+    id: 'rule-c1',
+    name: '文档起草路由',
+    description: '处理标书、方案、合同和报告起草类请求。',
+    subAgentId: 'subagent-001',
+    subAgentName: '文档起草助手',
+    matchStrategy: 'combined',
+    keywords: ['标书', '方案', '草案', '起草', '模板'],
+    semanticThreshold: 0.72,
+    priority: 10,
+    enabled: true,
+    fallbackEnabled: true,
+  },
+  {
+    id: 'rule-c2',
+    name: '资料整理路由',
+    description: '处理资料上传、归档、抽取和整理类请求。',
+    subAgentId: 'subagent-002',
+    subAgentName: '资料整理助手',
+    matchStrategy: 'keyword',
+    keywords: ['上传', '归档', '整理', '抽取', '资料'],
+    semanticThreshold: 0.65,
+    priority: 9,
+    enabled: true,
+    fallbackEnabled: true,
+  },
+  {
+    id: 'rule-c3',
+    name: '规则校验路由',
+    description: '处理合规校验、规则比对和风险提示类请求。',
+    subAgentId: 'subagent-003',
+    subAgentName: '规则校验助手',
+    matchStrategy: 'semantic',
+    keywords: ['校验', '规则', '合规', '风险', '敏感'],
+    semanticThreshold: 0.75,
+    priority: 8,
+    enabled: true,
+    fallbackEnabled: true,
+  },
+  {
+    id: 'rule-c4',
+    name: '协作协调路由',
+    description: '处理跨部门确认、消息转发和协作摘要类请求。',
+    subAgentId: 'subagent-004',
+    subAgentName: '协作协调助手',
+    matchStrategy: 'llm_guided',
+    keywords: ['协作', '催办', '确认', '同步', '转发'],
+    semanticThreshold: 0.7,
+    priority: 7,
+    enabled: true,
+    fallbackEnabled: true,
+  },
+] : createMockRoutingRules()
+
+const createCorrectiveRoutingDecisions = (): RoutingDecision[] => createMockRoutingDecisions().length > 0 ? [
+  {
+    id: 'dec-c1',
+    timestamp: '2026-03-24T10:30:00Z',
+    inputPreview: '根据新的投标要求，先帮我起一个可编辑的标书大纲',
+    matchedRuleId: 'rule-c1',
+    matchedRuleName: '文档起草路由',
+    selectedSubAgentId: 'subagent-001',
+    selectedSubAgentName: '文档起草助手',
+    routingMode: 'auto',
+    confidence: 'high',
+    confidenceScore: 0.92,
+    reasoning: '检测到“投标要求”和“大纲”，与文档起草任务高度匹配。',
+    accepted: true,
+  },
+  {
+    id: 'dec-c2',
+    timestamp: '2026-03-24T10:15:00Z',
+    inputPreview: '把我本地的历史标书和云端模板整理成可引用资料包',
+    matchedRuleId: 'rule-c2',
+    matchedRuleName: '资料整理路由',
+    selectedSubAgentId: 'subagent-002',
+    selectedSubAgentName: '资料整理助手',
+    routingMode: 'auto',
+    confidence: 'high',
+    confidenceScore: 0.88,
+    reasoning: '检测到“本地”“云端”“整理”，符合资料接入与归档任务。',
+    accepted: true,
+  },
+  {
+    id: 'dec-c3',
+    timestamp: '2026-03-24T09:45:00Z',
+    inputPreview: '检查这份草案里哪些条款不符合制度要求',
+    matchedRuleId: 'rule-c3',
+    matchedRuleName: '规则校验路由',
+    selectedSubAgentId: 'subagent-003',
+    selectedSubAgentName: '规则校验助手',
+    routingMode: 'manual',
+    confidence: 'medium',
+    confidenceScore: 0.65,
+    reasoning: '语义相似度中等，建议人工确认是否需要跨制度库查询。',
+    accepted: null,
+  },
+  {
+    id: 'dec-c4',
+    timestamp: '2026-03-24T09:30:00Z',
+    inputPreview: '发一条摘要给财务和法务，请他们确认报价和风险项',
+    matchedRuleId: 'rule-c4',
+    matchedRuleName: '协作协调路由',
+    selectedSubAgentId: 'subagent-004',
+    selectedSubAgentName: '协作协调助手',
+    routingMode: 'auto',
+    confidence: 'low',
+    confidenceScore: 0.45,
+    reasoning: '涉及跨部门消息协作，但仍需要人工决定是否立即发送。',
+    accepted: false,
+  },
+] : createMockRoutingDecisions()
+
 // Match strategy options
 const MATCH_STRATEGIES: { value: MatchStrategy; label: string; description: string }[] = [
   { value: 'keyword', label: '关键词匹配', description: '仅基于关键词进行匹配' },
@@ -201,8 +319,8 @@ const getConfidenceBadge = (level?: ConfidenceLevel) => {
 
 export function SubAgentRouting({ className = '' }: SubAgentRoutingProps) {
   const [routingMode, setRoutingMode] = useState<RoutingMode>('hybrid')
-  const [routingRules, setRoutingRules] = useState<RoutingRule[]>(createMockRoutingRules())
-  const [routingDecisions] = useState<RoutingDecision[]>(createMockRoutingDecisions)
+  const [routingRules, setRoutingRules] = useState<RoutingRule[]>(createCorrectiveRoutingRules())
+  const [routingDecisions] = useState<RoutingDecision[]>(createCorrectiveRoutingDecisions)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [editingRule, setEditingRule] = useState<RoutingRule | null>(null)
 
@@ -586,7 +704,7 @@ export function SubAgentRouting({ className = '' }: SubAgentRoutingProps) {
                     defaultValue={editingRule?.subAgentId || ''}
                   >
                     <option value="">选择 Sub-Agent</option>
-                    {MOCK_SUB_AGENTS.filter(a => a.enabled).map(agent => (
+                    {CORRECTIVE_SUB_AGENTS.filter(a => a.enabled).map(agent => (
                       <option key={agent.id} value={agent.id}>
                         {agent.name}
                       </option>

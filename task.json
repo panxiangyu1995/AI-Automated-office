@@ -1,10 +1,12 @@
 {
   "version": "2.0.0",
-  "lastUpdated": "2026-03-23",
-  "scope": "Remaining agent-first execution plan",
+  "lastUpdated": "2026-03-26",
+  "scope": "Historical agent-first tasks plus corrective rebaseline follow-up",
   "batch": "Agent Master Plan",
-  "range": "Task 1-103",
+  "range": "Task 1-104",
   "roadmap": "docs/agent-implementation-roadmap.md",
+  "sourceOfTruth": "openspec/changes/agent-platform-course-correction",
+  "activeNote": "Tasks 1-103 remain as completed implementation history. Task 104 records the completed corrective rebaseline after the iron-law update.",
   "tasks": [
     {
       "id": 1,
@@ -3498,6 +3500,51 @@
       "dependencies": [
         "Story 50.2"
       ],
+      "passes": true
+    },
+    {
+      "id": 104,
+      "epic": "Course Correction",
+      "story": "Agent Platform Rebaseline",
+      "title": "Agent 平台纠偏重构基线",
+      "description": "Freeze legacy execution direction, classify implemented assets, and rebaseline ownership, tool calling, writeback review, and capability supply around the updated iron-law documents.",
+      "openspec_change": "agent-platform-course-correction",
+      "steps": [
+        "Audit completed task batches, active OpenSpec changes, and implemented code into keep / rename-rebind / refactor / freeze-supersede categories",
+        "Refactor main-agent and sub-agent ownership so Sub-Agent state belongs to the current user's main Agent instead of department-specific mock entities",
+        "Rebaseline tool descriptors, capability status, history, observability, and built-in Skill surfaces to the Tool Calling 2.0 and capability-supply model",
+        "Promote existing writeback adapters into a staged review flow with user-only accept/reject semantics",
+        "Verify corrected behavior with targeted session, settings, workbench, and writeback tests"
+      ],
+      "frs_covered": [
+        "FR9",
+        "FR12",
+        "FR69-FR80",
+        "FR430-FR439",
+        "FR460-FR469",
+        "FR835-FR840",
+        "FR890-FR938"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR3",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-013",
+        "ADR-020",
+        "ADR-025",
+        "ADR-035",
+        "ADR-037",
+        "ADR-045",
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [],
       "passes": true
     }
   ]

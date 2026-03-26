@@ -24,6 +24,11 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  SETTINGS_DEPARTMENTS,
+  SETTINGS_KNOWLEDGE_BASES,
+  SETTINGS_SUB_AGENT_OPTIONS,
+} from './subAgentSettingsFixtures'
 
 // Types
 export type PermissionBoundary = 'department' | 'cross_department' | 'all'
@@ -98,6 +103,13 @@ const MOCK_KNOWLEDGE_BASES = [
   { id: 'kb-policy', name: '公司政策', description: '公司规章制度' },
 ]
 
+const CORRECTIVE_SUB_AGENTS =
+  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
+const CORRECTIVE_DEPARTMENTS =
+  SETTINGS_DEPARTMENTS.length > 0 ? SETTINGS_DEPARTMENTS : MOCK_DEPARTMENTS
+const CORRECTIVE_KNOWLEDGE_BASES =
+  SETTINGS_KNOWLEDGE_BASES.length > 0 ? SETTINGS_KNOWLEDGE_BASES : MOCK_KNOWLEDGE_BASES
+
 // Isolation mode options
 const ISOLATION_MODES: { value: 'strict' | 'standard' | 'open'; label: string; description: string }[] = [
   { value: 'strict', label: '严格隔离', description: '完全隔离，不与其他部门数据交互' },
@@ -159,12 +171,85 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
 
   // Get selected sub-agent info
   const selectedSubAgent = useMemo(() => {
-    return MOCK_SUB_AGENTS.find(a => a.id === selectedSubAgentId)
+    return CORRECTIVE_SUB_AGENTS.find(a => a.id === selectedSubAgentId)
   }, [selectedSubAgentId])
 
   // Load permission config for selected sub-agent
   const handleSelectSubAgent = useCallback((subAgentId: string) => {
     setSelectedSubAgentId(subAgentId)
+    const presets: Record<string, Pick<PermissionConfig, 'boundary' | 'departmentPermissions' | 'knowledgeScopes' | 'visibilityLevel' | 'canAccessPersonalData' | 'canModifyOwnData' | 'isolationMode'>> = {
+      'subagent-001': {
+        boundary: 'cross_department',
+        departmentPermissions: [
+          { departmentId: 'dept-tender', departmentName: '招投标部', dataAccess: 'read', canExecuteActions: true },
+          { departmentId: 'dept-legal', departmentName: '法务部', dataAccess: 'read', canExecuteActions: false },
+        ],
+        knowledgeScopes: [
+          { knowledgeBaseId: 'kb-bid-archive', knowledgeBaseName: '历史标书知识库', accessLevel: 'read' },
+          { knowledgeBaseId: 'kb-template', knowledgeBaseName: '模板资产库', accessLevel: 'read' },
+        ],
+        visibilityLevel: 'visible',
+        canAccessPersonalData: false,
+        canModifyOwnData: false,
+        isolationMode: 'standard',
+      },
+      'subagent-002': {
+        boundary: 'cross_department',
+        departmentPermissions: [
+          { departmentId: 'dept-tender', departmentName: '招投标部', dataAccess: 'read', canExecuteActions: true },
+          { departmentId: 'dept-ops', departmentName: '运营支持', dataAccess: 'read', canExecuteActions: true },
+        ],
+        knowledgeScopes: [
+          { knowledgeBaseId: 'kb-bid-archive', knowledgeBaseName: '历史标书知识库', accessLevel: 'read' },
+          { knowledgeBaseId: 'kb-collaboration', knowledgeBaseName: '协作摘要知识库', accessLevel: 'read' },
+        ],
+        visibilityLevel: 'restricted',
+        canAccessPersonalData: false,
+        canModifyOwnData: false,
+        isolationMode: 'standard',
+      },
+      'subagent-003': {
+        boundary: 'cross_department',
+        departmentPermissions: [
+          { departmentId: 'dept-legal', departmentName: '法务部', dataAccess: 'read', canExecuteActions: true },
+          { departmentId: 'dept-finance', departmentName: '财务部', dataAccess: 'read', canExecuteActions: false },
+        ],
+        knowledgeScopes: [
+          { knowledgeBaseId: 'kb-policy', knowledgeBaseName: '制度与规则知识库', accessLevel: 'read' },
+          { knowledgeBaseId: 'kb-template', knowledgeBaseName: '模板资产库', accessLevel: 'read' },
+        ],
+        visibilityLevel: 'restricted',
+        canAccessPersonalData: false,
+        canModifyOwnData: false,
+        isolationMode: 'strict',
+      },
+      'subagent-004': {
+        boundary: 'cross_department',
+        departmentPermissions: [
+          { departmentId: 'dept-management', departmentName: '管理层', dataAccess: 'read', canExecuteActions: true },
+          { departmentId: 'dept-sales', departmentName: '销售部', dataAccess: 'read', canExecuteActions: true },
+        ],
+        knowledgeScopes: [
+          { knowledgeBaseId: 'kb-collaboration', knowledgeBaseName: '协作摘要知识库', accessLevel: 'read' },
+        ],
+        visibilityLevel: 'visible',
+        canAccessPersonalData: false,
+        canModifyOwnData: false,
+        isolationMode: 'standard',
+      },
+    }
+
+    const preset = presets[subAgentId]
+    if (preset) {
+      setPermissionConfig({
+        subAgentId,
+        ...preset,
+        lastModified: new Date().toISOString(),
+        version: 1,
+      })
+      setSubmitMessage(null)
+      return
+    }
     // Mock: load default permission config
     setPermissionConfig({
       subAgentId,
@@ -208,7 +293,7 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
   }, [permissionConfig])
 
   // Add department permission
-  const handleAddDepartmentPermission = useCallback((dept: typeof MOCK_DEPARTMENTS[0]) => {
+  const handleAddDepartmentPermission = useCallback((dept: typeof CORRECTIVE_DEPARTMENTS[0]) => {
     if (!permissionConfig) return
     const exists = permissionConfig.departmentPermissions.some(p => p.departmentId === dept.id)
     if (exists) return
@@ -245,7 +330,7 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
   }, [permissionConfig])
 
   // Add knowledge scope
-  const handleAddKnowledgeScope = useCallback((kb: typeof MOCK_KNOWLEDGE_BASES[0]) => {
+  const handleAddKnowledgeScope = useCallback((kb: typeof CORRECTIVE_KNOWLEDGE_BASES[0]) => {
     if (!permissionConfig) return
     const exists = permissionConfig.knowledgeScopes.some(k => k.knowledgeBaseId === kb.id)
     if (exists) return
@@ -355,16 +440,16 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
 
   // Get available departments (not yet added)
   const availableDepartments = useMemo(() => {
-    if (!permissionConfig) return MOCK_DEPARTMENTS
+    if (!permissionConfig) return CORRECTIVE_DEPARTMENTS
     const addedIds = new Set(permissionConfig.departmentPermissions.map(p => p.departmentId))
-    return MOCK_DEPARTMENTS.filter(d => !addedIds.has(d.id))
+    return CORRECTIVE_DEPARTMENTS.filter(d => !addedIds.has(d.id))
   }, [permissionConfig])
 
   // Get available knowledge bases (not yet added)
   const availableKnowledgeBases = useMemo(() => {
-    if (!permissionConfig) return MOCK_KNOWLEDGE_BASES
+    if (!permissionConfig) return CORRECTIVE_KNOWLEDGE_BASES
     const addedIds = new Set(permissionConfig.knowledgeScopes.map(k => k.knowledgeBaseId))
-    return MOCK_KNOWLEDGE_BASES.filter(k => !addedIds.has(k.id))
+    return CORRECTIVE_KNOWLEDGE_BASES.filter(k => !addedIds.has(k.id))
   }, [permissionConfig])
 
   return (
@@ -392,7 +477,7 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
                 选择 Sub-Agent
               </h3>
               <div className="space-y-2">
-                {MOCK_SUB_AGENTS.map(agent => (
+                {CORRECTIVE_SUB_AGENTS.map(agent => (
                   <button
                     key={agent.id}
                     className={`w-full text-left p-3 rounded-lg border transition-colors ${

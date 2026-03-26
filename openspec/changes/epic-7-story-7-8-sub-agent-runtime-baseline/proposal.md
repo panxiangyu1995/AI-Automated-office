@@ -1,5 +1,8 @@
 ﻿# Proposal: Sub Agent Runtime Baseline
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for user-main-Agent to Sub-Agent runtime ownership must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Expose automatic sub-agent creation behavior through the core Agent execution surface.
 

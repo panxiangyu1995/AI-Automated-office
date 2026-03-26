@@ -1,5 +1,8 @@
 ﻿# Proposal: Agent Observability Panel
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical story traceability only. Ongoing implementation for observability surfaces must follow the corrective change and the updated iron-law documents.
+
 ## Problem Statement
 Expose task, token, and tool execution metrics to users and admins.
 

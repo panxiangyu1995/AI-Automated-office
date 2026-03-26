@@ -24,6 +24,7 @@ export {
 export { MessageList } from './components/MessageList'
 export { SessionList } from './components/SessionList'
 export { SessionPanel } from './components/SessionPanel'
+export { StagedReviewPanel } from './components/StagedReviewPanel'
 export { HistoryPanel } from './components/HistoryPanel'
 export { CheckpointMarker, CheckpointList } from './components/CheckpointMarker'
 export { RestoreDialog } from './components/RestoreDialog'

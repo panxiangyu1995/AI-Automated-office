@@ -173,10 +173,10 @@ const mockTenantStats: TenantStatistics = {
     { name: 'gpt-3.5-turbo', calls: 189, tokens: 234567 },
   ],
   topTools: [
-    { name: 'fs_read_file', calls: 1234, successRate: 98.5 },
+    { name: 'file_read', calls: 1234, successRate: 98.5 },
     { name: 'http_request', calls: 987, successRate: 95.2 },
-    { name: 'db_query', calls: 654, successRate: 92.1 },
-    { name: 'agent_execute', calls: 432, successRate: 96.7 },
+    { name: 'knowledge_query', calls: 654, successRate: 92.1 },
+    { name: 'workspace_stage_change', calls: 432, successRate: 96.7 },
   ],
   usageByDepartment: [
     { department: '研发部', sessions: 456, tokens: 1234567, cost: 567.89 },
@@ -191,6 +191,66 @@ const mockTenantStats: TenantStatistics = {
     { date: '2024-01-22', sessions: 38, tokens: 76543, cost: 38.90 },
     { date: '2024-01-23', sessions: 61, tokens: 112345, cost: 61.23 },
     { date: '2024-01-24', sessions: 48, tokens: 90123, cost: 48.56 },
+  ],
+}
+
+const correctiveSessionMetrics: SessionMetrics[] = mockSessionMetrics.length > 0 ? [
+  {
+    sessionId: 'sess-c1',
+    sessionName: '标书资料梳理会话',
+    startTime: Date.now() - 1000 * 60 * 30,
+    status: 'active',
+    tokenUsage: { input: 2340, output: 5670, total: 8010 },
+    toolMetrics: { totalCalls: 12, successCount: 11, failedCount: 1, avgLatency: 234 },
+    costMetrics: { inputCost: 0.23, outputCost: 0.57, totalCost: 0.80 },
+  },
+  {
+    sessionId: 'sess-c2',
+    sessionName: '合同草案生成会话',
+    startTime: Date.now() - 1000 * 60 * 60 * 2,
+    endTime: Date.now() - 1000 * 60 * 60,
+    status: 'completed',
+    tokenUsage: { input: 4560, output: 8900, total: 13460 },
+    toolMetrics: { totalCalls: 28, successCount: 27, failedCount: 1, avgLatency: 189 },
+    costMetrics: { inputCost: 0.46, outputCost: 0.89, totalCost: 1.35 },
+  },
+  {
+    sessionId: 'sess-c3',
+    sessionName: '跨部门协作摘要会话',
+    startTime: Date.now() - 1000 * 60 * 60 * 24,
+    endTime: Date.now() - 1000 * 60 * 60 * 23,
+    status: 'failed',
+    tokenUsage: { input: 1230, output: 450, total: 1680 },
+    toolMetrics: { totalCalls: 5, successCount: 3, failedCount: 2, avgLatency: 456 },
+    costMetrics: { inputCost: 0.12, outputCost: 0.05, totalCost: 0.17 },
+  },
+  {
+    sessionId: 'sess-c4',
+    sessionName: '知识草稿沉淀会话',
+    startTime: Date.now() - 1000 * 60 * 60 * 48,
+    endTime: Date.now() - 1000 * 60 * 60 * 47,
+    status: 'completed',
+    tokenUsage: { input: 6780, output: 12340, total: 19120 },
+    toolMetrics: { totalCalls: 34, successCount: 34, failedCount: 0, avgLatency: 178 },
+    costMetrics: { inputCost: 0.68, outputCost: 1.23, totalCost: 1.91 },
+  },
+] : mockSessionMetrics
+
+const correctiveTenantStats: TenantStatistics = {
+  ...mockTenantStats,
+  period: '2026-03',
+  topTools: [
+    { name: 'file_read', calls: 1234, successRate: 98.5 },
+    { name: 'http_request', calls: 987, successRate: 95.2 },
+    { name: 'knowledge_query', calls: 654, successRate: 92.1 },
+    { name: 'workspace_stage_change', calls: 432, successRate: 96.7 },
+  ],
+  usageByDepartment: [
+    { department: '招投标部', sessions: 456, tokens: 1234567, cost: 567.89 },
+    { department: '销售部', sessions: 234, tokens: 567890, cost: 234.56 },
+    { department: '财务部', sessions: 189, tokens: 345678, cost: 178.90 },
+    { department: '法务部', sessions: 156, tokens: 234567, cost: 123.45 },
+    { department: '管理层', sessions: 212, tokens: 156789, cost: 89.76 },
   ],
 }
 
@@ -276,7 +336,7 @@ export function AgentObservabilityPanel() {
               <div>
                 <p className="text-xs text-muted-foreground">总会话数</p>
                 <p className="text-xl font-bold text-[#1E3A5F]">
-                  {formatNumber(mockTenantStats.totalSessions)}
+                  {formatNumber(correctiveTenantStats.totalSessions)}
                 </p>
               </div>
               <Activity className="h-6 w-6 text-[#1E3A5F]/20" />
@@ -294,7 +354,7 @@ export function AgentObservabilityPanel() {
               <div>
                 <p className="text-xs text-muted-foreground">活跃用户</p>
                 <p className="text-xl font-bold text-[#1E3A5F]">
-                  {formatNumber(mockTenantStats.activeUsers)}
+                  {formatNumber(correctiveTenantStats.activeUsers)}
                 </p>
               </div>
               <Users className="h-6 w-6 text-[#1E3A5F]/20" />
@@ -312,13 +372,13 @@ export function AgentObservabilityPanel() {
               <div>
                 <p className="text-xs text-muted-foreground">Token 总量</p>
                 <p className="text-xl font-bold text-[#1E3A5F]">
-                  {formatNumber(mockTenantStats.totalTokens.input + mockTenantStats.totalTokens.output)}
+                  {formatNumber(correctiveTenantStats.totalTokens.input + correctiveTenantStats.totalTokens.output)}
                 </p>
               </div>
               <Cpu className="h-6 w-6 text-[#1E3A5F]/20" />
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
-              输入: {formatNumber(mockTenantStats.totalTokens.input)} / 输出: {formatNumber(mockTenantStats.totalTokens.output)}
+              输入: {formatNumber(correctiveTenantStats.totalTokens.input)} / 输出: {formatNumber(correctiveTenantStats.totalTokens.output)}
             </div>
           </CardContent>
         </Card>
@@ -329,13 +389,13 @@ export function AgentObservabilityPanel() {
               <div>
                 <p className="text-xs text-muted-foreground">工具调用</p>
                 <p className="text-xl font-bold text-[#1E3A5F]">
-                  {formatNumber(mockTenantStats.totalToolCalls)}
+                  {formatNumber(correctiveTenantStats.totalToolCalls)}
                 </p>
               </div>
               <Zap className="h-6 w-6 text-[#1E3A5F]/20" />
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
-              成功率: {mockTenantStats.successRate}%
+              成功率: {correctiveTenantStats.successRate}%
             </div>
           </CardContent>
         </Card>
@@ -346,7 +406,7 @@ export function AgentObservabilityPanel() {
               <div>
                 <p className="text-xs text-muted-foreground">平均响应</p>
                 <p className="text-xl font-bold text-[#1E3A5F]">
-                  {formatTime(mockTenantStats.avgResponseTime)}
+                  {formatTime(correctiveTenantStats.avgResponseTime)}
                 </p>
               </div>
               <Clock className="h-6 w-6 text-[#1E3A5F]/20" />
@@ -364,7 +424,7 @@ export function AgentObservabilityPanel() {
               <div>
                 <p className="text-xs text-muted-foreground">总成本</p>
                 <p className="text-xl font-bold text-[#1E3A5F]">
-                  {formatCost(mockTenantStats.totalCost)}
+                  {formatCost(correctiveTenantStats.totalCost)}
                 </p>
               </div>
               <Database className="h-6 w-6 text-[#1E3A5F]/20" />
@@ -400,7 +460,7 @@ export function AgentObservabilityPanel() {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center justify-between text-base">
                 <span>活跃会话</span>
-                <Badge variant="secondary">{mockSessionMetrics.length} 个会话</Badge>
+                <Badge variant="secondary">{correctiveSessionMetrics.length} 个会话</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -418,7 +478,7 @@ export function AgentObservabilityPanel() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockSessionMetrics.map((session) => (
+                    {correctiveSessionMetrics.map((session) => (
                       <TableRow key={session.sessionId}>
                         <TableCell>
                           <div>
@@ -489,7 +549,7 @@ export function AgentObservabilityPanel() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockTenantStats.topModels.map((model, index) => (
+                  {correctiveTenantStats.topModels.map((model, index) => (
                     <div key={model.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E3A5F] text-xs text-white">
@@ -519,7 +579,7 @@ export function AgentObservabilityPanel() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockTenantStats.topTools.map((tool, index) => (
+                  {correctiveTenantStats.topTools.map((tool, index) => (
                     <div key={tool.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E3A5F] text-xs text-white">
@@ -560,8 +620,8 @@ export function AgentObservabilityPanel() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockTenantStats.usageByDepartment.map((dept) => {
-                    const percentage = (dept.cost / mockTenantStats.totalCost) * 100
+                  {correctiveTenantStats.usageByDepartment.map((dept) => {
+                    const percentage = (dept.cost / correctiveTenantStats.totalCost) * 100
                     return (
                       <TableRow key={dept.department}>
                         <TableCell className="font-medium">{dept.department}</TableCell>
@@ -597,8 +657,8 @@ export function AgentObservabilityPanel() {
             </CardHeader>
             <CardContent>
               <div className="flex items-end gap-4">
-                {mockTenantStats.trend.map((day) => {
-                  const maxTokens = Math.max(...mockTenantStats.trend.map((d) => d.tokens))
+                {correctiveTenantStats.trend.map((day) => {
+                  const maxTokens = Math.max(...correctiveTenantStats.trend.map((d) => d.tokens))
                   const height = (day.tokens / maxTokens) * 100
                   return (
                     <div key={day.date} className="flex flex-1 flex-col items-center gap-2">

@@ -14,10 +14,19 @@ import { useCallback, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
+import { StagedReviewPanel } from './StagedReviewPanel'
 import { 
   useChatStore, 
   useActiveChatSession
 } from '../hooks/useChatStore'
+import {
+  createCardContainerReference,
+  createCardReference,
+  createCardUpdateOperation,
+  createCardWritebackAction,
+  createTextCardContent,
+  useStagedReviewStore,
+} from '@/features/session/runtime'
 import { cn } from '@/lib/utils'
 
 // ==================== Types ====================
@@ -137,6 +146,8 @@ export function AgentChatPanel({
     <div className={cn('flex flex-col h-full bg-white', className)}>
       {/* Header */}
       <ChatHeader />
+
+      <StagedReviewPanel sessionId={activeSessionId} />
       
       {/* Message List */}
       <MessageList className="flex-1 overflow-y-auto" />
@@ -157,7 +168,7 @@ export function AgentChatPanel({
  * 模拟 AI 响应 (用于测试)
  */
 async function simulateResponse(
-  _userContent: string,
+  userContent: string,
   sessionId: string,
   _messageId: string,
   _partId: string
@@ -183,6 +194,33 @@ async function simulateResponse(
   // 完成流式传输
   store.finalizeStreamingMessage(sessionId)
   store.stopStreaming()
+
+  const containerRef = createCardContainerReference(
+    'workbench-tender-draft',
+    'tender-workspace',
+    'dept-tender',
+    'workbench'
+  )
+  const cardRef = createCardReference(`candidate-${Date.now()}`, containerRef, 0)
+  const cardAction = createCardWritebackAction(sessionId, containerRef, [
+    createCardUpdateOperation(cardRef, 'create', {
+      cardData: {
+        title: 'AI 候选业务草稿',
+        description: '等待用户确认后再正式应用到页面。',
+        contentType: 'text',
+        content: createTextCardContent(
+          `基于“${userContent}”生成的候选内容已暂存，请在变更清单中逐条接受或拒绝。`,
+          'markdown'
+        ),
+      },
+    }),
+  ])
+
+  useStagedReviewStore.getState().stageWorkbenchWriteback(cardAction, {
+    title: 'AI 候选改动',
+    summary: '聊天区上方的变更清单会将候选改动与工具调用分开展示，只有用户接受后才算正式生效。',
+    sourceTool: 'workspace_stage_change',
+  })
 }
 
 export default AgentChatPanel

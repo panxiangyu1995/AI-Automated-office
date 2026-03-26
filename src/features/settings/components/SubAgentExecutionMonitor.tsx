@@ -179,6 +179,80 @@ const createMockExecutions = (): SubAgentExecution[] => [
   },
 ]
 
+const createCorrectiveExecutions = (): SubAgentExecution[] => createMockExecutions().length > 0 ? [
+  {
+    id: 'exec-c1',
+    subAgentId: 'subagent-001',
+    subAgentName: '文档起草助手',
+    subAgentTemplate: 'specialist',
+    status: 'running',
+    riskLevel: 'low',
+    startTime: '2026-03-24T10:35:00Z',
+    input: '根据新的投标要求生成一个可审阅的章节草案',
+    steps: [
+      { id: 'step-c1', name: '解析需求', status: 'completed', startTime: '2026-03-24T10:35:00Z', endTime: '2026-03-24T10:35:01Z', duration: 1, details: '识别为文档起草任务' },
+      { id: 'step-c2', name: '读取模板与资料', status: 'completed', startTime: '2026-03-24T10:35:01Z', endTime: '2026-03-24T10:35:02Z', duration: 1, details: '读取云端模板与历史标书摘要' },
+      { id: 'step-c3', name: '暂存候选改动', status: 'running', startTime: '2026-03-24T10:35:02Z' },
+    ],
+    trace: { id: 'trace-c1', parentSessionId: 'session-123', parentMessageId: 'msg-456', linkedAt: '2026-03-24T10:35:00Z' },
+  },
+  {
+    id: 'exec-c2',
+    subAgentId: 'subagent-002',
+    subAgentName: '资料整理助手',
+    subAgentTemplate: 'general',
+    status: 'completed',
+    riskLevel: 'medium',
+    startTime: '2026-03-24T10:30:00Z',
+    endTime: '2026-03-24T10:31:15Z',
+    input: '整理本地旧标书和云端模板，生成本次项目的资料包',
+    output: '已生成资料包：历史标书摘要 3 份、可复用模板 2 份、投标要求提取结果 1 份。',
+    metrics: { duration: 75, inputTokens: 256, outputTokens: 512, totalTokens: 768, latencyMs: 1200 },
+    steps: [
+      { id: 'step-c4', name: '收集资料', status: 'completed', startTime: '2026-03-24T10:30:00Z', endTime: '2026-03-24T10:30:20Z', duration: 20 },
+      { id: 'step-c5', name: '抽取结构', status: 'completed', startTime: '2026-03-24T10:30:20Z', endTime: '2026-03-24T10:30:50Z', duration: 30 },
+      { id: 'step-c6', name: '生成资料摘要', status: 'completed', startTime: '2026-03-24T10:30:50Z', endTime: '2026-03-24T10:31:15Z', duration: 25 },
+    ],
+    trace: { id: 'trace-c2', parentSessionId: 'session-122', parentMessageId: 'msg-455', linkedAt: '2026-03-24T10:30:00Z' },
+  },
+  {
+    id: 'exec-c3',
+    subAgentId: 'subagent-003',
+    subAgentName: '规则校验助手',
+    subAgentTemplate: 'analyst',
+    status: 'failed',
+    riskLevel: 'high',
+    startTime: '2026-03-24T10:25:00Z',
+    endTime: '2026-03-24T10:25:30Z',
+    input: '检查草案中的敏感条款与制度规则',
+    error: '制度规则知识库不可用，无法完成本次校验',
+    steps: [
+      { id: 'step-c7', name: '加载校验规则', status: 'completed', startTime: '2026-03-24T10:25:00Z', endTime: '2026-03-24T10:25:05Z', duration: 5 },
+      { id: 'step-c8', name: '检索制度知识', status: 'failed', startTime: '2026-03-24T10:25:05Z', endTime: '2026-03-24T10:25:30Z', duration: 25, details: '连接超时' },
+    ],
+    trace: { id: 'trace-c3', parentSessionId: 'session-121', parentMessageId: 'msg-454', linkedAt: '2026-03-24T10:25:00Z' },
+  },
+  {
+    id: 'exec-c4',
+    subAgentId: 'subagent-004',
+    subAgentName: '协作协调助手',
+    subAgentTemplate: 'coordinator',
+    status: 'completed',
+    riskLevel: 'low',
+    startTime: '2026-03-24T10:20:00Z',
+    endTime: '2026-03-24T10:20:45Z',
+    input: '向财务和法务发送项目协作摘要，并回收确认结果',
+    output: '已发送协作摘要并收到 2 条回执：财务已确认报价口径，法务标记 1 个风险条款。',
+    metrics: { duration: 45, inputTokens: 128, outputTokens: 256, totalTokens: 384, latencyMs: 800 },
+    steps: [
+      { id: 'step-c9', name: '生成摘要', status: 'completed', startTime: '2026-03-24T10:20:00Z', endTime: '2026-03-24T10:20:25Z', duration: 25 },
+      { id: 'step-c10', name: '发送消息', status: 'completed', startTime: '2026-03-24T10:20:25Z', endTime: '2026-03-24T10:20:40Z', duration: 15 },
+      { id: 'step-c11', name: '整理回执', status: 'completed', startTime: '2026-03-24T10:20:40Z', endTime: '2026-03-24T10:20:45Z', duration: 5 },
+    ],
+    trace: { id: 'trace-c4', parentSessionId: 'session-120', parentMessageId: 'msg-453', linkedAt: '2026-03-24T10:20:00Z' },
+  },
+] : createMockExecutions()
+
 // Status icon mapping
 const getStatusIcon = (status: ExecutionStatus) => {
   switch (status) {
@@ -226,7 +300,7 @@ const getRiskBadge = (level: SubAgentExecutionRiskLevel) => {
 }
 
 export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMonitorProps) {
-  const [executions] = useState<SubAgentExecution[]>(createMockExecutions())
+  const [executions] = useState<SubAgentExecution[]>(createCorrectiveExecutions())
   const [selectedExecution, setSelectedExecution] = useState<SubAgentExecution | null>(null)
 
   // Stats

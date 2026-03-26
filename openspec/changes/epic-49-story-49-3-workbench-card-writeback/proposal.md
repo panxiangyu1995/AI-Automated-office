@@ -1,5 +1,8 @@
 # Proposal: Workbench Card Writeback
 
+> Status: Standalone execution direction superseded by `agent-platform-course-correction`.
+> Keep this change as historical foundation traceability only. Ongoing implementation for workbench-card writeback must route through the corrective staged-review contract and updated iron-law documents.
+
 ## Background
 Generate and update workbench cards through the dynamic host runtime.
 
