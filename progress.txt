@@ -6655,3 +6655,31 @@
 ### Notes:
 - 本次未改动 `legacy-governance.md`，因为新增内容属于现行铁律前向补充，不涉及恢复 superseded legacy change
 - 如需继续推进，我可以下一步把 `Epic 58` 进一步拆成 OpenSpec change 与 tasks
+
+---
+
+## [2026-03-26] - Direct Request: AI 面板历史/会话次级视图交互重构
+
+### 铁律合规检查：
+- PRD 合规：本次仅重构 AI 辅助面板的交互逻辑与入口一致性，不新增超出“固定壳层 + AI 辅助面板 + 人工审阅落地”的产品能力
+- 架构合规：沿用既有聊天会话、历史管理和 staged review runtime，不引入新的会话执行路径；仅补充 UI shell 状态
+- UX 合规：保持 VSCode-like 固定壳层，移除 AI 面板内常驻的嵌套次级侧栏，改为按需打开的次级抽屉
+- Epic 合规：工作落在 `task.json` 新增的任务 `110` 与 OpenSpec change `agent-panel-secondary-surface-refactor`
+
+### What was done:
+- 创建并完成 `openspec/changes/agent-panel-secondary-surface-refactor/` 的 proposal、design、spec 与 tasks
+- 在 `task.json` 中新增任务 `110`，将本轮 UI 交互重构纳入活动任务批次
+- 为 UI shell 增加 AI 面板次级视图状态，支持会话列表 / 历史记录按需打开、选择后关闭、ESC 关闭和遮罩关闭
+- 重构 `SessionPanel` / `AgentChatPanel` 为聊天优先布局，并统一 TopBar `视图 / 助手`、面板头部按钮与布局控制按钮的行为
+- 统一前端设置页、提示文案、hook 测试与 Tauri 默认快捷键到 `CmdOrCtrl+Shift+I`
+- 新增针对 AI 面板次级视图的 Vitest 集成测试与 Playwright smoke 用例
+
+### Testing:
+- `npx.cmd vitest run --config vitest.config.ts src/hooks/__tests__/useGlobalShortcuts.test.ts tests/integration/agent-panel-secondary-surface.test.tsx tests/integration/auth/account-menu.test.tsx` 通过
+- `$env:VITE_BYPASS_AUTH='true'; npx.cmd playwright test tests/e2e/smoke/agent-panel.spec.ts --project=smoke` 通过
+- `npm.cmd run lint` 通过
+- `npm.cmd run build` 通过
+
+### Notes:
+- 浏览器 smoke 首轮暴露出遮罩层点击被抽屉内容拦截的问题，已通过限制遮罩覆盖范围修复
+- 仓库中存在与本次请求无关的未跟踪文档目录，本轮未触碰
