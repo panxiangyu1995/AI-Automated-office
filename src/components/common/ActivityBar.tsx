@@ -24,7 +24,8 @@ const activityItems: { id: ActivityBarItem; icon: typeof LayoutGrid; label: stri
 ]
 
 export function ActivityBar() {
-  const { activeActivityItem, setActiveActivityItem } = useUIStore()
+  const activeActivityItem = useUIStore((state) => state.activeActivityItem)
+  const setActiveActivityItem = useUIStore((state) => state.setActiveActivityItem)
 
   return (
     <aside

@@ -1,0 +1,25 @@
+name: epic-41-43-store-selector-best-practice-alignment
+status: pending
+created_at: 2026-03-26
+epic: 41
+story: Best Practice Alignment (Shell + Session Store Subscriptions)
+title: Store Selector Best Practice Alignment
+mapping:
+  frs:
+    - FR9
+    - FR10
+    - FR11
+    - FR260
+    - FR261
+    - FR262
+    - FR263
+  nfrs:
+    - NFR3
+  arch:
+    - ADR-001
+    - ADR-004
+    - ADR-035
+  ux:
+    - UX-01
+    - UX-02
+    - UX-04

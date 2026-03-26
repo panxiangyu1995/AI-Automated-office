@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore'
 const DEV_MODE_BYPASS_AUTH = import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === 'true'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const navigate = useNavigate()
   const location = useLocation()
 

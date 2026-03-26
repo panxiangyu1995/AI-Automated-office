@@ -11,7 +11,7 @@ interface WorkbenchProps {
 }
 
 export function Workbench({ children, className = '', descriptor }: WorkbenchProps) {
-  const { activeActivityItem } = useUIStore()
+  const activeActivityItem = useUIStore((state) => state.activeActivityItem)
   const location = useLocation()
   const params = useParams()
   const outlet = useOutlet()

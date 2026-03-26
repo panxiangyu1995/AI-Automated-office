@@ -23,10 +23,12 @@ import {
   ChevronDown,
   FileText
 } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 import { cn } from '@/lib/utils'
 import { 
   useHistoryStore, 
   useHistoryFilter, 
+  useArchivedSessions,
   type TimeFilter,
   type ArchivedSession 
 } from '../hooks/useHistoryStore'
@@ -208,8 +210,27 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
   const [showTimeFilter, setShowTimeFilter] = useState(false)
   
   const filter = useHistoryFilter()
-  const { setKeyword, setTimeRange, clearFilters, archiveSession, restoreSession, deleteArchivedSession, getArchivedSessions } = useHistoryStore()
-  const { sessions, activeSessionId, setActiveSession } = useChatStore()
+  const archivedSessions = useArchivedSessions()
+  const {
+    setKeyword,
+    setTimeRange,
+    clearFilters,
+    archiveSession,
+    restoreSession,
+    deleteArchivedSession,
+  } = useHistoryStore(
+    useShallow((state) => ({
+      setKeyword: state.setKeyword,
+      setTimeRange: state.setTimeRange,
+      clearFilters: state.clearFilters,
+      archiveSession: state.archiveSession,
+      restoreSession: state.restoreSession,
+      deleteArchivedSession: state.deleteArchivedSession,
+    }))
+  )
+  const sessions = useChatStore((state) => state.sessions)
+  const activeSessionId = useChatStore((state) => state.activeSessionId)
+  const setActiveSession = useChatStore((state) => state.setActiveSession)
   
   // Filter sessions based on keyword and time range
   const filteredSessions = useMemo(() => {
@@ -256,8 +277,6 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
     
     return result
   }, [sessions, filter])
-  
-  const archivedSessions = getArchivedSessions()
   
   const handleSelectSession = useCallback((sessionId: string) => {
     setActiveSession(sessionId)

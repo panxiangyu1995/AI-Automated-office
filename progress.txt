@@ -6457,3 +6457,46 @@
 ### Notes:
 - `openspec.cmd list --json` 已识别新增的 3 个纠偏变更
 - 工作区仍存在用户先前的未提交改动，本次未回退、不覆盖历史变更
+
+---
+
+## [2026-03-26] - Direct Request: Context7 最佳实践审计后的首批 React/Zustand 纠偏
+
+### 铁律合规检查：
+- PRD 合规：统一 Agent Runtime、固定 UI + Mixed UI + Dynamic UI 宿主、会话管理与治理面板保持语义不变
+- 架构合规：分层架构、Workbench 宿主、Session 运行时与治理面板继续复用现有基础，不额外引入新运行边界
+- UX 合规：不改变现有 VSCode-like 壳层、设置工作台、AI 会话区与治理面板交互
+- Epic 合规：Epic 4, Epic 32, Epic 36, Epic 41, Epic 43
+
+### What was done:
+- 通过 Context7 对 React 官方文档与 Zustand 官方文档做最佳实践核对，确认两批高价值问题
+  - 壳层与会话面存在整仓 Zustand 订阅
+  - 若干运行治理面板把简单 fallback 值也包进了无收益 `useMemo`
+- 新建 2 个 OpenSpec changes
+  - `epic-41-43-store-selector-best-practice-alignment`
+  - `epic-32-36-react-memo-best-practice-alignment`
+- 更新 `task.json`
+  - 追加 Task 108-109，并在验证通过后标记完成
+- 收窄 shell / session 的 Zustand 订阅粒度
+  - `App`、`AppLayout`、`Workbench`、`TopBar`、`ActivityBar`、`Sidebar`、`AiChatPanel`、`BottomPanel`、`AuthGuard`
+  - `useAuth`、`useChatStore.useStreamingStatus`
+  - `AgentChatPanel`、`SessionPanel`、`SessionList`、`HistoryPanel`
+  - 对多字段读取改用 `useShallow`，对单字段读取改成 selector，保持现有行为不变
+- 简化运行治理面板中的无收益 memo
+  - `ErrorClassificationGuidance`
+  - `FailoverSessionRepair`
+  - `LogMetricsCenter`
+  - 保留统计、筛选、聚合等真正有意义的 `useMemo`
+- 新增回归测试
+  - `tests/integration/runtime-panel-fallbacks.test.tsx`
+
+### Testing:
+- `npm run validate:manifests` 通过
+- `npm run lint` 通过
+- `npx vitest run --config vitest.config.ts tests/integration/workbench-host.test.tsx tests/integration/sidebar-resource-entry.test.tsx tests/integration/auth/account-menu.test.tsx tests/integration/agent-chat-staged-review.test.tsx tests/integration/runtime-panel-fallbacks.test.tsx` 通过
+- `npm run build` 通过
+- `VITE_BYPASS_AUTH=true npx playwright test tests/e2e/smoke/settings.spec.ts --project=smoke` 通过
+
+### Notes:
+- Context7 最佳实践结论已落成第一批高置信重构，其他低收益或高耦合项暂未扩散到全仓
+- Vitest 在沙箱中因 `esbuild` 子进程 `spawn EPERM` 失败，已按规则提权重跑并通过

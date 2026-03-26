@@ -14,6 +14,7 @@
 
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { useShallow } from 'zustand/react/shallow'
 import type { Message, TextPart, Part, MessageStatus, MessageRole } from '../../message/runtime/messageModel'
 import { useCheckpointStore } from './useCheckpointStore'
 
@@ -444,11 +445,13 @@ export function useStreamingStatus(): {
   streamingContent: string
   streamingMessageId: string | null
 } {
-  return useChatStore((state) => ({
-    isStreaming: state.isStreaming,
-    streamingContent: state.streamingContent,
-    streamingMessageId: state.streamingMessageId,
-  }))
+  return useChatStore(
+    useShallow((state) => ({
+      isStreaming: state.isStreaming,
+      streamingContent: state.streamingContent,
+      streamingMessageId: state.streamingMessageId,
+    }))
+  )
 }
 
 // ==================== Export ====================

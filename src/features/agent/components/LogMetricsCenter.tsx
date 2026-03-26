@@ -667,9 +667,9 @@ export function LogMetricsCenter({
   metrics: initialMetrics,
   healthIndicators: initialHealthIndicators,
 }: LogMetricsCenterProps) {
-  const logs = useMemo(() => initialLogs || mockLogs, [initialLogs])
-  const metrics = useMemo(() => initialMetrics || mockMetrics, [initialMetrics])
-  const healthIndicators = useMemo(() => initialHealthIndicators || mockHealthIndicators, [initialHealthIndicators])
+  const logs = initialLogs ?? mockLogs
+  const metrics = initialMetrics ?? mockMetrics
+  const healthIndicators = initialHealthIndicators ?? mockHealthIndicators
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')

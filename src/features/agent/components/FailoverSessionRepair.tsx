@@ -564,12 +564,9 @@ export function FailoverSessionRepair({
   failoverRecords: initialRecords,
   sessionRepairs: initialRepairs,
 }: FailoverSessionRepairProps) {
-  const providers = useMemo(() => initialProviders || mockProviders, [initialProviders])
-  const failoverRecords = useMemo(
-    () => initialRecords || mockFailoverRecords,
-    [initialRecords]
-  )
-  const sessionRepairs = useMemo(() => initialRepairs || mockSessionRepairs, [initialRepairs])
+  const providers = initialProviders ?? mockProviders
+  const failoverRecords = initialRecords ?? mockFailoverRecords
+  const sessionRepairs = initialRepairs ?? mockSessionRepairs
 
   const [activeTab, setActiveTab] = useState<'providers' | 'failovers' | 'repairs'>('providers')
   const [searchQuery, setSearchQuery] = useState('')

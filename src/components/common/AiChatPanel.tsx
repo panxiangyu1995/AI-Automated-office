@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { ResizablePanel } from './ResizablePanel'
 import { useUIStore } from '../../stores/uiStore'
 import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
@@ -29,7 +30,14 @@ export function AiChatPanel({ children }: AiChatPanelProps) {
     chatPanelCollapsed,
     setChatPanelWidth,
     toggleChatPanel,
-  } = useUIStore()
+  } = useUIStore(
+    useShallow((state) => ({
+      chatPanelWidth: state.chatPanelWidth,
+      chatPanelCollapsed: state.chatPanelCollapsed,
+      setChatPanelWidth: state.setChatPanelWidth,
+      toggleChatPanel: state.toggleChatPanel,
+    }))
+  )
 
   // 使用快捷键监听器
   useShortcutListener('open-ai-chat', toggleChatPanel)

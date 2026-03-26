@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { open } from '@tauri-apps/plugin-shell'
 import { useNavigate } from 'react-router-dom'
+import { useShallow } from 'zustand/react/shallow'
 import {
   Bot,
   CircleUserRound,
@@ -56,8 +57,25 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     toggleChatPanel,
     toggleBottomPanel,
     setActiveActivityItem,
-  } = useUIStore()
-  const { user, isAuthenticated, clearAuthSession, switchAccount } = useAuthStore()
+  } = useUIStore(
+    useShallow((state) => ({
+      sidebarCollapsed: state.sidebarCollapsed,
+      chatPanelCollapsed: state.chatPanelCollapsed,
+      bottomPanelCollapsed: state.bottomPanelCollapsed,
+      toggleSidebar: state.toggleSidebar,
+      toggleChatPanel: state.toggleChatPanel,
+      toggleBottomPanel: state.toggleBottomPanel,
+      setActiveActivityItem: state.setActiveActivityItem,
+    }))
+  )
+  const { user, isAuthenticated, clearAuthSession, switchAccount } = useAuthStore(
+    useShallow((state) => ({
+      user: state.user,
+      isAuthenticated: state.isAuthenticated,
+      clearAuthSession: state.clearAuthSession,
+      switchAccount: state.switchAccount,
+    }))
+  )
 
   // 硬件对话框状态
   const [scanDialogOpen, setScanDialogOpen] = useState(false)
@@ -114,13 +132,13 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     navigate('/login', { replace: true })
   }, [navigate])
 
-  const handleSwitchAccount = useCallback(() => {
-    switchAccount()
+  const handleSwitchAccount = useCallback(async () => {
+    await switchAccount()
     navigateToLogin()
   }, [switchAccount, navigateToLogin])
 
-  const handleLogout = useCallback(() => {
-    clearAuthSession()
+  const handleLogout = useCallback(async () => {
+    await clearAuthSession()
     navigateToLogin()
   }, [clearAuthSession, navigateToLogin])
 
@@ -441,8 +459,8 @@ interface AccountMenuProps {
     role: string
   } | null
   onNavigateToLogin: () => void
-  onSwitchAccount: () => void
-  onLogout: () => void
+  onSwitchAccount: () => Promise<void>
+  onLogout: () => Promise<void>
   handleMenuAction: (label: string, handler?: () => void | Promise<void>) => (event?: Event) => void
 }
 

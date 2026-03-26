@@ -3670,6 +3670,88 @@
         "Task 106"
       ],
       "passes": true
+    },
+    {
+      "id": 108,
+      "epic": "Epic 41 / Epic 43 / Epic 4",
+      "story": "Best Practice Alignment (Shell + Session Store Subscriptions)",
+      "title": "Workbench 壳层与会话订阅粒度最佳实践纠偏",
+      "description": "Refactor shell and session-facing Zustand usage to selector-based subscriptions and shallow composite picks, keeping the iron-law fixed/mixed/dynamic UI responsibilities and session behavior unchanged.",
+      "openspec_change": "epic-41-43-store-selector-best-practice-alignment",
+      "steps": [
+        "Refactor App shell, workbench, auth, and session-facing components to subscribe through selectors instead of whole-store destructuring",
+        "Use shallow composite selectors for multi-field UI, auth, and session state reads where components need a stable object snapshot",
+        "Keep session creation, session switching, workbench host rendering, sidebar navigation, and account actions behaviorally unchanged",
+        "Verify the refactor with targeted workbench, sidebar, account, staged-review, and browser smoke coverage"
+      ],
+      "frs_covered": [
+        "FR9",
+        "FR10",
+        "FR11",
+        "FR260",
+        "FR261",
+        "FR262",
+        "FR263"
+      ],
+      "nfrs_covered": [
+        "NFR3"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-004",
+        "ADR-035"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 104"
+      ],
+      "passes": true
+    },
+    {
+      "id": 109,
+      "epic": "Epic 32 / Epic 36",
+      "story": "Best Practice Alignment (Observability + Reliability Panels)",
+      "title": "可观测与可靠性面板 React 派生态最佳实践纠偏",
+      "description": "Remove no-op memo wrappers from runtime observability and reliability panels, keep cheap fallback derivation inside render, and preserve expensive aggregation memoization only where it materially reduces recomputation.",
+      "openspec_change": "epic-32-36-react-memo-best-practice-alignment",
+      "steps": [
+        "Replace simple fallback-value useMemo usage in the affected observability and reliability panels with direct render-time derivation",
+        "Keep stats, filtering, and list aggregation memoization only for materially repeated computations",
+        "Preserve default sample data, filtering, export, and panel copy behavior across the affected surfaces",
+        "Verify the refactor with targeted runtime panel rendering coverage plus lint and build validation"
+      ],
+      "frs_covered": [
+        "FR1100",
+        "FR1102",
+        "FR1103",
+        "FR1146",
+        "FR1162",
+        "FR1163",
+        "FR1164",
+        "FR1165",
+        "FR1169"
+      ],
+      "nfrs_covered": [
+        "NFR3",
+        "NFR35"
+      ],
+      "arch_covered": [
+        "ADR-023",
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 104",
+        "Task 108"
+      ],
+      "passes": true
     }
   ]
 }

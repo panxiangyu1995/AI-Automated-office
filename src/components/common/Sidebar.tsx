@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useShallow } from 'zustand/react/shallow'
 import {
   Building2,
   FileText,
@@ -50,7 +51,17 @@ export function Sidebar({ children }: SidebarProps) {
     editorSidebarEntries,
     recentSidebarEntries,
     setActiveActivityItem,
-  } = useUIStore()
+  } = useUIStore(
+    useShallow((state) => ({
+      sidebarWidth: state.sidebarWidth,
+      sidebarCollapsed: state.sidebarCollapsed,
+      setSidebarWidth: state.setSidebarWidth,
+      dynamicSidebarEntries: state.dynamicSidebarEntries,
+      editorSidebarEntries: state.editorSidebarEntries,
+      recentSidebarEntries: state.recentSidebarEntries,
+      setActiveActivityItem: state.setActiveActivityItem,
+    }))
+  )
   const location = useLocation()
   const navigate = useNavigate()
 

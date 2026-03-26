@@ -12,6 +12,7 @@
 
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { useShallow } from 'zustand/react/shallow'
 import { useChatStore, type ChatSession } from './useChatStore'
 
 // ==================== Types ====================
@@ -238,7 +239,11 @@ export function useHistoryFilter(): HistoryFilter {
  * 获取归档的会话列表
  */
 export function useArchivedSessions(): ArchivedSession[] {
-  return useHistoryStore((state) => state.getArchivedSessions())
+  return useHistoryStore(
+    useShallow((state) =>
+      [...Object.values(state.archivedSessions)].sort((a, b) => b.archivedAt - a.archivedAt)
+    )
+  )
 }
 
 // ==================== Export ====================

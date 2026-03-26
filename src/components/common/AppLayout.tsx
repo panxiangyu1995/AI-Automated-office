@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useShallow } from 'zustand/react/shallow'
 import { useUIStore } from '../../stores/uiStore'
 import { useEditorStore } from '../../stores/editorStore'
 import { TopBar } from './TopBar'
@@ -24,7 +25,7 @@ const searchResults: SearchResult[] = []
 
 export function AppLayout() {
   const location = useLocation()
-  const { 
+  const {
     sidebarCollapsed,
     topBarVisible,
     quickSearchOpen,
@@ -32,7 +33,17 @@ export function AppLayout() {
     closeQuickSearch,
     toggleTopBar,
     setActiveActivityItem,
-  } = useUIStore()
+  } = useUIStore(
+    useShallow((state) => ({
+      sidebarCollapsed: state.sidebarCollapsed,
+      topBarVisible: state.topBarVisible,
+      quickSearchOpen: state.quickSearchOpen,
+      openQuickSearch: state.openQuickSearch,
+      closeQuickSearch: state.closeQuickSearch,
+      toggleTopBar: state.toggleTopBar,
+      setActiveActivityItem: state.setActiveActivityItem,
+    }))
+  )
   const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -45,9 +56,7 @@ export function AppLayout() {
     closeQuickSearch()
   }
 
-  useShortcutListener('open-quick-search', () => {
-    openQuickSearch()
-  })
+  useShortcutListener('open-quick-search', openQuickSearch)
 
   useShortcutListener('open-settings', () => {
     setActiveActivityItem('settings')

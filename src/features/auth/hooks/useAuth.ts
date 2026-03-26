@@ -1,4 +1,5 @@
-﻿import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useShallow } from 'zustand/react/shallow'
 import { useAuthStore } from '@/stores/authStore'
 import { authApi } from '../api/authApi'
 import type { LoginRequest, RegisterRequest } from '../types/auth.types'
@@ -13,7 +14,18 @@ export function useAuth() {
     accessToken,
     refreshToken,
     updateToken,
-  } = useAuthStore()
+  } = useAuthStore(
+    useShallow((state) => ({
+      setAuth: state.setAuth,
+      clearAuthSession: state.clearAuthSession,
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+      permissions: state.permissions,
+      accessToken: state.accessToken,
+      refreshToken: state.refreshToken,
+      updateToken: state.updateToken,
+    }))
+  )
   const navigate = useNavigate()
 
   const login = async (request: LoginRequest) => {

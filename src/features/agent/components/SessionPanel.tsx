@@ -42,7 +42,8 @@ export function SessionPanel({
 }: SessionPanelProps) {
   const [showSidebar, setShowSidebar] = useState(defaultShowSidebar)
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>(defaultSidebarMode)
-  const { activeSessionId, createSession } = useChatStore()
+  const activeSessionId = useChatStore((state) => state.activeSessionId)
+  const createSession = useChatStore((state) => state.createSession)
   
   // 初始化：创建默认会话
   useEffect(() => {

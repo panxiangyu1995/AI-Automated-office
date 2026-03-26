@@ -12,6 +12,7 @@
 
 import { useState, useMemo } from 'react'
 import { MessageSquare, Plus, MoreVertical, Pencil, Trash2, Check, X } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 import { cn } from '@/lib/utils'
 import { useChatStore, type ChatSession } from '../hooks/useChatStore'
 
@@ -185,7 +186,16 @@ export function SessionList({ className, onNewSession }: SessionListProps) {
     updateSessionTitle, 
     deleteSession,
     createSession 
-  } = useChatStore()
+  } = useChatStore(
+    useShallow((state) => ({
+      sessions: state.sessions,
+      activeSessionId: state.activeSessionId,
+      setActiveSession: state.setActiveSession,
+      updateSessionTitle: state.updateSessionTitle,
+      deleteSession: state.deleteSession,
+      createSession: state.createSession,
+    }))
+  )
   
   // Sort sessions by updatedAt (newest first)
   const sortedSessions = useMemo(() => {

@@ -2,11 +2,9 @@ import { ResizablePanel } from './ResizablePanel'
 import { useUIStore } from '../../stores/uiStore'
 
 export function BottomPanel() {
-  const {
-    bottomPanelHeight,
-    bottomPanelCollapsed,
-    setBottomPanelHeight,
-  } = useUIStore()
+  const bottomPanelHeight = useUIStore((state) => state.bottomPanelHeight)
+  const bottomPanelCollapsed = useUIStore((state) => state.bottomPanelCollapsed)
+  const setBottomPanelHeight = useUIStore((state) => state.setBottomPanelHeight)
 
   return (
     <ResizablePanel

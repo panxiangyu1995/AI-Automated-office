@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect } from 'react'
 import { Plus } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { StagedReviewPanel } from './StagedReviewPanel'
@@ -40,7 +41,7 @@ interface AgentChatPanelProps {
 // ==================== Header Component ====================
 
 function ChatHeader() {
-  const { createSession } = useChatStore()
+  const createSession = useChatStore((state) => state.createSession)
   const activeSession = useActiveChatSession()
   
   const handleNewChat = () => {
@@ -91,7 +92,16 @@ export function AgentChatPanel({
     addAssistantMessage,
     startStreaming,
     stopStreaming,
-  } = useChatStore()
+  } = useChatStore(
+    useShallow((state) => ({
+      activeSessionId: state.activeSessionId,
+      createSession: state.createSession,
+      addUserMessage: state.addUserMessage,
+      addAssistantMessage: state.addAssistantMessage,
+      startStreaming: state.startStreaming,
+      stopStreaming: state.stopStreaming,
+    }))
+  )
   
   // 初始化：创建默认会话
   useEffect(() => {

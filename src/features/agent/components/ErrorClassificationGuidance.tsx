@@ -488,8 +488,8 @@ export function ErrorClassificationGuidance({
   errors: initialErrors,
   errorCodes: initialErrorCodes,
 }: ErrorClassificationGuidanceProps) {
-  const errors = useMemo(() => initialErrors || mockErrorInstances, [initialErrors])
-  const errorCodes = useMemo(() => initialErrorCodes || mockErrorCodes, [initialErrorCodes])
+  const errors = initialErrors ?? mockErrorInstances
+  const errorCodes = initialErrorCodes ?? mockErrorCodes
 
   const [activeTab, setActiveTab] = useState<'errors' | 'codes' | 'guidance'>('errors')
   const [searchQuery, setSearchQuery] = useState('')

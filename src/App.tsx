@@ -19,10 +19,12 @@ import { Toaster } from './components/ui/toaster'
 import { setForbiddenHandler, setUnauthorizedHandler } from './lib/api/interceptors'
 import { createWorkbenchRouteObjects } from './routes/workbenchRoutes'
 
+const workbenchRouteObjects = createWorkbenchRouteObjects()
+
 function App() {
-  const workbenchRouteObjects = createWorkbenchRouteObjects()
-  const { setInitialized } = useAppStore()
-  const { restoreSession, isAuthenticated } = useAuthStore()
+  const setInitialized = useAppStore((state) => state.setInitialized)
+  const restoreSession = useAuthStore((state) => state.restoreSession)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const showForbidden = usePermissionStore((state) => state.showForbidden)
   const hideForbidden = usePermissionStore((state) => state.hideForbidden)
   const forbiddenModal = usePermissionStore((state) => state.forbiddenModal)
@@ -122,15 +124,11 @@ function App() {
     void initApp()
   }, [restoreSession, setInitialized])
 
-  const handleAutoCheckUpdate = useCallback(async () => {
-    await checkUpdate()
-  }, [checkUpdate])
-
   useEffect(() => {
     if (!loading) {
-      void handleAutoCheckUpdate()
+      void checkUpdate()
     }
-  }, [loading, handleAutoCheckUpdate])
+  }, [loading, checkUpdate])
 
   useEffect(() => {
     const dismissed = localStorage.getItem('topbar-hint-dismissed')
