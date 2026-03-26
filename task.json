@@ -1,12 +1,12 @@
 {
   "version": "2.0.0",
   "lastUpdated": "2026-03-26",
-  "scope": "Historical agent-first tasks plus corrective rebaseline follow-up",
+  "scope": "Historical agent-first tasks plus corrective rebaseline and iron-law alignment wave 1",
   "batch": "Agent Master Plan",
-  "range": "Task 1-104",
+  "range": "Task 1-107",
   "roadmap": "docs/agent-implementation-roadmap.md",
   "sourceOfTruth": "openspec/changes/agent-platform-course-correction",
-  "activeNote": "Tasks 1-103 remain as completed implementation history. Task 104 records the completed corrective rebaseline after the iron-law update.",
+  "activeNote": "Tasks 1-103 remain as completed implementation history. Task 104 records the completed corrective rebaseline after the iron-law update. Tasks 105-107 are the active iron-law alignment wave for Sub-Agent ownership, capability supply visibility, and staged review governance.",
   "tasks": [
     {
       "id": 1,
@@ -3545,6 +3545,130 @@
         "UX-04"
       ],
       "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 105,
+      "epic": "Epic 21",
+      "story": "Corrective Alignment (Stories 21.17-21.23)",
+      "title": "Sub-Agent 主体与配置界面纠偏",
+      "description": "Align Sub-Agent settings surfaces to the iron-law model of one main Agent per user with user-owned Sub-Agents, while treating departments strictly as capability, permission, and context boundaries.",
+      "openspec_change": "epic-21-sub-agent-ownership-alignment",
+      "steps": [
+        "Refactor registry, persona, permission, model, routing, execution, and binding surfaces to use the corrective shared Sub-Agent fixtures",
+        "Remove department-specific Agent mock copy and sample data from the affected settings pages",
+        "Make default persona drafts inherit the selected Sub-Agent template role and invocation description",
+        "Verify corrected ownership copy and default behavior through targeted settings integration coverage"
+      ],
+      "frs_covered": [
+        "FR890-FR900",
+        "FR905-FR914",
+        "FR915-FR925",
+        "FR930-FR938",
+        "FR460",
+        "FR461",
+        "FR922"
+      ],
+      "nfrs_covered": [
+        "NFR16",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-013",
+        "ADR-039",
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 104"
+      ],
+      "passes": true
+    },
+    {
+      "id": 106,
+      "epic": "Epic 5 / Epic 21",
+      "story": "Corrective Alignment (Tool Calling 2.0)",
+      "title": "Tool Calling 2.0 与能力供给可见性纠偏",
+      "description": "Rebaseline capability status, tool history, observability, and visible Skill source summaries to the iron-law Tool Calling 2.0 layering and capability-supply model.",
+      "openspec_change": "epic-5-capability-supply-visibility-alignment",
+      "steps": [
+        "Rename capability labels and descriptions to the corrected capability-supply terminology",
+        "Refactor tool history categories, labels, and default entries to general, platform, department, and restricted layers",
+        "Remove restricted low-level default-facing examples such as db_query from ordinary history samples",
+        "Preserve visible distinction between platform built-in, department built-in, and user-installed Skills where the affected surfaces summarize capability sources"
+      ],
+      "frs_covered": [
+        "FR69-FR80",
+        "FR74",
+        "FR75",
+        "FR79",
+        "FR80",
+        "FR500-FR502",
+        "FR835-FR840"
+      ],
+      "nfrs_covered": [
+        "NFR8-6",
+        "NFR8-7",
+        "NFR16",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-020",
+        "ADR-023",
+        "ADR-025",
+        "ADR-045",
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 104"
+      ],
+      "passes": true
+    },
+    {
+      "id": 107,
+      "epic": "Epic 49 / Epic 5",
+      "story": "Corrective Alignment (Staged Review)",
+      "title": "AI 暂存写回与审阅清单显性化纠偏",
+      "description": "Keep staged candidate-change review clearly separate from tool-call display, expose source metadata in the review surface, and reinforce that accept/reject/rollback remain user-only review actions.",
+      "openspec_change": "epic-49-staged-review-governance-alignment",
+      "steps": [
+        "Expose staged review package source kind and source tool information in the review surface",
+        "Preserve the staged review runtime guard that prevents AI actors from finalizing accept, reject, or rollback actions",
+        "Verify that staged review packages remain distinct from tool call cards in the affected chat and review tests"
+      ],
+      "frs_covered": [
+        "FR69",
+        "FR70",
+        "FR76",
+        "FR79",
+        "FR80",
+        "FR470-FR498"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR23-8"
+      ],
+      "arch_covered": [
+        "ADR-035",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 104",
+        "Task 106"
+      ],
       "passes": true
     }
   ]

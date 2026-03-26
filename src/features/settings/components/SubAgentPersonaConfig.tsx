@@ -96,25 +96,15 @@ const SOUL_TEMPLATES: Record<SoulTemplate, { name: string; description: string }
   },
 }
 
-// Mock Sub-Agent list (should be replaced with actual data from store)
-const MOCK_SUB_AGENTS = [
-  { id: 'subagent-001', name: 'HR助手', template: 'specialist', enabled: true },
-  { id: 'subagent-002', name: '财务分析师', template: 'analyst', enabled: true },
-  { id: 'subagent-003', name: '销售协调员', template: 'coordinator', enabled: true },
-  { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
-]
+const CORRECTIVE_SUB_AGENTS = SETTINGS_SUB_AGENT_OPTIONS
 
-const CORRECTIVE_SUB_AGENTS =
-  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
-
-// Mock audit history
-const createMockAuditHistory = (): PersonaAuditEntry[] => [
+const createCorrectiveAuditHistory = (): PersonaAuditEntry[] => [
   {
     id: 'audit-001',
     timestamp: '2026-03-24T10:30:00Z',
     action: 'apply',
     actor: 'admin',
-    after: { rolePrompt: 'HR专家助手...', version: 3 },
+    after: { rolePrompt: '负责把任务目标整理为候选文档结构、章节草稿和可审阅文本。', version: 3 },
     status: 'success',
   },
   {
@@ -122,17 +112,17 @@ const createMockAuditHistory = (): PersonaAuditEntry[] => [
     timestamp: '2026-03-24T09:15:00Z',
     action: 'update',
     actor: 'admin',
-    before: { rolePrompt: '原角色提示词...' },
-    after: { rolePrompt: 'HR专家助手...' },
+    before: { rolePrompt: '上一版角色草稿...' },
+    after: { rolePrompt: '负责校验内容是否符合模板、权限边界和业务规则，并给出修正建议。' },
     status: 'success',
   },
   {
     id: 'audit-003',
     timestamp: '2026-03-23T16:45:00Z',
-    action: 'rollback',
-    actor: 'admin',
+      action: 'rollback',
+      actor: 'admin',
     before: { rolePrompt: '新版提示词...' },
-    after: { rolePrompt: '原角色提示词...' },
+    after: { rolePrompt: '上一版角色草稿...' },
     status: 'success',
   },
   {
@@ -145,23 +135,26 @@ const createMockAuditHistory = (): PersonaAuditEntry[] => [
   },
 ]
 
-// Default persona config
-const createDefaultPersonaConfig = (subAgentId: string): PersonaConfig => ({
-  subAgentId,
-  rolePrompt: '',
-  invocationDescription: '',
-  triggerConditions: [],
-  soulTemplate: 'standard',
-  status: 'draft',
-  lastModified: new Date().toISOString(),
-  lastModifiedBy: 'current-user',
-  version: 1,
-})
+const createDefaultPersonaConfig = (subAgentId: string): PersonaConfig => {
+  const selectedSubAgent = CORRECTIVE_SUB_AGENTS.find((item) => item.id === subAgentId)
+
+  return {
+    subAgentId,
+    rolePrompt: selectedSubAgent?.defaultRole ?? '',
+    invocationDescription: selectedSubAgent?.description ?? '',
+    triggerConditions: [],
+    soulTemplate: 'standard',
+    status: 'draft',
+    lastModified: new Date().toISOString(),
+    lastModifiedBy: 'current-user',
+    version: 1,
+  }
+}
 
 export function SubAgentPersonaConfig({ className = '' }: SubAgentPersonaConfigProps) {
   const [selectedSubAgentId, setSelectedSubAgentId] = useState<string | null>(null)
   const [personaConfig, setPersonaConfig] = useState<PersonaConfig | null>(null)
-  const [auditHistory] = useState<PersonaAuditEntry[]>(createMockAuditHistory)
+  const [auditHistory] = useState<PersonaAuditEntry[]>(createCorrectiveAuditHistory)
   const [showPreviewDialog, setShowPreviewDialog] = useState(false)
   const [previewContent, setPreviewContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -391,7 +384,7 @@ ${personaConfig.soulTemplate === 'custom' ? `\n自定义内容:\n${personaConfig
             Sub-Agent 角色配置
           </h2>
           <p className="text-muted-foreground">
-            配置 Sub-Agent 的角色提示词、触发条件和 SOUL 模板策略
+            配置当前用户主 Agent 下 Sub-Agent 的角色提示词、触发条件和 SOUL 模板策略。
           </p>
         </div>
       </div>

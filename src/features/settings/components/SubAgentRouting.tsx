@@ -70,121 +70,9 @@ export interface SubAgentRoutingProps {
   className?: string
 }
 
-// Mock Sub-Agent list
-const MOCK_SUB_AGENTS = [
-  { id: 'subagent-001', name: 'HR助手', template: 'specialist', enabled: true },
-  { id: 'subagent-002', name: '财务分析师', template: 'analyst', enabled: true },
-  { id: 'subagent-003', name: '销售协调员', template: 'coordinator', enabled: true },
-  { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
-]
+const CORRECTIVE_SUB_AGENTS = SETTINGS_SUB_AGENT_OPTIONS
 
-const CORRECTIVE_SUB_AGENTS =
-  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
-
-// Mock routing rules
-const createMockRoutingRules = (): RoutingRule[] => [
-  {
-    id: 'rule-001',
-    name: 'HR查询规则',
-    description: '处理员工信息查询、假期计算等HR相关请求',
-    subAgentId: 'subagent-001',
-    subAgentName: 'HR助手',
-    matchStrategy: 'combined',
-    keywords: ['员工', '请假', '假期', '考勤', '工资'],
-    semanticThreshold: 0.7,
-    priority: 10,
-    enabled: true,
-    fallbackEnabled: true,
-  },
-  {
-    id: 'rule-002',
-    name: '财务分析规则',
-    description: '处理财务报表、预算分析等财务相关请求',
-    subAgentId: 'subagent-002',
-    subAgentName: '财务分析师',
-    matchStrategy: 'keyword',
-    keywords: ['财务', '报表', '预算', '支出', '收入'],
-    semanticThreshold: 0.6,
-    priority: 9,
-    enabled: true,
-    fallbackEnabled: false,
-  },
-  {
-    id: 'rule-003',
-    name: '销售协调规则',
-    description: '处理客户跟进、销售流程等销售相关请求',
-    subAgentId: 'subagent-003',
-    subAgentName: '销售协调员',
-    matchStrategy: 'semantic',
-    keywords: ['客户', '销售', '订单', '商机'],
-    semanticThreshold: 0.75,
-    priority: 8,
-    enabled: true,
-    fallbackEnabled: true,
-  },
-]
-
-// Mock routing decisions
-const createMockRoutingDecisions = (): RoutingDecision[] => [
-  {
-    id: 'dec-001',
-    timestamp: '2026-03-24T10:30:00Z',
-    inputPreview: '我想查询员工张三的考勤记录',
-    matchedRuleId: 'rule-001',
-    matchedRuleName: 'HR查询规则',
-    selectedSubAgentId: 'subagent-001',
-    selectedSubAgentName: 'HR助手',
-    routingMode: 'auto',
-    confidence: 'high',
-    confidenceScore: 0.92,
-    reasoning: '检测到关键词"员工"和"考勤"，匹配HR查询规则',
-    accepted: true,
-  },
-  {
-    id: 'dec-002',
-    timestamp: '2026-03-24T10:15:00Z',
-    inputPreview: '帮我分析一下本月的财务支出',
-    matchedRuleId: 'rule-002',
-    matchedRuleName: '财务分析规则',
-    selectedSubAgentId: 'subagent-002',
-    selectedSubAgentName: '财务分析师',
-    routingMode: 'auto',
-    confidence: 'high',
-    confidenceScore: 0.88,
-    reasoning: '检测到关键词"财务"和"支出"，匹配财务分析规则',
-    accepted: true,
-  },
-  {
-    id: 'dec-003',
-    timestamp: '2026-03-24T09:45:00Z',
-    inputPreview: '有一个新客户需要跟进',
-    matchedRuleId: 'rule-003',
-    matchedRuleName: '销售协调规则',
-    selectedSubAgentId: 'subagent-003',
-    selectedSubAgentName: '销售协调员',
-    routingMode: 'manual',
-    confidence: 'medium',
-    confidenceScore: 0.65,
-    reasoning: '语义相似度中等，建议人工确认',
-    accepted: null,
-  },
-  {
-    id: 'dec-004',
-    timestamp: '2026-03-24T09:30:00Z',
-    inputPreview: '如何设置新员工的系统权限',
-    matchedRuleId: 'rule-001',
-    matchedRuleName: 'HR查询规则',
-    selectedSubAgentId: 'subagent-001',
-    selectedSubAgentName: 'HR助手',
-    routingMode: 'auto',
-    confidence: 'low',
-    confidenceScore: 0.45,
-    reasoning: '未检测到明确关键词，使用语义匹配',
-    accepted: false,
-  },
-]
-
-const createCorrectiveRoutingRules = (): RoutingRule[] => createMockRoutingRules().length > 0 ? [
+const createCorrectiveRoutingRules = (): RoutingRule[] => [
   {
     id: 'rule-c1',
     name: '文档起草路由',
@@ -237,9 +125,9 @@ const createCorrectiveRoutingRules = (): RoutingRule[] => createMockRoutingRules
     enabled: true,
     fallbackEnabled: true,
   },
-] : createMockRoutingRules()
+] 
 
-const createCorrectiveRoutingDecisions = (): RoutingDecision[] => createMockRoutingDecisions().length > 0 ? [
+const createCorrectiveRoutingDecisions = (): RoutingDecision[] => [
   {
     id: 'dec-c1',
     timestamp: '2026-03-24T10:30:00Z',
@@ -296,7 +184,7 @@ const createCorrectiveRoutingDecisions = (): RoutingDecision[] => createMockRout
     reasoning: '涉及跨部门消息协作，但仍需要人工决定是否立即发送。',
     accepted: false,
   },
-] : createMockRoutingDecisions()
+]
 
 // Match strategy options
 const MATCH_STRATEGIES: { value: MatchStrategy; label: string; description: string }[] = [
@@ -376,7 +264,7 @@ export function SubAgentRouting({ className = '' }: SubAgentRoutingProps) {
             Sub-Agent 调用路由
           </h2>
           <p className="text-muted-foreground">
-            配置路由规则，实现主 Agent 到 Sub-Agent 的自动或手动路由
+            配置主 Agent 到 Sub-Agent 的调用路由，让部门只作为权限与能力边界参与决策。
           </p>
         </div>
       </div>

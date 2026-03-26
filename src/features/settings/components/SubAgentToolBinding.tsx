@@ -183,15 +183,15 @@ export function SubAgentToolBinding({ className = '' }: SubAgentToolBindingProps
 
   return (
     <div className={cn('space-y-6', className)}>
-      <div>
-        <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Wrench className="h-6 w-6" />
-          Sub-Agent 工具绑定
-        </h2>
-        <p className="text-muted-foreground">
-          Skills 分为平台内置、部门内置、用户安装三类来源，避免所有能力混成同一种绿色标签。
-        </p>
-      </div>
+        <div>
+          <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+            <Wrench className="h-6 w-6" />
+            Sub-Agent 工具绑定
+          </h2>
+          <p className="text-muted-foreground">
+            当前用户主 Agent 下的 Sub-Agent 从平台内置、部门内置、用户安装三类来源绑定能力，避免所有能力混成同一种绿色标签。
+          </p>
+        </div>
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-4">

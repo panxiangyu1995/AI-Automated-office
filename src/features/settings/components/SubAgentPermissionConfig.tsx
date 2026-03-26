@@ -76,39 +76,9 @@ export interface SubAgentPermissionConfigProps {
   className?: string
 }
 
-// Mock Sub-Agent list
-const MOCK_SUB_AGENTS = [
-  { id: 'subagent-001', name: 'HR助手', template: 'specialist', enabled: true },
-  { id: 'subagent-002', name: '财务分析师', template: 'analyst', enabled: true },
-  { id: 'subagent-003', name: '销售协调员', template: 'coordinator', enabled: true },
-  { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
-]
-
-// Mock departments
-const MOCK_DEPARTMENTS = [
-  { id: 'dept-hr', name: '人事部' },
-  { id: 'dept-finance', name: '财务部' },
-  { id: 'dept-sales', name: '销售部' },
-  { id: 'dept-ops', name: '运营部' },
-  { id: 'dept-it', name: 'IT部' },
-  { id: 'dept-admin', name: '管理层' },
-]
-
-// Mock knowledge bases
-const MOCK_KNOWLEDGE_BASES = [
-  { id: 'kb-hr', name: 'HR知识库', description: '人力资源相关文档' },
-  { id: 'kb-finance', name: '财务知识库', description: '财务制度与流程' },
-  { id: 'kb-sales', name: '销售知识库', description: '销售技巧与案例' },
-  { id: 'kb-product', name: '产品知识库', description: '产品手册与规格' },
-  { id: 'kb-policy', name: '公司政策', description: '公司规章制度' },
-]
-
-const CORRECTIVE_SUB_AGENTS =
-  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
-const CORRECTIVE_DEPARTMENTS =
-  SETTINGS_DEPARTMENTS.length > 0 ? SETTINGS_DEPARTMENTS : MOCK_DEPARTMENTS
-const CORRECTIVE_KNOWLEDGE_BASES =
-  SETTINGS_KNOWLEDGE_BASES.length > 0 ? SETTINGS_KNOWLEDGE_BASES : MOCK_KNOWLEDGE_BASES
+const CORRECTIVE_SUB_AGENTS = SETTINGS_SUB_AGENT_OPTIONS
+const CORRECTIVE_DEPARTMENTS = SETTINGS_DEPARTMENTS
+const CORRECTIVE_KNOWLEDGE_BASES = SETTINGS_KNOWLEDGE_BASES
 
 // Isolation mode options
 const ISOLATION_MODES: { value: 'strict' | 'standard' | 'open'; label: string; description: string }[] = [
@@ -133,8 +103,7 @@ const VISIBILITY_LEVELS: { value: VisibilityLevel; label: string }[] = [
   { value: 'full', label: '完全可见' },
 ]
 
-// Mock audit history
-const createMockAuditHistory = (): PermissionAuditEntry[] => [
+const createCorrectiveAuditHistory = (): PermissionAuditEntry[] => [
   {
     id: 'audit-001',
     timestamp: '2026-03-24T10:30:00Z',
@@ -165,7 +134,7 @@ const createMockAuditHistory = (): PermissionAuditEntry[] => [
 export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionConfigProps) {
   const [selectedSubAgentId, setSelectedSubAgentId] = useState<string | null>(null)
   const [permissionConfig, setPermissionConfig] = useState<PermissionConfig | null>(null)
-  const [auditHistory] = useState<PermissionAuditEntry[]>(createMockAuditHistory)
+  const [auditHistory] = useState<PermissionAuditEntry[]>(createCorrectiveAuditHistory)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -250,17 +219,26 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
       setSubmitMessage(null)
       return
     }
-    // Mock: load default permission config
+
     setPermissionConfig({
       subAgentId,
-      boundary: 'department',
+      boundary: 'cross_department',
       departmentPermissions: [
-        { departmentId: 'dept-hr', departmentName: '人事部', dataAccess: 'read', canExecuteActions: true },
+        {
+          departmentId: 'dept-management',
+          departmentName: '管理层',
+          dataAccess: 'read',
+          canExecuteActions: false,
+        },
       ],
       knowledgeScopes: [
-        { knowledgeBaseId: 'kb-hr', knowledgeBaseName: 'HR知识库', accessLevel: 'read' },
+        {
+          knowledgeBaseId: 'kb-policy',
+          knowledgeBaseName: '制度与规则知识库',
+          accessLevel: 'read',
+        },
       ],
-      visibilityLevel: 'visible',
+      visibilityLevel: 'restricted',
       canAccessPersonalData: false,
       canModifyOwnData: false,
       isolationMode: 'standard',
@@ -462,7 +440,7 @@ export function SubAgentPermissionConfig({ className = '' }: SubAgentPermissionC
             Sub-Agent 权限配置
           </h2>
           <p className="text-muted-foreground">
-            配置 Sub-Agent 的部门边界、数据权限和知识访问范围
+            配置当前用户主 Agent 下 Sub-Agent 的部门边界、数据权限和知识访问范围。
           </p>
         </div>
       </div>

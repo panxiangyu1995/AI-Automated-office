@@ -45,6 +45,8 @@ describe('Agent chat staged review surface', () => {
     expect(screen.getByText('候选改动清单')).toBeInTheDocument()
     expect(screen.getByText('AI 候选改动')).toBeInTheDocument()
     expect(screen.getByText('AI 草稿卡片')).toBeInTheDocument()
+    expect(screen.getByText('来源区域: workbench')).toBeInTheDocument()
+    expect(screen.getByText('来源工具: workspace_stage_change')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '接受' }))
     expect(screen.getAllByText('已接受').length).toBeGreaterThanOrEqual(1)

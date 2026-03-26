@@ -6414,3 +6414,46 @@
 ### Notes:
 - Phase 3 已完成收藏、最近访问、全局搜索结果页和统一审计入口
 - 顺手修复了 `ResourceExecutionAudit.tsx` 中无 key 的列表 Fragment，回归测试已无该 warning
+
+---
+
+## [2026-03-26] - Direct Request: 铁律更新后的第一批纠偏重构
+
+### 铁律合规检查：
+- PRD 合规：主 Agent / Sub-Agent 主体模型、Tool Calling 2.0 分层、AI 暂存写回与用户审阅边界
+- 架构合规：ADR-013, ADR-020, ADR-023, ADR-025, ADR-035, ADR-037, ADR-039, ADR-045, ADR-046
+- UX 合规：固定治理页承载设置、AI 先暂存候选改动、用户执行接受/拒绝、工具调用与审阅清单分离
+- Epic 合规：Epic 5, Epic 21, Epic 49
+
+### What was done:
+- 新建 3 个纠偏 OpenSpec changes
+  - `epic-21-sub-agent-ownership-alignment`
+  - `epic-5-capability-supply-visibility-alignment`
+  - `epic-49-staged-review-governance-alignment`
+- 更新 `task.json`
+  - 追加 Task 105-107，作为铁律更新后的第一批纠偏任务
+  - 保留 Task 1-104 的历史定位，不重开旧批次
+- 修正 Sub-Agent 设置面
+  - `SubAgentRegistry`、`SubAgentPersonaConfig`、`SubAgentPermissionConfig`、`SubAgentModelConfig`、`SubAgentRouting`、`SubAgentExecutionMonitor`、`SubAgentToolBinding`
+  - 移除“部门专属 Agent”旧 mock 叙事，统一为“当前用户主 Agent 下的 Sub-Agent”
+  - 让 Persona 默认值继承所选 Sub-Agent 模板的角色与调用描述
+- 修正 Tool Calling 2.0 / 能力供给可见性
+  - `ModuleCapabilityStatus` 改为能力供给状态表达
+  - `ToolHistory` 改为 general / platform / department / restricted 分层分类
+  - `AgentObservabilityPanel` 补齐分层能力说明
+- 修正 AI 暂存写回审阅可见性
+  - `StagedReviewPanel` 显示来源区域与来源工具
+  - 保持 `stagedReviewFlow` 中 accept / reject / rollback 的用户专属约束
+- 新增/更新验证用例
+  - `tests/integration/sub-agent-settings-alignment.test.tsx`
+  - `tests/integration/tool-history-layering.test.tsx`
+  - `tests/integration/agent-chat-staged-review.test.tsx`
+
+### Testing:
+- `npm run lint` 通过
+- `npm run build` 通过
+- `npx vitest run --config vitest.config.ts tests/integration/sub-agent-settings-alignment.test.tsx tests/integration/tool-history-layering.test.tsx tests/integration/agent-chat-staged-review.test.tsx tests/unit/features/session/runtime/stagedReviewFlow.test.ts` 通过
+
+### Notes:
+- `openspec.cmd list --json` 已识别新增的 3 个纠偏变更
+- 工作区仍存在用户先前的未提交改动，本次未回退、不覆盖历史变更

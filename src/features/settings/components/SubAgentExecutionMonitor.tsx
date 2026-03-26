@@ -82,104 +82,7 @@ export interface SubAgentExecutionMonitorProps {
   className?: string
 }
 
-// Mock Sub-Agent list (for reference)
-// const MOCK_SUB_AGENTS = [
-//   { id: 'subagent-001', name: 'HR助手', template: 'specialist' },
-//   { id: 'subagent-002', name: '财务分析师', template: 'analyst' },
-//   { id: 'subagent-003', name: '销售协调员', template: 'coordinator' },
-//   { id: 'subagent-004', name: 'IT支持助手', template: 'general' },
-// ]
-
-// Mock execution history
-const createMockExecutions = (): SubAgentExecution[] => [
-  {
-    id: 'exec-001',
-    subAgentId: 'subagent-001',
-    subAgentName: 'HR助手',
-    subAgentTemplate: 'specialist',
-    status: 'running',
-    riskLevel: 'low',
-    startTime: '2026-03-24T10:35:00Z',
-    input: '查询员工张三的请假记录',
-    steps: [
-      { id: 'step-001', name: '理解用户意图', status: 'completed', startTime: '2026-03-24T10:35:00Z', endTime: '2026-03-24T10:35:01Z', duration: 1, details: '识别为员工信息查询' },
-      { id: 'step-002', name: '查询数据库', status: 'completed', startTime: '2026-03-24T10:35:01Z', endTime: '2026-03-24T10:35:02Z', duration: 1, details: '执行 SQL 查询' },
-      { id: 'step-003', name: '生成回复', status: 'running', startTime: '2026-03-24T10:35:02Z' },
-    ],
-    trace: { id: 'trace-001', parentSessionId: 'session-123', parentMessageId: 'msg-456', linkedAt: '2026-03-24T10:35:00Z' },
-  },
-  {
-    id: 'exec-002',
-    subAgentId: 'subagent-002',
-    subAgentName: '财务分析师',
-    subAgentTemplate: 'analyst',
-    status: 'completed',
-    riskLevel: 'medium',
-    startTime: '2026-03-24T10:30:00Z',
-    endTime: '2026-03-24T10:31:15Z',
-    input: '分析本月财务支出情况',
-    output: '本月支出总计 125,000 元，较上月减少 8%。主要支出项目：\n1. 人力成本：65,000 元\n2. 运营费用：35,000 元\n3. 采购支出：25,000 元',
-    metrics: { duration: 75, inputTokens: 256, outputTokens: 512, totalTokens: 768, latencyMs: 1200 },
-    steps: [
-      { id: 'step-010', name: '数据收集', status: 'completed', startTime: '2026-03-24T10:30:00Z', endTime: '2026-03-24T10:30:20Z', duration: 20 },
-      { id: 'step-011', name: '数据分析', status: 'completed', startTime: '2026-03-24T10:30:20Z', endTime: '2026-03-24T10:30:50Z', duration: 30 },
-      { id: 'step-012', name: '生成报告', status: 'completed', startTime: '2026-03-24T10:30:50Z', endTime: '2026-03-24T10:31:15Z', duration: 25 },
-    ],
-    trace: { id: 'trace-002', parentSessionId: 'session-122', parentMessageId: 'msg-455', linkedAt: '2026-03-24T10:30:00Z' },
-  },
-  {
-    id: 'exec-003',
-    subAgentId: 'subagent-003',
-    subAgentName: '销售协调员',
-    subAgentTemplate: 'coordinator',
-    status: 'failed',
-    riskLevel: 'high',
-    startTime: '2026-03-24T10:25:00Z',
-    endTime: '2026-03-24T10:25:30Z',
-    input: '创建新客户档案',
-    error: '数据库连接失败：无法连接到客户数据库',
-    steps: [
-      { id: 'step-020', name: '验证输入', status: 'completed', startTime: '2026-03-24T10:25:00Z', endTime: '2026-03-24T10:25:05Z', duration: 5 },
-      { id: 'step-021', name: '写入数据库', status: 'failed', startTime: '2026-03-24T10:25:05Z', endTime: '2026-03-24T10:25:30Z', duration: 25, details: '连接超时' },
-    ],
-    trace: { id: 'trace-003', parentSessionId: 'session-121', parentMessageId: 'msg-454', linkedAt: '2026-03-24T10:25:00Z' },
-  },
-  {
-    id: 'exec-004',
-    subAgentId: 'subagent-001',
-    subAgentName: 'HR助手',
-    subAgentTemplate: 'specialist',
-    status: 'completed',
-    riskLevel: 'low',
-    startTime: '2026-03-24T10:20:00Z',
-    endTime: '2026-03-24T10:20:45Z',
-    input: '计算员工李四年假余额',
-    output: '李四当前年假余额为 12 天，其中已使用 3 天，剩余 9 天。',
-    metrics: { duration: 45, inputTokens: 128, outputTokens: 256, totalTokens: 384, latencyMs: 800 },
-    steps: [
-      { id: 'step-030', name: '查询假期记录', status: 'completed', startTime: '2026-03-24T10:20:00Z', endTime: '2026-03-24T10:20:25Z', duration: 25 },
-      { id: 'step-031', name: '计算余额', status: 'completed', startTime: '2026-03-24T10:20:25Z', endTime: '2026-03-24T10:20:40Z', duration: 15 },
-      { id: 'step-032', name: '生成回复', status: 'completed', startTime: '2026-03-24T10:20:40Z', endTime: '2026-03-24T10:20:45Z', duration: 5 },
-    ],
-    trace: { id: 'trace-004', parentSessionId: 'session-120', parentMessageId: 'msg-453', linkedAt: '2026-03-24T10:20:00Z' },
-  },
-  {
-    id: 'exec-005',
-    subAgentId: 'subagent-004',
-    subAgentName: 'IT支持助手',
-    subAgentTemplate: 'general',
-    status: 'pending',
-    riskLevel: 'medium',
-    startTime: '2026-03-24T10:40:00Z',
-    input: '重置用户王五的邮箱密码',
-    steps: [
-      { id: 'step-040', name: '等待审批', status: 'pending', startTime: '2026-03-24T10:40:00Z' },
-    ],
-    trace: { id: 'trace-005', parentSessionId: 'session-124', parentMessageId: 'msg-457', linkedAt: '2026-03-24T10:40:00Z' },
-  },
-]
-
-const createCorrectiveExecutions = (): SubAgentExecution[] => createMockExecutions().length > 0 ? [
+const createCorrectiveExecutions = (): SubAgentExecution[] => [
   {
     id: 'exec-c1',
     subAgentId: 'subagent-001',
@@ -251,7 +154,7 @@ const createCorrectiveExecutions = (): SubAgentExecution[] => createMockExecutio
     ],
     trace: { id: 'trace-c4', parentSessionId: 'session-120', parentMessageId: 'msg-453', linkedAt: '2026-03-24T10:20:00Z' },
   },
-] : createMockExecutions()
+]
 
 // Status icon mapping
 const getStatusIcon = (status: ExecutionStatus) => {
@@ -359,7 +262,7 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
             Sub-Agent 执行监控
           </h2>
           <p className="text-muted-foreground">
-            实时监控 Sub-Agent 执行状态，查看执行历史与性能指标
+            监控当前用户主 Agent 到 Sub-Agent 的执行链路，查看审阅、协作与恢复状态。
           </p>
         </div>
       </div>

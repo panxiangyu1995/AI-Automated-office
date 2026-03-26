@@ -1,0 +1,25 @@
+name: epic-21-sub-agent-ownership-alignment
+status: pending
+created_at: 2026-03-26
+epic: 21
+story: Corrective Alignment (Stories 21.17-21.23)
+title: Sub-Agent Ownership Alignment
+mapping:
+  frs:
+    - FR890-FR900
+    - FR905-FR914
+    - FR915-FR925
+    - FR930-FR938
+    - FR460
+    - FR461
+    - FR922
+  nfrs:
+    - NFR16
+    - NFR23-8
+  arch:
+    - ADR-013
+    - ADR-039
+    - ADR-046
+  ux:
+    - UX-02
+    - UX-04

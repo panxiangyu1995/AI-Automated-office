@@ -1,8 +1,8 @@
 /**
- * ModuleCapabilityStatus - 部门模块状态监控组件
- * Story 5.6 - 部门模块状态监控
+ * ModuleCapabilityStatus - 能力供给状态组件
+ * Story 5.6 - 能力供给与模块状态监控
  *
- * 显示模块级别的工具、技能、MCP 和握手状态
+ * 显示能力包级别的原子工具、Skills、MCP 和运行时绑定状态
  *
  * 铁律合规：
  * - UX: 使用 Shadcn/ui 组件
@@ -68,12 +68,12 @@ const CAPABILITY_CONFIG: Record<CapabilityType, {
 }> = {
   tool: {
     icon: Box,
-    label: '工具',
+    label: '原子工具',
     color: 'text-blue-500',
   },
   skill: {
     icon: Zap,
-    label: '技能',
+    label: 'Skills',
     color: 'text-purple-500',
   },
   mcp: {
@@ -83,7 +83,7 @@ const CAPABILITY_CONFIG: Record<CapabilityType, {
   },
   builtin: {
     icon: Settings,
-    label: '内置',
+    label: '能力包',
     color: 'text-gray-500',
   },
 }
@@ -499,7 +499,7 @@ export function ModuleCapabilityStatus({
       <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4" style={{ color: BRAND_COLOR }} />
-          <span className="font-medium text-slate-700">模块能力状态</span>
+          <span className="font-medium text-slate-700">能力供给状态</span>
           <Badge variant="secondary" className="text-xs">
             {summary.connected}/{summary.total} 已绑定
           </Badge>

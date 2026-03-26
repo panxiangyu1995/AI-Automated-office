@@ -68,19 +68,9 @@ export interface SubAgentModelConfigProps {
   className?: string
 }
 
-// Mock Sub-Agent list
-const MOCK_SUB_AGENTS = [
-  { id: 'subagent-001', name: 'HR助手', template: 'specialist', enabled: true },
-  { id: 'subagent-002', name: '财务分析师', template: 'analyst', enabled: true },
-  { id: 'subagent-003', name: '销售协调员', template: 'coordinator', enabled: true },
-  { id: 'subagent-004', name: 'IT支持助手', template: 'general', enabled: false },
-]
+const CORRECTIVE_SUB_AGENTS = SETTINGS_SUB_AGENT_OPTIONS
 
-const CORRECTIVE_SUB_AGENTS =
-  SETTINGS_SUB_AGENT_OPTIONS.length > 0 ? SETTINGS_SUB_AGENT_OPTIONS : MOCK_SUB_AGENTS
-
-// Mock providers with models
-const MOCK_PROVIDERS: { id: ModelProvider; name: string; models: string[] }[] = [
+const MODEL_PROVIDERS: { id: ModelProvider; name: string; models: string[] }[] = [
   { id: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'] },
   { id: 'zhipu', name: '智谱AI', models: ['glm-4', 'glm-4-flash', 'glm-4-plus'] },
   { id: 'dashscope', name: '百炼', models: ['qwen-turbo', 'qwen-plus', 'qwen-max'] },
@@ -97,8 +87,7 @@ const DEFAULT_PARAMS: Record<ModelProvider, { temperature: number; maxTokens: nu
   minimax: { temperature: 0.8, maxTokens: 4096, topP: 0.95 },
 }
 
-// Mock audit history
-const createMockAuditHistory = (): ModelAuditEntry[] => [
+const createCorrectiveAuditHistory = (): ModelAuditEntry[] => [
   {
     id: 'audit-001',
     timestamp: '2026-03-24T10:30:00Z',
@@ -130,7 +119,7 @@ const createMockAuditHistory = (): ModelAuditEntry[] => [
 export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps) {
   const [selectedSubAgentId, setSelectedSubAgentId] = useState<string | null>(null)
   const [modelConfig, setModelConfig] = useState<ModelConfig | null>(null)
-  const [auditHistory] = useState<ModelAuditEntry[]>(createMockAuditHistory)
+  const [auditHistory] = useState<ModelAuditEntry[]>(createCorrectiveAuditHistory)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -142,13 +131,12 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
   // Get selected provider info
   const selectedProvider = useMemo(() => {
     if (!modelConfig) return null
-    return MOCK_PROVIDERS.find(p => p.id === modelConfig.provider)
+    return MODEL_PROVIDERS.find((provider) => provider.id === modelConfig.provider)
   }, [modelConfig])
 
   // Load model config for selected sub-agent
   const handleSelectSubAgent = useCallback((subAgentId: string) => {
     setSelectedSubAgentId(subAgentId)
-    // Mock: load default model config
     setModelConfig({
       subAgentId,
       provider: 'openai',
@@ -172,7 +160,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
   const handleProviderChange = useCallback((provider: ModelProvider) => {
     if (!modelConfig) return
     const defaults = DEFAULT_PARAMS[provider]
-    const providerInfo = MOCK_PROVIDERS.find(p => p.id === provider)
+    const providerInfo = MODEL_PROVIDERS.find((item) => item.id === provider)
     setModelConfig(prev => prev ? {
       ...prev,
       provider,
@@ -295,7 +283,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
             Sub-Agent 模型配置
           </h2>
           <p className="text-muted-foreground">
-            为 Sub-Agent 选择模型提供商和参数配置
+            为当前用户主 Agent 下的 Sub-Agent 选择模型提供商和参数配置。
           </p>
         </div>
       </div>
@@ -396,7 +384,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
                           选择提供商
                         </Label>
                         <div className="grid grid-cols-5 gap-2">
-                          {MOCK_PROVIDERS.map(provider => (
+                          {MODEL_PROVIDERS.map(provider => (
                             <button
                               key={provider.id}
                               className={`p-3 rounded-lg border text-center transition-colors ${
@@ -594,7 +582,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
                               onChange={(e) => handleUpdateFallback({ fallbackProvider: e.target.value as ModelProvider })}
                             >
                               <option value="">选择备用提供商</option>
-                              {MOCK_PROVIDERS.filter(p => p.id !== modelConfig.provider).map(provider => (
+                              {MODEL_PROVIDERS.filter((provider) => provider.id !== modelConfig.provider).map(provider => (
                                 <option key={provider.id} value={provider.id}>
                                   {provider.name}
                                 </option>
@@ -612,7 +600,7 @@ export function SubAgentModelConfig({ className = '' }: SubAgentModelConfigProps
                                 onChange={(e) => handleUpdateFallback({ fallbackModel: e.target.value })}
                               >
                                 <option value="">选择备用模型</option>
-                                {MOCK_PROVIDERS.find(p => p.id === modelConfig.fallbackProvider)?.models.map(model => (
+                                {MODEL_PROVIDERS.find((provider) => provider.id === modelConfig.fallbackProvider)?.models.map(model => (
                                   <option key={model} value={model}>
                                     {model}
                                   </option>

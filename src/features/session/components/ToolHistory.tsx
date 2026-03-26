@@ -1,7 +1,7 @@
 /**
  * ToolHistory.tsx
- * 工具调用历史追溯组件
- * Story 5.12 - 提供可搜索的工具执行历史记录和统计
+ * Tool Calling 2.0 历史追溯组件
+ * Story 5.12 - 提供可搜索的分层工具执行历史记录和统计
  */
 
 import { useState, useMemo } from 'react'
@@ -63,13 +63,10 @@ export type ToolExecutionStatus =
 
 // 工具类别
 export type ToolHistoryCategory =
-  | 'file'
-  | 'network'
-  | 'database'
-  | 'system'
-  | 'agent'
-  | 'external'
-  | 'custom'
+  | 'general'
+  | 'platform'
+  | 'department'
+  | 'restricted'
 
 // 历史记录条目
 export interface ToolHistoryEntry {
@@ -140,13 +137,17 @@ const statusIcons: Record<ToolExecutionStatus, React.ReactNode> = {
 
 // 类别颜色
 const categoryColors: Record<ToolHistoryCategory, string> = {
-  file: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-  network: 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-  database: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300',
-  system: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300',
-  agent: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-  external: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
-  custom: 'bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+  general: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+  platform: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+  department: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  restricted: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
+}
+
+const categoryLabels: Record<ToolHistoryCategory, string> = {
+  general: '通用',
+  platform: '平台',
+  department: '部门',
+  restricted: '受限',
 }
 
 // 模拟历史数据
@@ -154,7 +155,7 @@ const mockHistory: ToolHistoryEntry[] = [
   {
     id: 'h1',
     toolName: 'file_read',
-    category: 'file',
+    category: 'general',
     status: 'success',
     timestamp: Date.now() - 1000 * 60 * 5,
     duration: 45,
@@ -172,7 +173,7 @@ const mockHistory: ToolHistoryEntry[] = [
   {
     id: 'h2',
     toolName: 'http_request',
-    category: 'network',
+    category: 'general',
     status: 'timeout',
     timestamp: Date.now() - 1000 * 60 * 15,
     duration: 30000,
@@ -190,7 +191,7 @@ const mockHistory: ToolHistoryEntry[] = [
   {
     id: 'h3',
     toolName: 'knowledge_query',
-    category: 'custom',
+    category: 'platform',
     status: 'success',
     timestamp: Date.now() - 1000 * 60 * 30,
     duration: 156,
@@ -209,7 +210,7 @@ const mockHistory: ToolHistoryEntry[] = [
   {
     id: 'h4',
     toolName: 'workspace_stage_change',
-    category: 'agent',
+    category: 'platform',
     status: 'success',
     timestamp: Date.now() - 1000 * 60 * 60,
     duration: 2345,
@@ -228,7 +229,7 @@ const mockHistory: ToolHistoryEntry[] = [
   {
     id: 'h5',
     toolName: 'sandbox_execute',
-    category: 'system',
+    category: 'general',
     status: 'cancelled',
     timestamp: Date.now() - 1000 * 60 * 90,
     duration: 500,
@@ -245,8 +246,8 @@ const mockHistory: ToolHistoryEntry[] = [
   },
   {
     id: 'h6',
-    toolName: 'agent_delegate',
-    category: 'external',
+    toolName: 'sales_query',
+    category: 'department',
     status: 'retrying',
     timestamp: Date.now() - 1000 * 30,
     duration: 0,
@@ -254,7 +255,7 @@ const mockHistory: ToolHistoryEntry[] = [
     correlationId: 'corr-006',
     sessionId: 'sess-001',
     userId: 'user-001',
-    input: { subAgentId: 'subagent-004', task: '协调财务确认报价口径' },
+    input: { department: 'sales', query: '待确认报价单' },
     retryCount: 1,
     isRetained: true,
     retentionDays: 30,
@@ -276,7 +277,7 @@ const mockStats: ToolHistoryStats = {
     { name: 'http_request', count: 256 },
     { name: 'knowledge_query', count: 198 },
     { name: 'workspace_stage_change', count: 145 },
-    { name: 'sandbox_execute', count: 98 },
+    { name: 'sales_query', count: 98 },
   ],
   dailyTrend: [
     { date: '2024-01-20', calls: 156, success: 148 },
@@ -377,6 +378,7 @@ export function ToolHistory() {
           <div className="flex items-center gap-2">
             <History className="h-5 w-5 text-[#1E3A5F]" />
             <h2 className="text-lg font-semibold text-[#1E3A5F]">工具调用历史</h2>
+            <p className="text-sm text-muted-foreground">按通用工具、平台工具、部门能力工具的分层追溯执行记录。</p>
           </div>
           <Button variant="outline" size="sm">
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -485,13 +487,10 @@ export function ToolHistory() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部类别</SelectItem>
-                  <SelectItem value="file">文件</SelectItem>
-                  <SelectItem value="network">网络</SelectItem>
-                  <SelectItem value="database">数据库</SelectItem>
-                  <SelectItem value="system">系统</SelectItem>
-                  <SelectItem value="agent">Agent</SelectItem>
-                  <SelectItem value="external">外部</SelectItem>
-                  <SelectItem value="custom">自定义</SelectItem>
+                  <SelectItem value="general">通用工具</SelectItem>
+                  <SelectItem value="platform">平台工具</SelectItem>
+                  <SelectItem value="department">部门能力工具</SelectItem>
+                  <SelectItem value="restricted">受限工具</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -548,7 +547,7 @@ export function ToolHistory() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Badge variant="outline" className={categoryColors[entry.category]}>
-                              {entry.category}
+                              {categoryLabels[entry.category]}
                             </Badge>
                             <span className="font-medium">{entry.toolName}</span>
                           </div>

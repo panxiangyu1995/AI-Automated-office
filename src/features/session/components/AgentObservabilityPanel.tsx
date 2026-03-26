@@ -244,6 +244,7 @@ const correctiveTenantStats: TenantStatistics = {
     { name: 'http_request', calls: 987, successRate: 95.2 },
     { name: 'knowledge_query', calls: 654, successRate: 92.1 },
     { name: 'workspace_stage_change', calls: 432, successRate: 96.7 },
+    { name: 'sales_query', calls: 321, successRate: 94.4 },
   ],
   usageByDepartment: [
     { department: '招投标部', sessions: 456, tokens: 1234567, cost: 567.89 },
@@ -303,7 +304,10 @@ export function AgentObservabilityPanel() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-[#1E3A5F]" />
-          <h2 className="text-lg font-semibold text-[#1E3A5F]">可观测性面板</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-[#1E3A5F]">可观测性面板</h2>
+            <p className="text-sm text-muted-foreground">聚合通用工具、平台工具和部门能力工具的运行指标。</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Select

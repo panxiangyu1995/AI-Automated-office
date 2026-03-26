@@ -105,6 +105,16 @@ export function StagedReviewPanel({ sessionId, className }: StagedReviewPanelPro
                             <CardDescription className="mt-1 text-xs leading-5">
                               {reviewPackage.summary}
                             </CardDescription>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Badge variant="outline" className="text-[11px]">
+                                来源区域: {reviewPackage.sourceKind}
+                              </Badge>
+                              {reviewPackage.sourceTool ? (
+                                <Badge variant="outline" className="text-[11px]">
+                                  来源工具: {reviewPackage.sourceTool}
+                                </Badge>
+                              ) : null}
+                            </div>
                           </div>
                           <Badge variant="outline" className="text-xs">
                             {packageStatusLabel[reviewPackage.status]}
