@@ -40,6 +40,8 @@ import { Button } from '../ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { useUIStore } from '../../stores/uiStore'
 import { useAuthStore } from '../../stores/authStore'
+import { useChatStore } from '../../features/agent'
+import { DEFAULT_SHORTCUTS, formatShortcutLabel } from '../../lib/shortcutConfig'
 
 interface TopBarProps {
   visible: boolean
@@ -53,8 +55,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     sidebarCollapsed,
     chatPanelCollapsed,
     bottomPanelCollapsed,
+    openChatPanel,
     toggleSidebar,
     toggleChatPanel,
+    openAgentSecondarySurface,
+    closeAgentSecondarySurface,
     toggleBottomPanel,
     setActiveActivityItem,
   } = useUIStore(
@@ -62,12 +67,16 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
       sidebarCollapsed: state.sidebarCollapsed,
       chatPanelCollapsed: state.chatPanelCollapsed,
       bottomPanelCollapsed: state.bottomPanelCollapsed,
+      openChatPanel: state.openChatPanel,
       toggleSidebar: state.toggleSidebar,
       toggleChatPanel: state.toggleChatPanel,
+      openAgentSecondarySurface: state.openAgentSecondarySurface,
+      closeAgentSecondarySurface: state.closeAgentSecondarySurface,
       toggleBottomPanel: state.toggleBottomPanel,
       setActiveActivityItem: state.setActiveActivityItem,
     }))
   )
+  const createSession = useChatStore((state) => state.createSession)
   const { user, isAuthenticated, clearAuthSession, switchAccount } = useAuthStore(
     useShallow((state) => ({
       user: state.user,
@@ -121,12 +130,25 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     onOpenLayoutDialog?.()
   }
 
+  const aiPanelShortcutLabel = formatShortcutLabel(DEFAULT_SHORTCUTS.openAiChat)
+
   /**
    * 打开设置页面
    */
   const handleOpenSettings = () => {
     setActiveActivityItem('settings')
   }
+
+  const handleNewChat = useCallback(() => {
+    openChatPanel()
+    closeAgentSecondarySurface()
+    createSession()
+  }, [closeAgentSecondarySurface, createSession, openChatPanel])
+
+  const handleOpenChatHistory = useCallback(() => {
+    openChatPanel()
+    openAgentSecondarySurface('history')
+  }, [openAgentSecondarySurface, openChatPanel])
 
   const navigateToLogin = useCallback(() => {
     navigate('/login', { replace: true })
@@ -273,13 +295,14 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
                 <Eye size={14} className="mr-2" />
                 活动栏
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: Sidebar')}>
+              <MenubarItem onSelect={handleMenuAction('View: Sidebar', toggleSidebar)}>
                 <Eye size={14} className="mr-2" />
                 侧边栏
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: AI Chat Panel')}>
+              <MenubarItem onSelect={handleMenuAction('View: AI Chat Panel', toggleChatPanel)}>
                 <Eye size={14} className="mr-2" />
                 AI 对话面板
+                <MenubarShortcut>{aiPanelShortcutLabel}</MenubarShortcut>
               </MenubarItem>
               <MenubarSeparator />
               <MenubarItem onSelect={handleMenuAction('View: Full Screen')}>
@@ -311,11 +334,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
               助手
             </MenubarTrigger>
             <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Agent: New Chat')}>
+              <MenubarItem onSelect={handleMenuAction('Agent: New Chat', handleNewChat)}>
                 <Bot size={14} className="mr-2" />
                 新对话
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Agent: Chat History')}>
+              <MenubarItem onSelect={handleMenuAction('Agent: Chat History', handleOpenChatHistory)}>
                 <Bot size={14} className="mr-2" />
                 历史记录...
               </MenubarItem>
@@ -438,6 +461,7 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           toggleSidebar={toggleSidebar}
           toggleChatPanel={toggleChatPanel}
           toggleBottomPanel={toggleBottomPanel}
+          aiPanelShortcutLabel={aiPanelShortcutLabel}
           onOpenLayoutDialog={handleOpenLayoutDialog}
         />
       </div>
@@ -535,6 +559,7 @@ interface LayoutControlButtonsProps {
   toggleSidebar: () => void
   toggleChatPanel: () => void
   toggleBottomPanel: () => void
+  aiPanelShortcutLabel: string
   onOpenLayoutDialog?: () => void
 }
 
@@ -545,6 +570,7 @@ function LayoutControlButtons({
   toggleSidebar,
   toggleChatPanel,
   toggleBottomPanel,
+  aiPanelShortcutLabel,
   onOpenLayoutDialog,
 }: LayoutControlButtonsProps) {
   return (
@@ -597,7 +623,7 @@ function LayoutControlButtons({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>切换辅助侧栏 (Ctrl+Shift+I)</p>
+              <p>{`切换辅助侧栏 (${aiPanelShortcutLabel})`}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

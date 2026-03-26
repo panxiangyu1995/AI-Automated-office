@@ -18,6 +18,7 @@ import { ForbiddenPage, ForbiddenModal } from './components/permission'
 import { Toaster } from './components/ui/toaster'
 import { setForbiddenHandler, setUnauthorizedHandler } from './lib/api/interceptors'
 import { createWorkbenchRouteObjects } from './routes/workbenchRoutes'
+import { DEFAULT_SHORTCUTS, formatShortcutLabel } from './lib/shortcutConfig'
 
 const workbenchRouteObjects = createWorkbenchRouteObjects()
 
@@ -36,6 +37,7 @@ function App() {
     reason: SessionExpiredReason
     message?: string
   }>({ open: false, reason: 'unknown' })
+  const aiPanelShortcutLabel = formatShortcutLabel(DEFAULT_SHORTCUTS.openAiChat)
 
   useGlobalShortcuts()
 
@@ -163,7 +165,7 @@ function App() {
           <Alert className="border-slate-200 bg-white shadow-lg">
             <AlertTitle className="text-slate-900">欢迎使用顶部菜单栏</AlertTitle>
             <AlertDescription className="mt-2 text-slate-600">
-              <div>快捷键提示: Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，Ctrl+Shift+I 切换 AI Chat Panel。</div>
+              <div>{`快捷键提示: Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，${aiPanelShortcutLabel} 切换 AI Chat Panel。`}</div>
               <div className="mt-3 flex justify-end">
                 <Button size="sm" onClick={handleDismissTopBarHint}>
                   知道了

@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect } from 'react'
-import { Plus } from 'lucide-react'
+import { Clock3, MessageSquare, Plus } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
@@ -36,15 +36,27 @@ interface AgentChatPanelProps {
   className?: string
   onSendMessage?: (content: string) => Promise<void>
   onStopGeneration?: () => void
+  onNewSession?: () => void
+  onOpenSessions?: () => void
+  onOpenHistory?: () => void
 }
 
 // ==================== Header Component ====================
 
-function ChatHeader() {
+function ChatHeader({
+  onNewSession,
+  onOpenSessions,
+  onOpenHistory,
+}: Pick<AgentChatPanelProps, 'onNewSession' | 'onOpenSessions' | 'onOpenHistory'>) {
   const createSession = useChatStore((state) => state.createSession)
   const activeSession = useActiveChatSession()
   
   const handleNewChat = () => {
+    if (onNewSession) {
+      onNewSession()
+      return
+    }
+
     createSession()
   }
   
@@ -67,13 +79,38 @@ function ChatHeader() {
         </div>
       </div>
       
-      <button
-        onClick={handleNewChat}
-        className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-        title="新对话"
-      >
-        <Plus size={18} />
-      </button>
+      <div className="flex items-center gap-2">
+        {onOpenSessions && (
+          <button
+            onClick={onOpenSessions}
+            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            title="打开会话列表"
+            aria-label="打开会话列表"
+          >
+            <MessageSquare size={14} />
+            会话
+          </button>
+        )}
+        {onOpenHistory && (
+          <button
+            onClick={onOpenHistory}
+            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            title="打开历史记录"
+            aria-label="打开历史记录"
+          >
+            <Clock3 size={14} />
+            历史
+          </button>
+        )}
+        <button
+          onClick={handleNewChat}
+          className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+          title="新对话"
+          aria-label="新对话"
+        >
+          <Plus size={18} />
+        </button>
+      </div>
     </div>
   )
 }
@@ -83,7 +120,10 @@ function ChatHeader() {
 export function AgentChatPanel({ 
   className,
   onSendMessage,
-  onStopGeneration 
+  onStopGeneration,
+  onNewSession,
+  onOpenSessions,
+  onOpenHistory,
 }: AgentChatPanelProps) {
   const {
     activeSessionId,
@@ -155,7 +195,11 @@ export function AgentChatPanel({
   return (
     <div className={cn('flex flex-col h-full bg-white', className)}>
       {/* Header */}
-      <ChatHeader />
+      <ChatHeader
+        onNewSession={onNewSession}
+        onOpenSessions={onOpenSessions}
+        onOpenHistory={onOpenHistory}
+      />
 
       <StagedReviewPanel sessionId={activeSessionId} />
       

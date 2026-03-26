@@ -13,6 +13,7 @@ export type ActivityBarItem =
   | 'settings'
 
 export type SidebarOpenMode = 'static' | 'dynamic' | 'editor'
+export type AgentSecondarySurface = 'none' | 'sessions' | 'history'
 
 export interface SidebarOpenTarget {
   path: string
@@ -33,6 +34,7 @@ interface UIState {
   sidebarCollapsed: boolean
   chatPanelWidth: number
   chatPanelCollapsed: boolean
+  agentSecondarySurface: AgentSecondarySurface
   quickSearchOpen: boolean
   activeActivityItem: ActivityBarItem
   topBarVisible: boolean
@@ -44,8 +46,12 @@ interface UIState {
   setSidebarWidth: (width: number) => void
   setChatPanelWidth: (width: number) => void
   setBottomPanelHeight: (height: number) => void
+  openChatPanel: () => void
+  closeChatPanel: () => void
   toggleSidebar: () => void
   toggleChatPanel: () => void
+  openAgentSecondarySurface: (surface: Exclude<AgentSecondarySurface, 'none'>) => void
+  closeAgentSecondarySurface: () => void
   toggleBottomPanel: () => void
   toggleTopBar: () => void
   resetLayout: () => void
@@ -110,6 +116,7 @@ export const useUIStore = create<UIState>()(
   persist<UIState, [], [], PersistedUIState>(
     (set, get) => ({
       ...defaultLayout,
+      agentSecondarySurface: 'none',
       quickSearchOpen: false,
       activeActivityItem: 'dashboard',
       dynamicSidebarEntries: [],
@@ -118,11 +125,23 @@ export const useUIStore = create<UIState>()(
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       setChatPanelWidth: (width) => set({ chatPanelWidth: width }),
       setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
+      openChatPanel: () => set({ chatPanelCollapsed: false }),
+      closeChatPanel: () => set({ chatPanelCollapsed: true, agentSecondarySurface: 'none' }),
       toggleSidebar: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
-      toggleChatPanel: () => set({ chatPanelCollapsed: !get().chatPanelCollapsed }),
+      toggleChatPanel: () =>
+        set((state) => ({
+          chatPanelCollapsed: !state.chatPanelCollapsed,
+          agentSecondarySurface: state.chatPanelCollapsed ? state.agentSecondarySurface : 'none',
+        })),
+      openAgentSecondarySurface: (surface) =>
+        set({
+          chatPanelCollapsed: false,
+          agentSecondarySurface: surface,
+        }),
+      closeAgentSecondarySurface: () => set({ agentSecondarySurface: 'none' }),
       toggleBottomPanel: () => set({ bottomPanelCollapsed: !get().bottomPanelCollapsed }),
       toggleTopBar: () => set({ topBarVisible: !get().topBarVisible }),
-      resetLayout: () => set({ ...defaultLayout }),
+      resetLayout: () => set({ ...defaultLayout, agentSecondarySurface: 'none' }),
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
       toggleQuickSearch: () => set({ quickSearchOpen: !get().quickSearchOpen }),

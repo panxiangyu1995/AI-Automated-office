@@ -13,7 +13,7 @@ interface AiChatPanelProps {
  * AI 对话面板组件
  *
  * 功能：
- * - 响应 Ctrl+Shift+D (Cmd+Shift+D) 全局快捷键打开/关闭
+ * - 响应 Ctrl+Shift+I (Cmd+Shift+I) 全局快捷键打开/关闭
  * - 可调整宽度（300-500px）
  * - 可折叠
  * - 会话管理列表

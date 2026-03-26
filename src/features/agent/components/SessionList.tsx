@@ -21,6 +21,7 @@ import { useChatStore, type ChatSession } from '../hooks/useChatStore'
 interface SessionListProps {
   className?: string
   onNewSession?: () => void
+  onSelectSession?: (sessionId: string) => void
 }
 
 // ==================== Session Item ====================
@@ -178,7 +179,7 @@ function SessionItem({ session, isActive, onSelect, onRename, onDelete }: Sessio
 
 // ==================== Main Component ====================
 
-export function SessionList({ className, onNewSession }: SessionListProps) {
+export function SessionList({ className, onNewSession, onSelectSession }: SessionListProps) {
   const { 
     sessions, 
     activeSessionId, 
@@ -209,6 +210,7 @@ export function SessionList({ className, onNewSession }: SessionListProps) {
   
   const handleSelectSession = (sessionId: string) => {
     setActiveSession(sessionId)
+    onSelectSession?.(sessionId)
   }
   
   const handleRenameSession = (sessionId: string, title: string) => {

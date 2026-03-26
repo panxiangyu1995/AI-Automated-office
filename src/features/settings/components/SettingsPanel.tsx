@@ -9,6 +9,14 @@ import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { ScrollArea } from '../../../components/ui/scroll-area'
 import { Switch } from '../../../components/ui/switch'
+import {
+  DEFAULT_SHORTCUTS,
+  SHORTCUT_STORAGE_KEY,
+  formatShortcutLabel,
+  parseShortcutConfig,
+  type ShortcutConfig,
+  type ShortcutKey,
+} from '../../../lib/shortcutConfig'
 import { cn } from '../../../lib/utils'
 import { useUIStore } from '../../../stores/uiStore'
 import {
@@ -51,20 +59,10 @@ import { SubAgentRouting } from './SubAgentRouting'
 import { SubAgentToolBinding } from './SubAgentToolBinding'
 import { TicketKnowledgeGeneration } from './TicketKnowledgeGeneration'
 
-type ShortcutKey = 'showApp' | 'openAiChat' | 'quickSearch' | 'openSettings'
-
-const SHORTCUT_STORAGE_KEY = 'shortcuts'
 const SETTINGS_FAVORITES_STORAGE_KEY = 'settings-favorite-sections'
 const SETTINGS_RECENTS_STORAGE_KEY = 'settings-recent-sections'
 const MAX_RECENT_SECTIONS = 6
 const MAX_FAVORITE_SECTIONS = 6
-
-const DEFAULT_SHORTCUTS: Record<ShortcutKey, string> = {
-  showApp: 'Ctrl+Shift+A',
-  openAiChat: 'Ctrl+Shift+D',
-  quickSearch: 'Ctrl+Shift+F',
-  openSettings: 'CmdOrCtrl+,',
-}
 
 const SHORTCUT_FIELDS: Array<{
   key: ShortcutKey
@@ -72,10 +70,30 @@ const SHORTCUT_FIELDS: Array<{
   description: string
   placeholder: string
 }> = [
-  { key: 'showApp', label: '显示/隐藏应用', description: '快速唤起桌面端主窗口。', placeholder: 'Ctrl+Shift+A' },
-  { key: 'openAiChat', label: '打开 AI 对话', description: '直接进入右侧 AI 对话面板。', placeholder: 'Ctrl+Shift+D' },
-  { key: 'quickSearch', label: '快速搜索', description: '打开工作台搜索能力。', placeholder: 'Ctrl+Shift+F' },
-  { key: 'openSettings', label: '打开设置', description: '快速进入平台治理中心。', placeholder: 'CmdOrCtrl+,' },
+  {
+    key: 'showApp',
+    label: '显示/隐藏应用',
+    description: '快速唤起桌面端主窗口。',
+    placeholder: formatShortcutLabel(DEFAULT_SHORTCUTS.showApp),
+  },
+  {
+    key: 'openAiChat',
+    label: '打开 AI 对话',
+    description: '直接进入右侧 AI 对话面板。',
+    placeholder: formatShortcutLabel(DEFAULT_SHORTCUTS.openAiChat),
+  },
+  {
+    key: 'quickSearch',
+    label: '快速搜索',
+    description: '打开工作台搜索能力。',
+    placeholder: formatShortcutLabel(DEFAULT_SHORTCUTS.quickSearch),
+  },
+  {
+    key: 'openSettings',
+    label: '打开设置',
+    description: '快速进入平台治理中心。',
+    placeholder: formatShortcutLabel(DEFAULT_SHORTCUTS.openSettings),
+  },
 ]
 
 const KIND_LABELS: Record<SettingsSectionKind, string> = {
@@ -138,20 +156,7 @@ const STATUS_STYLES: Record<SectionStatusTone, string> = {
 }
 
 function loadShortcutsFromStorage() {
-  const saved = localStorage.getItem(SHORTCUT_STORAGE_KEY)
-  if (!saved) {
-    return DEFAULT_SHORTCUTS
-  }
-
-  try {
-    const parsed = JSON.parse(saved) as Partial<Record<ShortcutKey, string>>
-    return {
-      ...DEFAULT_SHORTCUTS,
-      ...parsed,
-    }
-  } catch {
-    return DEFAULT_SHORTCUTS
-  }
+  return parseShortcutConfig(localStorage.getItem(SHORTCUT_STORAGE_KEY))
 }
 
 function loadFavoriteSections() {
@@ -279,7 +284,7 @@ function WorkspacePreferencesSection(props: {
 }
 
 function ShortcutSettingsSection(props: {
-  draftShortcuts: Record<ShortcutKey, string>
+  draftShortcuts: ShortcutConfig
   shortcutErrors: Partial<Record<ShortcutKey, string>>
   hasShortcutChanges: boolean
   saving: boolean
@@ -807,8 +812,8 @@ export function SettingsPanel() {
   const [activeCategory, setActiveCategory] = useState<SettingsCategoryKey>('home')
   const [activeSection, setActiveSection] = useState<SettingsSectionKey>('general')
   const [searchQuery, setSearchQuery] = useState('')
-  const [shortcuts, setShortcuts] = useState<Record<ShortcutKey, string>>(() => loadShortcutsFromStorage())
-  const [draftShortcuts, setDraftShortcuts] = useState<Record<ShortcutKey, string>>(() => loadShortcutsFromStorage())
+  const [shortcuts, setShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
+  const [draftShortcuts, setDraftShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
   const [shortcutErrors, setShortcutErrors] = useState<Partial<Record<ShortcutKey, string>>>({})
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
