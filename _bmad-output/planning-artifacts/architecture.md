@@ -131,7 +131,8 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-019 | 敏感操作确认采用聊天界面内弹出方式 | 架构讨论 2026-03-10 |
 | ADR-020 | MCP工具优先级：内置工具优先，MCP工具Post-MVP实现 | 架构讨论 2026-03-10 |
 | ADR-021 | 统一消息系统采用参与者模型（human/agent/system/group） | 架构讨论 2026-03-11 |
-| ADR-022 | 黑名单匹配采用简单通配符模式（支持精确、前缀、后缀、包含、分组匹配） | 架构讨论 2026-03-11 |
+| ADR-022 | 黑名单匹配采用简单通配符模式（支持精确、前缀、后缀、包含、分组匹配） | 架构讨论 2026-03-11
+| ADR-022-1 | 命令黑白名单采用三层机制：黑名单（禁止）、白名单（允许）、灰名单（需确认） | kilocode研究 2026-03-26
 | ADR-023 | Agent可观测性数据存储采用本地SQLite，管理员可见范围为租户级 | 架构讨论 2026-03-11 |
 | ADR-024 | 断点续传支持从任意中断位置恢复，数据持久化到本地SQLite | 架构讨论 2026-03-11 |
 | ADR-025 | 工具系统采用通用工具架构：每部门最多5个核心工具（query/aggregate/mutate/action/export），参数化设计避免工具爆炸 | Party Mode讨论 2026-03-13 |
@@ -160,6 +161,9 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-048 | Heartbeat/Cron 机制作为运行治理能力并入：采用预检查、隔离执行、静默确认与重试超时控制，避免打扰与成本失控 | SOUL研究对齐 2026-03-23 |
 | ADR-049 | Workbench 交互骨架采用“命令中心 + 最近上下文索引 + 分层反馈 + 工作场景恢复”统一模型，作为固定壳层标准能力 | VSCode工作台对齐 2026-03-26 |
 | ADR-050 | 扩展与配置治理采用“受控贡献点 + 可解释配置来源”机制：扩展只能通过注册的 Workbench 贡献点注入，配置值需展示来源作用域与覆盖关系 | VSCode工作台对齐 2026-03-26 |
+| ADR-051 | MCP 服务器启用/禁用采用配置驱动 + 状态管理：支持 `enabled: boolean` 字段控制，运行时动态连接/断开，状态持久化到本地存储 | kilocode研究 2026-03-26 |
+| ADR-052 | 权限控制采用三级动作模型：`ask`（每次询问）、`allow`（自动允许）、`deny`（自动拒绝），支持分层覆盖（平台→租户→部门→用户） | kilocode研究 2026-03-26 |
+| ADR-053 | 多模态附件输入支持拖拽、粘贴、文件选择三种方式，支持图片（PNG/JPEG/GIF/WebP）和文档（PDF）预览，附件跟随业务对象权限 | kilocode研究 2026-03-26 |
 
 ### Recommended Architecture
 
