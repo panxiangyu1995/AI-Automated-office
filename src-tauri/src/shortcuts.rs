@@ -7,7 +7,7 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 /// 默认快捷键配置
 pub const DEFAULT_SHOW_APP: &str = "CmdOrCtrl+Shift+A";
-pub const DEFAULT_OPEN_AI_CHAT: &str = "CmdOrCtrl+Shift+D";
+pub const DEFAULT_OPEN_AI_CHAT: &str = "CmdOrCtrl+Shift+I";
 pub const DEFAULT_QUICK_SEARCH: &str = "CmdOrCtrl+Shift+F";
 pub const DEFAULT_OPEN_SETTINGS: &str = "CmdOrCtrl+,";
 
