@@ -781,8 +781,8 @@ This document provides the complete epic and story breakdown for AI-Automated-of
 | 编号 | 需求 |
 |-----|------|
 | FR460 | 用户主Agent及其Sub-Agent在部门上下文下只能调用本部门的内部工具 |
-| FR461 | 用户主Agent及其Sub-Agent可以调用其他部门暴露的公开工具 |
-| FR462 | 部门管理员可以在后台配置本部门哪些工具对外公开 |
+| FR461 | 用户主Agent及其Sub-Agent可以调用其他部门暴露的协作工具 |
+| FR462 | 部门管理员可以在后台配置本部门哪些工具对外共享 |
 | FR463 | 用户可以手动触发跨部门任务 |
 | FR464 | Agent可以自动识别跨部门协作需求并编排执行计划 |
 | FR465 | 自动编排的跨部门任务需要用户确认后才执行 |
