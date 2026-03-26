@@ -64,7 +64,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-项目共定义854个功能需求，覆盖平台核心（桌面端、通用Agent Runtime、插件与能力包系统、权限系统、知识库RAG、统一消息系统、LLM/MCP配置、Sub-Agent体系、多知识库配置、数据访问白名单）和8个业务部门模块，并新增“编辑器系统与动态模板渲染”能力。核心架构围绕**一个统一 Agent 内核 + 多部门能力供给**展开，同时延伸到可扩展编辑器注册、模板运行时、Canvas即时渲染、模板设计器与部门模板资产管理，支撑“动态模板驱动UI”的产品方向。
+按当前 PRD 统计口径，项目共定义916条功能需求，覆盖平台核心（桌面端、通用 Agent Runtime、插件与能力包系统、权限系统、知识库 RAG、统一消息系统、LLM/MCP 配置、Sub-Agent 体系、多知识库配置、数据访问白名单、实现细节补充、平台治理补强）和8个业务部门模块，并新增“编辑器系统与动态模板渲染”“工作台体验增强”“自定义字段与 AI 字段感知”“平台级审批对象与文档资产治理”能力。核心架构围绕**一个统一 Agent 内核 + 多部门能力供给**展开，同时延伸到命令中心与最近上下文索引、工作场景恢复、布局预设、问题中心、可扩展编辑器注册、模板运行时、Canvas 即时渲染、模板设计器、审批对象、文档资产图谱、Trace / Span 链路与能力治理看板，支撑“动态模板驱动 UI + 可治理 Agent 平台”的产品方向。
 
 **Non-Functional Requirements:**
 - 性能：本地操作<100ms，云端<3s，空闲内存<500MB
@@ -158,6 +158,8 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-046 | OpenCode Skill 渐进式加载作为全量参考并分级采纳：默认加载基础规范，任务与引用资源按需加载，维持上下文预算控制 | OpenCode研究对齐 2026-03-23 |
 | ADR-047 | SOUL 机制作为人格模板能力并入：支持多源导入与优先级覆盖，但默认只读，修改需用户确认并记录版本审计 | SOUL研究对齐 2026-03-23 |
 | ADR-048 | Heartbeat/Cron 机制作为运行治理能力并入：采用预检查、隔离执行、静默确认与重试超时控制，避免打扰与成本失控 | SOUL研究对齐 2026-03-23 |
+| ADR-049 | Workbench 交互骨架采用“命令中心 + 最近上下文索引 + 分层反馈 + 工作场景恢复”统一模型，作为固定壳层标准能力 | VSCode工作台对齐 2026-03-26 |
+| ADR-050 | 扩展与配置治理采用“受控贡献点 + 可解释配置来源”机制：扩展只能通过注册的 Workbench 贡献点注入，配置值需展示来源作用域与覆盖关系 | VSCode工作台对齐 2026-03-26 |
 
 ### Recommended Architecture
 
@@ -6367,6 +6369,51 @@ ws_endpoint = "wss://ws.example.com"
 - 模板数据绑定仅允许访问已授权的部门数据源，并受数据访问白名单与字段脱敏规则约束。
 - 模板库按租户、部门和可见范围隔离，管理员审核后才能发布到共享模板空间。
 
+## Workbench Interaction and Recovery Architecture
+
+### Architecture Positioning
+
+工作台体验增强能力位于 `Experience Layer`、`Agent Runtime Layer` 与 `Storage & Tenant Platform Layer` 的交界处。它负责把命令式入口、最近上下文、分层反馈、工作场景恢复、本地历史与受控扩展注入统一收敛到固定壳层，而不是散落在各业务页面各自实现。
+
+### Core Components
+
+| 组件 | 职责 | 所在层 |
+|------|------|------|
+| Command Center | 统一承载 Command Palette / Quick Ask / Quick Open / Quick Pick 查询入口 | Experience Layer |
+| Recent Context Index | 索引最近页面、项目、模板、知识条目、消息会话、协作者与治理入口 | Experience Layer + Storage & Tenant Platform Layer |
+| Workbench Snapshot Store | 保存标签、分栏、筛选条件、AI 面板状态与草稿上下文 | Storage & Tenant Platform Layer |
+| Layout Preset Manager | 管理专注模式、审批模式、起草模式、审计模式等布局预设 | Experience Layer + Storage & Tenant Platform Layer |
+| Problems Aggregator | 聚合校验错误、同步冲突、权限阻塞、待确认 staged change 与输出日志 | Agent Runtime Layer + Experience Layer |
+| Settings Scope Resolver | 解析平台默认、租户策略、部门策略、工作区/项目、用户偏好、会话/Sub-Agent 覆盖链路 | Capability Supply Layer + Experience Layer |
+| Contribution Point Registry | 注册 Sidebar、Bottom Panel、StatusBar、Command Palette 等受控注入点 | Experience Layer + Capability Supply Layer |
+| Local History Store | 保存文档、模板与动态表单草稿的本地历史快照与对比索引 | Storage & Tenant Platform Layer |
+
+### Runtime Flow
+
+1. 用户打开 Command Center 后，系统同时查询页面、命令、项目/工作区、模板、知识条目、消息会话与治理入口，并按权限与最近上下文排序。
+2. Quick Open / Quick Pick 优先返回当前工作区、最近项目和最近页面结果，降低跨模块切换成本。
+3. 工作区切换、重启恢复或崩溃恢复时，Workbench Snapshot Store 恢复标签、分栏、筛选条件、AI 面板状态与草稿上下文。
+4. 运行时状态按严重性进入字段内联反馈、StatusBar、Toast / Dialog、消息中心与 Problems Center，不允许所有反馈都挤入单一通知通道。
+5. 设置面板通过 Settings Scope Resolver 展示当前值来源，至少支持 `平台默认 < 租户策略 < 部门策略 < 工作区/项目 < 用户偏好 < 会话/Sub-Agent 覆盖` 的解释链。
+
+### Boundary Rules
+
+- 扩展只能通过 Sidebar 视图、Bottom Panel 标签、StatusBar 条目、Command Palette 命令、上下文菜单、编辑器类型和模板资产等受控贡献点进入工作台。
+- 扩展不得直接改写 TopBar、ActivityBar、Workbench 核心壳层，也不得绕过 Contribution Point Registry 注入任意 UI。
+- Problems Center 负责聚合诊断与阻塞项，StatusBar 仅承载轻量持续反馈，避免状态与错误语义混淆。
+- 本地历史恢复必须先经过对比确认，不得直接覆盖已发布正式版本或已进入审批链路的正式资产。
+
+### Experience SLO Alignment
+
+| 指标 | 目标 |
+|------|------|
+| Command Center 打开延迟 | < 150ms |
+| Command Center 首批结果返回 | < 300ms |
+| Quick Open 跳转到目标资产 | < 500ms |
+| 最近工作区恢复时间 | < 3秒 |
+| 问题中心聚合刷新延迟 | < 1秒 |
+| 布局预设切换延迟 | < 300ms |
+
 ## UI 分层与模块矩阵
 
 > **参考文档：** [ui-module-matrix-2026-03-22.md](./ui-module-matrix-2026-03-22.md) — 详细定义了固定 UI / 混合 UI / 动态 UI 的完整清单、部门维度矩阵及迁移建议。
@@ -6400,6 +6447,7 @@ ws_endpoint = "wss://ws.example.com"
 - AI Chat Panel 外壳
 - StatusBar
 - Command Palette
+- Bottom Panel 固定容器位
 - 全局 Dialog / Toast / Confirm
 
 #### 身份与账户
@@ -6601,7 +6649,7 @@ Epic 41
 
 ### Requirements Coverage Validation ✅
 
-**功能需求覆盖（共854个）:**
+**功能需求覆盖（按当前 PRD 统计口径共916条）:**
 
 | FR类别 | 需求编号范围 | 数量 | 架构支持 | 状态 |
 |--------|-------------|------|---------|------|
@@ -6612,7 +6660,7 @@ Epic 41
 | 多租户管理 | FR34-FR37 | 4 | 数据库级隔离 | ✅ |
 | 数据同步与存储 | FR38-FR43 | 6 | Sync Engine + WebSocket | ✅ |
 | **统一消息系统** | FR44-FR48, FR59-FR68, FR90-FR98, FR600-FR662 | 99 | Message Router + WebSocket | ✅ |
-| 工具调用可见性 | FR69-FR80 | 12 | Tool Panel + 状态监控 | ✅ |
+| 工具调用可见性 | FR69-FR80 | 13 | Tool Panel + 状态监控 | ✅ |
 | AI纠偏反馈学习 | FR81-FR89 | 9 | 错题集架构 | ✅ |
 | 新手引导与帮助 | FR87-FR89 | 3 | 引导系统 | ✅ |
 | 核心部门功能 | FR99-FR209 | 62 | 部门能力包目录结构 + 能力接口 | ✅ |
@@ -6625,7 +6673,7 @@ Epic 41
 | **MCP服务管理** | FR810-FR820 | 11 | MCP Client Manager + Service Registry | ✅ |
 | **MCP工具Approve策略** | FR825-FR832 | 8 | Tool Policy Engine + Approval Workflow | ✅ |
 | **Skill配置管理** | FR835-FR840 | 6 | Skill Registry + Plugin Governance | ✅ |
-| **系统提示词管理** | FR850-FR860 | 11 | Prompt Store + Versioning + Audit | ✅ |
+| **系统提示词管理** | FR850-FR863 | 14 | Prompt Store + Versioning + Audit | ✅ |
 | **Rules规则管理** | FR865-FR875 | 11 | Rule Engine + Priority Resolver | ✅ |
 | **提示词调试功能** | FR880-FR888 | 9 | Prompt Sandbox + Token Analyzer | ✅ |
 | **Sub-Agent管理** | FR890-FR900 | 11 | Sub-Agent Registry + Lifecycle Manager | ✅ |
@@ -6636,7 +6684,9 @@ Epic 41
 | **数据访问白名单功能** | FR965-FR974 | 10 | Query Guard + Masking Policy | ✅ |
 | **缺失功能补充（新增）** | FR1000-FR1212 | 169 | 平台治理、运维、编辑器基础设施、可观测性与容错子系统 | ✅ |
 | **编辑器系统与动态模板渲染** | FR1213-FR1302 | 90 | Editor Registry + Template Runtime + Canvas Renderer + Template Library | ✅ |
-| **总计** | | **854** | | ✅ |
+| **实现细节补充** | FR1500-FR1524 | 25 | Streaming Runtime + Message Runtime + Scheduler Extensions + Audit Extensions | ✅ |
+| **参考项目吸收与平台治理补强** | FR1525-FR1558 | 34 | Approval Object Model + Document Asset Graph + Trace/Span + Capability Governance | ✅ |
+| **总计** | | **916** | | ✅ |
 
 **非功能需求覆盖:**
 
@@ -6793,49 +6843,118 @@ pnpm tauri add sqlite
 ```
 
 
-## ?????? AI ????????????
+## 自定义字段与 AI 字段感知架构补充
 
-### ????
+### 架构定位
 
-??????? AI ???????????????????????????????????????????????? Agent Runtime????????????????????????????????
+自定义字段与 AI 字段感知能力不是孤立配置页，而是建立在业务对象模型、动态 UI Runtime 与统一 Agent Runtime 之上的一条补充架构链路。它需要同时解决字段定义存储、场景显示、AI 使用边界和审计追踪，确保企业在不改前端代码的前提下扩展字段模型，并让 AI 只消费被授权且被解释的字段。
 
-### ????
+### 核心原则
 
-1. ?????????????????????????????????????
-2. ??????????AI ???????????????? `tenant + object` ?????
-3. ???????????????? schema ??????????????????????
-4. AI ??????????????? schema ????????????????????????
-5. ????? AI ???????????????
+1. 字段定义、场景配置与 AI 策略分层治理，避免单点配置承担多重语义
+2. 所有字段定义与 AI 策略必须按 `tenant + object` 维度隔离，确保租户边界清晰
+3. 动态表单与动态详情运行时按字段 schema 渲染，不依赖硬编码页面组件
+4. AI 任务执行前由上下文组装层统一装配字段 schema 与字段值，不允许业务场景自行拼接
+5. 所有字段与 AI 配置变更进入统一审计链路
 
-### ??????
+### 核心组件
 
-| ?? | ?? |
+| 组件 | 职责 |
 |------|------|
-| Field Definition Store | ????????????????????? |
-| Field Scenario Config Store | ???????????????????????????? |
-| AI Field Policy Store | ????? AI ????????????????? |
-| Dynamic Field Renderer | ???????????? schema ???? |
-| AI Context Assembler | ? AI ???????????? schema ???? |
-| Audit Logger | ????? AI ???? |
+| Field Definition Store | 存储业务对象的字段定义、类型、默认值、状态与稳定 `field_key` |
+| Field Scenario Config Store | 存储列表、详情、创建、编辑、审批等场景的字段显示、排序与必填配置 |
+| AI Field Policy Store | 存储字段 AI 可用性、语义说明、任务范围与优先参考策略 |
+| Dynamic Field Renderer | 根据字段 schema 驱动动态表单和动态详情的运行时渲染 |
+| AI Context Assembler | 在 AI 任务触发前组装字段 schema 摘要、字段值与使用边界 |
+| Audit Logger | 记录字段定义、场景配置、AI 策略和运行时引用说明 |
 
-### ?????
+### 运行规则
 
-1. AI ???? `ai_enabled=true` ?????????????
-2. ?????????????AI ???????
-3. ??????????????? AI ???????
-4. ???????????????????????? schema ???
+1. AI 上下文只允许注入 `ai_enabled=true` 且命中当前任务范围的字段
+2. 字段无值时必须以显式空值传递给 AI，不允许在组装阶段补造内容
+3. 未授权、已停用或未命中场景的字段不得进入 AI 上下文
+4. 字段 schema 加载失败时，运行时必须返回可诊断错误，而不是静默忽略
 
-### ??? ADR ???
+### 与既有 ADR 对齐
 
-?????????????????
+本能力需要继续遵循现有架构决策：
 
-- ADR-018??????????????
-- ADR-036?????????? schema + ???? + ???????
-- ADR-037??????????????????
+- ADR-018：字段级权限采用后台动态配置
+- ADR-036：动态模板运行时采用“模板 schema + 数据绑定层 + Canvas 渲染层”的分层设计
+- ADR-037：模板设计器与模板库归属于平台公共能力，字段扩展通过统一运行时接入，不直接耦合渲染内核
 
-### ??????
+### 开放问题
 
-1. ??????????????????????????????? schema?
-2. ??????? Agent Runtime ???????? AI ?????
-3. ??????????????????????????????
-4. ???????????????
+1. 字段 schema 的缓存、失效与版本切换策略需在运行时层进一步明确
+2. 字段级权限、脱敏策略与 Agent Runtime 的上下文裁剪规则需要统一治理
+3. 搜索、导出、报表等非 AI 场景是否复用同一字段 schema 契约仍需确认
+4. 字段引用说明在 UI 可解释区域中的展示密度需要与 UX 规范联动
+
+## 参考项目吸收后的平台治理架构补充
+
+### 架构边界
+
+本补充用于吸收优秀开源项目中的运行时工程化与治理对象模型，但必须继续服从当前铁律：
+
+1. 产品仍然是“一个主 Agent + 用户自有 Sub-Agent + 部门边界”的企业 Agent 平台，不引入 AI 公司模拟器叙事
+2. 多 Agent 只是受治理的执行手段，不默认演化为高自治 swarm
+3. `accept / reject / rollback / publish` 仍然是人类审阅动作，不进入 Tool Registry
+4. 所有治理增强都必须落入统一消息、权限、审计、租户隔离与动态 UI 宿主模型
+
+### 核心组件
+
+| 组件 | 职责 |
+|------|------|
+| Approval Object Store | 以平台级独立对象存储审批请求、状态机、审批意见与关联资源 |
+| Approval Gate & Resume Coordinator | 在写回、发布、纳库等高风险动作前挂起任务，并在审批完成后按结果恢复执行 |
+| Document Asset Service | 统一管理文档资产、修订链、状态流转与来源元数据 |
+| Asset Link Graph | 关联文档、审批、知识条目、消息卡片、业务对象与能力输出 |
+| Trace / Span Store | 记录会话、Prompt 组装、上下文压缩、检索、工具、审批门禁、委派、写回与回滚链路 |
+| Flight Recorder Snapshot Store | 冻结失败任务、异常中断任务或进入审批门禁任务的可回放快照 |
+| Delegation Contract Resolver | 对 Sub-Agent 委派目标、范围、预算、可用能力与输出 schema 进行约束校验 |
+| Capability Contract Registry | 统一维护 Tool、Skill、MCP 与部门能力包的输入输出、风险、幂等性与审批策略 |
+| Capability Fitness Collector | 聚合成功率、失败率、延迟、审批摩擦率和错误分布等健康指标 |
+| Suggestion Package Generator | 基于 Trace 与健康指标生成待审阅的优化建议包，而不是自动改配置 |
+| Principal Membership Service | 统一建模人员、主 Agent、Sub-Agent、群组和系统身份之间的成员关系 |
+| Model Policy Layer | 监督租户/部门级提供商与模型策略、Inline 模型与思考变体切换以及预算徽章合法性 |
+| Context Orchestrator | 负责上下文预算、来源标注、压缩阈值、业务对象注入与“Add Context”交互，并输出可观测的上下文 Span |
+| Clarification Interaction Service | 所有结构化追问（Ask Question）由该服务管道处理，附带选项、自由输入、Mode/Action 建议与审计元数据 |
+
+### 运行主链
+
+1. Agent 执行任务时先创建根 Trace，并在 Prompt 组装、检索、工具调用、审批门禁、委派和写回阶段持续生成 Span
+2. Model Policy Layer 校验当前会话的提供商、模型与思考变体是否在租户/部门策略允许范围内，必要时降级到 fallback 小模型或阻止请求
+3. Context Orchestrator 汇总来自文档、审批、知识库、上下文注入命令的内容，驱动 Context Window、token 预算、压缩策略与“Add Context”交互，并以分层 Span 形式暴露给 Trace Store
+4. 若上下文缺口或存在高风险目标，Clarification Interaction Service 发起结构化追问，收集选项/自由文本/后续动作并记录结果，以决定是否继续高风险写回或委派
+5. 命中高风险写操作时，Runtime 通过 `Approval Gate` 生成平台级审批对象，并挂起当前任务执行
+6. 审批结果进入统一审计流；若审批通过，`Resume Coordinator` 从检查点或冻结快照恢复任务
+7. 若任务输出为文档、模板或知识草稿，则统一落入 `Document Asset Service` 管理修订链与来源元数据
+8. Sub-Agent 委派前，`Delegation Contract Resolver` 校验任务目标、能力白名单、预算与权限继承边界
+9. Trace、审批、文档与能力指标共同汇入治理看板和改进建议引擎，但输出只能形成待审阅建议包
+
+### 可见性分层
+
+| 视图层级 | 面向对象 | 可见内容 |
+|------|------|------|
+| 用户摘要视图 | 普通业务用户 | 当前任务摘要、关键步骤、审批状态、文档修订状态 |
+| 管理员审计视图 | 租户管理员/部门管理员 | 审批决定、资源关联、委派关系、脱敏后的 Trace 链路 |
+| Context Inspector | 授权管理员/审计 | 会话上下文分解、系统提示、原始消息与 Provider/Model 统计 |
+| 平台深度视图 | 运维/平台治理 | Span 级耗时、错误码、能力健康度、失败快照与建议包 |
+
+### 与既有架构对齐
+
+本补充继续复用并强化既有架构决策：
+
+- ADR-018 / ADR-019 / ADR-021：权限、审批、消息与审计仍走统一治理主链
+- ADR-023：可观测性数据继续以租户级可见范围为边界
+- ADR-036 / ADR-037：文档、模板与动态 UI 仍通过统一运行时和宿主协议承接
+- Tool Calling 2.0：能力契约化、少而强的原子能力、部门能力包参数化
+
+### 开放问题
+
+1. `Trace / Span` 的冷热分层存储策略需要结合本地 SQLite 与云端归档进一步明确
+2. `Approval Resume Gate` 的检查点粒度需要与流式运行时和 UI 写回协议联动设计
+3. `Principal Membership` 是否需要支持临时项目组、代理关系和外部协作者身份仍需细化
+4. `Suggestion Package` 的版本化、比较与回滚策略需要在后续 OpenSpec 中拆解
+5. Model Policy Layer 的多租户预设、预算徽章与 fallback 小模型策略需要与治理白名单、一致性成本计划联动
+6. Clarification Interaction Service 如何与审批门禁、Context Orchestrator 输出和审计链同步仍需进一步明确
