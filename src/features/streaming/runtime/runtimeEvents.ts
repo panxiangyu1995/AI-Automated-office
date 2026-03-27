@@ -290,6 +290,16 @@ export class RuntimeEventEmitter {
     }
   }
 
+  /**
+   * Emit an externally sourced event (backend stream).
+   */
+  emitExternal(event: RuntimeEvent): void {
+    if (event.sequence > this.sequence) {
+      this.sequence = event.sequence
+    }
+    this.emit(event)
+  }
+
   // ==================== Event Creation Methods ====================
 
   /**

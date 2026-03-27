@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
+use crate::agent::events::RuntimeEventEmitter;
 use crate::agent::orchestrator::AgentOrchestrator;
 use crate::agent::runtime_session::RuntimeSessionService;
 use crate::agent::{AgentExecutionRequest, AgentExecutionResponse, AgentRuntimeState};
@@ -41,6 +42,7 @@ pub async fn start_agent_session(
 pub async fn execute_agent(
     request: AgentExecutionRequest,
     state: State<'_, AgentRuntimeState>,
+    app: tauri::AppHandle,
 ) -> Result<AgentExecutionResponse, String> {
     let runtime = RuntimeSessionService::new(&request.tenant_id)
         .await
@@ -50,7 +52,11 @@ pub async fn execute_agent(
         runtime,
         state.cancellations(),
     );
-    orchestrator.execute(request).await.map_err(|err| err.to_string())
+    let mut event_emitter = RuntimeEventEmitter::new(app, request.session_id.clone());
+    orchestrator
+        .execute_with_events(request, Some(&mut event_emitter))
+        .await
+        .map_err(|err| err.to_string())
 }
 
 #[tauri::command]

@@ -13,6 +13,7 @@ import type { SyncState, StreamChunkConsumer } from './syncEngine'
 import { SyncEngine, createSyncEngine } from './syncEngine'
 import type { ReconnectState } from './reconnectHandler'
 import { ReconnectHandler, createReconnectHandler } from './reconnectHandler'
+import { attachTauriRuntimeEventBridge } from './runtimeEventBridge'
 
 // ==================== Context Types ====================
 
@@ -72,6 +73,7 @@ export function StreamingProvider({
   const eventEmitterRef = useRef<RuntimeEventEmitter | null>(null)
   const syncEngineRef = useRef<SyncEngine | null>(null)
   const reconnectHandlerRef = useRef<ReconnectHandler | null>(null)
+  const bridgeUnlistenRef = useRef<null | (() => void)>(null)
 
   // State
   const [syncState, setSyncState] = useState<SyncState>({
@@ -124,8 +126,33 @@ export function StreamingProvider({
     // Subscribe to state changes
     const unsubSync = syncEngineRef.current.addStateListener(setSyncState)
     const unsubReconnect = reconnectHandlerRef.current.addStateListener(setReconnectState)
+    let isMounted = true
+
+    const attachBridge = async () => {
+      if (!eventEmitterRef.current || !syncEngineRef.current || !reconnectHandlerRef.current) {
+        return
+      }
+      const unlisten = await attachTauriRuntimeEventBridge({
+        sessionId,
+        eventEmitter: eventEmitterRef.current,
+        syncEngine: syncEngineRef.current,
+        reconnectHandler: reconnectHandlerRef.current,
+      })
+      if (!isMounted) {
+        unlisten()
+        return
+      }
+      bridgeUnlistenRef.current = unlisten
+    }
+
+    void attachBridge()
 
     return () => {
+      isMounted = false
+      if (bridgeUnlistenRef.current) {
+        bridgeUnlistenRef.current()
+        bridgeUnlistenRef.current = null
+      }
       unsubSync()
       unsubReconnect()
       reconnectHandlerRef.current?.cleanup()

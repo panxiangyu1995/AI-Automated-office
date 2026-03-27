@@ -1,5 +1,6 @@
 //! Agent runtime core module.
 
+pub mod events;
 pub mod orchestrator;
 pub mod provider;
 pub mod runtime_session;

@@ -6704,3 +6704,25 @@
 - Build failure appears environment-related; no runtime tests executed.
 
 ---
+
+## [2026-03-27] - Task 112: Story 51.2 - Runtime event streaming bridge
+
+### 铁律合规检查：
+- PRD 合规：FR405, FR406, FR407
+- 架构合规：ADR-001, ADR-037
+- UX 合规：UX-01, UX-04, UX-05
+- NFR 合规：NFR3, NFR16
+
+### What was done:
+- Added backend runtime event emitter and serialized event schema for session/message lifecycle events.
+- Emitted runtime events from the Rust orchestrator and bridged them to the frontend via Tauri events.
+- Added frontend runtime event bridge to feed backend events into the runtime emitter with ordering checks and replay storage.
+
+### Testing:
+- `pnpm.cmd lint` passed
+- `pnpm.cmd build` passed (esbuild requires escalated execution)
+
+### Notes:
+- Event bridge currently covers session/message/error events; tool streaming will be layered in Task 113.
+
+---

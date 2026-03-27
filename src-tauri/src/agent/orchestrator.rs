@@ -3,7 +3,9 @@ use std::sync::Arc;
 
 use tokio::sync::RwLock;
 use uuid::Uuid;
+use chrono::Utc;
 
+use super::events::RuntimeEventEmitter;
 use super::provider::{AgentProvider, ProviderRequest};
 use super::runtime_session::RuntimeSessionService;
 use super::{
@@ -54,18 +56,34 @@ impl AgentOrchestrator {
         &self,
         request: AgentExecutionRequest,
     ) -> AgentResult<AgentExecutionResponse> {
+        self.execute_with_events(request, None).await
+    }
+
+    pub async fn execute_with_events(
+        &self,
+        request: AgentExecutionRequest,
+        mut emitter: Option<&mut RuntimeEventEmitter>,
+    ) -> AgentResult<AgentExecutionResponse> {
         self.clear_interrupt(&request.session_id).await;
         if self.is_interrupted(&request.session_id).await {
             return Err(AgentError::Interrupted);
         }
 
+        let start_time = Utc::now().timestamp_millis();
         let trace_id = Uuid::new_v4().to_string();
         self.runtime
             .ensure_session(&request.session_id, &request.user_id)
             .await?;
 
+        if let Some(event_emitter) = emitter.as_deref_mut() {
+            event_emitter.session_start(Some(serde_json::json!({
+                "userId": request.user_id,
+                "traceId": trace_id,
+            })));
+        }
+
         let user_metadata = with_trace_metadata(request.metadata.clone(), &trace_id, "user");
-        self.runtime
+        let user_message = self.runtime
             .append_message(
                 &request.session_id,
                 "user",
@@ -73,6 +91,15 @@ impl AgentOrchestrator {
                 user_metadata,
             )
             .await?;
+
+        if let Some(event_emitter) = emitter.as_deref_mut() {
+            let payload = serde_json::json!({
+                "role": "user",
+                "content": request.message,
+            });
+            event_emitter.message_start(user_message.id.clone(), payload.clone());
+            event_emitter.message_end(user_message.id.clone(), payload);
+        }
 
         let history = self.runtime.list_messages(&request.session_id).await?;
         let mut messages = Vec::new();
@@ -86,7 +113,7 @@ impl AgentOrchestrator {
             }
         }
 
-        let provider_response = self
+        let provider_response = match self
             .provider
             .complete(ProviderRequest {
                 session_id: request.session_id.clone(),
@@ -94,7 +121,25 @@ impl AgentOrchestrator {
                 messages,
                 metadata: None,
             })
-            .await?;
+            .await
+        {
+            Ok(response) => response,
+            Err(err) => {
+                if let Some(event_emitter) = emitter.as_deref_mut() {
+                    event_emitter.error(serde_json::json!({
+                        "code": "UNKNOWN_ERROR",
+                        "message": err.to_string(),
+                        "recoverable": false
+                    }));
+                    let duration = Utc::now().timestamp_millis() - start_time;
+                    event_emitter.session_end(serde_json::json!({
+                        "reason": "error",
+                        "duration": duration,
+                    }));
+                }
+                return Err(err);
+            }
+        };
 
         if self.is_interrupted(&request.session_id).await {
             return Ok(AgentExecutionResponse {
@@ -108,7 +153,7 @@ impl AgentOrchestrator {
 
         let assistant_metadata =
             with_trace_metadata(provider_response.metadata.clone(), &trace_id, "assistant");
-        self.runtime
+        let assistant_message = self.runtime
             .append_message(
                 &request.session_id,
                 "assistant",
@@ -116,6 +161,23 @@ impl AgentOrchestrator {
                 assistant_metadata,
             )
             .await?;
+
+        if let Some(event_emitter) = emitter.as_deref_mut() {
+            let payload = serde_json::json!({
+                "role": "assistant",
+                "content": provider_response.content,
+            });
+            event_emitter.message_start(assistant_message.id.clone(), payload.clone());
+            event_emitter.message_end(assistant_message.id.clone(), payload);
+        }
+
+        if let Some(event_emitter) = emitter.as_deref_mut() {
+            let duration = Utc::now().timestamp_millis() - start_time;
+            event_emitter.session_end(serde_json::json!({
+                "reason": "completed",
+                "duration": duration,
+            }));
+        }
 
         Ok(AgentExecutionResponse {
             session_id: request.session_id,
