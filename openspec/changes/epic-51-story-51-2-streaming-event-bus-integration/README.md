@@ -1,41 +1,29 @@
-# Epic 51, Story 51.2: 主Agent协调器 - 流式事件总线集成
+# epic-51-story-51-2-streaming-event-bus-integration
 
-## 概述
+## Story
+- Epic: Epic 51
+- Story: Story 51.2
+- Task: Task 112
+- Title: Runtime event streaming bridge
+- Phase: Phase 1 - Execution Spine
+- Priority: high
 
-实现前后端流式事件总线，支持思考过程、工具调用状态、执行进度的实时推送与前端展示。
+## Goal
+Upgrade the frontend event model into a real frontend-backend runtime event bridge for progress, tool, error, and completion events.
 
-## 实现类型
-- **类型**: refactor
-- **优先级**: high
-- **阶段**: Phase 1 - Agent Runtime端到端集成
+## Requirements Mapping
+- FR: FR405, FR406, FR407
+- NFR: NFR3, NFR16
+- ARCH: ADR-001, ADR-037
+- UX: UX-01, UX-04, UX-05
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR405, FR406, FR407
-- **NFRs**: NFR3, NFR16
-
-### 架构需求
-- **ARCH**: ADR-001, ADR-037
-
-### UX 需求
-- **UX**: UX-01, UX-04, UX-05
-
-## 验收标准
-
-1. 扩展RuntimeEventEmitter支持细粒度事件类型（thinking、tool_calling、tool_result、confirmation_needed）
-2. 实现前端StreamingHostContext与后端事件流的完整对接
-3. 添加思考过程的实时展示组件
-4. 实现工具调用状态的实时更新与可视化
-5. 添加执行进度的流式反馈
-
-## 依赖
-
+## Dependencies
 - Story 51.1
 - Story 43.3
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Define runtime event protocol and event type mapping
+2. Implement backend to frontend event bridge
+3. Connect StreamingHostContext to the real event source
+4. Handle ordering, reconnect, replay, and interruption consistency
+5. Verify chat and debug panels consume real runtime events

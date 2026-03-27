@@ -1,41 +1,34 @@
-# Epic 55, Story 55.2: 错误恢复与故障转移机制
+# epic-55-story-55-2-error-recovery-failover
 
-## 概述
+## Story
+- Epic: Epic 55
+- Story: Story 55.2
+- Task: Task 118
+- Title: Retry, replan, and checkpoint recovery
+- Phase: Phase 3 - Reliability and Governance
+- Priority: high
 
-实现Agent错误恢复、故障转移、会话修复、自动重试等可靠性机制。
+## Goal
+Connect replan strategy, checkpoint management, and failure recovery to real backend execution records and restore flows.
 
-## 实现类型
-- **类型**: new
-- **优先级**: high
-- **阶段**: Phase 5 - 治理与可靠性增强
+## Requirements Mapping
+- FR: FR603, FR604, FR605
+- NFR: NFR1, NFR16, NFR22
+- ARCH: ADR-001, ADR-037
+- UX: UX-01, UX-04
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR603, FR604, FR605
-- **NFRs**: NFR1, NFR16, NFR22
-
-### 架构需求
-- **ARCH**: ADR-001
-
-### UX 需求
-- **UX**: UX-01, UX-04
-
-## 验收标准
-
-1. 创建ErrorRecoveryManager错误恢复管理器
-2. 实现工具调用失败的自动重试策略
-3. 实现LLM服务故障的自动切换
-4. 添加会话状态的自动修复机制
-5. 实现故障通知与人工介入流程
-
-## 依赖
-
+## Dependencies
 - Story 51.1
+- Story 51.2
+- Story 51.3
+- Story 51.4
+- Story 43.4
 - Story 44.4
+- Story 48.3
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Connect retry and replan decisions to real execution outcomes
+2. Implement checkpoint save, activate, rollback, and restore
+3. Trigger recovery from tool failure, timeout, and interruption
+4. Feed recovery state back to chat and debug views
+5. Verify interruption, retry, rollback, and restore end to end

@@ -1,9 +1,9 @@
 name: epic-51-story-51-2-streaming-event-bus-integration
 status: pending
-created_at: 2026-03-26
+created_at: 2026-03-27
 epic: 51
 story: 51.2
-title: 主Agent协调器 - 流式事件总线集成
+title: Runtime event streaming bridge
 mapping:
   frs:
     - FR405

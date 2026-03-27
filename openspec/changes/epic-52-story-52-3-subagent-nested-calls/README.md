@@ -1,40 +1,28 @@
-# Epic 52, Story 52.3: Sub-Agent嵌套调用控制
+# epic-52-story-52-3-subagent-nested-calls
 
-## 概述
+## Story
+- Epic: Epic 52
+- Story: Story 52.3
+- Task: Task 125
+- Title: Sub-Agent nested call control
+- Phase: Phase 4 - Advanced Common Agent
+- Priority: medium
 
-实现Sub-Agent嵌套调用机制，支持最多3层嵌套，包含深度控制和调用链路追踪。
+## Goal
+Add nested call depth limits, loop detection, budgets, and timeout control to prevent recursive multi-agent failure modes.
 
-## 实现类型
-- **类型**: new
-- **优先级**: high
-- **阶段**: Phase 2 - Sub-Agent运行时实现
+## Requirements Mapping
+- FR: FR935, FR937, FR938
+- NFR: NFR1, NFR16
+- ARCH: ADR-013
+- UX: UX-01, UX-04
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR935, FR937, FR938
-- **NFRs**: NFR1, NFR16
-
-### 架构需求
-- **ARCH**: ADR-013
-
-### UX 需求
-- **UX**: UX-01, UX-04
-
-## 验收标准
-
-1. 实现嵌套调用深度计数器与限制检查
-2. 创建Sub-Agent调用栈追踪
-3. 实现调用链路可视化数据
-4. 添加循环调用检测与防护
-5. 实现嵌套调用超时控制
-
-## 依赖
-
+## Dependencies
 - Story 52.2
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Track nested depth and enforce limits
+2. Add loop detection and call budgets
+3. Propagate timeout and failure correctly
+4. Link nested calls to trace, audit, and failure records
+5. Verify no unbounded recursion or privilege escalation

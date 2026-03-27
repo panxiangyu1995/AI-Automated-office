@@ -1,42 +1,29 @@
-# Epic 53, Story 53.4: 记忆检索与注入集成
+# epic-53-story-53-4-memory-retrieval-integration
 
-## 概述
+## Story
+- Epic: Epic 53
+- Story: Story 53.4
+- Task: Task 117
+- Title: Knowledge retrieval integration
+- Phase: Phase 2 - Context, Memory, Prompt
+- Priority: high
 
-在Agent执行前自动检索相关记忆并注入到提示词上下文，实现记忆的主动应用。
+## Goal
+Replace the mock retrieval path with real backend retrieval over storage, vector, and scoped knowledge sources.
 
-## 实现类型
-- **类型**: refactor
-- **优先级**: medium
-- **阶段**: Phase 3 - 记忆层与提示词集成
+## Requirements Mapping
+- FR: FR446, FR447, FR448
+- NFR: NFR1, NFR16, NFR20
+- ARCH: ADR-038, ADR-039, ADR-043
+- UX: UX-01
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR448, FR449
-- **NFRs**: NFR1, NFR16
-
-### 架构需求
-- **ARCH**: ADR-043, ADR-044
-
-### UX 需求
-- **UX**: UX-01, UX-04
-
-## 验收标准
-
-1. 集成KnowledgeRetrieval到Agent执行流程
-2. 实现会话启动时的记忆预加载
-3. 实现用户输入时的相关记忆检索
-4. 添加记忆注入的优先级排序
-5. 实现记忆来源的追踪与展示
-
-## 依赖
-
+## Dependencies
 - Story 53.1
-- Story 6.3
-- Story 9.1
+- Story 47.4
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Create backend retrieval service
+2. Replace mockRetrieve with real async retrieval
+3. Enforce scope filters for tenant, department, and session
+4. Inject retrieval results into planner, runtime, and tool context
+5. Add caching, timeout, and degradation behavior

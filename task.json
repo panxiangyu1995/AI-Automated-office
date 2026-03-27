@@ -1,1413 +1,602 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "lastUpdated": "2026-03-27",
-  "scope": "Phase 3 Agent Runtime End-to-End Integration - Core Agent Functionality Completion",
-  "batch": "Agent Core Integration",
-  "range": "Task 111-145",
-  "roadmap": "docs/agent-implementation-roadmap.md",
-  "sourceOfTruth": "openspec/changes/agent-core-integration",
-  "activeNote": "Tasks 111-145: 区分全新开发(new)、重构扩展(refactor)和优化完善(polish)。Phase 0为后端Rust基础设施，是所有任务的前置依赖。",
+  "scope": "Generic Agent Runtime Rebaseline",
+  "batch": "Generic Agent Core Replan",
+  "range": "Task 111-127",
+  "roadmap": "_bmad-output/planning-artifacts/agent-runtime-rebaseline-2026-03-27.md",
+  "sourceOfTruth": "openspec/changes/agent-runtime-rebaseline",
+  "activeNote": "Archived tasks 60-87 are treated as completed runtime foundations. This batch focuses on the missing Rust execution spine, runtime bridge, tool pipeline, memory and knowledge integration, reliability, and security before Sub-Agent expansion.",
   "implementationNotes": {
-    "new": "全新开发，需要从零创建",
-    "refactor": "基于现有代码重构扩展，需整合或重写核心逻辑",
-    "polish": "基于现有代码完善，需扩展功能或修bug",
-    "backendOnly": "纯后端Rust开发"
+    "foundationComplete": "Story 43.1-49.4 in task-archived-1.json are reusable foundations and must not be rebuilt in this batch.",
+    "integration": "This batch is about connecting existing frontend runtime models to a real backend execution layer.",
+    "backendRequired": "Anything involving real execution, persistence, streaming, tools, permissions, knowledge retrieval, audit, or recovery must land in src-tauri/src/agent and Tauri commands.",
+    "deferred": "Business pilots, skill ecosystem work, and advanced multi-agent behavior stay out of the critical path until the main Agent loop is stable."
   },
   "tasks": [
-    {
-      "id": 101,
-      "epic": "Epic 51",
-      "story": "Pre-Task",
-      "title": "后端Rust Agent基础架构",
-      "description": "创建src-tauri/src/agent/目录和核心模块，为所有后续Agent任务提供后端基础设施。",
-      "implementationType": "backendOnly",
-      "phase": "Phase 0 - 后端Rust基础设施",
-      "isBlocker": true,
-      "existingCode": {
-        "frontend": "N/A - 纯后端任务",
-        "backend": "N/A - 全新创建",
-        "note": "src-tauri/src/目录中目前没有agent/子目录"
-      },
-      "steps": [
-        "创建src-tauri/src/agent/目录结构",
-        "创建agent/mod.rs模块入口",
-        "创建agent/llm/目录和Provider trait定义",
-        "创建agent/session/目录和会话管理基础结构",
-        "创建agent/commands.rs Tauri命令接口定义",
-        "创建Cargo.toml依赖配置（tokio, async-trait等）"
-      ],
-      "frs_covered": ["FR400", "FR410"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-001", "ADR-037"],
-      "ux_covered": [],
-      "dependencies": [],
-      "passes": false
-    },
     {
       "id": 111,
       "epic": "Epic 51",
       "story": "Story 51.1",
-      "title": "主Agent协调器 - 核心协调模块",
-      "description": "创建主Agent协调器，整合会话生命周期、运行时状态机、结构化规划器和步骤执行器，实现从用户输入到执行计划的完整流程编排。",
+      "title": "Rust agent core and orchestrator",
+      "description": "Create src-tauri/src/agent and land the real backend orchestrator, provider trait, runtime session service, and Tauri command entry points.",
       "implementationType": "refactor",
-      "phase": "Phase 1 - Agent Runtime端到端集成",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "critical",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [
+          "src/features/session/runtime/sessionLifecycle.ts",
           "src/features/session/runtime/runtimeStateMachine.ts",
-          "src/features/session/executor/stepExecutor.ts",
-          "src/features/session/planner/structuredPlanner.ts"
+          "src/features/session/planner/structuredPlanner.ts",
+          "src/features/session/executor/stepExecutor.ts"
         ],
-        "backend": "需要创建src-tauri/src/agent/作为实际执行层",
-        "note": "前端已有接口定义和UI组件，需实现后端执行逻辑并连接前端"
+        "backend": [
+          "src-tauri/src/lib.rs",
+          "src-tauri/src/commands/mod.rs"
+        ],
+        "note": "Frontend runtime shells exist, but src-tauri/src/agent does not exist yet."
       },
       "openspec_change": "epic-51-story-51-1-agent-orchestrator-core",
-      "phase": "Phase 1 - Agent Runtime端到端集成",
       "steps": [
-        "创建AgentOrchestrator核心类，整合sessionLifecycle、runtimeStateMachine、structuredPlanner、stepExecutor",
-        "实现用户消息接收与意图解析入口",
-        "实现计划生成与执行状态流转的完整协调",
-        "添加执行过程中的事件分发与状态同步",
-        "实现执行完成后的结果汇总与消息生成"
+        "Create src-tauri/src/agent and module exports",
+        "Define AgentOrchestrator, provider trait, and runtime session service",
+        "Register agent commands in lib.rs invoke_handler",
+        "Define request and response contracts for frontend runtime integration",
+        "Ensure the main execution loop is interruptible, traceable, and persistable"
       ],
-      "frs_covered": [
-        "FR400",
-        "FR401",
-        "FR402",
-        "FR403",
-        "FR404"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR17"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037",
-        "ADR-043"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 43.1",
-        "Story 43.2",
-        "Story 43.3",
-        "Story 44.1",
-        "Story 44.2",
-        "Story 44.3"
-      ],
+      "frs_covered": ["FR400", "FR401", "FR402", "FR403", "FR404"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR17"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 43.1", "Story 43.2", "Story 44.1", "Story 44.2", "Story 44.3"],
       "passes": false
     },
     {
       "id": 112,
       "epic": "Epic 51",
       "story": "Story 51.2",
-      "title": "主Agent协调器 - 流式事件总线集成",
-      "description": "实现前后端流式事件总线，支持思考过程、工具调用状态、执行进度的实时推送与前端展示。",
+      "title": "Runtime event streaming bridge",
+      "description": "Upgrade the frontend event model into a real frontend-backend runtime event bridge for progress, tool, error, and completion events.",
       "implementationType": "refactor",
-      "phase": "Phase 1 - Agent Runtime端到端集成",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "high",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [
-          "src/features/streaming/runtime/runtimeEvents.ts - RuntimeEventEmitter已有",
-          "src/features/streaming/runtime/streamingHostContext.tsx - StreamingProvider已有"
+          "src/features/streaming/runtime/runtimeEvents.ts",
+          "src/features/streaming/runtime/streamingHostContext.tsx"
         ],
-        "backend": "需要创建后端事件推送服务（WebSocket/Server-Sent Events）",
-        "note": "前端事件系统基本完整，需实现后端推送并连接"
+        "backend": [
+          "src-tauri/src/lib.rs"
+        ],
+        "note": "Current event emission is local to the frontend and not driven by real backend execution."
       },
-      "backendRequired": true,
-      "priority": "high",
+      "openspec_change": "epic-51-story-51-2-streaming-event-bus-integration",
       "steps": [
-        "扩展RuntimeEventEmitter支持细粒度事件类型（thinking、tool_calling、tool_result、confirmation_needed）",
-        "实现前端StreamingHostContext与后端事件流的完整对接",
-        "添加思考过程的实时展示组件",
-        "实现工具调用状态的实时更新与可视化",
-        "添加执行进度的流式反馈"
+        "Define runtime event protocol and event type mapping",
+        "Implement backend to frontend event bridge",
+        "Connect StreamingHostContext to the real event source",
+        "Handle ordering, reconnect, replay, and interruption consistency",
+        "Verify chat and debug panels consume real runtime events"
       ],
-      "frs_covered": [
-        "FR405",
-        "FR406",
-        "FR407"
-      ],
-      "nfrs_covered": [
-        "NFR3",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-001",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04",
-        "UX-05"
-      ],
-      "dependencies": [
-        "Story 51.1",
-        "Story 43.3"
-      ],
+      "frs_covered": ["FR405", "FR406", "FR407"],
+      "nfrs_covered": ["NFR3", "NFR16"],
+      "arch_covered": ["ADR-001", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04", "UX-05"],
+      "dependencies": ["Story 51.1", "Story 43.3"],
       "passes": false
     },
     {
       "id": 113,
       "epic": "Epic 51",
       "story": "Story 51.3",
-      "title": "工具执行管道 - 完整执行链",
-      "description": "实现从工具注册表到实际执行的完整管道，包括权限预检查、敏感操作检测、执行器调用、结果归一化。",
+      "title": "Real tool execution pipeline",
+      "description": "Connect the existing tool models to a real backend execution pipeline, including core tool registration, permission checks, confirmation flow, and result normalization.",
       "implementationType": "refactor",
-      "phase": "Phase 1 - Agent Runtime端到端集成",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "critical",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [
-          "src/features/session/tools/toolRegistry.ts - 工具注册表已有",
-          "src/features/session/tools/toolExecutor.ts - 执行器接口已有",
-          "src/features/session/tools/toolPermissionPrecheck.ts - 权限预检查已有",
-          "src/features/session/tools/sensitiveActionDetection.ts - 敏感操作检测已有"
+          "src/features/session/tools/toolRegistry.ts",
+          "src/features/session/tools/toolExecutor.ts",
+          "src/features/session/tools/toolPermissionPrecheck.ts",
+          "src/features/session/tools/sensitiveActionDetection.ts",
+          "src/features/session/tools/toolResultNormalization.ts"
         ],
-        "backend": "需要创建后端工具执行器",
-        "note": "前端已有完整接口和UI，需实现后端执行逻辑"
+        "backend": [
+          "src-tauri/src/http/commands.rs"
+        ],
+        "note": "registerCoreTools is still a placeholder and there is no backend ToolExecutionPipeline."
       },
-      "backendRequired": true,
-      "priority": "high",
+      "openspec_change": "epic-51-story-51-3-tool-execution-pipeline",
       "steps": [
-        "创建后端ToolExecutionPipeline，连接前端toolRegistry/toolExecutor/toolPermissionPrecheck",
-        "实现工具描述符与后端实际执行器的绑定机制",
-        "集成sensitiveActionDetection到后端执行流程",
-        "实现工具策略管道：权限检查→沙箱验证→路径检查→执行",
-        "添加工具降级方案的自动执行逻辑"
+        "Implement backend ToolExecutionPipeline",
+        "Bind tool descriptors to real executors",
+        "Register core tools and remove placeholder behavior",
+        "Integrate permission checks, sensitive action detection, and confirmation flow",
+        "Normalize tool results and errors into one runtime contract"
       ],
-      "frs_covered": [
-        "FR420",
-        "FR421",
-        "FR422",
-        "FR423",
-        "FR424"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR20"
-      ],
-      "arch_covered": [
-        "ADR-010",
-        "ADR-018",
-        "ADR-045"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 45.1",
-        "Story 45.2",
-        "Story 45.3",
-        "Story 51.1"
-      ],
+      "frs_covered": ["FR420", "FR421", "FR422", "FR423", "FR424"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
+      "arch_covered": ["ADR-010", "ADR-018", "ADR-045"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 51.1", "Story 45.1", "Story 45.2", "Story 45.3", "Story 45.4", "Story 46.1", "Story 46.2", "Story 46.3"],
       "passes": false
     },
     {
       "id": 114,
       "epic": "Epic 51",
       "story": "Story 51.4",
-      "title": "端到端测试框架与核心测试用例",
-      "description": "创建Agent端到端测试框架，包含模拟LLM响应、完整对话流程测试、工具调用验证。",
-      "implementationType": "new",
-      "phase": "Phase 1 - Agent Runtime端到端集成",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要创建MockLLMProvider和测试工具集"
-      },
+      "title": "Chat host integration and E2E baseline",
+      "description": "Remove the simulated chat response path and connect the chat panel, staged review, and writeback flow to the real runtime, then add the minimum end-to-end harness.",
+      "implementationType": "refactor",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "high",
       "backendRequired": true,
-      "priority": "medium",
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/AgentChatPanel.tsx",
+          "src/features/agent/components/StagedReviewPanel.tsx",
+          "src/features/session/runtime/formWritebackAdapter.ts",
+          "src/features/session/runtime/detailSectionWriteback.ts",
+          "src/features/session/runtime/workbenchCardWriteback.ts",
+          "src/features/session/runtime/editorTemplateWriteback.ts"
+        ],
+        "backend": [
+          "src-tauri/src/storage/message_store.rs",
+          "src-tauri/src/storage/checkpoint_store.rs"
+        ],
+        "note": "AgentChatPanel still falls back to simulateResponse today."
+      },
+      "openspec_change": "epic-51-story-51-4-e2e-testing-framework",
       "steps": [
-        "创建MockLLMProvider用于测试环境模拟LLM响应",
-        "实现测试用的工具集（mock tools）",
-        "编写端到端测试：用户输入→意图解析→计划生成→工具调用→结果返回",
-        "添加流式输出测试用例",
-        "实现中断、重试、检查点恢复的测试场景"
+        "Remove the default simulateResponse path",
+        "Connect MessageInput, MessageList, and StagedReviewPanel to the real runtime",
+        "Close the loop from user input to tool call to staged writeback to apply",
+        "Add a mock provider and a minimum tool set for runtime tests",
+        "Add end-to-end coverage for the main Agent loop"
       ],
-      "frs_covered": [
-        "FR400",
-        "FR410",
-        "FR411"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR22"
-      ],
-      "arch_covered": [
-        "ADR-001"
-      ],
-      "ux_covered": [],
-      "dependencies": [
-        "Story 51.1",
-        "Story 51.2",
-        "Story 51.3"
-      ],
+      "frs_covered": ["FR400", "FR410", "FR411"],
+      "nfrs_covered": ["NFR1", "NFR22"],
+      "arch_covered": ["ADR-001", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04", "UX-05"],
+      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 43.4", "Story 49.1", "Story 49.2", "Story 49.3", "Story 49.4"],
       "passes": false
     },
     {
       "id": 115,
-      "epic": "Epic 52",
-      "story": "Story 52.1",
-      "title": "Sub-Agent路由引擎 - 触发条件匹配",
-      "description": "实现Sub-Agent路由引擎，基于配置的触发条件（关键词、意图、场景）自动选择匹配的Sub-Agent。",
-      "implementationType": "refactor",
-      "phase": "Phase 2 - Sub-Agent运行时实现",
+      "epic": "Epic 53",
+      "story": "Story 53.1",
+      "title": "Prompt builder and provider request path",
+      "description": "Create the real prompt assembly and provider request path for the common Agent runtime.",
+      "implementationType": "new",
+      "phase": "Phase 2 - Context, Memory, Prompt",
+      "priority": "critical",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [
-          "src/features/settings/components/SubAgentRouting.tsx - UI已有"
+          "src/features/session/runtime/userContext.ts",
+          "src/features/session/runtime/pageContext.ts"
         ],
-        "backend": "需要实现路由匹配逻辑",
-        "note": "UI组件已有，需实现核心路由逻辑"
+        "backend": [
+          "src-tauri/src/http/commands.rs"
+        ],
+        "note": "There is no Agent-specific provider layer yet."
       },
-      "backendRequired": true,
-      "priority": "medium",
+      "openspec_change": "epic-53-story-53-1-prompt-builder",
       "steps": [
-        "创建SubAgentRouter核心类（前端逻辑）",
-        "实现基于关键词的匹配算法",
-        "实现基于意图的匹配（与IntentParsing模块集成）",
-        "实现基于场景的匹配逻辑",
-        "添加匹配度评分与排序机制"
+        "Define provider traits and request-response contracts",
+        "Implement PromptBuilder with system prompt, runtime context, and tool visibility",
+        "Support provider selection, timeout, retry, and error mapping",
+        "Connect PromptBuilder to AgentOrchestrator",
+        "Persist model outputs through the runtime pipeline"
       ],
-      "frs_covered": [
-        "FR930",
-        "FR931",
-        "FR932"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-013",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 21.16",
-        "Story 21.17",
-        "Story 51.1"
-      ],
+      "frs_covered": ["FR440", "FR441", "FR442"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-038", "ADR-039", "ADR-043"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 51.1"],
       "passes": false
     },
     {
       "id": 116,
-      "epic": "Epic 52",
-      "story": "Story 52.2",
-      "title": "Sub-Agent执行上下文 - 隔离环境",
-      "description": "创建Sub-Agent执行上下文，实现独立的记忆、工具集、权限配置，确保Sub-Agent执行的隔离性。",
-      "implementationType": "new",
-      "phase": "Phase 2 - Sub-Agent运行时实现",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要创建SubAgentExecutionContext类"
-      },
-      "backendRequired": true,
+      "epic": "Epic 53",
+      "story": "Story 53.2",
+      "title": "Context compression and session summary persistence",
+      "description": "Turn the existing summary and compression model into real backend persistence and runtime token budget control.",
+      "implementationType": "refactor",
+      "phase": "Phase 2 - Context, Memory, Prompt",
       "priority": "high",
-      "openspec_change": "epic-52-story-52-2-subagent-execution-context",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/session/runtime/sessionMemorySummary.ts",
+          "src/features/agent/hooks/useContextCompression.ts"
+        ],
+        "backend": [
+          "src-tauri/src/storage/memory_store.rs"
+        ],
+        "note": "The summary model exists, but it is not yet part of real backend runtime behavior."
+      },
+      "openspec_change": "epic-53-story-53-2-context-compression",
       "steps": [
-        "创建SubAgentExecutionContext类",
-        "实现Sub-Agent独立的记忆注入（基于配置的记忆范围）",
-        "实现工具集的动态过滤（仅允许配置的工具）",
-        "实现权限上下文的隔离与继承",
-        "创建Sub-Agent专用的系统提示词构建器"
+        "Create summary refresh triggers and persistence structures",
+        "Generate reusable session summaries and key facts from real history",
+        "Implement token budget and compression policy",
+        "Feed compressed context back into PromptBuilder",
+        "Add restore, refresh, and expiry behavior"
       ],
-      "frs_covered": [
-        "FR915",
-        "FR916",
-        "FR918",
-        "FR919",
-        "FR920",
-        "FR923"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR20"
-      ],
-      "arch_covered": [
-        "ADR-013",
-        "ADR-037",
-        "ADR-043"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 52.1",
-        "Story 21.18",
-        "Story 21.19"
-      ],
+      "frs_covered": ["FR443", "FR444", "FR445"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-038", "ADR-043"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 53.1", "Story 47.3"],
       "passes": false
     },
     {
       "id": 117,
-      "epic": "Epic 52",
-      "story": "Story 52.3",
-      "title": "Sub-Agent嵌套调用控制",
-      "description": "实现Sub-Agent嵌套调用机制，支持最多3层嵌套，包含深度控制和调用链路追踪。",
-      "implementationType": "new",
-      "phase": "Phase 2 - Sub-Agent运行时实现",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要创建嵌套调用深度控制逻辑"
-      },
-      "backendRequired": true,
+      "epic": "Epic 53",
+      "story": "Story 53.4",
+      "title": "Knowledge retrieval integration",
+      "description": "Replace the mock retrieval path with real backend retrieval over storage, vector, and scoped knowledge sources.",
+      "implementationType": "refactor",
+      "phase": "Phase 2 - Context, Memory, Prompt",
       "priority": "high",
-      "openspec_change": "epic-52-story-52-3-subagent-nested-calls",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/session/runtime/knowledgeRetrieval.ts"
+        ],
+        "backend": [
+          "src-tauri/src/vector/mod.rs",
+          "src-tauri/src/vector/store.rs",
+          "src-tauri/src/storage/memory_store.rs"
+        ],
+        "note": "knowledgeRetrieval.ts still exposes mockRetrieve."
+      },
+      "openspec_change": "epic-53-story-53-4-memory-retrieval-integration",
       "steps": [
-        "实现嵌套调用深度计数器与限制检查",
-        "创建Sub-Agent调用栈追踪",
-        "实现调用链路可视化数据",
-        "添加循环调用检测与防护",
-        "实现嵌套调用超时控制"
+        "Create backend retrieval service",
+        "Replace mockRetrieve with real async retrieval",
+        "Enforce scope filters for tenant, department, and session",
+        "Inject retrieval results into planner, runtime, and tool context",
+        "Add caching, timeout, and degradation behavior"
       ],
-      "frs_covered": [
-        "FR935",
-        "FR937",
-        "FR938"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-013"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 52.2"
-      ],
+      "frs_covered": ["FR446", "FR447", "FR448"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
+      "arch_covered": ["ADR-038", "ADR-039", "ADR-043"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 53.1", "Story 47.4"],
       "passes": false
     },
     {
       "id": 118,
-      "epic": "Epic 52",
-      "story": "Story 52.4",
-      "title": "Sub-Agent结果汇总与回传",
-      "description": "实现Sub-Agent执行结果返回主Agent的机制，包括结果格式化、上下文整合、执行摘要生成。",
-      "implementationType": "new",
-      "phase": "Phase 2 - Sub-Agent运行时实现",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要创建SubAgentResultNormalizer结果归一化器"
-      },
+      "epic": "Epic 55",
+      "story": "Story 55.2",
+      "title": "Retry, replan, and checkpoint recovery",
+      "description": "Connect replan strategy, checkpoint management, and failure recovery to real backend execution records and restore flows.",
+      "implementationType": "refactor",
+      "phase": "Phase 3 - Reliability and Governance",
+      "priority": "high",
       "backendRequired": true,
-      "priority": "medium",
-      "openspec_change": "epic-52-story-52-4-subagent-result-return",
+      "existingCode": {
+        "frontend": [
+          "src/features/session/replan/replanStrategy.ts",
+          "src/features/agent/components/CheckpointManagementPanel.tsx",
+          "src/features/agent/components/FailoverSessionRepair.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/storage/checkpoint_store.rs",
+          "src-tauri/src/storage/message_store.rs"
+        ],
+        "note": "Recovery models exist, but there is no actual backend recovery loop yet."
+      },
+      "openspec_change": "epic-55-story-55-2-error-recovery-failover",
       "steps": [
-        "创建SubAgentResultNormalizer结果归一化器",
-        "实现Sub-Agent执行摘要自动生成",
-        "实现结果与主Agent上下文的整合",
-        "添加Sub-Agent执行失败的回退处理",
-        "实现结果的可视化展示"
+        "Connect retry and replan decisions to real execution outcomes",
+        "Implement checkpoint save, activate, rollback, and restore",
+        "Trigger recovery from tool failure, timeout, and interruption",
+        "Feed recovery state back to chat and debug views",
+        "Verify interruption, retry, rollback, and restore end to end"
       ],
-      "frs_covered": [
-        "FR933",
-        "FR934",
-        "FR936"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-013",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 52.2",
-        "Story 52.3"
-      ],
+      "frs_covered": ["FR603", "FR604", "FR605"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR22"],
+      "arch_covered": ["ADR-001", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4", "Story 43.4", "Story 44.4", "Story 48.3"],
       "passes": false
     },
     {
       "id": 119,
-      "epic": "Epic 52",
-      "story": "Story 52.5",
-      "title": "Sub-Agent执行监控与诊断",
-      "description": "实现Sub-Agent执行的实时监控、性能指标收集、调用链路追踪，集成到现有的SubAgentExecutionMonitor。",
+      "epic": "Epic 55",
+      "story": "Story 55.1",
+      "title": "Trace, audit, and failure persistence",
+      "description": "Turn trace, tool audit, and failure recording into real backend persistence and query capabilities.",
       "implementationType": "refactor",
-      "phase": "Phase 2 - Sub-Agent运行时实现",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要扩展SubAgentExecutionMonitor支持实时运行时数据"
-      },
+      "phase": "Phase 3 - Reliability and Governance",
+      "priority": "high",
       "backendRequired": true,
-      "priority": "medium",
-      "openspec_change": "epic-52-story-52-5-subagent-monitoring",
+      "existingCode": {
+        "frontend": [
+          "src/features/session/runtime/traceAndStepLog.ts",
+          "src/features/session/runtime/toolAuditLog.ts",
+          "src/features/session/runtime/failureRecording.ts"
+        ],
+        "backend": [
+          "src-tauri/src/storage/message_store.rs",
+          "src-tauri/src/storage/session_store.rs"
+        ],
+        "note": "The models exist, but there are no backend trace or audit records yet."
+      },
+      "openspec_change": "epic-55-story-55-1-audit-log-system",
       "steps": [
-        "扩展SubAgentExecutionMonitor支持实时运行时数据",
-        "实现Sub-Agent调用性能指标收集（响应时间、Token使用）",
-        "实现调用链路追踪数据生成",
-        "添加Sub-Agent执行日志记录",
-        "集成到前端监控界面"
+        "Design trace, tool audit, and execution record storage",
+        "Write trace and audit events from orchestrator and tool pipeline",
+        "Expose query commands by session, trace, tool, and task",
+        "Connect debug panels to real data sources",
+        "Ensure audit coverage for tool calls, confirmations, failures, and results"
       ],
-      "frs_covered": [
-        "FR924",
-        "FR938"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR23"
-      ],
-      "arch_covered": [
-        "ADR-013",
-        "ADR-023"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 52.4",
-        "Story 21.23"
-      ],
+      "frs_covered": ["FR600", "FR601", "FR602"],
+      "nfrs_covered": ["NFR1", "NFR20", "NFR23"],
+      "arch_covered": ["ADR-023", "ADR-037"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 51.1", "Story 51.3", "Story 48.1", "Story 48.2", "Story 48.3"],
       "passes": false
     },
     {
       "id": 120,
-      "epic": "Epic 53",
-      "story": "Story 53.1",
-      "title": "提示词构建器 - 分层提示词整合",
-      "description": "创建提示词构建器，整合系统提示词、角色提示词、记忆、错题集规则，实现分层提示词加载策略。",
-      "implementationType": "new",
-      "phase": "Phase 3 - 记忆层与提示词集成",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要创建PromptBuilder核心类"
-      },
+      "epic": "Epic 55",
+      "story": "Story 55.3",
+      "title": "Runtime metrics and debug telemetry",
+      "description": "Replace mock observability with real runtime metrics, logs, and diagnostic telemetry.",
+      "implementationType": "refactor",
+      "phase": "Phase 3 - Reliability and Governance",
+      "priority": "medium",
       "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-53-story-53-1-prompt-builder",
+      "existingCode": {
+        "frontend": [
+          "src/features/session/runtime/runtimeMetrics.ts",
+          "src/features/agent/components/LogMetricsCenter.tsx",
+          "src/features/agent/components/TaskTraceAnalysis.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/utils/logger.rs"
+        ],
+        "note": "Current observability panels still contain mock data."
+      },
+      "openspec_change": "epic-55-story-55-3-performance-monitoring",
       "steps": [
-        "创建PromptBuilder核心类",
-        "实现系统提示词与角色提示词的合并",
-        "集成个人记忆（L1）到提示词上下文",
-        "集成企业知识库（L2）检索结果",
-        "实现错题集规则的自动注入"
+        "Define runtime metric collection points",
+        "Persist telemetry and expose aggregate queries",
+        "Connect metrics panels to real data",
+        "Support session and tenant level statistics",
+        "Emit structured diagnostics for troubleshooting"
       ],
-      "frs_covered": [
-        "FR440",
-        "FR441",
-        "FR442"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-038",
-        "ADR-039",
-        "ADR-043"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 21.1",
-        "Story 21.2",
-        "Story 6.1",
-        "Story 6.2",
-        "Story 6.6"
-      ],
+      "frs_covered": ["FR606", "FR607", "FR608"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR23"],
+      "arch_covered": ["ADR-023"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 55.1", "Story 48.4"],
       "passes": false
     },
     {
       "id": 121,
-      "epic": "Epic 53",
-      "story": "Story 53.2",
-      "title": "上下文压缩触发与执行",
-      "description": "实现Token监测与自动上下文压缩，当上下文达到阈值时自动触发压缩流程。",
+      "epic": "Epic 55",
+      "story": "Story 55.4",
+      "title": "Backend-enforced security and confirmation",
+      "description": "Move sensitive action detection, input validation, field permissions, and confirmation flow into backend-enforced runtime guards.",
       "implementationType": "refactor",
-      "phase": "Phase 3 - 记忆层与提示词集成",
+      "phase": "Phase 3 - Reliability and Governance",
+      "priority": "high",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [
-          "src/features/agent/hooks/useContextCompression.ts"
+          "src/features/session/tools/sensitiveActionDetection.ts",
+          "src/features/session/confirmation/confirmationFlow.ts",
+          "src/features/session/runtime/fieldActionAuthorization.ts"
         ],
         "backend": [],
-        "note": "前端已有useContextCompression，需扩展为完整实现"
+        "note": "Security and confirmation are still largely frontend-side decisions today."
       },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-53-story-53-2-context-compression",
+      "openspec_change": "epic-55-story-55-4-security-hardening",
       "steps": [
-        "创建ContextCompressor集成到Agent执行流程",
-        "实现Token使用实时监测",
-        "添加上下文窗口阈值检测（默认80%）",
-        "集成摘要生成、滑动窗口、关键事实提取",
-        "实现压缩过程的透明化通知"
+        "Move sensitive input and dangerous action checks into backend guards",
+        "Implement backend confirmation, rejection, and permission-denied flows",
+        "Add allow and block policy for system, path, and network tools",
+        "Add second-pass validation for risky writeback and outbound requests",
+        "Write security events into audit records"
       ],
-      "frs_covered": [
-        "FR443",
-        "FR444",
-        "FR445"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-031",
-        "ADR-032",
-        "ADR-033",
-        "ADR-034"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 53.1",
-        "Story 6.5"
-      ],
+      "frs_covered": ["FR609", "FR610", "FR611"],
+      "nfrs_covered": ["NFR20", "NFR21"],
+      "arch_covered": ["ADR-018", "ADR-041"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 51.3", "Story 55.1", "Story 46.1", "Story 46.2", "Story 46.3", "Story 46.4"],
       "passes": false
     },
     {
       "id": 122,
       "epic": "Epic 53",
       "story": "Story 53.3",
-      "title": "错题集规则自动应用",
-      "description": "实现错题集规则在Agent执行过程中的自动检索和应用，基于场景匹配相关规则。",
-      "implementationType": "new",
-      "phase": "Phase 3 - 记忆层与提示词集成",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要创建CorrectionRuleMatcher规则匹配器"
-      },
-      "backendRequired": true,
+      "title": "Controlled correction-rule baseline",
+      "description": "Add correction-rule read, match, and suggestion output after the main Agent loop is stable, without allowing automatic config mutation.",
+      "implementationType": "refactor",
+      "phase": "Phase 4 - Advanced Common Agent",
       "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/session/components/CorrectionRuleLearning.tsx"
+        ],
+        "backend": [],
+        "note": "Correction support exists mostly as UI and model scaffolding."
+      },
       "openspec_change": "epic-53-story-53-3-correction-rules",
       "steps": [
-        "创建CorrectionRuleMatcher规则匹配器",
-        "实现基于当前任务场景的错题集检索",
-        "实现匹配规则的提示词注入",
-        "添加规则应用的审计记录",
-        "实现规则效果的反馈收集"
+        "Add correction rule read and match capability",
+        "Inject rule suggestions into planner and runtime without auto-mutation",
+        "Link rule hits to failure and audit records",
+        "Output reviewable improvement suggestions",
+        "Verify human review remains required for governance changes"
       ],
-      "frs_covered": [
-        "FR446",
-        "FR447"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-043"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 53.1",
-        "Story 6.6"
-      ],
+      "frs_covered": ["FR449", "FR450", "FR451"],
+      "nfrs_covered": ["NFR1", "NFR20"],
+      "arch_covered": ["ADR-039", "ADR-043"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 53.1", "Story 55.1", "Story 55.2", "Story 55.4"],
       "passes": false
     },
     {
       "id": 123,
-      "epic": "Epic 53",
-      "story": "Story 53.4",
-      "title": "记忆检索与注入集成",
-      "description": "在Agent执行前自动检索相关记忆并注入到提示词上下文，实现记忆的主动应用。",
+      "epic": "Epic 52",
+      "story": "Story 52.1",
+      "title": "Sub-Agent routing baseline",
+      "description": "Only after the main Agent loop is stable, add routing for delegated Sub-Agent calls based on keywords, intent, and scenario matching.",
       "implementationType": "refactor",
-      "phase": "Phase 3 - 记忆层与提示词集成",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要集成KnowledgeRetrieval到Agent执行流程"
-      },
-      "backendRequired": true,
+      "phase": "Phase 4 - Advanced Common Agent",
       "priority": "medium",
-      "openspec_change": "epic-53-story-53-4-memory-retrieval-integration",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/SubAgentRouting.tsx"
+        ],
+        "backend": [],
+        "note": "The UI exists before the runtime capability and must remain a deferred path."
+      },
+      "openspec_change": "epic-52-story-52-1-subagent-routing-engine",
       "steps": [
-        "集成KnowledgeRetrieval到Agent执行流程",
-        "实现会话启动时的记忆预加载",
-        "实现用户输入时的相关记忆检索",
-        "添加记忆注入的优先级排序",
-        "实现记忆来源的追踪与展示"
+        "Create routing service for keyword, intent, and scenario matching",
+        "Base delegation decisions on real runtime context",
+        "Write routing outcomes into the main trace",
+        "Prepare standardized input for Sub-Agent execution context",
+        "Verify routing cannot bypass an incomplete main Agent path"
       ],
-      "frs_covered": [
-        "FR448",
-        "FR449"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-043",
-        "ADR-044"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 53.1",
-        "Story 6.3",
-        "Story 9.1"
-      ],
+      "frs_covered": ["FR930", "FR931", "FR932"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-013", "ADR-037"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4", "Story 55.1", "Story 21.16", "Story 21.17"],
       "passes": false
     },
     {
       "id": 124,
-      "epic": "Epic 54",
-      "story": "Story 54.1",
-      "title": "审批中心完整实现 - 流程引擎",
-      "description": "实现审批中心的完整流程引擎，包括审批流程创建、状态流转、历史记录管理。",
+      "epic": "Epic 52",
+      "story": "Story 52.2",
+      "title": "Sub-Agent execution context and isolation",
+      "description": "Create isolated execution context, memory scope, tool filtering, and permission inheritance or shrinkage for Sub-Agent calls.",
       "implementationType": "new",
-      "phase": "Phase 4 - 业务模块动态化",
+      "phase": "Phase 4 - Advanced Common Agent",
+      "priority": "medium",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [],
         "backend": [],
-        "note": "需要创建ApprovalWorkflowEngine核心类"
+        "note": "There is no real backend implementation for Sub-Agent execution context yet."
       },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-1-approval-workflow-engine",
+      "openspec_change": "epic-52-story-52-2-subagent-execution-context",
       "steps": [
-        "创建ApprovalWorkflowEngine核心类",
-        "实现审批流程的定义与存储",
-        "实现审批状态的流转逻辑（待审批→审批中→已通过/已拒绝）",
-        "添加审批节点的处理逻辑",
-        "实现审批历史记录管理"
+        "Create SubAgentExecutionContext and tool filtering",
+        "Project main Agent context into isolated Sub-Agent context",
+        "Ensure permissions can only inherit or shrink",
+        "Link Sub-Agent calls back to the main trace",
+        "Provide the shared context model needed by later Sub-Agent tasks"
       ],
-      "frs_covered": [
-        "FR500",
-        "FR501",
-        "FR502"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-025",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 39.1",
-        "Story 39.2",
-        "Story 42.1"
-      ],
+      "frs_covered": ["FR915", "FR916", "FR918", "FR919", "FR920", "FR923"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
+      "arch_covered": ["ADR-013", "ADR-037", "ADR-043"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 52.1", "Story 21.18", "Story 21.19"],
       "passes": false
     },
     {
       "id": 125,
-      "epic": "Epic 54",
-      "story": "Story 54.2",
-      "title": "审批中心 - Agent集成",
-      "description": "将审批中心与Agent Runtime集成，支持Agent自动创建审批、查询审批状态、处理审批结果。",
-      "implementationType": "refactor",
-      "phase": "Phase 4 - 业务模块动态化",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/ApprovalPilotIntegration.tsx"
-        ],
-        "backend": [],
-        "note": "ApprovalPilotIntegration组件已有，需实现工具集成"
-      },
+      "epic": "Epic 52",
+      "story": "Story 52.3",
+      "title": "Sub-Agent nested call control",
+      "description": "Add nested call depth limits, loop detection, budgets, and timeout control to prevent recursive multi-agent failure modes.",
+      "implementationType": "new",
+      "phase": "Phase 4 - Advanced Common Agent",
+      "priority": "medium",
       "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-2-approval-agent-integration",
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "This is an advanced capability and must follow a verified single-layer Sub-Agent path."
+      },
+      "openspec_change": "epic-52-story-52-3-subagent-nested-calls",
       "steps": [
-        "创建审批相关的工具集（create_approval、query_approval、approve、reject）",
-        "实现Agent自动识别需要审批的场景",
-        "实现审批创建时的内容自动生成",
-        "集成审批状态到Agent对话上下文",
-        "实现审批结果的通知与处理"
+        "Track nested depth and enforce limits",
+        "Add loop detection and call budgets",
+        "Propagate timeout and failure correctly",
+        "Link nested calls to trace, audit, and failure records",
+        "Verify no unbounded recursion or privilege escalation"
       ],
-      "frs_covered": [
-        "FR503",
-        "FR504",
-        "FR505"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-025",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 54.1",
-        "Story 51.1"
-      ],
+      "frs_covered": ["FR935", "FR937", "FR938"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-013"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 52.2"],
       "passes": false
     },
     {
       "id": 126,
-      "epic": "Epic 54",
-      "story": "Story 54.3",
-      "title": "销售模块数据层 - 数据模型与API",
-      "description": "创建销售模块的完整数据层，包括客户、报价单、合同、订单的数据模型和API。",
+      "epic": "Epic 52",
+      "story": "Story 52.4",
+      "title": "Sub-Agent result return and merge",
+      "description": "Return Sub-Agent summaries, failures, and outputs back into the main Agent session in a reviewable and traceable form.",
       "implementationType": "new",
-      "phase": "Phase 4 - 业务模块动态化",
+      "phase": "Phase 4 - Advanced Common Agent",
+      "priority": "medium",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [],
         "backend": [],
-        "note": "需要定义销售模块数据模型和创建模拟数据API"
+        "note": "Result return belongs after isolation and nested-call control."
       },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-3-sales-data-layer",
+      "openspec_change": "epic-52-story-52-4-subagent-result-return",
       "steps": [
-        "定义销售模块数据模型（Customer、Quotation、Contract、Order）",
-        "创建模拟数据API（mock APIs）用于开发和测试",
-        "实现数据验证规则",
-        "添加数据权限控制",
-        "创建数据变更历史记录"
+        "Normalize Sub-Agent result and summary payloads",
+        "Merge results and failures back into the main Agent context",
+        "Allow main Agent replanning or review handoff based on returned results",
+        "Preserve context boundaries during result merge",
+        "Add visible debug and review data for parent-child Agent interaction"
       ],
-      "frs_covered": [
-        "FR510",
-        "FR511",
-        "FR512"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR20"
-      ],
-      "arch_covered": [
-        "ADR-025",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 39.1",
-        "Story 39.2"
-      ],
+      "frs_covered": ["FR933", "FR934", "FR936"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-013", "ADR-037"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 52.2", "Story 52.3"],
       "passes": false
     },
     {
       "id": 127,
-      "epic": "Epic 54",
-      "story": "Story 54.4",
-      "title": "销售模块 - 动态表单与数据绑定",
-      "description": "实现销售模块的动态表单与真实业务数据的绑定，支持CRUD操作。",
+      "epic": "Epic 52",
+      "story": "Story 52.5",
+      "title": "Sub-Agent monitoring and diagnostics",
+      "description": "After real Sub-Agent execution exists, add monitoring, linked traces, metrics, and diagnostics for multi-agent execution.",
       "implementationType": "refactor",
-      "phase": "Phase 4 - 业务模块动态化",
-      "existingCode": {
-        "frontend": [
-          "src/features/dynamic-ui/components/DynamicFormRenderer.tsx"
-        ],
-        "backend": [],
-        "note": "DynamicFormRenderer已有，需绑定销售数据API"
-      },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-4-sales-dynamic-forms",
-      "steps": [
-        "创建销售模块的Schema定义（客户、报价单、合同、订单）",
-        "实现DynamicFormRenderer与销售数据API的绑定",
-        "实现表单数据的自动保存与验证",
-        "添加字段级权限控制",
-        "实现表单变更的审计日志"
-      ],
-      "frs_covered": [
-        "FR513",
-        "FR514",
-        "FR515"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-035",
-        "ADR-036",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 54.3",
-        "Story 40.1",
-        "Story 40.2"
-      ],
-      "passes": false
-    },
-    {
-      "id": 128,
-      "epic": "Epic 54",
-      "story": "Story 54.5",
-      "title": "销售模块 - Agent工具集成",
-      "description": "为销售模块创建Agent可用的工具集，支持Agent执行销售相关任务。",
-      "implementationType": "refactor",
-      "phase": "Phase 4 - 业务模块动态化",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/SalesPilotIntegration.tsx"
-        ],
-        "backend": [],
-        "note": "SalesPilotIntegration组件已有，需实现工具集"
-      },
-      "backendRequired": true,
-      "priority": "medium",
-      "openspec_change": "epic-54-story-54-5-sales-agent-tools",
-      "steps": [
-        "创建销售模块工具集（customer_query、quotation_create、contract_generate等）",
-        "实现工具与销售数据层的集成",
-        "添加销售场景的智能推荐",
-        "实现销售数据的批量操作",
-        "集成销售模块到Agent对话流程"
-      ],
-      "frs_covered": [
-        "FR516",
-        "FR517",
-        "FR518"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-025",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 54.4",
-        "Story 51.3"
-      ],
-      "passes": false
-    },
-    {
-      "id": 129,
-      "epic": "Epic 54",
-      "story": "Story 54.6",
-      "title": "财务模块数据层 - 数据模型与API",
-      "description": "创建财务模块的完整数据层，包括发票、台账、应收应付的数据模型和API。",
-      "implementationType": "new",
-      "phase": "Phase 4 - 业务模块动态化",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要定义财务模块数据模型和API"
-      },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-6-finance-data-layer",
-      "steps": [
-        "定义财务模块数据模型（Invoice、Ledger、Receivable、Payable）",
-        "创建模拟数据API",
-        "实现发票OCR数据解析接口",
-        "实现台账数据结构",
-        "添加财务数据权限控制"
-      ],
-      "frs_covered": [
-        "FR520",
-        "FR521",
-        "FR522"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR20"
-      ],
-      "arch_covered": [
-        "ADR-025",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 39.1",
-        "Story 39.2"
-      ],
-      "passes": false
-    },
-    {
-      "id": 130,
-      "epic": "Epic 54",
-      "story": "Story 54.7",
-      "title": "财务模块 - 发票OCR与台账生成",
-      "description": "实现财务模块的发票OCR识别和自动台账生成功能，与Agent Runtime集成。",
-      "implementationType": "refactor",
-      "phase": "Phase 4 - 业务模块动态化",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/FinancePilotIntegration.tsx"
-        ],
-        "backend": [],
-        "note": "FinancePilotIntegration组件已有，需实现OCR和台账逻辑"
-      },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-7-finance-ocr-ledger",
-      "steps": [
-        "集成发票OCR工具（模拟或真实）",
-        "实现发票信息的自动提取与验证",
-        "实现台账的自动生成逻辑",
-        "创建台账编辑与确认界面",
-        "实现应收应付的自动计算"
-      ],
-      "frs_covered": [
-        "FR523",
-        "FR524",
-        "FR525"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-025",
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 54.6",
-        "Story 40.1"
-      ],
-      "passes": false
-    },
-    {
-      "id": 131,
-      "epic": "Epic 54",
-      "story": "Story 54.8",
-      "title": "AI暂存写回与审阅机制",
-      "description": "实现Agent生成内容到业务页面的暂存与审阅机制，支持用户确认后正式应用。",
-      "implementationType": "refactor",
-      "phase": "Phase 4 - 业务模块动态化",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/StagedReviewPanel.tsx"
-        ],
-        "backend": [],
-        "note": "StagedReviewPanel已有，需扩展为完整实现"
-      },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-54-story-54-8-staged-review-writeback",
-      "steps": [
-        "创建StagedReviewManager管理暂存内容",
-        "实现AI生成内容的暂存展示界面",
-        "实现用户审阅与编辑功能",
-        "实现确认后的正式写回",
-        "添加审阅历史的审计记录"
-      ],
-      "frs_covered": [
-        "FR530",
-        "FR531",
-        "FR532"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16"
-      ],
-      "arch_covered": [
-        "ADR-037"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04",
-        "UX-05"
-      ],
-      "dependencies": [
-        "Story 54.2",
-        "Story 54.4",
-        "Story 54.7"
-      ],
-      "passes": false
-    },
-    {
-      "id": 132,
-      "epic": "Epic 55",
-      "story": "Story 55.1",
-      "title": "完整审计日志系统",
-      "description": "实现完整的审计日志系统，记录所有Agent操作、工具调用、决策过程、数据变更。",
-      "implementationType": "refactor",
-      "phase": "Phase 5 - 治理与可靠性增强",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要扩展AuditLogManager支持全量审计事件"
-      },
-      "backendRequired": true,
-      "priority": "medium",
-      "openspec_change": "epic-55-story-55-1-audit-log-system",
-      "steps": [
-        "扩展AuditLogManager支持全量审计事件",
-        "实现Agent决策过程的详细记录",
-        "实现数据变更的审计追踪",
-        "添加审计日志的查询与导出功能",
-        "实现审计日志的定期归档"
-      ],
-      "frs_covered": [
-        "FR600",
-        "FR601",
-        "FR602"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR20",
-        "NFR23"
-      ],
-      "arch_covered": [
-        "ADR-023"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 51.1",
-        "Story 51.3"
-      ],
-      "passes": false
-    },
-    {
-      "id": 133,
-      "epic": "Epic 55",
-      "story": "Story 55.2",
-      "title": "错误恢复与故障转移机制",
-      "description": "实现Agent错误恢复、故障转移、会话修复、自动重试等可靠性机制。",
-      "implementationType": "new",
-      "phase": "Phase 5 - 治理与可靠性增强",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/FailoverSessionRepair.tsx"
-        ],
-        "backend": [],
-        "note": "FailoverSessionRepair组件已有，需实现ErrorRecoveryManager"
-      },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-55-story-55-2-error-recovery-failover",
-      "steps": [
-        "创建ErrorRecoveryManager错误恢复管理器",
-        "实现工具调用失败的自动重试策略",
-        "实现LLM服务故障的自动切换",
-        "添加会话状态的自动修复机制",
-        "实现故障通知与人工介入流程"
-      ],
-      "frs_covered": [
-        "FR603",
-        "FR604",
-        "FR605"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR22"
-      ],
-      "arch_covered": [
-        "ADR-001"
-      ],
-      "ux_covered": [
-        "UX-01",
-        "UX-04"
-      ],
-      "dependencies": [
-        "Story 51.1",
-        "Story 44.4"
-      ],
-      "passes": false
-    },
-    {
-      "id": 134,
-      "epic": "Epic 55",
-      "story": "Story 55.3",
-      "title": "性能监控与指标收集",
-      "description": "实现Agent性能监控，包括响应时间、工具调用成功率、Token使用、资源消耗等指标。",
-      "implementationType": "refactor",
-      "phase": "Phase 5 - 治理与可靠性增强",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/LogMetricsCenter.tsx",
-          "src/features/agent/components/TaskTraceAnalysis.tsx"
-        ],
-        "backend": [],
-        "note": "监控组件已有，需扩展RuntimeMetrics"
-      },
-      "backendRequired": true,
-      "priority": "medium",
-      "openspec_change": "epic-55-story-55-3-performance-monitoring",
-      "steps": [
-        "扩展RuntimeMetrics支持全量性能指标",
-        "实现Agent响应时间监控",
-        "实现Token使用统计与预警",
-        "添加工具调用成功率监控",
-        "创建性能监控仪表板"
-      ],
-      "frs_covered": [
-        "FR606",
-        "FR607",
-        "FR608"
-      ],
-      "nfrs_covered": [
-        "NFR1",
-        "NFR16",
-        "NFR23"
-      ],
-      "arch_covered": [
-        "ADR-023"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 51.1",
-        "Story 51.3"
-      ],
-      "passes": false
-    },
-    {
-      "id": 135,
-      "epic": "Epic 55",
-      "story": "Story 55.4",
-      "title": "安全检查强化",
-      "description": "强化Agent安全检查，包括敏感数据检测、黑名单拦截、权限校验、输入验证。",
-      "implementationType": "refactor",
-      "phase": "Phase 5 - 治理与可靠性增强",
-      "existingCode": {
-        "frontend": [
-          "src/features/session/tools/sensitiveActionDetection.ts"
-        ],
-        "backend": [],
-        "note": "sensitiveActionDetection已有，需扩展更多敏感模式"
-      },
-      "backendRequired": true,
-      "priority": "high",
-      "openspec_change": "epic-55-story-55-4-security-hardening",
-      "steps": [
-        "扩展sensitiveActionDetection支持更多敏感模式",
-        "实现输入内容的黑名单过滤",
-        "强化字段级权限校验",
-        "添加敏感数据的自动脱敏",
-        "实现安全事件的实时告警"
-      ],
-      "frs_covered": [
-        "FR609",
-        "FR610",
-        "FR611"
-      ],
-      "nfrs_covered": [
-        "NFR20",
-        "NFR21"
-      ],
-      "arch_covered": [
-        "ADR-018",
-        "ADR-041"
-      ],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 51.3",
-        "Story 45.3"
-      ],
-      "passes": false
-    },
-    {
-      "id": 136,
-      "epic": "Epic 56",
-      "story": "Story 56.1",
-      "title": "前端性能优化 - 大列表虚拟化",
-      "description": "优化大表单渲染和大量消息列表的性能，实现虚拟化渲染。",
-      "implementationType": "polish",
-      "phase": "技术债务与优化",
-      "existingCode": {
-        "frontend": [
-          "src/features/agent/components/MessageList.tsx"
-        ],
-        "backend": [],
-        "note": "MessageList已有，需添加虚拟化渲染"
-      },
-      "backendRequired": false,
+      "phase": "Phase 4 - Advanced Common Agent",
       "priority": "low",
-      "openspec_change": "epic-56-story-56-1-frontend-virtualization",
-      "steps": [
-        "实现消息列表的虚拟化渲染",
-        "优化大表单的渲染性能",
-        "添加组件懒加载机制",
-        "优化流式输出的渲染性能",
-        "实现内存使用优化"
-      ],
-      "frs_covered": [],
-      "nfrs_covered": [
-        "NFR3",
-        "NFR16"
-      ],
-      "arch_covered": [],
-      "ux_covered": [
-        "UX-01"
-      ],
-      "dependencies": [
-        "Story 51.2"
-      ],
-      "passes": false
-    },
-    {
-      "id": 137,
-      "epic": "Epic 56",
-      "story": "Story 56.2",
-      "title": "类型定义统一",
-      "description": "统一代码库中重复的类型定义，如ToolCategory、StepStatus等在不同模块的定义。",
-      "implementationType": "polish",
-      "phase": "技术债务与优化",
+      "backendRequired": true,
       "existingCode": {
         "frontend": [],
         "backend": [],
-        "note": "需要梳理代码库中的重复类型定义并统一"
+        "note": "Monitoring depends on real Sub-Agent execution and trace links."
       },
-      "backendRequired": false,
-      "priority": "low",
-      "openspec_change": "epic-56-story-56-2-type-unification",
+      "openspec_change": "epic-52-story-52-5-subagent-monitoring",
       "steps": [
-        "梳理代码库中的重复类型定义",
-        "创建统一的types目录和共享类型定义",
-        "统一ToolCategory类型定义",
-        "统一StepStatus/TaskStatus类型定义",
-        "更新所有引用到统一类型"
+        "Add metrics for Sub-Agent latency, failure rate, and token usage",
+        "Connect Sub-Agent monitoring to the shared telemetry and trace stack",
+        "Support inspection by main session, child call, and role template",
+        "Emit diagnostics for multi-agent troubleshooting",
+        "Verify monitoring does not create new permission leaks"
       ],
-      "frs_covered": [],
-      "nfrs_covered": [
-        "NFR22"
-      ],
-      "arch_covered": [],
-      "ux_covered": [],
-      "dependencies": [],
-      "passes": false
-    },
-    {
-      "id": 138,
-      "epic": "Epic 56",
-      "story": "Story 56.3",
-      "title": "API文档生成",
-      "description": "为核心模块生成API文档，特别是Agent Runtime的使用方式。",
-      "implementationType": "polish",
-      "phase": "技术债务与优化",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要配置TypeDoc文档生成工具"
-      },
-      "backendRequired": false,
-      "priority": "low",
-      "openspec_change": "epic-56-story-56-3-api-documentation",
-      "steps": [
-        "配置TypeDoc文档生成工具",
-        "为核心模块添加JSDoc注释",
-        "生成Agent Runtime API文档",
-        "生成工具系统API文档",
-        "发布文档到内部文档站点"
-      ],
-      "frs_covered": [],
-      "nfrs_covered": [
-        "NFR22"
-      ],
-      "arch_covered": [],
-      "ux_covered": [],
-      "dependencies": [
-        "Story 51.1"
-      ],
-      "passes": false
-    },
-    {
-      "id": 139,
-      "epic": "Epic 56",
-      "story": "Story 56.4",
-      "title": "测试覆盖率提升",
-      "description": "提升代码库的测试覆盖率，特别是UI组件测试和集成测试。",
-      "implementationType": "polish",
-      "phase": "技术债务与优化",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要配置测试覆盖率报告和创建测试套件"
-      },
-      "backendRequired": false,
-      "priority": "low",
-      "openspec_change": "epic-56-story-56-4-test-coverage",
-      "steps": [
-        "配置测试覆盖率报告",
-        "为关键UI组件添加单元测试",
-        "创建Agent Runtime集成测试套件",
-        "添加Sub-Agent调用链测试",
-        "实现端到端测试自动化"
-      ],
-      "frs_covered": [],
-      "nfrs_covered": [
-        "NFR22"
-      ],
-      "arch_covered": [],
-      "ux_covered": [],
-      "dependencies": [
-        "Story 51.4"
-      ],
-      "passes": false
-    },
-    {
-      "id": 140,
-      "epic": "Epic 56",
-      "story": "Story 56.5",
-      "title": "代码质量与Lint规则",
-      "description": "统一代码风格，完善ESLint规则，提升代码质量。",
-      "implementationType": "polish",
-      "phase": "技术债务与优化",
-      "existingCode": {
-        "frontend": [],
-        "backend": [],
-        "note": "需要审查并更新ESLint配置"
-      },
-      "backendRequired": false,
-      "priority": "low",
-      "openspec_change": "epic-56-story-56-5-code-quality",
-      "steps": [
-        "审查并更新ESLint配置",
-        "添加React最佳实践规则",
-        "修复现有Lint错误",
-        "配置Prettier代码格式化",
-        "添加Git Hooks自动检查"
-      ],
-      "frs_covered": [],
-      "nfrs_covered": [
-        "NFR22"
-      ],
-      "arch_covered": [],
-      "ux_covered": [],
-      "dependencies": [],
+      "frs_covered": ["FR924", "FR938"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR23"],
+      "arch_covered": ["ADR-013", "ADR-023"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 52.4", "Story 55.3", "Story 21.23"],
       "passes": false
     }
   ]

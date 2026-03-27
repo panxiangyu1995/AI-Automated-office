@@ -1,41 +1,33 @@
-# Epic 55, Story 55.4: 安全检查强化
+# epic-55-story-55-4-security-hardening
 
-## 概述
+## Story
+- Epic: Epic 55
+- Story: Story 55.4
+- Task: Task 121
+- Title: Backend-enforced security and confirmation
+- Phase: Phase 3 - Reliability and Governance
+- Priority: high
 
-强化Agent安全检查，包括敏感数据检测、黑名单拦截、权限校验、输入验证。
+## Goal
+Move sensitive action detection, input validation, field permissions, and confirmation flow into backend-enforced runtime guards.
 
-## 实现类型
-- **类型**: refactor
-- **优先级**: high
-- **阶段**: Phase 5 - 治理与可靠性增强
+## Requirements Mapping
+- FR: FR609, FR610, FR611
+- NFR: NFR20, NFR21
+- ARCH: ADR-018, ADR-041
+- UX: UX-01
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR609, FR610, FR611
-- **NFRs**: NFR20, NFR21
-
-### 架构需求
-- **ARCH**: ADR-018, ADR-041
-
-### UX 需求
-- **UX**: UX-01
-
-## 验收标准
-
-1. 扩展sensitiveActionDetection支持更多敏感模式
-2. 实现输入内容的黑名单过滤
-3. 强化字段级权限校验
-4. 添加敏感数据的自动脱敏
-5. 实现安全事件的实时告警
-
-## 依赖
-
+## Dependencies
 - Story 51.3
-- Story 45.3
+- Story 55.1
+- Story 46.1
+- Story 46.2
+- Story 46.3
+- Story 46.4
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Move sensitive input and dangerous action checks into backend guards
+2. Implement backend confirmation, rejection, and permission-denied flows
+3. Add allow and block policy for system, path, and network tools
+4. Add second-pass validation for risky writeback and outbound requests
+5. Write security events into audit records

@@ -1,41 +1,29 @@
-# Epic 52, Story 52.4: Sub-Agent结果汇总与回传
+# epic-52-story-52-4-subagent-result-return
 
-## 概述
+## Story
+- Epic: Epic 52
+- Story: Story 52.4
+- Task: Task 126
+- Title: Sub-Agent result return and merge
+- Phase: Phase 4 - Advanced Common Agent
+- Priority: medium
 
-实现Sub-Agent执行结果返回主Agent的机制，包括结果格式化、上下文整合、执行摘要生成。
+## Goal
+Return Sub-Agent summaries, failures, and outputs back into the main Agent session in a reviewable and traceable form.
 
-## 实现类型
-- **类型**: new
-- **优先级**: medium
-- **阶段**: Phase 2 - Sub-Agent运行时实现
+## Requirements Mapping
+- FR: FR933, FR934, FR936
+- NFR: NFR1, NFR16
+- ARCH: ADR-013, ADR-037
+- UX: UX-01, UX-04
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR933, FR934, FR936
-- **NFRs**: NFR1, NFR16
-
-### 架构需求
-- **ARCH**: ADR-013, ADR-037
-
-### UX 需求
-- **UX**: UX-01, UX-04
-
-## 验收标准
-
-1. 创建SubAgentResultNormalizer结果归一化器
-2. 实现Sub-Agent执行摘要自动生成
-3. 实现结果与主Agent上下文的整合
-4. 添加Sub-Agent执行失败的回退处理
-5. 实现结果的可视化展示
-
-## 依赖
-
+## Dependencies
 - Story 52.2
 - Story 52.3
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Normalize Sub-Agent result and summary payloads
+2. Merge results and failures back into the main Agent context
+3. Allow main Agent replanning or review handoff based on returned results
+4. Preserve context boundaries during result merge
+5. Add visible debug and review data for parent-child Agent interaction

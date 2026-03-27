@@ -1,41 +1,31 @@
-# Epic 53, Story 53.3: 错题集规则自动应用
+# epic-53-story-53-3-correction-rules
 
-## 概述
+## Story
+- Epic: Epic 53
+- Story: Story 53.3
+- Task: Task 122
+- Title: Controlled correction-rule baseline
+- Phase: Phase 4 - Advanced Common Agent
+- Priority: medium
 
-实现错题集规则在Agent执行过程中的自动检索和应用，基于场景匹配相关规则。
+## Goal
+Add correction-rule read, match, and suggestion output after the main Agent loop is stable, without allowing automatic config mutation.
 
-## 实现类型
-- **类型**: new
-- **优先级**: medium
-- **阶段**: Phase 3 - 记忆层与提示词集成
+## Requirements Mapping
+- FR: FR449, FR450, FR451
+- NFR: NFR1, NFR20
+- ARCH: ADR-039, ADR-043
+- UX: UX-01
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR446, FR447
-- **NFRs**: NFR1, NFR16
-
-### 架构需求
-- **ARCH**: ADR-043
-
-### UX 需求
-- **UX**: UX-01
-
-## 验收标准
-
-1. 创建CorrectionRuleMatcher规则匹配器
-2. 实现基于当前任务场景的错题集检索
-3. 实现匹配规则的提示词注入
-4. 添加规则应用的审计记录
-5. 实现规则效果的反馈收集
-
-## 依赖
-
+## Dependencies
 - Story 53.1
-- Story 6.6
+- Story 55.1
+- Story 55.2
+- Story 55.4
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Add correction rule read and match capability
+2. Inject rule suggestions into planner and runtime without auto-mutation
+3. Link rule hits to failure and audit records
+4. Output reviewable improvement suggestions
+5. Verify human review remains required for governance changes

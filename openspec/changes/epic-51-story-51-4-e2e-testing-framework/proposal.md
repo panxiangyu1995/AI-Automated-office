@@ -1,145 +1,37 @@
-# Proposal: 端到端测试框架与核心测试用例
+# Proposal: Chat host integration and E2E baseline
 
-## 变更类型
-- [x] 新功能 (new)
+## Change Type
+- refactor
 
-## 背景
+## Background
+Remove the simulated chat response path and connect the chat panel, staged review, and writeback flow to the real runtime, then add the minimum end-to-end harness.
 
-当前AI-Automated-office项目缺乏完整的端到端测试框架。Agent Runtime的核心功能（用户输入处理、意图解析、计划生成、工具调用、结果返回）需要一套可靠的测试机制来验证其正确性和稳定性。
+This story is aligned to the agent-runtime-rebaseline plan and replaces earlier sequencing assumptions for this runtime area.
 
-现有的前端接口和UI组件已部分完成，但缺乏对应的测试基础设施：
-- 前端已有runtimeStateMachine、stepExecutor、structuredPlanner等接口定义
-- 后端Agent执行逻辑需要完整实现
-- 缺乏Mock机制来模拟LLM响应
-- 缺乏完整的端到端测试用例覆盖
+## Scope
+### In Scope
+- Remove the default simulateResponse path
+- Connect MessageInput, MessageList, and StagedReviewPanel to the real runtime
+- Close the loop from user input to tool call to staged writeback to apply
+- Add a mock provider and a minimum tool set for runtime tests
+- Add end-to-end coverage for the main Agent loop
 
-本Story旨在创建完整的E2E测试框架，为后续所有Agent相关功能提供测试基础设施。
+### Out of Scope
+- Work outside this story boundary
+- Business pilot or skill expansion that is not named in this story
+- Rebuilding archived Story 43.1 through Story 49.4 foundations from scratch
 
-## 目标
+## Risks
+- Backend and frontend contracts may drift during integration
+- Placeholder, mock, or UI-only behavior may survive in the execution path
+- Dependency stories may not be stable enough when implementation begins
 
-创建Agent端到端测试框架，包含模拟LLM响应、完整对话流程测试、工具调用验证，满足以下验收标准：
-
-1. **MockLLMProvider**: 创建用于测试环境的LLM响应模拟器，支持预设响应、错误注入、延迟控制
-2. **Mock Tools**: 实现测试用的工具集，验证工具注册、调用、权限检查全流程
-3. **完整对话流程测试**: 覆盖用户输入 → 意图解析 → 计划生成 → 工具调用 → 结果返回
-4. **流式输出测试**: 验证思考过程、工具调用状态的流式输出
-5. **异常场景测试**: 中断恢复、重试机制、检查点恢复
-
-## 范围
-
-### 包含
-
-- **MockLLMProvider**: 测试用LLM模拟器
-  - 支持预设响应模板
-  - 支持随机错误注入
-  - 支持响应延迟模拟
-  - 支持流式响应模拟
-
-- **Mock Tools**: 测试工具集
-  - 文件操作Mock工具
-  - HTTP请求Mock工具
-  - 数据库Mock工具
-  - 自定义Mock工具工厂
-
-- **端到端测试用例**
-  - 用户输入 → 意图解析 → 计划生成 → 工具调用 → 结果返回
-  - 多轮对话上下文保持
-  - 并发请求处理
-
-- **流式输出测试**
-  - Server-Sent Events模拟
-  - 思考过程实时展示
-  - 工具调用状态流
-
-- **异常场景测试**
-  - 中断信号处理与恢复
-  - 自动重试机制验证
-  - 检查点保存与恢复
-
-### 不包含
-
-- 性能压力测试（属于Story 56.4测试覆盖率提升）
-- UI组件单元测试（使用Vitest/Jest）
-- 跨浏览器兼容性测试
-
-## 影响范围
-
-### 前端
-
-| 模块 | 影响 | 说明 |
-|------|------|------|
-| `src/features/session/` | 高 | 测试框架依赖现有session模块接口 |
-| `src/features/agent/` | 高 | 直接测试Agent核心功能 |
-| `src/features/streaming/` | 中 | 流式输出测试需要streaming模块 |
-
-### 后端 (Rust)
-
-| 模块 | 影响 | 说明 |
-|------|------|------|
-| `src-tauri/src/agent/` | 高 | 后端测试基础设施 |
-| `src-tauri/src/agent/llm/` | 高 | MockLLMProvider实现 |
-| `src-tauri/src/agent/tools/` | 中 | Mock工具实现 |
-| `src-tauri/src/agent/session/` | 中 | 测试用会话管理 |
-
-### 数据库
-
-- 无数据库模型变更
-- 测试使用内存存储或临时SQLite数据库
-
-## 风险评估
-
-| 风险 | 可能性 | 影响 | 缓解措施 |
-|------|--------|------|----------|
-| 后端基础设施缺失 | 高 | 高 | Task 101已完成后端基础架构，本Story依赖其实现 |
-| 前端接口已存在但未连接 | 中 | 中 | 逐步对接测试，先验证接口兼容性 |
-| MockLLM与真实LLM行为差异 | 中 | 中 | 设计可切换机制，支持真实LLM验证 |
-| 测试用例维护成本 | 中 | 低 | 使用Page Object模式隔离UI变更 |
-| 流式输出时序问题 | 中 | 中 | 使用异步队列管理事件顺序 |
-
-## 依赖
-
-### 前置依赖 (必须全部完成)
-
-| Story | 名称 | 说明 |
-|-------|------|------|
-| Story 51.1 | 主Agent协调器 - 核心协调模块 | 依赖AgentOrchestrator核心类 |
-| Story 51.2 | 主Agent协调器 - 流式事件总线集成 | 依赖流式事件推送服务 |
-| Story 51.3 | 工具执行管道 - 完整执行链 | 依赖工具注册表和执行器 |
-
-### 后置依赖 (本Story完成后解锁)
-
-| Story | 名称 | 说明 |
-|-------|------|------|
-| Story 56.4 | 测试覆盖率提升 | 依赖本Story的测试框架 |
-| Story 55.2 | 错误恢复与故障转移机制 | 依赖本Story的异常场景测试 |
-| 所有Agent相关Story | - | 需要E2E测试框架验证 |
-
-## 实现步骤
-
-1. **创建MockLLMProvider**
-   - 定义MockProvider Trait，实现Provider接口
-   - 实现响应模板系统（JSON/YAML配置）
-   - 实现错误注入器（随机失败、延迟）
-   - 实现流式响应模拟器
-
-2. **实现测试工具集**
-   - 创建MockTool基类
-   - 实现FileMockTool、HttpMockTool、DbMockTool
-   - 实现工具调用拦截器
-   - 实现权限预检查Mock
-
-3. **编写端到端测试用例**
-   - 用户输入 → 意图解析 → 计划生成测试
-   - 工具调用全流程测试
-   - 多轮对话上下文测试
-   - 并发请求处理测试
-
-4. **添加流式输出测试**
-   - SSE事件模拟与验证
-   - 思考过程实时展示测试
-   - 工具调用状态流测试
-
-5. **实现异常场景测试**
-   - 中断信号处理测试
-   - 自动重试机制验证
-   - 检查点保存/恢复测试
+## Dependencies
+- Story 51.1
+- Story 51.2
+- Story 51.3
+- Story 43.4
+- Story 49.1
+- Story 49.2
+- Story 49.3
+- Story 49.4

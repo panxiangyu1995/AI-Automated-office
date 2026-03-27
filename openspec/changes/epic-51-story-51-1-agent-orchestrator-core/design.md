@@ -1,58 +1,32 @@
-# Design: 主Agent协调器 - 核心协调模块
+# Design: Rust agent core and orchestrator
 
-## 技术方案
+## Architecture Alignment
+- Phase: Phase 1 - Execution Spine
+- Backend Required: Yes
+- Rebaseline Source: openspec/changes/agent-runtime-rebaseline
 
-### 实现类型
-- **类型**: refactor
-- **优先级**: high
-- **阶段**: Phase 1 - Agent Runtime端到端集成
+## Existing Code
+### Frontend
+- src/features/session/runtime/sessionLifecycle.ts
+- src/features/session/runtime/runtimeStateMachine.ts
+- src/features/session/planner/structuredPlanner.ts
+- src/features/session/executor/stepExecutor.ts
 
-### 前端实现
+### Backend
+- src-tauri/src/lib.rs
+- src-tauri/src/commands/mod.rs
 
-基于现有前端代码进行重构扩展：
+### Current Note
+Frontend runtime shells exist, but src-tauri/src/agent does not exist yet.
 
-1. 整合现有接口定义
-2. 实现业务逻辑
-3. 连接前端UI组件
+## Technical Design
+- Create src-tauri/src/agent and module exports
+- Define AgentOrchestrator, provider trait, and runtime session service
+- Register agent commands in lib.rs invoke_handler
+- Define request and response contracts for frontend runtime integration
+- Ensure the main execution loop is interruptible, traceable, and persistable
 
-### 后端实现
-
-创建Rust后端实现（src-tauri/src/agent/）：
-
-1. 定义模块接口
-2. 实现核心逻辑
-3. 添加Tauri命令暴露
-
-### 数据库设计
-
-如有数据模型变更，需要：
-- 定义数据表结构
-- 实现CRUD操作
-- 添加索引优化
-
-## 组件设计
-
-### 新增组件
-- 根据实际需求创建
-
-### 修改组件
-- 基于现有组件扩展
-
-## 状态管理
-
-使用Zustand进行状态管理：
-- 定义Store接口
-- 实现状态更新逻辑
-- 添加Selector优化渲染
-
-## 安全考虑
-
-- 遵循ADR-018安全设计
-- 实现输入验证和脱敏
-- 添加权限校验
-
-## 性能考虑
-
-- 遵循NFR3响应性要求
-- 优化重渲染
-- 实现虚拟化（如需要）
+## Test Focus
+- Contract compatibility with the runtime spine
+- Failure, retry, and recovery behavior where applicable
+- Permission, audit, and confirmation coverage where applicable

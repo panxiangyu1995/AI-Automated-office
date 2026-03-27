@@ -1,45 +1,32 @@
-# Epic 51, Story 51.1: 主Agent协调器 - 核心协调模块
+# epic-51-story-51-1-agent-orchestrator-core
 
-## 概述
+## Story
+- Epic: Epic 51
+- Story: Story 51.1
+- Task: Task 111
+- Title: Rust agent core and orchestrator
+- Phase: Phase 1 - Execution Spine
+- Priority: critical
 
-创建主Agent协调器，整合会话生命周期、运行时状态机、结构化规划器和步骤执行器，实现从用户输入到执行计划的完整流程编排。
+## Goal
+Create src-tauri/src/agent and land the real backend orchestrator, provider trait, runtime session service, and Tauri command entry points.
 
-## 实现类型
-- **类型**: refactor
-- **优先级**: high
-- **阶段**: Phase 1 - Agent Runtime端到端集成
+## Requirements Mapping
+- FR: FR400, FR401, FR402, FR403, FR404
+- NFR: NFR1, NFR16, NFR17
+- ARCH: ADR-001, ADR-037, ADR-043
+- UX: UX-01, UX-04
 
-## 铁律映射
-
-### PRD 需求
-- **FRs**: FR400, FR401, FR402, FR403, FR404
-- **NFRs**: NFR1, NFR16, NFR17
-
-### 架构需求
-- **ARCH**: ADR-001, ADR-037, ADR-043
-
-### UX 需求
-- **UX**: UX-01, UX-04
-
-## 验收标准
-
-1. 创建AgentOrchestrator核心类，整合sessionLifecycle、runtimeStateMachine、structuredPlanner、stepExecutor
-2. 实现用户消息接收与意图解析入口
-3. 实现计划生成与执行状态流转的完整协调
-4. 添加执行过程中的事件分发与状态同步
-5. 实现执行完成后的结果汇总与消息生成
-
-## 依赖
-
+## Dependencies
 - Story 43.1
 - Story 43.2
-- Story 43.3
 - Story 44.1
 - Story 44.2
 - Story 44.3
 
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Create src-tauri/src/agent and module exports
+2. Define AgentOrchestrator, provider trait, and runtime session service
+3. Register agent commands in lib.rs invoke_handler
+4. Define request and response contracts for frontend runtime integration
+5. Ensure the main execution loop is interruptible, traceable, and persistable

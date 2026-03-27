@@ -1,145 +1,36 @@
-# Proposal: Sub-Agent路由引擎 - 触发条件匹配
+# Proposal: Sub-Agent routing baseline
 
-## 变更类型
-- [x] 重构 (refactor)
+## Change Type
+- refactor
 
-## 背景
+## Background
+Only after the main Agent loop is stable, add routing for delegated Sub-Agent calls based on keywords, intent, and scenario matching.
 
-当前AI-Automated-office系统支持Sub-Agent机制，但缺乏智能的路由引擎来根据用户输入自动选择合适的Sub-Agent。用户需要手动指定或使用简单的关键词匹配来触发Sub-Agent，这导致：
+This story is aligned to the agent-runtime-rebaseline plan and replaces earlier sequencing assumptions for this runtime area.
 
-1. **路由效率低**: 简单的关键词匹配无法处理同义词、多语言、拼写错误
-2. **意图理解弱**: 无法识别用户真实意图，只能做表面匹配
-3. **场景适配差**: 缺乏基于上下文的场景感知能力
-4. **扩展性差**: 新增Sub-Agent需要手动配置路由规则
+## Scope
+### In Scope
+- Create routing service for keyword, intent, and scenario matching
+- Base delegation decisions on real runtime context
+- Write routing outcomes into the main trace
+- Prepare standardized input for Sub-Agent execution context
+- Verify routing cannot bypass an incomplete main Agent path
 
-本Story旨在实现一个智能的Sub-Agent路由引擎，支持基于关键词、意图和场景的匹配机制，并提供匹配度评分与排序功能。
+### Out of Scope
+- Work outside this story boundary
+- Business pilot or skill expansion that is not named in this story
+- Rebuilding archived Story 43.1 through Story 49.4 foundations from scratch
 
-## 目标
+## Risks
+- Backend and frontend contracts may drift during integration
+- Placeholder, mock, or UI-only behavior may survive in the execution path
+- Dependency stories may not be stable enough when implementation begins
 
-实现Sub-Agent路由引擎 - 触发条件匹配，满足以下验收标准：
-
-1. **SubAgentRouter核心类**: 创建前端路由逻辑类，整合三种匹配策略
-2. **关键词匹配**: 实现基于关键词的精确匹配和模糊匹配算法
-3. **意图匹配**: 实现基于意图的匹配，与IntentParsing模块集成
-4. **场景匹配**: 实现基于当前上下文/场景的匹配逻辑
-5. **匹配度评分**: 实现多维度评分机制，对候选Sub-Agent进行排序
-
-## 范围
-
-### 包含
-
-- **SubAgentRouter核心类**
-  - 三种匹配策略的整合
-  - 匹配度评分计算
-  - 候选Sub-Agent排序
-  - 路由结果缓存
-
-- **关键词匹配算法**
-  - 精确关键词匹配
-  - 模糊匹配（编辑距离）
-  - 同义词扩展匹配
-  - 关键词权重配置
-
-- **意图匹配集成**
-  - 与IntentParsing模块集成
-  - 意图类型到Sub-Agent的映射
-  - 意图置信度阈值
-
-- **场景匹配逻辑**
-  - 当前模块上下文识别
-  - 用户操作历史分析
-  - 时间/地点等场景因素
-
-- **匹配度评分与排序**
-  - 多维度评分（关键词30% + 意图40% + 场景30%）
-  - 评分阈值控制
-  - 结果排序与去重
-
-### 不包含
-
-- Sub-Agent执行上下文管理（属于Story 52.2）
-- Sub-Agent嵌套调用控制（属于Story 52.3）
-- Sub-Agent结果汇总（属于Story 52.4）
-- Sub-Agent执行监控（属于Story 52.5）
-
-## 影响范围
-
-### 前端
-
-| 模块 | 影响 | 说明 |
-|------|------|------|
-| `src/features/settings/components/SubAgentRouting.tsx` | 高 | 已有UI组件，需要实现核心路由逻辑 |
-| `src/features/agent/` | 高 | 路由引擎是Agent核心组件 |
-| `src/stores/` | 中 | 路由配置状态管理 |
-
-### 后端 (Rust)
-
-| 模块 | 影响 | 说明 |
-|------|------|------|
-| `src-tauri/src/agent/subagent/` | 高 | 路由逻辑后端实现 |
-| `src-tauri/src/agent/intent/` | 中 | 意图解析集成 |
-
-### 数据库
-
-- 路由配置表 `subagent_routing_config`
-- 匹配规则表 `routing_rules`
-- 匹配历史表 `routing_history`
-
-## 风险评估
-
-| 风险 | 可能性 | 影响 | 缓解措施 |
-|------|--------|------|----------|
-| 前端UI已存在但逻辑缺失 | 高 | 中 | 先实现核心逻辑，再对接UI |
-| 意图解析模块依赖未完成 | 中 | 中 | 设计接口抽象，支持Mock模式 |
-| 路由性能影响响应时间 | 中 | 中 | 添加缓存，预计算匹配 |
-| 匹配算法复杂度高 | 中 | 中 | 使用高效的字符串匹配算法 |
-| 评分权重配置主观性强 | 中 | 低 | 提供可视化配置界面 |
-
-## 依赖
-
-### 前置依赖 (必须全部完成)
-
-| Story | 名称 | 说明 |
-|-------|------|------|
-| Story 21.16 | 意图解析 - 意图识别 | 意图类型定义 |
-| Story 21.17 | 意图解析 - 意图置信度 | 置信度计算 |
-| Story 51.1 | 主Agent协调器 - 核心协调模块 | Agent运行时基础 |
-
-### 后置依赖 (本Story完成后解锁)
-
-| Story | 名称 | 说明 |
-|-------|------|------|
-| Story 52.2 | Sub-Agent执行上下文 - 隔离环境 | 路由结果需要执行上下文 |
-| Story 52.3 | Sub-Agent嵌套调用控制 | 嵌套调用需要路由引擎 |
-
-## 实现步骤
-
-1. **创建SubAgentRouter核心类**
-   - 定义路由配置接口
-   - 实现三种匹配策略的调用接口
-   - 实现评分计算与排序逻辑
-   - 实现结果缓存机制
-
-2. **实现基于关键词的匹配算法**
-   - 构建关键词词典（支持同义词）
-   - 实现精确匹配（BMH/KMP）
-   - 实现模糊匹配（编辑距离 Levenshtein）
-   - 计算关键词匹配得分
-
-3. **实现基于意图的匹配**
-   - 与IntentParsing模块集成
-   - 获取当前意图类型和置信度
-   - 建立意图到Sub-Agent的映射表
-   - 计算意图匹配得分
-
-4. **实现基于场景的匹配**
-   - 识别当前模块上下文
-   - 分析用户操作历史序列
-   - 提取时间/地点等场景因素
-   - 计算场景匹配得分
-
-5. **添加匹配度评分与排序机制**
-   - 定义评分权重配置（可调整）
-   - 实现加权评分计算
-   - 实现结果排序与去重
-   - 添加评分阈值过滤
+## Dependencies
+- Story 51.1
+- Story 51.2
+- Story 51.3
+- Story 51.4
+- Story 55.1
+- Story 21.16
+- Story 21.17

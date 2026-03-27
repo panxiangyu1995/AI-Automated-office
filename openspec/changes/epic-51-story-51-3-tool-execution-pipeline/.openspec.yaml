@@ -1,9 +1,9 @@
 name: epic-51-story-51-3-tool-execution-pipeline
 status: pending
-created_at: 2026-03-26
+created_at: 2026-03-27
 epic: 51
 story: 51.3
-title: 工具执行管道 - 完整执行链
+title: Real tool execution pipeline
 mapping:
   frs:
     - FR420

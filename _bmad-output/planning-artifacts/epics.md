@@ -3299,6 +3299,10 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 **Epic目标：** 用户可以上传和管理知识文档，通过AI问答检索知识，系统自动从工单生成知识条目；管理员可创建多个知识库，配置Agent知识库绑定，AI可上传知识但需审核（全局/部门知识库需审核，个人知识库无需审核）。
 
+**实现边界（并入铁律）：**
+- 知识库、访问权限、审核链路、Agent 绑定、审计与隔离属于平台原生能力。
+- “工单转知识”“AI 整理知识并提交审核”等流程默认优先实现为内置 skill，不继续扩张知识库原生控制面。
+
 **覆盖需求：** FR250-FR254, FR280-FR292, FR940-FR960
 
 **Phase:** Phase 3 - 企业级能力层
@@ -3414,6 +3418,11 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 ## Epic 10: ClawHub生态兼容
 
 **Epic目标：** 系统可以解析SKILL.md、SOUL.md格式文件，用户可以从ClawHub市场安装Skill/SOUL资源，支持Plugin适配转换。
+
+**实现边界（并入铁律）：**
+- ClawHub 与外部生态默认只作为资源来源，不直接替代平台治理层。
+- 公共资源进入企业交付范围前，必须经过来源校验、白名单或私有镜像、静态分析、审批与审计。
+- Skill / SOUL 内容可优先复用，但兼容适配、安装治理、版本管理与安全边界必须平台原生实现。
 
 **覆盖需求：** FR700-FR755
 
@@ -5208,6 +5217,12 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 **Epic目标：** 用户可以配置和管理 LLM 提供商、MCP 服务和工具，设置工具的 approve 策略，管理平台内置 Skills、用户安装 Skills、提示词、规则和 Sub-Agent，确保 Agent 应用的核心能力可配置、可控制、可审计。
 
+**实现边界（并入铁律）：**
+- Epic 21 的核心职责是建设平台控制面与治理面，而不是把大量业务流程直接吸收到原生平台中。
+- 业务或部门专用的复杂流程能力，默认优先实现为内置 skill 或 plugin，原生平台仅提供注册、配置、权限、审计、调试与编排能力。
+- Prompt 优化、实验、公共模板、公共资源市场等可优先复用外部能力，但最终生效规则、审批、审计和作用域覆盖必须留在平台原生控制面。
+- 后续具体的能力分流、平台级内置清单、部门能力包清单与 MVP / Post-MVP 优先级，统一以 `_bmad-output/planning-artifacts/agent-capability-strategy-2026-03-27.md` 为执行参照。
+
 **覆盖需求：** FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840
 
 **Phase:** Phase 2 - AI Agent核心层
@@ -5226,6 +5241,15 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 - 平台必须预置一组可直接使用的默认 Skills，作为零配置起点，而不只是支持 Skill 导入与安装。
 - Skill 来源分为平台内置、部门能力包内置、用户/管理员安装三层，但统一进入同一治理链路。
 - 平台级内置 Skills 在 MVP 阶段优先覆盖资料导入、文档起草、结构抽取、模板沉淀、知识草稿提交、跨部门摘要、变更包整理、纪要总结等高复用场景。
+- 平台应内置 `skill-creator-assistant`，作为用户创建个人草稿 skill 的默认入口；该入口辅助编写和测试 skill，但不拥有绕过发布治理与权限控制的特权。
+- 平台首批默认内置 skill 名单以 `_bmad-output/planning-artifacts/agent-capability-strategy-2026-03-27.md` 中确认的 `21` 个办公技能包为实施基线。
+
+**Skill 生命周期与发布基线（并入铁律）：**
+- 用户应可创建 `个人草稿 skill` 并在本人作用域内立即测试和启用；共享给部门、租户或升级为平台内置前，必须进入对应的审核发布流程。
+- 个人草稿 skill 仍必须继承用户权限、数据范围、Approve 策略、Trace、审计和调用预算约束，不存在“个人 skill 免治理”模式。
+- 用户自建默认仅限 `声明式 / 组合型 skill`；凡涉及新脚本、新插件代码、新外部连接器、新外部 API 凭证或新增执行面者，统一视为 `扩展型 skill`，必须走受控导入/安装流程。
+- Planner 与 Runtime 必须支持在单轮任务内组合多次 skill 调用，并将每次 `skill_call` 纳入统一的权限检查、审批策略、Trace 与失败恢复链路。
+- 平台执行层按 `Tool -> Atomic Skill / Subskill -> Composite Skill / Long-task Skill -> Sub-Agent` 分层；Composite Skill 负责编排方法闭环，Sub-Agent 负责独立角色与受控委派，两者不得混用。
 
 ---
 
@@ -6981,6 +7005,7 @@ Epic 1 / Epic 2
 2. Planner 输出为结构化步骤，而不是不可追踪的纯文本推理。
 3. Runtime 支持线性多步执行和有限次重新规划。
 4. 失败重试和中断恢复进入统一状态机，不出现旁路逻辑。
+5. Planner 可同时规划 `tool_call`、`atomic_skill_call`、`composite_skill_call` 与 `subagent_call`，但必须保持四类节点的语义边界清晰。
 
 ## Epic 45: 统一 Tool Runtime
 
@@ -7001,6 +7026,7 @@ Epic 1 / Epic 2
 2. 工具执行前完成参数校验和上下文注入。
 3. Core Tools、Plugin Tools、MCP Tools 使用同一注册与执行协议。
 4. 工具结果可被 Planner、Audit、UI Writeback 共同消费。
+5. Atomic Skill 与 Composite Skill 进入同一 Capability Registry，并继承统一的 schema、权限、审批、Trace、超时和重试协议。
 
 ## Epic 46: Permission Gate 与 Human-in-the-loop
 

@@ -1,41 +1,29 @@
-# Epic 55, Story 55.3: 性能监控与指标收集
+# epic-55-story-55-3-performance-monitoring
 
-## 概述
+## Story
+- Epic: Epic 55
+- Story: Story 55.3
+- Task: Task 120
+- Title: Runtime metrics and debug telemetry
+- Phase: Phase 3 - Reliability and Governance
+- Priority: medium
 
-实现Agent性能监控，包括响应时间、工具调用成功率、Token使用、资源消耗等指标。
+## Goal
+Replace mock observability with real runtime metrics, logs, and diagnostic telemetry.
 
-## 实现类型
-- **类型**: refactor
-- **优先级**: medium
-- **阶段**: Phase 5 - 治理与可靠性增强
+## Requirements Mapping
+- FR: FR606, FR607, FR608
+- NFR: NFR1, NFR16, NFR23
+- ARCH: ADR-023
+- UX: UX-01
 
-## 铁律映射
+## Dependencies
+- Story 55.1
+- Story 48.4
 
-### PRD 需求
-- **FRs**: FR606, FR607, FR608
-- **NFRs**: NFR1, NFR16, NFR23
-
-### 架构需求
-- **ARCH**: ADR-023
-
-### UX 需求
-- **UX**: UX-01
-
-## 验收标准
-
-1. 扩展RuntimeMetrics支持全量性能指标
-2. 实现Agent响应时间监控
-3. 实现Token使用统计与预警
-4. 添加工具调用成功率监控
-5. 创建性能监控仪表板
-
-## 依赖
-
-- Story 51.1
-- Story 51.3
-
-## 相关文档
-- PRD: `_bmad-output/planning-artifacts/prd.md`
-- 架构: `_bmad-output/planning-artifacts/architecture.md`
-- UX规范: `_bmad-output/planning-artifacts/ux-design-specification.md`
-- Epic文档: `_bmad-output/planning-artifacts/epics.md`
+## Planned Steps
+1. Define runtime metric collection points
+2. Persist telemetry and expose aggregate queries
+3. Connect metrics panels to real data
+4. Support session and tenant level statistics
+5. Emit structured diagnostics for troubleshooting

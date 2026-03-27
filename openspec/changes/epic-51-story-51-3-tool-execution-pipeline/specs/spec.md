@@ -1,140 +1,15 @@
-# Specification: 工具执行管道 - 完整执行链
+## ADDED Requirements
 
-## 需求来源
+### Requirement: Story 51.3 - Real tool execution pipeline
+The system SHALL deliver this story scope aligned with FR(FR420, FR421, FR422, FR423, FR424) and ARCH(ADR-010, ADR-018, ADR-045).
 
-### PRD 需求
-- FR420: 工具注册与管理
-- FR421: 工具执行与结果返回
-- FR422: 工具权限控制
-- FR423: 工具安全检测
-- FR424: 工具降级策略
+#### Scenario: Story completed
+- **GIVEN** implementation follows task.json and the agent-runtime-rebaseline plan
+- **WHEN** code, tests, and documentation are complete
+- **THEN** all acceptance items in tasks.md SHALL be satisfied
+- **AND** the behavior SHALL run through the real common Agent path rather than placeholder-only or mock-only logic
 
-### 架构约束
-- ADR-010: 工具系统架构
-- ADR-018: 安全设计规范
-- ADR-045: 权限系统集成
-
-### UX 规范
-- UX-01: AI对话交互界面规范
-- UX-04: 状态反馈与加载规范
-
-## 功能规格
-
-### 用户故事
-As a 用户,
-I want to AI能够安全、可控地执行各种工具来完成我的任务,
-So that 我无需关心工具调用的复杂细节。
-
-### 验收场景
-
-#### Scenario 1: 正常工具执行
-- **GIVEN** Agent决定调用某个工具
-- **WHEN** 工具执行管道开始处理
-- **THEN** 按顺序执行：权限检查 → 安全验证 → 参数验证 → 执行 → 归一化
-- **AND** 返回标准化的工具结果
-
-#### Scenario 2: 权限不足
-- **GIVEN** 用户尝试调用需要更高权限的工具
-- **WHEN** 权限检查环节
-- **THEN** 返回权限错误，提示用户申请权限
-
-#### Scenario 3: 敏感操作拦截
-- **GIVEN** 用户指令触发敏感操作检测
-- **WHEN** 安全验证环节
-- **THEN** 拦截操作，提示用户确认
-- **AND** 记录安全日志
-
-#### Scenario 4: 执行超时
-- **GIVEN** 工具执行时间过长
-- **WHEN** 执行超过30秒
-- **THEN** 超时错误，触发降级逻辑
-
-#### Scenario 5: 降级执行
-- **GIVEN** 主要工具执行失败
-- **WHEN** 降级逻辑被触发
-- **THEN** 自动尝试降级方案
-
-## 数据规格
-
-### 输入
-
-#### ToolCall
-| 字段 | 类型 | 必填 | 校验规则 |
-|------|------|------|----------|
-| call_id | string | 是 | UUID格式 |
-| name | string | 是 | 工具名称，非空 |
-| args | object | 是 | JSON对象 |
-| timeout_ms | number | 否 | 默认30000 |
-
-### 输出
-
-#### ToolResult
-| 字段 | 类型 | 描述 |
-|------|------|------|
-| call_id | string | 调用ID |
-| success | boolean | 是否成功 |
-| data | any | 返回数据 |
-| error | ToolError | 错误信息（如有） |
-| duration_ms | number | 执行耗时 |
-| fallback_used | boolean | 是否使用了降级方案 |
-
-#### ToolError
-| 字段 | 类型 | 描述 |
-|------|------|------|
-| code | string | 错误码 |
-| message | string | 错误信息 |
-| recoverable | boolean | 是否可恢复 |
-
-### 错误码定义
-
-| 错误码 | 错误信息 | 处理方式 |
-|--------|----------|----------|
-| TOOL_001 | 工具不存在 | 返回错误 |
-| TOOL_002 | 参数验证失败 | 返回详细验证错误 |
-| TOOL_003 | 权限不足 | 返回权限错误 |
-| TOOL_004 | 安全检查失败 | 记录日志，阻塞执行 |
-| TOOL_005 | 执行超时 | 触发降级 |
-| TOOL_006 | 执行失败 | 尝试降级方案 |
-| TOOL_007 | 降级失败 | 返回最终错误 |
-
-## 管道处理流程
-
-```
-1. FIND_TOOL
-   └─→ 根据name查找工具描述符
-       ├─ 找不到 → TOOL_001
-
-2. CHECK_PERMISSION
-   └─→ 检查用户权限
-       ├─ 权限不足 → TOOL_003
-
-3. SECURITY_CHECK
-   └─→ 敏感操作检测、路径验证
-       ├─ 检测失败 → TOOL_004
-
-4. VALIDATE_ARGS
-   └─→ 参数类型和范围验证
-       ├─ 验证失败 → TOOL_002
-
-5. EXECUTE
-   └─→ 调用工具执行器
-       ├─ 超时 → TOOL_005
-       ├─ 执行失败 → 6.FALLBACK
-
-6. FALLBACK
-   └─→ 执行降级方案
-       ├─ 降级成功 → 返回降级结果
-       └─ 降级失败 → TOOL_007
-
-7. NORMALIZE
-   └─→ 归一化输出格式
-       └─→ 返回ToolResult
-```
-
-## 边界条件
-
-- **工具不存在**: 返回明确错误码
-- **参数缺失**: 使用默认值或报错
-- **并发调用**: 支持同一工具的多个调用
-- **资源限制**: 单次执行内存限制 100MB
-- **降级链**: 最多支持3级降级
+#### Scenario: Dependency gate respected
+- **GIVEN** dependency stories are listed for this story
+- **WHEN** implementation begins and verification is performed
+- **THEN** the story SHALL not be considered complete if those dependencies remain unstable

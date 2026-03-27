@@ -212,6 +212,31 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 - **执行前再收敛**：Runtime 只从当前作用域允许且权限放行的能力集中选取候选项，而不是把所有已安装能力直接暴露给模型。
 - **开放但不失控**：用户自定义能力是第一类平台能力，但永远不能绕过黑名单、Approve 策略、沙箱、配额、审计和数据权限边界。
 
+### Capability Routing Strategy
+
+平台内所有能力都必须在进入实现阶段前完成一次“能力分流”判断：
+
+- **Native Platform Capabilities**：凡涉及权限、审批、审计、沙箱、租户隔离、持久化模型、运行时编排、委派合同、能力契约、治理看板的能力，必须由平台原生实现。
+- **Externally Reused Assets**：凡属于公共 skill / SOUL 生态、通用模板、prompt 优化/eval 基础设施、弱业务绑定的通用自动化能力，应优先作为外部资源复用，而不是在平台内重复开发。
+- **Internal Skills**：凡属于依赖既有 Tools / MCP / 知识库的多步骤业务流程、生成整理转换流程、部门专用方法能力，默认实现为平台内置 skill，而不是继续扩张原生控制面。
+- **Promotion Rule**：一个 skill / plugin 只有在反复证明需要承载治理、隔离、审批、审计、持久化模型或运行时编排职责时，才允许上升为原生平台能力。
+- **Public Marketplace Boundary**：公共市场只能作为资源来源；生产交付应通过私有镜像、来源白名单或受控导入进入平台，并统一接受安全扫描、审批与审计。
+- **Default Decision Order**：默认按“外部复用 → 内部自建 skill → 原生实现”的顺序决策，除非该能力一开始就显然属于控制面或治理面。
+- **Execution Reference**：能力分流、实施优先级与 Skill 分层清单统一以 `_bmad-output/planning-artifacts/agent-capability-strategy-2026-03-27.md` 为参照，避免规划分散在多份平级文档中。
+- **Built-in Skill Baseline**：平台首批默认内置 skill 名单采用上述统一文档中确认的 `21` 个办公技能包，后续增减应通过同一治理链更新。
+
+### Skill Lifecycle and Execution Model
+
+- **Lifecycle Scopes**：Skill 按作用域至少分为 `个人草稿`、`部门共享`、`租户共享`、`平台内置` 四层。所有 Skill 统一进入 Capability Registry，但发布治理按作用域逐级增强。
+- **Personal Draft First**：用户可创建个人草稿 skill 并在本人作用域内立即测试与启用；该便利性不改变任何权限边界，skill 运行时仍继承当前用户权限、数据范围、Approve 策略、超时预算与审计要求。
+- **Promote to Share**：Skill 升级为部门共享、租户共享或平台内置前，必须经过版本快照、来源说明、变更摘要、静态检查与对应责任人审核。
+- **Skill Type Boundary**：默认允许用户自助创建的是 `声明式 / 组合型 skill`，即通过既有 Tools / MCP / Prompt / Knowledge / Template 编排形成的方法型能力；凡引入新脚本、新代码、新外部连接器、新外部 API 凭证或新增执行面者，归为 `扩展型 skill`，必须走受控导入与更严格校验。
+- **Runtime Call Semantics**：Planner 必须把 `skill_call` 视为与 `tool_call` 同级的可调度能力节点，允许在单轮任务内组合多次不同的 skill 调用；每次调用都必须具备统一的输入/输出 schema、副作用声明、审批策略与 Trace 节点。
+- **Bounded Composition**：Skill 可以编排 Tools、MCP，并在受控条件下调用其它 Skills；Runtime 必须限制嵌套深度、单轮调用预算与重试次数，防止递归失控和隐性越权。
+- **Execution Hierarchy**：运行时能力层级明确为 `Tool -> Atomic Skill / Subskill -> Composite Skill / Long-task Skill -> Sub-Agent`。前三级属于方法复用与能力编排层，Sub-Agent 属于独立委派执行层。
+- **No Privilege Amplification**：Composite Skill 调用 Atomic Skill 或 Tool 时，只能继承或收缩调用者权限，不得放大数据范围、审批权限或知识范围。
+- **Promote to Sub-Agent**：当一个 Composite Skill 需要独立角色提示词、独立模型、独立知识范围、独立记忆隔离、独立审批策略或开放式多分支委派时，必须升级为 Sub-Agent，并进入 Delegation Contract 体系，而不是继续堆叠 skill 调用。
+
 ## Agent Framework Core Decisions
 
 > 基于OpenClaw架构研究和当前产品方向，平台整体采用“压缩后的四层主干”，而 Agent Runtime 内部继续遵循感知-决策-执行-记忆闭环。
