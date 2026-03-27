@@ -56,6 +56,21 @@ export {
   registerCoreTools,
 } from './toolRegistry'
 
+// Backend Tool Client
+export type {
+  BackendToolExecutionContext,
+  BackendToolExecutionRequest,
+  BackendToolExecutionResponse,
+  BackendToolConfirmationRequest,
+  BackendPermissionResult,
+  BackendSensitivityAssessment,
+} from './backendToolClient'
+
+export {
+  listBackendTools,
+  executeBackendTool,
+} from './backendToolClient'
+
 // Executor
 export type {
   ToolRuntimeContext,

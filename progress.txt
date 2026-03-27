@@ -6726,3 +6726,26 @@
 - Event bridge currently covers session/message/error events; tool streaming will be layered in Task 113.
 
 ---
+
+## [2026-03-27] - Task 113: Story 51.3 - Real tool execution pipeline
+
+### 铁律合规检查：
+- PRD 合规：FR420, FR421, FR422, FR423, FR424
+- 架构合规：ADR-010, ADR-018, ADR-045
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16, NFR20
+
+### What was done:
+- Added Rust tool execution pipeline with descriptor registry, permission checks, sensitivity assessment, and confirmation gating.
+- Registered core tools (system, network, http) with real executors and exposed Tauri commands for tool listing and execution.
+- Added backend tool client for the frontend registry and enabled runtime tool events in the streaming bridge.
+- Added unit tests for tool parameter validation and permission checks.
+
+### Testing:
+- `pnpm.cmd lint` passed
+- `pnpm.cmd build` passed
+
+### Notes:
+- Rust unit tests were added but not executed in this run.
+
+---

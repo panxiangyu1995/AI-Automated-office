@@ -76,6 +76,7 @@ pub fn run() {
                     .expect("无法初始化会话缓存");
                 app.manage(session_cache);
                 app.manage(agent::AgentRuntimeState::new());
+                app.manage(agent::tools::ToolExecutionPipeline::new());
             });
             
             // 注册默认快捷键
@@ -113,6 +114,8 @@ pub fn run() {
             commands::agent::start_agent_session,
             commands::agent::execute_agent,
             commands::agent::interrupt_agent_session,
+            commands::tools::list_tools,
+            commands::tools::execute_tool,
             // Session cache commands
             commands::session::save_session_metadata,
             commands::session::get_session_metadata,

@@ -4,6 +4,7 @@ pub mod events;
 pub mod orchestrator;
 pub mod provider;
 pub mod runtime_session;
+pub mod tools;
 
 use std::collections::HashSet;
 use std::sync::Arc;

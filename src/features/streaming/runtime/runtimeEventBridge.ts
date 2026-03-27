@@ -121,6 +121,37 @@ function toRuntimeEvent(event: BackendRuntimeEvent): RuntimeEvent | null {
         recoverable: Boolean(payload.recoverable),
       }
     }
+    case 'tool_call': {
+      if (!event.messageId) return null
+      const payload = event.payload ?? {}
+      return {
+        id: event.id,
+        type: 'tool_call',
+        sessionId: event.sessionId,
+        timestamp: event.timestamp,
+        sequence: event.sequence,
+        messageId: event.messageId,
+        toolId: (payload.toolId as string) ?? 'unknown',
+        toolName: (payload.toolName as string) ?? (payload.toolId as string) ?? 'unknown',
+        parameters: (payload.parameters as Record<string, unknown>) ?? {},
+      }
+    }
+    case 'tool_result': {
+      if (!event.messageId) return null
+      const payload = event.payload ?? {}
+      return {
+        id: event.id,
+        type: 'tool_result',
+        sessionId: event.sessionId,
+        timestamp: event.timestamp,
+        sequence: event.sequence,
+        messageId: event.messageId,
+        toolId: (payload.toolId as string) ?? 'unknown',
+        result: payload.result,
+        success: Boolean(payload.success),
+        duration: payload.duration ? Number(payload.duration) : undefined,
+      }
+    }
     default:
       return null
   }

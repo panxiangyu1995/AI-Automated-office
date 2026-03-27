@@ -84,6 +84,14 @@ impl RuntimeEventEmitter {
         self.emit(RuntimeEventType::MessageEnd, Some(message_id), Some(payload));
     }
 
+    pub fn tool_call(&mut self, message_id: Option<String>, payload: serde_json::Value) {
+        self.emit(RuntimeEventType::ToolCall, message_id, Some(payload));
+    }
+
+    pub fn tool_result(&mut self, message_id: Option<String>, payload: serde_json::Value) {
+        self.emit(RuntimeEventType::ToolResult, message_id, Some(payload));
+    }
+
     pub fn error(&mut self, payload: serde_json::Value) {
         self.emit(RuntimeEventType::Error, None, Some(payload));
     }

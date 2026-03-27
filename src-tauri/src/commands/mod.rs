@@ -11,4 +11,5 @@ pub mod session;
 pub mod shortcuts;
 pub mod storage;
 pub mod system;
+pub mod tools;
 pub mod update;

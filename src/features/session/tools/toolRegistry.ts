@@ -537,7 +537,14 @@ export function createToolRegistry(config?: Partial<ToolRegistryConfig>): ToolRe
 /**
  * Register core tools
  */
-export function registerCoreTools(_registry: ToolRegistry = getToolRegistry()): void {
-  // Example core tools would be registered here
-  // This is a placeholder for the actual core tool registration
+export async function registerCoreTools(
+  registry: ToolRegistry = getToolRegistry()
+): Promise<void> {
+  try {
+    const { listBackendTools } = await import('./backendToolClient')
+    const tools = await listBackendTools()
+    registry.registerAll(tools)
+  } catch (error) {
+    console.warn('Failed to load backend tools, leaving registry empty', error)
+  }
 }
