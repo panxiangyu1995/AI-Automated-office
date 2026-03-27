@@ -6683,3 +6683,24 @@
 ### Notes:
 - 浏览器 smoke 首轮暴露出遮罩层点击被抽屉内容拦截的问题，已通过限制遮罩覆盖范围修复
 - 仓库中存在与本次请求无关的未跟踪文档目录，本轮未触碰
+## [2026-03-27] - Task 111: Story 51.1 - Rust agent core and orchestrator
+
+### 铁律合规检查：
+- PRD 合规：FR400, FR401, FR402, FR403, FR404
+- 架构合规：ADR-001, ADR-037, ADR-043
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16, NFR17
+
+### What was done:
+- Added Rust agent runtime module (`src-tauri/src/agent`) with orchestrator, provider trait, runtime session service, and shared runtime state.
+- Added Tauri agent commands (`start_agent_session`, `execute_agent`, `interrupt_agent_session`) and registered them in the invoke handler.
+- Wired runtime state into app setup and added trace metadata to persisted agent messages.
+
+### Testing:
+- `pnpm.cmd lint` passed
+- `pnpm.cmd build` passed (required escalated execution due to `esbuild` spawn EPERM)
+
+### Notes:
+- Build failure appears environment-related; no runtime tests executed.
+
+---

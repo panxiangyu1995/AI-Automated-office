@@ -3,6 +3,7 @@
 //! 本模块是 Tauri 应用的入口点，负责初始化应用和注册命令。
 
 mod auth;
+mod agent;
 mod commands;
 pub mod crypto;
 mod hardware;
@@ -74,6 +75,7 @@ pub fn run() {
                     .await
                     .expect("无法初始化会话缓存");
                 app.manage(session_cache);
+                app.manage(agent::AgentRuntimeState::new());
             });
             
             // 注册默认快捷键
@@ -108,6 +110,9 @@ pub fn run() {
             commands::auth::register,
             commands::auth::logout,
             commands::auth::get_current_user,
+            commands::agent::start_agent_session,
+            commands::agent::execute_agent,
+            commands::agent::interrupt_agent_session,
             // Session cache commands
             commands::session::save_session_metadata,
             commands::session::get_session_metadata,
