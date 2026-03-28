@@ -306,7 +306,7 @@
       "arch_covered": ["ADR-001", "ADR-037"],
       "ux_covered": ["UX-01", "UX-04"],
       "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4", "Story 43.4", "Story 44.4", "Story 48.3"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 119,

@@ -6941,3 +6941,43 @@
 - 当 Tauri 不可用时优雅降级到 mock 实现
 - 缓存提高检索性能
 - 超时和错误处理确保可靠性
+
+---
+
+## [2026-03-28] - Task 118: Story 55.2 - Retry, replan, and checkpoint recovery
+
+### 铁律合规检查：
+- PRD 合规：FR603, FR604, FR605
+- 架构合规：ADR-001, ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16, NFR22
+
+### What was done:
+- 创建 src-tauri/src/agent/error_recovery.rs 模块
+  - RecoveryService: 错误恢复服务
+  - RecoveryTrigger: 恢复触发类型 (ToolFailure/Timeout/Interruption等)
+  - RecoveryAction: 恢复动作类型 (RetryStep/SkipStep/RestartPlan等)
+  - RecoveryDecision: 恢复决策结构
+  - RecoveryContext: 恢复上下文
+  - RecoveryStrategyConfig: 可配置的恢复策略
+  - CheckpointManager: 检查点管理器
+  - RecoveryEventHandler trait: 事件处理接口
+
+- 关键功能
+  - determine_recovery_action: 根据触发器和上下文自动决定恢复动作
+  - calculate_retry_delay: 指数退避延迟计算
+  - create_checkpoint: 创建会话检查点
+  - restore_from_checkpoint: 从检查点恢复
+  - record_recovery: 记录恢复历史
+
+### Testing:
+- npm run lint 通过
+- npm run build 通过
+- npm run tauri build 通过
+
+### Notes:
+- 错误恢复模块已添加到 agent/mod.rs
+- RecoveryService 可通过 Arc<StorageManager> 创建
+- 支持 7 种恢复触发类型和 8 种恢复动作
+- 指数退避重试策略（可配置基础延迟和乘数）
+- 需要与 AgentOrchestrator 集成才能完全发挥作用
