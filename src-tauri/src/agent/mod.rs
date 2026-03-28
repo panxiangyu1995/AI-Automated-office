@@ -8,6 +8,7 @@ pub mod events;
 pub mod execution;
 pub mod heartbeat;
 pub mod knowledge_retrieval;
+pub mod memory;
 pub mod mock_provider;
 pub mod monitoring;
 pub mod nested;

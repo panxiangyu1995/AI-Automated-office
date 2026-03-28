@@ -78,6 +78,15 @@ pub fn run() {
                 app.manage(agent::AgentRuntimeState::new());
                 app.manage(agent::tools::ToolExecutionPipeline::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
+
+                // Initialize memory service
+                let memory_config = agent::memory::MemoryConfig::default();
+                let memory_service = agent::memory::MemoryService::new(
+                    memory_config,
+                    vector::embedding::EmbeddingService::new(vector::config::EmbeddingConfig::default())
+                        .expect("无法初始化Embedding服务"),
+                );
+                app.manage(std::sync::Arc::new(memory_service));
             });
             
             // 注册默认快捷键
@@ -125,6 +134,14 @@ pub fn run() {
             agent::heartbeat::trigger_heartbeat_now,
             agent::heartbeat::get_heartbeat_status,
             agent::heartbeat::update_heartbeat_config,
+            // Memory commands
+            agent::memory::memory_search,
+            agent::memory::memory_add,
+            agent::memory::memory_update,
+            agent::memory::memory_delete,
+            agent::memory::memory_stats,
+            agent::memory::memory_sync,
+            agent::memory::memory_hook_event,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands

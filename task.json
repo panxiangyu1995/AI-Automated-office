@@ -598,6 +598,216 @@
       "ux_covered": ["UX-01", "UX-04"],
       "dependencies": ["Story 52.4", "Story 55.3", "Story 21.23"],
       "passes": true
+    },
+    {
+      "id": 128,
+      "epic": "Epic 55",
+      "story": "Story 55.5",
+      "title": "Heartbeat backend execution engine",
+      "description": "Implement heartbeat mechanism backend execution engine with scheduling, preflight checks, HEARTBEAT.md parsing, and silent handling. Create src-tauri/src/agent/heartbeat.rs module to enable periodic Agent execution and proactive notifications.",
+      "implementationType": "new",
+      "phase": "Phase 3 - Reliability and Governance",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/HeartbeatChecklist.tsx"
+        ],
+        "backend": [],
+        "note": "Frontend HeartbeatChecklist component exists, but backend heartbeat.rs is missing. No scheduling or execution capability."
+      },
+      "openspec_change": "epic-55-story-55-5-heartbeat-backend-engine",
+      "steps": [
+        "Create src-tauri/src/agent/heartbeat.rs module skeleton with submodules",
+        "Implement HeartbeatConfig, ActiveHours, DeliveryTarget data structures",
+        "Implement HeartbeatPreflight with user status, active hours, resource, and context budget checks",
+        "Implement HEARTBEAT.md parser with checklist extraction and skip directive recognition",
+        "Implement HeartbeatExecutor with HEARTBEAT_OK silent handling and isolated session mode",
+        "Implement HeartbeatScheduler with configurable interval (default 30min) and timezone support",
+        "Implement HeartbeatEventEmitter for status change notifications and audit logging",
+        "Register Tauri commands: start_heartbeat, stop_heartbeat, trigger_heartbeat_now, get_heartbeat_status, update_heartbeat_config",
+        "Integrate with frontend HeartbeatChecklist component via event bridge",
+        "Add E2E tests for complete heartbeat flow"
+      ],
+      "frs_covered": ["FR1127", "FR1128", "FR1129", "FR1130", "FR1131", "FR1132", "FR1133", "FR1134"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR22", "NFR23"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
+      "ux_covered": ["UX-01", "UX-04", "UX-05"],
+      "dependencies": ["Story 51.1", "Story 51.2", "Story 55.1"],
+      "passes": true
+    },
+    {
+      "id": 129,
+      "epic": "Epic 53",
+      "story": "Story 53.5",
+      "title": "Three-layer memory system with vector database integration",
+      "description": "Implement complete three-layer memory architecture (L1 Personal Memory, L2 Enterprise Knowledge Base, L3 Graph Memory) with vector database integration, hybrid search (vector + BM25), smart update decision mechanism (ADD/UPDATE/DELETE/NONE), and Hook system for automatic memory capture.",
+      "implementationType": "new",
+      "phase": "Phase 2 - Context, Memory, Prompt",
+      "priority": "critical",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/storage/memory_store.rs",
+          "src-tauri/src/vector/mod.rs",
+          "src-tauri/src/vector/store.rs",
+          "src-tauri/src/vector/sqlite_vec.rs",
+          "src-tauri/src/vector/qdrant.rs",
+          "src-tauri/src/vector/embedding.rs",
+          "src-tauri/src/vector/hybrid.rs"
+        ],
+        "note": "Basic memory_store.rs and vector module skeleton exist, but three-layer architecture, permission isolation, hybrid search integration, Hook system, and smart update decision are missing."
+      },
+      "openspec_change": "epic-53-story-53-5-three-layer-memory-system",
+      "steps": [
+        "Create src-tauri/src/agent/memory/ module skeleton with submodules (hooks/, storage/, retrieval/, cognitive/, update/)",
+        "Implement MemoryLayer enum and MemoryItem struct with three-layer abstraction",
+        "Implement L1 Personal Memory storage with user isolation (FR14-5)",
+        "Implement L2 Enterprise Knowledge Base storage with tenant isolation (FR14-6)",
+        "Integrate sqlite-vec for local embedded vector search and Qdrant for cloud service (FR14-8)",
+        "Implement Hook system for automatic memory capture (SessionStart/End, UserPromptSubmit, PostToolUse)",
+        "Implement hybrid search engine with vector retrieval + BM25 keyword search and RRF fusion (FR14-11)",
+        "Implement smart update decision mechanism (ADD/UPDATE/DELETE/NONE/MERGE) (FR14-10)",
+        "Implement cognitive layer for domain state modeling and thinking trajectory",
+        "Register Tauri commands: memory_search, memory_add, memory_update, memory_delete, memory_stats, memory_sync",
+        "Implement frontend MemoryInspector.tsx and MemoryConfig.tsx components (FR14-12)",
+        "Add E2E tests for three-layer memory system"
+      ],
+      "frs_covered": ["FR14-4", "FR14-5", "FR14-6", "FR14-7", "FR14-8", "FR14-9", "FR14-10", "FR14-11", "FR14-12"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20", "NFR23"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 51.1", "Story 53.1", "Story 53.2"],
+      "passes": true
+    },
+    {
+      "id": 130,
+      "epic": "Epic 53",
+      "story": "Story 53.6",
+      "title": "Skill execution engine with progressive loading",
+      "description": "Implement complete Skill execution engine with SKILL.md parsing, progressive loading, tool/trigger conversion, execution control (timeout/retry), audit logging, version management, and multi-source loading mechanism.",
+      "implementationType": "new",
+      "phase": "Phase 2 - Context, Memory, Prompt",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/SkillConfiguration.tsx",
+          "src/features/settings/components/SkillMdParsing.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/tools/",
+          "src-tauri/src/agent/audit.rs"
+        ],
+        "note": "Frontend SkillConfiguration and SkillMdParsing components exist but are not connected to backend. Backend skill module is completely missing."
+      },
+      "openspec_change": "epic-53-story-53-6-skill-execution-engine",
+      "steps": [
+        "Create src-tauri/src/agent/skill/ module skeleton with submodules (discovery/, parser/, converter/, loader/, executor/, registry/, version/)",
+        "Implement SKILL.md parser with Frontmatter extraction and body parsing (FR700)",
+        "Implement Skill registry with SQLite storage and memory cache (FR708, FR709)",
+        "Implement multi-source discovery (Bundled/Managed/Workspace/External) with priority merging (FR703, FR704, FR705)",
+        "Implement progressive loader with prompt budget control and compact format fallback",
+        "Implement tool/trigger converter (FR701, FR702)",
+        "Implement Skill executor with concurrent control (FR706)",
+        "Implement timeout and retry mechanism with exponential backoff (FR707)",
+        "Implement audit integration for skill execution logging",
+        "Implement version manager with update check and rollback (FR710)",
+        "Register Tauri commands: get_installed_skills, parse_skill_file, toggle_skill, execute_skill, check_skill_updates, update_skill, get_skill_prompt",
+        "Connect frontend SkillConfiguration.tsx to backend APIs (FR835-FR840)"
+      ],
+      "frs_covered": ["FR700", "FR701", "FR702", "FR703", "FR704", "FR705", "FR706", "FR707", "FR708", "FR709", "FR710", "FR835", "FR836", "FR837", "FR838", "FR839", "FR840"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20", "NFR23"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-046"],
+      "ux_covered": ["UX-01", "UX-02", "UX-04"],
+      "dependencies": ["Story 51.1", "Story 53.1"],
+      "passes": false
+    },
+    {
+      "id": 131,
+      "epic": "Epic 53",
+      "story": "Story 53.7",
+      "title": "Knowledge Base RAG with vector retrieval and document processing pipeline",
+      "description": "Implement complete Knowledge Base RAG system with document processing pipeline (PDF/Word/Excel/TXT/MD parsing), intelligent chunking strategies (fixed/semantic/recursive), embedding service integration, hybrid search (vector + BM25), RAG context builder with token budget control, and incremental update mechanism.",
+      "implementationType": "new",
+      "phase": "Phase 2 - Context, Memory, Prompt",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/session/runtime/knowledgeRetrieval.ts"
+        ],
+        "backend": [
+          "src-tauri/src/vector/mod.rs",
+          "src-tauri/src/vector/store.rs",
+          "src-tauri/src/vector/hybrid.rs",
+          "src-tauri/src/vector/embedding.rs",
+          "src-tauri/src/agent/knowledge_retrieval.rs"
+        ],
+        "note": "Basic vector module and knowledge_retrieval.rs skeleton exist, but document processing pipeline, intelligent chunking, RAG context builder, and incremental update are missing."
+      },
+      "openspec_change": "epic-53-story-53-7-knowledge-base-rag",
+      "steps": [
+        "Create src-tauri/src/knowledge/ module skeleton with submodules (pipeline/, parser/, chunker/, context_builder/, incremental/)",
+        "Implement DocumentPipeline with multi-stage processing (Upload/Validate/Parse/Chunk/Embed/Index)",
+        "Implement document parsers (TxtParser, MarkdownParser, PdfParser, WordParser) with ParserRegistry (FR14-12)",
+        "Implement intelligent chunking strategies (FixedSize, Semantic, Recursive, Sentence) (FR14-13)",
+        "Integrate EmbeddingService with multi-model support (OpenAI/local) and batch processing (FR14-14)",
+        "Implement RagContextBuilder with hybrid search integration and token budget control (FR14-11, FR14-16)",
+        "Implement incremental update mechanism with content hash detection and version management (FR14-15)",
+        "Register Tauri commands: upload_document, search_knowledge, get_document_status, delete_document, rebuild_document_index",
+        "Implement frontend DocumentUploader.tsx and KnowledgeSearchPanel.tsx components",
+        "Add E2E tests for document processing and RAG retrieval"
+      ],
+      "frs_covered": ["FR14-11", "FR14-12", "FR14-13", "FR14-14", "FR14-15", "FR14-16"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 53.5", "Story 51.1", "Story 53.1"],
+      "passes": false
+    },
+    {
+      "id": 132,
+      "epic": "Epic 53",
+      "story": "Story 53.8",
+      "title": "Department Capability Package System with registry and enterprise cloud marketplace",
+      "description": "Implement complete Department Capability Package System with package registry mechanism, enterprise cloud marketplace integration (with ClawHub format compatibility), version management (SemVer), dependency resolution, permission control (tenant/department level), and core/extension capability packages.",
+      "implementationType": "new",
+      "phase": "Phase 2 - Context, Memory, Prompt",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/department/"
+        ],
+        "backend": [
+          "src-tauri/src/agent/skill/",
+          "src-tauri/src/agent/tool.rs"
+        ],
+        "note": "Skill system and tool infrastructure exist, but capability package registry, marketplace client, version management, and permission control are completely missing."
+      },
+      "openspec_change": "epic-53-story-53-8-department-capability-package",
+      "steps": [
+        "Create src-tauri/src/capability/ module skeleton with submodules (registry/, marketplace/, clawhub_adapter/, dependency/, permission/, version/, loader/)",
+        "Implement CapabilityPackageRegistry with register/unregister/list methods and SQLite persistence (FR800)",
+        "Implement MarketplaceClient trait and CloudMarketClient for enterprise cloud marketplace (FR801)",
+        "Implement ClawHubFormatAdapter for ClawHub format plugin compatibility and import",
+        "Implement SemanticVersion parsing and VersionConstraint resolution (FR802)",
+        "Implement DependencyResolver with dependency graph building and conflict detection (FR804)",
+        "Implement PackagePermissionController with install/runtime permission checks and audit logging (FR803)",
+        "Create core capability packages (hr-capability, approval-capability, sales-capability, finance-capability, warehouse-capability, management-capability) (FR805)",
+        "Create extension capability packages (aftersales-capability, bidding-capability, marketing-capability) (FR806)",
+        "Register Tauri commands: install_capability_package, uninstall_capability_package, list_installed_packages, search_marketplace, check_package_updates, update_capability_package, enable/disable_capability_package, import_clawhub_package",
+        "Implement frontend PackageMarketplace.tsx and InstalledPackages.tsx components",
+        "Add E2E tests for package lifecycle and marketplace integration"
+      ],
+      "frs_covered": ["FR800", "FR801", "FR802", "FR803", "FR804", "FR805", "FR806"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR20", "NFR21"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-046"],
+      "ux_covered": ["UX-01", "UX-02", "UX-04"],
+      "dependencies": ["Story 53.6", "Story 51.3", "Epic 2"],
+      "passes": false
     }
   ]
 }
