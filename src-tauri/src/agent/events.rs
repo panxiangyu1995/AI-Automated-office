@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,7 +63,7 @@ impl RuntimeEventEmitter {
             payload,
         };
 
-        if let Err(err) = self.app.emit_all("agent_runtime_event", event) {
+        if let Err(err) = self.app.emit("agent_runtime_event", event) {
             tracing::warn!("failed to emit runtime event: {}", err);
         }
     }

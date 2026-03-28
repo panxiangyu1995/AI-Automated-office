@@ -9,9 +9,9 @@ use crate::storage::{
 
 use super::{AgentError, AgentResult};
 
-#[derive(Clone)]
 pub struct RuntimeSessionService {
     storage: StorageManager,
+    tenant_id: String,
 }
 
 impl RuntimeSessionService {
@@ -19,7 +19,15 @@ impl RuntimeSessionService {
         let storage = StorageManager::init(tenant_id)
             .await
             .map_err(|err| AgentError::Storage(err.to_string()))?;
-        Ok(Self { storage })
+        Ok(Self {
+            storage,
+            tenant_id: tenant_id.to_string(),
+        })
+    }
+
+    /// Get the tenant ID for this session service
+    pub fn tenant_id(&self) -> &str {
+        &self.tenant_id
     }
 
     pub async fn ensure_session(&self, session_id: &str, user_id: &str) -> AgentResult<Session> {

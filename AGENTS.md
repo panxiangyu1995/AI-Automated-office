@@ -103,6 +103,36 @@
 - ❌ 不得跳过 Story 或省略验收标准
 - ✅ 实现细节可在验收标准框架内调整
 
+### 5️⃣ 测试规范铁律 - 质量铁律
+📄 **位置：** `_bmad-output/planning-artifacts/testing-specification.md`
+
+**内容要点：**
+- 分层测试策略：单元测试 → 集成测试 → E2E 测试（测试金字塔）
+- Mock 使用原则：Mock at the boundary, test your stack end-to-end
+- E2E 测试必须使用真实 API，禁止 Mock 自有后端
+- 集成测试使用 Testing Library，Mock 外部依赖
+- 单元测试纯函数优先，完全 Mock 外部依赖
+- 测试数据管理：Fixtures + Helpers
+- 测试覆盖率要求：单元 ≥ 80%，集成 ≥ 60%，E2E 核心流程 100%
+- 反模式清单：禁止 E2E Mock 自有 API、禁止测试间共享状态等
+
+**Mock 使用决策表：**
+| 场景 | 是否 Mock |
+|------|----------|
+| 自有 REST/GraphQL API | ❌ 永不 |
+| 自有数据库 | ❌ 永不 |
+| 认证系统 | ⚠️ 使用 storageState |
+| 第三方服务（支付/邮件/OAuth） | ✅ 总是 |
+| LLM API | ✅ 总是 |
+| CDN/静态资源 | ❌ 永不 |
+
+**约束力：**
+- ❌ 不得违背分层测试策略
+- ❌ E2E 测试不得 Mock 自有 API
+- ❌ 不得提交失败的测试
+- ✅ 新功能必须包含对应测试
+- ✅ 测试代码遵循与业务代码相同的质量标准
+
 ---
 
 ## ⚠️ 铁律执行机制（MANDATORY COMPLIANCE）
@@ -162,6 +192,13 @@
 ### Epic 合规
 - [ ] Story 来源：Epic X, Story X.X（填写具体故事编号）
 - [ ] 验收标准全部满足
+
+### 测试规范合规
+- [ ] 单元测试覆盖核心业务逻辑（如适用）
+- [ ] 集成测试覆盖模块间交互（如适用）
+- [ ] E2E 测试不 Mock 自有 API
+- [ ] 测试命名符合规范（描述行为，非实现）
+- [ ] 使用语义化选择器（role/label/testId）
 ```
 ---
 
@@ -189,6 +226,7 @@ This will:
 2. **架构文档**：`_bmad-output/planning-artifacts/architecture.md`
 3. **UX 设计规范**：`_bmad-output/planning-artifacts/ux-design-specification.md`
 4. **Epic 文档**：`_bmad-output/planning-artifacts/epics.md`
+5. **测试规范铁律**：`_bmad-output/planning-artifacts/testing-specification.md`
 
 ### Step 3: Select Next Task
 
@@ -765,7 +803,7 @@ cp .env.example .env  # 复制环境变量模板
 │  8. 执行铁律合规检查                                         │
 │     → PRD + 架构 + UX + Epic 四方约束                        │
 │     ↓                                                       │
-│  9. 按照OpenSpec 变更文档设计实现(opensx-apply)功能代码                      │
+│  9. 按照OpenSpec 变更文档设计实现(调用opensx-apply skill)功能代码                      │
 │     ↓                                                       │
 │  10. 执行测试验证                                            │
 │     → lint / build / playwright mcp浏览器测试                │

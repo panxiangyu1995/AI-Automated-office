@@ -6,6 +6,12 @@ use uuid::Uuid;
 use chrono::Utc;
 
 use super::events::RuntimeEventEmitter;
+use super::prompt_builder::{
+    AgentProviderExt, BuiltPrompt, ProviderChatRequest, ProviderChatResponse,
+    ProviderConfig, ProviderId, ProviderMessage, ProviderResponseMetadata,
+    ProviderSelector, PromptBuilder, PromptBuildOptions,
+    RetryPolicy, RuntimeContext, ToolDescriptor,
+};
 use super::provider::{AgentProvider, ProviderRequest};
 use super::runtime_session::RuntimeSessionService;
 use super::{
@@ -17,11 +23,29 @@ use super::{
     AgentResult,
 };
 
-#[derive(Clone)]
 pub struct AgentOrchestrator {
     provider: Arc<dyn AgentProvider>,
-    runtime: RuntimeSessionService,
+    runtime: Arc<RuntimeSessionService>,
     cancellations: Arc<RwLock<HashSet<String>>>,
+    /// Prompt builder for constructing prompts
+    prompt_builder: PromptBuilder,
+    /// Provider selector for multi-provider support
+    provider_selector: ProviderSelector,
+    /// Default provider configuration
+    default_config: ProviderConfig,
+}
+
+impl Clone for AgentOrchestrator {
+    fn clone(&self) -> Self {
+        Self {
+            provider: Arc::clone(&self.provider),
+            runtime: Arc::clone(&self.runtime),
+            cancellations: Arc::clone(&self.cancellations),
+            prompt_builder: self.prompt_builder.clone(),
+            provider_selector: self.provider_selector.clone(),
+            default_config: self.default_config.clone(),
+        }
+    }
 }
 
 impl AgentOrchestrator {
@@ -32,9 +56,59 @@ impl AgentOrchestrator {
     ) -> Self {
         Self {
             provider,
-            runtime,
+            runtime: Arc::new(runtime),
             cancellations,
+            prompt_builder: PromptBuilder::new(),
+            provider_selector: ProviderSelector::new(),
+            default_config: ProviderConfig::default(),
         }
+    }
+
+    /// Create orchestrator with prompt builder configured
+    pub fn with_prompt_builder(
+        provider: Arc<dyn AgentProvider>,
+        runtime: RuntimeSessionService,
+        cancellations: Arc<RwLock<HashSet<String>>>,
+        prompt_builder: PromptBuilder,
+    ) -> Self {
+        Self {
+            provider,
+            runtime: Arc::new(runtime),
+            cancellations,
+            prompt_builder,
+            provider_selector: ProviderSelector::new(),
+            default_config: ProviderConfig::default(),
+        }
+    }
+
+    /// Create orchestrator with full configuration
+    pub fn with_config(
+        provider: Arc<dyn AgentProvider>,
+        runtime: RuntimeSessionService,
+        cancellations: Arc<RwLock<HashSet<String>>>,
+        prompt_builder: PromptBuilder,
+        provider_selector: ProviderSelector,
+        config: ProviderConfig,
+    ) -> Self {
+        Self {
+            provider,
+            runtime: Arc::new(runtime),
+            cancellations,
+            prompt_builder,
+            provider_selector,
+            default_config: config,
+        }
+    }
+
+    /// Get the prompt builder reference
+    pub fn prompt_builder(&self) -> &PromptBuilder {
+        &self.prompt_builder
+    }
+
+    /// Update the runtime context for prompt building
+    pub fn with_runtime_context(mut self, context: RuntimeContext) -> Self {
+        self.prompt_builder = self.prompt_builder.clone().with_user_context(context);
+        self
     }
 
     pub async fn interrupt(&self, session_id: &str) -> bool {
@@ -205,5 +279,149 @@ fn with_trace_metadata(
             "role": role,
             "metadata": base
         }))
+    }
+}
+
+// ==================== Prompt Builder Extension Methods ====================
+
+impl AgentOrchestrator {
+    /// Build a prompt using the configured PromptBuilder
+    pub fn build_prompt(
+        &self,
+        user_message: &str,
+        options: &PromptBuildOptions,
+    ) -> BuiltPrompt {
+        self.prompt_builder.build(user_message, options)
+    }
+
+    /// Build a prompt with runtime context injected
+    pub fn build_prompt_with_context(
+        &self,
+        user_message: &str,
+        runtime_context: RuntimeContext,
+        options: &PromptBuildOptions,
+    ) -> BuiltPrompt {
+        self.prompt_builder
+            .clone()
+            .with_user_context(runtime_context)
+            .build(user_message, options)
+    }
+
+    /// Execute with built prompt and tools
+    pub async fn execute_with_prompt(
+        &self,
+        request: AgentExecutionRequest,
+        built_prompt: BuiltPrompt,
+        tools: Vec<ToolDescriptor>,
+        emitter: Option<&mut RuntimeEventEmitter>,
+    ) -> AgentResult<AgentExecutionResponse> {
+        self.execute_with_events(
+            AgentExecutionRequest {
+                metadata: Some(serde_json::json!({
+                    "built_prompt": built_prompt.system_prompt,
+                    "tools_count": tools.len(),
+                    "prompt_metadata": built_prompt.metadata,
+                })),
+                ..request
+            },
+            emitter,
+        )
+        .await
+    }
+
+    /// Select a provider by ID
+    pub fn select_provider(&self, provider_id: &ProviderId) -> Option<Arc<dyn AgentProviderExt>> {
+        self.provider_selector.select(provider_id)
+    }
+
+    /// Get the default provider configuration
+    pub fn default_provider_config(&self) -> &ProviderConfig {
+        &self.default_config
+    }
+
+    /// Update the default provider configuration
+    pub fn set_provider_config(&mut self, config: ProviderConfig) {
+        self.default_config = config;
+    }
+
+    /// Register a new provider
+    pub fn register_provider(
+        mut self,
+        id: ProviderId,
+        provider: Arc<dyn AgentProviderExt>,
+    ) -> Self {
+        self.provider_selector = self.provider_selector.register_provider(id, provider);
+        self
+    }
+
+    /// Get available provider IDs
+    pub fn available_providers(&self) -> Vec<ProviderId> {
+        self.provider_selector.available_providers()
+    }
+
+    /// Build provider request from built prompt
+    pub fn build_provider_request(
+        &self,
+        built_prompt: BuiltPrompt,
+        messages: Vec<ProviderMessage>,
+        config: ProviderConfig,
+        tools: Option<Vec<ToolDescriptor>>,
+    ) -> ProviderChatRequest {
+        ProviderChatRequest {
+            config,
+            messages,
+            tools,
+            metadata: Some(serde_json::json!({
+                "system_prompt": built_prompt.system_prompt,
+                "prompt_metadata": built_prompt.metadata,
+            })),
+        }
+    }
+
+    /// Execute provider request with retry support
+    pub async fn execute_provider_with_retry(
+        &self,
+        request: ProviderChatRequest,
+        retry_policy: &RetryPolicy,
+    ) -> AgentResult<ProviderChatResponse> {
+        // Try extended provider first if available
+        if let Some(extended) = self.provider_selector.default() {
+            return extended.complete_with_retry(request, retry_policy).await;
+        }
+
+        // Fall back to basic provider
+        let basic_request = ProviderRequest {
+            session_id: "default".to_string(),
+            trace_id: Uuid::new_v4().to_string(),
+            messages: request.messages.iter().map(|m| AgentMessage {
+                role: m.role.clone(),
+                content: m.content.clone(),
+                metadata: None,
+            }).collect(),
+            metadata: request.metadata,
+        };
+
+        let basic_response = self.provider.complete(basic_request).await?;
+
+        Ok(ProviderChatResponse {
+            content: basic_response.content,
+            tool_calls: basic_response.tool_calls.map(|tc| {
+                tc.as_array().map_or(Vec::new(), |arr| {
+                    arr.iter().filter_map(|item| {
+                        serde_json::from_value(item.clone()).ok()
+                    }).collect()
+                })
+            }),
+            metadata: basic_response.metadata.map(|_m| ProviderResponseMetadata {
+                model: None,
+                usage: None,
+                finish_reason: None,
+            }),
+        })
+    }
+
+    /// Map provider error to user-friendly message
+    pub fn map_provider_error(&self, error: &str) -> AgentError {
+        self.prompt_builder.map_error(error)
     }
 }
