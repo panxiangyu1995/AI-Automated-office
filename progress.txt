@@ -7223,3 +7223,47 @@
 - 权限遵循只收缩不扩展原则
 - Sub-Agent调用通过parent_trace_id链接到主trace
 - 支持内存作用域隔离
+
+---
+
+## [2026-03-28] - Task 125: Story 52.3 - Sub-Agent nested call control
+
+### 铁律合规检查：
+- PRD 合规：FR935, FR937, FR938
+- 架构合规：ADR-013
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+- 创建 src-tauri/src/agent/nested.rs 模块
+  - NestedCallService: 嵌套调用控制服务
+  - NestedCallPolicy: 嵌套调用策略（深度限制、预算等）
+  - NestedCallRecord: 嵌套调用记录
+  - NestedCallStatus: 嵌套调用状态枚举
+  - CallBudget: 调用预算跟踪
+  - CallChainEntry: 调用链条目（用于循环检测）
+
+- 关键功能
+  - check_nested_call_allowed(): 检查嵌套调用是否允许
+  - record_nested_call_start(): 记录嵌套调用开始
+  - record_nested_call_completion(): 记录嵌套调用完成
+  - detect_loop(): 检测潜在循环调用
+  - verify_no_privilege_escalation(): 验证无权限提升
+  - cancel_nested_calls(): 取消所有嵌套调用
+
+- 关键特性
+  - 嵌套深度跟踪和限制（默认最大深度5）
+  - 循环检测和调用预算
+  - 超时和失败传播
+  - 链接到trace、审计和失败记录
+  - 防止无界递归和权限提升
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（3分01秒）
+
+### Notes:
+- nested模块已添加到agent/mod.rs
+- 支持通过NestedCallPolicy配置最大深度和调用预算
+- 循环检测基于同一子代理在相同深度的最近调用
+- 权限提升验证确保子代理不能获得比父代理更高的权限

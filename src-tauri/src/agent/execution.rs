@@ -440,7 +440,7 @@ impl SubAgentExecutionService {
         &self,
         execution_id: &str,
         status: SubAgentStatus,
-        output: Option<String>,
+        _output: Option<String>,
         error: Option<String>,
     ) -> Result<()> {
         // Update context

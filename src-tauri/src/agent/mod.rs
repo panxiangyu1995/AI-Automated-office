@@ -2,14 +2,19 @@
 
 pub mod audit;
 pub mod context_compression;
+pub mod correction;
 pub mod error_recovery;
 pub mod events;
+pub mod execution;
 pub mod knowledge_retrieval;
 pub mod mock_provider;
+pub mod nested;
+pub mod routing;
 pub mod orchestrator;
 pub mod provider;
 pub mod prompt_builder;
 pub mod runtime_session;
+pub mod security;
 pub mod tools;
 
 use std::collections::HashSet;
