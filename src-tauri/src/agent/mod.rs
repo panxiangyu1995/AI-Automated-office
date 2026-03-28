@@ -8,6 +8,7 @@ pub mod events;
 pub mod execution;
 pub mod knowledge_retrieval;
 pub mod mock_provider;
+pub mod monitoring;
 pub mod nested;
 pub mod result;
 pub mod routing;

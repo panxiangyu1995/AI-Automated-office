@@ -7311,3 +7311,51 @@
 - 支持通过ResultMergePolicy配置自动合并策略
 - 失败结果默认需要审阅，防止错误传播
 - 重新规划建议帮助主Agent调整后续计划
+
+---
+
+## [2026-03-28] - Task 127: Story 52.5 - Sub-Agent monitoring and diagnostics
+
+### 铁律合规检查：
+- PRD 合规：FR924, FR938
+- 架构合规：ADR-013, ADR-023
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16, NFR23
+
+### What was done:
+- 创建 src-tauri/src/agent/monitoring.rs 模块
+  - SubAgentMonitoringService: Sub-Agent监控服务
+  - SubAgentMetrics: 指标结构（延迟、失败率、Token使用量）
+  - SessionSubAgentStats: 会话级别统计
+  - DiagnosticEntry: 诊断条目
+  - DiagnosticSeverity: 诊断严重级别
+  - DiagnosticCategory: 诊断类别
+  - MonitoringConfig: 监控配置
+
+- 关键功能
+  - record_execution_start/complete(): Sub-Agent执行生命周期跟踪
+  - get_sub_agent_metrics(): 获取Sub-Agent指标
+  - get_session_stats(): 获取会话级别统计
+  - emit_diagnostic(): 发出诊断事件
+  - record_loop_detection(): 记录循环检测事件
+  - record_permission_denial(): 记录权限拒绝事件
+  - get_diagnostic_summary(): 获取诊断摘要
+  - verify_no_permission_leaks(): 验证无权限泄漏
+
+- 关键特性
+  - 延迟阈值监控和自动诊断（警告/错误级别）
+  - 循环检测和权限审计
+  - 多代理故障排除诊断
+  - 活跃执行跟踪
+  - 会话级统计聚合
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（3分06秒）
+
+### Notes:
+- monitoring模块已添加到agent/mod.rs
+- 集成现有execution、nested、result模块的能力
+- 支持按会话、Sub-Agent、严重级别、类别过滤诊断
+- 监控配置可调整阈值和功能开关
+- 这是Epic 52 (Sub-Agent能力扩展)的最后一个任务
