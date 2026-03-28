@@ -7027,3 +7027,42 @@
 - AuditStore/AuditService 可通过 SqlitePool 创建
 - 需要数据库表支持（audit_* 系列表）
 - 完整的工具调用、确认、故障审计覆盖
+
+## [2026-03-28] - Task 120: Story 55.3 - Runtime metrics and debug telemetry
+
+### 铁律合规检查：
+- PRD 合规：FR606, FR607, FR608
+- 架构合规：ADR-023
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16, NFR23
+
+### What was done:
+- 创建 src-tauri/src/agent/telemetry.rs 模块
+  - TelemetryStore: 数据库持久化操作
+  - TelemetryService: 高级遥测操作
+  - MetricCategory, MetricUnit: 度量分类和单位枚举
+  - MetricPoint, AggregatedMetric, MetricSummary: 度量数据类型
+  - DiagnosticEntry, RuntimeStats, TenantStats: 诊断和统计类型
+
+- 关键功能
+  - record_metric_auto: 自动分类度量记录
+  - record_diagnostic: 诊断日志记录
+  - record_runtime_metrics: 运行时度量记录
+  - record_tool_metrics: 工具执行度量
+  - record_llm_metrics: LLM调用度量
+  - emit_diagnostic: 结构化诊断发射（集成tracing）
+  - get_runtime_stats: 运行时统计查询
+
+- 内存缓存
+  - 最近100条度量缓存（按度量名称）
+  - 自动清理旧条目
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（2分57秒）
+
+### Notes:
+- telemetry模块已添加到agent/mod.rs
+- 与tracing系统集成，支持实时监控
+- 6大度量类别覆盖：Runtime, Tool, Llm, Storage, Network, User
+- 单元测试覆盖：categorize_metric, Display, parse函数
