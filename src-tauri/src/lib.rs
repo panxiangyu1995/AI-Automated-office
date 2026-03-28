@@ -9,6 +9,7 @@ pub mod crypto;
 mod hardware;
 mod http;
 pub mod knowledge;
+pub mod capability;
 mod network;
 pub mod session;
 mod shortcuts;
@@ -73,7 +74,7 @@ pub fn run() {
                 
                 // Initialize session cache
                 let app_data_dir = get_app_data_dir();
-                let session_cache = session::SessionCache::new(app_data_dir)
+                let session_cache = session::SessionCache::new(app_data_dir.clone())
                     .await
                     .expect("无法初始化会话缓存");
                 app.manage(session_cache);
@@ -106,6 +107,36 @@ pub fn run() {
                 app.manage(std::sync::Arc::new(pipeline));
                 let context_builder = knowledge::RagContextBuilder::new(embedding_service);
                 app.manage(std::sync::Arc::new(context_builder));
+
+                // Initialize capability package services
+                let capability_storage = Arc::new(capability::FilePackageStorage::new(
+                    app_data_dir.clone().join("capability"),
+                ));
+                let permission_service = Arc::new(capability::SimplePermissionService::new());
+                let audit_logger = Arc::new(capability::SimpleAuditLogger::new());
+                let permission_controller = Arc::new(capability::PackagePermissionController::new(
+                    permission_service,
+                    audit_logger,
+                ));
+                let dependency_resolver = Arc::new(capability::DependencyResolver::new(
+                    capability_storage.clone(),
+                ));
+                let registry_config = capability::RegistryConfig {
+                    current_user: "system".to_string(),
+                    tenant_id: "default".to_string(),
+                    department_id: None,
+                    packages_dir: app_data_dir.join("packages"),
+                };
+                let capability_registry = Arc::new(capability::CapabilityPackageRegistry::new(
+                    registry_config,
+                    capability_storage,
+                    dependency_resolver,
+                    permission_controller,
+                ));
+                app.manage(capability_registry);
+
+                let package_loader = Arc::new(capability::PackageLoader::new());
+                app.manage(package_loader);
             });
             
             // 注册默认快捷键
@@ -175,6 +206,16 @@ pub fn run() {
             knowledge::knowledge_document_status,
             knowledge::knowledge_delete_document,
             knowledge::knowledge_rebuild_index,
+            // Capability package commands
+            capability::install_capability_package,
+            capability::uninstall_capability_package,
+            capability::list_installed_packages,
+            capability::search_marketplace,
+            capability::check_package_updates,
+            capability::update_capability_package,
+            capability::enable_capability_package,
+            capability::disable_capability_package,
+            capability::import_clawhub_package,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands

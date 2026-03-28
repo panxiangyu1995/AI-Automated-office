@@ -807,7 +807,7 @@
       "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-046"],
       "ux_covered": ["UX-01", "UX-02", "UX-04"],
       "dependencies": ["Story 53.6", "Story 51.3", "Epic 2"],
-      "passes": false
+      "passes": true
     }
   ]
 }
