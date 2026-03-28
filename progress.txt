@@ -7267,3 +7267,47 @@
 - 支持通过NestedCallPolicy配置最大深度和调用预算
 - 循环检测基于同一子代理在相同深度的最近调用
 - 权限提升验证确保子代理不能获得比父代理更高的权限
+
+---
+
+## [2026-03-28] - Task 126: Story 52.4 - Sub-Agent result return and merge
+
+### 铁律合规检查：
+- PRD 合规：FR933, FR934, FR936
+- 架构合规：ADR-013, ADR-037
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+- 创建 src-tauri/src/agent/result.rs 模块
+  - ResultMergeService: 结果合并服务
+  - SubAgentResult: Sub-Agent执行结果
+  - SubAgentResultStatus: 结果状态枚举
+  - MergeDecision: 合并决策（AutoMerge, ReviewRequired, Reject）
+  - MergedResultRecord: 合并结果记录
+  - ReviewDecision / ReviewOutcome: 审阅决策
+  - ResultMergePolicy: 合并策略配置
+  - ParentContextUpdate: 父上下文更新
+
+- 关键功能
+  - receive_result(): 接收和处理Sub-Agent结果
+  - submit_review_decision(): 提交审阅决策
+  - build_parent_update(): 构建父上下文更新
+  - get_merged_results(): 获取合并结果
+  - get_pending_reviews(): 获取待审阅结果
+
+- 关键特性
+  - 结果状态跟踪（成功、失败、超时、取消、最大步骤超出）
+  - 自动合并或手动审阅策略
+  - 失败信息包含错误类型、消息和恢复建议
+  - 重新规划建议基于合并结果生成
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（3分05秒）
+
+### Notes:
+- result模块已添加到agent/mod.rs
+- 支持通过ResultMergePolicy配置自动合并策略
+- 失败结果默认需要审阅，防止错误传播
+- 重新规划建议帮助主Agent调整后续计划

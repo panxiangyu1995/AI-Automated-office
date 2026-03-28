@@ -9,6 +9,7 @@ pub mod execution;
 pub mod knowledge_retrieval;
 pub mod mock_provider;
 pub mod nested;
+pub mod result;
 pub mod routing;
 pub mod orchestrator;
 pub mod provider;
