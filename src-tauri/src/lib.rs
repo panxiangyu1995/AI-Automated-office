@@ -8,6 +8,7 @@ mod commands;
 pub mod crypto;
 mod hardware;
 mod http;
+pub mod knowledge;
 mod network;
 pub mod session;
 mod shortcuts;
@@ -18,6 +19,7 @@ mod utils;
 pub mod vector;
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use tauri::Manager;
 use directories::ProjectDirs;
 
@@ -95,6 +97,15 @@ pub fn run() {
                 app.manage(std::sync::Arc::new(skill_discovery));
                 let skill_loader = agent::skill::SkillLoader::new();
                 app.manage(std::sync::Arc::new(skill_loader));
+
+                // Initialize knowledge base RAG services
+                let embedding_service = std::sync::Arc::new(vector::embedding::EmbeddingService::new(
+                    vector::config::EmbeddingConfig::default()
+                ).expect("无法初始化Embedding服务"));
+                let pipeline = knowledge::DocumentPipeline::new(embedding_service.clone());
+                app.manage(std::sync::Arc::new(pipeline));
+                let context_builder = knowledge::RagContextBuilder::new(embedding_service);
+                app.manage(std::sync::Arc::new(context_builder));
             });
             
             // 注册默认快捷键
@@ -158,6 +169,12 @@ pub fn run() {
             agent::skill::skill_loading_progress,
             agent::skill::skill_search,
             agent::skill::skill_validate,
+            // Knowledge commands
+            knowledge::knowledge_upload_document,
+            knowledge::knowledge_search,
+            knowledge::knowledge_document_status,
+            knowledge::knowledge_delete_document,
+            knowledge::knowledge_rebuild_index,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands
