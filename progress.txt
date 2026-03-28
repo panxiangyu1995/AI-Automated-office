@@ -7187,3 +7187,39 @@
 - SubAgentRoutingService默认加载3个路由规则
 - 支持Keyword、Semantic、Combined、LlmGuided四种匹配策略
 - 路由决策包含置信度评分和推理过程
+
+## [2026-03-28] - Task 124: Story 52.2 - Sub-Agent execution context and isolation
+
+### 铁律合规检查：
+- PRD 合规：FR915, FR916, FR918, FR919, FR920, FR923
+- 架构合规：ADR-013, ADR-037, ADR-043
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16, NFR20
+
+### What was done:
+- 创建 src-tauri/src/agent/execution.rs 模块
+  - SubAgentExecutionService: Sub-Agent执行服务
+  - SubAgentContext: 隔离的执行上下文
+  - MemoryScope: 内存作用域 (Private, Shared, Inherited, SessionOnly)
+  - ToolPermission: 工具权限 (Allowed, Denied, ReadOnly)
+  - SubAgentCallRecord: Sub-Agent调用记录
+  - ExecutionConstraints: 执行约束
+
+- 关键功能
+  - create_context(): 创建隔离的Sub-Agent执行上下文
+  - build_tool_rules(): 构建工具规则，支持权限继承和收缩
+  - shrink_permission(): 权限只能收缩不能扩展
+  - check_tool_access(): 检查工具访问权限
+  - record_tool_usage(): 记录工具使用
+  - record_step(): 记录步骤使用
+  - get_calls_by_parent_trace(): 按主trace查询调用记录
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（2分57秒）
+
+### Notes:
+- execution模块已添加到agent/mod.rs
+- 权限遵循只收缩不扩展原则
+- Sub-Agent调用通过parent_trace_id链接到主trace
+- 支持内存作用域隔离
