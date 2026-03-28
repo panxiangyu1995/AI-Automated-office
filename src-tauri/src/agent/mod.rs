@@ -6,6 +6,7 @@ pub mod correction;
 pub mod error_recovery;
 pub mod events;
 pub mod execution;
+pub mod heartbeat;
 pub mod knowledge_retrieval;
 pub mod mock_provider;
 pub mod monitoring;

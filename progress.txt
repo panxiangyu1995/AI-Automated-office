@@ -7359,3 +7359,49 @@
 - 支持按会话、Sub-Agent、严重级别、类别过滤诊断
 - 监控配置可调整阈值和功能开关
 - 这是Epic 52 (Sub-Agent能力扩展)的最后一个任务
+
+---
+
+## [2026-03-28] - Task 128: Story 55.5 - Heartbeat backend execution engine
+
+### 铁律合规检查：
+- PRD 合规：FR1127, FR1128, FR1129, FR1130, FR1131, FR1132, FR1133, FR1134
+- 架构合规：ADR-001, ADR-037, ADR-043
+- UX 合规：UX-01, UX-04, UX-05
+- NFR 合规：NFR1, NFR16, NFR22, NFR23
+
+### What was done:
+- 创建 src-tauri/src/agent/heartbeat/ 目录结构
+  - config.rs: 心跳配置结构 (HeartbeatConfig, ActiveHours, DeliveryTarget)
+  - parser.rs: HEARTBEAT.md 解析器 (HeartbeatMdParser, CheckItem, CheckPriority)
+  - preflight.rs: 预检查器 (HeartbeatPreflight, PreflightResult, SkipReason)
+  - executor.rs: 心跳执行器 (HeartbeatExecutor, HeartbeatRunResult, HeartbeatStatus)
+  - scheduler.rs: 心跳调度器 (HeartbeatScheduler, HeartbeatSchedulerState)
+  - events.rs: 心跳事件 (HeartbeatEvent, HeartbeatEventEmitter)
+  - delivery.rs: 投递机制 (DeliveryService, HeartbeatNotification, NotificationLevel)
+
+- 创建 src-tauri/src/agent/heartbeat/mod.rs 主模块
+  - HeartbeatManager: 多代理心跳管理
+  - 实现 start_heartbeat, stop_heartbeat, trigger_heartbeat_now, get_heartbeat_status, update_heartbeat_config 方法
+  - 实现 From trait 用于错误类型转换
+  - 注册 Tauri 命令: start_heartbeat, stop_heartbeat, trigger_heartbeat_now, get_heartbeat_status, update_heartbeat_config
+
+- 关键功能
+  - 心跳配置支持活动时段、时区、隔离会话、轻量上下文
+  - HEARTBEAT.md 解析支持检查清单和跳过指令
+  - 预检查支持用户状态、活动时段、资源、上下文预算检查
+  - 静默处理模式 (HEARTBEAT_OK)
+  - 多种投递渠道 (system, webhook, email)
+  - 可配置间隔（默认30分钟）
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（2分35秒）
+
+### Notes:
+- heartbeat 模块已添加到 agent/mod.rs
+- HeartbeatManager 已注册为 Tauri app state
+- 心跳命令已添加到 lib.rs 的 invoke_handler
+- 前端 HeartbeatChecklist 组件存在但尚未与后端集成（使用 mock 数据）
+- 这是 Epic 55 (可靠性与治理) 的心跳后端引擎实现
+

@@ -77,6 +77,7 @@ pub fn run() {
                 app.manage(session_cache);
                 app.manage(agent::AgentRuntimeState::new());
                 app.manage(agent::tools::ToolExecutionPipeline::new());
+                app.manage(agent::heartbeat::create_heartbeat_manager());
             });
             
             // 注册默认快捷键
@@ -119,6 +120,11 @@ pub fn run() {
             commands::agent::format_knowledge_for_planner,
             commands::agent::format_knowledge_for_runtime,
             commands::agent::format_knowledge_for_tool,
+            agent::heartbeat::start_heartbeat,
+            agent::heartbeat::stop_heartbeat,
+            agent::heartbeat::trigger_heartbeat_now,
+            agent::heartbeat::get_heartbeat_status,
+            agent::heartbeat::update_heartbeat_config,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands
