@@ -7148,3 +7148,42 @@
 - CorrectionRuleService默认加载3个规则
 - 所有建议都需要人工审核，不支持自动变更
 - 支持Keyword、Pattern、Context、ToolOutput四种触发类型
+
+## [2026-03-28] - Task 123: Story 52.1 - Sub-Agent routing baseline
+
+### 铁律合规检查：
+- PRD 合规：FR930, FR931, FR932
+- 架构合规：ADR-013, ADR-037
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+- 创建 src-tauri/src/agent/routing.rs 模块
+  - SubAgentRoutingService: Sub-Agent路由服务
+  - RoutingMode: 路由模式 (Manual, Auto, Hybrid)
+  - MatchStrategy: 匹配策略 (Keyword, Semantic, Combined, LlmGuided)
+  - ConfidenceLevel: 置信度级别 (High, Medium, Low)
+  - RoutingRule, RoutingDecision, RoutingOutcome 类型
+  - SubAgentExecutionContext, SubAgentConstraints 类型
+
+- 3个默认路由规则
+  - rule_c1: 文档起草路由 (方案、标书、草案、起草)
+  - rule_c2: 资料整理路由 (上传、归档、整理、抽取)
+  - rule_c3: 数据查询路由 (查询、分析、报表、统计)
+
+- 关键功能
+  - match_rules(): 基于关键词和策略进行规则匹配
+  - make_decision(): 创建包含置信度评分的路由决策
+  - get_outcomes_by_trace/session(): 查询路由结果
+  - record_acceptance(): 记录决策接受反馈
+  - verify_main_agent_path(): 验证主Agent路径完整性
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（3分08秒）
+
+### Notes:
+- routing模块已添加到agent/mod.rs
+- SubAgentRoutingService默认加载3个路由规则
+- 支持Keyword、Semantic、Combined、LlmGuided四种匹配策略
+- 路由决策包含置信度评分和推理过程
