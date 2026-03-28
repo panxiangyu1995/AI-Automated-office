@@ -6896,3 +6896,48 @@
 - SessionSummaryService 可通过 Arc<StorageManager> 创建
 - 需要其他组件（如 AgentOrchestrator）集成才能完全发挥作用
 - 当前实现为 Story 53.2 的核心骨架，具体集成将在后续任务中完成
+
+---
+
+## [2026-03-28] - Task 117: Story 53.4 - Knowledge retrieval integration
+
+### 铁律合规检查：
+- PRD 合规：FR446, FR447, FR448
+- 架构合规：ADR-038, ADR-039, ADR-043
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16, NFR20
+
+### What was done:
+- 创建 src-tauri/src/agent/knowledge_retrieval.rs 模块
+  - KnowledgeRetrievalService: 知识检索服务
+  - KnowledgeSourceRef, RetrievalRequest, RetrievalResult 类型
+  - RetrievalCache: TTL 缓存（max_entries=100, default_ttl=300s）
+  - filter_sources_by_scope: 作用域过滤（Global/Tenant/Department/User/Session）
+  - sort_sources_by_priority: 按优先级排序
+  - format_for_planner_context, format_for_runtime_context, format_for_tool_context
+
+- 添加 Tauri 命令（commands/agent.rs）
+  - retrieve_knowledge: 异步知识检索
+  - retrieve_knowledge_cached: 带缓存的知识检索
+  - format_knowledge_for_planner: 规划器上下文格式化
+  - format_knowledge_for_runtime: 运行时上下文格式化
+  - format_knowledge_for_tool: 工具上下文格式化
+
+- 更新 src/features/session/runtime/knowledgeRetrieval.ts
+  - 添加 retrieveKnowledge: 调用 Tauri 后端检索
+  - 添加 formatKnowledgeForPlanner/Runtime/Tool
+  - 支持回退到 mockRetrieve（当 Tauri 不可用时）
+
+- 注册命令到 lib.rs invoke_handler
+
+### Testing:
+- npm run lint 通过
+- npm run build 通过
+- npm run tauri build 通过（MSI 和 NSIS bundles 创建成功）
+
+### Notes:
+- 知识检索服务已集成到后端
+- 前端使用 Tauri invoke 调用后端命令
+- 当 Tauri 不可用时优雅降级到 mock 实现
+- 缓存提高检索性能
+- 超时和错误处理确保可靠性

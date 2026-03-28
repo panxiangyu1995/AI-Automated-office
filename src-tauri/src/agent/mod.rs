@@ -2,6 +2,7 @@
 
 pub mod context_compression;
 pub mod events;
+pub mod knowledge_retrieval;
 pub mod mock_provider;
 pub mod orchestrator;
 pub mod provider;

@@ -114,6 +114,11 @@ pub fn run() {
             commands::agent::start_agent_session,
             commands::agent::execute_agent,
             commands::agent::interrupt_agent_session,
+            commands::agent::retrieve_knowledge,
+            commands::agent::retrieve_knowledge_cached,
+            commands::agent::format_knowledge_for_planner,
+            commands::agent::format_knowledge_for_runtime,
+            commands::agent::format_knowledge_for_tool,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands

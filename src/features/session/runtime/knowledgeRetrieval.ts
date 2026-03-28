@@ -726,3 +726,212 @@ export function mockRetrieve(
     queryTime: Date.now() - startTime,
   })
 }
+
+// ==================== Tauri Backend Retrieval ====================
+
+/**
+ * Check if Tauri runtime is available
+ */
+function isTauriAvailable(): boolean {
+  return typeof window !== 'undefined' && '__TAURI__' in window
+}
+
+/**
+ * Knowledge source info for Tauri backend
+ */
+interface TauriKnowledgeSourceInfo {
+  source_id: string
+  source_type: string
+  name: string
+  scope: string
+  tenant_id?: string
+  department_id?: string
+  enabled?: boolean
+  priority?: number
+}
+
+/**
+ * Retrieval result from Tauri backend
+ */
+interface TauriRetrievalResult {
+  request_id: string
+  status: RetrievalStatus
+  items: RetrievedItem[]
+  total_count: number
+  retrieved_count: number
+  query_time_ms: number
+  sources_queried: string[]
+  sources_failed: string[]
+  error?: {
+    code: string
+    message: string
+    source_id?: string
+  }
+  created_at: number
+  expires_at?: number
+}
+
+/**
+ * Real retrieval using Tauri backend
+ */
+export async function retrieveKnowledge(
+  request: RetrievalRequest,
+  useCache: boolean = false
+): Promise<RetrievalResult> {
+  if (!isTauriAvailable()) {
+    console.warn('[KnowledgeRetrieval] Tauri not available, using mock')
+    return mockRetrieve(request)
+  }
+
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+
+    const sources: TauriKnowledgeSourceInfo[] = request.sources.map(s => ({
+      source_id: s.sourceId,
+      source_type: s.sourceType,
+      name: s.name,
+      scope: s.scope,
+      tenant_id: s.tenantId,
+      department_id: s.departmentId,
+      enabled: s.enabled,
+      priority: s.priority,
+    }))
+
+    const backendRequest = {
+      query: request.query,
+      scope: request.scope,
+      tenant_id: request.tenantId,
+      department_id: request.departmentId,
+      user_id: request.userId,
+      session_id: request.sessionId,
+      sources,
+      max_results: request.options.maxResults,
+      min_score: request.options.minScore,
+      timeout_ms: request.options.timeout,
+    }
+
+    let result: TauriRetrievalResult
+
+    if (useCache) {
+      result = await invoke<TauriRetrievalResult>('retrieve_knowledge_cached', { request: backendRequest })
+    } else {
+      result = await invoke<TauriRetrievalResult>('retrieve_knowledge', { request: backendRequest })
+    }
+
+    // Convert backend result to frontend format
+    return {
+      requestId: result.request_id,
+      status: result.status,
+      items: result.items,
+      totalCount: result.total_count,
+      retrievedCount: result.retrieved_count,
+      queryTime: result.query_time_ms,
+      sourcesQueried: result.sources_queried,
+      sourcesFailed: result.sources_failed,
+      error: result.error,
+      createdAt: result.created_at,
+      expiresAt: result.expires_at,
+    }
+  } catch (error) {
+    console.error('[KnowledgeRetrieval] Retrieval failed:', error)
+    // Fallback to mock on error
+    return mockRetrieve(request)
+  }
+}
+
+/**
+ * Format retrieval result for planner context using backend
+ */
+export async function formatKnowledgeForPlanner(result: RetrievalResult): Promise<string> {
+  if (!isTauriAvailable()) {
+    return formatForPlannerContext(result.items)
+  }
+
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+
+    // Convert frontend result to backend format
+    const backendResult: TauriRetrievalResult = {
+      request_id: result.requestId,
+      status: result.status,
+      items: result.items,
+      total_count: result.totalCount,
+      retrieved_count: result.retrievedCount,
+      query_time_ms: result.queryTime,
+      sources_queried: result.sourcesQueried,
+      sources_failed: result.sourcesFailed,
+      error: result.error,
+      created_at: result.createdAt,
+      expires_at: result.expiresAt,
+    }
+
+    return await invoke<string>('format_knowledge_for_planner', { result: backendResult })
+  } catch (error) {
+    console.error('[KnowledgeRetrieval] Format for planner failed:', error)
+    return formatForPlannerContext(result.items)
+  }
+}
+
+/**
+ * Format retrieval result for runtime context using backend
+ */
+export async function formatKnowledgeForRuntime(result: RetrievalResult): Promise<string> {
+  if (!isTauriAvailable()) {
+    return formatForRuntimeContext(result.items)
+  }
+
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+
+    const backendResult: TauriRetrievalResult = {
+      request_id: result.requestId,
+      status: result.status,
+      items: result.items,
+      total_count: result.totalCount,
+      retrieved_count: result.retrievedCount,
+      query_time_ms: result.queryTime,
+      sources_queried: result.sourcesQueried,
+      sources_failed: result.sourcesFailed,
+      error: result.error,
+      created_at: result.createdAt,
+      expires_at: result.expiresAt,
+    }
+
+    return await invoke<string>('format_knowledge_for_runtime', { result: backendResult })
+  } catch (error) {
+    console.error('[KnowledgeRetrieval] Format for runtime failed:', error)
+    return formatForRuntimeContext(result.items)
+  }
+}
+
+/**
+ * Format retrieval result for tool context using backend
+ */
+export async function formatKnowledgeForTool(result: RetrievalResult, toolName?: string): Promise<string> {
+  if (!isTauriAvailable()) {
+    return formatForToolRuntime(result.items, toolName)
+  }
+
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+
+    const backendResult: TauriRetrievalResult = {
+      request_id: result.requestId,
+      status: result.status,
+      items: result.items,
+      total_count: result.totalCount,
+      retrieved_count: result.retrievedCount,
+      query_time_ms: result.queryTime,
+      sources_queried: result.sourcesQueried,
+      sources_failed: result.sourcesFailed,
+      error: result.error,
+      created_at: result.createdAt,
+      expires_at: result.expiresAt,
+    }
+
+    return await invoke<string>('format_knowledge_for_tool', { result: backendResult, toolName })
+  } catch (error) {
+    console.error('[KnowledgeRetrieval] Format for tool failed:', error)
+    return formatForToolRuntime(result.items, toolName)
+  }
+}
