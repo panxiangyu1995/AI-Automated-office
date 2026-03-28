@@ -6981,3 +6981,49 @@
 - 支持 7 种恢复触发类型和 8 种恢复动作
 - 指数退避重试策略（可配置基础延迟和乘数）
 - 需要与 AgentOrchestrator 集成才能完全发挥作用
+
+---
+
+## [2026-03-28] - Task 119: Story 55.1 - Trace, audit, and failure persistence
+
+### 铁律合规检查：
+- PRD 合规：FR600, FR601, FR602
+- 架构合规：ADR-023, ADR-037
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR20, NFR23
+
+### What was done:
+- 创建 src-tauri/src/agent/audit.rs 模块
+  - AuditStore: 数据库持久化操作
+  - AuditService: 高级审计操作
+  - TraceStepStatus, StepType: 状态和类型枚举
+  - StepLogEntry, ToolAuditEntry: 执行记录类型
+  - FailureRecord, ConfirmationAuditEntry: 故障和确认记录
+  - TraceContext, TraceSummary: 追踪上下文
+
+- 数据库表支持
+  - audit_step_logs: 步骤日志
+  - audit_tool_calls: 工具调用审计
+  - audit_failures: 故障记录
+  - audit_confirmations: 确认请求审计
+  - audit_traces: 追踪上下文
+
+- 关键功能
+  - log_step_start/complete/failure: 步骤日志记录
+  - log_tool_call/complete/failure: 工具调用记录
+  - record_failure: 故障记录
+  - record_confirmation_request: 确认请求记录
+  - get_steps_by_session/trace: 按会话/追踪查询步骤
+  - get_tool_audits_by_session/tool: 按会话/工具查询审计
+  - get_failures_by_session: 查询故障记录
+
+### Testing:
+- npm run lint 通过
+- npm run build 通过
+- npm run tauri build 通过
+
+### Notes:
+- 审计模块已添加到 agent/mod.rs
+- AuditStore/AuditService 可通过 SqlitePool 创建
+- 需要数据库表支持（audit_* 系列表）
+- 完整的工具调用、确认、故障审计覆盖

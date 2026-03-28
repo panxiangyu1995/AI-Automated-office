@@ -1,5 +1,6 @@
 //! Agent runtime core module.
 
+pub mod audit;
 pub mod context_compression;
 pub mod error_recovery;
 pub mod events;
