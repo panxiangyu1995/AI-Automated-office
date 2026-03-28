@@ -6749,3 +6749,150 @@
 - Rust unit tests were added but not executed in this run.
 
 ---
+
+---
+
+## [2026-03-28] - Task 115: Story 53.1 - Prompt builder and provider request path
+
+### 铁律合规检查：
+- PRD 合规：FR440, FR441, FR442
+- 架构合规：ADR-038, ADR-039, ADR-043
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+- 创建 src-tauri/src/agent/prompt_builder.rs 模块
+  - ProviderId: 多 provider 支持的 provider 标识符枚举
+  - ProviderConfig: provider 配置（endpoint, api_key, model, timeout, retry）
+  - ToolDescriptor: 工具描述符结构
+  - SystemPromptComponents: 系统提示词组件结构
+  - RuntimeContext: 运行时上下文结构
+  - ToolVisibility: 工具可见性配置
+  - PromptBuildOptions: prompt 构建选项
+  - BuiltPrompt: 构建完成的 prompt 结果
+  - RetryPolicy: 重试策略
+  - ErrorMappingConfig: 错误映射配置
+  - AgentProviderExt trait: 扩展的 provider trait，支持 timeout、retry、error mapping
+  - ProviderSelector: 多 provider 选择器
+  - PromptBuilder: prompt 构建器
+  
+- 更新 src-tauri/src/agent/mod.rs
+  - 导出新的 prompt_builder 模块
+
+- 更新 src-tauri/src/agent/orchestrator.rs
+  - 集成 PromptBuilder 和 ProviderSelector
+  - 添加 AgentOrchestrator::with_prompt_builder 工厂方法
+  - 添加 AgentOrchestrator::with_config 完整配置工厂方法
+  - 添加 build_prompt, build_prompt_with_context 方法
+  - 添加 build_provider_request, execute_provider_with_retry 方法
+  - 添加 map_provider_error 方法
+  - 添加手动 Clone 实现
+
+- 更新 src-tauri/src/agent/runtime_session.rs
+  - 添加 tenant_id 字段和 tenant_id() 方法
+
+- 修复编译错误：
+  - 修复 PromptBuilder Clone derive
+  - 修复 ProviderSelector Arc 可变借用问题
+  - 修复 events.rs emit_all -> emit
+  - 使用 Arc<RuntimeSessionService> 解决 RuntimeSessionService Clone 问题
+
+### Testing:
+- cargo build 通过（28 warnings, 主要是未使用的代码）
+- Rust 代码编译成功
+
+### Notes:
+- 实现了完整的 prompt 构建管道，支持系统提示词、运行时上下文注入、工具可见性过滤
+- 支持多 provider 选择、timeout、retry、error mapping
+- 模型输出通过 runtime_session.append_message() 持久化到数据库
+
+---
+
+## [2026-03-28] - Task 114: Story 51.4 - Chat host integration and E2E baseline
+
+### 铁律合规检查：
+- PRD 合规：FR400, FR410, FR411
+- 架构合规：ADR-001, ADR-037
+- UX 合规：UX-01, UX-04, UX-05
+- NFR 合规：NFR1, NFR22
+
+### What was done:
+- 创建 src-tauri/src/agent/mock_provider.rs 模块
+  - MockProvider: 基础 mock provider，返回简单响应
+  - MockProviderWithTools: 支持模拟工具调用的 mock provider
+  - 支持自定义响应模式匹配
+  - 可配置的延迟模拟
+  
+- 更新 src-tauri/src/agent/mod.rs
+  - 导出 mock_provider 模块
+  - AgentRuntimeState::new() 改用 MockProvider
+  - 添加 with_mock_provider() 和 with_mock_provider_with_tools() 工厂方法
+
+- 更新 AgentChatPanel.tsx
+  - 移除 simulateResponse 路径
+  - 集成 useAgentRuntime hook 连接到真实后端 runtime
+  - 添加后端 session 初始化逻辑
+  - handleSend 改为调用 executeAgent()
+  - handleStop 改为调用 interrupt()
+  - 添加运行时状态指示器和错误显示
+
+- 更新 useAgentRuntime.ts
+  - 修复 React Hook 依赖警告
+  - 完善事件处理逻辑
+
+### Testing:
+- cargo build 通过
+- npm run build 通过
+- npm run lint 通过
+
+### Notes:
+- MockProvider 默认使用，可以通过 with_mock_provider_with_tools() 启用工具调用模拟
+- 前端通过 Tauri IPC 调用后端 execute_agent 命令
+- 后端使用 MockProvider 生成响应，不需要真实 LLM
+- Task 114 E2E 测试框架部分完成（模拟工具调用已支持，但 E2E 测试用例还未编写）
+
+---
+
+## [2026-03-28] - Task 116: Story 53.2 - Context compression and session summary persistence
+
+### 铁律合规检查：
+- PRD 合规：FR443, FR444, FR445
+- 架构合规：ADR-038, ADR-043
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+- 创建 v4_session_summaries 数据库迁移
+  - 添加 session_summaries 表用于持久化会话摘要
+  - 包含 session_id, summary_text, key_facts, statistics, token_count 等字段
+
+- 创建 context_compression.rs 模块
+  - TokenBudget: Token 预算配置（max_tokens, warning/critical thresholds）
+  - CompressionStrategy: 压缩策略枚举（Summary, SlidingWindow, Hybrid）
+  - RefreshTrigger: 刷新触发器枚举
+  - CompressionStats: 压缩统计信息结构体
+  - SessionSummary: 会话摘要结构体
+  - SummaryStore: 数据库操作（create, get_active, get_by_id, update, delete_expired）
+  - ContextCompressor: 核心压缩逻辑
+    - calculate_usage: 计算 token 使用率
+    - needs_compression/needs_warning: 检查是否需要压缩
+    - estimate_tokens: 估算文本 token 数量
+    - calculate_stats: 计算消息统计
+    - generate_summary_text: 生成摘要文本
+    - extract_key_facts: 提取关键事实
+    - compress: 执行压缩
+  - SessionSummaryManager trait: 会话摘要管理接口
+  - SessionSummaryService: 使用 StorageManager 的实现
+
+- 更新 migrations/mod.rs
+  - 添加 v4_session_summaries 模块注册
+  - 添加 down 字段到 Migration 结构体
+
+### Testing:
+- npm run tauri build 通过
+
+### Notes:
+- 新模块已添加到 agent/mod.rs
+- SessionSummaryService 可通过 Arc<StorageManager> 创建
+- 需要其他组件（如 AgentOrchestrator）集成才能完全发挥作用
+- 当前实现为 Story 53.2 的核心骨架，具体集成将在后续任务中完成

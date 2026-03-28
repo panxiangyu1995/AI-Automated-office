@@ -5,11 +5,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 mod v1_initial;
 mod v2_context_summaries;
 mod v3_users;
+mod v4_session_summaries;
 
 pub struct Migration {
     pub version: i64,
     pub name: &'static str,
     pub up: &'static str,
+    pub down: Option<&'static str>,
 }
 
 fn now_timestamp() -> i64 {
@@ -24,6 +26,7 @@ pub fn all_migrations() -> Vec<Migration> {
         v1_initial::migration(),
         v2_context_summaries::migration(),
         v3_users::migration(),
+        v4_session_summaries::migration(),
     ]
 }
 

@@ -18,5 +18,6 @@ pub fn migration() -> Migration {
         version: 3,
         name: "v3_users",
         up: UP_SQL,
+        down: None,
     }
 }

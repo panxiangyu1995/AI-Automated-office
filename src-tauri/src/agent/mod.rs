@@ -1,8 +1,11 @@
 //! Agent runtime core module.
 
+pub mod context_compression;
 pub mod events;
+pub mod mock_provider;
 pub mod orchestrator;
 pub mod provider;
+pub mod prompt_builder;
 pub mod runtime_session;
 pub mod tools;
 
@@ -71,7 +74,24 @@ pub struct AgentRuntimeState {
 impl AgentRuntimeState {
     pub fn new() -> Self {
         Self {
-            provider: Arc::new(provider::UnconfiguredProvider::new()),
+            // Use MockProvider for testing - replace with real provider in production
+            provider: Arc::new(mock_provider::MockProvider::new()),
+            cancellations: Arc::new(RwLock::new(HashSet::new())),
+        }
+    }
+
+    /// Create AgentRuntimeState with MockProvider (for testing)
+    pub fn with_mock_provider() -> Self {
+        Self {
+            provider: Arc::new(mock_provider::MockProvider::new()),
+            cancellations: Arc::new(RwLock::new(HashSet::new())),
+        }
+    }
+
+    /// Create AgentRuntimeState with MockProviderWithTools (for testing tool calls)
+    pub fn with_mock_provider_with_tools() -> Self {
+        Self {
+            provider: Arc::new(mock_provider::MockProviderWithTools::new()),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
         }
     }

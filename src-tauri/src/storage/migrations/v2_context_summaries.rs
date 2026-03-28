@@ -20,5 +20,6 @@ pub fn migration() -> Migration {
         version: 2,
         name: "v2_context_summaries",
         up: UP_SQL,
+        down: None,
     }
 }

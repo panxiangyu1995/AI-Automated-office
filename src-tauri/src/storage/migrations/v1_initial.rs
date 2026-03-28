@@ -88,5 +88,6 @@ pub fn migration() -> Migration {
         version: 1,
         name: "v1_initial",
         up: UP_SQL,
+        down: None,
     }
 }
