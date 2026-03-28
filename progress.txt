@@ -7110,3 +7110,41 @@
 - SecurityService可通过SqlitePool创建
 - 需要数据库表支持（security_events表）
 - 完整的安全事件审计覆盖
+
+## [2026-03-28] - Task 122: Story 53.3 - Controlled correction-rule baseline
+
+### 铁律合规检查：
+- PRD 合规：FR449, FR450, FR451
+- 架构合规：ADR-039, ADR-043
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR20
+
+### What was done:
+- 创建 src-tauri/src/agent/correction.rs 模块
+  - CorrectionRuleService: 修正规则服务
+  - LearningCorrectionRule: 修正规则类型
+  - CorrectionStatus: 规则状态 (Active, Inactive, Deprecated, Testing)
+  - RuleCategory: 规则类别 (OutputFormat, ContentAccuracy, Behavior, Safety, Performance)
+  - TriggerType: 触发类型 (Keyword, Pattern, Context, ToolOutput)
+
+- 3个默认修正规则
+  - rule_output_detail: 详细输出规则 (输出格式)
+  - rule_error_info: 错误信息增强规则 (内容准确性)
+  - rule_exec_result: 执行结果详情规则 (输出格式)
+
+- 关键功能
+  - match_rules(): 基于RuleMatchContext进行规则匹配
+  - generate_suggestions(): 生成需要人工审核的修正建议
+  - link_to_failure(): 将规则命中关联到失败记录
+  - get_stats(): 获取规则统计信息
+  - 正则表达式模式匹配支持
+
+### Testing:
+- cargo check 通过（仅警告）
+- npm run tauri build 通过（3分06秒）
+
+### Notes:
+- correction模块已添加到agent/mod.rs
+- CorrectionRuleService默认加载3个规则
+- 所有建议都需要人工审核，不支持自动变更
+- 支持Keyword、Pattern、Context、ToolOutput四种触发类型
