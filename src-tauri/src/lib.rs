@@ -87,6 +87,14 @@ pub fn run() {
                         .expect("无法初始化Embedding服务"),
                 );
                 app.manage(std::sync::Arc::new(memory_service));
+
+                // Initialize skill services
+                let skill_registry = agent::skill::SkillRegistry::new();
+                app.manage(std::sync::Arc::new(skill_registry));
+                let skill_discovery = agent::skill::SkillDiscoveryService::new();
+                app.manage(std::sync::Arc::new(skill_discovery));
+                let skill_loader = agent::skill::SkillLoader::new();
+                app.manage(std::sync::Arc::new(skill_loader));
             });
             
             // 注册默认快捷键
@@ -142,6 +150,14 @@ pub fn run() {
             agent::memory::memory_stats,
             agent::memory::memory_sync,
             agent::memory::memory_hook_event,
+            // Skill commands
+            agent::skill::skill_list,
+            agent::skill::skill_get,
+            agent::skill::skill_execute,
+            agent::skill::skill_discover,
+            agent::skill::skill_loading_progress,
+            agent::skill::skill_search,
+            agent::skill::skill_validate,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands

@@ -722,7 +722,7 @@
       "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-046"],
       "ux_covered": ["UX-01", "UX-02", "UX-04"],
       "dependencies": ["Story 51.1", "Story 53.1"],
-      "passes": false
+      "passes": true
     },
     {
       "id": 131,

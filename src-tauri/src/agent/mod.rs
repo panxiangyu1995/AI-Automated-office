@@ -10,6 +10,7 @@ pub mod heartbeat;
 pub mod knowledge_retrieval;
 pub mod memory;
 pub mod mock_provider;
+pub mod skill;
 pub mod monitoring;
 pub mod nested;
 pub mod result;
