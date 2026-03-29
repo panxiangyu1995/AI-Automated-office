@@ -1,17 +1,17 @@
 {
-  "version": "3.1.0",
-  "lastUpdated": "2026-03-27",
-  "scope": "Generic Agent Runtime Rebaseline",
-  "batch": "Generic Agent Core Replan",
-  "range": "Task 111-127",
-  "roadmap": "_bmad-output/planning-artifacts/agent-runtime-rebaseline-2026-03-27.md",
-  "sourceOfTruth": "openspec/changes/agent-runtime-rebaseline",
-  "activeNote": "Archived tasks 60-87 are treated as completed runtime foundations. This batch focuses on the missing Rust execution spine, runtime bridge, tool pipeline, memory and knowledge integration, reliability, and security before Sub-Agent expansion.",
+  "version": "3.2.0",
+  "lastUpdated": "2026-03-30",
+  "scope": "Workspace System Implementation",
+  "batch": "Workspace Data Model, Quick Open, Layout Presets, Advanced Features",
+  "range": "Task 140-145",
+  "roadmap": "_bmad-output/planning-artifacts/prd.md",
+  "sourceOfTruth": "openspec/changes/workspace-*",
+  "activeNote": "Implementing workspace functionality according to PRD (FR1000-FR1006). Phase 1: Data Model, Phase 2: Quick Open, Phase 3: Layout Presets, Phase 4: Advanced Features.",
   "implementationNotes": {
-    "foundationComplete": "Story 43.1-49.4 in task-archived-1.json are reusable foundations and must not be rebuilt in this batch.",
-    "integration": "This batch is about connecting existing frontend runtime models to a real backend execution layer.",
-    "backendRequired": "Anything involving real execution, persistence, streaming, tools, permissions, knowledge retrieval, audit, or recovery must land in src-tauri/src/agent and Tauri commands.",
-    "deferred": "Business pilots, skill ecosystem work, and advanced multi-agent behavior stay out of the critical path until the main Agent loop is stable."
+    "workspacePhases": "Task 140-143 implement workspace functionality in 4 phases. Each phase depends on the previous one.",
+    "prdCompliance": "All workspace features must comply with PRD definitions for FR1000-FR1006.",
+    "openspecReference": "Each task corresponds to an OpenSpec change in openspec/changes/workspace-*/",
+    "backendRequired": "Tasks 140, 141, 143 require backend API support for CRUD operations."
   },
   "tasks": [
     {
@@ -1439,6 +1439,529 @@
         "Story 21.7"
       ],
       "passes": true
+    },
+    {
+      "id": 136,
+      "epic": "Epic 51",
+      "story": "Story 51.6",
+      "title": "WebSocket Real-time Communication Integration",
+      "description": "Integrate WebSocket client with RuntimeEventBridge for bidirectional real-time communication. Implement reconnection with exponential backoff and heartbeat mechanism.",
+      "implementationType": "new",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/lib/websocket/client.ts",
+          "src/features/streaming/runtime/runtimeEventBridge.ts"
+        ],
+        "backend": [
+          "src-tauri/src/agent/events.rs"
+        ],
+        "note": "WebSocket client exists as placeholder but is not integrated with the event system."
+      },
+      "openspec_change": "message-websocket-integration",
+      "steps": [
+        "Add tauri-plugin-websocket to Cargo.toml dependencies",
+        "Configure WebSocket permissions in tauri.conf.json",
+        "Implement WebSocket client in Rust using tauri-plugin-websocket",
+        "Add WebSocket event types for bidirectional communication",
+        "Implement heartbeat ping/pong mechanism (30s interval)",
+        "Implement reconnection with exponential backoff (1s-30s, max 5 retries)",
+        "Extend RuntimeEventBridge to listen to WebSocket events",
+        "Add WebSocket event forwarding to RuntimeEventEmitter",
+        "Implement fallback to Tauri IPC when WebSocket unavailable",
+        "Test WebSocket connection, reconnection, heartbeat, and bidirectional event flow"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": [
+        "NFR3",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 137,
+      "epic": "Epic 51",
+      "story": "Story 51.7",
+      "title": "Message Remote Synchronization",
+      "description": "Implement message synchronization between local SQLite and cloud server. Add delta sync protocol, conflict detection, and resolution strategies for cross-device message sync.",
+      "implementationType": "new",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/hooks/useChatStore.ts",
+          "src/features/streaming/runtime/syncEngine.ts"
+        ],
+        "backend": [
+          "src-tauri/src/storage/message_store.rs"
+        ],
+        "note": "Messages are stored locally only, no remote sync capability exists."
+      },
+      "openspec_change": "message-remote-sync",
+      "steps": [
+        "Add sync_status, remote_id, updated_at, deleted_at fields to messages table",
+        "Create database migration script for new fields",
+        "Create SyncManager class for sync state management",
+        "Implement startup sync, periodic sync (60s), and shutdown sync",
+        "Implement delta sync protocol (GET/POST messages with timestamp",
+        "Implement soft delete synchronization",
+        "Implement last-write-wins conflict resolution",
+        "Add conflict resolution UI for manual merge",
+        "Add sync status indicator to message list",
+        "Test local message creation, conflict detection, and offline reconnection"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 138,
+      "epic": "Epic 51",
+      "story": "Story 51.8",
+      "title": "Streaming Render Optimization",
+      "description": "Fix part_delta event handling for smooth streaming text rendering. Implement virtualized message list with @tanstack/react-virtual for 1000+ messages. Add real-time tool call status display.",
+      "implementationType": "refactor",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/MessageList.tsx",
+          "src/features/agent/components/ChatMessage.tsx",
+          "src/features/agent/hooks/useChatStore.ts",
+          "src/features/streaming/runtime/syncEngine.ts"
+        ],
+        "backend": [],
+        "note": "part_delta events exist but UI does not respond correctly. No virtual list. Tool call status incomplete."
+      },
+      "openspec_change": "streaming-render-optimization",
+      "steps": [
+        "Refactor part_delta event handling in useChatStore with RAF batching",
+        "Add useRef for streaming content storage",
+        "Add blinking cursor animation for streaming state",
+        "Install @tanstack/react-virtual dependency",
+        "Refactor MessageList to use useVirtualizer",
+        "Implement dynamic height estimation for messages",
+        "Add scroll-to-top for loading older messages",
+        "Define ToolCallState interface with status types",
+        "Update ChatMessage to display tool call status (pending/running/success/error)",
+        "Add progress text display for long-running tools",
+        "Measure scroll FPS, streaming latency, and memory usage"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04",
+        "UX-05"
+      ],
+      "dependencies": [
+        "Story 51.2",
+        "Story 51.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 139,
+      "epic": "Epic 51",
+      "story": "Story 51.9",
+      "title": "Message Context Compression",
+      "description": "Integrate existing context_compression.rs into message flow. Implement automatic and manual context compression with conversation summarization and entity preservation.",
+      "implementationType": "new",
+      "phase": "Phase 2 - Context, Memory, Prompt",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/hooks/useAgentRuntime.ts",
+          "src/features/agent/hooks/useContextCompression.ts"
+        ],
+        "backend": [
+          "src-tauri/src/agent/context_compression.rs",
+          "src-tauri/src/agent/runtime_session.rs"
+        ],
+        "note": "context_compression.rs exists but is not integrated into the message flow."
+      },
+      "openspec_change": "message-context-compression",
+      "steps": [
+        "Review and enhance existing context_compression.rs implementation",
+        "Integrate compression into runtime_session.rs message flow",
+        "Implement compression trigger check (50 messages or 32000 tokens)",
+        "Implement layered compression (recent 10 rounds intact, middle rounds summarized)",
+        "Implement conversation round summarization with [[SUMMARY]] markers",
+        "Implement entity extraction and preservation (person, date, amount, technical terms)",
+        "Add Compress Context button to UI",
+        "Add Ctrl+Shift+C keyboard shortcut for manual compression",
+        "Display compression status indicator and toast notification",
+        "Test various conversation lengths and verify LLM quality with compressed context"
+      ],
+      "frs_covered": [
+        "FR443",
+        "FR444",
+        "FR445"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 53.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 140,
+      "epic": "Epic 41",
+      "story": "Story 41.5",
+      "title": "Workspace Data Model and Basic Framework",
+      "description": "实现工作区数据模型和基础框架。包括 Workspace/Project 数据模型定义、工作区 CRUD 操作、工作区切换基础。需要实现6个spec文件：workspace-entity、project-entity、workspace-membership、workspace-crud、workspace-switching、workspace-persistence。",
+      "implementationType": "new",
+      "phase": "Phase 1 - Workspace Foundation",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/components/common/Workbench.tsx",
+          "src/components/common/workbenchHost.tsx",
+          "src/components/common/AppLayout.tsx",
+          "src/stores/uiStore.ts"
+        ],
+        "backend": [],
+        "note": "Workbench 框架已存在但缺乏工作区数据模型。"
+      },
+      "openspec_change": "workspace-data-model",
+      "steps": [
+        "定义 TypeScript interfaces: Workspace, Project, WorkspaceMember",
+        "创建 workspaceStore.ts Zustand store",
+        "实现工作区 CRUD actions",
+        "实现工作区切换机制",
+        "创建工作区 API client",
+        "创建 WorkspaceSwitcher 组件",
+        "创建工作区管理 UI"
+      ],
+      "frs_covered": [
+        "FR1000",
+        "FR1001",
+        "FR1003",
+        "FR1005",
+        "FR1006"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 41.1",
+        "Story 41.2",
+        "Story 41.3",
+        "Story 41.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 141,
+      "epic": "Epic 41",
+      "story": "Story 41.6",
+      "title": "Workspace Quick Open Search",
+      "description": "实现 Quick Open 搜索能力。包括完善 Quick Open UI、跨资源搜索（项目、单据、模板、知识）、搜索结果排序、最近访问记录增强。需要实现4个spec文件：quick-open-ui、quick-open-search、quick-open-ranking、recent-access-enhanced。",
+      "implementationType": "new",
+      "phase": "Phase 2 - Workspace Quick Open",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/components/common/AppLayout.tsx"
+        ],
+        "backend": [],
+        "note": "Quick Open UI 骨架已存在但 searchResults 永远是空数组。"
+      },
+      "openspec_change": "workspace-quick-open",
+      "steps": [
+        "重构 Quick Open UI 组件",
+        "定义 SearchProvider 接口和 SearchResult 类型",
+        "实现 ProjectSearchProvider",
+        "实现 DocumentSearchProvider",
+        "实现 TemplateSearchProvider",
+        "实现 KnowledgeSearchProvider",
+        "实现 SearchAggregator 聚合结果",
+        "实现搜索结果排序算法",
+        "实现最近访问跟踪"
+      ],
+      "frs_covered": [
+        "FR1000-1",
+        "FR1000-2"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 41.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 142,
+      "epic": "Epic 41",
+      "story": "Story 41.7",
+      "title": "Workspace Layout Presets System",
+      "description": "实现布局预设系统。包括 LayoutPreset 数据模型、预设 CRUD、预设切换、按工作区恢复状态（标签、分栏、筛选、AI面板）、4种内置预设（专注/审批/起草/审计模式）。需要实现5个spec文件。",
+      "implementationType": "new",
+      "phase": "Phase 3 - Workspace Layout Presets",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/stores/uiStore.ts"
+        ],
+        "backend": [],
+        "note": "uiStore 只持久化了基础布局参数，缺乏预设和状态恢复。"
+      },
+      "openspec_change": "workspace-layout-presets",
+      "steps": [
+        "创建 layoutPresetStore.ts",
+        "定义 LayoutPreset 接口和配置类型",
+        "实现预设 CRUD actions",
+        "创建内置预设（Focus/Approval/Draft/Audit）",
+        "创建 PresetPicker 组件",
+        "实现工作区状态保存与恢复",
+        "实现预设切换机制",
+        "集成到 TopBar/StatusBar"
+      ],
+      "frs_covered": [
+        "FR1005-1",
+        "FR1005-2"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 41.5",
+        "Story 41.6"
+      ],
+      "passes": false
+    },
+    {
+      "id": 143,
+      "epic": "Epic 41",
+      "story": "Story 41.8",
+      "title": "Workspace Advanced Features",
+      "description": "实现工作区高级功能。包括项目模板系统、工作区级工具配置、工作区级插件配置、工作区成员邀请与角色管理、工作区默认入口配置。需要实现5个spec文件：project-template、workspace-tool-config、workspace-plugin-config、workspace-member-invite、workspace-default-entry。",
+      "implementationType": "new",
+      "phase": "Phase 4 - Workspace Advanced Features",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "完全缺失的高级功能。"
+      },
+      "openspec_change": "workspace-advanced-features",
+      "steps": [
+        "定义 ProjectTemplate 接口和配置类型",
+        "创建项目模板 CRUD",
+        "创建模板列表和选择组件",
+        "实现工作区工具配置 UI",
+        "实现工具冲突检测",
+        "实现工作区插件配置 UI",
+        "实现插件依赖验证",
+        "创建成员邀请流程",
+        "实现角色分配和变更",
+        "实现工作区默认入口配置"
+      ],
+      "frs_covered": [
+        "FR1002",
+        "FR1004",
+        "FR1006-1"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 41.5",
+        "Story 41.6",
+        "Story 41.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 144,
+      "epic": "Epic 51",
+      "story": "Story 51.10",
+      "title": "Layer 1 Core Tools Implementation",
+      "description": "实现16个核心工具（Core Tools），分为5组：文件系统工具（file_read, file_write, file_edit, dir_list）、Shell工具（sandbox_execute, pattern_search）、Web工具（web_search, web_fetch, http_request）、浏览器工具（browser_interact）、文档工具（document_parse, document_convert）。参考OpenClaw架构实现browser tool using Playwright CDP。",
+      "implementationType": "new",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/tools/core.rs"
+        ],
+        "note": "现有core.rs只有5个placeholder工具，需要扩展为16个完整实现。"
+      },
+      "openspec_change": "layer-1-core-tools-implementation",
+      "steps": [
+        "创建 src-tauri/src/agent/tools/core/ 目录结构",
+        "实现 filesystem 工具组（file_read, file_write, file_edit, dir_list）with path traversal prevention",
+        "实现 shell 工具组（sandbox_execute, pattern_search）with command whitelist",
+        "实现 web 工具组（web_search, web_fetch, http_request）with multiple search providers",
+        "实现 browser 工具组（browser_interact）using Playwright CDP, 17 actions",
+        "实现 document 工具组（document_parse, document_convert）for PDF/Markdown",
+        "在 ToolRegistry 中注册所有核心工具",
+        "添加工具描述符和权限配置",
+        "编写单元测试"
+      ],
+      "frs_covered": [
+        "FR420",
+        "FR421",
+        "FR422"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-010",
+        "ADR-018",
+        "ADR-045"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 145,
+      "epic": "Epic 51",
+      "story": "Story 51.11",
+      "title": "Layer 2 Enterprise Tools Implementation",
+      "description": "实现11个企业工具（Enterprise Tools），分为5组：资源工具（resource_query, resource_upload）、知识工具（knowledge_query, knowledge_submit_draft）、消息工具（message_query, message_send, agent_delegate）、工作区工具（workspace_stage_change）、数据库工具（db_query）。包含完整的安全机制（admin权限、表白名单、字段掩码、租户隔离、审计日志）。",
+      "implementationType": "new",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "企业工具模块完全缺失。"
+      },
+      "openspec_change": "layer-2-enterprise-tools-implementation",
+      "steps": [
+        "创建 src-tauri/src/agent/tools/enterprise/ 目录结构",
+        "实现 resource 工具组（resource_query, resource_upload）with local/cloud/workspace handlers",
+        "实现 knowledge 工具组（knowledge_query, knowledge_submit_draft）with RAG retrieval",
+        "实现 messaging 工具组（message_query, message_send, agent_delegate）with delegation depth tracking",
+        "实现 workspace 工具组（workspace_stage_change）with conflict detection",
+        "实现 database 工具组（db_query）with admin-only access, whitelist, field masking, tenant isolation",
+        "在 ToolRegistry 中注册所有企业工具",
+        "添加工具权限配置（db_query 仅限admin）",
+        "编写单元测试"
+      ],
+      "frs_covered": [
+        "FR420",
+        "FR421",
+        "FR422"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20",
+        "NFR21"
+      ],
+      "arch_covered": [
+        "ADR-010",
+        "ADR-018",
+        "ADR-045"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.3",
+        "Story 51.10"
+      ],
+      "passes": false
     }
   ]
 }
