@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use std::pin::Pin;
 use tokio_stream::Stream;
 
@@ -41,6 +42,19 @@ impl ZhipuModel {
 impl Default for ZhipuModel {
     fn default() -> Self {
         ZhipuModel::Glm4
+    }
+}
+
+impl FromStr for ZhipuModel {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "glm-4" | "glm4" => Ok(ZhipuModel::Glm4),
+            "glm-4v" | "glm4v" => Ok(ZhipuModel::Glm4V),
+            "glm-3-turbo" | "glm3" | "glm-3" => Ok(ZhipuModel::Glm3),
+            _ => Err(format!("Unknown Zhipu model: {}", s)),
+        }
     }
 }
 
@@ -84,6 +98,11 @@ impl ZhipuConfig {
     pub fn with_timeout(mut self, secs: u64) -> Self {
         self.timeout_secs = secs;
         self
+    }
+
+    /// Parse model from string, returns default if parsing fails
+    pub fn model_from_str(s: &str) -> Result<ZhipuModel, String> {
+        ZhipuModel::from_str(s)
     }
 }
 

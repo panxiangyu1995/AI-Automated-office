@@ -13,9 +13,13 @@ pub mod memory;
 pub mod mock_provider;
 pub mod skill;
 pub mod monitoring;
+pub mod config;
+pub mod mode;
 pub mod nested;
+pub mod permission;
 pub mod result;
 pub mod routing;
+pub mod template;
 pub mod orchestrator;
 pub mod provider;
 pub mod llm_provider;
@@ -86,15 +90,16 @@ pub struct AgentExecutionResponse {
 
 #[derive(Clone)]
 pub struct AgentRuntimeState {
-    provider: Arc<dyn AgentProvider>,
+    /// Agent provider wrapped in RwLock for interior mutability
+    provider: Arc<RwLock<Arc<dyn AgentProvider>>>,
     cancellations: Arc<RwLock<HashSet<String>>>,
 }
 
 impl AgentRuntimeState {
     pub fn new() -> Self {
         Self {
-            // Use MockProvider for testing - replace with real provider in production
-            provider: Arc::new(mock_provider::MockProvider::new()),
+            // Default to MockProvider - use set_provider() to replace with real provider
+            provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProvider::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
         }
     }
@@ -102,7 +107,7 @@ impl AgentRuntimeState {
     /// Create AgentRuntimeState with MockProvider (for testing)
     pub fn with_mock_provider() -> Self {
         Self {
-            provider: Arc::new(mock_provider::MockProvider::new()),
+            provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProvider::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
         }
     }
@@ -110,13 +115,25 @@ impl AgentRuntimeState {
     /// Create AgentRuntimeState with MockProviderWithTools (for testing tool calls)
     pub fn with_mock_provider_with_tools() -> Self {
         Self {
-            provider: Arc::new(mock_provider::MockProviderWithTools::new()),
+            provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProviderWithTools::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
         }
     }
 
+    /// Set the agent provider (replaces MockProvider with real provider)
+    /// Uses interior mutability via RwLock
+    pub async fn set_provider(&self, provider: Arc<dyn AgentProvider>) {
+        let mut guard = self.provider.write().await;
+        *guard = provider;
+    }
+
     pub fn provider(&self) -> Arc<dyn AgentProvider> {
-        Arc::clone(&self.provider)
+        Arc::clone(&*self.provider.blocking_read())
+    }
+
+    /// Get the provider for async operations
+    pub async fn get_provider(&self) -> Arc<dyn AgentProvider> {
+        Arc::clone(&*self.provider.read().await)
     }
 
     pub fn cancellations(&self) -> Arc<RwLock<HashSet<String>>> {

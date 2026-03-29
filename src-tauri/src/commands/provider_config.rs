@@ -16,6 +16,7 @@ use crate::agent::llm_provider::ProviderConfigService;
 use crate::agent::routing::{RoutingMode, YoloTtl};
 
 /// Provider config service state
+#[derive(Clone)]
 pub struct ProviderConfigState {
     pub service: Arc<ProviderConfigService>,
 }

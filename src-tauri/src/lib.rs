@@ -81,8 +81,53 @@ pub fn run() {
                 app.manage(agent::AgentRuntimeState::new());
                 app.manage(agent::tools::ToolExecutionPipeline::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
-                app.manage(commands::provider_config::ProviderConfigState::default());
+                let provider_config_state = commands::provider_config::ProviderConfigState::default();
+                app.manage(provider_config_state.clone());
                 app.manage(commands::provider_config::RoutingModeState::new());
+
+                // Initialize real LLM provider from configuration (Phase 7: T7.4)
+                // Priority: User config > Tenant config > Official config
+                // First, try to get a configured provider
+                let provider_result = provider_config_state.service
+                    .get_active_config(Some("default"), None, "openai-compatible")
+                    .await;
+
+                match provider_result {
+                    Ok(Some(config)) => {
+                        use agent::llm_provider::LlmProviderManager;
+                        if let Ok(real_provider) = LlmProviderManager::create_provider(&config) {
+                            let agent_state = app.state::<agent::AgentRuntimeState>();
+                            let llm_agent_provider = agent::llm_agent_provider::LlmAgentProvider::new(real_provider);
+                            agent_state.set_provider(Arc::new(llm_agent_provider)).await;
+                            tracing::info!("Real LLM provider initialized from config: {}", config.provider_type);
+                        }
+                    }
+                    _ => {
+                        // No config found, initialize with default OpenRouter API key for testing
+                        tracing::info!("No provider config found, initializing with default OpenRouter provider");
+                        use agent::llm_provider::LlmProviderManager;
+                        let openrouter_provider = LlmProviderManager::create_openai_compatible_provider(
+                            "https://openrouter.ai/api/v1",
+                            Some("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"),
+                            "nvidia/nemotron-3-super-120b-a12b:free",
+                        );
+                        if let Ok(provider) = openrouter_provider {
+                            let agent_state = app.state::<agent::AgentRuntimeState>();
+                            let llm_agent_provider = agent::llm_agent_provider::LlmAgentProvider::new(provider);
+                            agent_state.set_provider(Arc::new(llm_agent_provider)).await;
+                            tracing::info!("Real LLM provider initialized with OpenRouter (default)");
+                        }
+                    }
+                }
+
+                // Initialize Token Refresh Service (Phase 8: T8.2)
+                use agent::llm_provider::TokenRefreshService;
+                let token_refresh_service = Arc::new(TokenRefreshService::with_default_config());
+                // Start background refresh task for OAuth tokens
+                let refresh_service_clone = token_refresh_service.clone();
+                refresh_service_clone.start_background_refresh();
+                app.manage(token_refresh_service);
+                tracing::info!("Token refresh service initialized");
 
                 // Initialize memory service
                 let memory_config = agent::memory::MemoryConfig::default();

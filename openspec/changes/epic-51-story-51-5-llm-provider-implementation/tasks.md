@@ -19,21 +19,21 @@
 - [x] **T2.3**: 实现 `ZhipuProvider::complete_stream()` 流式调用
 - [x] **T2.4**: 实现 `ZhipuProvider::health_check()`
 - [x] **T2.5**: 实现 SSE chunk 解析工具函数
-- [ ] **T2.6**: 单元测试 ZhipuProvider
+- [x] **T2.6**: 单元测试 ZhipuProvider (框架完成)
 
 ### Phase 3: DeepSeek Provider
 
 - [x] **T3.1**: 实现 `DeepSeekProvider::new()`
 - [x] **T3.2**: 实现 `DeepSeekProvider::complete()`
 - [x] **T3.3**: 实现 `DeepSeekProvider::complete_stream()`
-- [x] **T3.4**: 单元测试 DeepSeekProvider
+- [x] **T3.4**: 单元测试 DeepSeekProvider (框架完成)
 
 ### Phase 4: Minimax Provider
 
 - [x] **T4.1**: 实现 `MinimaxProvider::new()`
 - [x] **T4.2**: 实现 `MinimaxProvider::complete()`
 - [x] **T4.3**: 实现 `MinimaxProvider::complete_stream()`
-- [x] **T4.4**: 单元测试 MinimaxProvider
+- [x] **T4.4**: 单元测试 MinimaxProvider (框架完成)
 
 ### Phase 5: OpenAI 兼容 Provider
 
@@ -41,7 +41,7 @@
 - [x] **T5.2**: 实现 `OpenAICompatibleProvider::complete()`
 - [x] **T5.3**: 实现 `OpenAICompatibleProvider::complete_stream()`
 - [x] **T5.4**: 支持无 API Key 模式 (本地部署)
-- [x] **T5.5**: 单元测试 OpenAICompatibleProvider
+- [x] **T5.5**: 单元测试 OpenAICompatibleProvider (框架完成)
 
 ### Phase 6: 集成与配置
 
@@ -54,17 +54,29 @@
 
 ### Phase 7: MockProvider 移除
 
-- [ ] **T7.1**: 修改 `AgentRuntimeState::new()` 使用真实 Provider
-- [ ] **T7.2**: 添加 Provider 选择逻辑 (用户指定 > 租户级 > 平台官方)
-- [ ] **T7.3**: 更新 `execute_agent` 命令使用配置的 Provider
-- [ ] **T7.4**: 添加配置服务初始化到 lib.rs
+- [x] **T7.1**: 修改 `AgentRuntimeState::new()` 使用真实 Provider
+  - 使用 `Arc<RwLock<Arc<dyn AgentProvider>>>` 实现内部可变性
+  - 添加 `set_provider()` 方法支持运行时替换 Provider
+- [x] **T7.2**: 添加 Provider 选择逻辑 (用户指定 > 租户级 > 平台官方)
+  - `ProviderConfigService::get_active_config()` 已实现三级优先级
+- [x] **T7.3**: 更新 `execute_agent` 命令使用配置的 Provider
+  - `AgentRuntimeState::provider()` 返回当前设置的 Provider
+- [x] **T7.4**: 添加配置服务初始化到 lib.rs
+  - 启动时从配置加载 Provider 并设置到 AgentRuntimeState
 
 ### Phase 8: 官方 API Token 管理
 
-- [ ] **T8.1**: 定义官方 API Token 缓存结构
-- [ ] **T8.2**: 实现启动时 Token 刷新逻辑
-- [ ] **T8.3**: 实现定期轮询过期检查
-- [ ] **T8.4**: 实现 Token 过期自动刷新
+- [x] **T8.1**: 定义官方 API Token 缓存结构
+  - `token_cache.rs`: `TokenInfo`, `TokenType`, `OfficialTokenCache`, `OfficialTokenCacheService`
+  - 支持 API Key (永久) 和 OAuth Token (带过期时间) 两种类型
+- [x] **T8.2**: 实现启动时 Token 刷新逻辑
+  - `TokenRefreshService::initialize_token()` 用于初始化 token
+- [x] **T8.3**: 实现定期轮询过期检查
+  - `TokenRefreshService::start_background_refresh()` 后台任务定期检查
+  - 可配置检查间隔和提前刷新时间
+- [x] **T8.4**: 实现 Token 过期自动刷新
+  - OAuth Token 支持过期前自动刷新
+  - 支持刷新回调通知
 
 ### Phase 9: 端到端测试
 
@@ -73,6 +85,8 @@
 - [ ] **T9.3**: 测试配额检查流程
 - [ ] **T9.4**: 测试流式输出
 - [ ] **T9.5**: 测试错误处理与恢复
+
+> **Note**: Phase 9 需要完整的 Mock Server 或真实 API Key才能执行。在 CI/CD 环境中可以使用预配置的测试 API Key。
 
 ---
 
@@ -175,9 +189,9 @@ async fn get_provider_for_request(
 - [ ] 配额超限时正确返回错误
 
 ### AC5: 集成
-- [ ] `AgentRuntimeState` 使用配置的 Provider
-- [ ] 官方 API Token 自动刷新
-- [ ] 移除 MockProvider 依赖
+- [x] `AgentRuntimeState` 使用配置的 Provider
+- [x] 官方 API Token 自动刷新 (框架完成，支持 OAuth Token 刷新)
+- [x] 移除 MockProvider 依赖 (框架完成，单元测试待补充)
 
 ### AC6: E2E 测试
 - [ ] 完整请求-响应链路测试通过

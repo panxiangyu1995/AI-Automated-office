@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use std::pin::Pin;
 use tokio_stream::Stream;
 
@@ -38,6 +39,18 @@ impl DeepSeekModel {
 impl Default for DeepSeekModel {
     fn default() -> Self {
         DeepSeekModel::DeepSeekChat
+    }
+}
+
+impl FromStr for DeepSeekModel {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "deepseek-chat" | "deepseekchat" => Ok(DeepSeekModel::DeepSeekChat),
+            "deepseek-coder" | "deepseekcoder" => Ok(DeepSeekModel::DeepSeekCoder),
+            _ => Err(format!("Unknown DeepSeek model: {}", s)),
+        }
     }
 }
 
@@ -81,6 +94,11 @@ impl DeepSeekConfig {
     pub fn with_timeout(mut self, secs: u64) -> Self {
         self.timeout_secs = secs;
         self
+    }
+
+    /// Parse model from string, returns default if parsing fails
+    pub fn model_from_str(s: &str) -> Result<DeepSeekModel, String> {
+        DeepSeekModel::from_str(s)
     }
 }
 

@@ -41,3 +41,18 @@ pub use config::{ProviderConfigService, ProviderConfig, ConfigLevel};
 pub use quota::{QuotaService, QuotaError, TokenUsage, UsageRecord, UsageStats};
 pub use config_service::SqliteProviderConfigService;
 pub use quota_service::SqliteQuotaService;
+
+// ============ Provider Manager ============
+
+pub mod provider_manager;
+pub use provider_manager::LlmProviderManager;
+
+// ============ Token Cache ============
+
+pub mod token_cache;
+pub use token_cache::{OfficialTokenCache, OfficialTokenCacheService, TokenInfo, TokenType};
+
+// ============ Token Refresh Service ============
+
+pub mod token_refresh;
+pub use token_refresh::{TokenRefreshConfig, TokenRefreshService, TokenRefreshCallback, TokenRefreshError};

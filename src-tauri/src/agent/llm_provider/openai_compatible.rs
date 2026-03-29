@@ -99,6 +99,11 @@ impl OpenAICompatibleConfig {
         self.require_auth = require;
         self
     }
+
+    /// Parse model from string
+    pub fn model_from_str(s: &str) -> OpenAICompatibleModel {
+        OpenAICompatibleModel::new(s)
+    }
 }
 
 /// OpenAI-compatible Provider
