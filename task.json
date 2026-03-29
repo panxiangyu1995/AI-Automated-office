@@ -808,6 +808,51 @@
       "ux_covered": ["UX-01", "UX-02", "UX-04"],
       "dependencies": ["Story 53.6", "Story 51.3", "Epic 2"],
       "passes": true
+    },
+    {
+      "id": 133,
+      "epic": "Epic 51",
+      "story": "Story 51.5",
+      "title": "Real LLM Provider Implementation",
+      "description": "Implement real LLM Provider integration to replace MockProvider. Includes Zhipu, DeepSeek, Minimax providers, OpenAI compatible provider for local deployments, ProviderConfigService with encrypted storage, QuotaService for official API quota management, and official API Token management with refresh mechanism.",
+      "implementationType": "new",
+      "phase": "Phase 1 - Execution Spine",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/AgentChatPanel.tsx",
+          "src/features/agent/hooks/useAgentRuntime.ts"
+        ],
+        "backend": [
+          "src-tauri/src/agent/mod.rs",
+          "src-tauri/src/agent/provider.rs",
+          "src-tauri/src/agent/mock_provider.rs",
+          "src-tauri/src/agent/orchestrator.rs"
+        ],
+        "note": "AgentOrchestrator and runtime event bridge exist, but use MockProvider instead of real LLM API."
+      },
+      "openspec_change": "epic-51-story-51-5-llm-provider-implementation",
+      "steps": [
+        "Create src-tauri/src/agent/provider/ module skeleton with trait.rs, error.rs, config.rs, quota.rs, crypto.rs",
+        "Define LlmProvider trait with complete() and complete_stream() methods",
+        "Implement ZhipuProvider with Chat Completions API and SSE streaming support",
+        "Implement DeepSeekProvider with OpenAI compatible format",
+        "Implement MinimaxProvider",
+        "Implement OpenAICompatibleProvider for local deployments (Ollama, etc.)",
+        "Implement ProviderConfigService with Cross-platform encrypted storage",
+        "Implement QuotaService for platform official API quota management",
+        "Implement OfficialTokenManager with startup refresh and periodic polling",
+        "Remove MockProvider from AgentRuntimeState::new()",
+        "Integrate ProviderConfigService into AgentRuntimeState",
+        "Add unit tests for all providers and services"
+      ],
+      "frs_covered": ["FR400", "FR401", "FR402", "FR403", "FR404"],
+      "nfrs_covered": ["NFR1", "NFR16", "NFR17", "NFR20"],
+      "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-054"],
+      "ux_covered": ["UX-01"],
+      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4"],
+      "passes": false
     }
   ]
 }

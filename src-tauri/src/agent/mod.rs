@@ -17,6 +17,7 @@ pub mod result;
 pub mod routing;
 pub mod orchestrator;
 pub mod provider;
+pub mod llm_provider;
 pub mod prompt_builder;
 pub mod runtime_session;
 pub mod security;
