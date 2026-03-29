@@ -52,11 +52,6 @@ export function ModeSwitcher({
   // Filter to only visible agents (primary mode agents)
   const visibleAgents = agents.filter(agent => agent.mode === 'primary')
 
-  // Don't render if only one agent
-  if (visibleAgents.length <= 1) {
-    return null
-  }
-
   const selectedAgent = agents.find(a => a.id === selectedAgentId)
 
   const handleToggle = useCallback(() => {
@@ -120,6 +115,11 @@ export function ModeSwitcher({
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isOpen])
+
+  // Don't render if only one agent - after all hooks
+  if (visibleAgents.length <= 1) {
+    return null
+  }
 
   return (
     <div className={cn('relative', className)} ref={dropdownRef}>
