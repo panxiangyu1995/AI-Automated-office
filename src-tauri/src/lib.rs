@@ -81,6 +81,8 @@ pub fn run() {
                 app.manage(agent::AgentRuntimeState::new());
                 app.manage(agent::tools::ToolExecutionPipeline::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
+                app.manage(commands::provider_config::ProviderConfigState::default());
+                app.manage(commands::provider_config::RoutingModeState::new());
 
                 // Initialize memory service
                 let memory_config = agent::memory::MemoryConfig::default();
@@ -229,6 +231,21 @@ pub fn run() {
             sync::offline_queue::enqueue_request,
             sync::offline_queue::get_pending_requests,
             sync::offline_queue::process_pending_requests,
+            // Provider config commands (Task 134)
+            commands::provider_config::save_provider_config,
+            commands::provider_config::get_provider_config,
+            commands::provider_config::get_tenant_provider_configs,
+            commands::provider_config::delete_provider_config,
+            commands::provider_config::update_provider_config,
+            commands::provider_config::get_routing_config,
+            commands::provider_config::get_current_mode,
+            commands::provider_config::switch_mode,
+            // Routing mode commands (Task 135)
+            commands::provider_config::get_routing_mode,
+            commands::provider_config::set_routing_mode,
+            commands::provider_config::activate_yolo_mode,
+            commands::provider_config::deactivate_yolo_mode,
+            commands::provider_config::get_yolo_status,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

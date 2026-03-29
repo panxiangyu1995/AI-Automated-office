@@ -7,6 +7,7 @@ pub mod agent;
 pub mod config;
 pub mod hardware;
 pub mod network;
+pub mod provider_config;
 pub mod session;
 pub mod shortcuts;
 pub mod storage;
