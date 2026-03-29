@@ -7497,3 +7497,61 @@
   - Testing (7.1-7.6)
   - Documentation (8.1-8.3)
 
+
+---
+
+## [2026-03-29] - Task 134 & 135: LLM Provider Plan/Act双配置与路由模式
+
+### 铁律合规检查：
+- PRD 合规：FR841-FR846 (Task 134), FR866-FR871 (Task 135)
+- 架构 合规：ADR-055, ADR-056
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+
+**后端实现 (前期已完成):**
+- ProviderConfig双配置结构 (plan_mode/act_mode)
+- AgentMode枚举 (Plan/Act)
+- ModeConfig和RoutingConfig结构
+- ToolDescriptor is_read_only标志
+- ToolPipeline Plan模式工具过滤
+- RoutingMode四档枚举 (Manual/Auto/Hybrid/Yolo)
+- YoloTtl枚举 (Once/OneHour/Today/Custom)
+- YOLO TTL自动失效机制
+- 审计日志yolo_mode字段
+
+**前端UI实现 (本期完成):**
+1. 创建 PlanActModeConfig.tsx 组件
+   - Plan模式配置卡片(只读工具Provider)
+   - Act模式配置卡片(全部工具Provider)
+   - 当前模式指示器与切换按钮
+   - Tab式双配置UI
+
+2. 创建 YoloModeConfig.tsx 组件
+   - RoutingModeSelector - 四档路由模式选择器
+   - YoloConfirmDialog - YOLO激活确认对话框
+     - 安全警告提示
+     - TTL选择(单次/1小时/本日/自定义秒数)
+     - 二次确认复选框
+   - YoloStatusIndicator - 状态指示器
+   - YoloModeConfig - 主配置卡片
+
+**Tauri命令实现:**
+- save_provider_config / get_provider_config
+- get_tenant_provider_configs / delete_provider_config
+- update_provider_config / get_routing_config
+- get_routing_mode / set_routing_mode
+- activate_yolo_mode / deactivate_yolo_mode
+- get_yolo_status / get_current_mode / switch_mode
+
+### Testing:
+- cargo check 通过 (src-tauri)
+- npm run build 通过 (前端)
+
+### Notes:
+- 前端组件使用 Shadcn/ui 组件库
+- YOLO确认对话框包含安全警告和二次确认机制
+- TTL支持按时间失效(1小时/本日/自定义)和单次失效(Once)
+- 路由模式支持Manual(全审批)、Auto(自动)、Hybrid(混合)、Yolo(无审批)四档
+
