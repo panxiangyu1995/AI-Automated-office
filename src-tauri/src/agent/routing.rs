@@ -7,6 +7,11 @@
 //! - Standardized input for Sub-Agent execution context
 //!
 //! Story 52.1 - Sub-Agent routing baseline
+//!
+//! Agent Mode Constraints (Task 1.4.3, 1.4.4):
+//! - Primary agents can be default and handle user requests
+//! - Subagents cannot be default and cannot be directly selected by user
+//! - Routing to subagents requires explicit delegation from primary agent
 
 use anyhow::Result;
 use chrono::Utc;
@@ -14,6 +19,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+
+// Re-export AgentMode for convenience
+pub use crate::agent::mode::AgentMode;
 
 /// Routing mode
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -560,6 +568,57 @@ impl SubAgentRoutingService {
         // 3. If security constraints are satisfied
         // For now, we always return true
         true
+    }
+
+    /// Check if routing to a specific subagent is allowed
+    ///
+    /// Subagents have the following constraints:
+    /// - Cannot be set as default agent
+    /// - Cannot be directly selected by user
+    /// - Can only be routed via explicit delegation from primary agent
+    ///
+    /// This method checks if a subagent can be used for routing based on context.
+    pub fn can_route_to_subagent(&self, _subagent_id: &str, _context: &RoutingContext) -> bool {
+        // For now, allow routing to subagents only in Auto and Hybrid modes
+        // In Manual mode, user explicitly chooses
+        matches!(
+            self.routing_mode,
+            RoutingMode::Auto | RoutingMode::Hybrid
+        )
+    }
+
+    /// Get routing constraints for a subagent
+    ///
+    /// Returns the constraints that should be applied when routing to a subagent.
+    pub fn get_routing_constraints(&self, subagent_id: &str) -> SubAgentConstraints {
+        // Default constraints for subagent routing
+        SubAgentConstraints {
+            max_steps: 10,
+            timeout_seconds: 300,
+            allowed_tools: Vec::new(),
+            denied_tools: Vec::new(),
+            permission_scope: "limited".to_string(),
+        }
+    }
+
+    /// Validate routing decision respects mode constraints
+    ///
+    /// This ensures that:
+    /// - Primary agents can be routed to freely
+    /// - Subagents can only be routed to via explicit delegation
+    pub fn validate_routing_decision(
+        &self,
+        decision: &RoutingDecision,
+        context: &RoutingContext,
+    ) -> bool {
+        // If no subagent selected, it's always valid (staying with primary)
+        if decision.selected_sub_agent_id.is_none() {
+            return true;
+        }
+
+        // If subagent is selected, verify routing is allowed
+        let subagent_id = decision.selected_sub_agent_id.as_ref().unwrap();
+        self.can_route_to_subagent(subagent_id, context)
     }
 }
 

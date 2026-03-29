@@ -7555,3 +7555,31 @@
 - TTL支持按时间失效(1小时/本日/自定义)和单次失效(Once)
 - 路由模式支持Manual(全审批)、Auto(自动)、Hybrid(混合)、Yolo(无审批)四档
 
+
+---
+
+## [2026-03-29] - UI重设计 - 参考cline风格
+
+### 参考来源:
+- 开源库参考项目/cline/webview-ui/src/components/
+
+### cline设计风格分析:
+1. **Tab设计**: 底部2px边框线标识当前Tab(不是背景色)
+2. **颜色**: 使用VS Code主题变量(var(--foreground)/var(--muted-foreground))
+3. **简洁**: 边框透明,激活时显示边框
+4. **品牌色**: 紫色 #9663f1
+
+### 重设计内容:
+1. **YoloModeConfig.tsx**:
+   - TabButton组件样式与cline一致
+   - 路由模式指示器使用简洁Badge样式
+   - YOLO确认对话框简化布局
+
+2. **PlanActModeConfig.tsx**:
+   - TabButton组件样式与cline一致
+   - Provider/Model选择器使用原生select样式
+   - Plan模式未配置时显示空状态
+
+### Testing:
+- npm run build 通过
+
