@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result};
 use sqlx::{Row, SqlitePool};
 
 pub mod checkpoint_store;
+pub mod debounced_store;
 pub mod memory_store;
 pub mod message_store;
 pub mod migrations;
@@ -12,6 +13,7 @@ pub mod sqlite;
 pub mod sync_queue;
 
 use checkpoint_store::CheckpointStore;
+use debounced_store::DebouncedStorageManager;
 use memory_store::MemoryStore;
 use message_store::MessageStore;
 use provider_config_store::ProviderConfigStore;
@@ -22,15 +24,24 @@ use sync_queue::SyncQueueStore;
 pub struct StorageManager {
     pool: SqlitePool,
     tenant_id: String,
+    /// 防抖存储管理器
+    debounced: DebouncedStorageManager,
 }
 
 impl StorageManager {
     pub async fn init(tenant_id: &str) -> Result<Self> {
         let pool = sqlite::create_pool(tenant_id).await?;
         migrations::run_migrations(&pool).await?;
+
+        // 创建防抖存储管理器
+        let session_store = SessionStore::new(pool.clone());
+        let message_store = MessageStore::new(pool.clone());
+        let debounced = DebouncedStorageManager::with_default_delay(session_store, message_store);
+
         Ok(Self {
             pool,
             tenant_id: tenant_id.to_string(),
+            debounced,
         })
     }
 
@@ -68,6 +79,13 @@ impl StorageManager {
 
     pub fn quota_store(&self) -> QuotaStore {
         QuotaStore::new(self.pool.clone())
+    }
+
+    /// 获取防抖存储管理器
+    ///
+    /// 用于对 Session 和 Message 的写入操作进行防抖处理
+    pub fn debounced(&self) -> &DebouncedStorageManager {
+        &self.debounced
     }
 }
 

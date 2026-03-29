@@ -58,11 +58,11 @@ impl RuntimeSessionService {
             version: 1,
         };
 
+        // 使用防抖存储，立即保存到缓存（延迟写入数据库）
         self.storage
-            .session_store()
-            .create(&session)
-            .await
-            .map_err(|err| AgentError::Storage(err.to_string()))?;
+            .debounced()
+            .save_session(session.clone())
+            .await;
 
         Ok(session)
     }
@@ -90,15 +90,19 @@ impl RuntimeSessionService {
             version: 1,
         };
 
+        // 使用防抖存储，立即保存到缓存（延迟写入数据库）
         self.storage
-            .session_store()
-            .create(&session)
-            .await
-            .map_err(|err| AgentError::Storage(err.to_string()))?;
+            .debounced()
+            .save_session(session.clone())
+            .await;
 
         Ok(session)
     }
 
+    /// Append a message to the session (debounced write)
+    ///
+    /// The message is cached in memory and written to the database
+    /// after the debounce delay (default 500ms) or when flush() is called.
     pub async fn append_message(
         &self,
         session_id: &str,
@@ -117,20 +121,43 @@ impl RuntimeSessionService {
             created_at: Utc::now().timestamp(),
         };
 
+        // 使用防抖存储，立即保存到缓存（延迟写入数据库）
         self.storage
-            .message_store()
-            .create(&message)
-            .await
-            .map_err(|err| AgentError::Storage(err.to_string()))?;
+            .debounced()
+            .save_message(message.clone())
+            .await;
 
         Ok(message)
     }
 
+    /// List messages for a session (reads directly from database)
     pub async fn list_messages(&self, session_id: &str) -> AgentResult<Vec<Message>> {
         self.storage
             .message_store()
             .list_by_session(session_id)
             .await
             .map_err(|err| AgentError::Storage(err.to_string()))
+    }
+
+    /// Flush all pending writes to the database
+    ///
+    /// Call this when the session ends or you need to ensure
+    /// all cached data is written to the database.
+    pub async fn flush(&self) -> AgentResult<()> {
+        self.storage
+            .debounced()
+            .flush()
+            .await;
+        Ok(())
+    }
+
+    /// Get the number of pending session writes
+    pub async fn session_pending_count(&self) -> AgentResult<usize> {
+        Ok(self.storage.debounced().session_pending_count().await)
+    }
+
+    /// Get the number of pending message writes
+    pub async fn message_pending_count(&self) -> AgentResult<usize> {
+        Ok(self.storage.debounced().message_pending_count().await)
     }
 }
