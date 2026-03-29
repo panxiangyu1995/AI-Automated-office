@@ -45,11 +45,34 @@
         "Define request and response contracts for frontend runtime integration",
         "Ensure the main execution loop is interruptible, traceable, and persistable"
       ],
-      "frs_covered": ["FR400", "FR401", "FR402", "FR403", "FR404"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR17"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 43.1", "Story 43.2", "Story 44.1", "Story 44.2", "Story 44.3"],
+      "frs_covered": [
+        "FR400",
+        "FR401",
+        "FR402",
+        "FR403",
+        "FR404"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 43.1",
+        "Story 43.2",
+        "Story 44.1",
+        "Story 44.2",
+        "Story 44.3"
+      ],
       "passes": true
     },
     {
@@ -80,11 +103,28 @@
         "Handle ordering, reconnect, replay, and interruption consistency",
         "Verify chat and debug panels consume real runtime events"
       ],
-      "frs_covered": ["FR405", "FR406", "FR407"],
-      "nfrs_covered": ["NFR3", "NFR16"],
-      "arch_covered": ["ADR-001", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04", "UX-05"],
-      "dependencies": ["Story 51.1", "Story 43.3"],
+      "frs_covered": [
+        "FR405",
+        "FR406",
+        "FR407"
+      ],
+      "nfrs_covered": [
+        "NFR3",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04",
+        "UX-05"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 43.3"
+      ],
       "passes": true
     },
     {
@@ -118,11 +158,37 @@
         "Integrate permission checks, sensitive action detection, and confirmation flow",
         "Normalize tool results and errors into one runtime contract"
       ],
-      "frs_covered": ["FR420", "FR421", "FR422", "FR423", "FR424"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
-      "arch_covered": ["ADR-010", "ADR-018", "ADR-045"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 51.1", "Story 45.1", "Story 45.2", "Story 45.3", "Story 45.4", "Story 46.1", "Story 46.2", "Story 46.3"],
+      "frs_covered": [
+        "FR420",
+        "FR421",
+        "FR422",
+        "FR423",
+        "FR424"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-010",
+        "ADR-018",
+        "ADR-045"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 45.1",
+        "Story 45.2",
+        "Story 45.3",
+        "Story 45.4",
+        "Story 46.1",
+        "Story 46.2",
+        "Story 46.3"
+      ],
       "passes": true
     },
     {
@@ -158,11 +224,34 @@
         "Add a mock provider and a minimum tool set for runtime tests",
         "Add end-to-end coverage for the main Agent loop"
       ],
-      "frs_covered": ["FR400", "FR410", "FR411"],
-      "nfrs_covered": ["NFR1", "NFR22"],
-      "arch_covered": ["ADR-001", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04", "UX-05"],
-      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 43.4", "Story 49.1", "Story 49.2", "Story 49.3", "Story 49.4"],
+      "frs_covered": [
+        "FR400",
+        "FR410",
+        "FR411"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04",
+        "UX-05"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2",
+        "Story 51.3",
+        "Story 43.4",
+        "Story 49.1",
+        "Story 49.2",
+        "Story 49.3",
+        "Story 49.4"
+      ],
       "passes": true
     },
     {
@@ -193,11 +282,26 @@
         "Connect PromptBuilder to AgentOrchestrator",
         "Persist model outputs through the runtime pipeline"
       ],
-      "frs_covered": ["FR440", "FR441", "FR442"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-038", "ADR-039", "ADR-043"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 51.1"],
+      "frs_covered": [
+        "FR440",
+        "FR441",
+        "FR442"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-039",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.1"
+      ],
       "passes": true
     },
     {
@@ -228,11 +332,26 @@
         "Feed compressed context back into PromptBuilder",
         "Add restore, refresh, and expiry behavior"
       ],
-      "frs_covered": ["FR443", "FR444", "FR445"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-038", "ADR-043"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 53.1", "Story 47.3"],
+      "frs_covered": [
+        "FR443",
+        "FR444",
+        "FR445"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 53.1",
+        "Story 47.3"
+      ],
       "passes": true
     },
     {
@@ -264,11 +383,28 @@
         "Inject retrieval results into planner, runtime, and tool context",
         "Add caching, timeout, and degradation behavior"
       ],
-      "frs_covered": ["FR446", "FR447", "FR448"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
-      "arch_covered": ["ADR-038", "ADR-039", "ADR-043"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 53.1", "Story 47.4"],
+      "frs_covered": [
+        "FR446",
+        "FR447",
+        "FR448"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-038",
+        "ADR-039",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 53.1",
+        "Story 47.4"
+      ],
       "passes": true
     },
     {
@@ -301,11 +437,33 @@
         "Feed recovery state back to chat and debug views",
         "Verify interruption, retry, rollback, and restore end to end"
       ],
-      "frs_covered": ["FR603", "FR604", "FR605"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR22"],
-      "arch_covered": ["ADR-001", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4", "Story 43.4", "Story 44.4", "Story 48.3"],
+      "frs_covered": [
+        "FR603",
+        "FR604",
+        "FR605"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2",
+        "Story 51.3",
+        "Story 51.4",
+        "Story 43.4",
+        "Story 44.4",
+        "Story 48.3"
+      ],
       "passes": true
     },
     {
@@ -338,11 +496,30 @@
         "Connect debug panels to real data sources",
         "Ensure audit coverage for tool calls, confirmations, failures, and results"
       ],
-      "frs_covered": ["FR600", "FR601", "FR602"],
-      "nfrs_covered": ["NFR1", "NFR20", "NFR23"],
-      "arch_covered": ["ADR-023", "ADR-037"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 51.1", "Story 51.3", "Story 48.1", "Story 48.2", "Story 48.3"],
+      "frs_covered": [
+        "FR600",
+        "FR601",
+        "FR602"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR20",
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-023",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.3",
+        "Story 48.1",
+        "Story 48.2",
+        "Story 48.3"
+      ],
       "passes": true
     },
     {
@@ -374,11 +551,26 @@
         "Support session and tenant level statistics",
         "Emit structured diagnostics for troubleshooting"
       ],
-      "frs_covered": ["FR606", "FR607", "FR608"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR23"],
-      "arch_covered": ["ADR-023"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 55.1", "Story 48.4"],
+      "frs_covered": [
+        "FR606",
+        "FR607",
+        "FR608"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-023"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 55.1",
+        "Story 48.4"
+      ],
       "passes": true
     },
     {
@@ -408,11 +600,30 @@
         "Add second-pass validation for risky writeback and outbound requests",
         "Write security events into audit records"
       ],
-      "frs_covered": ["FR609", "FR610", "FR611"],
-      "nfrs_covered": ["NFR20", "NFR21"],
-      "arch_covered": ["ADR-018", "ADR-041"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 51.3", "Story 55.1", "Story 46.1", "Story 46.2", "Story 46.3", "Story 46.4"],
+      "frs_covered": [
+        "FR609",
+        "FR610",
+        "FR611"
+      ],
+      "nfrs_covered": [
+        "NFR20",
+        "NFR21"
+      ],
+      "arch_covered": [
+        "ADR-018",
+        "ADR-041"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.3",
+        "Story 55.1",
+        "Story 46.1",
+        "Story 46.2",
+        "Story 46.3",
+        "Story 46.4"
+      ],
       "passes": true
     },
     {
@@ -440,11 +651,28 @@
         "Output reviewable improvement suggestions",
         "Verify human review remains required for governance changes"
       ],
-      "frs_covered": ["FR449", "FR450", "FR451"],
-      "nfrs_covered": ["NFR1", "NFR20"],
-      "arch_covered": ["ADR-039", "ADR-043"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 53.1", "Story 55.1", "Story 55.2", "Story 55.4"],
+      "frs_covered": [
+        "FR449",
+        "FR450",
+        "FR451"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-039",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 53.1",
+        "Story 55.1",
+        "Story 55.2",
+        "Story 55.4"
+      ],
       "passes": true
     },
     {
@@ -472,11 +700,31 @@
         "Prepare standardized input for Sub-Agent execution context",
         "Verify routing cannot bypass an incomplete main Agent path"
       ],
-      "frs_covered": ["FR930", "FR931", "FR932"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-013", "ADR-037"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4", "Story 55.1", "Story 21.16", "Story 21.17"],
+      "frs_covered": [
+        "FR930",
+        "FR931",
+        "FR932"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-013",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2",
+        "Story 51.3",
+        "Story 51.4",
+        "Story 55.1",
+        "Story 21.16",
+        "Story 21.17"
+      ],
       "passes": true
     },
     {
@@ -502,11 +750,32 @@
         "Link Sub-Agent calls back to the main trace",
         "Provide the shared context model needed by later Sub-Agent tasks"
       ],
-      "frs_covered": ["FR915", "FR916", "FR918", "FR919", "FR920", "FR923"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
-      "arch_covered": ["ADR-013", "ADR-037", "ADR-043"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 52.1", "Story 21.18", "Story 21.19"],
+      "frs_covered": [
+        "FR915",
+        "FR916",
+        "FR918",
+        "FR919",
+        "FR920",
+        "FR923"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-013",
+        "ADR-037",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 52.1",
+        "Story 21.18",
+        "Story 21.19"
+      ],
       "passes": true
     },
     {
@@ -532,11 +801,25 @@
         "Link nested calls to trace, audit, and failure records",
         "Verify no unbounded recursion or privilege escalation"
       ],
-      "frs_covered": ["FR935", "FR937", "FR938"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-013"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 52.2"],
+      "frs_covered": [
+        "FR935",
+        "FR937",
+        "FR938"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-013"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 52.2"
+      ],
       "passes": true
     },
     {
@@ -562,11 +845,27 @@
         "Preserve context boundaries during result merge",
         "Add visible debug and review data for parent-child Agent interaction"
       ],
-      "frs_covered": ["FR933", "FR934", "FR936"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-013", "ADR-037"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 52.2", "Story 52.3"],
+      "frs_covered": [
+        "FR933",
+        "FR934",
+        "FR936"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-013",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 52.2",
+        "Story 52.3"
+      ],
       "passes": true
     },
     {
@@ -592,11 +891,28 @@
         "Emit diagnostics for multi-agent troubleshooting",
         "Verify monitoring does not create new permission leaks"
       ],
-      "frs_covered": ["FR924", "FR938"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR23"],
-      "arch_covered": ["ADR-013", "ADR-023"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 52.4", "Story 55.3", "Story 21.23"],
+      "frs_covered": [
+        "FR924",
+        "FR938"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-013",
+        "ADR-023"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 52.4",
+        "Story 55.3",
+        "Story 21.23"
+      ],
       "passes": true
     },
     {
@@ -629,11 +945,37 @@
         "Integrate with frontend HeartbeatChecklist component via event bridge",
         "Add E2E tests for complete heartbeat flow"
       ],
-      "frs_covered": ["FR1127", "FR1128", "FR1129", "FR1130", "FR1131", "FR1132", "FR1133", "FR1134"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR22", "NFR23"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
-      "ux_covered": ["UX-01", "UX-04", "UX-05"],
-      "dependencies": ["Story 51.1", "Story 51.2", "Story 55.1"],
+      "frs_covered": [
+        "FR1127",
+        "FR1128",
+        "FR1129",
+        "FR1130",
+        "FR1131",
+        "FR1132",
+        "FR1133",
+        "FR1134"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22",
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04",
+        "UX-05"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2",
+        "Story 55.1"
+      ],
       "passes": true
     },
     {
@@ -674,11 +1016,37 @@
         "Implement frontend MemoryInspector.tsx and MemoryConfig.tsx components (FR14-12)",
         "Add E2E tests for three-layer memory system"
       ],
-      "frs_covered": ["FR14-4", "FR14-5", "FR14-6", "FR14-7", "FR14-8", "FR14-9", "FR14-10", "FR14-11", "FR14-12"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20", "NFR23"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 51.1", "Story 53.1", "Story 53.2"],
+      "frs_covered": [
+        "FR14-4",
+        "FR14-5",
+        "FR14-6",
+        "FR14-7",
+        "FR14-8",
+        "FR14-9",
+        "FR14-10",
+        "FR14-11",
+        "FR14-12"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20",
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 53.1",
+        "Story 53.2"
+      ],
       "passes": true
     },
     {
@@ -717,11 +1085,46 @@
         "Register Tauri commands: get_installed_skills, parse_skill_file, toggle_skill, execute_skill, check_skill_updates, update_skill, get_skill_prompt",
         "Connect frontend SkillConfiguration.tsx to backend APIs (FR835-FR840)"
       ],
-      "frs_covered": ["FR700", "FR701", "FR702", "FR703", "FR704", "FR705", "FR706", "FR707", "FR708", "FR709", "FR710", "FR835", "FR836", "FR837", "FR838", "FR839", "FR840"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20", "NFR23"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-046"],
-      "ux_covered": ["UX-01", "UX-02", "UX-04"],
-      "dependencies": ["Story 51.1", "Story 53.1"],
+      "frs_covered": [
+        "FR700",
+        "FR701",
+        "FR702",
+        "FR703",
+        "FR704",
+        "FR705",
+        "FR706",
+        "FR707",
+        "FR708",
+        "FR709",
+        "FR710",
+        "FR835",
+        "FR836",
+        "FR837",
+        "FR838",
+        "FR839",
+        "FR840"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20",
+        "NFR23"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043",
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 53.1"
+      ],
       "passes": true
     },
     {
@@ -760,11 +1163,33 @@
         "Implement frontend DocumentUploader.tsx and KnowledgeSearchPanel.tsx components",
         "Add E2E tests for document processing and RAG retrieval"
       ],
-      "frs_covered": ["FR14-11", "FR14-12", "FR14-13", "FR14-14", "FR14-15", "FR14-16"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 53.5", "Story 51.1", "Story 53.1"],
+      "frs_covered": [
+        "FR14-11",
+        "FR14-12",
+        "FR14-13",
+        "FR14-14",
+        "FR14-15",
+        "FR14-16"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 53.5",
+        "Story 51.1",
+        "Story 53.1"
+      ],
       "passes": true
     },
     {
@@ -802,11 +1227,37 @@
         "Implement frontend PackageMarketplace.tsx and InstalledPackages.tsx components",
         "Add E2E tests for package lifecycle and marketplace integration"
       ],
-      "frs_covered": ["FR800", "FR801", "FR802", "FR803", "FR804", "FR805", "FR806"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR20", "NFR21"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-046"],
-      "ux_covered": ["UX-01", "UX-02", "UX-04"],
-      "dependencies": ["Story 53.6", "Story 51.3", "Epic 2"],
+      "frs_covered": [
+        "FR800",
+        "FR801",
+        "FR802",
+        "FR803",
+        "FR804",
+        "FR805",
+        "FR806"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20",
+        "NFR21"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043",
+        "ADR-046"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-02",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 53.6",
+        "Story 51.3",
+        "Epic 2"
+      ],
       "passes": true
     },
     {
@@ -847,11 +1298,34 @@
         "Integrate ProviderConfigService into AgentRuntimeState",
         "Add unit tests for all providers and services"
       ],
-      "frs_covered": ["FR400", "FR401", "FR402", "FR403", "FR404"],
-      "nfrs_covered": ["NFR1", "NFR16", "NFR17", "NFR20"],
-      "arch_covered": ["ADR-001", "ADR-037", "ADR-043", "ADR-054"],
-      "ux_covered": ["UX-01"],
-      "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4"],
+      "frs_covered": [
+        "FR400",
+        "FR401",
+        "FR402",
+        "FR403",
+        "FR404"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR17",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-001",
+        "ADR-037",
+        "ADR-043",
+        "ADR-054"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2",
+        "Story 51.3",
+        "Story 51.4"
+      ],
       "passes": false
     },
     {
@@ -883,12 +1357,31 @@
         "前端配置 UI 添加 Plan/Act 双配置 Tab",
         "UI 显示当前所处模式（Plan/Act）"
       ],
-      "frs_covered": ["FR841", "FR842", "FR843", "FR844", "FR845", "FR846"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-055"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 51.5", "Story 21.1", "Story 21.2"],
-      "passes": false
+      "frs_covered": [
+        "FR841",
+        "FR842",
+        "FR843",
+        "FR844",
+        "FR845",
+        "FR846"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-055"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.5",
+        "Story 21.1",
+        "Story 21.2"
+      ],
+      "passes": true
     },
     {
       "id": 135,
@@ -921,12 +1414,31 @@
         "前端路由模式选择器 UI",
         "YOLO 确认对话框（安全警告 + 二次确认）"
       ],
-      "frs_covered": ["FR866", "FR867", "FR868", "FR869", "FR870", "FR871"],
-      "nfrs_covered": ["NFR1", "NFR16"],
-      "arch_covered": ["ADR-056"],
-      "ux_covered": ["UX-01", "UX-04"],
-      "dependencies": ["Story 51.5", "Story 21.6", "Story 21.7"],
-      "passes": false
+      "frs_covered": [
+        "FR866",
+        "FR867",
+        "FR868",
+        "FR869",
+        "FR870",
+        "FR871"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-056"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 51.5",
+        "Story 21.6",
+        "Story 21.7"
+      ],
+      "passes": true
     }
   ]
 }
