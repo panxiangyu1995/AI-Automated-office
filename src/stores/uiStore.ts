@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import type { LayoutConfig, PresetMode } from '../features/workspace/types/layout'
 
 export type ActivityBarItem =
   | 'dashboard'
@@ -43,9 +44,16 @@ interface UIState {
   dynamicSidebarEntries: SidebarResourceEntry[]
   editorSidebarEntries: SidebarResourceEntry[]
   recentSidebarEntries: SidebarResourceEntry[]
+  // Layout preset state
+  activePresetId: string | null
+  activePresetMode: PresetMode | null
+  aiPanelVisible: boolean
+  aiPanelWidth: number
+  // Layout preset actions
   setSidebarWidth: (width: number) => void
   setChatPanelWidth: (width: number) => void
   setBottomPanelHeight: (height: number) => void
+  setAiPanelWidth: (width: number) => void
   openChatPanel: () => void
   closeChatPanel: () => void
   toggleSidebar: () => void
@@ -54,6 +62,7 @@ interface UIState {
   closeAgentSecondarySurface: () => void
   toggleBottomPanel: () => void
   toggleTopBar: () => void
+  toggleAiPanel: () => void
   resetLayout: () => void
   openQuickSearch: () => void
   closeQuickSearch: () => void
@@ -63,6 +72,10 @@ interface UIState {
   setEditorSidebarEntries: (entries: SidebarResourceEntry[]) => void
   registerRecentSidebarEntry: (entry: SidebarResourceEntry) => void
   clearRecentSidebarEntries: () => void
+  // Layout preset methods
+  applyLayoutPreset: (layout: LayoutConfig, presetId?: string, presetMode?: PresetMode | null) => void
+  applyLayoutConfig: (config: Partial<LayoutConfig>) => void
+  resetToDefaultLayout: () => void
 }
 
 type PersistedUIState = Pick<
@@ -75,6 +88,10 @@ type PersistedUIState = Pick<
   | 'bottomPanelCollapsed'
   | 'activeActivityItem'
   | 'topBarVisible'
+  | 'activePresetId'
+  | 'activePresetMode'
+  | 'aiPanelVisible'
+  | 'aiPanelWidth'
 >
 
 const defaultLayout = {
@@ -85,6 +102,10 @@ const defaultLayout = {
   bottomPanelHeight: 200,
   bottomPanelCollapsed: true,
   topBarVisible: true,
+  activePresetId: null,
+  activePresetMode: null,
+  aiPanelVisible: true,
+  aiPanelWidth: 400,
 }
 
 const createDebouncedStorage = (storage: Storage, delay: number) => {
@@ -125,6 +146,7 @@ export const useUIStore = create<UIState>()(
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       setChatPanelWidth: (width) => set({ chatPanelWidth: width }),
       setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
+      setAiPanelWidth: (width) => set({ aiPanelWidth: width }),
       openChatPanel: () => set({ chatPanelCollapsed: false }),
       closeChatPanel: () => set({ chatPanelCollapsed: true, agentSecondarySurface: 'none' }),
       toggleSidebar: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
@@ -141,6 +163,7 @@ export const useUIStore = create<UIState>()(
       closeAgentSecondarySurface: () => set({ agentSecondarySurface: 'none' }),
       toggleBottomPanel: () => set({ bottomPanelCollapsed: !get().bottomPanelCollapsed }),
       toggleTopBar: () => set({ topBarVisible: !get().topBarVisible }),
+      toggleAiPanel: () => set({ aiPanelVisible: !get().aiPanelVisible }),
       resetLayout: () => set({ ...defaultLayout, agentSecondarySurface: 'none' }),
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
@@ -158,6 +181,40 @@ export const useUIStore = create<UIState>()(
           return { recentSidebarEntries: nextEntries }
         }),
       clearRecentSidebarEntries: () => set({ recentSidebarEntries: [] }),
+      // Layout preset methods
+      applyLayoutPreset: (layout, presetId, presetMode) =>
+        set({
+          sidebarWidth: layout.sidebarWidth,
+          sidebarCollapsed: layout.sidebarCollapsed,
+          chatPanelWidth: layout.chatPanelWidth,
+          chatPanelCollapsed: layout.chatPanelCollapsed,
+          bottomPanelHeight: layout.bottomPanelHeight,
+          bottomPanelCollapsed: layout.bottomPanelCollapsed,
+          topBarVisible: layout.topBarVisible,
+          aiPanelVisible: layout.aiPanelVisible,
+          activePresetId: presetId || null,
+          activePresetMode: presetMode ?? null,
+        }),
+      applyLayoutConfig: (config) =>
+        set((state) => ({
+          sidebarWidth: config.sidebarWidth ?? state.sidebarWidth,
+          sidebarCollapsed: config.sidebarCollapsed ?? state.sidebarCollapsed,
+          chatPanelWidth: config.chatPanelWidth ?? state.chatPanelWidth,
+          chatPanelCollapsed: config.chatPanelCollapsed ?? state.chatPanelCollapsed,
+          bottomPanelHeight: config.bottomPanelHeight ?? state.bottomPanelHeight,
+          bottomPanelCollapsed: config.bottomPanelCollapsed ?? state.bottomPanelCollapsed,
+          topBarVisible: config.topBarVisible ?? state.topBarVisible,
+          aiPanelVisible: config.aiPanelVisible ?? state.aiPanelVisible,
+          activePresetId: null, // Custom config, no preset
+          activePresetMode: null,
+        })),
+      resetToDefaultLayout: () =>
+        set({
+          ...defaultLayout,
+          agentSecondarySurface: 'none',
+          activePresetId: null,
+          activePresetMode: null,
+        }),
     }),
     {
       name: 'ui-layout',
@@ -171,6 +228,10 @@ export const useUIStore = create<UIState>()(
         bottomPanelCollapsed: state.bottomPanelCollapsed,
         activeActivityItem: state.activeActivityItem,
         topBarVisible: state.topBarVisible,
+        activePresetId: state.activePresetId,
+        activePresetMode: state.activePresetMode,
+        aiPanelVisible: state.aiPanelVisible,
+        aiPanelWidth: state.aiPanelWidth,
       }),
     }
   )
