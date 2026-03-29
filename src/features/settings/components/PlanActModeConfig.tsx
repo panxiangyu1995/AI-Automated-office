@@ -1,63 +1,34 @@
 /**
  * PlanActModeConfig.tsx
  * Story 21.24 - LLM Provider Plan/Act 双配置模式
- *
- * 功能：
- * - Plan模式配置（只读工具专用Provider）
- * - Act模式配置（全部工具使用Provider）
- * - 当前模式指示器
- * - Plan/Act模式切换
+ * UI参考cline的设计风格
  */
 
 import { useState } from 'react'
-import {
-  Bot,
-  Eye,
-  Rocket,
-  Check,
-  AlertCircle,
-  RefreshCw,
-  Loader2,
-} from 'lucide-react'
+import { Bot, Eye, Rocket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
 // ============================================================================
 // 类型定义
 
-/** Agent运行模式 */
 export type AgentMode = 'plan' | 'act'
 
-/** 单个模式的提供商配置 */
 export interface ModeProviderConfig {
   providerId: string
   modelId: string
   apiEndpoint?: string
   apiKey?: string
-  temperature?: number
-  maxTokens?: number
 }
 
-/** Plan/Act双配置 */
 export interface PlanActConfig {
   planMode: ModeProviderConfig | null
   actMode: ModeProviderConfig
   currentMode: AgentMode
 }
 
-/** 提供商信息 */
 export interface ProviderInfo {
   id: string
   name: string
@@ -65,454 +36,338 @@ export interface ProviderInfo {
   availableModels: string[]
 }
 
-/** 模式状态 */
-export interface ModeStatus {
-  currentMode: AgentMode
-  isReadOnlyToolsOnly: boolean
-  availableToolsCount: number
-  filteredToolsCount: number
-}
-
 // ============================================================================
-// 常量定义
+// 常量
 
-const AGENT_MODE_INFO = {
-  plan: {
-    label: 'Plan 模式',
-    description: '规划模式，仅允许使用只读工具，适合分析、检索、调研类任务',
+const AGENT_MODES: { value: AgentMode; label: string; description: string; icon: typeof Eye }[] = [
+  {
+    value: 'plan',
+    label: 'Plan',
+    description: 'Read-only tools only. Use for analysis and research.',
     icon: Eye,
-    color: 'text-blue-500',
-    badge: 'bg-blue-100 text-blue-700 border-blue-200',
   },
-  act: {
-    label: 'Act 模式',
-    description: '执行模式，允许使用全部工具，适合需要实际操作的任务',
+  {
+    value: 'act',
+    label: 'Act',
+    description: 'All tools enabled. Use for execution.',
     icon: Rocket,
-    color: 'text-green-500',
-    badge: 'bg-green-100 text-green-700 border-green-200',
   },
-} as const
+]
 
 // ============================================================================
-// Plan模式配置卡片
+// TabButton组件 - 参考cline样式
 
-interface PlanModeCardProps {
-  config: ModeProviderConfig | null
-  providers: ProviderInfo[]
-  onConfigChange: (config: ModeProviderConfig | null) => void
-  onTestConnection?: (config: ModeProviderConfig) => Promise<boolean>
+interface TabButtonProps {
+  children: React.ReactNode
+  isActive: boolean
+  onClick: () => void
+  disabled?: boolean
 }
 
-function PlanModeCard({
-  config,
-  providers,
-  onConfigChange,
-  onTestConnection,
-}: PlanModeCardProps) {
-  const [isTesting, setIsTesting] = useState(false)
-  const [testResult, setTestResult] = useState<'success' | 'failed' | null>(null)
-
-  const selectedProvider = providers.find((p) => p.id === config?.providerId)
-  const availableModels = selectedProvider?.availableModels || []
-
-  const handleProviderChange = (providerId: string) => {
-    const provider = providers.find((p) => p.id === providerId)
-    onConfigChange({
-      providerId,
-      modelId: provider?.availableModels[0] || '',
-      apiEndpoint: config?.apiEndpoint,
-      apiKey: config?.apiKey,
-    })
-  }
-
-  const handleModelChange = (modelId: string) => {
-    if (config) {
-      onConfigChange({ ...config, modelId })
-    }
-  }
-
-  const handleTestConnection = async () => {
-    if (!config || !onTestConnection) return
-    setIsTesting(true)
-    setTestResult(null)
-    try {
-      const success = await onTestConnection(config)
-      setTestResult(success ? 'success' : 'failed')
-    } catch {
-      setTestResult('failed')
-    }
-    setIsTesting(false)
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Eye className={cn('h-4 w-4', AGENT_MODE_INFO.plan.color)} />
-        <span className="font-medium">Plan 模式配置</span>
-        <Badge variant="outline" className="text-xs">仅只读工具</Badge>
-      </div>
-
-      {config ? (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">提供商</Label>
-              <Select value={config.providerId} onValueChange={handleProviderChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {providers.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">模型</Label>
-              <Select value={config.modelId} onValueChange={handleModelChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableModels.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestConnection}
-              disabled={isTesting || !onTestConnection}
-            >
-              {isTesting ? (
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3 w-3 mr-1" />
-              )}
-              测试连接
-            </Button>
-            {testResult === 'success' && (
-              <Check className="h-4 w-4 text-green-500" />
-            )}
-            {testResult === 'failed' && (
-              <AlertCircle className="h-4 w-4 text-red-500" />
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="text-sm text-muted-foreground py-2">
-          尚未配置Plan模式提供商
-        </div>
-      )}
-    </div>
-  )
-}
+const TabButton = ({ children, isActive, onClick, disabled }: TabButtonProps) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    style={{
+      background: 'none',
+      border: 'none',
+      borderBottom: `2px solid ${isActive ? 'var(--foreground)' : 'transparent'}`,
+      color: isActive ? 'var(--foreground)' : 'var(--muted-foreground)',
+      padding: '8px 16px',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      fontSize: '13px',
+      marginBottom: '-1px',
+      fontFamily: 'inherit',
+      opacity: disabled ? 0.6 : 1,
+    }}
+  >
+    {children}
+  </button>
+)
 
 // ============================================================================
-// Act模式配置卡片
+// Provider选择器组件
 
-interface ActModeCardProps {
-  config: ModeProviderConfig
-  providers: ProviderInfo[]
-  onConfigChange: (config: ModeProviderConfig) => void
-  onTestConnection?: (config: ModeProviderConfig) => Promise<boolean>
+interface ProviderSelectProps {
+  label: string
+  value: string
+  options: ProviderInfo[]
+  onChange: (id: string) => void
 }
 
-function ActModeCard({
-  config,
-  providers,
-  onConfigChange,
-  onTestConnection,
-}: ActModeCardProps) {
-  const [isTesting, setIsTesting] = useState(false)
-  const [testResult, setTestResult] = useState<'success' | 'failed' | null>(null)
-
-  const selectedProvider = providers.find((p) => p.id === config.providerId)
-  const availableModels = selectedProvider?.availableModels || []
-
-  const handleProviderChange = (providerId: string) => {
-    const provider = providers.find((p) => p.id === providerId)
-    onConfigChange({
-      providerId,
-      modelId: provider?.availableModels[0] || '',
-      apiEndpoint: config.apiEndpoint,
-      apiKey: config.apiKey,
-    })
-  }
-
-  const handleModelChange = (modelId: string) => {
-    onConfigChange({ ...config, modelId })
-  }
-
-  const handleTestConnection = async () => {
-    if (!onTestConnection) return
-    setIsTesting(true)
-    setTestResult(null)
-    try {
-      const success = await onTestConnection(config)
-      setTestResult(success ? 'success' : 'failed')
-    } catch {
-      setTestResult('failed')
-    }
-    setIsTesting(false)
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Rocket className={cn('h-4 w-4', AGENT_MODE_INFO.act.color)} />
-        <span className="font-medium">Act 模式配置</span>
-        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-          全部工具
-        </Badge>
-      </div>
-
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs">提供商</Label>
-            <Select value={config.providerId} onValueChange={handleProviderChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {providers.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs">模型</Label>
-            <Select value={config.modelId} onValueChange={handleModelChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availableModels.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTestConnection}
-            disabled={isTesting || !onTestConnection}
-          >
-            {isTesting ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3 w-3 mr-1" />
-            )}
-            测试连接
-          </Button>
-          {testResult === 'success' && (
-            <Check className="h-4 w-4 text-green-500" />
-          )}
-          {testResult === 'failed' && (
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+const ProviderSelect = ({ label, value, options, onChange }: ProviderSelectProps) => (
+  <div style={{ marginBottom: '12px' }}>
+    <label
+      style={{
+        display: 'block',
+        fontSize: '12px',
+        fontWeight: 500,
+        marginBottom: '4px',
+        color: 'var(--muted-foreground)',
+      }}
+    >
+      {label}
+    </label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: '100%',
+        padding: '6px 10px',
+        borderRadius: '4px',
+        border: '1px solid var(--border)',
+        background: 'var(--input)',
+        color: 'var(--foreground)',
+        fontSize: '13px',
+      }}
+    >
+      {options.map((opt) => (
+        <option key={opt.id} value={opt.id}>
+          {opt.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)
 
 // ============================================================================
-// 当前模式指示器
+// Model选择器组件
 
-interface CurrentModeIndicatorProps {
-  status: ModeStatus
-  onModeSwitch?: (mode: AgentMode) => void
+interface ModelSelectProps {
+  label: string
+  value: string
+  options: string[]
+  onChange: (id: string) => void
 }
 
-function CurrentModeIndicator({ status, onModeSwitch }: CurrentModeIndicatorProps) {
-  const modeInfo = AGENT_MODE_INFO[status.currentMode]
-  const Icon = modeInfo.icon
-
-  return (
-    <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-      <div className="flex items-center gap-3">
-        <div className={cn('p-2 rounded-full bg-background', modeInfo.badge)}>
-          <Icon className={cn('h-5 w-5', modeInfo.color)} />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{modeInfo.label}</span>
-            <Badge variant="outline" className="text-xs">
-              {status.currentMode === 'plan'
-                ? `${status.filteredToolsCount}/${status.availableToolsCount} 工具可用`
-                : `${status.availableToolsCount} 工具可用`}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">{modeInfo.description}</p>
-        </div>
-      </div>
-
-      {onModeSwitch && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onModeSwitch(status.currentMode === 'plan' ? 'act' : 'plan')}
-          className="gap-1"
-        >
-          <RefreshCw className="h-3 w-3" />
-          切换到 {status.currentMode === 'plan' ? 'Act' : 'Plan'}
-        </Button>
-      )}
-    </div>
-  )
-}
+const ModelSelect = ({ label, value, options, onChange }: ModelSelectProps) => (
+  <div style={{ marginBottom: '12px' }}>
+    <label
+      style={{
+        display: 'block',
+        fontSize: '12px',
+        fontWeight: 500,
+        marginBottom: '4px',
+        color: 'var(--muted-foreground)',
+      }}
+    >
+      {label}
+    </label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: '100%',
+        padding: '6px 10px',
+        borderRadius: '4px',
+        border: '1px solid var(--border)',
+        background: 'var(--input)',
+        color: 'var(--foreground)',
+        fontSize: '13px',
+      }}
+    >
+      {options.map((opt) => (
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
+      ))}
+    </select>
+  </div>
+)
 
 // ============================================================================
-// 主配置组件
+// 主组件
 
 interface PlanActModeConfigProps {
   className?: string
-  initialConfig?: Partial<PlanActConfig>
   providers?: ProviderInfo[]
-  onConfigChange?: (config: PlanActConfig) => void
+  initialPlanConfig?: ModeProviderConfig | null
+  initialActConfig?: ModeProviderConfig
+  onPlanConfigChange?: (config: ModeProviderConfig | null) => void
+  onActConfigChange?: (config: ModeProviderConfig) => void
   onModeSwitch?: (mode: AgentMode) => void
 }
 
-export function PlanActModeConfig({
+export const PlanActModeConfig = ({
   className,
-  initialConfig,
   providers = [],
-  onConfigChange,
+  initialPlanConfig = null,
+  initialActConfig,
+  onPlanConfigChange,
+  onActConfigChange,
   onModeSwitch,
-}: PlanActModeConfigProps) {
-  const [config, setConfig] = useState<PlanActConfig>({
-    planMode: initialConfig?.planMode || null,
-    actMode: initialConfig?.actMode || {
-      providerId: providers[0]?.id || '',
-      modelId: providers[0]?.availableModels[0] || '',
-    },
-    currentMode: initialConfig?.currentMode || 'act',
-  })
+}: PlanActModeConfigProps) => {
+  const [currentMode, setCurrentMode] = useState<AgentMode>('act')
+  const [planConfig, setPlanConfig] = useState<ModeProviderConfig | null>(initialPlanConfig)
+  const [actConfig, setActConfig] = useState<ModeProviderConfig>(
+    initialActConfig || (providers.length > 0 ? { providerId: providers[0].id, modelId: providers[0].availableModels[0] || '' } : { providerId: '', modelId: '' })
+  )
 
-  const [modeStatus] = useState<ModeStatus>({
-    currentMode: config.currentMode,
-    isReadOnlyToolsOnly: config.currentMode === 'plan',
-    availableToolsCount: config.currentMode === 'act' ? 156 : 45,
-    filteredToolsCount: config.currentMode === 'plan' ? 45 : 156,
-  })
+  const selectedPlanProvider = providers.find((p) => p.id === planConfig?.providerId)
+  const selectedActProvider = providers.find((p) => p.id === actConfig.providerId)
 
-  const handlePlanConfigChange = (planConfig: ModeProviderConfig | null) => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, planMode: planConfig }
-      onConfigChange?.(newConfig)
-      return newConfig
-    })
+  const handleProviderChange = (mode: AgentMode) => (providerId: string) => {
+    const provider = providers.find((p) => p.id === providerId)
+    if (!provider) return
+
+    if (mode === 'plan') {
+      const newConfig = { providerId, modelId: provider.availableModels[0] || '' }
+      setPlanConfig(newConfig)
+      onPlanConfigChange?.(newConfig)
+    } else {
+      const newConfig = { ...actConfig, providerId, modelId: provider.availableModels[0] || '' }
+      setActConfig(newConfig)
+      onActConfigChange?.(newConfig)
+    }
   }
 
-  const handleActConfigChange = (actConfig: ModeProviderConfig) => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, actMode: actConfig }
-      onConfigChange?.(newConfig)
-      return newConfig
-    })
+  const handleModelChange = (mode: AgentMode) => (modelId: string) => {
+    if (mode === 'plan') {
+      if (planConfig) {
+        const newConfig = { ...planConfig, modelId }
+        setPlanConfig(newConfig)
+        onPlanConfigChange?.(newConfig)
+      }
+    } else {
+      const newConfig = { ...actConfig, modelId }
+      setActConfig(newConfig)
+      onActConfigChange?.(newConfig)
+    }
   }
 
   const handleModeSwitch = (mode: AgentMode) => {
-    setConfig((prev) => {
-      const newConfig = { ...prev, currentMode: mode }
-      onConfigChange?.(newConfig)
-      onModeSwitch?.(mode)
-      return newConfig
-    })
-  }
-
-  // 模拟测试连接
-  const handleTestConnection = async (_cfg: ModeProviderConfig): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    return Math.random() > 0.2
+    setCurrentMode(mode)
+    onModeSwitch?.(mode)
   }
 
   return (
     <Card className={cn('', className)}>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Agent 模式配置</CardTitle>
+      <CardHeader style={{ paddingBottom: '0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <CardTitle style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Bot style={{ width: '16px', height: '16px', color: '#9663f1' }} />
+              Agent Mode
+            </CardTitle>
+            <CardDescription style={{ fontSize: '12px' }}>
+              Configure different providers for Plan and Act modes
+            </CardDescription>
+          </div>
+          <Badge variant="outline" className="text-xs">
+            {currentMode === 'plan' ? (
+              <>
+                <Eye style={{ width: '12px', height: '12px', marginRight: '4px' }} />
+                Plan
+              </>
+            ) : (
+              <>
+                <Rocket style={{ width: '12px', height: '12px', marginRight: '4px' }} />
+                Act
+              </>
+            )}
+          </Badge>
         </div>
-        <CardDescription>
-          配置 Plan/Act 双模式使用的不同Provider，实现精细化的工具权限控制
-        </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        {/* 当前模式指示器 */}
-        <CurrentModeIndicator status={modeStatus} onModeSwitch={handleModeSwitch} />
+      <CardContent style={{ paddingTop: '16px' }}>
+        {/* Tab buttons - 参考cline风格 */}
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid var(--border)',
+            marginBottom: '16px',
+          }}
+        >
+          {AGENT_MODES.map((mode) => {
+            const Icon = mode.icon
+            return (
+              <TabButton
+                key={mode.value}
+                isActive={currentMode === mode.value}
+                onClick={() => handleModeSwitch(mode.value)}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon style={{ width: '14px', height: '14px' }} />
+                  {mode.label}
+                </span>
+              </TabButton>
+            )
+          })}
+        </div>
 
-        <Separator />
+        {/* Mode description */}
+        <p style={{ fontSize: '13px', color: 'var(--muted-foreground)', marginBottom: '16px' }}>
+          {AGENT_MODES.find((m) => m.value === currentMode)?.description}
+        </p>
 
-        {/* Plan/Act 配置Tabs */}
-        <Tabs defaultValue="act" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="plan" className="gap-1">
-              <Eye className="h-3 w-3" />
-              Plan 模式
-            </TabsTrigger>
-            <TabsTrigger value="act" className="gap-1">
-              <Rocket className="h-3 w-3" />
-              Act 模式
-            </TabsTrigger>
-          </TabsList>
+        {/* Plan mode config */}
+        {currentMode === 'plan' && (
+          <div
+            style={{
+              padding: '16px',
+              background: 'var(--accent)',
+              borderRadius: '6px',
+              border: '1px solid var(--border)',
+            }}
+          >
+            {planConfig ? (
+              <>
+                <ProviderSelect
+                  label="Provider"
+                  value={planConfig.providerId}
+                  options={providers}
+                  onChange={handleProviderChange('plan')}
+                />
+                <ModelSelect
+                  label="Model"
+                  value={planConfig.modelId}
+                  options={selectedPlanProvider?.availableModels || []}
+                  onChange={handleModelChange('plan')}
+                />
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <Eye style={{ width: '24px', height: '24px', margin: '0 auto 8px', color: 'var(--muted-foreground)' }} />
+                <p style={{ fontSize: '13px', color: 'var(--muted-foreground)', marginBottom: '12px' }}>
+                  No Plan mode provider configured
+                </p>
+                <Button variant="outline" size="sm" onClick={() => setPlanConfig({ providerId: providers[0]?.id || '', modelId: providers[0]?.availableModels[0] || '' })}>
+                  Configure Provider
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
-          <TabsContent value="plan" className="mt-4">
-            <PlanModeCard
-              config={config.planMode}
-              providers={providers}
-              onConfigChange={handlePlanConfigChange}
-              onTestConnection={handleTestConnection}
+        {/* Act mode config */}
+        {currentMode === 'act' && (
+          <div
+            style={{
+              padding: '16px',
+              background: 'var(--accent)',
+              borderRadius: '6px',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <ProviderSelect
+              label="Provider"
+              value={actConfig.providerId}
+              options={providers}
+              onChange={handleProviderChange('act')}
             />
-
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
-                <strong>Plan 模式说明:</strong> Plan模式仅允许使用标记为"只读"的工具，
-                如查询、搜索、获取信息等操作。适合进行任务规划、数据分析、方案调研等场景。
-              </p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="act" className="mt-4">
-            <ActModeCard
-              config={config.actMode}
-              providers={providers}
-              onConfigChange={handleActConfigChange}
-              onTestConnection={handleTestConnection}
+            <ModelSelect
+              label="Model"
+              value={actConfig.modelId}
+              options={selectedActProvider?.availableModels || []}
+              onChange={handleModelChange('act')}
             />
+          </div>
+        )}
 
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-700">
-                <strong>Act 模式说明:</strong> Act模式允许使用全部工具，
-                包括可能对系统进行修改的操作。结合敏感度评估和审批流程，确保操作安全。
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Info note */}
+        <p style={{ fontSize: '11px', color: 'var(--muted-foreground)', marginTop: '12px' }}>
+          Plan mode restricts tools to read-only operations. Act mode enables all tools.
+        </p>
       </CardContent>
     </Card>
   )
