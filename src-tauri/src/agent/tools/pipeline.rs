@@ -13,6 +13,7 @@ use super::registry::ToolRegistry;
 use super::sensitivity::{assess_sensitivity, SensitiveActionAssessment};
 use crate::agent::events::RuntimeEventEmitter;
 use crate::agent::llm_provider::config::AgentMode;
+use crate::agent::routing::{RoutingMode, YoloTtl};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,6 +42,15 @@ pub struct ToolExecutionRequest {
     /// Agent execution mode for Plan mode tool filtering
     #[serde(default)]
     pub agent_mode: Option<AgentMode>,
+    /// Routing mode for confirmation handling
+    #[serde(default)]
+    pub routing_mode: Option<RoutingMode>,
+    /// YOLO mode TTL for auto-expiration
+    #[serde(default)]
+    pub yolo_ttl: Option<YoloTtl>,
+    /// YOLO mode activation timestamp (for TTL tracking)
+    #[serde(default)]
+    pub yolo_activated_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -411,5 +421,59 @@ impl ToolExecutionPipeline {
             completed_at,
             metadata: serde_json::json!({}),
         }
+    }
+
+    /// Determine if confirmation should be requested based on routing mode
+    /// - Manual: Always request confirmation
+    /// - Hybrid: Request for sensitive tools
+    /// - Auto: Skip confirmation for non-sensitive tools
+    /// - Yolo: Never request confirmation (auto-approve all)
+    pub fn should_request_confirmation(
+        &self,
+        routing_mode: Option<RoutingMode>,
+        sensitivity: &SensitiveActionAssessment,
+    ) -> bool {
+        use crate::agent::tools::sensitivity::RiskLevel;
+
+        match routing_mode {
+            Some(RoutingMode::Manual) => true,
+            Some(RoutingMode::Hybrid) => {
+                sensitivity.requires_confirmation || matches!(sensitivity.risk_level, RiskLevel::High | RiskLevel::Critical)
+            }
+            Some(RoutingMode::Auto) => sensitivity.requires_confirmation,
+            Some(RoutingMode::Yolo) => false, // YOLO mode never requests confirmation
+            None => sensitivity.requires_confirmation, // Default behavior
+        }
+    }
+
+    /// Check if YOLO mode TTL has expired
+    pub fn check_yolo_ttl_expired(
+        &self,
+        yolo_ttl: Option<YoloTtl>,
+        yolo_activated_at: Option<i64>,
+    ) -> bool {
+        match (yolo_ttl, yolo_activated_at) {
+            (Some(YoloTtl::Once), _) => false, // Once TTL means single task, not time-based
+            (Some(ttl), Some(activated_at)) => {
+                if let Some(ttl_seconds) = ttl.to_seconds() {
+                    let now = chrono::Utc::now().timestamp();
+                    let elapsed = now - activated_at;
+                    elapsed >= ttl_seconds as i64
+                } else {
+                    false // Once doesn't expire based on time
+                }
+            }
+            _ => false, // No TTL set or not activated
+        }
+    }
+
+    /// Check if YOLO mode is currently active (not expired)
+    pub fn is_yolo_active(
+        &self,
+        routing_mode: Option<RoutingMode>,
+        yolo_ttl: Option<YoloTtl>,
+        yolo_activated_at: Option<i64>,
+    ) -> bool {
+        routing_mode == Some(RoutingMode::Yolo) && !self.check_yolo_ttl_expired(yolo_ttl, yolo_activated_at)
     }
 }

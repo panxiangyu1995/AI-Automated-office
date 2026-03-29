@@ -7443,14 +7443,14 @@
 
 ### Notes:
 - Backend Data Models (1.1-1.5) 已完成
-- Backend Logic Implementation (2.1-2.6) 部分完成：
-  - 2.4 filter_readonly_tools() 已完成
-  - 2.5 Plan 模式检查已实现
+- Backend Logic Implementation (2.1-2.6) 已完成：
+  - 2.1 LlmAgentProvider::with_dual_config() 支持模式选择 ✓
+  - 2.2 get_active_mode() 方法 ✓
+  - 2.3 模式切换逻辑集成 (get_provider_for_mode) ✓
+  - 2.4 filter_readonly_tools() ✓
+  - 2.5 Plan 模式工具过滤 ✓
+  - 2.6 回退逻辑 (无plan_mode时fallback到act_mode) ✓
 - 尚未完成：
-  - 2.1 修改 LlmAgentProvider 支持模式选择
-  - 2.2 添加 get_active_mode() 方法
-  - 2.3 模式切换逻辑集成
-  - 2.6 回退逻辑
   - Frontend UI (3.1-3.5)
   - API Commands (4.1-4.4)
   - Testing (5.1-5.5)
@@ -7475,13 +7475,21 @@
 - map_step_log() 添加 yolo_mode 字段读取 (audit.rs)
 - log_step_start() 添加 yolo_mode 参数 (audit.rs)
 
+**Backend Logic Implementation (2.1-2.5):**
+- ToolExecutionRequest 添加 routing_mode, yolo_ttl, yolo_activated_at 字段
+- ToolExecutionPipeline 添加：
+  - should_request_confirmation() 方法 - 基于路由模式确定是否需要确认
+  - check_yolo_ttl_expired() 方法 - YOLO TTL 过期检查
+  - is_yolo_active() 方法 - 检查 YOLO 模式是否激活
+
 ### Testing:
 - cargo check 通过（仅警告）
+- npm run build 通过
 
 ### Notes:
 - Backend Data Models (1.1-1.5) 已完成
+- Backend Logic Implementation (2.1-2.5) 已完成
 - 尚未完成：
-  - Backend Logic Implementation (2.1-2.5)
   - YOLO Mode Security (3.1-3.5)
   - Frontend UI (4.1-4.6)
   - API Commands (5.1-5.5)
