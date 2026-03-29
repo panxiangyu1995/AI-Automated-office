@@ -46,10 +46,10 @@
 ### Phase 6: 集成与配置
 
 - [x] **T6.1**: 创建 SQLite 表 (provider_configs, platform_quotas, etc.)
-- [ ] **T6.2**: 实现 `ProviderConfigService::get_active_config()`
-- [ ] **T6.3**: 实现 `ProviderConfigService::save_config()`
-- [ ] **T6.4**: 实现 `QuotaService::check_and_consume()`
-- [ ] **T6.5**: 实现 `QuotaService::record_user_api_usage()`
+- [x] **T6.2**: 实现 `ProviderConfigService::get_active_config()`
+- [x] **T6.3**: 实现 `ProviderConfigService::save_config()`
+- [x] **T6.4**: 实现 `QuotaService::check_and_consume()`
+- [x] **T6.5**: 实现 `QuotaService::record_user_api_usage()`
 - [ ] **T6.6**: 集成配置服务到 AgentRuntimeState
 
 ### Phase 7: MockProvider 移除

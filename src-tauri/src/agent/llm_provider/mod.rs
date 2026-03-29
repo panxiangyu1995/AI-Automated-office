@@ -32,8 +32,12 @@ pub use openai_compatible::{OpenAICompatibleProvider, OpenAICompatibleConfig, Op
 pub mod crypto;
 pub mod config;
 pub mod quota;
+pub mod config_service;
+pub mod quota_service;
 
 // Re-export services
 pub use crypto::CryptoService;
 pub use config::{ProviderConfigService, ProviderConfig, ConfigLevel};
 pub use quota::{QuotaService, QuotaError, TokenUsage, UsageRecord, UsageStats};
+pub use config_service::SqliteProviderConfigService;
+pub use quota_service::SqliteQuotaService;
