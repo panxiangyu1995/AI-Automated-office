@@ -31,6 +31,7 @@ use tokio::sync::RwLock;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::agent::llm_provider::config::AgentMode;
 use provider::AgentProvider;
 
 #[derive(Debug, Error)]
@@ -61,6 +62,9 @@ pub struct AgentExecutionRequest {
     pub session_id: String,
     pub message: String,
     pub metadata: Option<serde_json::Value>,
+    /// Agent execution mode for Plan/Act dual configuration
+    #[serde(default)]
+    pub agent_mode: Option<AgentMode>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

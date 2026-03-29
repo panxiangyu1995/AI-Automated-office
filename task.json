@@ -853,6 +853,80 @@
       "ux_covered": ["UX-01"],
       "dependencies": ["Story 51.1", "Story 51.2", "Story 51.3", "Story 51.4"],
       "passes": false
+    },
+    {
+      "id": 134,
+      "epic": "Epic 21",
+      "story": "Story 21.24",
+      "title": "LLM Provider Plan/Act 双配置模式",
+      "description": "实现 LLM Provider 的 Plan/Act 双配置模式，支持分别为 Plan 阶段和 Act 阶段配置独立的 Provider/Model/API Key。Plan 模式自动限制仅允许读取类工具，Act 模式支持全部工具按敏感度评估审批。",
+      "implementationType": "new",
+      "phase": "Phase 2 - AI Agent核心层",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/ModelConfig.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/llm_provider/config.rs",
+          "src-tauri/src/agent/tools/descriptor.rs"
+        ],
+        "note": "现有 LLM Provider 配置只有一个全局设置，需要扩展为双配置结构。"
+      },
+      "openspec_change": "epic-21-story-21-24-plan-act-dual-provider-config",
+      "steps": [
+        "扩展 ProviderConfig 结构，添加 plan_mode 和 act_mode 双配置字段",
+        "ToolDescriptor 添加 is_read_only 标志",
+        "Task 引擎实现模式切换逻辑（Plan 阶段使用 plan_mode，Act 阶段使用 act_mode）",
+        "ToolPipeline 实现 Plan 模式工具过滤（仅允许 is_read_only=true 的工具）",
+        "前端配置 UI 添加 Plan/Act 双配置 Tab",
+        "UI 显示当前所处模式（Plan/Act）"
+      ],
+      "frs_covered": ["FR841", "FR842", "FR843", "FR844", "FR845", "FR846"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-055"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 51.5", "Story 21.1", "Story 21.2"],
+      "passes": false
+    },
+    {
+      "id": 135,
+      "epic": "Epic 21",
+      "story": "Story 21.25",
+      "title": "路由模式与YOLO Mode",
+      "description": "实现路由模式四档控制（Manual/Auto/Yolo/Hybrid）和 YOLO Mode 安全机制。YOLO 模式需要二次确认防误触，支持 TTL 生效时间限制，所有操作记录审计日志。",
+      "implementationType": "new",
+      "phase": "Phase 2 - AI Agent核心层",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/SettingsPanel.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/tools/pipeline.rs",
+          "src-tauri/src/agent/config.rs"
+        ],
+        "note": "现有工具审批是二元状态，需要扩展为四档路由模式和 YOLO 安全机制。"
+      },
+      "openspec_change": "epic-21-story-21-25-routing-mode-yolo",
+      "steps": [
+        "添加 RoutingMode 枚举：Manual/Auto/Yolo/Hybrid",
+        "ToolPipeline 根据路由模式决定是否需要审批",
+        "实现 YOLO 模式激活/去激活逻辑",
+        "实现 YOLO TTL（单次/1小时/本日）自动失效机制",
+        "YOLO 模式操作记录审计日志",
+        "管理员可禁用 YOLO 模式（企业安全策略）",
+        "前端路由模式选择器 UI",
+        "YOLO 确认对话框（安全警告 + 二次确认）"
+      ],
+      "frs_covered": ["FR866", "FR867", "FR868", "FR869", "FR870", "FR871"],
+      "nfrs_covered": ["NFR1", "NFR16"],
+      "arch_covered": ["ADR-056"],
+      "ux_covered": ["UX-01", "UX-04"],
+      "dependencies": ["Story 51.5", "Story 21.6", "Story 21.7"],
+      "passes": false
     }
   ]
 }

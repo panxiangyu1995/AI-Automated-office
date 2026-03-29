@@ -4,6 +4,10 @@
 //! - Level 1: Platform Official API (managed by platform)
 //! - Level 2: Tenant-level configuration (managed by tenant admin)
 //! - Level 3: User-level configuration (managed by individual user)
+//!
+//! Also supports Plan/Act dual configuration mode:
+//! - Plan mode: Uses separate provider/model for planning phase
+//! - Act mode: Uses provider/model for execution phase
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -12,6 +16,97 @@ use tokio::sync::RwLock;
 
 use super::crypto::CryptoService;
 use super::provider_trait::LlmProviderError;
+
+/// Agent execution mode for Plan/Act dual configuration
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AgentMode {
+    /// Plan mode: Used for generating task plans (read-only tools only)
+    Plan,
+    /// Act mode: Used for executing approved plans (all tools)
+    Act,
+}
+
+impl std::fmt::Display for AgentMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AgentMode::Plan => write!(f, "plan"),
+            AgentMode::Act => write!(f, "act"),
+        }
+    }
+}
+
+/// Mode-specific configuration for Plan/Act dual config
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModeConfig {
+    /// Provider type (zhipu, deepseek, minimax, openai-compatible)
+    pub provider: String,
+    /// Model to use (e.g., glm-4, deepseek-chat, claude-haiku)
+    pub model_id: String,
+    /// API endpoint (for OpenAI compatible providers)
+    pub api_endpoint: Option<String>,
+    /// Encrypted API key
+    pub api_key: String,
+}
+
+impl ModeConfig {
+    /// Create a new mode config with encrypted API key
+    pub fn new(
+        provider: impl Into<String>,
+        model_id: impl Into<String>,
+        api_key: &str,
+    ) -> Result<Self, LlmProviderError> {
+        let crypto = CryptoService::global();
+        let encrypted_api_key = crypto
+            .encrypt(api_key)
+            .map_err(|e| LlmProviderError::InvalidConfig(e.to_string()))?;
+
+        Ok(Self {
+            provider: provider.into(),
+            model_id: model_id.into(),
+            api_endpoint: None,
+            api_key: encrypted_api_key,
+        })
+    }
+
+    /// Set API endpoint for OpenAI compatible providers
+    pub fn with_api_endpoint(mut self, endpoint: impl Into<String>) -> Self {
+        self.api_endpoint = Some(endpoint.into());
+        self
+    }
+
+    /// Decrypt and get the API key
+    pub fn get_api_key(&self) -> Result<String, LlmProviderError> {
+        let crypto = CryptoService::global();
+        crypto
+            .decrypt(&self.api_key)
+            .map_err(|e| LlmProviderError::InvalidConfig(e.to_string()))
+    }
+}
+
+/// Routing configuration for Plan/Act dual configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RoutingConfig {
+    /// Plan mode configuration (optional - falls back to act_mode if not set)
+    pub plan_mode: Option<ModeConfig>,
+    /// Act mode configuration (required)
+    pub act_mode: ModeConfig,
+}
+
+impl RoutingConfig {
+    /// Get the active mode config based on current agent mode
+    pub fn get_mode_config(&self, mode: AgentMode) -> &ModeConfig {
+        match mode {
+            AgentMode::Plan => self.plan_mode.as_ref().unwrap_or(&self.act_mode),
+            AgentMode::Act => &self.act_mode,
+        }
+    }
+
+    /// Check if Plan mode is configured
+    pub fn has_plan_mode(&self) -> bool {
+        self.plan_mode.is_some()
+    }
+}
 
 /// Configuration level priority (higher = higher priority)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -55,6 +150,9 @@ pub struct ProviderConfig {
     pub user_id: Option<String>,
     /// Whether this config is active
     pub is_active: bool,
+    /// Plan/Act dual configuration (optional, for new mode)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub routing_config: Option<RoutingConfig>,
     /// Created timestamp
     pub created_at: i64,
     /// Updated timestamp
@@ -84,6 +182,7 @@ impl ProviderConfig {
             tenant_id: None,
             user_id: None,
             is_active: true,
+            routing_config: None,
             created_at: chrono::Utc::now().timestamp(),
             updated_at: chrono::Utc::now().timestamp(),
         })

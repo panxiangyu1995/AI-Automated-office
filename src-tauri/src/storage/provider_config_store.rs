@@ -5,7 +5,7 @@
 use anyhow::{Context, Result};
 use sqlx::{Row, SqlitePool};
 
-use crate::agent::llm_provider::config::{ConfigLevel, ProviderConfig};
+use crate::agent::llm_provider::config::{ConfigLevel, ProviderConfig, RoutingConfig};
 use crate::agent::llm_provider::LlmProviderError;
 
 /// Provider config store backed by SQLite
@@ -24,14 +24,16 @@ impl ProviderConfigStore {
     pub async fn save_config(&self, config: &ProviderConfig) -> Result<(), LlmProviderError> {
         let level_str = config.level.as_str();
         let is_deleted = if config.level == "deleted" { 1 } else { 0 };
+        let routing_config_json = config.routing_config.as_ref().map(|rc| serde_json::to_string(rc).ok()).flatten();
 
         sqlx::query(
             r#"
             INSERT INTO provider_configs (
                 id, config_key, provider_id, provider_name, api_endpoint,
                 api_key_encrypted, model, priority, is_active, config_level,
-                tenant_id, user_id, created_at, updated_at, is_deleted, version
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tenant_id, user_id, created_at, updated_at, is_deleted, version,
+                routing_config
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 api_endpoint = excluded.api_endpoint,
                 api_key_encrypted = excluded.api_key_encrypted,
@@ -40,7 +42,8 @@ impl ProviderConfigStore {
                 is_active = excluded.is_active,
                 updated_at = excluded.updated_at,
                 is_deleted = excluded.is_deleted,
-                version = version + 1
+                version = version + 1,
+                routing_config = excluded.routing_config
             "#,
         )
         .bind(&config.id)
@@ -58,6 +61,7 @@ impl ProviderConfigStore {
         .bind(config.created_at)
         .bind(config.updated_at)
         .bind(is_deleted)
+        .bind(&routing_config_json)
         .execute(&self.pool)
         .await
         .context("failed to save provider config")
@@ -208,6 +212,9 @@ impl ProviderConfigStore {
 
 /// Map a database row to ProviderConfig
 fn map_config(row: sqlx::sqlite::SqliteRow) -> ProviderConfig {
+    let routing_config: Option<RoutingConfig> = row.get::<Option<String>, _>("routing_config")
+        .and_then(|json| serde_json::from_str(&json).ok());
+
     ProviderConfig {
         id: row.get("id"),
         provider_type: row.get("provider_id"),
@@ -218,6 +225,7 @@ fn map_config(row: sqlx::sqlite::SqliteRow) -> ProviderConfig {
         tenant_id: row.get("tenant_id"),
         user_id: row.get("user_id"),
         is_active: row.get::<i32, _>("is_active") == 1,
+        routing_config,
         created_at: row.get("created_at"),
         updated_at: row.get("updated_at"),
     }

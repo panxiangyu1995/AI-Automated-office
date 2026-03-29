@@ -22,6 +22,7 @@ pub enum RoutingMode {
     Manual,
     Auto,
     Hybrid,
+    Yolo,
 }
 
 impl std::fmt::Display for RoutingMode {
@@ -30,6 +31,35 @@ impl std::fmt::Display for RoutingMode {
             RoutingMode::Manual => write!(f, "manual"),
             RoutingMode::Auto => write!(f, "auto"),
             RoutingMode::Hybrid => write!(f, "hybrid"),
+            RoutingMode::Yolo => write!(f, "yolo"),
+        }
+    }
+}
+
+/// YOLO mode time-to-live options
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum YoloTtl {
+    Once,
+    OneHour,
+    Today,
+    Custom(u64),
+}
+
+impl YoloTtl {
+    /// Get TTL in seconds
+    pub fn to_seconds(&self) -> Option<u64> {
+        match self {
+            YoloTtl::Once => None,
+            YoloTtl::OneHour => Some(3600),
+            YoloTtl::Today => {
+                // Calculate seconds until midnight
+                let now = chrono::Utc::now();
+                let midnight = now.date_naive().and_hms_opt(23, 59, 59).unwrap();
+                let duration = midnight.signed_duration_since(now.naive_local());
+                Some(duration.num_seconds() as u64)
+            }
+            YoloTtl::Custom(seconds) => Some(*seconds),
         }
     }
 }

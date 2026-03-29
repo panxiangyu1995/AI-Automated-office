@@ -5789,12 +5789,76 @@ Story 1.16 (测试框架) ─── 支撑 Story 1.6-1.15 的质量门禁
 
 ---
 
+### Story 21.24: LLM Provider Plan/Act 双配置模式
+
+**As a** 用户,
+**I want** 分别为 Plan 模式和 Act 模式配置不同的 LLM Provider,
+**So that** Plan 模式使用低成本高精度模型生成计划，Act 模式使用高性能模型执行任务。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入模型配置页面
+**When** 配置 Plan 模式 Provider
+**Then** 可选择独立的 Provider（Anthropic、DeepSeek 等）
+**And** 可选择独立的 Model（Haiku、GPT-3.5 等低成本模型）
+**And** Plan 模式工具限制：仅允许读取类工具（read、search），禁止写入/执行
+
+**Given** Plan 模式已配置
+**When** 配置 Act 模式 Provider
+**Then** 可选择独立的 Provider
+**And** 可选择独立的 Model（Sonnet、GPT-4 等高性能模型）
+**And** Act 模式工具限制：允许全部工具，按敏感度评估审批
+
+**Given** 用户发起任务
+**When** Agent 执行任务
+**Then** Plan 阶段使用 Plan 模式配置
+**And** Act 阶段使用 Act 模式配置
+**And** 系统显示当前所处模式（Plan/Act）
+
+---
+
+### Story 21.25: 路由模式与YOLO Mode
+
+**As a** 用户,
+**I want** 选择路由模式（Manual/Auto/Yolo/Hybrid）,
+**So that** 控制 Agent 工具调用的自动化程度。
+
+**Acceptance Criteria:**
+
+**Given** 用户进入设置页面
+**When** 选择路由模式
+**Then** 可选择四种模式：
+  - 🔒 Manual：每个工具调用都需要用户确认
+  - ⚖️ Auto：按敏感度评估自动决定是否需要审批
+  - 🚀 Yolo：所有工具调用自动执行，无任何阻止
+  - 🔀 Hybrid：根据工具类型自动选择模式
+
+**Given** 用户开启 Yolo 模式
+**When** 点击开启
+**Then** 显示安全警告，需要用户阅读并确认
+**And** 需要二次确认防误触
+**And** 支持设置生效时间限制（单次/1小时/本日/自定义）
+
+**Given** Yolo 模式已开启
+**When** Agent 执行任务
+**Then** 所有工具调用自动执行，无审批阻止
+**And** 系统记录 Yolo 模式的使用日志
+**And** 管理员可禁用 Yolo 模式（强制 Auto/Manual）
+
+**Given** 管理员配置企业策略
+**When** 设置企业级路由策略
+**Then** 可强制禁用 Yolo 模式
+**And** 可设置默认路由模式
+**And** 用户必须遵循企业策略
+
+---
+
 ### Epic 21 Summary
 
 | 指标 | 数量 |
 |------|------|
-| **Story总数** | 23 |
-| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR840, FR850-FR863, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938 |
+| **Story总数** | 25 |
+| **覆盖FR** | FR800-FR809, FR810-FR820, FR825-FR832, FR835-FR846, FR850-FR863, FR865-FR875, FR880-FR888, FR890-FR900, FR905-FR914, FR915-FR925, FR930-FR938, FR841-FR846(Plan/Act), FR866-FR871(YOLO) |
 
 ---
 

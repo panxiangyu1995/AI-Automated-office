@@ -7,6 +7,7 @@ mod v2_context_summaries;
 mod v3_users;
 mod v4_session_summaries;
 mod v5_provider_tables;
+mod v6_provider_routing_config;
 
 pub struct Migration {
     pub version: i64,
@@ -29,6 +30,7 @@ pub fn all_migrations() -> Vec<Migration> {
         v3_users::migration(),
         v4_session_summaries::migration(),
         v5_provider_tables::migration(),
+        v6_provider_routing_config::migration(),
     ]
 }
 

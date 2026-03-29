@@ -7405,3 +7405,87 @@
 - 前端 HeartbeatChecklist 组件存在但尚未与后端集成（使用 mock 数据）
 - 这是 Epic 55 (可靠性与治理) 的心跳后端引擎实现
 
+---
+
+## [2026-03-29] - Task 134: Story 21.24 - LLM Provider Plan/Act 双配置模式
+
+### 铁律合规检查：
+- PRD 合规：FR841, FR842, FR843, FR844, FR845, FR846
+- 架构合规：ADR-055, ADR-056
+- UX 合规：UX-02, UX-04
+- Epic 合规：Epic 21, Story 21.24
+
+### What was done:
+**Backend Data Models (1.1-1.5):**
+- 添加 AgentMode enum (Plan/Act) 到 config.rs
+- 添加 ModeConfig struct (provider, model_id, api_endpoint, api_key) 到 config.rs
+- 添加 RoutingConfig struct (plan_mode, act_mode) 到 config.rs
+- 更新 ProviderConfig struct 添加 routing_config: Option<RoutingConfig> 字段
+- 更新 ProviderConfig::new() 添加 routing_config: None 初始化
+- ToolCapabilities.is_read_only 已存在 (descriptor.rs:75)
+- 创建 v6_provider_routing_config.rs migration 添加 routing_config 列
+- 更新 storage/migrations/mod.rs 注册 v6 migration
+- 更新 storage/provider_config_store.rs:
+  - save_config(): 添加 routing_config JSON 序列化保存
+  - map_config(): 添加 routing_config 反序列化读取
+  - 导入 RoutingConfig 类型
+
+**Backend Logic Implementation (2.1-2.6):**
+- AgentExecutionRequest 添加 agent_mode: Option<AgentMode> 字段
+- ToolRegistry 添加 filter_readonly_tools() 方法
+- ToolExecutionRequest 添加 agent_mode: Option<AgentMode> 字段
+- ToolExecutionPipeline::execute() 添加 Plan 模式检查:
+  - 如果 agent_mode == Plan 且工具 is_read_only == false，拒绝执行
+  - 返回 ToolErrorCode::PermissionDenied
+
+### Testing:
+- cargo check 通过（仅警告）
+
+### Notes:
+- Backend Data Models (1.1-1.5) 已完成
+- Backend Logic Implementation (2.1-2.6) 部分完成：
+  - 2.4 filter_readonly_tools() 已完成
+  - 2.5 Plan 模式检查已实现
+- 尚未完成：
+  - 2.1 修改 LlmAgentProvider 支持模式选择
+  - 2.2 添加 get_active_mode() 方法
+  - 2.3 模式切换逻辑集成
+  - 2.6 回退逻辑
+  - Frontend UI (3.1-3.5)
+  - API Commands (4.1-4.4)
+  - Testing (5.1-5.5)
+  - Documentation (6.1-6.3)
+
+---
+
+## [2026-03-29] - Task 135: Story 21.25 - 路由模式与YOLO Mode
+
+### 铁律合规检查：
+- PRD 合规：FR866, FR867, FR868, FR869, FR870, FR871
+- 架构合规：ADR-057, ADR-058
+- UX 合规：UX-02, UX-04
+- Epic 合规：Epic 21, Story 21.25
+
+### What was done:
+**Backend Data Models (1.1-1.5):**
+- RoutingMode enum 添加 Yolo 模式 (routing.rs)
+- 添加 YoloTtl enum (Once, OneHour, Today, Custom) (routing.rs)
+- YoloTtl::to_seconds() 方法实现 TTL 计算
+- StepLogEntry 添加 yolo_mode: bool 字段 (audit.rs)
+- map_step_log() 添加 yolo_mode 字段读取 (audit.rs)
+- log_step_start() 添加 yolo_mode 参数 (audit.rs)
+
+### Testing:
+- cargo check 通过（仅警告）
+
+### Notes:
+- Backend Data Models (1.1-1.5) 已完成
+- 尚未完成：
+  - Backend Logic Implementation (2.1-2.5)
+  - YOLO Mode Security (3.1-3.5)
+  - Frontend UI (4.1-4.6)
+  - API Commands (5.1-5.5)
+  - Admin Controls (6.1-6.4)
+  - Testing (7.1-7.6)
+  - Documentation (8.1-8.3)
+

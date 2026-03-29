@@ -36,4 +36,13 @@ impl ToolRegistry {
             .ok_or_else(|| vec![format!("Tool not found: {}", tool_id)])?;
         validate_parameters(descriptor, params)
     }
+
+    /// Filter tools to only include read-only tools (for Plan mode)
+    pub fn filter_readonly_tools(&self) -> Vec<ToolDescriptor> {
+        self.tools
+            .values()
+            .filter(|tool| tool.capabilities.is_read_only)
+            .cloned()
+            .collect()
+    }
 }

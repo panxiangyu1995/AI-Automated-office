@@ -12,6 +12,7 @@ use super::permission::{check_permissions, PermissionCheckResult};
 use super::registry::ToolRegistry;
 use super::sensitivity::{assess_sensitivity, SensitiveActionAssessment};
 use crate::agent::events::RuntimeEventEmitter;
+use crate::agent::llm_provider::config::AgentMode;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,6 +38,9 @@ pub struct ToolExecutionRequest {
     pub timeout_ms: Option<u64>,
     pub metadata: Option<Value>,
     pub message_id: Option<String>,
+    /// Agent execution mode for Plan mode tool filtering
+    #[serde(default)]
+    pub agent_mode: Option<AgentMode>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -224,6 +228,32 @@ impl ToolExecutionPipeline {
                 permission: Some(permission),
                 sensitivity: None,
             });
+        }
+
+        // Plan mode: only allow read-only tools
+        if let Some(agent_mode) = &request.agent_mode {
+            if *agent_mode == AgentMode::Plan && !descriptor.capabilities.is_read_only {
+                return Ok(ToolExecutionResponse {
+                    result: self.error_result(
+                        &execution_id,
+                        &request.tool_id,
+                        started_at,
+                        ToolExecutionError {
+                            code: ToolErrorCode::PermissionDenied,
+                            message: "Tool not allowed in Plan mode: not read-only".to_string(),
+                            details: Some(serde_json::json!({
+                                "tool_id": request.tool_id,
+                                "is_read_only": descriptor.capabilities.is_read_only,
+                            })),
+                            recoverable: false,
+                            retryable: false,
+                        },
+                    ),
+                    confirmation: None,
+                    permission: Some(permission),
+                    sensitivity: None,
+                });
+            }
         }
 
         let sensitivity = assess_sensitivity(&descriptor, &params);

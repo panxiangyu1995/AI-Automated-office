@@ -99,6 +99,8 @@ pub struct StepLogEntry {
     pub completed_at: Option<i64>,
     pub duration_ms: Option<i64>,
     pub metadata: Option<serde_json::Value>,
+    /// Indicates if this step was executed in YOLO mode
+    pub yolo_mode: bool,
 }
 
 /// Trace context
@@ -465,6 +467,7 @@ fn map_step_log(row: sqlx::sqlite::SqliteRow) -> StepLogEntry {
     let input: Option<String> = row.try_get("input").unwrap_or(None);
     let output: Option<String> = row.try_get("output").unwrap_or(None);
     let metadata: Option<String> = row.try_get("metadata").unwrap_or(None);
+    let yolo_mode: bool = row.try_get::<i32, _>("yolo_mode").unwrap_or(0) == 1;
 
     StepLogEntry {
         id: row.get("id"),
@@ -482,6 +485,7 @@ fn map_step_log(row: sqlx::sqlite::SqliteRow) -> StepLogEntry {
         completed_at: row.get("completed_at"),
         duration_ms: row.get("duration_ms"),
         metadata: metadata.and_then(|v| serde_json::from_str(&v).ok()),
+        yolo_mode,
     }
 }
 
@@ -606,6 +610,7 @@ impl AuditService {
         session_id: &str,
         step_type: StepType,
         name: &str,
+        yolo_mode: bool,
     ) -> Result<StepLogEntry> {
         let entry = StepLogEntry {
             id: Self::generate_id("step"),
@@ -623,6 +628,7 @@ impl AuditService {
             completed_at: None,
             duration_ms: None,
             metadata: None,
+            yolo_mode,
         };
 
         self.store.create_step_log(&entry).await?;
