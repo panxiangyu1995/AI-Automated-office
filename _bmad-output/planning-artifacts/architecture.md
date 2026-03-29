@@ -4,6 +4,7 @@ workflowType: 'architecture'
 lastStep: 10
 status: 'complete'
 completedAt: '2026-03-11'
+lastEdited: '2026-03-26'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - docs/memory-fusion-pdf-draft.md
@@ -154,7 +155,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-041 | 提示词安全采用三层护栏：禁止清单 + 需确认事项 + 幻觉红旗阻断，并纳入统一审计链路 | 提示词研究结论 2026-03-23 |
 | ADR-042 | 引入会话知识累积机制：仅沉淀“非显而易见且可复用”的经验规则，分层写回AGENTS知识库 | 提示词研究结论 2026-03-23 |
 | ADR-043 | 记忆系统融合采用“Hook无感摄入 + 认知状态重建”模式：采纳 SessionStart/UserPromptSubmit/PostToolUse/Stop/SessionEnd 生命周期并支持 tunnel_state | 记忆融合草案对齐 2026-03-23 |
-| ADR-044 | 记忆层实现遵循 Rust-First 与本地优先：MVP 默认 SQLite + FTS5 + sqlite-vec，LanceDB 仅 Post-MVP 可选扩展 | 记忆融合草案对齐 2026-03-23 |
+| ADR-044 | 记忆层实现遵循 Rust-First 与本地优先：MVP 默认 SQLite + FTS5 + sqlite-vec，LanceDB 仅 Post-MVP 可选扩展；向量存储演进路径：MVP sqlite-vec(本地) → Post-MVP Qdrant本地版/云端版（用户可选） | 记忆融合草案对齐 2026-03-23 |
 | ADR-045 | OpenCode 工具系统作为全量参考并分级采纳：直接采纳“工具收敛+参数化”与“权限审计链路”，其余按现有技术栈改造采纳 | OpenCode研究对齐 2026-03-23 |
 | ADR-046 | OpenCode Skill 渐进式加载作为全量参考并分级采纳：默认加载基础规范，任务与引用资源按需加载，维持上下文预算控制 | OpenCode研究对齐 2026-03-23 |
 | ADR-047 | SOUL 机制作为人格模板能力并入：支持多源导入与优先级覆盖，但默认只读，修改需用户确认并记录版本审计 | SOUL研究对齐 2026-03-23 |

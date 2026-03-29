@@ -564,6 +564,193 @@ jobs:
 
 ---
 
+## VSCode式工作台测试策略
+
+### 概述
+
+AI-Automated-office 采用类 VSCode Workbench 的四栏布局作为产品核心 UX。本章节定义针对这一核心架构的测试策略。
+
+**设计背景参考：**
+- 固定壳层：TopBar + ActivityBar + Sidebar + Workbench + AI Chat Panel + StatusBar
+- 混合 UI：外壳固定，内容区动态
+- 动态 UI：业务主体按需渲染
+
+### 固定壳层组件测试
+
+#### 1. TopBar 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 菜单渲染 | E2E | 所有菜单项（File/Edit/View/Agent/Plugins/Tools/Help）正确显示 |
+| 快捷键绑定 | E2E | Ctrl+Shift+M 切换菜单栏显示/隐藏 |
+| 布局控制按钮 | E2E | 4个按钮（自定义布局/左侧栏/面板/辅助侧栏）功能正常 |
+| 菜单项点击 | E2E | 各菜单下拉项可点击且触发正确动作 |
+
+**E2E 示例：**
+```typescript
+test('TopBar menu items should be visible and clickable', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('menuitem', { name: 'File' })).toBeVisible()
+  await page.getByRole('menuitem', { name: 'File' }).click()
+  await expect(page.getByRole('menuitem', { name: 'New' })).toBeVisible()
+})
+```
+
+#### 2. ActivityBar 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 图标渲染 | E2E | 所有部门/功能图标正确显示 |
+| 选中状态 | E2E | 选中项有正确的视觉高亮 |
+| 切换功能 | E2E | 点击图标切换到对应模块 |
+| 悬浮提示 | E2E | hover 显示功能名称 tooltip |
+
+**E2E 示例：**
+```typescript
+test('ActivityBar icons should toggle views correctly', async ({ page }) => {
+  await page.goto('/')
+  // 销售模块
+  await page.getByRole('button', { name: 'sales' }).click()
+  await expect(page.locator('[data-testid="sales-container"]')).toBeVisible()
+  // 切换到人事
+  await page.getByRole('button', { name: 'hr' }).click()
+  await expect(page.locator('[data-testid="hr-container"]')).toBeVisible()
+})
+```
+
+#### 3. Sidebar 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 折叠/展开 | E2E | 可通过 Ctrl+B 切换显示状态 |
+| 二级导航 | E2E | 点击父级展开子项 |
+| 视图切换 | E2E | 不同模块的 Sidebar 内容正确切换 |
+| 状态持久化 | E2E | 刷新后保持折叠/展开状态 |
+
+#### 4. AI Chat Panel 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 面板显示/隐藏 | E2E | Ctrl+Shift+I 切换 AI 面板 |
+| 对话输入 | E2E | 可输入文本并发送 |
+| 消息渲染 | E2E | 用户消息和 AI 回复正确显示 |
+| 工具调用展示 | E2E | 工具调用过程可见、可解释 |
+| 关键事实摘要 | E2E | 记住的关键事实正确展示 |
+
+**E2E 示例：**
+```typescript
+test('AI Chat Panel should toggle and function correctly', async ({ page }) => {
+  // 隐藏状态
+  await page.keyboard.press('Control+Shift+I')
+  await expect(page.getByTestId('ai-chat-panel')).toBeHidden()
+  // 显示状态
+  await page.keyboard.press('Control+Shift+I')
+  await expect(page.getByTestId('ai-chat-panel')).toBeVisible()
+  // 发送消息
+  await page.getByTestId('chat-input').fill('帮我生成报价单')
+  await page.getByRole('button', { name: '发送' }).click()
+  await expect(page.getByText('帮我生成报价单')).toBeVisible()
+})
+```
+
+#### 5. Workbench 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 业务容器加载 | E2E | 切换模块时正确加载对应容器页 |
+| 混合 UI 渲染 | E2E | 固定壳层稳定，内容区动态加载 |
+| 多标签支持 | E2E | 可打开多个标签页且状态独立 |
+| 布局状态恢复 | E2E | 重启后恢复上次工作区状态 |
+
+#### 6. StatusBar 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 同步状态 | E2E | 显示当前同步状态（已同步/同步中/离线） |
+| 上下文状态 | E2E | 显示当前部门、当前任务 |
+| 草稿状态 | E2E | 显示草稿是否已保存 |
+| 诊断入口 | E2E | 点击可打开诊断面板 |
+
+### 分层 UI 边界测试
+
+#### 固定 UI / 混合 UI / 动态 UI 边界验证
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 治理页固定性 | E2E | 权限/租户/审计等页面不能动态化 |
+| 业务差异位置 | E2E | 部门差异只发生在内容区，不影响壳层 |
+| 动态内容边界 | E2E | 动态内容被限制在正确边界内 |
+
+**测试策略：**
+```typescript
+test('governance pages must remain fixed UI', async ({ page }) => {
+  const governancePages = [
+    '/admin/users',
+    '/admin/roles',
+    '/admin/permissions',
+    '/admin/audit',
+    '/settings/model',
+    '/settings/plugins'
+  ]
+  for (const path of governancePages) {
+    await page.goto(path)
+    // 验证：壳层结构稳定，不受内容动态加载影响
+    await expect(page.getByTestId('top-bar')).toBeVisible()
+    await expect(page.getByTestId('activity-bar')).toBeVisible()
+    await expect(page.getByTestId('sidebar')).toBeVisible()
+    await expect(page.getByTestId('status-bar')).toBeVisible()
+  }
+})
+```
+
+### Command Palette 测试
+
+| 测试场景 | 测试方法 | 验证点 |
+|---------|---------|--------|
+| 唤起方式 | E2E | Ctrl+Shift+P 唤起命令面板 |
+| 搜索功能 | E2E | 输入可过滤命令列表 |
+| 命令执行 | E2E | 选择命令后正确执行 |
+| 跨模块导航 | E2E | 可通过命令快速跳转到任意页面 |
+
+**E2E 示例：**
+```typescript
+test('Command Palette should provide cross-module navigation', async ({ page }) => {
+  await page.keyboard.press('Control+Shift+P')
+  await expect(page.getByTestId('command-palette')).toBeVisible()
+  await page.getByTestId('command-input').fill('settings')
+  await expect(page.getByRole('option', { name: /settings/i })).toHaveCount.greaterThan(0)
+  await page.getByRole('option', { name: /model settings/i }).click()
+  await expect(page).toHaveURL(/.*\/settings\/model/)
+})
+```
+
+### Tauri 环境测试要求
+
+```typescript
+// 固定壳层组件测试必须考虑 Tauri 环境
+test.describe('Workbench Components in Tauri', () => {
+  test.beforeEach(async ({ page }) => {
+    const isTauri = await page.evaluate(() =>
+      typeof (window as any).__TAURI__ !== 'undefined'
+    )
+    if (!isTauri) {
+      test.skip('Requires Tauri runtime for workbench tests')
+    }
+  })
+
+  test('should preserve layout state across restarts', async ({ page }) => {
+    // 设置布局状态
+    await page.getByTestId('toggle-sidebar').click()
+    // 重启应用（模拟）
+    await page.reload()
+    // 验证状态恢复
+    await expect(page.getByTestId('sidebar')).toBeHidden()
+  })
+})
+```
+
+---
+
 **约束力：**
 - ❌ 不得违背分层测试策略
 - ❌ E2E 测试不得 Mock 自有 API

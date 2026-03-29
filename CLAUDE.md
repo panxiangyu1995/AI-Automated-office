@@ -417,7 +417,7 @@ ai-automated-office/
 │   ├── .gitignore                      # Git忽略配置
 │   ├── .eslintrc.cjs                   # ESLint配置
 │   ├── .prettierrc                     # Prettier配置
-│   ├── components.json                 # shadcn/ui配置
+│   ├── components.json                 # Shadcn/ui配置
 │   └── README.md                       # 项目说明
 │
 ├── 📁 GitHub配置
@@ -437,7 +437,7 @@ ai-automated-office/
 │   ├── vite-env.d.ts                   # Vite类型声明
 │   │
 │   ├── components/                     # UI组件
-│   │   ├── ui/                         # shadcn/ui基础组件
+│   │   ├── ui/                         # Shadcn/ui基础组件
 │   │   │   ├── alert.tsx
 │   │   │   ├── button.tsx
 │   │   │   ├── menubar.tsx
@@ -714,7 +714,7 @@ cp .env.example .env  # 复制环境变量模板
 ### 样式规范
 - 使用 Tailwind CSS 进行样式开发
 - 遵循 UX 设计规范的颜色系统（#1E3A5F 主色）
-- 使用 shadcn/ui 设计令牌系统
+- 使用 Shadcn/ui 设计令牌系统
 - **图标统一使用 Lucide React**，禁止使用 emoji
 
 ### Rust/Tauri 规范

@@ -24,6 +24,8 @@ inputDocuments:
   - _bmad-output/opencode/09-reference-recommendations.md
   - _bmad-output/opencode/10-skill-progressive-loading.md
   - _bmad-output/planning-artifacts/pencil-new.pen
+  - _bmad-output/planning-artifacts/agent-capability-strategy-2026-03-27.md
+  - _bmad-output/planning-artifacts/agent-runtime-rebaseline-2026-03-27.md
 ---
 
 # AI-Automated-office - Epic Breakdown
