@@ -45,7 +45,7 @@
 
 ### Phase 6: 集成与配置
 
-- [ ] **T6.1**: 创建 SQLite 表 (provider_configs, platform_quotas, etc.)
+- [x] **T6.1**: 创建 SQLite 表 (provider_configs, platform_quotas, etc.)
 - [ ] **T6.2**: 实现 `ProviderConfigService::get_active_config()`
 - [ ] **T6.3**: 实现 `ProviderConfigService::save_config()`
 - [ ] **T6.4**: 实现 `QuotaService::check_and_consume()`

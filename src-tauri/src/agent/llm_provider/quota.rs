@@ -19,6 +19,9 @@ pub enum QuotaError {
 
     #[error("Invalid quota configuration")]
     InvalidConfig(String),
+
+    #[error("Storage error: {0}")]
+    StorageError(String),
 }
 
 /// Token usage record

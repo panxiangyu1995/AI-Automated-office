@@ -5,6 +5,8 @@ pub mod checkpoint_store;
 pub mod memory_store;
 pub mod message_store;
 pub mod migrations;
+pub mod provider_config_store;
+pub mod quota_store;
 pub mod session_store;
 pub mod sqlite;
 pub mod sync_queue;
@@ -12,6 +14,8 @@ pub mod sync_queue;
 use checkpoint_store::CheckpointStore;
 use memory_store::MemoryStore;
 use message_store::MessageStore;
+use provider_config_store::ProviderConfigStore;
+use quota_store::QuotaStore;
 use session_store::SessionStore;
 use sync_queue::SyncQueueStore;
 
@@ -56,6 +60,14 @@ impl StorageManager {
 
     pub fn checkpoint_store(&self) -> CheckpointStore {
         CheckpointStore::new(self.pool.clone())
+    }
+
+    pub fn provider_config_store(&self) -> ProviderConfigStore {
+        ProviderConfigStore::new(self.pool.clone())
+    }
+
+    pub fn quota_store(&self) -> QuotaStore {
+        QuotaStore::new(self.pool.clone())
     }
 }
 
