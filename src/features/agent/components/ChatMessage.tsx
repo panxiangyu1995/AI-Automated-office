@@ -88,35 +88,91 @@ interface ToolCallCardProps {
   part: ToolCallPart
 }
 
+// Status display configuration - defined outside component to avoid closure issues
+const STATUS_CONFIG = {
+  pending: {
+    color: 'text-yellow-500',
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-200',
+    label: '等待中',
+    icon: '⏳',
+  },
+  running: {
+    color: 'text-blue-500',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    label: '运行中',
+    icon: '🔄',
+  },
+  completed: {
+    color: 'text-green-500',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    label: '已完成',
+    icon: '✅',
+  },
+  failed: {
+    color: 'text-red-500',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    label: '失败',
+    icon: '❌',
+  },
+  cancelled: {
+    color: 'text-gray-500',
+    bg: 'bg-gray-50',
+    border: 'border-gray-200',
+    label: '已取消',
+    icon: '⚪',
+  },
+} as const
+
 function ToolCallCard({ part }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false)
-  
-  const statusColor = {
-    pending: 'text-yellow-500',
-    running: 'text-blue-500',
-    completed: 'text-green-500',
-    failed: 'text-red-500',
-    cancelled: 'text-gray-500',
-  }[part.status]
-  
+
+  // Get status config - fallback to pending for unknown states
+  const statusKey = part.status as keyof typeof STATUS_CONFIG
+  const statusConfig = STATUS_CONFIG[statusKey] || STATUS_CONFIG.pending
+
+  // Get progress text if available (from tool_call_progress events)
+  const progressText = (part as { progress?: string }).progress
+
   return (
-    <div className="border border-slate-200 rounded-lg my-2 overflow-hidden">
+    <div className={cn('border rounded-lg my-2 overflow-hidden', statusConfig.border)}>
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 transition-colors"
+        className={cn(
+          'w-full flex items-center justify-between px-3 py-2 transition-colors',
+          statusConfig.bg,
+          'hover:opacity-80'
+        )}
       >
         <div className="flex items-center gap-2">
-          <span className={cn('text-xs font-medium', statusColor)}>
-            {part.status}
+          <span className="text-sm">{statusConfig.icon}</span>
+          <span className={cn('text-xs font-medium', statusConfig.color)}>
+            {statusConfig.label}
           </span>
           <span className="text-sm font-medium text-slate-700">
             {part.toolName}
           </span>
+          {/* Progress text for running state */}
+          {part.status === 'running' && progressText && (
+            <span className="text-xs text-blue-500 animate-pulse">
+              {progressText}
+            </span>
+          )}
         </div>
         {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
-      
+
+      {/* Running animation */}
+      {part.status === 'running' && (
+        <div className="h-1 bg-blue-100 overflow-hidden">
+          <div className="h-full bg-blue-500 animate-pulse w-2/3" />
+        </div>
+      )}
+
       {/* Parameters */}
       {expanded && (
         <div className="p-3 bg-white">
@@ -316,7 +372,8 @@ export function ChatMessage({ message, streamingContent, isStreaming }: ChatMess
           {isStreaming && streamingContent && (
             <div className="mt-1">
               <SimpleMarkdown content={streamingContent} />
-              <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
+              {/* Blinking cursor animation for streaming state */}
+              <span className="inline-block w-0.5 h-4 bg-primary ml-1 animate-pulse" />
             </div>
           )}
           

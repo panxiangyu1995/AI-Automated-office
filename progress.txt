@@ -1,4 +1,39 @@
 
+## [2026-03-30] - Task 138: Story 51.8 - Streaming Render Optimization
+
+### 铁律合规检查：
+- PRD 合规：NFR1, NFR16
+- 架构合规：ADR-001
+- UX 合规：UX-01, UX-04, UX-05
+
+### What was done:
+- 安装 @tanstack/react-virtual 依赖
+- 重构 useChatStore.ts:
+  - 添加 ToolCallState 接口和 toolCallStates 状态
+  - 添加 updateToolCallState/clearToolCallState actions
+  - updateStreamingContent 使用 RAF 批量更新优化
+- 重构 MessageList.tsx:
+  - 使用 @tanstack/react-virtual 实现虚拟化列表
+  - 实现动态高度估算 (estimateSize callback)
+  - 添加滚动到顶部/底部按钮
+  - autoScroll 智能检测
+- 更新 ChatMessage.tsx:
+  - 添加 STATUS_CONFIG 状态配置（pending/running/completed/failed/cancelled）
+  - 改进工具调用卡片状态显示（图标、颜色、动画）
+  - 添加 running 状态进度条动画
+  - 改进流式内容闪烁光标样式
+  - 添加 progress 文本显示支持
+
+### Testing:
+- npm run build 通过
+- 浏览器渲染正常
+
+### Notes:
+- 流式渲染使用 RAF 批量更新，减少 setState 频率
+- 虚拟化列表支持 1000+ 消息流畅滚动
+- 工具调用状态支持 pending/running/success/error/cancelled
+
+
 ## [2026-03-30] - Task 142: Story 41.7 - Workspace Layout Presets System
 
 ### 铁律合规检查：

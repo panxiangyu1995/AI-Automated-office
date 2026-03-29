@@ -37,35 +37,54 @@ export interface ChatSession {
   updatedAt: number
 }
 
+/**
+ * Tool call state for real-time status display
+ */
+export type ToolCallStatus = 'pending' | 'running' | 'success' | 'error'
+
+export interface ToolCallState {
+  tool_call_id: string
+  status: ToolCallStatus
+  progress?: string
+  error?: string
+}
+
 export interface ChatStoreState {
   // Sessions
   sessions: Record<string, ChatSession>
   activeSessionId: string | null
-  
+
   // Streaming
   isStreaming: boolean
   streamingMessageId: string | null
   streamingPartId: string | null
   streamingContent: string
-  
+
+  // Tool call states (for real-time status display)
+  toolCallStates: Record<string, ToolCallState>
+
   // Session Actions
   createSession: (title?: string) => string
   deleteSession: (sessionId: string) => void
   setActiveSession: (sessionId: string) => void
   updateSessionTitle: (sessionId: string, title: string) => void
-  
+
   // Message Actions
   addUserMessage: (sessionId: string, content: string) => Message | null
   addAssistantMessage: (sessionId: string, content?: string) => Message | null
   appendPartToMessage: (sessionId: string, messageId: string, part: Part) => void
   updateMessagePart: (sessionId: string, messageId: string, partId: string, updates: Partial<Part>) => void
-  
-  // Streaming Actions
+
+  // Streaming Actions (with RAF batching)
   startStreaming: (sessionId: string, messageId: string, partId: string) => void
   updateStreamingContent: (content: string) => void
   finalizeStreamingMessage: (sessionId: string) => void
   stopStreaming: () => void
-  
+
+  // Tool call state actions
+  updateToolCallState: (toolCallId: string, state: Partial<ToolCallState>) => void
+  clearToolCallState: (toolCallId: string) => void
+
   // Reset
   reset: () => void
 }
@@ -77,6 +96,7 @@ const initialState = {
   streamingMessageId: null,
   streamingPartId: null,
   streamingContent: '',
+  toolCallStates: {},
 }
 
 // ==================== Message Creation Helpers ====================
@@ -325,43 +345,49 @@ export const useChatStore = create<ChatStoreState>()(
     },
     
     updateStreamingContent: (content: string) => {
-      set({ streamingContent: content })
-      
-      // 实时更新消息内容
-      const { streamingMessageId, streamingPartId } = get()
-      if (streamingMessageId && streamingPartId) {
-        const sessionId = get().activeSessionId
-        if (sessionId) {
-          set((state) => {
-            const session = state.sessions[sessionId]
-            if (!session) return state
-            
-            return {
-              sessions: {
-                ...state.sessions,
-                [sessionId]: {
-                  ...session,
-                  messages: session.messages.map(m =>
-                    m.id === streamingMessageId
-                      ? {
-                          ...m,
-                          parts: m.parts.map(p =>
-                            p.id === streamingPartId && p.type === 'text'
-                              ? { ...p, content } as TextPart
-                              : p
-                          ),
-                          updatedAt: Date.now(),
-                        }
-                      : m
-                  ),
+      // 使用 RAF 批量更新机制优化性能
+      const rafId = requestAnimationFrame(() => {
+        set({ streamingContent: content })
+
+        // 实时更新消息内容
+        const { streamingMessageId, streamingPartId } = get()
+        if (streamingMessageId && streamingPartId) {
+          const sessionId = get().activeSessionId
+          if (sessionId) {
+            set((state) => {
+              const session = state.sessions[sessionId]
+              if (!session) return state
+
+              return {
+                sessions: {
+                  ...state.sessions,
+                  [sessionId]: {
+                    ...session,
+                    messages: session.messages.map(m =>
+                      m.id === streamingMessageId
+                        ? {
+                            ...m,
+                            parts: m.parts.map(p =>
+                              p.id === streamingPartId && p.type === 'text'
+                                ? { ...p, content } as TextPart
+                                : p
+                            ),
+                            updatedAt: Date.now(),
+                          }
+                        : m
+                    ),
+                  },
                 },
-              },
-            }
-          })
+              }
+            })
+          }
         }
-      }
+      })
+
+      // 存储 RAF ID 以便取消
+      return () => cancelAnimationFrame(rafId)
     },
-    
+
     finalizeStreamingMessage: (sessionId: string) => {
       const { streamingMessageId, streamingPartId, streamingContent } = get()
       
@@ -405,7 +431,29 @@ export const useChatStore = create<ChatStoreState>()(
         streamingContent: '',
       })
     },
-    
+
+    // ==================== Tool Call State Actions ====================
+
+    updateToolCallState: (toolCallId: string, updates: Partial<ToolCallState>) => {
+      set((state) => ({
+        toolCallStates: {
+          ...state.toolCallStates,
+          [toolCallId]: {
+            ...state.toolCallStates[toolCallId],
+            tool_call_id: toolCallId,
+            ...updates,
+          },
+        },
+      }))
+    },
+
+    clearToolCallState: (toolCallId: string) => {
+      set((state) => {
+        const { [toolCallId]: _, ...remaining } = state.toolCallStates
+        return { toolCallStates: remaining }
+      })
+    },
+
     // ==================== Reset ====================
     
     reset: () => {
