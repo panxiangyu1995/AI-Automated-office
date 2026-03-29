@@ -50,7 +50,7 @@
 - [x] **T6.3**: 实现 `ProviderConfigService::save_config()`
 - [x] **T6.4**: 实现 `QuotaService::check_and_consume()`
 - [x] **T6.5**: 实现 `QuotaService::record_user_api_usage()`
-- [ ] **T6.6**: 集成配置服务到 AgentRuntimeState
+- [x] **T6.6**: 集成配置服务到 AgentRuntimeState
 
 ### Phase 7: MockProvider 移除
 
