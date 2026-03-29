@@ -1,4 +1,52 @@
 
+## [2026-03-30] - Task 140: Story 41.5 - Workspace Data Model and Basic Framework
+
+### 铁律合规检查：
+- PRD 合规：FR1000, FR1001, FR1003, FR1005, FR1006
+- 架构合规：ARCH-01
+- UX 合规：UX-01, UX-04
+- NFR 合规：NFR1, NFR16
+
+### What was done:
+- 创建 `src/features/workspace/types/index.ts`
+  - 定义 Workspace, Project, WorkspaceMember 接口
+  - 定义 WorkspaceRole, ProjectStatus, WorkspaceVisibility 枚举
+  - 定义 API 请求/响应类型
+  - 定义 Store 状态类型
+- 创建 `src/stores/workspaceStore.ts`
+  - Zustand store 实现，支持持久化到 localStorage
+  - Workspace CRUD 操作（创建、更新、删除、获取）
+  - Project CRUD 操作（创建、更新、归档）
+  - 成员管理（邀请、更新角色、移除）
+  - 工作区切换机制
+  - Selector 和 Hook 导出
+- 创建 `src/lib/api/workspace.ts`
+  - REST API 客户端封装
+  - Workspace/Project/Member API
+  - 工具函数（权限检查、统计）
+- 创建 `src/components/workspace/WorkspaceSwitcher.tsx`
+  - 工作区切换下拉组件
+  - 搜索过滤功能
+  - 创建工作区快捷入口
+  - 工作区设置入口
+- 创建 `src/components/workspace/CreateWorkspaceDialog.tsx`
+  - 创建工作区对话框
+  - 支持名称、描述、可见性设置
+- 创建 `src/components/workspace/WorkspaceSettingsPage.tsx`
+  - 工作区设置页面
+  - 成员管理标签页
+  - 危险区域（删除工作区）
+
+### Testing:
+- npm run build 通过
+
+### Notes:
+- 使用 Shadcn/ui 组件
+- 遵循现有代码风格和架构
+- workspaceStore 使用 Zustand persist 中间件
+- API 客户端需要云端 API 支持
+
+
 ## [2026-03-24] - Task 54: Story 21.10 - 系统提示词查看与编辑
 
 ### 铁律合规检查：
