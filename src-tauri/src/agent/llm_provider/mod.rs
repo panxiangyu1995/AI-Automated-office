@@ -17,16 +17,15 @@ pub use provider_trait::LlmProviderError as ProviderError;
 
 pub mod zhipu;
 
-// TODO: Uncomment when implementations are added
-// pub mod deepseek;
-// pub mod minimax;
-// pub mod openai_compatible;
+pub mod deepseek;
+pub mod minimax;
+pub mod openai_compatible;
 
-// Re-export providers when implemented
+// Re-export providers
 pub use zhipu::{ZhipuProvider, ZhipuConfig, ZhipuModel};
-// pub use deepseek::DeepSeekProvider;
-// pub use minimax::MinimaxProvider;
-// pub mod openai_compatible::OpenAICompatibleProvider;
+pub use deepseek::{DeepSeekProvider, DeepSeekConfig, DeepSeekModel};
+pub use minimax::{MinimaxProvider, MinimaxConfig, MinimaxModel};
+pub use openai_compatible::{OpenAICompatibleProvider, OpenAICompatibleConfig, OpenAICompatibleModel};
 
 // ============ Configuration Services ============
 

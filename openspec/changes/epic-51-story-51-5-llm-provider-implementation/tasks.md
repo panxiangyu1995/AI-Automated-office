@@ -23,25 +23,25 @@
 
 ### Phase 3: DeepSeek Provider
 
-- [ ] **T3.1**: 实现 `DeepSeekProvider::new()`
-- [ ] **T3.2**: 实现 `DeepSeekProvider::complete()`
-- [ ] **T3.3**: 实现 `DeepSeekProvider::complete_stream()`
-- [ ] **T3.4**: 单元测试 DeepSeekProvider
+- [x] **T3.1**: 实现 `DeepSeekProvider::new()`
+- [x] **T3.2**: 实现 `DeepSeekProvider::complete()`
+- [x] **T3.3**: 实现 `DeepSeekProvider::complete_stream()`
+- [x] **T3.4**: 单元测试 DeepSeekProvider
 
 ### Phase 4: Minimax Provider
 
-- [ ] **T4.1**: 实现 `MinimaxProvider::new()`
-- [ ] **T4.2**: 实现 `MinimaxProvider::complete()`
-- [ ] **T4.3**: 实现 `MinimaxProvider::complete_stream()`
-- [ ] **T4.4**: 单元测试 MinimaxProvider
+- [x] **T4.1**: 实现 `MinimaxProvider::new()`
+- [x] **T4.2**: 实现 `MinimaxProvider::complete()`
+- [x] **T4.3**: 实现 `MinimaxProvider::complete_stream()`
+- [x] **T4.4**: 单元测试 MinimaxProvider
 
 ### Phase 5: OpenAI 兼容 Provider
 
-- [ ] **T5.1**: 实现 `OpenAICompatibleProvider::new()`
-- [ ] **T5.2**: 实现 `OpenAICompatibleProvider::complete()`
-- [ ] **T5.3**: 实现 `OpenAICompatibleProvider::complete_stream()`
-- [ ] **T5.4**: 支持无 API Key 模式 (本地部署)
-- [ ] **T5.5**: 单元测试 OpenAICompatibleProvider
+- [x] **T5.1**: 实现 `OpenAICompatibleProvider::new()`
+- [x] **T5.2**: 实现 `OpenAICompatibleProvider::complete()`
+- [x] **T5.3**: 实现 `OpenAICompatibleProvider::complete_stream()`
+- [x] **T5.4**: 支持无 API Key 模式 (本地部署)
+- [x] **T5.5**: 单元测试 OpenAICompatibleProvider
 
 ### Phase 6: 集成与配置
 
