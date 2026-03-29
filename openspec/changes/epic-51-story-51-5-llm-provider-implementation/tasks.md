@@ -8,9 +8,9 @@
 - [x] **T1.2**: 定义 `LlmProvider` trait (`trait.rs`)
 - [x] **T1.3**: 定义 `ProviderError` 错误类型 (`error.rs`)
 - [x] **T1.4**: 定义请求/响应数据结构 (`trait.rs`)
-- [ ] **T1.5**: 创建 `CryptoService` 加密服务 (`crypto.rs`)
-- [ ] **T1.6**: 创建 `ProviderConfigService` 配置服务 (`config.rs`)
-- [ ] **T1.7**: 创建 `QuotaService` 配额服务 (`quota.rs`)
+- [x] **T1.5**: 创建 `CryptoService` 加密服务 (`crypto.rs`)
+- [x] **T1.6**: 创建 `ProviderConfigService` 配置服务 (`config.rs`)
+- [x] **T1.7**: 创建 `QuotaService` 配额服务 (`quota.rs`)
 
 ### Phase 2: Zhipu Provider (MVP)
 

@@ -30,12 +30,11 @@ pub use zhipu::{ZhipuProvider, ZhipuConfig, ZhipuModel};
 
 // ============ Configuration Services ============
 
-// TODO: Uncomment when services are implemented
-// pub mod config;
-// pub mod quota;
-// pub mod crypto;
+pub mod crypto;
+pub mod config;
+pub mod quota;
 
-// Re-export services when implemented
-// pub use config::ProviderConfigService;
-// pub use quota::QuotaService;
-// pub use crypto::CryptoService;
+// Re-export services
+pub use crypto::CryptoService;
+pub use config::{ProviderConfigService, ProviderConfig, ConfigLevel};
+pub use quota::{QuotaService, QuotaError, TokenUsage, UsageRecord, UsageStats};
