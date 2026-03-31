@@ -7714,3 +7714,60 @@
 ### Testing:
 - npm run build 通过
 
+
+---
+
+## [2026-03-31] - Task 145: Story 51.11 - Layer 2 Enterprise Tools Implementation
+
+### 铁律合规检查：
+- PRD 合规：FR420, FR421, FR422
+- 架构合规：ADR-010, ADR-018, ADR-045
+- UX 合规：UX-01
+- NFR 合规：NFR1, NFR16, NFR20, NFR21
+
+### What was done:
+**创建 enterprise.rs 模块:**
+- 实现了 9 个企业工具，分为 5 组
+
+**Resource 工具组:**
+- `resource_query` - 查询本地/云端/工作区资源
+- `resource_upload` - 上传文件到受控存储
+
+**Knowledge 工具组:**
+- `knowledge_query` - 企业知识库 RAG 检索
+- `knowledge_submit_draft` - 提交知识条目草稿
+
+**Messaging 工具组:**
+- `message_query` - 查询用户/频道消息
+- `message_send` - 发送消息到用户/频道/代理/部门
+- `agent_delegate` - 任务委派给子代理，包含深度跟踪
+
+**Workspace 工具组:**
+- `workspace_stage_change` - 为工作区页面/编辑器暂存变更
+
+**Database 工具组:**
+- `db_query` - 数据库查询（admin专用，白名单表，字段掩码，租户隔离，审计日志）
+
+**安全机制:**
+- admin 权限检查（db_query）
+- 表白名单验证
+- 敏感字段自动掩码（password, token, secret, api_key等）
+- 租户隔离过滤注入
+- 委派深度限制（默认3层）
+- 查询超时和行数限制
+- 审计日志记录
+
+**集成:**
+- 在 `mod.rs` 中添加 `pub mod enterprise;`
+- 在 `pipeline.rs` 中注册 `enterprise::register_enterprise_tools()`
+- 添加完整的单元测试
+
+### Testing:
+- cargo check --lib 通过
+- cargo build --lib 通过
+
+### Notes:
+- 企业工具完全集成到 ToolExecutionPipeline
+- db_query 工具默认仅限 admin 权限
+- 使用静态配置管理（DbQueryConfig, DelegationConfig）
+- 测试覆盖了权限检查、表白名单、委派深度等场景

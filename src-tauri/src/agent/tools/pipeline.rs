@@ -6,7 +6,13 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::time::{timeout, Duration};
 
+use super::browser;
 use super::core::register_core_tools;
+use super::document;
+use super::enterprise;
+use super::filesystem;
+use super::shell;
+use super::web;
 use super::descriptor::ToolDescriptor;
 use super::permission::{check_permissions, PermissionCheckResult};
 use super::registry::ToolRegistry;
@@ -140,6 +146,12 @@ impl ToolExecutionPipeline {
         let mut registry = ToolRegistry::new();
         let mut executors: HashMap<String, Arc<dyn ToolExecutor>> = HashMap::new();
         register_core_tools(&mut registry, &mut executors);
+        filesystem::register_filesystem_tools(&mut registry, &mut executors);
+        shell::register_shell_tools(&mut registry, &mut executors);
+        web::register_web_tools(&mut registry, &mut executors);
+        browser::register_browser_tools(&mut registry, &mut executors);
+        document::register_document_tools(&mut registry, &mut executors);
+        enterprise::register_enterprise_tools(&mut registry, &mut executors);
 
         Self {
             registry: Arc::new(registry),
