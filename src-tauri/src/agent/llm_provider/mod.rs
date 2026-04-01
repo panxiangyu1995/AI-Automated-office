@@ -56,3 +56,8 @@ pub use token_cache::{OfficialTokenCache, OfficialTokenCacheService, TokenInfo, 
 
 pub mod token_refresh;
 pub use token_refresh::{TokenRefreshConfig, TokenRefreshService, TokenRefreshCallback, TokenRefreshError};
+
+// ============ Integration Tests ============
+
+#[cfg(test)]
+mod tests;

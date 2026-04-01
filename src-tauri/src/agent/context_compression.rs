@@ -43,7 +43,7 @@ impl Default for TokenBudget {
 }
 
 /// Compression strategy
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CompressionStrategy {
     /// Summary mode: generate summary and replace history
     Summary,
@@ -508,7 +508,7 @@ impl Default for ContextCompressor {
 }
 
 /// Threshold status
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ThresholdStatus {
     Normal,
     Warning,

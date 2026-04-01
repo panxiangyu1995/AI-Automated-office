@@ -27,6 +27,9 @@ pub mod prompt_builder;
 pub mod runtime_session;
 pub mod security;
 pub mod tools;
+pub mod websocket;
+pub mod message_sync;
+pub mod context_compression_integration;
 
 use std::collections::HashSet;
 use std::sync::Arc;
