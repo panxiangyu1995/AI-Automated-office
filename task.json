@@ -1270,6 +1270,7 @@
       "phase": "Phase 1 - Execution Spine",
       "priority": "critical",
       "backendRequired": true,
+      "passes": true,
       "existingCode": {
         "frontend": [
           "src/features/agent/components/AgentChatPanel.tsx",
@@ -1450,6 +1451,7 @@
       "phase": "Phase 1 - Execution Spine",
       "priority": "high",
       "backendRequired": true,
+      "passes": true,
       "existingCode": {
         "frontend": [
           "src/lib/websocket/client.ts",
@@ -1502,6 +1504,7 @@
       "phase": "Phase 1 - Execution Spine",
       "priority": "high",
       "backendRequired": true,
+      "passes": true,
       "existingCode": {
         "frontend": [
           "src/features/agent/hooks/useChatStore.ts",
@@ -1607,6 +1610,7 @@
       "phase": "Phase 2 - Context, Memory, Prompt",
       "priority": "high",
       "backendRequired": true,
+      "passes": true,
       "existingCode": {
         "frontend": [
           "src/features/agent/hooks/useAgentRuntime.ts",
@@ -1962,6 +1966,181 @@
         "Story 51.10"
       ],
       "passes": true
+    },
+    {
+      "id": 200,
+      "epic": "Epic 1",
+      "story": "Story 1.X",
+      "title": "主题系统基础架构",
+      "description": "创建主题系统基础架构，包括类型定义、颜色变换工具、颜色注册表和基础颜色定义。",
+      "implementationType": "new",
+      "phase": "Phase 1 - Theme System",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/styles/globals.css"
+        ],
+        "backend": [],
+        "note": "当前只有基础的 CSS 变量定义，无主题系统架构。"
+      },
+      "openspec_change": "theme-system-foundation",
+      "steps": [
+        "创建 src/theme/ 目录结构",
+        "实现 colorTypes.ts 类型定义",
+        "实现 colorUtils.ts 颜色变换工具",
+        "实现 colorRegistry.ts 颜色注册表",
+        "实现 colors/baseColors.ts 基础颜色定义",
+        "创建统一导出 index.ts"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 201,
+      "epic": "Epic 1",
+      "story": "Story 1.X",
+      "title": "主题系统 React 集成",
+      "description": "实现主题系统的 React 集成，包括 ThemeProvider 组件和 useTheme Hook。",
+      "implementationType": "new",
+      "phase": "Phase 2 - Theme System",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "ThemeProvider 和 useTheme 完全缺失。"
+      },
+      "openspec_change": "theme-system-react-integration",
+      "steps": [
+        "实现 ThemeProvider.tsx 组件",
+        "实现 useTheme.ts Hook",
+        "更新 App.tsx 包裹 ThemeProvider",
+        "更新 theme/index.ts 导出新组件"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 1.X - 主题系统基础架构"
+      ],
+      "passes": false
+    },
+    {
+      "id": 202,
+      "epic": "Epic 1",
+      "story": "Story 1.X",
+      "title": "主题系统组件迁移",
+      "description": "将组件中的硬编码颜色迁移到 CSS 变量，实现主题切换能力。",
+      "implementationType": "refactor",
+      "phase": "Phase 3 - Theme System",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/components/ui/button.tsx",
+          "src/components/ui/card.tsx",
+          "src/components/common/TopBar.tsx",
+          "src/components/common/Sidebar.tsx"
+        ],
+        "backend": [],
+        "note": "大量硬编码颜色需要迁移。"
+      },
+      "openspec_change": "theme-system-component-migration",
+      "steps": [
+        "定义按钮颜色 colors/buttonColors.ts",
+        "定义卡片颜色 colors/cardColors.ts",
+        "定义侧边栏颜色 colors/sidebarColors.ts",
+        "定义顶部栏颜色 colors/topbarColors.ts",
+        "迁移 Button 组件到 CSS 变量",
+        "迁移 Card 组件到 CSS 变量",
+        "迁移 TopBar 组件到 CSS 变量",
+        "迁移 Sidebar 组件到 CSS 变量",
+        "浏览器测试验证主题切换"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 1.X - 主题系统基础架构",
+        "Story 1.X - 主题系统 React 集成"
+      ],
+      "passes": false
+    },
+    {
+      "id": 203,
+      "epic": "Epic 1",
+      "story": "Story 1.X",
+      "title": "主题系统预设主题",
+      "description": "定义预设主题数据，包括亮色、暗色、高对比度主题。",
+      "implementationType": "new",
+      "phase": "Phase 4 - Theme System",
+      "priority": "medium",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "预设主题数据完全缺失。"
+      },
+      "openspec_change": "theme-system-preset-themes",
+      "steps": [
+        "定义亮色主题 themes/lightModern.ts",
+        "定义暗色主题 themes/darkModern.ts",
+        "定义高对比度主题 themes/highContrast.ts",
+        "创建主题导出 themes/index.ts"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 1.X - 主题系统基础架构",
+        "Story 1.X - 主题系统 React 集成",
+        "Story 1.X - 主题系统组件迁移"
+      ],
+      "passes": false
     }
   ]
 }

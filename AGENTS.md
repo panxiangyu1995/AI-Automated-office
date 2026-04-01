@@ -523,11 +523,19 @@ ai-automated-office/
 │   │   ├── api.types.ts                # API响应类型
 │   │   └── models.types.ts             # 数据模型类型
 │   │
-│   └── styles/                         # 全局样式
-│       ├── globals.css                 # 全局CSS
-│       └── themes/                     # 主题文件
-│           ├── light.css
-│           └── dark.css
+│   ├── theme/                         # 主题系统
+│   │   ├── index.ts                   # 统一导出
+│   │   ├── colorRegistry.ts           # 颜色注册表
+│   │   ├── colorTypes.ts             # 类型定义
+│   │   ├── colorUtils.ts             # 颜色变换工具
+│   │   ├── ThemeProvider.tsx         # 主题 Provider
+│   │   ├── useTheme.ts               # useTheme Hook
+│   │   └── colors/
+│   │       ├── baseColors.ts         # 基础颜色
+│   │       └── componentColors.ts    # 组件颜色
+│   │
+│   ├── styles/                         # 全局样式
+│   │   └── globals.css                 # 全局CSS
 │
 ├── 📁 Tauri/Rust后端 (src-tauri/)
 │   ├── Cargo.toml                      # Rust依赖配置
@@ -716,6 +724,7 @@ cp .env.example .env  # 复制环境变量模板
 - 遵循 UX 设计规范的颜色系统（#1E3A5F 主色）
 - 使用 shadcn/ui 设计令牌系统
 - **图标统一使用 Lucide React**，禁止使用 emoji
+- **主题系统**：颜色通过 `src/theme/colorRegistry.ts` 注册，使用 `var(--ao-{id})` 格式引用，参考 UX 设计规范主题系统架构
 
 ### Rust/Tauri 规范
 - 遵循 Rust 官方代码风格

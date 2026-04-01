@@ -311,6 +311,167 @@ AI-Automated-office 采用：
 
 ---
 
+## 主题系统架构
+
+### 设计目标
+
+主题系统采用**颜色注册表 + CSS 变量**模式，参考 VSCode 主题架构设计，支持多主题切换、主题继承、颜色变换和用户自定义。
+
+### 核心架构
+
+```
+颜色定义（TypeScript） → 注册到 ColorRegistry → 生成 CSS 变量（--ao-{id}） → 注入到 DOM
+```
+
+### 主题类型
+
+| 类型 | 说明 | CSS 类名 |
+|-----|------|---------|
+| `light` | 亮色主题 | `.light` |
+| `dark` | 暗色主题 | `.dark` |
+| `hc` | 高对比度主题 | `.hc` |
+| `system` | 跟随系统 | 动态切换 |
+
+### 颜色标识符规范
+
+采用 `{category}.{component}-{state}` 格式命名：
+
+```
+foreground          # 基础颜色
+border             # 边框颜色
+button.background  # 按钮背景
+button.foreground # 按钮文字
+button.hoverBackground
+input.background
+input.foreground
+input.border
+sidebar.background
+sidebar.foreground
+sidebar.border
+activityBar.background
+activityBar.foreground
+activityBar.activeBorder
+statusBar.background
+statusBar.foreground
+```
+
+### 目录结构
+
+```
+src/theme/
+├── index.ts                    # 统一导出
+├── colorRegistry.ts             # 颜色注册表
+├── colorTypes.ts               # 类型定义
+├── colorUtils.ts               # 颜色变换工具
+├── ThemeProvider.tsx           # React 主题 Provider
+├── useTheme.ts                 # useTheme Hook
+└── colors/
+    ├── baseColors.ts           # 基础颜色定义
+    └── componentColors.ts      # 组件颜色定义
+```
+
+### 颜色注册表
+
+```typescript
+// 颜色默认值（针对四种主题类型）
+interface ColorDefaults {
+  light: ColorValue | null
+  dark: ColorValue | null
+  hc: ColorValue | null
+}
+
+// 注册颜色
+export function registerColor(
+  id: ColorIdentifier,
+  defaults: ColorDefaults,
+  description: string
+): ColorIdentifier
+
+// 转换为 CSS 变量名
+export function toCssVariableName(id: ColorIdentifier): string
+// 示例: 'button.background' -> '--ao-button-background'
+
+// 获取 CSS 变量
+export function toCssVariable(id: ColorIdentifier): string
+// 示例: 'button.background' -> 'var(--ao-button-background)'
+```
+
+### 颜色变换函数
+
+| 函数 | 说明 | 示例 |
+|-----|------|------|
+| `darken(color, factor)` | 使颜色变暗 | `darken('#FFFFFF', 0.2)` |
+| `lighten(color, factor)` | 使颜色变亮 | `lighten('#000000', 0.1)` |
+| `transparent(color, factor)` | 调整透明度 | `transparent('#0078D4', 0.5)` |
+| `mix(color1, color2, ratio)` | 混合两种颜色 | `mix('#000', '#FFF', 0.5)` |
+
+### React 集成
+
+```tsx
+// ThemeProvider.tsx
+export function ThemeProvider({ children }) {
+  const [themeType, setThemeType] = useState<'light' | 'dark' | 'hc' | 'system'>('system')
+  
+  // 监听系统主题变化（仅 system 模式）
+  // 动态加载主题 CSS 变量
+  // 注入到 document.documentElement
+  
+  return (
+    <ThemeContext.Provider value={{ themeType, setThemeType }}>
+      {children}
+    </ThemeContext.Provider>
+  )
+}
+
+// 使用方式
+const Button = styled.button`
+  background: var(--ao-button-background);
+  color: var(--ao-button-foreground);
+  border: 1px solid var(--ao-border);
+  &:hover { background: var(--ao-button-hoverBackground); }
+`
+```
+
+### 主题切换机制
+
+1. 用户选择主题类型（亮色/暗色/高对比度/跟随系统）
+2. ThemeProvider 更新 document.documentElement 的 class
+3. 颜色注册表根据主题类型解析对应颜色值
+4. CSS 变量通过 `element.style.setProperty()` 动态注入
+5. 无需刷新页面，实时生效
+
+### 主题文件
+
+预设主题存储为 JSON 文件，支持 `extends` 继承机制：
+
+```json
+{
+  "$schema": "ai-office://schemas/color-theme",
+  "name": "Dark Modern",
+  "type": "dark",
+  "extends": "./darkPlus.json",
+  "colors": {
+    "background": "#1F1F1E",
+    "foreground": "#CCCCCC",
+    "button.background": "#0078D4"
+  }
+}
+```
+
+### 迁移计划
+
+| 阶段 | 任务 | 优先级 |
+|-----|------|-------|
+| 1 | 创建 `src/theme/` 目录结构 | P0 |
+| 2 | 实现颜色注册表和变换工具 | P0 |
+| 3 | 迁移 Shadcn/ui 颜色到注册表 | P0 |
+| 4 | 实现 ThemeProvider 和 useTheme | P0 |
+| 5 | 更新 globals.css 使用新 CSS 变量 | P1 |
+| 6 | 添加高对比度主题支持 | P2 |
+| 7 | 添加用户自定义颜色功能 | P2 |
+
+---
+
 ## 核心交互定义
 
 ### 定义性体验
@@ -752,6 +913,253 @@ AI-Automated-office 的旅程共性是：
 - AI 是否能正确打开和填充目标页面
 - 治理页是否无动态歧义
 - 无业务数据时是否只展示结构与能力说明
+
+---
+
+## 系统侧边栏 (Sidebar) 详细设计规范
+
+### 侧边栏定位
+
+**侧边栏是系统的 L2 级导航区域**，位于 ActivityBar（一级导航）右侧，负责承载当前活动域下的视图切换、二级导航和上下文筛选功能。
+
+| 层级 | 组件 | 职责 |
+|------|------|------|
+| L1（一级） | ActivityBar | 切换活动域（部门、平台功能） |
+| **L2（二级）** | **Sidebar** | **当前域内的视图和导航** |
+| L3（三级） | Tab / TabBar | 同一视图内的多标签切换 |
+| 内容 | Workbench | 具体业务内容渲染区 |
+
+### 侧边栏内容模式
+
+侧边栏内容随当前活动域动态变化，分为以下模式：
+
+#### 模式 1：资源浏览器模式（非管理页面）
+
+```
+┌─────────────────────────────┐
+│ 资源浏览器          [搜索] │
+├─────────────────────────────┤
+│ 固定导航                    │
+│   ├─ 📁 文件管理           │
+│   ├─ 📊 数据看板           │
+│   └─ 📑 文档库             │
+├─────────────────────────────┤
+│ 动态资源                    │
+│   ├─ 📄 合同文件.pdf        │
+│   └─ 📊 Q1报表.xlsx        │
+├─────────────────────────────┤
+│ 最近打开                    │
+│   └─ 📄 报价单.docx         │
+└─────────────────────────────┘
+```
+
+**内容：**
+- 固定导航：系统级资源入口（文件、数据、文档）
+- 动态资源：根据工作区/项目注册的资源列表
+- 最近打开：用户最近访问过的资源
+
+#### 模式 2：设置中心模式（L2 级分类导航）
+
+```
+┌─────────────────────────────┐
+│ 设置中心            [搜索] │
+├─────────────────────────────┤
+│ 工作台与个人偏好            │
+│   ├─ 通用 ⚙               │
+│   └─ 快捷键 ⌨              │
+├─────────────────────────────┤
+│ AI 与模型                   │
+│   └─ Agent 设置 🧠         │
+├─────────────────────────────┤
+│ Sub-Agent 与 Skills        │
+│   ├─ Sub-Agent 管理         │
+│   ├─ 角色配置              │
+│   ├─ 工具绑定              │
+│   └─ ... (更多)            │
+├─────────────────────────────┤
+│ 知识库与内容               │
+│   ├─ 文档上传              │
+│   ├─ 问答检索              │
+│   └─ ...                   │
+└─────────────────────────────┘
+```
+
+**内容：**
+- 分类标题（一级 L2 导航）
+- 分类下的设置项列表（二级 L2 导航）
+- 每个分类可展开/折叠
+- 当前活动项高亮显示
+
+#### 模式 3：管理后台模式
+
+```
+┌─────────────────────────────┐
+│ 系统管理            [搜索] │
+├─────────────────────────────┤
+│ 用户管理 👥                  │
+│ 组织架构 🏢                  │
+│ 权限矩阵 🔐                  │
+│ 租户管理 🏠                  │
+└─────────────────────────────┘
+```
+
+**内容：**
+- 固定的管理入口列表
+- 无展开/折叠（管理页面结构扁平）
+
+### 侧边栏组件结构
+
+```
+┌─────────────────────────────────┐
+│ Header (56px)                   │
+│ 标题 + 搜索框                   │
+├─────────────────────────────────┤
+│ ScrollArea (flex-1)            │
+│  ├─ Section: 分类标题          │
+│  ├─ SectionItem: 分类项        │
+│  │   └─ SubItems: 子项列表      │
+│  └─ ...更多 Section             │
+└─────────────────────────────────┘
+```
+
+### 侧边栏交互规范
+
+#### 导航交互
+
+| 交互 | 行为 |
+|------|------|
+| 点击分类标题 | 展开/折叠该分类的子项列表 |
+| 点击子项 | 切换到对应的设置/视图页面 |
+| 当前页面高亮 | 左侧显示绿色指示条 (#238636) |
+
+#### 搜索交互
+
+| 交互 | 行为 |
+|------|------|
+| 输入关键词 | 实时筛选匹配的分类和子项 |
+| 无匹配结果 | 显示"没有找到匹配的项" |
+| 清空搜索 | 恢复完整列表显示 |
+
+### 侧边栏样式规范
+
+#### 尺寸规范
+
+| 属性 | 值 |
+|------|-----|
+| 默认宽度 | 240px |
+| 最小宽度 | 220px |
+| 最大宽度 | 320px |
+| Header 高度 | 56px |
+| 搜索框高度 | 36px |
+| 分类标题行高 | 32px |
+| 子项行高 | 28px |
+
+#### 颜色规范
+
+| 元素 | 颜色值 |
+|------|--------|
+| 背景色 | #161B22 |
+| Header 边框 | #21262D |
+| 搜索框背景 | #0D1117 |
+| 搜索框边框 | #30363D |
+| 搜索图标 | #8B949E |
+| 主文字色 | #C9D1D9 |
+| 次级文字色 | #8B949E |
+| 激活文字色 | #FFFFFF |
+| 激活背景 | #21262D |
+| 激活指示条 | #238636 |
+| 数量徽章边框 | #30363D |
+| 数量徽章文字 | #8B949E |
+| Hover 背景 | rgba(255,255,255,0.05) |
+
+#### 字体规范
+
+| 元素 | 字号 | 字重 |
+|------|------|------|
+| Header 标题 | 14px | 600 (semibold) |
+| 分类标题 | 12px | 600 (semibold) |
+| 分类项文字 | 14px | 400 (normal) |
+| 子项文字 | 13px | 400 (normal) |
+| 数量徽章 | 10px | 400 (normal) |
+
+#### 间距规范
+
+| 元素 | 间距 |
+|------|------|
+| 整体内边距 | 8px (p-2) |
+| 分类项内边距 | 12px 水平, 8px 垂直 |
+| 子项内边距 | 12px 水平, 6px 垂直 |
+| 子项缩进 | 12px (ml-3) |
+| 分类间距 | 4px (mb-1) |
+
+#### 圆角规范
+
+| 元素 | 圆角 |
+|------|------|
+| 搜索框 | 6px |
+| 分类项 | 6px |
+| 子项 | 6px |
+| 数量徽章 | 4px |
+
+### 侧边栏实现要求
+
+#### 必须遵守的规则
+
+1. **侧边栏导航状态必须全局管理**
+   - 使用 zustand store 统一管理 `settingsActiveCategory` 和 `settingsActiveSection`
+   - 不可在页面组件内部维护独立的导航状态
+
+2. **侧边栏内容不得嵌入到业务页面内部**
+   - 设置页面的侧边栏必须使用系统级 Sidebar 组件
+   - 业务页面不得自行实现内嵌导航边栏
+
+3. **侧边栏在不同 ActivityBar 项下可呈现不同内容**
+   - 通过 `activeActivityItem` 判断当前活动域
+   - 渲染对应的侧边栏内容模式
+
+4. **侧边栏宽度必须可调节**
+   - 使用 ResizablePanel 组件支持拖拽调节
+   - 宽度变化时不得影响 Workbench 区域内容
+
+5. **侧边栏状态必须持久化**
+   - 侧边栏展开/折叠状态保存到 localStorage
+   - 页面刷新后恢复之前状态
+
+#### 状态管理规范
+
+```typescript
+// uiStore.ts 中必须包含的状态
+interface UIState {
+  // ... 其他状态
+  settingsActiveCategory: SettingsCategoryKey
+  settingsActiveSection: SettingsSectionKey
+  setSettingsActiveCategory: (category: SettingsCategoryKey) => void
+  setSettingsActiveSection: (section: SettingsSectionKey) => void
+}
+```
+
+#### 组件结构规范
+
+```
+Sidebar (系统侧边栏容器)
+├── Header (标题 + 搜索)
+├── ScrollArea (可滚动内容区)
+│   ├── SettingsSidebarContent (设置中心内容)
+│   │   ├── CategoryButton (分类按钮)
+│   │   └── SubItemList (子项列表)
+│   │       └── SubItemButton (子项按钮)
+│   ├── ResourceSidebarContent (资源浏览内容)
+│   └── AdminSidebarContent (管理后台内容)
+```
+
+### 侧边栏无障碍规范
+
+| 要求 | 说明 |
+|------|------|
+| 键盘导航 | Tab 键可在分类和子项间切换 |
+| ARIA 标签 | 按钮必须包含 `aria-label` |
+| 焦点可见 | 焦点状态使用明显的轮廓指示 |
+| 屏幕阅读器 | 使用语义化 HTML 结构 |
 
 ---
 
