@@ -13,7 +13,7 @@
  * 导出 Agent 相关的组件和 Hooks
  */
 
-// Components
+// Legacy Components (deprecated, will be removed in future version)
 export { AgentChatPanel } from './components/AgentChatPanel'
 export { ChatMessage } from './components/ChatMessage'
 export { 

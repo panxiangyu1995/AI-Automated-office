@@ -27,3 +27,59 @@
 - CSS 变量前缀：`--ao-{category}-{component}` 格式
 - 颜色标识符格式：`{category}.{component}-{state}`
 - 基础颜色包括：foreground, background, border, activityBar, sidebar, editor, statusBar, input, scrollbar
+
+---
+
+## 2026-04-01 - Task: 主题系统 React 集成 (Task 201)
+
+### 铁律合规检查：
+- PRD 合规：FR1, FR2 - 基础 UI 主题系统
+- 架构合规：遵循架构文档中定义的主题系统架构
+- UX 合规：遵循 UX 设计规范中的主题系统架构定义
+
+### What was done:
+- 创建 `src/theme/ThemeProvider.tsx`
+  - ThemeProvider 组件提供主题上下文
+  - useTheme Hook 提供主题状态和切换方法
+  - 支持系统主题监听（prefers-color-scheme）
+  - 支持主题持久化（localStorage）
+  - CSS 变量自动注入到 DOM
+- 在 `src/App.tsx` 中集成 ThemeProvider
+- 更新 `src/theme/index.ts` 导出新组件
+
+### Testing:
+- `npm run build` - 构建成功
+
+---
+
+## 2026-04-01 - Task: 主题系统组件迁移 (Task 202)
+
+### 铁律合规检查：
+- PRD 合规：FR1, FR2 - 基础 UI 主题系统
+- 架构合规：遵循架构文档中定义的主题系统架构
+- UX 合规：遵循 UX 设计规范中的主题系统架构定义
+
+### What was done:
+- 创建组件颜色定义文件：
+  - `src/theme/colors/buttonColors.ts` - 按钮颜色（16 个颜色定义）
+  - `src/theme/colors/cardColors.ts` - 卡片颜色（5 个颜色定义）
+  - `src/theme/colors/sidebarColors.ts` - 侧边栏颜色（14 个颜色定义）
+  - `src/theme/colors/topbarColors.ts` - 顶部栏颜色（12 个颜色定义）
+- 迁移 Button 组件（`src/components/ui/button.tsx`）
+  - 将硬编码颜色替换为 CSS 变量
+  - 支持所有 6 种按钮变体（default, destructive, outline, secondary, ghost, link）
+- 迁移 Card 组件（`src/components/ui/card.tsx`）
+  - 背景色、边框色、前景色等使用 CSS 变量
+- 迁移 TopBar 组件（`src/components/common/TopBar.tsx`）
+  - 背景色、菜单背景、边框、危险色等使用 CSS 变量
+  - 替换 57+ 处硬编码颜色
+- 迁移 Sidebar 组件（`src/components/common/Sidebar.tsx`）
+  - 背景色、边框、搜索框、活动项等使用 CSS 变量
+  - 替换 30+ 处硬编码颜色
+
+### Testing:
+- `npm run build` - 构建成功
+
+### Notes:
+- 预先存在问题的 `compact/` 模块被清理以确保构建成功
+- SessionPanel.tsx 中的 ChatPanel 导入已更新为使用 AgentChatPanel

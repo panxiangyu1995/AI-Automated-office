@@ -167,61 +167,68 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   if (!visible) return null
 
   return (
-    <header className="h-8 bg-[#1E3A5F] border-b border-[#152A45] flex items-center justify-between px-2 select-none">
-      <div className="flex items-center">
-        <div className="flex items-center gap-2 mr-6">
-          <span className="text-white font-bold text-sm">Realline</span>
-        </div>
-        <Menubar className="border-none bg-transparent">
+    <header 
+      className="h-10 flex items-center justify-between px-4 select-none"
+      style={{ backgroundColor: 'var(--ao-topbar-background)' }}
+    >
+      {/* 左侧菜单 */}
+      <div className="flex items-center gap-6">
+        <span className="text-white font-semibold text-sm">Realline</span>
+        
+        <Menubar className="border-none bg-transparent h-auto p-0">
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               文件
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('File: New')}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('File: New')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 新建
                 <MenubarShortcut>⌘N</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('File: Open')}>
+              <MenubarItem onSelect={handleMenuAction('File: Open')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 打开...
                 <MenubarShortcut>⌘O</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('File: Save')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('File: Save')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 保存
                 <MenubarShortcut>⌘S</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('File: Save As')}>
+              <MenubarItem onSelect={handleMenuAction('File: Save As')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 另存为...
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('File: Import')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('File: Import')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 导入...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('File: Export')}>
+              <MenubarItem onSelect={handleMenuAction('File: Export')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 导出...
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('File: Settings', handleOpenSettings)}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('File: Settings', handleOpenSettings)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Settings size={14} className="mr-2" />
                 设置...
                 <MenubarShortcut>⌘,</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('File: Print', handleOpenPrintDialog)}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('File: Print', handleOpenPrintDialog)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <FileText size={14} className="mr-2" />
                 打印...
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem
-                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                onSelect={handleMenuAction('File: Exit', handleExit)}
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem 
+                className="text-red-400"
+                onSelect={handleMenuAction('File: Exit', handleExit)} 
+                style={{ color: 'var(--ao-topbar-dangerForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}
               >
                 <FileText size={14} className="mr-2" />
                 退出
@@ -230,49 +237,52 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               编辑
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Edit: Undo')}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('Edit: Undo')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 撤销
                 <MenubarShortcut>⌘Z</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Edit: Redo')}>
+              <MenubarItem onSelect={handleMenuAction('Edit: Redo')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 重做
                 <MenubarShortcut>⌘⇧Z</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Edit: Cut')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Edit: Cut')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 剪切
                 <MenubarShortcut>⌘X</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Edit: Copy')}>
+              <MenubarItem onSelect={handleMenuAction('Edit: Copy')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 复制
                 <MenubarShortcut>⌘C</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Edit: Paste')}>
+              <MenubarItem onSelect={handleMenuAction('Edit: Paste')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 粘贴
                 <MenubarShortcut>⌘V</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Edit: Find')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Edit: Find')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 查找...
                 <MenubarShortcut>⌘F</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Edit: Replace')}>
+              <MenubarItem onSelect={handleMenuAction('Edit: Replace')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 替换...
                 <MenubarShortcut>⌘H</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Edit: Select All')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Edit: Select All')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Edit3 size={14} className="mr-2" />
                 全选
                 <MenubarShortcut>⌘A</MenubarShortcut>
@@ -281,47 +291,50 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               视图
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('View: Toggle Menu Bar', onToggle)}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('View: Toggle Menu Bar', onToggle)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 切换菜单栏
                 <MenubarShortcut>⌘⇧M</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('View: Activity Bar')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('View: Activity Bar')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 活动栏
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: Sidebar', toggleSidebar)}>
+              <MenubarItem onSelect={handleMenuAction('View: Sidebar', toggleSidebar)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 侧边栏
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: AI Chat Panel', toggleChatPanel)}>
+              <MenubarItem onSelect={handleMenuAction('View: AI Chat Panel', toggleChatPanel)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 AI 对话面板
                 <MenubarShortcut>{aiPanelShortcutLabel}</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('View: Full Screen')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('View: Full Screen')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 全屏
                 <MenubarShortcut>F11</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('View: Zoom In')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('View: Zoom In')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 放大
                 <MenubarShortcut>⌘+</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: Zoom Out')}>
+              <MenubarItem onSelect={handleMenuAction('View: Zoom Out')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 缩小
                 <MenubarShortcut>⌘-</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: Reset Zoom')}>
+              <MenubarItem onSelect={handleMenuAction('View: Reset Zoom')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 重置缩放
                 <MenubarShortcut>⌘0</MenubarShortcut>
@@ -330,24 +343,27 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               助手
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Agent: New Chat', handleNewChat)}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('Agent: New Chat', handleNewChat)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Bot size={14} className="mr-2" />
                 新对话
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Agent: Chat History', handleOpenChatHistory)}>
+              <MenubarItem onSelect={handleMenuAction('Agent: Chat History', handleOpenChatHistory)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Bot size={14} className="mr-2" />
                 历史记录...
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Agent: Model Settings')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Agent: Model Settings')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Bot size={14} className="mr-2" />
                 模型设置...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Agent: API Key Management')}>
+              <MenubarItem onSelect={handleMenuAction('Agent: API Key Management')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Bot size={14} className="mr-2" />
                 API 密钥管理...
               </MenubarItem>
@@ -355,19 +371,22 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               插件
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Market')}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Market')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Puzzle size={14} className="mr-2" />
                 插件市场...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Plugins: Installed Plugins')}>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Installed Plugins')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Puzzle size={14} className="mr-2" />
                 已安装插件...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Settings')}>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Settings')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Puzzle size={14} className="mr-2" />
                 插件设置...
               </MenubarItem>
@@ -375,19 +394,22 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               工具
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Tools: Data Sync')}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('Tools: Data Sync')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Wrench size={14} className="mr-2" />
                 数据同步
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Tools: System Logs')}>
+              <MenubarItem onSelect={handleMenuAction('Tools: System Logs')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Wrench size={14} className="mr-2" />
                 系统日志...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Tools: Performance Monitor')}>
+              <MenubarItem onSelect={handleMenuAction('Tools: Performance Monitor')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Wrench size={14} className="mr-2" />
                 性能监控...
               </MenubarItem>
@@ -395,22 +417,25 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               硬件
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Hardware: Scan Document', handleOpenScanDialog)}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('Hardware: Scan Document', handleOpenScanDialog)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Scan size={14} className="mr-2" />
                 扫描文档...
                 <MenubarShortcut>Ctrl+Shift+S</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Hardware: Print Document', handleOpenPrintDialog)}>
+              <MenubarItem onSelect={handleMenuAction('Hardware: Print Document', handleOpenPrintDialog)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Printer size={14} className="mr-2" />
                 打印文档...
                 <MenubarShortcut>Ctrl+P</MenubarShortcut>
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Hardware: Device Management', handleOpenHardwareDialog)}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Hardware: Device Management', handleOpenHardwareDialog)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <HardDrive size={14} className="mr-2" />
                 设备管理...
               </MenubarItem>
@@ -418,25 +443,28 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger className="text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]">
+            <MenubarTrigger 
+              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+              style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+            >
               帮助
             </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onSelect={handleMenuAction('Help: Settings', handleOpenSettings)}>
+            <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
+              <MenubarItem onSelect={handleMenuAction('Help: Settings', handleOpenSettings)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Settings size={14} className="mr-2" />
                 设置...
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Help: Documentation', handleOpenDocs)}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Help: Documentation', handleOpenDocs)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <HelpCircle size={14} className="mr-2" />
                 文档
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Help: Keyboard Shortcuts')}>
+              <MenubarItem onSelect={handleMenuAction('Help: Keyboard Shortcuts')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <HelpCircle size={14} className="mr-2" />
                 快捷键列表...
               </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onSelect={handleMenuAction('Help: About')}>
+              <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+              <MenubarItem onSelect={handleMenuAction('Help: About')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <HelpCircle size={14} className="mr-2" />
                 关于...
               </MenubarItem>
@@ -445,6 +473,7 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
         </Menubar>
       </div>
 
+      {/* 右侧控制按钮 */}
       <div className="flex items-center gap-2">
         <AccountMenu
           isAuthenticated={isAuthenticated}
@@ -508,7 +537,8 @@ function AccountMenu({
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 text-white hover:bg-[#2A4A73]"
+        className="h-7 w-7 hover:bg-[var(--ao-topbar-border)]"
+        style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
         aria-label="登录账号"
         onClick={onNavigateToLogin}
       >
@@ -522,26 +552,35 @@ function AccountMenu({
       <MenubarMenu>
         <MenubarTrigger
           aria-label="账号菜单"
-          className="h-6 w-6 justify-center rounded-md p-0 text-white hover:bg-[#2A4A73] data-[state=open]:bg-[#2A4A73]"
+          className="h-7 w-7 justify-center rounded-md p-0 hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+          style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
         >
           <CircleUserRound size={16} />
         </MenubarTrigger>
-        <MenubarContent align="end" sideOffset={8} className="min-w-[240px]">
-          <MenubarLabel className="text-xs text-muted-foreground">当前账号</MenubarLabel>
-          <div className="rounded-md bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-600">
+        <MenubarContent 
+          align="end" 
+          sideOffset={8} 
+          className="min-w-[240px]"
+          style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}
+        >
+          <MenubarLabel className="text-xs" style={{ color: 'var(--ao-sidebar-secondaryForeground)' }}>当前账号</MenubarLabel>
+          <div 
+            className="rounded-md px-3 py-2 text-xs leading-5"
+            style={{ backgroundColor: 'var(--ao-sidebar-searchBackground)', color: 'var(--ao-topbar-menuItemForeground)' }}
+          >
             <div>用户名：{resolveField(user?.username, '未设置用户名')}</div>
             <div>姓名：{resolveField(user?.name, '未设置姓名')}</div>
             <div>部门：{resolveField(user?.department, '未设置部门')}</div>
             <div>角色：{resolveField(user?.role, '未设置角色')}</div>
           </div>
-          <MenubarSeparator />
-          <MenubarItem onSelect={handleMenuAction('Account: Switch Account', onSwitchAccount)}>
+          <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
+          <MenubarItem onSelect={handleMenuAction('Account: Switch Account', onSwitchAccount)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
             <RefreshCw size={14} className="mr-2" />
             切换账号
           </MenubarItem>
-          <MenubarItem
-            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-            onSelect={handleMenuAction('Account: Logout', onLogout)}
+          <MenubarItem 
+            onSelect={handleMenuAction('Account: Logout', onLogout)} 
+            style={{ color: 'var(--ao-topbar-dangerForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}
           >
             <LogOut size={14} className="mr-2" />
             退出登录
@@ -582,7 +621,8 @@ function LayoutControlButtons({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-white hover:bg-[#2A4A73]"
+                className="h-7 w-7 hover:bg-[var(--ao-topbar-border)]"
+                style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
                 onClick={onOpenLayoutDialog}
               >
                 <LayoutTemplate size={16} />
@@ -597,9 +637,8 @@ function LayoutControlButtons({
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-6 w-6 text-white hover:bg-[#2A4A73] ${
-                  !sidebarCollapsed ? 'bg-[#3A5A83]' : ''
-                }`}
+                className={`h-7 w-7 hover:bg-[var(--ao-topbar-border)] ${!sidebarCollapsed ? 'bg-[var(--ao-topbar-border)]' : ''}`}
+                style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
                 onClick={toggleSidebar}
               >
                 <PanelLeft size={16} />
@@ -614,9 +653,8 @@ function LayoutControlButtons({
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-6 w-6 text-white hover:bg-[#2A4A73] ${
-                  !chatPanelCollapsed ? 'bg-[#3A5A83]' : ''
-                }`}
+                className={`h-7 w-7 hover:bg-[var(--ao-topbar-border)] ${!chatPanelCollapsed ? 'bg-[var(--ao-topbar-border)]' : ''}`}
+                style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
                 onClick={toggleChatPanel}
               >
                 <PanelRight size={16} />
@@ -631,9 +669,8 @@ function LayoutControlButtons({
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-6 w-6 text-white hover:bg-[#2A4A73] ${
-                  !bottomPanelCollapsed ? 'bg-[#3A5A83]' : ''
-                }`}
+                className={`h-7 w-7 hover:bg-[var(--ao-topbar-border)] ${!bottomPanelCollapsed ? 'bg-[var(--ao-topbar-border)]' : ''}`}
+                style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
                 onClick={toggleBottomPanel}
               >
                 <PanelBottom size={16} />

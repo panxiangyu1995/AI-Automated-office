@@ -2098,7 +2098,7 @@
         "Story 1.X - 主题系统基础架构",
         "Story 1.X - 主题系统 React 集成"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 203,

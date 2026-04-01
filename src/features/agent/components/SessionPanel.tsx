@@ -80,7 +80,7 @@ export function SessionPanel({ className, onSendMessage, onStopGeneration }: Ses
   const currentSurface = agentSecondarySurface === 'none' ? null : SURFACE_META[agentSecondarySurface]
 
   return (
-    <div className={cn('relative flex h-full bg-white', className)}>
+    <div className={cn('relative flex h-full', className)} style={{ backgroundColor: '#0F1419' }}>
       <AgentChatPanel
         className="h-full min-w-0 flex-1"
         onSendMessage={onSendMessage}
@@ -95,26 +95,35 @@ export function SessionPanel({ className, onSendMessage, onStopGeneration }: Ses
           <button
             type="button"
             aria-label="关闭次级面板"
-            className="absolute inset-y-0 right-0 left-[320px] z-10 bg-slate-900/20 backdrop-blur-[1px]"
+            className="absolute inset-y-0 right-0 left-[320px] z-10 backdrop-blur-[1px]"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
             onClick={closeAgentSecondarySurface}
           />
 
           <section
-            className="absolute inset-y-0 left-0 z-20 flex w-full max-w-[320px] flex-col border-r border-slate-200 bg-white shadow-xl"
+            className="absolute inset-y-0 left-0 z-20 flex w-full max-w-[320px] flex-col shadow-xl"
+            style={{ 
+              backgroundColor: '#161B22',
+              borderRight: '1px solid #30363D',
+            }}
             aria-label={currentSurface.title}
           >
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+            <div 
+              className="flex items-start justify-between gap-3 px-4 py-3"
+              style={{ borderBottom: '1px solid #21262D' }}
+            >
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-slate-900">
+                <div className="flex items-center gap-2" style={{ color: '#C9D1D9' }}>
                   <currentSurface.icon size={16} />
                   <h3 className="text-sm font-semibold">{currentSurface.title}</h3>
                 </div>
-                <p className="mt-1 text-xs leading-5 text-slate-500">{currentSurface.description}</p>
+                <p className="mt-1 text-xs leading-5" style={{ color: '#8B949E' }}>{currentSurface.description}</p>
               </div>
               <button
                 type="button"
                 onClick={closeAgentSecondarySurface}
-                className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                className="rounded-lg p-1.5 transition-colors hover:bg-[#21262D]"
+                style={{ color: '#8B949E' }}
                 title="关闭"
                 aria-label="关闭"
               >

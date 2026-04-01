@@ -9,21 +9,21 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-[var(--ao-button-background)] text-[var(--ao-button-foreground)] hover:bg-[var(--ao-button-hoverBackground)] border border-[var(--ao-button-border)]",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          "bg-[var(--ao-button-dangerBackground)] text-[var(--ao-button-dangerForeground)] hover:bg-[var(--ao-button-dangerHoverBackground)] border border-[var(--ao-button-dangerBorder)]",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-[var(--ao-button-outlineBorder)] bg-transparent hover:bg-[var(--ao-button-outlineHoverBackground)] hover:border-[var(--ao-button-outlineHoverBorder)] text-[var(--ao-button-outlineForeground)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-[var(--ao-button-secondaryBackground)] text-[var(--ao-button-secondaryForeground)] hover:bg-[var(--ao-button-secondaryHoverBackground)] border border-[var(--ao-button-secondaryBorder)]",
+        ghost: "hover:bg-[var(--ao-button-ghostHoverBackground)] text-[var(--ao-button-ghostForeground)]",
+        link: "text-[var(--ao-button-linkForeground)] underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {
