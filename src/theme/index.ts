@@ -31,5 +31,8 @@ export {
   generateThemeCss,
 } from './colorRegistry'
 
+// Theme Provider
+export { ThemeProvider, useTheme } from './ThemeProvider'
+
 // Base Colors
 export * from './colors'

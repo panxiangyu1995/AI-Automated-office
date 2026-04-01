@@ -2047,7 +2047,7 @@
       "dependencies": [
         "Story 1.X - 主题系统基础架构"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 202,

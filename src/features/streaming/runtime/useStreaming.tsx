@@ -10,7 +10,6 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Message } from '../../message/runtime/messageModel'
 import type { PartDeltaEvent, MessageEndEvent } from './runtimeEvents'
 
 // ==================== Types ====================
@@ -44,8 +43,6 @@ export interface UseStreamingOptions {
   debounceMs?: number
   /** Maximum parts to keep in memory */
   maxParts?: number
-  /** Enable virtualized rendering */
-  virtualized?: boolean
   /** Callback when streaming completes */
   onComplete?: (messageId: string, content: string) => void
   /** Callback on error */
@@ -55,22 +52,21 @@ export interface UseStreamingOptions {
 // ==================== Helper Functions ====================
 
 /**
- * Accumulate text content from stream chunks
- */
-function accumulateContent(chunks: PartDeltaEvent[]): string {
-  return chunks.map(c => c.delta).join('')
-}
-
-/**
  * Calculate estimated tokens (simple heuristic)
  */
 function estimateTokens(text: string): number {
   if (!text) return 0
-  // Rough estimate: ~4 chars per token for English, ~1.5 for Chinese
   const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length
   const chineseTokens = chineseChars / 1.5
   const otherTokens = (text.length - chineseChars) / 4
   return Math.ceil(chineseTokens + otherTokens)
+}
+
+/**
+ * Accumulate text content from stream chunks
+ */
+function accumulateContent(chunks: PartDeltaEvent[]): string {
+  return chunks.map(c => c.delta).join('')
 }
 
 // ==================== Hooks ====================
@@ -107,7 +103,6 @@ export function useStreamingMessage(
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
-    
     debounceTimerRef.current = setTimeout(() => {
       setState(updater)
     }, debounceMs)
@@ -197,11 +192,13 @@ export function useStreamingMessage(
 
   // Cleanup on unmount
   useEffect(() => {
+    const chunks = chunksRef.current
+    const timer = debounceTimerRef.current
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
+      if (timer) {
+        clearTimeout(timer)
       }
-      chunksRef.current.clear()
+      chunks.clear()
     }
   }, [])
 
@@ -215,31 +212,178 @@ export function useStreamingMessage(
   }
 }
 
+// ==================== Streaming Manager ====================
+
+/**
+ * Streaming manager data
+ */
+interface StreamingManagerData {
+  state: StreamingState
+  chunksRef: Map<string, PartDeltaEvent[]>
+  accumulatedContentRef: string
+  options: UseStreamingOptions
+}
+
 /**
  * Hook for managing multiple streaming messages
  */
 export function useStreamingManager() {
   const [activeStreams, setActiveStreams] = useState<Map<string, StreamingState>>(new Map())
-  const streamsRef = useRef<Map<string, ReturnType<typeof useStreamingMessage>>>(new Map())
+  const streamsDataRef = useRef<Map<string, StreamingManagerData>>(new Map())
+  const updateTimerRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  // Update stream state with debouncing
+  const updateStreamState = useCallback((
+    messageId: string,
+    updater: (prev: StreamingState) => StreamingState
+  ) => {
+    // Clear existing timer
+    const existingTimer = updateTimerRef.current.get(messageId)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+    
+    // Set new timer
+    updateTimerRef.current.set(messageId, setTimeout(() => {
+      setActiveStreams(prev => {
+        const next = new Map(prev)
+        const data = streamsDataRef.current.get(messageId)
+        if (data) {
+          const newParts = updater({ ...data.state, parts: new Map(data.state.parts) })
+          next.set(messageId, newParts)
+          data.state = newParts
+        }
+        return next
+      })
+      updateTimerRef.current.delete(messageId)
+    }, 16))
+  }, [])
 
   // Start tracking a new message
-  const startStream = useCallback((messageId: string, options?: UseStreamingOptions) => {
-    const hook = useStreamingMessage(messageId, options)
-    streamsRef.current.set(messageId, hook)
+  const startStream = useCallback((
+    messageId: string,
+    options?: UseStreamingOptions
+  ) => {
+    const initialState: StreamingState = {
+      messageId,
+      parts: new Map(),
+      isComplete: false,
+      totalTokens: 0,
+      lastUpdate: Date.now(),
+    }
+    
+    const data: StreamingManagerData = {
+      state: initialState,
+      chunksRef: new Map(),
+      accumulatedContentRef: '',
+      options: options || {},
+    }
+    
+    streamsDataRef.current.set(messageId, data)
     
     setActiveStreams(prev => {
       const next = new Map(prev)
-      next.set(messageId, hook.state)
+      next.set(messageId, initialState)
       return next
     })
     
-    return hook
+    return messageId
   }, [])
+
+  // Handle part delta
+  const handlePartDelta = useCallback((event: PartDeltaEvent) => {
+    const data = streamsDataRef.current.get(event.messageId)
+    if (!data) return
+    
+    // Accumulate chunks
+    const existing = data.chunksRef.get(event.partId) || []
+    data.chunksRef.set(event.partId, [...existing, event])
+    
+    // Calculate accumulated content
+    const allChunks = Array.from(data.chunksRef.values()).flat()
+    data.accumulatedContentRef = accumulateContent(allChunks)
+    
+    const maxParts = data.options.maxParts || 100
+    
+    updateStreamState(event.messageId, prev => {
+      const newParts = new Map(prev.parts)
+      newParts.set(event.partId, {
+        id: event.partId,
+        content: data.accumulatedContentRef,
+        tokens: estimateTokens(data.accumulatedContentRef),
+        isComplete: false,
+      })
+      
+      if (newParts.size > maxParts) {
+        const keys = Array.from(newParts.keys())
+        const toRemove = keys.slice(0, newParts.size - maxParts)
+        toRemove.forEach(k => newParts.delete(k))
+      }
+      
+      return {
+        ...prev,
+        parts: newParts,
+        totalTokens: estimateTokens(data.accumulatedContentRef),
+        lastUpdate: Date.now(),
+      }
+    })
+  }, [updateStreamState])
+
+  // Handle part end
+  const handlePartEnd = useCallback((messageId: string, partId: string) => {
+    const data = streamsDataRef.current.get(messageId)
+    if (!data) return
+    
+    updateStreamState(messageId, prev => {
+      const newParts = new Map(prev.parts)
+      const part = newParts.get(partId)
+      if (part) {
+        newParts.set(partId, { ...part, isComplete: true })
+      }
+      return { ...prev, parts: newParts }
+    })
+  }, [updateStreamState])
+
+  // Handle message end
+  const handleMessageEnd = useCallback((event: MessageEndEvent) => {
+    const data = streamsDataRef.current.get(event.messageId)
+    if (!data) return
+    
+    updateStreamState(event.messageId, prev => {
+      const newParts = new Map(prev.parts)
+      newParts.forEach((part, id) => {
+        newParts.set(id, { ...part, isComplete: true })
+      })
+      
+      const finalContent = Array.from(newParts.values())
+        .map(p => p.content)
+        .join('')
+      
+      data.chunksRef.clear()
+      data.options.onComplete?.(event.messageId, finalContent)
+      
+      return {
+        ...prev,
+        parts: newParts,
+        isComplete: true,
+        lastUpdate: Date.now(),
+      }
+    })
+  }, [updateStreamState])
 
   // Stop tracking a message
   const stopStream = useCallback((messageId: string) => {
-    streamsRef.current.delete(messageId)
+    // Clear timer
+    const timer = updateTimerRef.current.get(messageId)
+    if (timer) {
+      clearTimeout(timer)
+      updateTimerRef.current.delete(messageId)
+    }
     
+    // Remove data
+    streamsDataRef.current.delete(messageId)
+    
+    // Update state
     setActiveStreams(prev => {
       const next = new Map(prev)
       next.delete(messageId)
@@ -247,24 +391,33 @@ export function useStreamingManager() {
     })
   }, [])
 
-  // Get stream hook by ID
-  const getStream = useCallback((messageId: string) => {
-    return streamsRef.current.get(messageId)
-  }, [])
-
-  // Get all active stream IDs
-  const getActiveIds = useCallback(() => {
-    return Array.from(streamsRef.current.keys())
+  // Cleanup on unmount
+  useEffect(() => {
+    const timers = updateTimerRef.current
+    const streams = streamsDataRef.current
+    return () => {
+      timers.forEach(timer => clearTimeout(timer))
+      timers.clear()
+      streams.clear()
+    }
   }, [])
 
   return {
     activeStreams,
     startStream,
     stopStream,
-    getStream,
-    getActiveIds,
+    handlePartDelta,
+    handlePartEnd,
+    handleMessageEnd,
+    getContent: (messageId: string) => {
+      const data = streamsDataRef.current.get(messageId)
+      return data?.accumulatedContentRef || ''
+    },
+    getActiveIds: () => Array.from(streamsDataRef.current.keys()),
   }
 }
+
+// ==================== Hooks ====================
 
 /**
  * Hook for rendering streaming text with animation
@@ -282,7 +435,7 @@ export function useStreamingText(initialText: string = '') {
   // Start animation loop
   useEffect(() => {
     let lastTime = performance.now()
-    const charsPerSecond = 100 // Adjust for speed
+    const charsPerSecond = 100
 
     const animate = (currentTime: number) => {
       const deltaTime = (currentTime - lastTime) / 1000
@@ -312,20 +465,14 @@ export function useStreamingText(initialText: string = '') {
     }
   }, [displayText.length])
 
-  return { displayText, setTargetText, isComplete: displayText.length >= targetTextRef.current.length }
+  return { 
+    displayText, 
+    setTargetText, 
+    isComplete: displayText.length >= targetTextRef.current.length 
+  }
 }
 
-// ==================== Component Helpers ====================
-
-/**
- * Virtualized message list for long conversations
- */
-export interface VirtualizedMessageListProps {
-  messages: Message[]
-  itemHeight: number
-  visibleCount: number
-  renderItem: (message: Message, index: number) => React.ReactNode
-}
+// ==================== Helpers ====================
 
 /**
  * Get visible range for virtualization
@@ -342,17 +489,16 @@ export function getVisibleRange(
 }
 
 /**
- * Memoized streaming content component
+ * Create streaming content state
  */
-export function createStreamingContent(
+export function createStreamingContentState(
   content: string,
   isStreaming: boolean,
   className?: string
-): React.ReactNode {
-  return (
-    <span className={className}>
-      {content}
-      {isStreaming && <span className="streaming-cursor">|</span>}
-    </span>
-  )
+) {
+  return {
+    content,
+    isStreaming,
+    className,
+  }
 }
