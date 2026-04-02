@@ -6,6 +6,12 @@
 //! - Intelligent chunking strategies (fixed, semantic, recursive)
 //! - RAG context builder with token budget control
 //! - Incremental update mechanism
+//! - Embedding cache for reducing API calls
+//! - Metadata filtering for precise retrieval
+//! - BM25 full-text search
+//! - Hybrid search engine
+//! - Smart chunker for semantic-aware document splitting
+//! - Retrieval configuration
 //!
 //! # Architecture
 //!
@@ -14,6 +20,11 @@
 //! - `chunker/`: Document chunking strategies
 //! - `context_builder/`: RAG context building
 //! - `incremental/`: Incremental update mechanism
+//! - `embedding_cache.rs`: Embedding vector cache
+//! - `metadata_filter.rs`: Metadata filter DSL
+//! - `bm25.rs`: BM25 full-text search
+//! - `smart_chunker.rs`: Smart document chunking
+//! - `retrieval_config.rs`: Retrieval configuration
 
 pub mod types;
 pub mod pipeline;
@@ -22,9 +33,23 @@ pub mod chunker;
 pub mod context_builder;
 pub mod incremental;
 
+// New modules for RAG enhancement
+pub mod embedding_cache;
+pub mod metadata_filter;
+pub mod bm25;
+pub mod smart_chunker;
+pub mod retrieval_config;
+
 pub use types::*;
 pub use pipeline::DocumentPipeline;
 pub use context_builder::RagContextBuilder;
+
+// Re-export for convenience
+pub use embedding_cache::{EmbeddingCache, CacheStats};
+pub use metadata_filter::{MetadataFilter, MetadataCondition, LogicalOperator, FilterCondition, FilterValue};
+pub use bm25::Bm25Store;
+pub use smart_chunker::{SmartChunker, SmartChunk, SmartChunkerConfig};
+pub use retrieval_config::{RetrievalConfig, SearchMethod, RerankingMode, RetrievalResult};
 
 use std::sync::Arc;
 use tauri::State;
@@ -84,7 +109,7 @@ pub async fn knowledge_search(
         .map(|r| {
             let metadata = r.metadata.clone();
             RetrievedChunk {
-                chunk_id: r.id,
+                chunk_id: r.id.clone(),
                 document_id: metadata.get("document_id").and_then(|v| v.as_str()).unwrap_or("").to_string(),
                 content: metadata.get("content").and_then(|v| v.as_str()).unwrap_or("").to_string(),
                 score: r.score,
