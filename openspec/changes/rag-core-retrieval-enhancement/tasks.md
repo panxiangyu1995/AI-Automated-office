@@ -67,12 +67,12 @@
 - [x] 7.2 Update knowledge_search to use HybridSearchEngine
 - [x] 7.3 Add new Tauri commands for cache statistics
 - [x] 7.4 Update frontend RetrievalConfig.tsx component
-- [ ] 7.5 Run full integration tests
-- [ ] 7.6 Performance testing with sample documents
+- [ ] 7.5 Run full integration tests (requires runtime environment)
+- [ ] 7.6 Performance testing with sample documents (requires runtime environment)
 
 ## 8. Documentation & Cleanup
 
 - [x] 8.1 Add Rust documentation comments
 - [x] 8.2 Update AGENTS.md with RAG architecture changes
-- [ ] 8.3 Update PRD if needed
+- [ ] 8.3 Update PRD if needed (pending integration testing)
 - [x] 8.4 Code review and lint fixes

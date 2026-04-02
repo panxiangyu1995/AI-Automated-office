@@ -12,31 +12,25 @@ import { BottomPanel } from './BottomPanel'
 import { StatusBar } from './StatusBar'
 import { LayoutSettingsDialog } from './LayoutSettingsDialog'
 import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
-import { Search, CornerDownLeft, ArrowUp, ArrowDown } from 'lucide-react'
+import { Search, CornerDownLeft, ArrowUp, ArrowDown, FolderOpen, FileText, BookOpen, Users } from 'lucide-react'
+import { useQuickOpen } from '../../features/workspace/search'
+import { resourceTypeIcons, SearchResult as AppSearchResult } from '../../features/workspace/search/types'
 
-type SearchResult = {
-  id: string
-  title: string
-  subtitle: string
-  icon?: ComponentType<{ className?: string }>
+// Re-export for backwards compatibility
+type SearchResult = AppSearchResult
+
+// Icon mapping for legacy SearchResult type
+const legacyIconMap: Record<string, ComponentType<{ className?: string }>> = {
+  project: FolderOpen,
+  document: FileText,
+  knowledge: BookOpen,
+  user: Users,
 }
-
-const searchResults: SearchResult[] = []
 
 export function AppLayout() {
   const location = useLocation()
-  const {
-    sidebarCollapsed,
-    topBarVisible,
-    quickSearchOpen,
-    openQuickSearch,
-    closeQuickSearch,
-    toggleTopBar,
-    setActiveActivityItem,
-  } = useUIStore(
+  const { toggleTopBar, setActiveActivityItem, quickSearchOpen: storeQuickSearchOpen, openQuickSearch: storeOpenQuickSearch, closeQuickSearch: storeCloseQuickSearch } = useUIStore(
     useShallow((state) => ({
-      sidebarCollapsed: state.sidebarCollapsed,
-      topBarVisible: state.topBarVisible,
       quickSearchOpen: state.quickSearchOpen,
       openQuickSearch: state.openQuickSearch,
       closeQuickSearch: state.closeQuickSearch,
@@ -45,15 +39,68 @@ export function AppLayout() {
     }))
   )
   const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
-  const [selectedIndex, setSelectedIndex] = useState(0)
   const activeEditorDocument = useEditorStore((state) => state.activeDocument)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
-  const handleSelectResult = (index: number) => {
-    const result = searchResults[index]
-    if (!result) return
+
+  // Quick Open search functionality - use store state
+  const {
+    query: searchValue,
+    results: searchResults,
+    isOpen: localQuickSearchOpen,
+    openSearch: localOpenQuickSearch,
+    closeSearch: localCloseQuickSearch,
+    setSelectedIndex,
+    selectedIndex,
+    navigateUp,
+    navigateDown,
+    selectCurrent,
+    hasResults,
+  } = useQuickOpen({
+    externalIsOpen: storeQuickSearchOpen,
+    externalOpen: storeOpenQuickSearch,
+    externalClose: storeCloseQuickSearch,
+  })
+
+  // Use store functions for Quick Open
+  const quickSearchOpen = storeQuickSearchOpen
+  const openQuickSearch = storeOpenQuickSearch
+  const closeQuickSearch = storeCloseQuickSearch
+
+  // Get icon for result
+  const getResultIcon = (result: AppSearchResult): ComponentType<{ className?: string }> | undefined => {
+    return resourceTypeIcons[result.type] ?? legacyIconMap[result.type]
+  }
+
+  // Handle result selection
+  const handleSelectResult = (result: AppSearchResult) => {
     console.log('Selected:', result)
+    // TODO: Navigate to the selected resource based on type
     closeQuickSearch()
+  }
+
+  // Handle keyboard navigation in search
+  const handleSearchKeyDown = (event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        event.preventDefault()
+        navigateUp()
+        break
+      case 'ArrowDown':
+        event.preventDefault()
+        navigateDown()
+        break
+      case 'Enter':
+        event.preventDefault()
+        const selected = selectCurrent()
+        if (selected) {
+          handleSelectResult(selected)
+        }
+        break
+      case 'Escape':
+        event.preventDefault()
+        closeQuickSearch()
+        break
+    }
   }
 
   useShortcutListener('open-quick-search', openQuickSearch)
@@ -65,9 +112,6 @@ export function AppLayout() {
   useEffect(() => {
     if (quickSearchOpen) {
       searchInputRef.current?.focus()
-      setSelectedIndex(searchResults.length > 0 ? 0 : -1)
-    } else {
-      setSearchValue('')
     }
   }, [quickSearchOpen])
 
@@ -168,8 +212,12 @@ export function AppLayout() {
               <input
                 ref={searchInputRef}
                 value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="输入命令或搜索..."
+                onChange={(event) => {
+                  // searchValue and search are from useQuickOpen hook
+                  search(event.target.value)
+                }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder={searchValue ? '搜索项目、文档、模板...' : '输入命令或搜索...'}
                 className="flex-1 text-sm outline-none bg-transparent"
                 style={{ color: '#C9D1D9' }}
               />
@@ -183,24 +231,20 @@ export function AppLayout() {
 
             {/* 搜索结果 */}
             <div className="p-2 max-h-[400px] overflow-y-auto">
-              <div 
-                className="px-3 py-2 text-xs font-semibold"
-                style={{ color: '#8B949E' }}
-              >
-                最近
-              </div>
+              {!hasResults && !searchValue && (
+                <div className="px-3 py-2 text-xs font-semibold" style={{ color: '#8B949E' }}>
+                  最近访问
+                </div>
+              )}
+              {searchValue && !hasResults && (
+                <div className="px-3 py-6 text-sm" style={{ color: '#8B949E' }}>
+                  暂无搜索结果
+                </div>
+              )}
               <div className="flex flex-col gap-1">
-                {searchResults.length === 0 && (
-                  <div 
-                    className="px-3 py-6 text-sm"
-                    style={{ color: '#8B949E' }}
-                  >
-                    暂无搜索结果
-                  </div>
-                )}
                 {searchResults.map((result, index) => {
                   const isSelected = index === selectedIndex
-                  const Icon = result.icon
+                  const Icon = getResultIcon(result)
                   return (
                     <div
                       key={result.id}
@@ -208,7 +252,7 @@ export function AppLayout() {
                       style={{
                         backgroundColor: isSelected ? '#21262D' : 'transparent',
                       }}
-                      onClick={() => handleSelectResult(index)}
+                      onClick={() => handleSelectResult(result)}
                     >
                       {Icon && (
                         <span style={{ color: isSelected ? '#FFFFFF' : '#8B949E' }}>

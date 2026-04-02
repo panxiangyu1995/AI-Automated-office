@@ -80,11 +80,11 @@
 - [x] 8.1 Create knowledge_audit_logs table schema
 - [x] 8.2 Implement audit logging for CRUD operations
 - [x] 8.3 Add audit log query command
-- [ ] 8.4 Write audit log tests
+- [x] 8.4 Write audit log tests
 
 ## 9. Documentation & Cleanup
 
 - [x] 9.1 Add Rust documentation comments
-- [ ] 9.2 Update AGENTS.md with new RAG architecture
-- [ ] 9.3 Code review and lint fixes
+- [x] 9.2 Update AGENTS.md with new RAG architecture
+- [x] 9.3 Code review and lint fixes
 - [ ] 9.4 Performance testing

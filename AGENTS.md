@@ -686,6 +686,55 @@ ai-automated-office/
 
 ---
 
+## 📚 知识库 RAG 架构
+
+本项目实现了企业级知识库 RAG 系统，位于 `src-tauri/src/knowledge/` 目录。
+
+### 核心模块
+
+| 模块 | 说明 |
+|------|------|
+| `embedding_cache.rs` | 嵌入向量缓存，减少 API 调用 |
+| `metadata_filter.rs` | 元数据过滤 DSL |
+| `bm25.rs` | BM25 全文搜索 |
+| `smart_chunker.rs` | 智能文档分块 |
+| `retrieval_config.rs` | 检索配置 |
+| `permission.rs` | 权限模型 (OnlyMe/AllTeam/PartialTeam) |
+| `crud.rs` | 知识库 CRUD |
+| `document_crud.rs` | 文档 CRUD |
+| `segment.rs` | 片段管理 |
+| `audit.rs` | 审计日志 |
+
+### 权限模型
+
+```rust
+pub enum KnowledgePermission {
+    OnlyMe,       // 仅创建者
+    AllTeam,      // 所有团队成员
+    PartialTeam,  // 部分成员
+}
+```
+
+### 前端知识库组件
+
+位于 `src/features/knowledge/` 目录：
+
+- `KnowledgeBaseManager.tsx` - 知识库管理界面
+- `DocumentManager.tsx` - 文档管理界面
+- `MemberManager.tsx` - 成员管理界面
+- `useKnowledgeBase.ts` - 知识库 Hook
+- `useDocument.ts` - 文档 Hook
+
+### Tauri Commands
+
+- `knowledge_base_create/get/update/delete/list` - 知识库 CRUD
+- `knowledge_member_add/list/remove/update` - 成员管理
+- `knowledge_document_upload/list/get/update/delete` - 文档 CRUD
+- `knowledge_segment_create/list/get/update/delete` - 片段管理
+- `audit_log_query` - 审计日志查询
+
+---
+
 ## 💻 Commands
 
 ```bash

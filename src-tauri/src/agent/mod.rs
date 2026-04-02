@@ -38,7 +38,9 @@ use tokio::sync::RwLock;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::agent::llm_agent_provider::LlmAgentProvider;
 use crate::agent::llm_provider::config::AgentMode;
+use crate::agent::llm_provider::provider_manager::LlmProviderManager;
 use provider::AgentProvider;
 
 #[derive(Debug, Error)]
@@ -51,6 +53,10 @@ pub enum AgentError {
     Storage(String),
     #[error("agent execution error: {0}")]
     Execution(String),
+    #[error("provider creation failed: {0}")]
+    ProviderCreation(String),
+    #[error("configuration error: {0}")]
+    Config(String),
 }
 
 pub type AgentResult<T> = Result<T, AgentError>;
@@ -91,19 +97,116 @@ pub struct AgentExecutionResponse {
     pub error: Option<String>,
 }
 
+/// Configuration for initializing AgentRuntimeState with real LLM providers
+#[derive(Debug, Clone)]
+pub struct RuntimeConfig {
+    /// Provider type: "zhipu", "deepseek", "minimax", "openai-compatible"
+    pub provider_type: String,
+    /// API key (will be encrypted for storage)
+    pub api_key: String,
+    /// Model to use
+    pub model: String,
+    /// API endpoint (for OpenAI compatible providers)
+    pub api_endpoint: Option<String>,
+    /// Tenant ID (for multi-tenant scenarios)
+    pub tenant_id: Option<String>,
+    /// User ID (for user-level config)
+    pub user_id: Option<String>,
+    /// Plan mode configuration (optional, for Plan/Act dual config)
+    pub plan_mode_config: Option<PlanModeConfig>,
+}
+
+/// Configuration for Plan mode in dual config
+#[derive(Debug, Clone)]
+pub struct PlanModeConfig {
+    pub provider_type: String,
+    pub api_key: String,
+    pub model: String,
+    pub api_endpoint: Option<String>,
+}
+
 #[derive(Clone)]
 pub struct AgentRuntimeState {
     /// Agent provider wrapped in RwLock for interior mutability
     provider: Arc<RwLock<Arc<dyn AgentProvider>>>,
     cancellations: Arc<RwLock<HashSet<String>>>,
+    /// Provider configuration
+    config: Arc<RwLock<Option<RuntimeConfig>>>,
 }
 
 impl AgentRuntimeState {
+    /// Create AgentRuntimeState with MockProvider (default - for backward compatibility)
     pub fn new() -> Self {
         Self {
-            // Default to MockProvider - use set_provider() to replace with real provider
             provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProvider::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
+            config: Arc::new(RwLock::new(None)),
+        }
+    }
+
+    /// Create AgentRuntimeState with a real LLM provider from configuration
+    pub async fn with_config(config: RuntimeConfig) -> Result<Self, AgentError> {
+        let provider = Self::create_provider_from_config(&config).await?;
+        
+        Ok(Self {
+            provider: Arc::new(RwLock::new(Arc::new(provider))),
+            cancellations: Arc::new(RwLock::new(HashSet::new())),
+            config: Arc::new(RwLock::new(Some(config))),
+        })
+    }
+
+    /// Create LLM Agent Provider from configuration
+    async fn create_provider_from_config(config: &RuntimeConfig) -> Result<LlmAgentProvider, AgentError> {
+        // Create Act mode provider
+        let act_llm = Self::create_llm_provider(
+            &config.provider_type,
+            &config.api_key,
+            &config.model,
+            config.api_endpoint.as_deref(),
+        )?;
+
+        // Create Plan mode provider if configured
+        let plan_llm = if let Some(plan_config) = &config.plan_mode_config {
+            Some(Self::create_llm_provider(
+                &plan_config.provider_type,
+                &plan_config.api_key,
+                &plan_config.model,
+                plan_config.api_endpoint.as_deref(),
+            )?)
+        } else {
+            None
+        };
+
+        Ok(LlmAgentProvider::with_dual_config(act_llm, plan_llm))
+    }
+
+    /// Create an LLM provider from parameters
+    fn create_llm_provider(
+        provider_type: &str,
+        api_key: &str,
+        model: &str,
+        api_endpoint: Option<&str>,
+    ) -> Result<Arc<dyn crate::agent::llm_provider::LlmProvider>, AgentError> {
+        match provider_type {
+            "zhipu" => LlmProviderManager::create_zhipu_provider(api_key, model)
+                .map_err(|e| AgentError::ProviderCreation(e.to_string())),
+            "deepseek" => LlmProviderManager::create_deepseek_provider(api_key, model)
+                .map_err(|e| AgentError::ProviderCreation(e.to_string())),
+            "openai-compatible" | "openai" => {
+                let endpoint = api_endpoint.unwrap_or("https://api.openai.com/v1/chat/completions");
+                LlmProviderManager::create_openai_compatible_provider(endpoint, Some(api_key), model)
+                    .map_err(|e| AgentError::ProviderCreation(e.to_string()))
+            }
+            "minimax" => {
+                // Minimax requires group_id - use a default
+                let config = crate::agent::llm_provider::MinimaxConfig::new(api_key.to_string(), "default");
+                let provider = crate::agent::llm_provider::MinimaxProvider::with_config(config);
+                Ok(Arc::new(provider))
+            }
+            _ => Err(AgentError::Config(format!(
+                "Unknown provider type: {}. Supported: zhipu, deepseek, minimax, openai-compatible",
+                provider_type
+            ))),
         }
     }
 
@@ -112,6 +215,7 @@ impl AgentRuntimeState {
         Self {
             provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProvider::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
+            config: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -120,14 +224,42 @@ impl AgentRuntimeState {
         Self {
             provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProviderWithTools::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
+            config: Arc::new(RwLock::new(None)),
         }
     }
 
-    /// Set the agent provider (replaces MockProvider with real provider)
+    /// Create AgentRuntimeState with a specific LLM provider (convenience method)
+    pub async fn with_llm_provider(llm: Arc<dyn crate::agent::llm_provider::LlmProvider>) -> Self {
+        let agent_provider = LlmAgentProvider::new(llm);
+        Self {
+            provider: Arc::new(RwLock::new(Arc::new(agent_provider))),
+            cancellations: Arc::new(RwLock::new(HashSet::new())),
+            config: Arc::new(RwLock::new(None)),
+        }
+    }
+
+    /// Set the agent provider (replaces current provider)
     /// Uses interior mutability via RwLock
     pub async fn set_provider(&self, provider: Arc<dyn AgentProvider>) {
         let mut guard = self.provider.write().await;
         *guard = provider;
+    }
+
+    /// Set the LLM provider directly (creates LlmAgentProvider wrapper)
+    pub async fn set_llm_provider(&self, llm: Arc<dyn crate::agent::llm_provider::LlmProvider>) {
+        let agent_provider = LlmAgentProvider::new(llm);
+        self.set_provider(Arc::new(agent_provider)).await;
+    }
+
+    /// Update provider configuration and recreate provider
+    pub async fn update_config(&self, config: RuntimeConfig) -> Result<(), AgentError> {
+        let provider = Self::create_provider_from_config(&config).await?;
+        self.set_provider(Arc::new(provider)).await;
+        
+        let mut config_guard = self.config.write().await;
+        *config_guard = Some(config);
+        
+        Ok(())
     }
 
     pub fn provider(&self) -> Arc<dyn AgentProvider> {
@@ -137,6 +269,16 @@ impl AgentRuntimeState {
     /// Get the provider for async operations
     pub async fn get_provider(&self) -> Arc<dyn AgentProvider> {
         Arc::clone(&*self.provider.read().await)
+    }
+
+    /// Get current configuration
+    pub async fn get_config(&self) -> Option<RuntimeConfig> {
+        self.config.read().await.clone()
+    }
+
+    /// Check if a real provider is configured (not MockProvider)
+    pub fn has_real_provider(&self) -> bool {
+        self.config.blocking_read().is_some()
     }
 
     pub fn cancellations(&self) -> Arc<RwLock<HashSet<String>>> {

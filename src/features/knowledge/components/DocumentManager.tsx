@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDocument } from '../hooks/useDocument';
-import type { DocumentFilter, DocumentStatus, DocumentType, UploadDocumentRequest, UpdateDocumentRequest } from '../types';
+import type { DocumentFilter, DocumentStatus, DocumentType, UpdateDocumentRequest } from '../types';
 import {
   Dialog,
   DialogContent,
