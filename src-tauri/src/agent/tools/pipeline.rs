@@ -11,6 +11,11 @@ use super::core::register_core_tools;
 use super::document;
 use super::enterprise;
 use super::filesystem;
+use super::media;
+use super::automation;
+use super::memory;
+use super::profile::{resolve_allowed_tools, check_tool_access, ToolProfile, ToolProfileConfig, ToolsConfig};
+use super::sessions;
 use super::shell;
 use super::web;
 use super::descriptor::ToolDescriptor;
@@ -57,6 +62,12 @@ pub struct ToolExecutionRequest {
     /// YOLO mode activation timestamp (for TTL tracking)
     #[serde(default)]
     pub yolo_activated_at: Option<i64>,
+    /// Tool profile for filtering allowed tools (OpenClaw-style)
+    #[serde(default)]
+    pub profile: Option<ToolProfile>,
+    /// Profile configuration overrides
+    #[serde(default)]
+    pub profile_config: Option<ToolProfileConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -137,6 +148,7 @@ pub trait ToolExecutor: Send + Sync {
 pub struct ToolExecutionPipeline {
     registry: Arc<ToolRegistry>,
     executors: Arc<HashMap<String, Arc<dyn ToolExecutor>>>,
+    profile_manager: profile::ProfileManager,
     default_timeout_ms: u64,
     max_timeout_ms: u64,
 }
@@ -152,13 +164,43 @@ impl ToolExecutionPipeline {
         browser::register_browser_tools(&mut registry, &mut executors);
         document::register_document_tools(&mut registry, &mut executors);
         enterprise::register_enterprise_tools(&mut registry, &mut executors);
+        memory::register_memory_tools(&mut registry, &mut executors);
+        sessions::register_sessions_tools(&mut registry, &mut executors);
+        media::register_media_tools(&mut registry, &mut executors);
+        automation::register_automation_tools(&mut registry, &mut executors);
 
         Self {
             registry: Arc::new(registry),
             executors: Arc::new(executors),
+            profile_manager: profile::ProfileManager::new(),
             default_timeout_ms: 30000,
             max_timeout_ms: 300000,
         }
+    }
+
+    /// Get the profile manager for runtime profile switching
+    pub fn profile_manager(&self) -> &profile::ProfileManager {
+        &self.profile_manager
+    }
+
+    /// Set the current tool profile
+    pub fn set_profile(&self, profile: ToolProfile) {
+        self.profile_manager.set_profile(profile);
+    }
+
+    /// Get the current tool profile
+    pub fn get_profile(&self) -> ToolProfile {
+        self.profile_manager.get_current_profile()
+    }
+
+    /// List all tools allowed for the current profile
+    pub fn list_allowed_tools(&self) -> Vec<ToolDescriptor> {
+        profile::filter_tools_by_profile(&self.list_tools(), self.get_profile())
+    }
+
+    /// Check if a tool is allowed for the current profile
+    pub fn is_tool_allowed(&self, tool_id: &str) -> bool {
+        self.profile_manager.check_access(tool_id)
     }
 
     pub fn list_tools(&self) -> Vec<ToolDescriptor> {
@@ -223,6 +265,44 @@ impl ToolExecutionPipeline {
                 permission: None,
                 sensitivity: None,
             });
+        }
+
+        // Profile-based tool filtering (OpenClaw-style)
+        // Check if the tool is allowed for the current profile
+        if let Some(profile) = &request.profile {
+            let is_allowed = check_tool_access(
+                &request.tool_id,
+                *profile,
+                request.profile_config.as_ref(),
+            );
+            if !is_allowed {
+                return Ok(ToolExecutionResponse {
+                    result: self.error_result(
+                        &execution_id,
+                        &request.tool_id,
+                        started_at,
+                        ToolExecutionError {
+                            code: ToolErrorCode::PermissionDenied,
+                            message: format!(
+                                "Tool '{}' is not allowed in profile '{}'. Allowed tools: {:?}",
+                                request.tool_id,
+                                profile,
+                                resolve_allowed_tools(*profile, request.profile_config.as_ref())
+                            ),
+                            details: Some(serde_json::json!({
+                                "profile": profile.to_string(),
+                                "requested_tool": request.tool_id,
+                                "allowed_tools": resolve_allowed_tools(*profile, request.profile_config.as_ref()),
+                            })),
+                            recoverable: false,
+                            retryable: false,
+                        },
+                    ),
+                    confirmation: None,
+                    permission: None,
+                    sensitivity: None,
+                });
+            }
         }
 
         let permission = check_permissions(&descriptor, &request.context.permissions);

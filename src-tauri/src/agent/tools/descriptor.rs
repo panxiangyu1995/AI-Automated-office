@@ -9,6 +9,10 @@ pub enum ToolCategory {
     Mcp,
     Builtin,
     External,
+    Memory,
+    Session,
+    Media,
+    Automation,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

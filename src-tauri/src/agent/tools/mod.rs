@@ -8,6 +8,7 @@ pub mod enterprise;
 pub mod filesystem;
 pub mod permission;
 pub mod pipeline;
+pub mod profile;
 pub mod registry;
 pub mod sensitivity;
 pub mod shell;
@@ -15,4 +16,5 @@ pub mod web;
 
 pub use descriptor::*;
 pub use pipeline::*;
+pub use profile::*;
 pub use registry::*;
