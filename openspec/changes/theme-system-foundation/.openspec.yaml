@@ -1,0 +1,11 @@
+# OpenSpec Configuration
+name: theme-system-foundation
+status: draft
+created: 2026-04-01
+description: 主题系统基础架构 - 类型定义、颜色注册表、变换工具
+type: feature
+epic: Epic 1 - 桌面端UI与系统交互
+story: Story 1.X - 主题系统
+phase: Phase 1
+priority: high
+depends_on: []

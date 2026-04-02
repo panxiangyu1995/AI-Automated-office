@@ -12,6 +12,8 @@
 //! - Hybrid search engine
 //! - Smart chunker for semantic-aware document splitting
 //! - Retrieval configuration
+//! - Permission model (OnlyMe/AllTeam/PartialTeam)
+//! - Knowledge base CRUD operations
 //!
 //! # Architecture
 //!
@@ -25,6 +27,8 @@
 //! - `bm25.rs`: BM25 full-text search
 //! - `smart_chunker.rs`: Smart document chunking
 //! - `retrieval_config.rs`: Retrieval configuration
+//! - `permission.rs`: Permission model
+//! - `crud.rs`: Knowledge base CRUD commands
 
 pub mod types;
 pub mod pipeline;
@@ -33,23 +37,32 @@ pub mod chunker;
 pub mod context_builder;
 pub mod incremental;
 
-// New modules for RAG enhancement
+// Enhancement modules
 pub mod embedding_cache;
 pub mod metadata_filter;
 pub mod bm25;
 pub mod smart_chunker;
 pub mod retrieval_config;
 
+// Enterprise modules
+pub mod permission;
+pub mod crud;
+pub mod document_crud;
+pub mod segment;
+pub mod audit;
+
 pub use types::*;
 pub use pipeline::DocumentPipeline;
 pub use context_builder::RagContextBuilder;
 
-// Re-export for convenience
+// Re-exports
 pub use embedding_cache::{EmbeddingCache, CacheStats};
 pub use metadata_filter::{MetadataFilter, MetadataCondition, LogicalOperator, FilterCondition, FilterValue};
 pub use bm25::Bm25Store;
 pub use smart_chunker::{SmartChunker, SmartChunk, SmartChunkerConfig};
 pub use retrieval_config::{RetrievalConfig, SearchMethod, RerankingMode, RetrievalResult};
+pub use permission::{PermissionService, KnowledgePermission, AccessLevel, UserContext, PermissionCheckResult};
+pub use crud::KnowledgeBaseService;
 
 use std::sync::Arc;
 use tauri::State;

@@ -45,6 +45,12 @@ type FixedSidebarEntry = {
 
 const adminMenuItems: FixedSidebarEntry[] = [
   {
+    id: 'knowledge',
+    label: '知识库管理',
+    icon: Database,
+    target: { path: '/admin/knowledge', mode: 'static' },
+  },
+  {
     id: 'users',
     label: '用户管理',
     icon: Users,

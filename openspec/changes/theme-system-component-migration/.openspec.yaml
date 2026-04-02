@@ -1,0 +1,13 @@
+# OpenSpec Configuration
+name: theme-system-component-migration
+status: draft
+created: 2026-04-01
+description: 主题系统组件迁移 - 将硬编码颜色迁移到 CSS 变量
+type: refactor
+epic: Epic 1 - 桌面端UI与系统交互
+story: Story 1.X - 主题系统
+phase: Phase 3
+priority: high
+depends_on:
+  - theme-system-foundation
+  - theme-system-react-integration

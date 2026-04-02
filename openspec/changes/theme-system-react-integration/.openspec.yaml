@@ -1,0 +1,12 @@
+# OpenSpec Configuration
+name: theme-system-react-integration
+status: draft
+created: 2026-04-01
+description: 主题系统 React 集成 - ThemeProvider 和 useTheme Hook
+type: feature
+epic: Epic 1 - 桌面端UI与系统交互
+story: Story 1.X - 主题系统
+phase: Phase 2
+priority: high
+depends_on:
+  - theme-system-foundation

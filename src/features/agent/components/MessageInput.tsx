@@ -205,6 +205,13 @@ export function MessageInput({
   
   // 键盘事件处理
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl+Shift+C: 触发上下文压缩（通过自定义事件）
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+      e.preventDefault()
+      window.dispatchEvent(new CustomEvent('trigger-context-compress'))
+      return
+    }
+    
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -444,7 +451,7 @@ export function MessageInput({
         {/* 快捷提示 */}
         <div className="flex items-center justify-between mt-2 px-1">
           <span className="text-xs text-slate-400">
-            Enter 发送 · Shift+Enter 换行 · 支持粘贴/拖放文件
+            Enter 发送 · Shift+Enter 换行 · Ctrl+Shift+C 压缩上下文 · 支持粘贴/拖放文件
           </span>
           
           {/* 语音按钮 (暂未实现) */}

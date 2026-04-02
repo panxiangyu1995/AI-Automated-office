@@ -1,0 +1,14 @@
+# OpenSpec Configuration
+name: theme-system-preset-themes
+status: draft
+created: 2026-04-01
+description: 主题系统预设主题 - 定义亮色、暗色、高对比度主题
+type: feature
+epic: Epic 1 - 桌面端UI与系统交互
+story: Story 1.X - 主题系统
+phase: Phase 4
+priority: medium
+depends_on:
+  - theme-system-foundation
+  - theme-system-react-integration
+  - theme-system-component-migration
