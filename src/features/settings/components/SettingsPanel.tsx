@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { AlertTriangle, ArrowRight, Clock3, Info, Search, Star, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  Clock3,
+  Star,
+} from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '../../../components/ui/alert'
 import { Badge } from '../../../components/ui/badge'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { ScrollArea } from '../../../components/ui/scroll-area'
 import { Switch } from '../../../components/ui/switch'
@@ -20,7 +24,6 @@ import {
 import { cn } from '../../../lib/utils'
 import { useUIStore } from '../../../stores/uiStore'
 import {
-  DEFAULT_SECTION_BY_CATEGORY,
   getSettingsCategory,
   getSettingsSection,
   getSettingsSectionGovernance,
@@ -64,6 +67,8 @@ const SETTINGS_RECENTS_STORAGE_KEY = 'settings-recent-sections'
 const MAX_RECENT_SECTIONS = 6
 const MAX_FAVORITE_SECTIONS = 6
 
+// CATEGORY_ICONS is now defined in Sidebar.tsx
+
 const SHORTCUT_FIELDS: Array<{
   key: ShortcutKey
   label: string
@@ -103,9 +108,9 @@ const KIND_LABELS: Record<SettingsSectionKind, string> = {
 }
 
 const KIND_STYLES: Record<SettingsSectionKind, string> = {
-  config: 'border-slate-200 bg-slate-100 text-slate-700',
-  monitor: 'border-blue-200 bg-blue-50 text-blue-700',
-  audit: 'border-amber-200 bg-amber-50 text-amber-700',
+  config: 'border-[#30363D] bg-[#21262D] text-[#C9D1D9]',
+  monitor: 'border-[#58A6FF]/30 bg-[#58A6FF]/10 text-[#58A6FF]',
+  audit: 'border-[#D29922]/30 bg-[#D29922]/10 text-[#D29922]',
 }
 
 const RISK_LABELS: Record<SettingsRiskLevel, string> = {
@@ -115,23 +120,9 @@ const RISK_LABELS: Record<SettingsRiskLevel, string> = {
 }
 
 const RISK_STYLES: Record<SettingsRiskLevel, string> = {
-  low: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  medium: 'border-amber-200 bg-amber-50 text-amber-700',
-  high: 'border-rose-200 bg-rose-50 text-rose-700',
-}
-
-const SAVE_MODE_LABELS: Record<SettingsSaveMode, string> = {
-  instant: '即时生效',
-  manual: '手动保存',
-  managed: '页面内管理',
-  readonly: '只读视图',
-}
-
-const SAVE_MODE_STYLES: Record<SettingsSaveMode, string> = {
-  instant: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  manual: 'border-blue-200 bg-blue-50 text-blue-700',
-  managed: 'border-slate-200 bg-slate-100 text-slate-700',
-  readonly: 'border-slate-200 bg-slate-100 text-slate-700',
+  low: 'border-[#3FB950]/30 bg-[#3FB950]/10 text-[#3FB950]',
+  medium: 'border-[#D29922]/30 bg-[#D29922]/10 text-[#D29922]',
+  high: 'border-[#F85149]/30 bg-[#F85149]/10 text-[#F85149]',
 }
 
 type SectionStatusTone = 'neutral' | 'success' | 'warning' | 'danger'
@@ -149,10 +140,10 @@ interface RecentSectionVisit {
 }
 
 const STATUS_STYLES: Record<SectionStatusTone, string> = {
-  neutral: 'border-slate-200 bg-slate-50 text-slate-700',
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  warning: 'border-amber-200 bg-amber-50 text-amber-700',
-  danger: 'border-rose-200 bg-rose-50 text-rose-700',
+  neutral: 'border-[#30363D] bg-[#161B22] text-[#C9D1D9]',
+  success: 'border-[#3FB950]/30 bg-[#3FB950]/10 text-[#3FB950]',
+  warning: 'border-[#D29922]/30 bg-[#D29922]/10 text-[#D29922]',
+  danger: 'border-[#F85149]/30 bg-[#F85149]/10 text-[#F85149]',
 }
 
 function loadShortcutsFromStorage() {
@@ -198,6 +189,15 @@ function matchesQuery(section: SettingsSectionDescriptor, query: string) {
   return [section.title, section.description, ...section.keywords].some((value) =>
     value.toLowerCase().includes(normalized)
   )
+}
+
+function matchesCategoryQuery(category: (typeof SETTINGS_CATEGORIES)[number], query: string) {
+  const normalized = query.trim().toLowerCase()
+  if (!normalized) {
+    return true
+  }
+
+  return [category.title, category.description].some((value) => value.toLowerCase().includes(normalized))
 }
 
 function formatVisitTime(timestamp: number) {
@@ -255,24 +255,24 @@ function WorkspacePreferencesSection(props: {
     <div className="space-y-6">
       <div className="grid gap-4 xl:grid-cols-2">
         {items.map((item) => (
-          <Card key={item.id} className="border-slate-200 shadow-none">
+          <Card key={item.id}>
             <CardContent className="flex items-start justify-between gap-4 p-5">
               <div className="space-y-1">
-                <Label className="text-sm font-medium text-slate-900" htmlFor={item.id}>
+                <Label htmlFor={item.id} className="text-sm font-medium">
                   {item.title}
                 </Label>
-                <p className="text-sm leading-6 text-slate-500">{item.description}</p>
+                <p className="text-sm leading-6">{item.description}</p>
               </div>
               <Switch id={item.id} checked={item.checked} onCheckedChange={item.onCheckedChange} />
             </CardContent>
           </Card>
         ))}
       </div>
-      <Card className="border-dashed border-slate-300 bg-slate-50 shadow-none">
+      <Card>
         <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <div className="text-sm font-medium text-slate-900">恢复默认布局</div>
-            <p className="text-sm leading-6 text-slate-500">重置固定壳层结构，回到平台推荐布局。</p>
+            <div className="text-sm font-medium">恢复默认布局</div>
+            <p className="text-sm leading-6">重置固定壳层结构，回到平台推荐布局。</p>
           </div>
           <Button variant="outline" onClick={props.onResetLayout}>
             恢复默认布局
@@ -295,36 +295,29 @@ function ShortcutSettingsSection(props: {
 }) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="space-y-3">
         {SHORTCUT_FIELDS.map((field) => (
-          <Card key={field.key} className="border-slate-200 shadow-none">
-            <CardHeader className="space-y-1 p-5">
-              <CardTitle className="text-base font-semibold text-slate-900">{field.label}</CardTitle>
-              <CardDescription className="text-sm leading-6 text-slate-500">
-                {field.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 p-5 pt-0">
-              <Input
-                value={props.draftShortcuts[field.key]}
-                onChange={(event) => props.onChange(field.key, event.target.value)}
-                placeholder={field.placeholder}
-              />
-              {props.shortcutErrors[field.key] && (
-                <div className="text-xs text-red-500">{props.shortcutErrors[field.key]}</div>
-              )}
+          <Card key={field.key}>
+            <CardContent className="flex items-center justify-between gap-4 p-4">
+              <div className="space-y-1">
+                <div className="text-sm font-medium">{field.label}</div>
+                <div className="text-xs">{field.description}</div>
+              </div>
+              <div 
+                className="flex items-center gap-1 rounded px-3 py-2 font-mono text-sm"
+                style={{ backgroundColor: '#0D1117', color: '#C9D1D9' }}
+              >
+                {props.draftShortcuts[field.key]}
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={props.onSave} disabled={props.saving || !props.hasShortcutChanges}>
-          {props.saving ? '保存中...' : '保存并生效'}
-        </Button>
-        <Button variant="outline" onClick={props.onReset} disabled={props.saving}>
+        <Button onClick={props.onReset} disabled={props.saving}>
           恢复默认
         </Button>
-        {props.saveMessage && <span className="text-sm text-slate-500">{props.saveMessage}</span>}
+        {props.saveMessage && <span className="text-sm">{props.saveMessage}</span>}
       </div>
     </div>
   )
@@ -419,109 +412,18 @@ function SettingsSectionShell(props: {
   children: ReactNode
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="space-y-6">
-        <Card className="border-slate-200 bg-white shadow-none">
-          <CardHeader className="space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className={cn('border', KIND_STYLES[props.section.kind])}>
-                  {KIND_LABELS[props.section.kind]}
-                </Badge>
-                <Badge variant="outline" className={cn('border', RISK_STYLES[props.riskLevel])}>
-                  {RISK_LABELS[props.riskLevel]}
-                </Badge>
-                <Badge variant="outline" className={cn('border', SAVE_MODE_STYLES[props.saveMode])}>
-                  {SAVE_MODE_LABELS[props.saveMode]}
-                </Badge>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-label={props.isFavorite ? `取消收藏${props.section.title}` : `收藏${props.section.title}`}
-                onClick={props.onToggleFavorite}
-                className={cn(
-                  'px-2 text-slate-500 hover:text-slate-900',
-                  props.isFavorite && 'text-amber-500 hover:text-amber-600'
-                )}
-              >
-                <Star className={cn(props.isFavorite && 'fill-current')} />
-                {props.isFavorite ? '已收藏' : '收藏'}
-              </Button>
-            </div>
-            <div className="space-y-1">
-              <CardTitle className="text-xl text-slate-900">{props.section.title}</CardTitle>
-              <CardDescription className="text-sm leading-6 text-slate-500">
-                {props.section.description}
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <Card className="border-slate-200 bg-slate-50 shadow-none">
-                <CardContent className="space-y-1 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">适用对象</div>
-                  <div className="text-sm font-medium text-slate-900">{props.audience}</div>
-                </CardContent>
-              </Card>
-              <Card className="border-slate-200 bg-slate-50 shadow-none">
-                <CardContent className="space-y-1 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">风险级别</div>
-                  <div className="text-sm font-medium text-slate-900">{RISK_LABELS[props.riskLevel]}</div>
-                </CardContent>
-              </Card>
-              <Card className="border-slate-200 bg-slate-50 shadow-none">
-                <CardContent className="space-y-1 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">保存方式</div>
-                  <div className="text-sm font-medium text-slate-900">{SAVE_MODE_LABELS[props.saveMode]}</div>
-                </CardContent>
-              </Card>
-            </div>
+    <div className="space-y-6">
+      {/* 状态信息 */}
+      <Alert className={cn('border', STATUS_STYLES[props.status.tone])}>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>保存状态</AlertTitle>
+        <AlertDescription>
+          <div className="font-medium">{props.status.label}</div>
+          <div className="mt-1">{props.status.description}</div>
+        </AlertDescription>
+      </Alert>
 
-            <Alert className="border-slate-200 bg-slate-50 text-slate-700">
-              <Info className="h-4 w-4" />
-              <AlertTitle>治理说明</AlertTitle>
-              <AlertDescription>{props.governanceNote}</AlertDescription>
-            </Alert>
-
-            <Alert className={cn('border', STATUS_STYLES[props.status.tone])}>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>保存状态</AlertTitle>
-              <AlertDescription>
-                <div className="font-medium">{props.status.label}</div>
-                <div className="mt-1">{props.status.description}</div>
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-
-        {props.children}
-      </div>
-
-      <div className="space-y-4">
-        <Card className="border-slate-200 bg-white shadow-none">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-base text-slate-900">变更影响</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm leading-6 text-slate-500">{props.changeImpact}</CardContent>
-        </Card>
-
-        <Card className="border-slate-200 bg-white shadow-none">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-base text-slate-900">审计与可追溯</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm leading-6 text-slate-500">{props.auditTrail}</p>
-            {props.section.key !== 'resource-execution-audit' && (
-              <Button type="button" variant="outline" className="w-full justify-between" onClick={props.onOpenAudit}>
-                打开统一审计入口
-                <ArrowRight />
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {props.children}
     </div>
   )
 }
@@ -540,25 +442,29 @@ function SettingsQuickAccessCard(props: {
   onToggleFavorite?: (key: SettingsSectionKey) => void
 }) {
   return (
-    <Card className="border-slate-200 bg-white shadow-none">
+    <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-base text-slate-900">{props.title}</CardTitle>
+        <CardTitle className="text-base">{props.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {props.items.length === 0 ? (
-          <div className="text-sm leading-6 text-slate-500">{props.emptyText}</div>
+          <div className="text-sm leading-6">{props.emptyText}</div>
         ) : (
           props.items.map((item) => (
-            <div key={item.key} className="flex items-start gap-2 rounded-lg border border-slate-200 p-3">
+            <div 
+              key={item.key} 
+              className="flex items-start gap-2 rounded-lg p-3"
+              style={{ border: '1px solid #30363D', backgroundColor: '#0D1117' }}
+            >
               <button
                 type="button"
                 className="min-w-0 flex-1 cursor-pointer text-left"
                 aria-label={`打开${item.title}`}
                 onClick={() => props.onOpenSection(item.key)}
               >
-                <div className="text-sm font-medium text-slate-900">{item.title}</div>
-                <div className="text-xs leading-5 text-slate-500">{item.subtitle}</div>
-                {item.meta && <div className="pt-1 text-[11px] text-slate-400">{item.meta}</div>}
+                <div className="text-sm font-medium">{item.title}</div>
+                <div className="text-xs leading-5">{item.subtitle}</div>
+                {item.meta && <div className="pt-1 text-[11px]">{item.meta}</div>}
               </button>
               {props.onToggleFavorite && (
                 <Button
@@ -567,7 +473,7 @@ function SettingsQuickAccessCard(props: {
                   variant="ghost"
                   aria-label={item.isFavorite ? `取消收藏${item.title}` : `收藏${item.title}`}
                   onClick={() => props.onToggleFavorite?.(item.key)}
-                  className={cn(item.isFavorite && 'text-amber-500 hover:text-amber-600')}
+                  className={cn(item.isFavorite && 'text-[#D29922] hover:text-[#D29922]')}
                 >
                   <Star className={cn(item.isFavorite && 'fill-current')} />
                 </Button>
@@ -603,11 +509,11 @@ function SettingsSearchResults(props: {
 
   if (results.length === 0) {
     return (
-      <Card className="border-dashed border-slate-300 bg-white shadow-none">
+      <Card>
         <CardContent className="space-y-2 p-8">
-          <div className="text-base font-medium text-slate-900">没有找到匹配的设置项</div>
-          <div className="text-sm leading-6 text-slate-500">
-            试试搜索治理域、设置项名称、能力关键词，例如“审计”“模型”“连接器”。
+          <div className="text-base font-medium">没有找到匹配的设置项</div>
+          <div className="text-sm leading-6">
+            试试搜索治理域、设置项名称、能力关键词，例如"审计""模型""连接器"。
           </div>
         </CardContent>
       </Card>
@@ -616,11 +522,11 @@ function SettingsSearchResults(props: {
 
   return (
     <div className="space-y-4">
-      <Card className="border-slate-200 bg-white shadow-none">
+      <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-lg text-slate-900">全局搜索结果</CardTitle>
-          <CardDescription className="text-sm leading-6 text-slate-500">
-            共找到 {results.length} 个与 “{props.query}” 相关的治理项，可直接打开目标设置页。
+          <CardTitle className="text-lg">全局搜索结果</CardTitle>
+          <CardDescription className="text-sm leading-6">
+            共找到 {results.length} 个与 "{props.query}" 相关的治理项，可直接打开目标设置页。
           </CardDescription>
         </CardHeader>
       </Card>
@@ -632,11 +538,11 @@ function SettingsSearchResults(props: {
           const recent = props.recentLookup.get(section.key)
 
           return (
-            <Card key={section.key} className="border-slate-200 bg-white shadow-none">
+            <Card key={section.key}>
               <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="border-slate-200 text-slate-600">
+                    <Badge variant="outline" className="border-[#30363D]">
                       {category?.title ?? '治理域'}
                     </Badge>
                     <Badge variant="outline" className={cn('border', KIND_STYLES[section.kind])}>
@@ -646,10 +552,10 @@ function SettingsSearchResults(props: {
                       {RISK_LABELS[governance.riskLevel]}
                     </Badge>
                   </div>
-                  <div className="text-base font-semibold text-slate-900">{section.title}</div>
-                  <div className="text-sm leading-6 text-slate-500">{section.description}</div>
+                  <div className="text-base font-semibold">{section.title}</div>
+                  <div className="text-sm leading-6">{section.description}</div>
                   {recent && (
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 text-xs">
                       <Clock3 className="h-3.5 w-3.5" />
                       最近访问于 {formatVisitTime(recent.visitedAt)}
                     </div>
@@ -662,7 +568,7 @@ function SettingsSearchResults(props: {
                     variant="ghost"
                     aria-label={props.favoriteKeys.has(section.key) ? `取消收藏${section.title}` : `收藏${section.title}`}
                     onClick={() => props.onToggleFavorite(section.key)}
-                    className={cn(props.favoriteKeys.has(section.key) && 'text-amber-500 hover:text-amber-600')}
+                    className={cn(props.favoriteKeys.has(section.key) && 'text-[#D29922] hover:text-[#D29922]')}
                   >
                     <Star className={cn(props.favoriteKeys.has(section.key) && 'fill-current')} />
                   </Button>
@@ -681,7 +587,6 @@ function SettingsSearchResults(props: {
 
 function SettingsHome(props: {
   query: string
-  onOpenCategory: (category: Exclude<SettingsCategoryKey, 'home'>) => void
   favoriteSections: SettingsSectionDescriptor[]
   recentSections: Array<RecentSectionVisit & { descriptor: SettingsSectionDescriptor }>
   onOpenSection: (key: SettingsSectionKey) => void
@@ -700,24 +605,23 @@ function SettingsHome(props: {
       return true
     }
 
-    return [category.title, category.description].some((value) => value.toLowerCase().includes(normalized)) ||
-      getSettingsSections(category.key).some((section) => matchesQuery(section, normalized))
+    return matchesCategoryQuery(category, normalized)
   })
 
   if (categories.length === 0) {
     return (
-      <Card className="border-dashed border-slate-300 bg-white shadow-none">
-        <CardContent className="p-8 text-sm text-slate-500">没有找到匹配的治理域，请尝试其他关键词。</CardContent>
+      <Card>
+        <CardContent className="p-8 text-sm">没有找到匹配的治理域，请尝试其他关键词。</CardContent>
       </Card>
     )
   }
 
   return (
     <div className="space-y-6">
-      <Card className="border-slate-200 bg-white shadow-none">
+      <Card>
         <CardHeader className="space-y-2">
-          <CardTitle className="text-xl text-slate-900">平台治理中心</CardTitle>
-          <CardDescription className="text-sm leading-6 text-slate-500">
+          <CardTitle className="text-xl">平台治理中心</CardTitle>
+          <CardDescription className="text-sm leading-6">
             设置页已按固定治理域收敛。一级导航只保留稳定边界，具体配置项下沉到二级页面。
           </CardDescription>
         </CardHeader>
@@ -747,10 +651,10 @@ function SettingsHome(props: {
           }))}
           onOpenSection={props.onOpenSection}
         />
-        <Card className="border-slate-200 bg-white shadow-none">
+        <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-base text-slate-900">统一审计入口</CardTitle>
-            <CardDescription className="text-sm leading-6 text-slate-500">
+            <CardTitle className="text-base">统一审计入口</CardTitle>
+            <CardDescription className="text-sm leading-6">
               所有高风险治理动作最终都应回到统一审计页查看证据、异常模式与导出记录。
             </CardDescription>
           </CardHeader>
@@ -775,26 +679,40 @@ function SettingsHome(props: {
               key={category.key}
               type="button"
               aria-label={`打开${category.title}`}
-              onClick={() => props.onOpenCategory(category.key)}
-              className="cursor-pointer rounded-xl border border-slate-200 bg-white p-5 text-left transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50"
+              onClick={() => props.onOpenSection(sections[0]?.key ?? category.key)}
+              className="cursor-pointer rounded-xl p-5 text-left transition-all duration-200 hover:shadow-lg"
+              style={{ 
+                border: '1px solid #30363D', 
+                backgroundColor: '#161B22',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+              }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div
                   className="flex h-11 w-11 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: 'rgba(30, 58, 95, 0.08)', color: '#1E3A5F' }}
+                  style={{ backgroundColor: 'rgba(35, 134, 54, 0.15)', color: '#3FB950' }}
                 >
                   <category.icon className="h-5 w-5" />
                 </div>
-                <Badge variant="outline" className="border-slate-200 text-slate-600">
+                <Badge 
+                  variant="outline" 
+                  className="border-[#30363D]"
+                  style={{ color: '#8B949E', backgroundColor: '#21262D' }}
+                >
                   {sections.length} 项
                 </Badge>
               </div>
               <div className="mt-4 space-y-2">
-                <div className="text-base font-semibold text-slate-900">{category.title}</div>
-                <p className="text-sm leading-6 text-slate-500">{category.description}</p>
+                <div className="text-base font-semibold" style={{ color: '#C9D1D9' }}>{category.title}</div>
+                <p className="text-sm leading-6" style={{ color: '#8B949E' }}>{category.description}</p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {previewSections.slice(0, 4).map((section) => (
-                    <Badge key={section.key} variant="outline" className="border-slate-200 text-slate-600">
+                    <Badge 
+                      key={section.key} 
+                      variant="outline" 
+                      className="border-[#30363D]"
+                      style={{ color: '#C9D1D9', backgroundColor: 'transparent' }}
+                    >
                       {section.title}
                     </Badge>
                   ))}
@@ -808,18 +726,9 @@ function SettingsHome(props: {
   )
 }
 
+// No inline SettingsSidebar - use global Sidebar component
+
 export function SettingsPanel() {
-  const [activeCategory, setActiveCategory] = useState<SettingsCategoryKey>('home')
-  const [activeSection, setActiveSection] = useState<SettingsSectionKey>('general')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [shortcuts, setShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
-  const [draftShortcuts, setDraftShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
-  const [shortcutErrors, setShortcutErrors] = useState<Partial<Record<ShortcutKey, string>>>({})
-  const [saving, setSaving] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<string | null>(null)
-  const [saveTone, setSaveTone] = useState<'idle' | 'success' | 'error'>('idle')
-  const [favoriteSections, setFavoriteSections] = useState<SettingsSectionKey[]>(() => loadFavoriteSections())
-  const [recentSections, setRecentSections] = useState<RecentSectionVisit[]>(() => loadRecentSections())
   const {
     topBarVisible,
     toggleTopBar,
@@ -830,7 +739,26 @@ export function SettingsPanel() {
     bottomPanelCollapsed,
     toggleBottomPanel,
     resetLayout,
+    settingsActiveCategory,
+    settingsActiveSection,
+    setSettingsActiveCategory,
+    setSettingsActiveSection,
   } = useUIStore()
+
+  // Local state for settings
+  const [searchQuery, setSearchQuery] = useState('')
+  const [shortcuts, setShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
+  const [draftShortcuts, setDraftShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
+  const [shortcutErrors, setShortcutErrors] = useState<Partial<Record<ShortcutKey, string>>>({})
+  const [saving, setSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [saveTone, setSaveTone] = useState<'idle' | 'success' | 'error'>('idle')
+  const [favoriteSections, setFavoriteSections] = useState<SettingsSectionKey[]>(() => loadFavoriteSections())
+  const [recentSections, setRecentSections] = useState<RecentSectionVisit[]>(() => loadRecentSections())
+
+  // Use global state for navigation
+  const activeCategory = settingsActiveCategory
+  const activeSection = settingsActiveSection
 
   const hasShortcutChanges = useMemo(() => {
     return (
@@ -890,14 +818,6 @@ export function SettingsPanel() {
     return getSettingsCategory(activeCategory) ?? SETTINGS_CATEGORIES[0]
   }, [activeCategory])
 
-  const searchResultsCount = useMemo(() => {
-    if (!isSearchMode) {
-      return 0
-    }
-
-    return SETTINGS_SECTIONS.filter((section) => matchesQuery(section, searchQuery)).length
-  }, [isSearchMode, searchQuery])
-
   const categorySections = useMemo(() => {
     if (activeCategory === 'home') {
       return []
@@ -922,7 +842,7 @@ export function SettingsPanel() {
     }
 
     if (!visibleSections.some((section) => section.key === activeSection)) {
-      setActiveSection(visibleSections[0].key)
+      setSettingsActiveSection(visibleSections[0].key)
     }
   }, [activeCategory, activeSection, isSearchMode, visibleSections])
 
@@ -965,9 +885,9 @@ export function SettingsPanel() {
     saving,
   ])
 
-  const headerTitle = isSearchMode ? '全局搜索结果' : activeCategoryDescriptor.title
+  const headerTitle = isSearchMode ? '全局搜索结果' : currentSectionDescriptor?.title ?? activeCategoryDescriptor.title
   const headerDescription = isSearchMode
-    ? `在平台治理中心中查找与“${searchQuery}”相关的设置项，并直接跳转到目标治理页。`
+    ? `在平台治理中心中查找与"${searchQuery}"相关的设置项，并直接跳转到目标治理页。`
     : currentSectionDescriptor?.description ?? activeCategoryDescriptor.description
 
   const registerRecentSection = (section: SettingsSectionDescriptor) => {
@@ -998,23 +918,10 @@ export function SettingsPanel() {
       return
     }
 
-    setActiveCategory(section.category)
-    setActiveSection(section.key)
+    setSettingsActiveCategory(section.category)
+    setSettingsActiveSection(section.key)
     setSearchQuery('')
     registerRecentSection(section)
-  }
-
-  const handleSelectCategory = (category: SettingsCategoryKey) => {
-    setSearchQuery('')
-    setActiveCategory(category)
-    if (category !== 'home') {
-      const defaultSectionKey = DEFAULT_SECTION_BY_CATEGORY[category]
-      setActiveSection(defaultSectionKey)
-      const defaultSection = getSettingsSection(defaultSectionKey)
-      if (defaultSection) {
-        registerRecentSection(defaultSection)
-      }
-    }
   }
 
   const handleOpenAuditEntry = () => {
@@ -1126,10 +1033,10 @@ export function SettingsPanel() {
         return <ModelProviderSettings />
       case 'updates':
         return (
-          <Card className="border-dashed border-slate-300 bg-white shadow-none">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-lg text-slate-900">更新策略</CardTitle>
-              <CardDescription className="text-sm leading-6 text-slate-500">
+              <CardTitle className="text-lg">更新策略</CardTitle>
+              <CardDescription className="text-sm leading-6">
                 当前已为系统更新预留固定治理入口，后续将在此补齐版本策略、灰度更新与发布日志能力。
               </CardDescription>
             </CardHeader>
@@ -1187,194 +1094,33 @@ export function SettingsPanel() {
   }
 
   return (
-    <div className="flex h-full w-full bg-slate-50 text-slate-900">
-      <aside className="flex w-[280px] flex-col border-r border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-5 py-5">
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Workbench</div>
-          <div className="mt-2 text-lg font-semibold text-slate-900">设置中心</div>
-          <p className="mt-1 text-sm leading-6 text-slate-500">固定治理 UI，集中承载平台级配置、监控与审计能力。</p>
+    <section 
+      className="flex min-w-0 flex-1 flex-col h-full"
+      style={{ backgroundColor: '#0F1419' }}
+    >
+      {/* Header */}
+      <header 
+        className="px-6 py-5"
+        style={{ borderBottom: '1px solid #21262D', backgroundColor: '#0F1419' }}
+      >
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="space-y-3">
+            {/* 面包屑导航 */}
+            <div className="flex items-center gap-2 text-sm">
+              <span style={{ color: '#8B949E' }}>设置</span>
+              <span style={{ color: '#6E7681' }}>/</span>
+              <span className="font-medium" style={{ color: '#C9D1D9' }}>{activeCategoryDescriptor.title}</span>
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-semibold" style={{ color: '#C9D1D9' }}>{headerTitle}</h1>
+              <p className="max-w-3xl text-sm leading-6" style={{ color: '#8B949E' }}>{headerDescription}</p>
+            </div>
+          </div>
         </div>
+      </header>
 
-        <ScrollArea className="flex-1">
-          <div className="space-y-2 p-3">
-            {SETTINGS_CATEGORIES.map((category, index) => {
-              const isActive = category.key === activeCategory
-              const sections = category.key === 'home' ? [] : getSettingsSections(category.key)
-
-              return (
-                <div key={category.key}>
-                  {index === 1 && (
-                    <div className="px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      治理域
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    aria-label={`切换到${category.title}`}
-                    onClick={() => handleSelectCategory(category.key)}
-                    className={cn(
-                      'flex w-full cursor-pointer items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors duration-200',
-                      isActive ? 'border border-transparent' : 'border border-transparent hover:bg-slate-50'
-                    )}
-                    style={isActive ? { backgroundColor: 'rgba(30, 58, 95, 0.08)', color: '#1E3A5F' } : undefined}
-                  >
-                    <div
-                      className={cn('mt-0.5 flex h-9 w-9 items-center justify-center rounded-lg', isActive ? '' : 'bg-slate-100 text-slate-600')}
-                      style={isActive ? { backgroundColor: '#1E3A5F', color: '#FFFFFF' } : undefined}
-                    >
-                      <category.icon className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className={cn('text-sm font-medium', isActive ? 'text-current' : 'text-slate-900')}>
-                        {category.title}
-                      </div>
-                      <p className={cn('text-xs leading-5', isActive ? 'text-current/80' : 'text-slate-500')}>
-                        {category.description}
-                      </p>
-                      {category.key !== 'home' && (
-                        <div className="pt-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                          {sections.length} 项治理能力
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                </div>
-              )
-            })}
-
-            {(favoriteSectionDescriptors.length > 0 || recentSectionDescriptors.length > 0) && (
-              <div className="space-y-3 px-3 pb-4 pt-5">
-                {favoriteSectionDescriptors.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">收藏项</div>
-                    {favoriteSectionDescriptors.slice(0, 3).map((section) => (
-                      <button
-                        key={section.key}
-                        type="button"
-                        aria-label={`打开${section.title}`}
-                        onClick={() => handleOpenSection(section.key)}
-                        className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-700 transition-colors duration-200 hover:border-slate-300 hover:bg-white"
-                      >
-                        <span className="truncate">{section.title}</span>
-                        <Star className="fill-current text-amber-500" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {recentSectionDescriptors.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">最近访问</div>
-                    {recentSectionDescriptors.slice(0, 3).map((item) => (
-                      <button
-                        key={item.sectionKey}
-                        type="button"
-                        aria-label={`打开${item.descriptor.title}`}
-                        onClick={() => handleOpenSection(item.sectionKey)}
-                        className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-700 transition-colors duration-200 hover:border-slate-300 hover:bg-white"
-                      >
-                        <span className="truncate">{item.descriptor.title}</span>
-                        <Clock3 className="text-slate-400" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </aside>
-
-      <section className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-slate-200 bg-white px-6 py-5">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="border-slate-200 text-slate-600">
-                  固定治理 UI
-                </Badge>
-                {!isSearchMode && currentSectionDescriptor && (
-                  <Badge className={cn('border', KIND_STYLES[currentSectionDescriptor.kind])}>
-                    {KIND_LABELS[currentSectionDescriptor.kind]}
-                  </Badge>
-                )}
-                {!isSearchMode && currentSectionGovernance && (
-                  <>
-                    <Badge className={cn('border', RISK_STYLES[currentSectionGovernance.riskLevel])}>
-                      {RISK_LABELS[currentSectionGovernance.riskLevel]}
-                    </Badge>
-                    <Badge className={cn('border', SAVE_MODE_STYLES[currentSectionGovernance.saveMode])}>
-                      {SAVE_MODE_LABELS[currentSectionGovernance.saveMode]}
-                    </Badge>
-                  </>
-                )}
-                {isSearchMode && (
-                  <Badge variant="outline" className="border-slate-200 text-slate-600">
-                    {searchResultsCount} 个结果
-                  </Badge>
-                )}
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-2xl font-semibold text-slate-900">{headerTitle}</h1>
-                <p className="max-w-3xl text-sm leading-6 text-slate-500">{headerDescription}</p>
-              </div>
-              {!isSearchMode && currentSectionDescriptor && (
-                <div className="text-sm font-medium text-slate-600">{currentSectionDescriptor.title}</div>
-              )}
-            </div>
-
-            <div className="w-full max-w-md">
-              <div className="relative flex items-center gap-2">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="搜索设置项、能力或治理域"
-                  className="pl-9"
-                />
-                {isSearchMode && (
-                  <Button type="button" variant="ghost" size="icon" aria-label="清除搜索" onClick={() => setSearchQuery('')}>
-                    <X />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {activeCategory !== 'home' && !isSearchMode && (
-          <div className="border-b border-slate-200 bg-white px-6 py-3">
-            <div className="flex flex-wrap gap-2">
-              {visibleSections.map((section) => (
-                <button
-                  key={section.key}
-                  type="button"
-                  aria-label={`打开${section.title}`}
-                  onClick={() => handleOpenSection(section.key)}
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors duration-200',
-                    activeSection === section.key
-                      ? 'border-transparent text-white'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                  )}
-                  style={activeSection === section.key ? { backgroundColor: '#1E3A5F' } : undefined}
-                >
-                  <span>{section.title}</span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'border-current/20 bg-transparent',
-                      activeSection === section.key ? 'text-white' : KIND_STYLES[section.kind]
-                    )}
-                  >
-                    {KIND_LABELS[section.kind]}
-                  </Badge>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <ScrollArea className="flex-1">
+      {/* Content */}
+      <ScrollArea className="flex-1">
           <div className="p-6">
             {isSearchMode ? (
               <SettingsSearchResults
@@ -1387,7 +1133,6 @@ export function SettingsPanel() {
             ) : activeCategory === 'home' ? (
               <SettingsHome
                 query={searchQuery}
-                onOpenCategory={(category) => handleSelectCategory(category)}
                 favoriteSections={favoriteSectionDescriptors}
                 recentSections={recentSectionDescriptors}
                 onOpenSection={handleOpenSection}
@@ -1395,8 +1140,8 @@ export function SettingsPanel() {
                 onToggleFavorite={handleToggleFavorite}
               />
             ) : visibleSections.length === 0 ? (
-              <Card className="border-dashed border-slate-300 bg-white shadow-none">
-                <CardContent className="p-8 text-sm text-slate-500">当前治理域下没有找到匹配的设置项。</CardContent>
+              <Card>
+                <CardContent className="p-8 text-sm">当前治理域下没有找到匹配的设置项。</CardContent>
               </Card>
             ) : currentSectionDescriptor && currentSectionGovernance && currentSectionStatus ? (
               <SettingsSectionShell
@@ -1419,7 +1164,6 @@ export function SettingsPanel() {
             )}
           </div>
         </ScrollArea>
-      </section>
-    </div>
+    </section>
   )
 }

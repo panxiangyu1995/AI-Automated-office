@@ -36,3 +36,6 @@ export { ThemeProvider, useTheme } from './ThemeProvider'
 
 // Base Colors
 export * from './colors'
+
+// Themes
+export * from './themes'

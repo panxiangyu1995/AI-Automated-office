@@ -9,6 +9,7 @@ interface ResizablePanelProps {
   collapsed?: boolean
   children: ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 export function ResizablePanel({
@@ -20,6 +21,7 @@ export function ResizablePanel({
   collapsed = false,
   children,
   className = '',
+  style: customStyle,
 }: ResizablePanelProps) {
   const isResizing = useRef(false)
   const startPos = useRef(0)
@@ -108,7 +110,8 @@ export function ResizablePanel({
     )
   }
 
-  const style = {
+  const style: React.CSSProperties = {
+    ...customStyle,
     [isVertical ? 'height' : 'width']: `${width}px`,
     flexShrink: 0
   }

@@ -2140,7 +2140,7 @@
         "Story 1.X - 主题系统 React 集成",
         "Story 1.X - 主题系统组件迁移"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }

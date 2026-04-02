@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { LayoutConfig, PresetMode } from '../features/workspace/types/layout'
+import type { SettingsCategoryKey, SettingsSectionKey } from '../features/settings/settingsRegistry'
 
 export type ActivityBarItem =
   | 'dashboard'
@@ -44,6 +45,9 @@ interface UIState {
   dynamicSidebarEntries: SidebarResourceEntry[]
   editorSidebarEntries: SidebarResourceEntry[]
   recentSidebarEntries: SidebarResourceEntry[]
+  // Settings navigation state (for sidebar integration)
+  settingsActiveCategory: SettingsCategoryKey
+  settingsActiveSection: SettingsSectionKey
   // Layout preset state
   activePresetId: string | null
   activePresetMode: PresetMode | null
@@ -72,6 +76,9 @@ interface UIState {
   setEditorSidebarEntries: (entries: SidebarResourceEntry[]) => void
   registerRecentSidebarEntry: (entry: SidebarResourceEntry) => void
   clearRecentSidebarEntries: () => void
+  // Settings navigation actions
+  setSettingsActiveCategory: (category: SettingsCategoryKey) => void
+  setSettingsActiveSection: (section: SettingsSectionKey) => void
   // Layout preset methods
   applyLayoutPreset: (layout: LayoutConfig, presetId?: string, presetMode?: PresetMode | null) => void
   applyLayoutConfig: (config: Partial<LayoutConfig>) => void
@@ -143,6 +150,8 @@ export const useUIStore = create<UIState>()(
       dynamicSidebarEntries: [],
       editorSidebarEntries: [],
       recentSidebarEntries: [],
+      settingsActiveCategory: 'workspace',
+      settingsActiveSection: 'general',
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
       setChatPanelWidth: (width) => set({ chatPanelWidth: width }),
       setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
@@ -181,6 +190,8 @@ export const useUIStore = create<UIState>()(
           return { recentSidebarEntries: nextEntries }
         }),
       clearRecentSidebarEntries: () => set({ recentSidebarEntries: [] }),
+      setSettingsActiveCategory: (category) => set({ settingsActiveCategory: category }),
+      setSettingsActiveSection: (section) => set({ settingsActiveSection: section }),
       // Layout preset methods
       applyLayoutPreset: (layout, presetId, presetMode) =>
         set({

@@ -10,19 +10,13 @@ interface AiChatPanelProps {
 }
 
 /**
- * AI 对话面板组件
+ * AI 对话面板组件 - 对齐设置页设计风格
  *
  * 功能：
  * - 响应 Ctrl+Shift+I (Cmd+Shift+I) 全局快捷键打开/关闭
- * - 可调整宽度（300-500px）
+ * - 可调整宽度（400-600px）
  * - 可折叠
  * - 会话管理列表
- *
- * 铁律合规：
- * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
- * - FR085: 全局快捷键支持
- * - FR10: 会话管理功能
  */
 export function AiChatPanel({ children }: AiChatPanelProps) {
   const {
@@ -53,8 +47,11 @@ export function AiChatPanel({ children }: AiChatPanelProps) {
       className="h-full"
     >
       <div 
-        className="h-full flex flex-col border-l border-slate-200"
-        style={{ backgroundColor: '#FFFFFF' }}
+        className="h-full flex flex-col border-l"
+        style={{ 
+          backgroundColor: '#0F1419',
+          borderColor: '#30363D',
+        }}
       >
         {children || (
           <SessionPanel className="h-full" />

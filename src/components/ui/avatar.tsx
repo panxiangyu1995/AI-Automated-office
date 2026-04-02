@@ -35,9 +35,13 @@ const AvatarFallback = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-slate-600 text-sm font-medium",
+      "flex h-full w-full items-center justify-center rounded-full text-sm font-medium",
       className
     )}
+    style={{ 
+      backgroundColor: '#21262D',
+      color: '#C9D1D9',
+    }}
     {...props}
   />
 ))

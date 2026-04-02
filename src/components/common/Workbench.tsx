@@ -62,8 +62,8 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
         outlet ?? (
           children || (
             <div className="flex h-full flex-col items-center justify-center p-8">
-              <h2 className="mb-2 text-2xl font-bold text-slate-800">欢迎使用 AI-Automated-Office</h2>
-              <p className="text-slate-500">AI 赋能的企业 ERP 系统</p>
+              <h2 className="mb-2 text-2xl font-bold" style={{ color: '#C9D1D9' }}>欢迎使用 AI-Automated-Office</h2>
+              <p style={{ color: '#8B949E' }}>AI 赋能的企业 ERP 系统</p>
             </div>
           )
         ),
@@ -71,7 +71,10 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
   }, [activeActivityItem, children, descriptor, location.pathname, outlet])
 
   return (
-    <main className={`flex-1 overflow-auto ${className}`} style={{ backgroundColor: '#F8FAFC' }}>
+    <main 
+      className={`flex-1 overflow-auto ${className}`} 
+      style={{ backgroundColor: '#0F1419' }}
+    >
       <WorkbenchHostRenderer descriptor={resolvedDescriptor} context={pageContext} />
     </main>
   )

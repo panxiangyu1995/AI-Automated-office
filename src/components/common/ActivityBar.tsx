@@ -8,10 +8,11 @@ import {
   Package,
   BookOpen,
   Settings,
+  User,
 } from 'lucide-react'
 import { useUIStore, type ActivityBarItem } from '../../stores/uiStore'
 
-// 活动栏配置 - 对齐 pencil-new.pen 设计
+// 活动栏配置 - 对齐设置页设计风格
 const activityItems: { id: ActivityBarItem; icon: typeof LayoutGrid; label: string }[] = [
   { id: 'dashboard', icon: LayoutGrid, label: '仪表盘' },
   { id: 'hr', icon: Users, label: '人事部' },
@@ -29,63 +30,92 @@ export function ActivityBar() {
 
   return (
     <aside
-      className="flex flex-col items-center py-4 flex-shrink-0"
+      className="flex flex-col items-center py-3 flex-shrink-0"
       style={{
         width: '48px',
-        backgroundColor: '#1E293B',
-        gap: '24px',
+        backgroundColor: '#1C2128',
+        gap: '4px',
       }}
     >
-      {/* 活动图标 */}
-      {activityItems.map(({ id, icon: Icon, label }) => {
-        const isActive = activeActivityItem === id
-        return (
-          <button
-            key={id}
-            onClick={() => setActiveActivityItem(id)}
-            className="relative flex items-center justify-center w-6 h-6 transition-colors group"
-            aria-label={label}
-            title={label}
-          >
-            <Icon
-              size={24}
+      {/* 顶部活动图标区域 */}
+      <div
+        className="flex flex-col items-center"
+        style={{ gap: '4px', width: '100%' }}
+      >
+        {activityItems.map(({ id, icon: Icon, label }) => {
+          const isActive = activeActivityItem === id
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveActivityItem(id)}
+              className="flex items-center justify-center w-10 h-10 rounded-md transition-colors cursor-pointer"
               style={{
-                color: isActive ? '#FFFFFF' : '#94A3B8',
+                backgroundColor: isActive ? '#0F1419' : 'transparent',
               }}
-            />
-            {/* 激活指示条 */}
-            {isActive && (
-              <div
-                className="absolute"
+              aria-label={label}
+              title={label}
+            >
+              <Icon
+                size={22}
                 style={{
-                  width: '2px',
-                  height: '24px',
-                  backgroundColor: '#FFFFFF',
-                  left: '-12px',
+                  color: isActive ? '#FFFFFF' : '#C9D1D9',
                 }}
               />
-            )}
-          </button>
-        )
-      })}
+            </button>
+          )
+        })}
+      </div>
 
       {/* 弹性空间 */}
       <div className="flex-1" />
 
-      {/* 设置按钮 */}
-      <button
-        onClick={() => setActiveActivityItem('settings')}
-        className="flex items-center justify-center w-6 h-6 transition-colors"
-        aria-label="设置"
-        title="设置"
+      {/* 底部设置和账号按钮 */}
+      <div
+        className="flex flex-col items-center"
+        style={{ gap: '4px', width: '100%' }}
       >
-        <Settings
-          size={24}
-          style={{
-            color: activeActivityItem === 'settings' ? '#FFFFFF' : '#94A3B8',
-          }}
+        {/* 分隔线 */}
+        <div
+          className="w-6 h-px mb-2"
+          style={{ backgroundColor: '#30363D' }}
         />
-      </button>
+
+        {/* 账号按钮 */}
+        <button
+          onClick={() => setActiveActivityItem('settings')}
+          className="flex items-center justify-center w-10 h-10 rounded-md transition-colors cursor-pointer"
+          style={{
+            backgroundColor: 'transparent',
+          }}
+          aria-label="账号"
+          title="账号"
+        >
+          <User
+            size={22}
+            style={{
+              color: '#C9D1D9',
+            }}
+          />
+        </button>
+
+        {/* 设置按钮 */}
+        <button
+          onClick={() => setActiveActivityItem('settings')}
+          className="flex items-center justify-center w-10 h-10 rounded-md transition-colors cursor-pointer"
+          style={{
+            backgroundColor: activeActivityItem === 'settings' ? '#0F1419' : 'transparent',
+          }}
+          aria-label="设置"
+          title="设置"
+        >
+          <Settings
+            size={22}
+            style={{
+              color: activeActivityItem === 'settings' ? '#FFFFFF' : '#C9D1D9',
+            }}
+          />
+        </button>
+      </div>
     </aside>
   )
 }

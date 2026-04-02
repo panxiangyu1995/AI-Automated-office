@@ -8,22 +8,30 @@ export function BottomPanel() {
 
   return (
     <ResizablePanel
-      width={bottomPanelHeight} // ResizablePanel 暂时使用 width 属性来表示尺寸，这里实际是高度
+      width={bottomPanelHeight}
       minWidth={100}
       maxWidth={600}
       onWidthChange={setBottomPanelHeight}
-      direction="top" // 向上调整大小
+      direction="top"
       collapsed={bottomPanelCollapsed}
-      className="border-t border-slate-200"
+      className="border-t"
+      style={{ borderColor: '#30363D' }}
     >
       <div 
-        className="h-full flex flex-col bg-white"
+        className="h-full flex flex-col"
+        style={{ backgroundColor: '#161B22' }}
       >
-        <div className="flex items-center px-4 h-9 border-b border-slate-200 bg-slate-50">
-          <span className="text-xs font-medium text-slate-600 uppercase">面板</span>
+        <div 
+          className="flex items-center px-4" 
+          style={{ height: '36px', borderBottom: '1px solid #21262D' }}
+        >
+          <span className="text-xs font-medium uppercase" style={{ color: '#8B949E' }}>面板</span>
         </div>
-        <div className="flex-1 p-4 overflow-auto">
-          <p className="text-sm text-slate-500">底部面板内容区域 (终端/输出/调试控制台)</p>
+        <div 
+          className="flex-1 p-4 overflow-auto"
+          style={{ color: '#C9D1D9' }}
+        >
+          <p className="text-sm" style={{ color: '#8B949E' }}>底部面板内容区域 (终端/输出/调试控制台)</p>
         </div>
       </div>
     </ResizablePanel>

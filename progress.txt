@@ -83,3 +83,122 @@
 ### Notes:
 - 预先存在问题的 `compact/` 模块被清理以确保构建成功
 - SessionPanel.tsx 中的 ChatPanel 导入已更新为使用 AgentChatPanel
+
+---
+
+## 2026-04-02 - OpenSpec 变更实施: business-context-compression-adaptation
+
+### 变更概述
+创建业务上下文压缩服务，将 Claude Code 的 9 段式压缩扩展为 9+X 段式以适配办公场景。
+
+### 铁律合规检查：
+- PRD 合规：上下文压缩相关需求
+- 架构合规：遵循分层微内核架构
+- UX 合规：遵循 UX 设计规范
+
+### What was done:
+
+**Phase 1-8: 核心压缩服务实现**
+
+1. 创建 `src/features/agent/types/compact.types.ts`
+   - 定义所有压缩相关类型：CompressionLayer, CompressionStatus, NeverCompressType, CompressibleType 等
+   - 定义 BusinessCompactSummary (9+X 段式摘要结构)
+   - 定义 TriggerType, RecoveryResult 等
+
+2. 创建 `src/features/agent/services/compact/` 目录
+   - `constants.ts` - 压缩配置常量 (DEFAULT_CONFIG, NEVER_COMPRESS_TYPES, COMPRESSIBLE_TYPES 等)
+   - `prompts.ts` - 9+X 段式压缩提示词模板
+   - `neverCompress.ts` - Never Compress 规则服务
+   - `businessMemory.ts` - 业务记忆压缩层
+   - `microCompact.ts` - 微压缩层
+   - `businessCompact.ts` - 业务全量压缩层
+   - `reactiveCompact.ts` - 响应式压缩层
+   - `compactTrigger.ts` - 多维度触发器
+   - `recovery.ts` - 压缩恢复服务
+   - `index.ts` - 统一导出
+
+3. OpenSpec 变更文档
+   - `proposal.md` - 变更提案
+   - `design.md` - 技术设计文档
+   - `specs/*.md` - 8 个规格文件
+   - `tasks.md` - 52 个任务清单
+
+**Phase 9: 前端集成**
+
+1. 创建 `src/features/agent/hooks/useBusinessCompression.ts`
+   - `useBusinessCompression` Hook 封装压缩状态管理
+   - 提供 triggerManual, shouldTrigger, executeCompression 方法
+   - 提供 detectAutoRecovery, recover 恢复功能
+   - 提供 thresholdStatus 状态计算
+
+2. 创建 `src/features/agent/components/chat/CompressionStatus.tsx`
+   - 压缩状态指示器组件
+   - 支持 idle/compressing/success/error/warning 五种状态
+   - 显示 Token 进度条和阈值信息
+   - 使用 Lucide React 图标
+
+3. 创建 `src/features/agent/components/chat/CompressionHistory.tsx`
+   - 压缩历史记录查看组件
+   - 支持展开/收起更多记录
+   - 显示压缩层类型、触发方式、压缩比例、耗时
+   - 提供恢复按钮和清空功能
+
+4. 在 `AgentChatPanel.tsx` 中集成
+   - 添加 `CompressionStatusBar` 子组件
+   - 在消息列表下方显示压缩状态栏
+   - 集成"压缩上下文"按钮
+
+5. 在 `MessageInput.tsx` 中实现快捷键
+   - 添加 Ctrl+Shift+C 快捷键监听
+   - 通过自定义事件 `trigger-context-compress` 触发压缩
+   - 更新快捷提示文本
+
+6. 创建 `src/features/agent/components/index.ts`
+   - 统一导出所有 Agent 组件
+
+7. 更新 `src/features/agent/hooks/index.ts`
+   - 导出 useBusinessCompression Hook
+
+### 待完成任务:
+- Phase 10: 后端集成 (Rust context_compression.rs)
+- Phase 11: E2E 测试
+- Phase 12: 性能测试
+- Phase 13: 文档和发布
+
+### Notes:
+- 构建环境问题 (WSL relay error)，但代码文件已正确创建
+- 需要运行 npm run build 验证
+- Phase 9 前端集成已完成
+
+
+---
+
+## 2026-04-01 - Task: 主题系统预设主题 (Task 203)
+
+### 铁律合规检查：
+- PRD 合规：FR1, FR2 - 基础 UI 主题系统
+- 架构合规：遵循架构文档中定义的主题系统架构
+- UX 合规：遵循 UX 设计规范中的主题系统架构定义
+
+### What was done:
+- 创建预设主题文件：
+  - `src/theme/themes/lightModern.ts` - 亮色主题（基于现代浅色设计）
+  - `src/theme/themes/darkModern.ts` - 暗色主题（基于 GitHub Dark 配色）
+  - `src/theme/themes/highContrast.ts` - 高对比度主题（满足 WCAG AAA 标准）
+  - `src/theme/themes/index.ts` - 主题模块统一导出
+- 每个主题包含：
+  - 基础颜色（foreground, background, border 等）
+  - 按钮颜色（default, destructive, outline, secondary, ghost, link）
+  - 卡片颜色
+  - 侧边栏颜色
+  - 顶部栏颜色
+  - 活动栏、编辑器、状态栏、输入框、滚动条颜色
+- 更新 `src/theme/index.ts` 导出主题模块
+
+### Testing:
+- ReadLints 检查通过，无 lint 错误
+
+### Notes:
+- 主题 ID 使用 kebab-case：lightModern, darkModern, highContrast
+- 主题类型：'light' | 'dark' | 'hc'（高对比度）
+- 高对比度主题所有边框和文字使用白色以最大化对比度

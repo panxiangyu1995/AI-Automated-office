@@ -50,6 +50,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import { SETTINGS_SUB_AGENT_OPTIONS } from './subAgentSettingsFixtures'
 
 // Types
@@ -96,7 +97,7 @@ const TEMPLATE_CONFIG: Record<SubAgentTemplate, SubAgentTemplateInfo> = {
     name: '通用助手',
     description: '适用于日常任务和通用问题解答',
     icon: <Bot className="h-4 w-4" />,
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    color: 'text-[#58A6FF] bg-[#58A6FF]/10 border border-[#58A6FF]/30',
     defaultRole: '通用 AI 助手，负责日常对话和信息查询',
     suggestedSkills: ['对话', '搜索', '总结'],
     suggestedTools: ['web_search', 'calculator'],
@@ -106,7 +107,7 @@ const TEMPLATE_CONFIG: Record<SubAgentTemplate, SubAgentTemplateInfo> = {
     name: '领域专家',
     description: '专注于特定领域的高级分析和建议',
     icon: <Zap className="h-4 w-4" />,
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+    color: 'text-[#A371F7] bg-[#A371F7]/10 border border-[#A371F7]/30',
     defaultRole: '领域专家，提供专业知识和深度分析',
     suggestedSkills: ['专业知识', '数据分析', '报告生成'],
     suggestedTools: ['data_analysis', 'report_generator'],
@@ -116,7 +117,7 @@ const TEMPLATE_CONFIG: Record<SubAgentTemplate, SubAgentTemplateInfo> = {
     name: '数据分析师',
     description: '专注于数据处理和可视化',
     icon: <Settings className="h-4 w-4" />,
-    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    color: 'text-[#3FB950] bg-[#3FB950]/10 border border-[#3FB950]/30',
     defaultRole: '数据分析师，执行数据处理和生成可视化报告',
     suggestedSkills: ['数据处理', '统计分析', '图表生成'],
     suggestedTools: ['data_processor', 'chart_maker', 'excel_export'],
@@ -126,7 +127,7 @@ const TEMPLATE_CONFIG: Record<SubAgentTemplate, SubAgentTemplateInfo> = {
     name: '任务协调员',
     description: '擅长分解复杂任务并协调执行',
     icon: <User className="h-4 w-4" />,
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+    color: 'text-[#D29922] bg-[#D29922]/10 border border-[#D29922]/30',
     defaultRole: '任务协调员，将复杂任务分解为可执行的子任务',
     suggestedSkills: ['任务分解', '进度跟踪', '结果汇总'],
     suggestedTools: ['task_tracker', 'notifier', 'summarizer'],
@@ -362,11 +363,11 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Bot className="h-6 w-6" />
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2" style={{ color: '#C9D1D9' }}>
+            <Bot className="h-6 w-6" style={{ color: '#3FB950' }} />
             Sub-Agent 注册表
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-sm mt-1" style={{ color: '#8B949E' }}>
             管理当前用户主 Agent 挂载的 Sub-Agent 配置，部门只作为上下文、权限和能力边界出现。
           </p>
         </div>
@@ -378,46 +379,46 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-muted-foreground" />
+              <Bot className="h-5 w-5" style={{ color: '#8B949E' }} />
               <div>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-xs text-muted-foreground">当前主 Agent 的 Sub-Agent</div>
+                <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{stats.total}</div>
+                <div className="text-xs" style={{ color: '#8B949E' }}>当前主 Agent 的 Sub-Agent</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5" style={{ color: '#3FB950' }} />
               <div>
-                <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-                <div className="text-xs text-muted-foreground">已启用</div>
+                <div className="text-2xl font-bold" style={{ color: '#3FB950' }}>{stats.active}</div>
+                <div className="text-xs" style={{ color: '#8B949E' }}>已启用</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-gray-500" />
+              <XCircle className="h-5 w-5" style={{ color: '#6E7681' }} />
               <div>
-                <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
-                <div className="text-xs text-muted-foreground">已禁用</div>
+                <div className="text-2xl font-bold" style={{ color: '#6E7681' }}>{stats.inactive}</div>
+                <div className="text-xs" style={{ color: '#8B949E' }}>已禁用</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-purple-500" />
+              <Zap className="h-5 w-5" style={{ color: '#A371F7' }} />
               <div>
-                <div className="text-2xl font-bold">{Object.values(stats.byTemplate).reduce((a, b) => a + b, 0)}</div>
-                <div className="text-xs text-muted-foreground">模板类型</div>
+                <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{Object.values(stats.byTemplate).reduce((a, b) => a + b, 0)}</div>
+                <div className="text-xs" style={{ color: '#8B949E' }}>模板类型</div>
               </div>
             </div>
           </CardContent>
@@ -425,35 +426,50 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
         <CardContent className="pt-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4" style={{ color: '#8B949E' }} />
                 <Input
                   placeholder="搜索 Sub-Agent..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ 
+                    backgroundColor: '#0D1117', 
+                    borderColor: '#30363D', 
+                    color: '#C9D1D9' 
+                  }}
                 />
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Filter className="h-4 w-4" style={{ color: '#8B949E' }} />
               <select
-                className="text-sm border rounded px-2 py-1.5"
+                className="text-sm rounded px-2 py-1.5"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+                style={{ 
+                  backgroundColor: '#0D1117', 
+                  borderColor: '#30363D', 
+                  color: '#C9D1D9' 
+                }}
               >
                 <option value="all">全部状态</option>
                 <option value="enabled">已启用</option>
                 <option value="disabled">已禁用</option>
               </select>
               <select
-                className="text-sm border rounded px-2 py-1.5"
+                className="text-sm rounded px-2 py-1.5"
                 value={filterTemplate}
                 onChange={(e) => setFilterTemplate(e.target.value as SubAgentTemplate | 'all')}
+                style={{ 
+                  backgroundColor: '#0D1117', 
+                  borderColor: '#30363D', 
+                  color: '#C9D1D9' 
+                }}
               >
                 <option value="all">全部模板</option>
                 {Object.entries(TEMPLATE_CONFIG).map(([key, config]) => (
@@ -476,10 +492,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
       <ScrollArea className="h-[500px]">
         <div className="space-y-3">
           {filteredSubAgents.length === 0 ? (
-            <Card>
+            <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
               <CardContent className="py-12 text-center">
-                <Bot className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">没有找到匹配的 Sub-Agent</p>
+                <Bot className="h-12 w-12 mx-auto mb-4" style={{ color: '#8B949E' }} />
+                <p style={{ color: '#8B949E' }}>没有找到匹配的 Sub-Agent</p>
               </CardContent>
             </Card>
           ) : (
@@ -488,7 +504,7 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
               const isExpanded = expandedAgents.has(agent.id)
 
               return (
-                <Card key={agent.id}>
+                <Card key={agent.id} style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
@@ -497,34 +513,34 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                           className="mt-1"
                         >
                           {isExpanded ? (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            <ChevronDown className="h-4 w-4" style={{ color: '#8B949E' }} />
                           ) : (
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            <ChevronRight className="h-4 w-4" style={{ color: '#8B949E' }} />
                           )}
                         </button>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{agent.name}</span>
-                            <Badge className={templateInfo.color}>
+                            <span className="font-medium" style={{ color: '#C9D1D9' }}>{agent.name}</span>
+                            <Badge className={cn(templateInfo.color, 'text-xs')}>
                               {templateInfo.icon}
                               <span className="ml-1">{templateInfo.name}</span>
                             </Badge>
                             {agent.enabled ? (
-                              <Badge variant="outline" className="text-green-600 border-green-300">
+                              <Badge variant="outline" className="border-[#3FB950]/30" style={{ color: '#3FB950' }}>
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
                                 启用
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-gray-600 border-gray-300">
+                              <Badge variant="outline" className="border-[#6E7681]/30" style={{ color: '#6E7681' }}>
                                 <XCircle className="h-3 w-3 mr-1" />
                                 禁用
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">
+                          <p className="text-sm mb-2" style={{ color: '#8B949E' }}>
                             {agent.description}
                           </p>
-                          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap gap-4 text-xs" style={{ color: '#8B949E' }}>
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               创建于 {new Date(agent.createdAt).toLocaleDateString()}
@@ -554,9 +570,9 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                                 onClick={() => toggleAgentEnabled(agent.id)}
                               >
                                 {agent.enabled ? (
-                                  <ToggleRight className="h-4 w-4 text-green-500" />
+                                  <ToggleRight className="h-4 w-4" style={{ color: '#3FB950' }} />
                                 ) : (
-                                  <ToggleLeft className="h-4 w-4 text-gray-400" />
+                                  <ToggleLeft className="h-4 w-4" style={{ color: '#6E7681' }} />
                                 )}
                               </Button>
                             </TooltipTrigger>
@@ -569,10 +585,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
+                              <MoreVertical className="h-4 w-4" style={{ color: '#8B949E' }} />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
                             <DropdownMenuItem onClick={() => handleOpenEditDialog(agent)}>
                               <Edit className="h-4 w-4 mr-2" />
                               编辑
@@ -581,9 +597,9 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                               <Copy className="h-4 w-4 mr-2" />
                               复制
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
+                            <DropdownMenuSeparator style={{ backgroundColor: '#30363D' }} />
                             <DropdownMenuItem
-                              className="text-red-600"
+                              className="focus:bg-[#F85149]/10 focus:text-[#F85149]"
                               onClick={() => deleteAgent(agent.id)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
@@ -595,24 +611,24 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     </div>
 
                     {isExpanded && (
-                      <div className="mt-4 pl-7 space-y-4 border-t pt-4">
+                      <div className="mt-4 pl-7 space-y-4" style={{ borderTop: '1px solid #30363D' }}>
                         {/* Role */}
                         <div>
-                          <div className="text-sm font-medium mb-1 flex items-center gap-2">
-                            <Shield className="h-4 w-4 text-muted-foreground" />
+                          <div className="text-sm font-medium mb-1 flex items-center gap-2" style={{ color: '#C9D1D9' }}>
+                            <Shield className="h-4 w-4" style={{ color: '#8B949E' }} />
                             角色定义
                           </div>
-                          <div className="text-sm bg-muted/50 p-3 rounded-md">
+                          <div className="text-sm p-3 rounded-md" style={{ backgroundColor: '#0D1117', color: '#C9D1D9' }}>
                             {agent.role}
                           </div>
                         </div>
 
                         {/* Skills */}
                         <div>
-                          <div className="text-sm font-medium mb-1">技能</div>
+                          <div className="text-sm font-medium mb-1" style={{ color: '#C9D1D9' }}>技能</div>
                           <div className="flex flex-wrap gap-1">
                             {agent.skills.map(skill => (
-                              <Badge key={skill} variant="secondary">
+                              <Badge key={skill} variant="outline" className="border-[#30363D]" style={{ color: '#C9D1D9' }}>
                                 {skill}
                               </Badge>
                             ))}
@@ -621,10 +637,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
 
                         {/* Tools */}
                         <div>
-                          <div className="text-sm font-medium mb-1">工具</div>
+                          <div className="text-sm font-medium mb-1" style={{ color: '#C9D1D9' }}>工具</div>
                           <div className="flex flex-wrap gap-1">
                             {agent.tools.map(tool => (
-                              <Badge key={tool} variant="outline">
+                              <Badge key={tool} variant="outline" className="border-[#30363D]" style={{ color: '#8B949E' }}>
                                 {tool}
                               </Badge>
                             ))}
@@ -634,10 +650,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                         {/* MCP Tools */}
                         {agent.mcpTools.length > 0 && (
                           <div>
-                            <div className="text-sm font-medium mb-1">MCP 工具</div>
+                            <div className="text-sm font-medium mb-1" style={{ color: '#C9D1D9' }}>MCP 工具</div>
                             <div className="flex flex-wrap gap-1">
                               {agent.mcpTools.map(tool => (
-                                <Badge key={tool} variant="outline" className="border-blue-300 text-blue-600">
+                                <Badge key={tool} variant="outline" className="border-[#58A6FF]/30" style={{ color: '#58A6FF' }}>
                                   {tool}
                                 </Badge>
                               ))}
@@ -647,10 +663,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
 
                         {/* Permissions */}
                         <div>
-                          <div className="text-sm font-medium mb-1">权限</div>
+                          <div className="text-sm font-medium mb-1" style={{ color: '#C9D1D9' }}>权限</div>
                           <div className="flex flex-wrap gap-1">
                             {agent.permissions.map(perm => (
-                              <Badge key={perm} variant="outline" className="border-orange-300 text-orange-600">
+                              <Badge key={perm} variant="outline" className="border-[#D29922]/30" style={{ color: '#D29922' }}>
                                 {perm}
                               </Badge>
                             ))}
@@ -668,10 +684,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[85vh]">
+        <DialogContent className="max-w-2xl max-h-[85vh]" style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
           <DialogHeader>
-            <DialogTitle>创建 Sub-Agent</DialogTitle>
-            <DialogDescription>
+            <DialogTitle style={{ color: '#C9D1D9' }}>创建 Sub-Agent</DialogTitle>
+            <DialogDescription style={{ color: '#8B949E' }}>
               选择模板并配置将挂载到当前用户主 Agent 下的 Sub-Agent。
             </DialogDescription>
           </DialogHeader>
@@ -680,25 +696,30 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
             <div className="space-y-4 p-1">
               {/* Template Selection */}
               <div className="space-y-2">
-                <Label>选择模板</Label>
+                <Label style={{ color: '#C9D1D9' }}>选择模板</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(TEMPLATE_CONFIG).map(([key, config]) => (
                     <button
                       key={key}
-                      className={`p-3 rounded-lg border text-left transition-colors ${
+                      className={cn(
+                        'p-3 rounded-lg border text-left transition-all duration-200',
                         formData.template === key
-                          ? 'border-primary bg-primary/5'
-                          : 'hover:bg-muted/50'
-                      }`}
+                          ? 'border-[#238636] shadow-sm'
+                          : 'border-[#30363D] hover:border-[#8B949E]'
+                      )}
+                      style={formData.template === key
+                        ? { backgroundColor: 'rgba(35, 134, 54, 0.1)' }
+                        : { backgroundColor: '#0D1117' }
+                      }
                       onClick={() => handleTemplateChange(key as SubAgentTemplate)}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`p-1 rounded ${config.color}`}>
+                        <span className={cn('p-1 rounded text-xs', config.color)}>
                           {config.icon}
                         </span>
-                        <span className="font-medium">{config.name}</span>
+                        <span className="font-medium" style={{ color: '#C9D1D9' }}>{config.name}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{config.description}</p>
+                      <p className="text-xs" style={{ color: '#8B949E' }}>{config.description}</p>
                     </button>
                   ))}
                 </div>
@@ -706,40 +727,43 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
 
               {/* Name */}
               <div className="space-y-2">
-                <Label htmlFor="name">名称</Label>
+                <Label htmlFor="name" style={{ color: '#C9D1D9' }}>名称</Label>
                 <Input
                   id="name"
                   placeholder="输入 Sub-Agent 名称"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description">描述</Label>
+                <Label htmlFor="description" style={{ color: '#C9D1D9' }}>描述</Label>
                 <Textarea
                   id="description"
                   placeholder="输入 Sub-Agent 描述"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Role */}
               <div className="space-y-2">
-                <Label htmlFor="role">角色定义</Label>
+                <Label htmlFor="role" style={{ color: '#C9D1D9' }}>角色定义</Label>
                 <Textarea
                   id="role"
                   placeholder="定义 Sub-Agent 的角色和行为"
                   value={formData.role}
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Skills */}
               <div className="space-y-2">
-                <Label>技能 (逗号分隔)</Label>
+                <Label style={{ color: '#C9D1D9' }}>技能 (逗号分隔)</Label>
                 <Input
                   placeholder="输入技能，用逗号分隔"
                   value={formData.skills?.join(', ')}
@@ -747,12 +771,13 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     ...prev,
                     skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Tools */}
               <div className="space-y-2">
-                <Label>工具 (逗号分隔)</Label>
+                <Label style={{ color: '#C9D1D9' }}>工具 (逗号分隔)</Label>
                 <Input
                   placeholder="输入工具 ID，用逗号分隔"
                   value={formData.tools?.join(', ')}
@@ -760,6 +785,7 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     ...prev,
                     tools: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
             </div>
@@ -779,10 +805,10 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[85vh]">
+        <DialogContent className="max-w-2xl max-h-[85vh]" style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
           <DialogHeader>
-            <DialogTitle>编辑 Sub-Agent</DialogTitle>
-            <DialogDescription>
+            <DialogTitle style={{ color: '#C9D1D9' }}>编辑 Sub-Agent</DialogTitle>
+            <DialogDescription style={{ color: '#8B949E' }}>
               修改当前用户主 Agent 下 Sub-Agent 的配置和属性。
             </DialogDescription>
           </DialogHeader>
@@ -791,40 +817,43 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
             <div className="space-y-4 p-1">
               {/* Name */}
               <div className="space-y-2">
-                <Label htmlFor="edit-name">名称</Label>
+                <Label htmlFor="edit-name" style={{ color: '#C9D1D9' }}>名称</Label>
                 <Input
                   id="edit-name"
                   placeholder="输入 Sub-Agent 名称"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="edit-description">描述</Label>
+                <Label htmlFor="edit-description" style={{ color: '#C9D1D9' }}>描述</Label>
                 <Textarea
                   id="edit-description"
                   placeholder="输入 Sub-Agent 描述"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Role */}
               <div className="space-y-2">
-                <Label htmlFor="edit-role">角色定义</Label>
+                <Label htmlFor="edit-role" style={{ color: '#C9D1D9' }}>角色定义</Label>
                 <Textarea
                   id="edit-role"
                   placeholder="定义 Sub-Agent 的角色和行为"
                   value={formData.role}
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Skills */}
               <div className="space-y-2">
-                <Label>技能 (逗号分隔)</Label>
+                <Label style={{ color: '#C9D1D9' }}>技能 (逗号分隔)</Label>
                 <Input
                   placeholder="输入技能，用逗号分隔"
                   value={formData.skills?.join(', ')}
@@ -832,12 +861,13 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     ...prev,
                     skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Tools */}
               <div className="space-y-2">
-                <Label>工具 (逗号分隔)</Label>
+                <Label style={{ color: '#C9D1D9' }}>工具 (逗号分隔)</Label>
                 <Input
                   placeholder="输入工具 ID，用逗号分隔"
                   value={formData.tools?.join(', ')}
@@ -845,12 +875,13 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     ...prev,
                     tools: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* MCP Tools */}
               <div className="space-y-2">
-                <Label>MCP 工具 (逗号分隔)</Label>
+                <Label style={{ color: '#C9D1D9' }}>MCP 工具 (逗号分隔)</Label>
                 <Input
                   placeholder="输入 MCP 工具 ID，用逗号分隔"
                   value={formData.mcpTools?.join(', ')}
@@ -858,12 +889,13 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     ...prev,
                     mcpTools: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
 
               {/* Permissions */}
               <div className="space-y-2">
-                <Label>权限 (逗号分隔)</Label>
+                <Label style={{ color: '#C9D1D9' }}>权限 (逗号分隔)</Label>
                 <Input
                   placeholder="输入权限 ID，用逗号分隔"
                   value={formData.permissions?.join(', ')}
@@ -871,6 +903,7 @@ export function SubAgentRegistry({ className = '' }: SubAgentRegistryProps) {
                     ...prev,
                     permissions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   }))}
+                  style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
                 />
               </div>
             </div>
