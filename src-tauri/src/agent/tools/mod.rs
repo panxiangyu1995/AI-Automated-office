@@ -6,6 +6,7 @@ pub mod descriptor;
 pub mod document;
 pub mod enterprise;
 pub mod filesystem;
+pub mod finance;
 pub mod permission;
 pub mod pipeline;
 pub mod profile;

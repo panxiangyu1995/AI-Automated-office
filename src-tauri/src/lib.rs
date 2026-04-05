@@ -40,6 +40,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_websocket::init())
         .setup(|app| {
             // 初始化日志
             utils::logger::init_logger();
@@ -81,6 +82,11 @@ pub fn run() {
                 app.manage(agent::AgentRuntimeState::new());
                 app.manage(agent::tools::ToolExecutionPipeline::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
+                
+                // Initialize WebSocket connection manager (Task 136)
+                let ws_manager = Arc::new(agent::websocket::WebSocketConnectionManager::new());
+                app.manage(ws_manager);
+                
                 let provider_config_state = commands::provider_config::ProviderConfigState::default();
                 app.manage(provider_config_state.clone());
                 app.manage(commands::provider_config::RoutingModeState::new());
@@ -291,6 +297,13 @@ pub fn run() {
             commands::provider_config::activate_yolo_mode,
             commands::provider_config::deactivate_yolo_mode,
             commands::provider_config::get_yolo_status,
+            // WebSocket commands (Task 136)
+            agent::websocket::create_websocket_connection,
+            agent::websocket::get_websocket_connection_state,
+            agent::websocket::is_websocket_connected,
+            agent::websocket::close_websocket_connection,
+            agent::websocket::send_websocket_message,
+            agent::websocket::get_active_websocket_sessions,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

@@ -1,38 +1,179 @@
-//! Permission Ruleset Module
+//! Permission Module
 //!
-//! Implements fine-grained permission control for office scenarios:
-//! - Operation-level permissions (department, approval, document, etc.)
-//! - Pattern-based resource matching with glob support
-//! - Rule merging with deny-priority semantics
+//! Implements three-layer permission system:
+//! - Platform Base: System-level default permissions
+//! - Department Capability: Department-specific tool permissions
+//! - Role Enhancement: Role-based permission overrides
 //!
-//! See spec: openspec/changes/subagent-architecture-alignment/specs/subagent-permission-ruleset/spec.md
+//! Permission calculation: Final = (Platform ∪ Department ∪ Role) \ Blacklist
 
 pub mod ruleset;
 
-pub use ruleset::{
-    PermissionAction, PermissionChecker, PermissionOperation, PermissionRule, Ruleset,
-};
+// Permission engine - three-layer permission calculation
+pub mod engine;
 
-/// Default permission ruleset for office operations
-pub fn default_office_ruleset() -> Ruleset {
-    vec![
-        // Department - ask by default, allow public queries
-        PermissionRule::new("department", "public_*", PermissionAction::Allow),
-        PermissionRule::new("department", "*", PermissionAction::Ask),
-        // Approval - ask by default
-        PermissionRule::new("approval", "*", PermissionAction::Ask),
-        // Document - read allowed, write asks, delete denied
-        PermissionRule::new("document", "read_*", PermissionAction::Allow),
-        PermissionRule::new("document", "write_*", PermissionAction::Ask),
-        PermissionRule::new("document", "delete_*", PermissionAction::Deny),
-        // Employee - profile read allowed, salary denied
-        PermissionRule::new("employee", "profile_*", PermissionAction::Allow),
-        PermissionRule::new("employee", "salary_*", PermissionAction::Deny),
-        // Finance - ask by default
-        PermissionRule::new("finance", "*", PermissionAction::Ask),
-        // Warehouse - ask by default
-        PermissionRule::new("warehouse", "*", PermissionAction::Ask),
-        // MCP tools - ask by default
-        PermissionRule::new("mcp_*", "*", PermissionAction::Ask),
-    ]
+// Field-level permission checker
+pub mod field_checker;
+
+// Data scope filter
+pub mod scope_filter;
+
+// Permission middleware for tool execution pipeline
+pub mod middleware;
+
+pub use engine::{
+    PermissionEngine, PermissionEngineConfig, ExecutionContext, UserPermissions,
+    PermissionDomain, PermissionError,
+};
+pub use field_checker::{
+    FieldPermissionChecker, FieldPermissionConfig, FieldPermissionRule,
+    check_field_access, get_allowed_fields,
+};
+pub use scope_filter::{
+    DataScopeFilter, ScopeFilterResult, apply_scope_filter, build_scope_query,
+};
+pub use middleware::PermissionMiddleware;
+
+use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+
+/// Role type for permission system
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Role {
+    Admin,
+    Manager,
+    Specialist,
+    Staff,
+    Guest,
+}
+
+impl Role {
+    /// Parse from string
+    pub fn parse(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "admin" => Some(Role::Admin),
+            "manager" => Some(Role::Manager),
+            "specialist" => Some(Role::Specialist),
+            "staff" => Some(Role::Staff),
+            "guest" => Some(Role::Guest),
+            _ => None,
+        }
+    }
+
+    /// Get role hierarchy level (higher = more permissions)
+    pub fn level(&self) -> u8 {
+        match self {
+            Role::Admin => 100,
+            Role::Executive => 90,
+            Role::Manager => 70,
+            Role::Specialist => 50,
+            Role::Staff => 30,
+            Role::Guest => 10,
+        }
+    }
+}
+
+impl std::fmt::Display for Role {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Role::Admin => write!(f, "admin"),
+            Role::Manager => write!(f, "manager"),
+            Role::Specialist => write!(f, "specialist"),
+            Role::Staff => write!(f, "staff"),
+            Role::Guest => write!(f, "guest"),
+        }
+    }
+}
+
+impl Default for Role {
+    fn default() -> Self {
+        Role::Staff
+    }
+}
+
+/// Executive role (for convenience in finance context)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ExecutiveRole {
+    Staff,
+    Specialist,
+    Manager,
+    Executive,
+}
+
+impl ExecutiveRole {
+    pub fn parse(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "staff" => Some(ExecutiveRole::Staff),
+            "specialist" => Some(ExecutiveRole::Specialist),
+            "manager" => Some(ExecutiveRole::Manager),
+            "executive" => Some(ExecutiveRole::Executive),
+            _ => None,
+        }
+    }
+
+    pub fn level(&self) -> u8 {
+        match self {
+            ExecutiveRole::Executive => 90,
+            ExecutiveRole::Manager => 70,
+            ExecutiveRole::Specialist => 50,
+            ExecutiveRole::Staff => 30,
+        }
+    }
+}
+
+impl Default for ExecutiveRole {
+    fn default() -> Self {
+        ExecutiveRole::Staff
+    }
+}
+
+/// Tool constraint for permission calculation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ToolConstraint {
+    /// Maximum calls per day
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_per_day: Option<u32>,
+    /// Maximum amount limit
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_amount: Option<f64>,
+    /// Allowed fields for this tool
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_fields: Option<Vec<String>>,
+    /// Data scope constraint
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data_scope: Option<DataScopeType>,
+}
+
+/// Data scope type
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DataScopeType {
+    /// Only user's own data
+    Personal,
+    /// Department data only
+    Department,
+    /// All data
+    All,
+    /// Executive scope (includes sensitive data)
+    Executive,
+}
+
+impl Default for DataScopeType {
+    fn default() -> Self {
+        DataScopeType::Personal
+    }
+}
+
+impl std::fmt::Display for DataScopeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DataScopeType::Personal => write!(f, "personal"),
+            DataScopeType::Department => write!(f, "department"),
+            DataScopeType::All => write!(f, "all"),
+            DataScopeType::Executive => write!(f, "executive"),
+        }
+    }
 }

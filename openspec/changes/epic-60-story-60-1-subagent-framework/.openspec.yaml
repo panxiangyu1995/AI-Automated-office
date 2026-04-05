@@ -1,0 +1,20 @@
+# OpenSpec Change: Subagent 核心框架
+
+> Epic 60, Story 60.1
+
+## 状态
+
+- **状态**: draft
+- **创建时间**: 2026-04-03
+- **Epic**: Epic 60 - 部门化 Subagent 架构
+
+## 概述
+
+实现 Subagent 核心框架，包括类型定义、加载机制和基础架构。
+
+## 相关文档
+
+- [proposal.md](./proposal.md)
+- [design.md](./design.md)
+- [tasks.md](./tasks.md)
+- [specs/](./specs/)

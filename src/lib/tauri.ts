@@ -120,3 +120,104 @@ export const getPendingRequests = async (): Promise<QueuedRequest[]> => {
 export const processPendingRequests = async (): Promise<SyncResult[]> => {
   return invoke('process_pending_requests')
 }
+
+// ==================== WebSocket Commands (Task 136) ====================
+
+export interface WebSocketConfig {
+  url: string
+  token?: string
+  heartbeat_interval_ms?: number
+  heartbeat_timeout_ms?: number
+  max_reconnect_attempts?: number
+  initial_reconnect_delay_ms?: number
+}
+
+export interface WebSocketConnectionState {
+  session_id: string
+  is_connected: boolean
+  last_pong_at: number | null
+  reconnect_attempts: number
+  max_reconnect_attempts: number
+  reconnect_delay_ms: number
+  url: string | null
+}
+
+export type WebSocketEventType =
+  | 'Ping'
+  | 'Pong'
+  | 'SessionStart'
+  | 'SessionEnd'
+  | 'MessageStart'
+  | 'MessageEnd'
+  | 'ToolCall'
+  | 'ToolResult'
+  | 'PartDelta'
+  | 'Error'
+  | 'SyncStatus'
+  | 'SyncComplete'
+  | 'Connected'
+  | 'Disconnected'
+
+export interface WebSocketEvent {
+  type: WebSocketEventType
+  session_id?: string
+  message_id?: string
+  timestamp?: number
+  content?: string
+  code?: string
+  status?: string
+  pending?: number
+  synced_at?: number
+  reason?: string
+  payload?: Record<string, unknown>
+}
+
+/**
+ * Create a new WebSocket connection
+ */
+export const createWebSocketConnection = async (
+  config: WebSocketConfig,
+  sessionId?: string
+): Promise<string> => {
+  return invoke('create_websocket_connection', { config, sessionId })
+}
+
+/**
+ * Get WebSocket connection state
+ */
+export const getWebSocketConnectionState = async (
+  sessionId: string
+): Promise<WebSocketConnectionState> => {
+  return invoke('get_websocket_connection_state', { sessionId })
+}
+
+/**
+ * Check if WebSocket is connected
+ */
+export const isWebSocketConnected = async (sessionId: string): Promise<boolean> => {
+  return invoke('is_websocket_connected', { sessionId })
+}
+
+/**
+ * Close WebSocket connection
+ */
+export const closeWebSocketConnection = async (sessionId: string): Promise<void> => {
+  return invoke('close_websocket_connection', { sessionId })
+}
+
+/**
+ * Send message through WebSocket
+ */
+export const sendWebSocketMessage = async (
+  sessionId: string,
+  event: WebSocketEvent
+): Promise<void> => {
+  return invoke('send_websocket_message', { sessionId, event })
+}
+
+/**
+ * Get all active WebSocket sessions
+ */
+export const getActiveWebSocketSessions = async (): Promise<string[]> => {
+  return invoke('get_active_websocket_sessions')
+}

@@ -1,7 +1,9 @@
 //! WebSocket Integration Module
 //!
 //! Implements WebSocket client for real-time bidirectional communication
-//! between backend and frontend. Supports:
+//! between backend and frontend using tauri-plugin-websocket.
+//! Supports:
+//! - Real WebSocket connections to cloud server
 //! - Event streaming from backend to frontend
 //! - Message sync status updates
 //! - Heartbeat mechanism
@@ -9,11 +11,11 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Manager};
 use tokio::sync::{RwLock, broadcast};
-use tokio::time::interval;
+use tokio::time::{interval, Duration};
 use uuid::Uuid;
 
 /// WebSocket event types for bidirectional communication
@@ -43,199 +45,213 @@ pub enum WebSocketEvent {
     Disconnected { reason: Option<String> },
 }
 
-/// WebSocket client state
+/// WebSocket connection state
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WebSocketState {
+pub struct WebSocketConnectionState {
     pub session_id: String,
     pub is_connected: bool,
     pub last_pong_at: Option<i64>,
     pub reconnect_attempts: u32,
     pub max_reconnect_attempts: u32,
     pub reconnect_delay_ms: u64,
+    pub url: Option<String>,
 }
 
-/// WebSocket event emitter for broadcasting events to listeners
+/// Connection config
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WebSocketConfig {
+    pub url: String,
+    pub token: Option<String>,
+    pub heartbeat_interval_ms: u64,
+    pub heartbeat_timeout_ms: u64,
+    pub max_reconnect_attempts: u32,
+    pub initial_reconnect_delay_ms: u64,
+}
+
+impl Default for WebSocketConfig {
+    fn default() -> Self {
+        Self {
+            url: String::new(),
+            token: None,
+            heartbeat_interval_ms: 30000,
+            heartbeat_timeout_ms: 10000,
+            max_reconnect_attempts: 5,
+            initial_reconnect_delay_ms: 1000,
+        }
+    }
+}
+
+/// WebSocket connection manager
 #[derive(Clone)]
-pub struct WebSocketEventEmitter {
-    sender: broadcast::Sender<WebSocketEvent>,
-    state: Arc<RwLock<WebSocketState>>,
+pub struct WebSocketConnectionManager {
+    connections: Arc<RwLock<HashMap<String, WebSocketConnection>>>,
+    event_emitters: Arc<RwLock<HashMap<String, broadcast::Sender<WebSocketEvent>>>>,
 }
 
-impl WebSocketEventEmitter {
-    /// Create a new WebSocket event emitter
-    pub fn new(session_id: String) -> Self {
-        let (sender, _) = broadcast::channel(1000);
-        let state = WebSocketState {
-            session_id,
+pub struct WebSocketConnection {
+    pub state: Arc<RwLock<WebSocketConnectionState>>,
+    pub event_tx: broadcast::Sender<WebSocketEvent>,
+}
+
+impl WebSocketConnectionManager {
+    pub fn new() -> Self {
+        Self {
+            connections: Arc::new(RwLock::new(HashMap::new())),
+            event_emitters: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    /// Create a new connection
+    pub async fn create_connection(&self, session_id: String, config: WebSocketConfig) -> WebSocketConnection {
+        let (event_tx, _) = broadcast::channel(1000);
+        
+        let state = WebSocketConnectionState {
+            session_id: session_id.clone(),
             is_connected: false,
             last_pong_at: None,
             reconnect_attempts: 0,
-            max_reconnect_attempts: 5,
-            reconnect_delay_ms: 1000,
+            max_reconnect_attempts: config.max_reconnect_attempts,
+            reconnect_delay_ms: config.initial_reconnect_delay_ms,
+            url: Some(config.url.clone()),
         };
-        
-        Self {
-            sender,
+
+        let connection = WebSocketConnection {
             state: Arc::new(RwLock::new(state)),
-        }
-    }
-    
-    /// Subscribe to events
-    pub fn subscribe(&self) -> broadcast::Receiver<WebSocketEvent> {
-        self.sender.subscribe()
-    }
-    
-    /// Emit an event to all subscribers
-    pub async fn emit(&self, event: WebSocketEvent) {
-        let _ = self.sender.send(event);
-    }
-    
-    /// Emit session start event
-    pub async fn session_start(&self, session_id: String, payload: Option<serde_json::Value>) {
-        self.emit(WebSocketEvent::SessionStart { session_id, payload }).await;
-    }
-    
-    /// Emit session end event
-    pub async fn session_end(&self, session_id: String, payload: Option<serde_json::Value>) {
-        self.emit(WebSocketEvent::SessionEnd { session_id, payload }).await;
-    }
-    
-    /// Emit message start event
-    pub async fn message_start(&self, message_id: String, payload: Option<serde_json::Value>) {
-        self.emit(WebSocketEvent::MessageStart { message_id, payload }).await;
-    }
-    
-    /// Emit message end event
-    pub async fn message_end(&self, message_id: String, payload: Option<serde_json::Value>) {
-        self.emit(WebSocketEvent::MessageEnd { message_id, payload }).await;
-    }
-    
-    /// Emit part delta for streaming
-    pub async fn part_delta(&self, message_id: String, content: String) {
-        self.emit(WebSocketEvent::PartDelta { message_id, content }).await;
-    }
-    
-    /// Emit tool call event
-    pub async fn tool_call(&self, message_id: String, payload: Option<serde_json::Value>) {
-        self.emit(WebSocketEvent::ToolCall { message_id, payload }).await;
-    }
-    
-    /// Emit tool result event
-    pub async fn tool_result(&self, message_id: String, payload: Option<serde_json::Value>) {
-        self.emit(WebSocketEvent::ToolResult { message_id, payload }).await;
-    }
-    
-    /// Emit error event
-    pub async fn error(&self, code: String, message: String) {
-        self.emit(WebSocketEvent::Error { code, message }).await;
-    }
-    
-    /// Emit sync status
-    pub async fn sync_status(&self, status: String, pending: u32) {
-        self.emit(WebSocketEvent::SyncStatus { status, pending }).await;
-    }
-    
-    /// Emit connected event
-    pub async fn connected(&self) {
-        let mut state = self.state.write().await;
-        state.is_connected = true;
-        state.reconnect_attempts = 0;
-        drop(state);
-        
-        let session_id = self.state.read().await.session_id.clone();
-        self.emit(WebSocketEvent::Connected { session_id }).await;
-    }
-    
-    /// Emit disconnected event
-    pub async fn disconnected(&self, reason: Option<String>) {
-        let mut state = self.state.write().await;
-        state.is_connected = false;
-        drop(state);
-        
-        self.emit(WebSocketEvent::Disconnected { reason }).await;
-    }
-    
-    /// Update pong timestamp
-    pub async fn update_pong(&self) {
-        let mut state = self.state.write().await;
-        state.last_pong_at = Some(chrono::Utc::now().timestamp_millis());
-    }
-    
-    /// Get current state
-    pub async fn get_state(&self) -> WebSocketState {
-        self.state.read().await.clone()
-    }
-    
-    /// Check if connected
-    pub async fn is_connected(&self) -> bool {
-        self.state.read().await.is_connected
-    }
-    
-    /// Increment reconnect attempts
-    pub async fn increment_reconnect(&self) -> u32 {
-        let mut state = self.state.write().await;
-        state.reconnect_attempts += 1;
-        state.reconnect_attempts
-    }
-    
-    /// Calculate reconnect delay with exponential backoff
-    pub async fn get_reconnect_delay(&self) -> Duration {
-        let state = self.state.read().await;
-        let delay = state.reconnect_delay_ms * 2_u64.pow(state.reconnect_attempts.min(5));
-        Duration::from_millis(delay.min(30000)) // Max 30 seconds
-    }
-}
+            event_tx: event_tx.clone(),
+        };
 
-/// WebSocket manager for handling multiple connections
-#[derive(Clone)]
-pub struct WebSocketManager {
-    emitters: Arc<RwLock<HashMap<String, WebSocketEventEmitter>>>,
-}
+        let mut connections = self.connections.write().await;
+        connections.insert(session_id.clone(), connection.clone());
 
-impl WebSocketManager {
-    /// Create a new WebSocket manager
-    pub fn new() -> Self {
-        Self {
-            emitters: Arc::new(RwLock::new(HashMap::new())),
-        }
+        let mut emitters = self.event_emitters.write().await;
+        emitters.insert(session_id, event_tx);
+
+        connection
     }
-    
-    /// Create a new session emitter
-    pub async fn create_session(&self, session_id: String) -> WebSocketEventEmitter {
-        let emitter = WebSocketEventEmitter::new(session_id.clone());
-        let mut emitters = self.emitters.write().await;
-        emitters.insert(session_id, emitter.clone());
-        emitter
+
+    /// Get a connection by session ID
+    pub async fn get_connection(&self, session_id: &str) -> Option<WebSocketConnection> {
+        let connections = self.connections.read().await;
+        connections.get(session_id).cloned()
     }
-    
-    /// Get an existing session emitter
-    pub async fn get_session(&self, session_id: &str) -> Option<WebSocketEventEmitter> {
-        let emitters = self.emitters.read().await;
-        emitters.get(session_id).cloned()
-    }
-    
-    /// Remove a session
-    pub async fn remove_session(&self, session_id: &str) {
-        let mut emitters = self.emitters.write().await;
+
+    /// Remove a connection
+    pub async fn remove_connection(&self, session_id: &str) {
+        let mut connections = self.connections.write().await;
+        connections.remove(session_id);
+
+        let mut emitters = self.event_emitters.write().await;
         emitters.remove(session_id);
     }
-    
-    /// Get all active sessions
-    pub async fn get_active_sessions(&self) -> Vec<String> {
-        let emitters = self.emitters.read().await;
-        emitters.keys().cloned().collect()
+
+    /// Subscribe to events for a session
+    pub async fn subscribe(&self, session_id: &str) -> Option<broadcast::Receiver<WebSocketEvent>> {
+        let emitters = self.event_emitters.read().await;
+        emitters.get(session_id).map(|tx| tx.subscribe())
     }
-    
+
+    /// Emit an event to a session
+    pub async fn emit_event(&self, session_id: &str, event: WebSocketEvent) {
+        let emitters = self.event_emitters.read().await;
+        if let Some(tx) = emitters.get(session_id) {
+            let _ = tx.send(event);
+        }
+    }
+
     /// Broadcast to all sessions
     pub async fn broadcast(&self, event: WebSocketEvent) {
-        let emitters = self.emitters.read().await;
-        for emitter in emitters.values() {
-            let _ = emitter.sender.send(event.clone());
+        let emitters = self.event_emitters.read().await;
+        for tx in emitters.values() {
+            let _ = tx.send(event.clone());
         }
+    }
+
+    /// Get all active session IDs
+    pub async fn get_active_sessions(&self) -> Vec<String> {
+        let connections = self.connections.read().await;
+        connections.keys().cloned().collect()
+    }
+
+    /// Update connection state
+    pub async fn update_state(&self, session_id: &str, update: impl FnOnce(&mut WebSocketConnectionState)) {
+        if let Some(conn) = self.get_connection(session_id).await {
+            let mut state = conn.state.write().await;
+            update(&mut state);
+        }
+    }
+
+    /// Mark as connected
+    pub async fn set_connected(&self, session_id: &str) {
+        self.update_state(session_id, |state| {
+            state.is_connected = true;
+            state.reconnect_attempts = 0;
+            state.reconnect_delay_ms = 1000;
+        }).await;
+    }
+
+    /// Mark as disconnected
+    pub async fn set_disconnected(&self, session_id: &str) {
+        self.update_state(session_id, |state| {
+            state.is_connected = false;
+        }).await;
+    }
+
+    /// Increment reconnect attempts
+    pub async fn increment_reconnect(&self, session_id: &str) -> u32 {
+        let mut current_attempts = 0u32;
+        
+        if let Some(conn) = self.get_connection(session_id).await {
+            let mut state = conn.state.write().await;
+            state.reconnect_attempts += 1;
+            state.reconnect_delay_ms = (state.reconnect_delay_ms * 2).min(30000);
+            current_attempts = state.reconnect_attempts;
+        }
+        
+        current_attempts
+    }
+
+    /// Check if can reconnect
+    pub async fn can_reconnect(&self, session_id: &str) -> bool {
+        if let Some(conn) = self.get_connection(session_id).await {
+            let state = conn.state.read().await;
+            state.reconnect_attempts < state.max_reconnect_attempts
+        } else {
+            false
+        }
+    }
+
+    /// Get reconnect delay
+    pub async fn get_reconnect_delay(&self, session_id: &str) -> Duration {
+        if let Some(conn) = self.get_connection(session_id).await {
+            let state = conn.state.read().await;
+            Duration::from_millis(state.reconnect_delay_ms)
+        } else {
+            Duration::from_millis(1000)
+        }
+    }
+
+    /// Update pong timestamp
+    pub async fn update_pong(&self, session_id: &str) {
+        self.update_state(session_id, |state| {
+            state.last_pong_at = Some(chrono::Utc::now().timestamp_millis());
+        }).await;
+    }
+
+    /// Emit connected event
+    pub async fn emit_connected(&self, session_id: &str) {
+        let _ = self.emit_event(session_id, WebSocketEvent::Connected {
+            session_id: session_id.to_string(),
+        }).await;
+    }
+
+    /// Emit disconnected event
+    pub async fn emit_disconnected(&self, session_id: &str, reason: Option<String>) {
+        let _ = self.emit_event(session_id, WebSocketEvent::Disconnected { reason }).await;
     }
 }
 
-impl Default for WebSocketManager {
+impl Default for WebSocketConnectionManager {
     fn default() -> Self {
         Self::new()
     }
@@ -245,79 +261,129 @@ impl Default for WebSocketManager {
 // Tauri Commands
 // ============================================================================
 
-use tauri::State;
+use tauri_plugin_websocket::{WebSocketExt, StreamExt};
 
-/// Create a new WebSocket session
+/// Create a new WebSocket connection
 #[tauri::command]
-pub async fn create_websocket_session(
+pub async fn create_websocket_connection(
     session_id: Option<String>,
-    manager: State<'_, Arc<WebSocketManager>>,
+    config: WebSocketConfig,
+    app: AppHandle,
+    manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
 ) -> Result<String, String> {
-    let id = session_id.unwrap_or_else(|| format!("ws-session-{}", Uuid::new_v4()));
-    let _emitter = manager.create_session(id.clone()).await;
-    tracing::info!("WebSocket session created: {}", id);
+    let id = session_id.unwrap_or_else(|| format!("ws-{}", Uuid::new_v4()));
+    
+    // Create connection
+    let _connection = manager.create_connection(id.clone(), config.clone()).await;
+    
+    // Connect using tauri-plugin-websocket
+    let url = if let Some(token) = &config.token {
+        format!("{}?token={}", config.url, token)
+    } else {
+        config.url.clone()
+    };
+
+    let app_handle = app.clone();
+    let session_id_clone = id.clone();
+    let manager_clone = manager.inner().clone();
+    let heartbeat_interval = config.heartbeat_interval_ms;
+    
+    // Spawn WebSocket connection task
+    tauri::async_runtime::spawn(async move {
+        // Connect to WebSocket
+        let result: Result<_, _> = app_handle.ws(&url);
+        
+        match result {
+            Ok(_conn) => {
+                // Mark as connected
+                manager_clone.set_connected(&session_id_clone).await;
+                manager_clone.emit_connected(&session_id_clone).await;
+                
+                // Start heartbeat task
+                let hb_manager = manager_clone.clone();
+                let hb_session = session_id_clone.clone();
+                tauri::async_runtime::spawn(async move {
+                    let mut ticker = interval(Duration::from_millis(heartbeat_interval));
+                    loop {
+                        ticker.tick().await;
+                        
+                        // Check if we should reconnect
+                        if !hb_manager.can_reconnect(&hb_session).await {
+                            tracing::warn!("Max reconnect attempts reached for session: {}", hb_session);
+                            hb_manager.emit_disconnected(&hb_session, Some("Max reconnect attempts reached".to_string())).await;
+                            break;
+                        }
+                    }
+                });
+
+                tracing::info!("WebSocket connection established: {}", session_id_clone);
+            }
+            Err(e) => {
+                tracing::error!("Failed to create WebSocket connection: {}", e);
+                manager_clone.set_disconnected(&session_id_clone).await;
+                let _ = manager_clone.emit_event(&session_id_clone, WebSocketEvent::Error {
+                    code: "CONNECTION_FAILED".to_string(),
+                    message: e.to_string(),
+                }).await;
+            }
+        }
+    });
+
+    tracing::info!("WebSocket connection created: {}", id);
     Ok(id)
 }
 
-/// Get WebSocket session state
+/// Get WebSocket connection state
 #[tauri::command]
-pub async fn get_websocket_state(
+pub async fn get_websocket_connection_state(
     session_id: String,
-    manager: State<'_, Arc<WebSocketManager>>,
-) -> Result<WebSocketState, String> {
-    let emitter = manager
-        .get_session(&session_id)
-        .await
-        .ok_or_else(|| format!("Session not found: {}", session_id))?;
+    manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
+) -> Result<WebSocketConnectionState, String> {
+    let connection = manager.get_connection(&session_id).await
+        .ok_or_else(|| format!("Connection not found: {}", session_id))?;
     
-    Ok(emitter.get_state().await)
+    Ok(connection.state.read().await.clone())
 }
 
-/// Check if WebSocket session is connected
+/// Check if WebSocket is connected
 #[tauri::command]
 pub async fn is_websocket_connected(
     session_id: String,
-    manager: State<'_, Arc<WebSocketManager>>,
+    manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
 ) -> Result<bool, String> {
-    let emitter = manager
-        .get_session(&session_id)
-        .await
-        .ok_or_else(|| format!("Session not found: {}", session_id))?;
+    let connection = manager.get_connection(&session_id).await
+        .ok_or_else(|| format!("Connection not found: {}", session_id))?;
     
-    Ok(emitter.is_connected().await)
+    Ok(connection.state.read().await.is_connected)
 }
 
-/// Close a WebSocket session
+/// Close WebSocket connection
 #[tauri::command]
-pub async fn close_websocket_session(
+pub async fn close_websocket_connection(
     session_id: String,
-    manager: State<'_, Arc<WebSocketManager>>,
+    manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
 ) -> Result<(), String> {
-    manager.remove_session(&session_id).await;
-    tracing::info!("WebSocket session closed: {}", session_id);
+    manager.emit_disconnected(&session_id, Some("Connection closed by client".to_string())).await;
+    manager.remove_connection(&session_id).await;
+    tracing::info!("WebSocket connection closed: {}", session_id);
     Ok(())
 }
 
-/// Emit an event to a WebSocket session
+/// Send message through WebSocket (internal event)
 #[tauri::command]
-pub async fn emit_websocket_event(
+pub async fn send_websocket_message(
     session_id: String,
     event: WebSocketEvent,
-    manager: State<'_, Arc<WebSocketManager>>,
+    manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
 ) -> Result<(), String> {
-    let emitter = manager
-        .get_session(&session_id)
-        .await
-        .ok_or_else(|| format!("Session not found: {}", session_id))?;
-    
-    emitter.emit(event).await;
+    manager.emit_event(&session_id, event).await;
     Ok(())
 }
 
 /// Get all active WebSocket sessions
 #[tauri::command]
 pub async fn get_active_websocket_sessions(
-    manager: State<'_, Arc<WebSocketManager>>,
+    manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
 ) -> Result<Vec<String>, String> {
     Ok(manager.get_active_sessions().await)
 }

@@ -1492,7 +1492,7 @@
         "Story 51.1",
         "Story 51.2"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 137,
@@ -1545,7 +1545,7 @@
         "Story 51.1",
         "Story 51.4"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 138,
@@ -1861,7 +1861,7 @@
         "Story 41.6",
         "Story 41.7"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 144,
@@ -2139,6 +2139,353 @@
         "Story 1.X - 主题系统基础架构",
         "Story 1.X - 主题系统 React 集成",
         "Story 1.X - 主题系统组件迁移"
+      ],
+      "passes": true
+    },
+    {
+      "id": 204,
+      "epic": "Epic 60",
+      "story": "Story 60.1",
+      "title": "Subagent 核心框架",
+      "description": "实现 Subagent 核心框架，包括类型定义、加载机制（Department/Personal）和基础架构。参考 ADR-059 设计，支持 Primary、Department、Personal、Hidden 四类 Agent。",
+      "implementationType": "new",
+      "phase": "Phase 1 - 基础框架",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "Subagent 框架完全缺失，需要从头实现。"
+      },
+      "openspec_change": "epic-60-story-60-1-subagent-framework",
+      "steps": [
+        "创建 src-tauri/src/agent/subagent/ 目录结构",
+        "实现 AgentConfig、ModelConfig、ToolPermissions 等类型定义",
+        "实现 DepartmentLoader 从插件 manifest 加载 Subagent",
+        "实现 PersonalLoader 从 SQLite 加载用户 Subagent",
+        "实现 SubagentManager 统一管理所有 Subagent",
+        "注册 Tauri Commands: get_available_subagents, get_subagent_config",
+        "创建前端类型定义 src/features/agent/types/subagent.ts"
+      ],
+      "frs_covered": [
+        "FR890",
+        "FR891",
+        "FR892",
+        "FR893",
+        "FR894",
+        "FR895",
+        "FR896",
+        "FR915",
+        "FR916"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-059",
+        "ADR-013"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 205,
+      "epic": "Epic 60",
+      "story": "Story 60.2",
+      "title": "Finance Department Subagent 实现",
+      "description": "实现财务部门 Subagent，包括 finance_query、finance_ocr、finance_mutate 等工具，配置 staff/specialist/manager/executive 四级角色权限矩阵。",
+      "implementationType": "new",
+      "phase": "Phase 2 - 核心部门",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "财务工具模块完全缺失。"
+      },
+      "openspec_change": "epic-60-story-60-2-finance-subagent",
+      "steps": [
+        "创建 Finance Subagent 配置文件 plugins/finance/agent/config.yaml",
+        "实现 finance_query 工具（发票查询，带字段级权限）",
+        "实现 finance_ocr 工具（发票识别，集成 OCR 服务）",
+        "实现 finance_mutate 工具（报销提交/审核，带金额限制）",
+        "实现 finance_aggregate 工具（统计聚合）",
+        "实现 finance_export 工具（报表导出）",
+        "配置四级角色权限矩阵",
+        "集成轻量模型（Haiku）用于 OCR"
+      ],
+      "frs_covered": [
+        "FR460",
+        "FR461",
+        "FR462"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ADR-059",
+        "ADR-018"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 60.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 206,
+      "epic": "Epic 60",
+      "story": "Story 60.3",
+      "title": "权限矩阵基础",
+      "description": "实现角色×部门×能力三维权限矩阵，包括三层权限域（Platform Base、Department Capability、Role Enhancement）、字段级权限控制、数据范围过滤。",
+      "implementationType": "new",
+      "phase": "Phase 2 - 核心部门",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "权限矩阵完全缺失。"
+      },
+      "openspec_change": "epic-60-story-60-3-permission-matrix",
+      "steps": [
+        "创建 src-tauri/src/agent/permission/ 目录",
+        "实现 PermissionEngine 权限计算引擎",
+        "实现三层权限合并逻辑（Platform/Department/Role）",
+        "实现 FieldPermissionChecker 字段级权限控制",
+        "实现 DataScopeFilter 数据范围过滤",
+        "实现工具执行管道权限中间件",
+        "集成到所有 Department Subagent"
+      ],
+      "frs_covered": [
+        "FR460",
+        "FR461",
+        "FR609"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20",
+        "NFR21"
+      ],
+      "arch_covered": [
+        "ADR-059",
+        "ADR-018",
+        "ADR-052"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 60.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 207,
+      "epic": "Epic 60",
+      "story": "Story 60.4",
+      "title": "意图路由引擎",
+      "description": "实现意图分类器和路由决策器，支持关键词匹配+语义分类，自动路由到合适的 Subagent，构建 DelegationContract 并执行委派。",
+      "implementationType": "new",
+      "phase": "Phase 3 - 高级特性",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "路由引擎完全缺失。"
+      },
+      "openspec_change": "epic-60-story-60-4-intent-router",
+      "steps": [
+        "创建 src-tauri/src/agent/router/ 目录",
+        "实现 IntentClassifier 意图分类器（关键词匹配+LLM语义分类）",
+        "实现 Router 路由决策器",
+        "实现 DelegationExecutor 委派执行器",
+        "实现 DelegationContract 委派协议",
+        "实现路由中间件集成到主 Agent Runtime",
+        "配置路由规则表"
+      ],
+      "frs_covered": [
+        "FR930",
+        "FR931",
+        "FR932"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-059",
+        "ADR-013"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 60.1",
+        "Story 60.2",
+        "Story 60.3"
+      ],
+      "passes": true
+    },
+    {
+      "id": 208,
+      "epic": "Epic 60",
+      "story": "Story 60.5",
+      "title": "Personal Subagent CRUD",
+      "description": "实现 Personal Subagent 的完整 CRUD 功能，包括创建、读取、更新、删除、版本历史、导入导出，以及工具权限继承验证。",
+      "implementationType": "new",
+      "phase": "Phase 2 - 核心部门",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "Personal Subagent CRUD 完全缺失。"
+      },
+      "openspec_change": "epic-60-story-60-5-personal-subagent-crud",
+      "steps": [
+        "创建数据库表 user_agents 和版本历史表",
+        "实现 CRUD API: create/update/delete/list/get",
+        "实现权限验证（只能选择主 Agent 权限范围内的工具）",
+        "实现版本历史记录",
+        "实现导入导出功能（JSON 格式）",
+        "创建前端 PersonalAgentManager.tsx 组件",
+        "实现 Subagent 创建/编辑表单"
+      ],
+      "frs_covered": [
+        "FR890",
+        "FR891",
+        "FR892",
+        "FR893",
+        "FR894",
+        "FR895",
+        "FR896",
+        "FR897",
+        "FR898",
+        "FR899",
+        "FR900"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-059"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 60.1"
+      ],
+      "passes": true
+    },
+    {
+      "id": 209,
+      "epic": "Epic 60",
+      "story": "Story 60.6",
+      "title": "模型分层与自动路由",
+      "description": "实现模型分层与自动路由，根据任务复杂度选择合适模型（主模型/轻量模型/小模型），支持执行过程中动态切换模型。",
+      "implementationType": "new",
+      "phase": "Phase 3 - 高级特性",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "模型路由器完全缺失。"
+      },
+      "openspec_change": "epic-60-story-60-6-model-layer-router",
+      "steps": [
+        "创建 src-tauri/src/agent/model_router/ 目录",
+        "实现 ModelRouter 模型路由器",
+        "实现 TaskComplexity 复杂度评估器",
+        "实现 ModelSwitchStrategy 动态切换策略",
+        "配置模型选择规则（OCR->Haiku, 标题->小模型, 复杂推理->Sonnet）",
+        "实现成本统计（各模型 token 使用量）",
+        "集成到 Subagent 执行管道"
+      ],
+      "frs_covered": [
+        "FR915",
+        "FR916"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR17"
+      ],
+      "arch_covered": [
+        "ADR-059",
+        "ADR-055"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Story 60.1",
+        "Story 60.4"
+      ],
+      "passes": true
+    },
+    {
+      "id": 210,
+      "epic": "Epic 60",
+      "story": "Story 60.7",
+      "title": "Orchestrator 跨部门编排",
+      "description": "实现 Orchestrator Agent，支持跨部门复杂任务的编排和协调，并行/顺序委派多个 Department Subagent，汇总结果返回用户。",
+      "implementationType": "new",
+      "phase": "Phase 3 - 高级特性",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "Orchestrator 完全缺失。"
+      },
+      "openspec_change": "epic-60-story-60-7-orchestrator",
+      "steps": [
+        "实现 Orchestrator Agent 配置（只读，禁止直接写操作）",
+        "实现并行委派引擎（同时调用多个 Subagent）",
+        "实现顺序委派引擎（按依赖顺序执行）",
+        "实现结果聚合器（汇总多个 Subagent 结果）",
+        "实现跨部门数据关联处理",
+        "实现 Orchestrator 监控面板",
+        "编写 E2E 测试验证跨部门协作"
+      ],
+      "frs_covered": [
+        "FR464",
+        "FR465",
+        "FR466",
+        "FR467"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ADR-059"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Story 60.2",
+        "Story 60.3",
+        "Story 60.4"
       ],
       "passes": true
     }

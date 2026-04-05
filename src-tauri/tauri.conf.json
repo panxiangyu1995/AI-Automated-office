@@ -55,6 +55,9 @@
       "windows": {
         "installMode": "passive"
       }
+    },
+    "websocket": {
+      "all": true
     }
   }
 }

@@ -1,0 +1,58 @@
+# Proposal: Finance Department Subagent 实现
+
+## 变更类型
+
+- [x] 新功能
+- [ ] 重构
+- [ ] 优化
+- [ ] 开发
+
+## 背景
+
+根据 ADR-059 设计，Department Subagent 是随插件加载的部门级 Agent。财务部门是核心部门之一，需要实现 Finance Subagent 来处理发票识别、报销审核、对账分析等财务任务。
+
+## 目标
+
+实现 Finance Department Subagent：
+
+1. **基础工具封装**：finance_query、finance_ocr、finance_mutate 等
+2. **角色权限矩阵**：staff、specialist、manager、executive 四级权限
+3. **轻量模型路由**：OCR 使用 Haiku 模型降低成本
+
+## 范围
+
+### 包含
+
+- Finance Subagent 配置
+- 财务工具封装
+- 角色权限矩阵
+- 发票 OCR 实现
+
+### 不包含
+
+- 财务数据库表设计（假设已存在）
+- 财务 UI 组件
+- 跨部门编排（由 Orchestrator 处理）
+
+## 影响范围
+
+### 前端
+
+- `src/features/finance/` - 财务相关组件
+
+### 后端
+
+- `src-tauri/src/agent/subagent/plugins/finance/` - Finance Subagent
+- `src-tauri/src/agent/tools/department/finance.rs` - 财务工具
+
+## 风险评估
+
+| 风险 | 可能性 | 影响 | 缓解措施 |
+|------|--------|------|----------|
+| 财务数据敏感 | 高 | 高 | 严格权限检查 |
+| OCR 准确性 | 中 | 中 | 支持人工确认 |
+
+## 依赖
+
+- **前置依赖**: Story 60.1（Subagent 框架）
+- **后置依赖**: Story 60.4（路由引擎）

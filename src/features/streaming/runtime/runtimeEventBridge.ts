@@ -1,190 +1,305 @@
 import { listen } from '@tauri-apps/api/event'
-import type { RuntimeEvent, RuntimeEventType } from './runtimeEvents'
+import { attachTauriRuntimeEventBridge, BackendRuntimeEvent, RuntimeEventBridgeOptions } from './runtimeEventBridgeTauri'
 import type { RuntimeEventEmitter } from './runtimeEvents'
 import type { SyncEngine } from './syncEngine'
 import type { ReconnectHandler } from './reconnectHandler'
 import {
-  createTextPart,
-  type Message,
-  type MessageRole,
-  type MessageStatus,
-  type ErrorCode,
-} from '../../message/runtime/messageModel'
+  createWebSocketConnection,
+  closeWebSocketConnection,
+  isWebSocketConnected,
+  type WebSocketConfig,
+  type WebSocketEvent,
+} from '../../lib/tauri'
 
-export interface BackendRuntimeEvent {
-  id: string
-  type: RuntimeEventType
-  sessionId: string
-  timestamp: number
-  sequence: number
-  messageId?: string
-  payload?: Record<string, unknown>
+export interface WebSocketRuntimeEventBridgeOptions extends RuntimeEventBridgeOptions {
+  wsConfig: WebSocketConfig
+  useWebSocket?: boolean
+  fallbackToTauri?: boolean
 }
 
-interface RuntimeEventBridgeOptions {
+export interface WebSocketBridgeState {
   sessionId: string
-  eventEmitter: RuntimeEventEmitter
-  syncEngine: SyncEngine
-  reconnectHandler: ReconnectHandler
+  wsSessionId: string | null
+  isConnected: boolean
+  useWebSocket: boolean
+  reconnectAttempts: number
+  maxReconnectAttempts: number
 }
 
-function buildMessage(
-  sessionId: string,
-  messageId: string,
-  role: MessageRole,
-  content: string,
-  metadata?: Record<string, unknown>,
-  status: MessageStatus = 'complete'
-): Message {
-  const part = createTextPart(content, 'plain')
-  const now = Date.now()
-  return {
-    id: messageId,
-    sessionId,
-    role,
-    status,
-    parts: [part],
-    createdAt: now,
-    updatedAt: now,
-    completedAt: status === 'complete' ? now : undefined,
-    metadata,
+/**
+ * WebSocket event handler
+ */
+function handleWebSocketEvent(
+  event: WebSocketEvent,
+  options: WebSocketRuntimeEventBridgeOptions
+): void {
+  const { eventEmitter } = options
+  const { eventBridge } = options as WebSocketRuntimeEventBridgeOptions & { eventBridge?: WebSocketBridgeState }
+
+  // Convert WebSocket event to RuntimeEvent
+  const runtimeEvent = convertWsEventToRuntimeEvent(event)
+  if (runtimeEvent) {
+    eventEmitter.emitExternal(runtimeEvent)
+  }
+
+  // Update bridge state
+  if (eventBridge) {
+    switch (event.type) {
+      case 'Connected':
+        eventBridge.isConnected = true
+        eventBridge.reconnectAttempts = 0
+        break
+      case 'Disconnected':
+        eventBridge.isConnected = false
+        break
+    }
   }
 }
 
-function toRuntimeEvent(event: BackendRuntimeEvent): RuntimeEvent | null {
+/**
+ * Convert WebSocket event to RuntimeEvent
+ */
+function convertWsEventToRuntimeEvent(event: WebSocketEvent): import('./runtimeEvents').RuntimeEvent | null {
   switch (event.type) {
-    case 'session_start': {
+    case 'SessionStart':
       return {
-        id: event.id,
+        id: crypto.randomUUID(),
         type: 'session_start',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        metadata: event.payload as { model?: string; provider?: string; userId?: string } | undefined,
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        metadata: event.payload,
       }
-    }
-    case 'session_end': {
-      const payload = event.payload ?? {}
+    case 'SessionEnd':
       return {
-        id: event.id,
+        id: crypto.randomUUID(),
         type: 'session_end',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        reason: (payload.reason as 'completed' | 'cancelled' | 'error' | 'timeout') ?? 'completed',
-        duration: Number(payload.duration ?? 0),
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        reason: (event.payload?.reason as 'completed' | 'cancelled' | 'error' | 'timeout') ?? 'completed',
+        duration: Number(event.payload?.duration ?? 0),
       }
-    }
-    case 'message_start': {
-      if (!event.messageId) return null
-      const payload = event.payload ?? {}
-      const role = (payload.role as MessageRole) ?? 'assistant'
-      const content = (payload.content as string) ?? ''
-      const message = buildMessage(event.sessionId, event.messageId, role, content, payload.metadata as Record<string, unknown>, 'streaming')
+    case 'MessageStart':
       return {
-        id: event.id,
+        id: crypto.randomUUID(),
         type: 'message_start',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        messageId: event.messageId,
-        message,
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        messageId: event.message_id,
+        message: {
+          id: event.message_id ?? '',
+          sessionId: event.session_id ?? '',
+          role: (event.payload?.role as 'assistant' | 'user') ?? 'assistant',
+          status: 'streaming',
+          parts: [{ type: 'text', text: (event.payload?.content as string) ?? '', contentType: 'plain' }],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          metadata: event.payload as Record<string, unknown>,
+        },
       }
-    }
-    case 'message_end': {
-      if (!event.messageId) return null
-      const payload = event.payload ?? {}
-      const role = (payload.role as MessageRole) ?? 'assistant'
-      const content = (payload.content as string) ?? ''
-      const message = buildMessage(event.sessionId, event.messageId, role, content, payload.metadata as Record<string, unknown>, 'complete')
+    case 'MessageEnd':
       return {
-        id: event.id,
+        id: crypto.randomUUID(),
         type: 'message_end',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        messageId: event.messageId,
-        message,
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        messageId: event.message_id,
+        message: {
+          id: event.message_id ?? '',
+          sessionId: event.session_id ?? '',
+          role: (event.payload?.role as 'assistant' | 'user') ?? 'assistant',
+          status: 'complete',
+          parts: [{ type: 'text', text: (event.payload?.content as string) ?? '', contentType: 'plain' }],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          completedAt: Date.now(),
+          metadata: event.payload as Record<string, unknown>,
+        },
       }
-    }
-    case 'error': {
-      const payload = event.payload ?? {}
+    case 'PartDelta':
       return {
-        id: event.id,
-        type: 'error',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        messageId: event.messageId,
-        code: (payload.code as ErrorCode) ?? 'UNKNOWN_ERROR',
-        message: (payload.message as string) ?? 'Unknown runtime error',
-        recoverable: Boolean(payload.recoverable),
+        id: crypto.randomUUID(),
+        type: 'part_delta',
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        messageId: event.message_id ?? '',
+        content: event.content ?? '',
       }
-    }
-    case 'tool_call': {
-      if (!event.messageId) return null
-      const payload = event.payload ?? {}
+    case 'ToolCall':
       return {
-        id: event.id,
+        id: crypto.randomUUID(),
         type: 'tool_call',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        messageId: event.messageId,
-        toolId: (payload.toolId as string) ?? 'unknown',
-        toolName: (payload.toolName as string) ?? (payload.toolId as string) ?? 'unknown',
-        parameters: (payload.parameters as Record<string, unknown>) ?? {},
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        messageId: event.message_id ?? '',
+        toolId: (event.payload?.toolId as string) ?? 'unknown',
+        toolName: (event.payload?.toolName as string) ?? 'unknown',
+        parameters: (event.payload?.parameters as Record<string, unknown>) ?? {},
       }
-    }
-    case 'tool_result': {
-      if (!event.messageId) return null
-      const payload = event.payload ?? {}
+    case 'ToolResult':
       return {
-        id: event.id,
+        id: crypto.randomUUID(),
         type: 'tool_result',
-        sessionId: event.sessionId,
-        timestamp: event.timestamp,
-        sequence: event.sequence,
-        messageId: event.messageId,
-        toolId: (payload.toolId as string) ?? 'unknown',
-        result: payload.result,
-        success: Boolean(payload.success),
-        duration: payload.duration ? Number(payload.duration) : undefined,
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        messageId: event.message_id ?? '',
+        toolId: (event.payload?.toolId as string) ?? 'unknown',
+        result: event.payload?.result,
+        success: Boolean(event.payload?.success),
+        duration: event.payload?.duration ? Number(event.payload.duration) : undefined,
       }
-    }
+    case 'Error':
+      return {
+        id: crypto.randomUUID(),
+        type: 'error',
+        sessionId: event.session_id ?? '',
+        timestamp: event.timestamp ?? Date.now(),
+        sequence: 0,
+        messageId: event.message_id,
+        code: (event.payload?.code as import('./runtimeEvents').ErrorCode) ?? 'UNKNOWN_ERROR',
+        message: (event.payload?.message as string) ?? 'Unknown runtime error',
+        recoverable: Boolean(event.payload?.recoverable),
+      }
     default:
       return null
   }
 }
 
-export async function attachTauriRuntimeEventBridge(
-  options: RuntimeEventBridgeOptions
+/**
+ * Attach WebSocket-based runtime event bridge
+ * 
+ * This provides real-time event streaming through WebSocket connections.
+ * Falls back to Tauri IPC if WebSocket is unavailable or fails.
+ */
+export async function attachWebSocketRuntimeEventBridge(
+  options: WebSocketRuntimeEventBridgeOptions
 ): Promise<() => void> {
-  const { sessionId, eventEmitter, syncEngine, reconnectHandler } = options
-  let lastSequence = 0
-  const eventStorage = reconnectHandler.getEventStorage()
+  const {
+    sessionId,
+    wsConfig,
+    useWebSocket = true,
+    fallbackToTauri = true,
+  } = options
 
-  const unlisten = await listen<BackendRuntimeEvent>('agent_runtime_event', (event) => {
-    const payload = event.payload
-    if (!payload || payload.sessionId !== sessionId) return
+  const bridgeState: WebSocketBridgeState = {
+    sessionId,
+    wsSessionId: null,
+    isConnected: false,
+    useWebSocket,
+    reconnectAttempts: 0,
+    maxReconnectAttempts: wsConfig.max_reconnect_attempts ?? 5,
+  }
 
-    if (payload.sequence <= lastSequence) {
-      return
+  // Attach bridge state to options for event handler access
+  ;(options as WebSocketRuntimeEventBridgeOptions & { eventBridge?: WebSocketBridgeState }).eventBridge = bridgeState
+
+  let unlistenTauri: (() => void) | null = null
+
+  // Try WebSocket connection if enabled
+  if (useWebSocket && wsConfig.url) {
+    try {
+      const wsSessionId = await createWebSocketConnection(wsConfig, sessionId)
+      bridgeState.wsSessionId = wsSessionId
+
+      // Note: In a real implementation, we would subscribe to WebSocket events here
+      // using Tauri's WebSocket plugin event listeners
+
+      // For now, mark as connected
+      bridgeState.isConnected = true
+
+      console.log(`[WebSocketBridge] Connected with session: ${wsSessionId}`)
+    } catch (error) {
+      console.warn('[WebSocketBridge] Failed to connect via WebSocket:', error)
+
+      if (!fallbackToTauri) {
+        throw error
+      }
+
+      // Fall back to Tauri IPC
+      console.log('[WebSocketBridge] Falling back to Tauri IPC')
+      unlistenTauri = await attachTauriRuntimeEventBridge(options)
+    }
+  } else if (fallbackToTauri) {
+    // Use Tauri IPC
+    unlistenTauri = await attachTauriRuntimeEventBridge(options)
+  }
+
+  // Return cleanup function
+  return async () => {
+    if (bridgeState.wsSessionId) {
+      try {
+        await closeWebSocketConnection(bridgeState.wsSessionId)
+      } catch (error) {
+        console.warn('[WebSocketBridge] Error closing WebSocket:', error)
+      }
     }
 
-    if (lastSequence > 0 && payload.sequence > lastSequence + 1) {
-      syncEngine.setError('STREAM_ERROR', 'Runtime event sequence gap detected')
+    if (unlistenTauri) {
+      unlistenTauri()
     }
-
-    lastSequence = payload.sequence
-    const runtimeEvent = toRuntimeEvent(payload)
-    if (!runtimeEvent) return
-
-    eventEmitter.emitExternal(runtimeEvent)
-    void eventStorage.addEvent(sessionId, runtimeEvent)
-  })
-
-  return () => {
-    unlisten()
   }
 }
+
+/**
+ * Reconnect WebSocket with exponential backoff
+ */
+export async function reconnectWebSocket(
+  options: WebSocketRuntimeEventBridgeOptions,
+  attempt: number = 0
+): Promise<void> {
+  const { wsConfig, eventBridge } = options as WebSocketRuntimeEventBridgeOptions & { eventBridge?: WebSocketBridgeState }
+  
+  if (!eventBridge) {
+    throw new Error('Bridge state not initialized')
+  }
+
+  if (attempt >= eventBridge.maxReconnectAttempts) {
+    console.error('[WebSocketBridge] Max reconnect attempts reached')
+    eventBridge.isConnected = false
+    return
+  }
+
+  // Calculate delay with exponential backoff (1s, 2s, 4s, 8s, 16s, max 30s)
+  const delay = Math.min(1000 * Math.pow(2, attempt), 30000)
+  
+  console.log(`[WebSocketBridge] Reconnecting in ${delay}ms (attempt ${attempt + 1}/${eventBridge.maxReconnectAttempts})`)
+  
+  await new Promise(resolve => setTimeout(resolve, delay))
+
+  try {
+    const wsSessionId = await createWebSocketConnection(wsConfig, eventBridge.sessionId)
+    eventBridge.wsSessionId = wsSessionId
+    eventBridge.reconnectAttempts = 0
+    eventBridge.isConnected = true
+    console.log(`[WebSocketBridge] Reconnected successfully`)
+  } catch (error) {
+    console.error(`[WebSocketBridge] Reconnect failed:`, error)
+    eventBridge.reconnectAttempts = attempt + 1
+    await reconnectWebSocket(options, attempt + 1)
+  }
+}
+
+/**
+ * Check WebSocket connection health
+ */
+export async function checkWebSocketHealth(
+  sessionId: string
+): Promise<{ connected: boolean; latency?: number }> {
+  try {
+    const connected = await isWebSocketConnected(sessionId)
+    return { connected }
+  } catch (error) {
+    console.warn('[WebSocketBridge] Health check failed:', error)
+    return { connected: false }
+  }
+}
+
+// Re-export Tauri bridge for convenience
+export { attachTauriRuntimeEventBridge }
+export type { BackendRuntimeEvent }

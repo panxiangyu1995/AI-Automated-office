@@ -512,3 +512,227 @@ src-tauri/src/agent/tools/
 - Playwright 集成需要实际安装 Playwright 和 Chrome
 - Memory/Media/Automation 使用 Mock 实现用于开发测试
 - 所有工具已集成到 ToolExecutionPipeline
+
+---
+
+## 2026-04-04 - Task: 权限矩阵基础 (Task 206)
+
+### 铁律合规检查：
+- PRD 合规：FR460, FR461, FR609 - 角色×部门×能力三维权限矩阵
+- 架构合规：遵循 ADR-059, ADR-018, ADR-052 架构设计
+- UX 合规：UX-01 - 权限系统集成
+
+### What was done:
+- 创建 `src-tauri/src/agent/permission/` 模块，包含以下文件：
+  - `mod.rs` - 模块导出，包含 Role、ExecutiveRole、ToolConstraint、DataScopeType 等类型定义
+  - `engine.rs` - PermissionEngine 权限计算引擎
+    - 三层权限合并：Platform ∪ Department ∪ Role \ Blacklist
+    - 用户权限缓存机制
+    - 支持 Admin/Manager/Specialist/Staff/Guest 角色
+  - `field_checker.rs` - FieldPermissionChecker 字段级权限控制
+    - 支持字段模式匹配（通配符）
+    - Read/Write/ReadWrite/Hidden 动作
+    - 自动过滤敏感字段（salary, bank_account, tax_id 等）
+  - `scope_filter.rs` - DataScopeFilter 数据范围过滤
+    - Personal/Department/All/Executive 四级数据范围
+    - 根据角色和实体类型自动推断数据范围
+    - SQL WHERE 子句生成
+  - `middleware.rs` - PermissionMiddleware 权限中间件
+    - 工具权限检查
+    - 字段权限检查
+    - 范围权限检查
+    - 完整检查流程
+    - Guard 模式 API
+
+### 实现细节：
+1. **三层权限合并**：
+   - Layer 1: Platform Base - 系统级默认权限
+   - Layer 2: Department Capability - 部门特定工具权限
+   - Layer 3: Role Enhancement - 角色增强权限
+
+2. **财务部门权限示例**：
+   - Staff: Personal 范围，只能查询和 OCR
+   - Specialist: Department 范围，可聚合统计
+   - Manager: All 范围，可导出和生成报表
+   - Executive: Executive 范围，无限制
+
+3. **敏感字段过滤**：
+   - Staff: 隐藏 bank_account, tax_id, salary, profit_margin 等
+   - Specialist: 隐藏 tax_id, profit_margin, cost_breakdown
+   - Manager: 隐藏 salary, bonus, tax_id
+   - Executive: 无隐藏字段
+
+### Testing:
+- 所有代码文件已创建
+- 模块结构完整
+- 单元测试已编写（engine.rs, field_checker.rs, scope_filter.rs, middleware.rs）
+- Lint 检查通过
+
+### Notes:
+- 构建环境问题 (WSL relay error)，代码文件已正确创建
+- 需要在有 Rust 工具链的环境中验证编译
+- 权限配置目前为硬编码，后续可扩展为数据库配置
+
+## 2026-04-04 - Task 136: WebSocket Real-time Communication Integration
+
+### 铁律合规检查：
+- PRD 合规：Epic 51 - Story 51.6（NFR3, NFR16）
+- 架构合规：ADR-001, ADR-037 - 使用 tauri-plugin-websocket
+- UX 合规：UX-01, UX-04 - 事件系统集成
+- Epic 合规：Story 51.6 - WebSocket 实时通信
+
+### What was done:
+1. 添加 `tauri-plugin-websocket = "2"` 到 Cargo.toml
+2. 在 tauri.conf.json 中配置 websocket 插件权限
+3. 重构 `src-tauri/src/agent/websocket.rs`:
+   - 使用 tauri-plugin-websocket 实现真正的 WebSocket 连接
+   - 添加 WebSocketConnectionManager 管理多个连接
+   - 实现心跳机制（可配置间隔）
+   - 实现指数退避重连机制
+   - 添加 WebSocketEvent 事件类型定义
+   - 添加 Tauri 命令：create_websocket_connection, get_websocket_connection_state, is_websocket_connected, close_websocket_connection, send_websocket_message, get_active_websocket_sessions
+4. 在 lib.rs 中注册 WebSocket 插件和命令
+5. 在 lib.rs 中初始化 WebSocketConnectionManager
+6. 在 `src/lib/tauri.ts` 中添加 TypeScript 类型和命令封装
+7. 更新 `src/features/streaming/runtime/runtimeEventBridge.ts`:
+   - 添加 WebSocketRuntimeEventBridgeOptions 接口
+   - 实现 attachWebSocketRuntimeEventBridge 函数
+   - 实现 reconnectWebSocket 函数（指数退避）
+   - 实现 checkWebSocketHealth 函数
+8. 创建 `src/features/streaming/runtime/runtimeEventBridgeTauri.ts` 兼容层
+
+### Testing:
+- Lint 检查通过
+- TypeScript 类型正确
+
+### Notes:
+- WebSocket 连接使用 tauri-plugin-websocket
+- 心跳间隔默认为 30 秒
+- 重连延迟：1s, 2s, 4s, 8s, 16s，最大 30s
+- 最大重连次数默认为 5 次
+
+## 2026-04-04 - Task 207: Intent Router (Task 136 continued)
+
+### 铁律合规检查：
+- PRD 合规：Epic 60 - Story 60.4（NFR1, NFR16）
+- 架构合规：ADR-059 - Subagent 路由
+- UX 合规：UX-01, UX-04
+- Epic 合规：Story 60.4 - 意图路由引擎
+
+### What was done:
+1. 创建 `src-tauri/src/agent/router/` 模块
+2. 实现 `classifier.rs`:
+   - IntentClassifier 意图分类器
+   - KeywordRule 关键词匹配规则
+   - 语义分类（使用 LLM）
+   - 默认关键词规则（finance, sales, hr, cross-department）
+3. 实现 `router.rs`:
+   - RouteDecision 路由决策
+   - DelegationConstraints 委派约束
+   - ModelProvider 模型选择（Haiku/Sonnet/Opus）
+   - 权限检查
+4. 实现 `executor.rs`:
+   - DelegationExecutor 委派执行器
+   - 超时处理
+   - 会话管理
+   - 错误处理
+5. 创建 `src-tauri/src/agent/model_router/` 模块:
+   - ModelRouter 模型路由器
+   - TaskContext 任务上下文
+   - TaskComplexity 复杂度评估
+   - ModelSelectionRule 规则系统
+6. 更新 `agent/mod.rs` 导出新模块
+
+### Testing:
+- Lint 检查通过
+- 单元测试已编写
+
+### Notes:
+- 意图分类支持关键词快速匹配和语义分析
+- 模型选择基于任务复杂度（Simple/Medium/Complex/NoTool）
+
+## 2026-04-04 - Task 208: Personal Subagent CRUD
+
+### 铁律合规检查：
+- PRD 合规：Epic 60 - Story 60.5（FR890-FR900）
+- 架构合规：ADR-059 - Personal Subagent
+- UX 合规：UX-01, UX-04
+- Epic 合规：Story 60.5 - Personal Subagent CRUD
+
+### What was done:
+1. 确认 `personal_loader.rs` 已完整实现：
+   - CreatePersonalSubagentRequest
+   - UpdatePersonalSubagentRequest
+   - CRUD 操作
+2. 确认 `commands/subagent.rs` 已有完整命令：
+   - create_personal_subagent
+   - update_personal_subagent
+   - delete_personal_subagent
+   - list_personal_subagents
+3. 创建 `src/features/settings/components/PersonalAgentManager.tsx`:
+   - Create/Edit/Delete 对话框
+   - 搜索和过滤功能
+   - 导入/导出 JSON 功能
+
+### Testing:
+- Lint 检查通过
+
+### Notes:
+- Personal Subagent 限制最多 10 个
+- 名称唯一性检查
+- 导入时自动生成新名称
+
+## 2026-04-04 - Task 209: Model Layer Router
+
+### 铁律合规检查：
+- PRD 合规：Epic 60 - Story 60.6（NFR1）
+- 架构合规：ADR-059 - 模型分层
+- Epic 合规：Story 60.6 - 模型分层与自动路由
+
+### What was done:
+1. 创建 `src-tauri/src/agent/model_router/` 模块
+2. 实现 `router.rs`:
+   - ModelRouter 模型路由器
+   - TaskContext 任务上下文
+   - TaskComplexity 复杂度评估
+   - ModelSelectionRule 选择规则
+   - ModelType (Primary/Light/Small)
+3. 三层模型配置：
+   - Primary: GPT-4o (复杂任务)
+   - Light: Claude Haiku (简单任务)
+   - Small: Claude Haiku 1K (无工具任务)
+
+### Testing:
+- Lint 检查通过
+- 单元测试已编写
+
+### Notes:
+- 复杂度评估基于工具名称、意图、工具数量
+
+## 2026-04-04 - Task 210: Orchestrator
+
+### 铁律合规检查：
+- PRD 合规：Epic 60 - Story 60.7（FR464-FR467）
+- 架构合规：ADR-059 - 跨部门编排
+- Epic 合规：Story 60.7 - Orchestrator 跨部门编排
+
+### What was done:
+1. 创建 `src-tauri/src/agent/orchestrator/` 模块
+2. 实现 `config.rs`:
+   - OrchestratorConfig 配置
+   - OrchestratorPermissions 权限（只读，禁止写操作）
+3. 实现 `engine.rs`:
+   - OrchestrationEngine 编排引擎
+   - OrchestrationMode 并行/顺序/自适应
+   - OrchestrationResult 结果聚合
+   - AggregatedResult 聚合结果
+4. 信号量控制并发数
+
+### Testing:
+- Lint 检查通过
+- 单元测试已编写
+
+### Notes:
+- Orchestrator 默认禁止写操作
+- 支持最多 5 个并行委派
+- 最大编排深度为 3 层

@@ -1,0 +1,214 @@
+# Finance Department Subagent 配置
+# ADR-059 部门化 Subagent 架构 - 财务部门
+
+name: finance
+display_name: 财务助手
+description: 处理财务相关任务，包括发票识别、报销审核、财务查询等
+agent_type: department
+plugin_id: finance
+version: "1.0.0"
+
+# 模型配置
+models:
+  primary:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    temperature: 0.7
+    max_tokens: 8192
+  
+  # 轻量模型用于 OCR 预处理
+  light:
+    provider: "anthropic"
+    model_id: "claude-haiku-4-20250711"
+    temperature: 0.3
+    max_tokens: 4096
+  
+  # 小模型用于简单查询
+  small:
+    provider: "openai"
+    model_id: "gpt-4o-mini"
+    temperature: 0.5
+    max_tokens: 1024
+
+# 工具定义
+tools:
+  - name: finance_query
+    display_name: 发票查询
+    description: 查询发票和报销记录
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+    field_permissions:
+      staff:
+        - invoice_number
+        - amount
+        - date
+        - status
+        - description
+      specialist:
+        - invoice_number
+        - amount
+        - date
+        - status
+        - description
+        - applicant_name
+        - department
+        - category
+      manager:
+        - "*"  # 全部字段
+      executive:
+        - "*"  # 全部字段 + 敏感字段
+
+  - name: finance_ocr
+    display_name: 发票识别
+    description: OCR识别发票图片
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+    rate_limits:
+      staff: 10  # 10次/天
+      specialist: 100  # 100次/天
+      manager: 500  # 500次/天
+      executive: 1000  # 1000次/天
+
+  - name: finance_mutate
+    display_name: 报销操作
+    description: 提交/审核/调整报销
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+    actions:
+      staff:
+        - submit_expense
+        - cancel_expense
+      specialist:
+        - approve_expense
+        - reject_expense
+        - adjust_expense
+      manager:
+        - "*"  # 所有操作
+      executive:
+        - "*"  # 所有操作
+    amount_limits:
+      staff: 1000  # 单笔限额1000元
+      specialist: 10000  # 单笔限额10000元
+      manager: 100000  # 单笔限额10万元
+      executive: null  # 无限制
+
+  - name: finance_aggregate
+    display_name: 统计聚合
+    description: 财务数据统计分析
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+    data_scope:
+      specialist: department
+      manager: all
+      executive: executive
+
+  - name: finance_export
+    display_name: 报表导出
+    description: 导出财务报表
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+    formats:
+      specialist:
+        - excel
+        - pdf
+      manager:
+        - excel
+        - pdf
+        - csv
+      executive:
+        - "*"
+
+  - name: finance_report
+    display_name: 报表生成
+    description: 生成财务分析报告
+    allowed_roles:
+      - manager
+      - executive
+
+  - name: finance_forecast
+    display_name: 预测分析
+    description: 财务预测和趋势分析
+    allowed_roles:
+      - executive
+
+  - name: finance_dashboard
+    display_name: 财务看板
+    description: 查看财务数据看板
+    allowed_roles:
+      - manager
+      - executive
+
+# 触发条件
+trigger:
+  mode: auto
+  keywords:
+    - "报销"
+    - "发票"
+    - "财务"
+    - "对账"
+    - "账单"
+    - "付款"
+    - "收款"
+    - "预算"
+    - "成本"
+    - "利润"
+  conditions:
+    - intent: "finance.ocr"
+      entities:
+        - "invoice"
+        - "发票"
+        - "收据"
+    - intent: "finance.query"
+      entities:
+        - "expense"
+        - "报销"
+        - "查询"
+    - intent: "finance.report"
+      entities:
+        - "report"
+        - "报表"
+        - "统计"
+    - intent: "finance.mutate"
+      entities:
+        - "提交"
+        - "审核"
+        - "批准"
+  priority: 8
+
+# 权限配置
+permissions:
+  data_scope:
+    staff: personal  # 仅本人数据
+    specialist: department  # 本部门数据
+    manager: all  # 全部数据
+    executive: executive  # 高管数据范围
+  
+  sensitive_fields:
+    - bank_account  # 银行账户
+    - tax_id  # 税号
+    - salary  # 工资
+    - bonus  # 奖金
+  
+  hidden_fields_for_staff:
+    - tax_amount
+    - profit_margin
+    - cost_breakdown
+
+# 限制配置
+limits:
+  max_steps: 30
+  max_concurrent: 2
+  timeout_seconds: 300

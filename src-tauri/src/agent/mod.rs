@@ -30,6 +30,9 @@ pub mod tools;
 pub mod websocket;
 pub mod message_sync;
 pub mod context_compression_integration;
+pub mod subagent;
+pub mod router;
+pub mod model_router;
 
 use std::collections::HashSet;
 use std::sync::Arc;

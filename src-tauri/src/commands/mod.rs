@@ -15,3 +15,4 @@ pub mod storage;
 pub mod system;
 pub mod tools;
 pub mod update;
+pub mod subagent;

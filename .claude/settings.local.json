@@ -1,5 +1,8 @@
 {
- "permissions": {
-    "defaultMode": "bypassPermissions"
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(python test_ralph_prompt.py)"
+    ]
   }
 }

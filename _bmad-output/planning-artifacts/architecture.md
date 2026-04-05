@@ -171,6 +171,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-056 | 路由模式采用四档设计：`Manual`（逐项审批）、`Auto`（按敏感度评估）、`Yolo`（完全自动执行）、`Hybrid`（混合模式）；Yolo 模式需二次确认防误触 | cline研究借鉴 2026-03-29 |
 | ADR-057 | MCP 服务支持 Per-Tool Auto-Approve 策略：每个 MCP 工具可独立配置 `auto_approve` 规则，支持精确工具名或正则匹配；STDIO 传输支持文件监视自动重启 | cline研究借鉴 2026-03-29 |
 | ADR-058 | 配置缓存采用四层优先级覆盖：Remote（远程企业配置） > Session（会话覆盖） > Task（任务设置） > Global（全局默认）；写操作采用防抖机制（500ms）减少 IO | cline研究借鉴 2026-03-29 |
+| ADR-059 | 部门化 Subagent 架构：插件即 Agent Bundle，每个部门插件包含独立 Subagent（提示词、模型、工具、Skills、MCP），采用角色×部门×能力三维权限矩阵；主 Agent 负责意图分类、委派编排、权限兜底；部门 Subagent 只做本部门业务；简单任务（OCR、摘要）自动路由到轻量模型；同时支持用户级 Personal Agent，仅本地存储，仅供用户本人使用，继承主 Agent 权限上限 | 架构创新 2026-04-03 |
 
 ## LLM API三级配置体系
 

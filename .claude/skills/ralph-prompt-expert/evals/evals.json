@@ -1,0 +1,54 @@
+{
+  "skill_name": "ralph-prompt-expert",
+  "description": "测试 ralph-prompt-expert 生成的 /ralph-loop 命令是否能正确执行",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "RL='提高 src/utils 的测试覆盖率到 90%'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含：任务描述、--completion-promise 参数、--max-iterations 参数，命令中无语法错误，引号正确匹配",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "RL='修复 SonarCloud 扫描出的 SQL 注入风险'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含安全修复相关指令和验证步骤",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "RL='将所有回调函数转换为 async/await'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含批量重构指令和验证步骤，可选包含 --allowed-tools 参数",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "RL='升级 React 到最新版本并修复破坏性变更'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含升级、测试、重建等步骤",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "RL='为所有 API 接口生成 OpenAPI 文档'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含文档生成和校验步骤",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "RL='修复 src/components 下的 TypeScript 类型错误'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含类型修复和验证步骤",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "RL='消除所有 ESLint 警告'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含 lint 修复循环",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "RL='批量重命名 src/api 下的所有 camelCase 函数为 snake_case'",
+      "expected_output": "应生成格式正确的 /ralph-loop 命令，包含批量重命名和验证步骤",
+      "files": []
+    }
+  ]
+}
