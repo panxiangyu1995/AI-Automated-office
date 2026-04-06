@@ -261,8 +261,6 @@ impl Default for WebSocketConnectionManager {
 // Tauri Commands
 // ============================================================================
 
-use tauri_plugin_websocket::{WebSocketExt, StreamExt};
-
 /// Create a new WebSocket connection
 #[tauri::command]
 pub async fn create_websocket_connection(

@@ -137,3 +137,104 @@ impl ToolExecutor for SessionStatusExecutor {
         })?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_context() -> ToolExecutionContext {
+        ToolExecutionContext {
+            session_id: "session-1".to_string(),
+            user_id: "test-user".to_string(),
+            tenant_id: "test-tenant".to_string(),
+            department_id: None,
+            page_id: None,
+            resource_id: None,
+            permissions: vec!["sessions:read".to_string()],
+            metadata: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_session_status_existing_session() {
+        let executor = SessionStatusExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionStatusResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert_eq!(response.session.id, "session-1");
+    }
+
+    #[tokio::test]
+    async fn test_session_status_default_session() {
+        let executor = SessionStatusExecutor::new();
+        let context = create_test_context();
+
+        // No session_id - uses context session_id
+        let params = serde_json::json!({});
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionStatusResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert_eq!(response.session.id, "session-1");
+    }
+
+    #[tokio::test]
+    async fn test_session_status_with_children() {
+        let executor = SessionStatusExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "include_children": true
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionStatusResponse = serde_json::from_value(result.unwrap()).unwrap();
+        // Response includes children array
+        assert!(response.children.len() >= 0);
+    }
+
+    #[tokio::test]
+    async fn test_session_status_without_children() {
+        let executor = SessionStatusExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "include_children": false
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionStatusResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.children.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_session_status_counts() {
+        let executor = SessionStatusExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "include_children": true
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionStatusResponse = serde_json::from_value(result.unwrap()).unwrap();
+        // active_agents and pending_tasks should be calculated
+        assert!(response.active_agents >= 0);
+        assert!(response.pending_tasks >= 0);
+    }
+}

@@ -9,6 +9,9 @@
 
 pub mod ruleset;
 
+// Re-export ruleset types for convenience
+pub use ruleset::{PermissionAction, PermissionRule, Ruleset};
+
 // Permission engine - three-layer permission calculation
 pub mod engine;
 

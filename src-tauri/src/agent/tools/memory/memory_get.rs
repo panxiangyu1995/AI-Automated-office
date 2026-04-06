@@ -81,6 +81,7 @@ impl MemoryGetExecutor {
             metadata: Some(entry.metadata.clone()),
             created_at: entry.created_at,
             updated_at: entry.updated_at,
+            found: true,
         })
     }
 }

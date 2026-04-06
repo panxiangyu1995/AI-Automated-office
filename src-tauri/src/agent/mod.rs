@@ -20,7 +20,7 @@ pub mod permission;
 pub mod result;
 pub mod routing;
 pub mod template;
-pub mod orchestrator;
+pub mod agent_orchestrator;
 pub mod provider;
 pub mod llm_provider;
 pub mod prompt_builder;

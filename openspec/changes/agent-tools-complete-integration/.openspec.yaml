@@ -1,0 +1,8 @@
+name: agent-tools-complete-integration
+description: Complete integration of memory, sessions, media, and automation tools into the agent tools system
+changelog:
+  added:
+    - Memory tools module (memory_search, memory_get)
+    - Sessions tools module (sessions_list, sessions_history, sessions_send, sessions_spawn, sessions_yield, session_status)
+    - Media tools module (image_understand, tts_speak)
+    - Automation tools module (cron_schedule, cron_list, cron_cancel)

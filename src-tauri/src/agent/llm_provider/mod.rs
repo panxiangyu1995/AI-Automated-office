@@ -10,6 +10,9 @@ pub use provider_trait::{
     LlmToolCall, LlmToolDescriptor, LlmToolFunction, LlmTokenUsage,
 };
 
+// Alias for backward compatibility
+pub use LlmProvider as LlmClient;
+
 // Re-export error types for convenience
 pub use provider_trait::LlmProviderError as ProviderError;
 

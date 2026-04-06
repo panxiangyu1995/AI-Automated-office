@@ -11,6 +11,10 @@ use super::sessions_list::{MockSessionStore, SessionStatus};
 use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, ToolExecutor};
 use crate::agent::tools::pipeline::ToolErrorCode;
 
+fn default_limit() -> usize {
+    20
+}
+
 /// Parameters for sessions history
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -186,5 +190,89 @@ impl ToolExecutor for SessionsHistoryExecutor {
             recoverable: false,
             retryable: false,
         })?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_context() -> ToolExecutionContext {
+        ToolExecutionContext {
+            session_id: "test-session".to_string(),
+            user_id: "test-user".to_string(),
+            tenant_id: "test-tenant".to_string(),
+            department_id: None,
+            page_id: None,
+            resource_id: None,
+            permissions: vec!["sessions:read".to_string()],
+            metadata: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_sessions_history_success() {
+        let executor = SessionsHistoryExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "limit": 10
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsHistoryResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert_eq!(response.session_id, "session-1");
+        assert!(!response.messages.is_empty());
+        assert!(response.total > 0);
+    }
+
+    #[tokio::test]
+    async fn test_sessions_history_with_offset() {
+        let executor = SessionsHistoryExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "limit": 2,
+            "offset": 0
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsHistoryResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert_eq!(response.messages.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_sessions_history_empty_session_id() {
+        let executor = SessionsHistoryExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "",
+            "limit": 10
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_history_limit_validation() {
+        let executor = SessionsHistoryExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "limit": 0
+        });
+
+        // Limit 0 should still work (returns empty or all available)
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
     }
 }

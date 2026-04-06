@@ -6,7 +6,7 @@ supersedes:
   - '_bmad-output/planning-artifacts/ux-design-specification.md (2026-03-11 version)'
 mergedDocuments:
   - '_bmad-output/planning-artifacts/ui-module-matrix-2026-03-22.md'
-lastEdited: '2026-03-25'
+lastEdited: '2026-04-06'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/architecture.md
@@ -76,6 +76,24 @@ classification:
 | **动态业务内容** | 表单、详情主体、图表、流程图、文档模板、业务卡片 | 支撑企业差异化 |
 | **平台治理能力** | 权限、审计、MCP、插件、模型、租户、日志、同步 | 高一致性与高安全性 |
 | **编辑器与模板系统** | 编辑器工作区、模板设计器、文档工作区 | 把动态 UI 变成可治理资产 |
+
+### 产品核心定位：一句话入口
+
+> **"所有任务和工作都在 AI Chat Panel 中跟 AI 对话，之后 Agent 帮我们完成"**
+
+**核心交互原则：**
+- **AI 即入口**：用户通过自然语言对话完成所有操作
+- **透明可控**：Agent 执行过程可见，用户可干预
+- **零学习成本**：说话就能完成任务
+- **编辑为辅**：仅在必要时使用工作区编辑面板进行手动调整
+
+**交互层级：**
+
+| 层级 | 组件 | 说明 |
+|------|------|------|
+| 第一层 | AI Chat Panel | 自然语言对话完成所有操作（主要入口） |
+| 第二层 | 工作区编辑面板 | 必要时的手动编辑（辅助编辑） |
+| 第三层 | 管理后台 | 定时任务、权限等配置页面 |
 
 ### 关键设计挑战
 

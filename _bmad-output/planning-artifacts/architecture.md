@@ -4,7 +4,7 @@ workflowType: 'architecture'
 lastStep: 10
 status: 'complete'
 completedAt: '2026-03-11'
-lastEdited: '2026-03-26'
+lastEdited: '2026-04-06'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - docs/memory-fusion-pdf-draft.md
@@ -106,6 +106,50 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 - **审阅写回**：候选改动先暂存到页面或编辑器，再由用户接受或拒绝
 - **错误处理**：分层处理、可恢复性优先、故障隔离、用户友好
 
+### 产品核心定位：一句话入口
+
+> **"所有任务和工作都在 AI Chat Panel 中跟 AI 对话，之后 Agent 帮我们完成"**
+
+**核心交互原则：**
+- **AI 即入口**：用户通过自然语言对话完成所有操作
+- **透明可控**：Agent 执行过程可见，用户可干预
+- **零学习成本**：说话就能完成任务
+- **编辑为辅**：仅在必要时使用工作区编辑面板进行手动调整
+
+**交互层级：**
+
+| 层级 | 角色 | 说明 |
+|------|------|------|
+| 第一层 | AI Chat Panel（主要入口） | 自然语言对话完成所有操作 |
+| 第二层 | 工作区编辑面板（辅助编辑） | 必要时的手动编辑 |
+| 第三层 | 管理后台（少量配置） | 定时任务、权限等 |
+
+**对话驱动示例：**
+
+```
+用户输入 → AI 理解 → Agent 执行 → 结果反馈
+
+用户：帮我处理今天的审批
+    ↓
+AI：正在处理...
+    ↓
+Agent：
+├── 调用 approval_pending_query
+├── 调用 approval_auto_process
+└── 生成处理结果
+    ↓
+结果展示：
+├── ✅ 通过的审批（自动处理）
+├── ⏳ 待确认的审批（需人工）
+└── 📝 需补充的审批（引导补充）
+    ↓
+用户：补充一下那个差旅报销的发票信息
+    ↓
+AI：打开工作区编辑面板，用户补充发票
+    ↓
+用户提交 → 完成审批流程
+```
+
 ### Architecture Decision Records (ADR)
 
 通过多架构师角色辩论、第一性原理分析、跨职能作战室和思维树探索，形成以下关键架构决策：
@@ -172,6 +216,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | ADR-057 | MCP 服务支持 Per-Tool Auto-Approve 策略：每个 MCP 工具可独立配置 `auto_approve` 规则，支持精确工具名或正则匹配；STDIO 传输支持文件监视自动重启 | cline研究借鉴 2026-03-29 |
 | ADR-058 | 配置缓存采用四层优先级覆盖：Remote（远程企业配置） > Session（会话覆盖） > Task（任务设置） > Global（全局默认）；写操作采用防抖机制（500ms）减少 IO | cline研究借鉴 2026-03-29 |
 | ADR-059 | 部门化 Subagent 架构：插件即 Agent Bundle，每个部门插件包含独立 Subagent（提示词、模型、工具、Skills、MCP），采用角色×部门×能力三维权限矩阵；主 Agent 负责意图分类、委派编排、权限兜底；部门 Subagent 只做本部门业务；简单任务（OCR、摘要）自动路由到轻量模型；同时支持用户级 Personal Agent，仅本地存储，仅供用户本人使用，继承主 Agent 权限上限 | 架构创新 2026-04-03 |
+| ADR-060 | 动态投递策略：任务结果根据紧急程度和场景动态选择投递渠道；紧急→动态通知卡片，常规→AI Chat Panel，低优先级→消息列表；用户可配置投递偏好和免打扰时段 | MVP研究对齐 2026-04-06 |
 
 ## LLM API三级配置体系
 
@@ -544,6 +589,100 @@ Agent框架内部采用**感知-决策-执行-记忆**闭环模型，但这四�
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### 多会话并行架构
+
+**设计原则：**
+- 每个 AI Chat Panel 标签页对应一个独立会话
+- 多会话可并行执行，互不干扰
+- 会话间状态隔离，工具调用互不影响
+
+**会话隔离机制：**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    多会话隔离架构                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  会话 A (HR 部门任务)                                           │
+│  ├── 独立的上下文状态                                          │
+│  ├── 独立的工具调用记录                                        │
+│  └── 独立的记忆层                                              │
+│                                                                 │
+│  会话 B (财务部门任务)                                          │
+│  ├── 独立的上下文状态                                          │
+│  ├── 独立的工具调用记录                                        │
+│  └── 独立的记忆层                                              │
+│                                                                 │
+│  会话 C (定时任务执行)                                          │
+│  ├── 独立的上下文状态                                          │
+│  ├── 独立的工具调用记录                                        │
+│  └── 与主会话隔离                                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Subagent 上下文隔离策略（参考 Claude Code）：**
+
+| 策略 | 说明 |
+|------|------|
+| **状态克隆** | 默认克隆所有可变状态 |
+| **按需共享** | 显式选择共享特定状态 |
+| **新 ID** | 每个子 Agent 生成新 ID |
+| **深度追踪** | 通过 `depth` 追踪嵌套层级 |
+
+**Rust 实现建议：**
+
+```rust
+// 子 Agent 上下文
+pub struct SubagentContext {
+    pub agent_id: AgentId,
+    pub parent_id: Option<AgentId>,
+    pub session_id: SessionId,
+    pub query_depth: u32,
+    pub inherited_state: InheritedState,
+    pub isolated_state: IsolatedState,
+}
+
+pub fn create_subagent_context(
+    parent: &AgentContext,
+    overrides: Option<ContextOverrides>,
+) -> AgentContext {
+    AgentContext {
+        // 可变状态 - 默认克隆以保持隔离
+        file_state: clone_file_state(&parent.file_state),
+        tool_decisions: HashMap::new(),
+
+        // 每个子 Agent 生成新 ID
+        agent_id: create_agent_id(),
+
+        // 深度追踪
+        query_depth: parent.query_depth + 1,
+    }
+}
+```
+
+**会话 Key 格式扩展：**
+
+```
+# 主会话
+{tenantId}:{pluginId}:{sessionId}
+例: main:agent:chat-001
+
+# 子 Agent 会话（隔离执行）
+{tenantId}:{pluginId}:{sessionId}/sub:{subId}
+例: main:agent:chat-001/sub:run-001
+
+# 定时任务会话（独立隔离）
+{tenantId}:{pluginId}:cron:{taskId}
+例: main:agent:cron:daily-report
+```
+
+**心跳机制隔离执行：**
+
+- 定时任务使用独立的 Subagent Context
+- 避免心跳任务干扰主会话执行
+- 心跳结果通过动态投递策略通知用户
 
 ### 提示词系统架构（直接采用）
 
@@ -7463,3 +7602,229 @@ pnpm tauri add sqlite
 4. `Suggestion Package` 的版本化、比较与回滚策略需要在后续 OpenSpec 中拆解
 5. Model Policy Layer 的多租户预设、预算徽章与 fallback 小模型策略需要与治理白名单、一致性成本计划联动
 6. Clarification Interaction Service 如何与审批门禁、Context Orchestrator 输出和审计链同步仍需进一步明确
+
+## 动态投递策略 (ADR-060)
+
+> 根据任务紧急程度和场景动态选择结果投递渠道，确保信息及时传达且不打扰用户
+
+### 投递渠道类型
+
+| 渠道 | 触发条件 | 特点 |
+|------|----------|------|
+| **动态通知卡片** | 紧急任务完成、审批超时、心跳预警 | 实时推送，可交互 |
+| **AI Chat Panel** | 常规任务完成、查询结果 | 对话内展示，可追问 |
+| **消息列表** | 低优先级任务、后台同步 | 静默通知，可追溯 |
+| **工作区编辑面板** | 需要用户补充内容 | 打开编辑界面 |
+
+### 紧急度评估规则
+
+```typescript
+interface DeliveryStrategy {
+  urgency: 'critical' | 'high' | 'normal' | 'low'
+  channel: 'notification' | 'chat' | 'list' | 'workbench'
+  canInterrupt: boolean
+  requireAck: boolean
+}
+
+// 紧急度评估
+function evaluateUrgency(task: Task): DeliveryStrategy {
+  // 审批超时 → 紧急
+  if (task.type === 'approval' && task.isOverdue) {
+    return { urgency: 'critical', channel: 'notification', canInterrupt: true, requireAck: true }
+  }
+
+  // 定时任务完成 → 根据结果判断
+  if (task.type === 'cron' && task.hasAlert) {
+    return { urgency: 'high', channel: 'notification', canInterrupt: true, requireAck: false }
+  }
+
+  // 常规任务 → 正常
+  if (task.type === 'user_request') {
+    return { urgency: 'normal', channel: 'chat', canInterrupt: false, requireAck: false }
+  }
+
+  // 后台同步 → 低
+  return { urgency: 'low', channel: 'list', canInterrupt: false, requireAck: false }
+}
+```
+
+### 用户偏好配置
+
+```yaml
+delivery_preferences:
+  # 免打扰时段
+  quiet_hours:
+    enabled: true
+    start: "22:00"
+    end: "08:00"
+    fallback_channel: "list"
+
+  # 渠道偏好
+  channel_overrides:
+    approval_result: "notification"
+    cron_result: "chat"
+    sync_result: "list"
+
+  # 批量操作汇总
+  batch_aggregation:
+    enabled: true
+    window_minutes: 15
+    min_items: 3
+```
+
+### 投递时序
+
+```
+任务执行 → 紧急度评估 → 渠道选择 → 免打扰检查 → 投递 → 确认/归档
+
+示例流程：
+
+用户：帮我处理今天的审批
+    ↓
+Agent 执行审批任务
+    ↓
+评估结果：
+├── 2 条自动通过 → 紧急度: normal → 投递: chat
+├── 1 条需补充 → 紧急度: high → 投递: notification + workbench
+    ↓
+投递：
+├── Chat Panel: "已处理 2 条审批"
+└── Notification: "差旅报销需补充发票信息" [点击打开编辑面板]
+```
+
+---
+
+## Claude Code 参考实现设计
+
+> 基于 Claude Code 开源项目分析，提取可复用的 Agent 架构设计
+
+### Agent 定义结构
+
+```typescript
+// Claude Code Agent 定义
+export type BaseAgentDefinition = {
+  agentType: string
+  whenToUse: string
+  tools?: string[]           // 允许使用的工具
+  disallowedTools?: string[]  // 禁止使用的工具
+  skills?: string[]          // 技能列表
+  mcpServers?: AgentMcpServerSpec[]
+  hooks?: HooksSettings       // 生命周期钩子
+  model?: string             // 可继承父 Agent
+  permissionMode?: PermissionMode
+  maxTurns?: number          // 最大轮次
+  memory?: AgentMemoryScope   // 记忆范围
+  isolation?: 'worktree' | 'remote'  // 隔离模式
+}
+```
+
+### 上下文隔离机制
+
+**核心实现**: AsyncLocalStorage
+
+```typescript
+// Agent 上下文类型
+export type SubagentContext = {
+  agentId: string
+  parentSessionId?: string
+  agentType: 'subagent'
+  subagentName?: string
+  invokingRequestId?: string
+  invocationKind?: 'spawn' | 'resume'
+}
+
+// 核心隔离机制
+const agentContextStorage = new AsyncLocalStorage<AgentContext>()
+
+export function getAgentContext(): AgentContext | undefined {
+  return agentContextStorage.getStore()
+}
+
+export function runWithAgentContext<T>(context: AgentContext, fn: () => T): T {
+  return agentContextStorage.run(context, fn)
+}
+```
+
+### 子 Agent 上下文创建
+
+```typescript
+export function createSubagentContext(
+  parentContext: ToolUseContext,
+  overrides?: SubagentContextOverrides,
+): ToolUseContext {
+  return {
+    // 可变状态 - 默认克隆以保持隔离
+    readFileState: cloneFileStateCache(parentContext.readFileState),
+    nestedMemoryAttachmentTriggers: new Set<string>(),
+
+    // 回调 - 默认无操作（隔离）
+    setAppState: () => {},
+    setResponseLength: () => {},
+
+    // 每个子 Agent 生成新 ID
+    agentId: createAgentId(),
+
+    // 创建新的查询跟踪链
+    queryTracking: {
+      chainId: randomUUID(),
+      depth: (parentContext.queryTracking?.depth ?? -1) + 1,
+    },
+  }
+}
+```
+
+### Rust 实现映射
+
+```rust
+// Agent 定义
+pub struct AgentDefinition {
+    pub id: AgentId,
+    pub name: String,
+    pub agent_type: AgentType,  // builtin/subagent/custom/plugin
+    pub tools: Vec<ToolName>,
+    pub disallowed_tools: Vec<ToolName>,
+    pub memory: MemoryScope,
+    pub hooks: AgentHooks,
+}
+
+// 子 Agent 上下文
+pub struct SubagentContext {
+    pub agent_id: AgentId,
+    pub parent_id: Option<AgentId>,
+    pub session_id: SessionId,
+    pub query_depth: u32,
+    pub inherited_state: InheritedState,
+    pub isolated_state: IsolatedState,
+}
+
+pub fn create_subagent_context(
+    parent: &AgentContext,
+    overrides: Option<ContextOverrides>,
+) -> AgentContext {
+    AgentContext {
+        // 可变状态 - 默认克隆以保持隔离
+        file_state: clone_file_state(&parent.file_state),
+        tool_decisions: HashMap::new(),
+
+        // 每个子 Agent 生成新 ID
+        agent_id: create_agent_id(),
+
+        // 深度追踪
+        query_depth: parent.query_depth + 1,
+    }
+}
+```
+
+### 关键文件索引
+
+| 功能模块 | Claude Code 文件 | AI-Automated-office 参考路径 |
+|---------|-----------------|------------------------------|
+| Agent 定义加载 | `src/tools/AgentTool/loadAgentsDir.ts` | `src-tauri/src/agent/definition.rs` |
+| Agent 执行引擎 | `src/tools/AgentTool/runAgent.ts` | `src-tauri/src/agent/executor.rs` |
+| 上下文隔离 | `src/utils/agentContext.ts` | `src-tauri/src/agent/context.rs` |
+| 子 Agent 上下文 | `src/utils/forkedAgent.ts` | `src-tauri/src/agent/subagent.rs` |
+| 会话内存 | `src/services/SessionMemory/sessionMemory.ts` | `src-tauri/src/agent/memory/` |
+| 会话管理 | `src/server/web/session-manager.ts` | `src-tauri/src/agent/session/manager.rs` |
+| 会话存储 | `src/server/web/session-store.ts` | `src-tauri/src/agent/session/store.rs` |
+| 进程通信 | `src/bridge/sessionRunner.ts` | `src-tauri/src/agent/process.rs` |
+| Agent 间通信 | `src/tools/SendMessageTool/SendMessageTool.ts` | `src-tauri/src/agent/mailbox.rs` |

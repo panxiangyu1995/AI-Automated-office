@@ -171,3 +171,111 @@ impl ToolExecutor for SessionsSpawnExecutor {
         })?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_context() -> ToolExecutionContext {
+        ToolExecutionContext {
+            session_id: "test-session".to_string(),
+            user_id: "test-user".to_string(),
+            tenant_id: "test-tenant".to_string(),
+            department_id: None,
+            page_id: None,
+            resource_id: None,
+            permissions: vec!["sessions:admin".to_string()],
+            metadata: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_sessions_spawn_success() {
+        let executor = SessionsSpawnExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "task": "Search for Rust programming information",
+            "ttl_seconds": 600
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsSpawnResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(!response.session_id.is_empty());
+        assert!(!response.task_id.is_empty());
+        assert_eq!(response.status, "spawned");
+        assert_eq!(response.ttl_seconds, Some(600));
+    }
+
+    #[tokio::test]
+    async fn test_sessions_spawn_empty_task() {
+        let executor = SessionsSpawnExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "task": ""
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_spawn_invalid_ttl() {
+        let executor = SessionsSpawnExecutor::new();
+        let context = create_test_context();
+
+        // TTL too large
+        let params = serde_json::json!({
+            "task": "Test task",
+            "ttl_seconds": 7200
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+
+        // Negative TTL
+        let params = serde_json::json!({
+            "task": "Test task",
+            "ttl_seconds": -1
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_spawn_with_tools() {
+        let executor = SessionsSpawnExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "task": "Search web for information",
+            "tools": ["web_search", "web_fetch"]
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsSpawnResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(!response.session_id.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_spawn_no_ttl() {
+        let executor = SessionsSpawnExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "task": "Simple task without TTL"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsSpawnResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.ttl_seconds.is_none());
+    }
+}

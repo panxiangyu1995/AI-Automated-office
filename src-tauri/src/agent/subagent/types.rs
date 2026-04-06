@@ -432,7 +432,7 @@ pub struct DelegationContext {
     pub extracted_entities: HashMap<String, serde_json::Value>,
     /// 前置 Subagent 的结果
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub previous_results: Option<Vec<SubagentResult>>,
+    pub previous_results: Option<Vec<SubagentExecutionResult>>,
 }
 
 /// 输出契约
@@ -459,7 +459,7 @@ impl Default for OutputContract {
 /// Subagent 执行结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SubagentResult {
+pub struct SubagentExecutionResult {
     /// Subagent 名称
     pub subagent: String,
     /// 执行状态

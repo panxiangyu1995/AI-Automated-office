@@ -147,6 +147,26 @@ pub struct ToolDescriptor {
     pub handler_function: Option<String>,
 }
 
+/// Tool trait for defining tool implementations
+/// This trait provides metadata about a tool including name, description,
+/// capabilities, and parameters
+pub trait Tool: Send + Sync {
+    /// Returns the tool name
+    fn name(&self) -> &str;
+
+    /// Returns the tool description
+    fn description(&self) -> &str;
+
+    /// Returns the tool capabilities
+    fn capabilities(&self) -> ToolCapabilities;
+
+    /// Returns the tool parameters schema
+    fn parameters(&self) -> Vec<ToolParameter>;
+
+    /// Returns the tool return type
+    fn return_type(&self) -> ToolReturnType;
+}
+
 pub fn validate_parameters(
     descriptor: &ToolDescriptor,
     params: &serde_json::Map<String, Value>,

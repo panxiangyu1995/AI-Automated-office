@@ -170,3 +170,123 @@ impl ToolExecutor for SessionsYieldExecutor {
         })?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_context() -> ToolExecutionContext {
+        ToolExecutionContext {
+            session_id: "parent-session".to_string(),
+            user_id: "test-user".to_string(),
+            tenant_id: "test-tenant".to_string(),
+            department_id: None,
+            page_id: None,
+            resource_id: None,
+            permissions: vec!["sessions:admin".to_string()],
+            metadata: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_sessions_yield_success() {
+        let executor = SessionsYieldExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": "Please process this task"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsYieldResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.success);
+        assert!(!response.yield_id.is_empty());
+        assert_eq!(response.target_session_id, "session-1");
+        assert!(response.message_delivered);
+    }
+
+    #[tokio::test]
+    async fn test_sessions_yield_with_wait() {
+        let executor = SessionsYieldExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": "Process and return result",
+            "wait_for_result": true
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsYieldResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.success);
+        assert!(response.result.is_some());
+        assert!(response.waited_seconds.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_yield_without_wait() {
+        let executor = SessionsYieldExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": "Background task",
+            "wait_for_result": false
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsYieldResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.success);
+        assert!(response.result.is_none());
+        assert!(response.waited_seconds.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_yield_empty_session_id() {
+        let executor = SessionsYieldExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "",
+            "message": "Test message"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_yield_empty_message() {
+        let executor = SessionsYieldExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": ""
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_yield_session_not_found() {
+        let executor = SessionsYieldExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "non-existent-session",
+            "message": "Test message"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+}

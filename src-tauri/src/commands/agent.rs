@@ -9,7 +9,7 @@ use crate::agent::knowledge_retrieval::{
     KnowledgeRetrieval, KnowledgeRetrievalService, KnowledgeSourceRef, KnowledgeSourceType,
     KnowledgeScope, RetrievalOptions, RetrievalRequest, RetrievalResult,
 };
-use crate::agent::orchestrator::AgentOrchestrator;
+use crate::agent::agent_orchestrator::AgentOrchestrator;
 use crate::agent::runtime_session::RuntimeSessionService;
 use crate::agent::{AgentExecutionRequest, AgentExecutionResponse, AgentRuntimeState};
 

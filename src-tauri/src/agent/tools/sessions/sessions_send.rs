@@ -150,3 +150,120 @@ impl ToolExecutor for SessionsSendExecutor {
         })?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_context() -> ToolExecutionContext {
+        ToolExecutionContext {
+            session_id: "parent-session".to_string(),
+            user_id: "test-user".to_string(),
+            tenant_id: "test-tenant".to_string(),
+            department_id: None,
+            page_id: None,
+            resource_id: None,
+            permissions: vec!["sessions:write".to_string()],
+            metadata: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_sessions_send_success() {
+        let executor = SessionsSendExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": "Hello, how are you?"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsSendResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.success);
+        assert!(response.delivered);
+        assert!(!response.message_id.is_empty());
+        assert_eq!(response.session_id, "session-1");
+    }
+
+    #[tokio::test]
+    async fn test_sessions_send_with_response() {
+        let executor = SessionsSendExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": "What is the status?",
+            "wait_for_response": true
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsSendResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.success);
+        assert!(response.response.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_send_empty_session_id() {
+        let executor = SessionsSendExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "",
+            "message": "Test message"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_send_empty_message() {
+        let executor = SessionsSendExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": ""
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_send_session_not_found() {
+        let executor = SessionsSendExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "non-existent-session",
+            "message": "Test message"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sessions_send_with_sender_id() {
+        let executor = SessionsSendExecutor::new();
+        let context = create_test_context();
+
+        let params = serde_json::json!({
+            "session_id": "session-1",
+            "message": "Message from agent",
+            "sender_id": "agent-001"
+        });
+
+        let result = executor.execute(params, &context).await;
+        assert!(result.is_ok());
+
+        let response: SessionsSendResponse = serde_json::from_value(result.unwrap()).unwrap();
+        assert!(response.success);
+    }
+}

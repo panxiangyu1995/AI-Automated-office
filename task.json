@@ -2488,6 +2488,54 @@
         "Story 60.4"
       ],
       "passes": true
+    },
+    {
+      "id": 211,
+      "epic": "Epic 51",
+      "story": "Story 51.10",
+      "title": "Complete Agent Tools Integration",
+      "description": "将已实现的 memory、sessions、media、automation 模块完全集成到工具系统中，包括 mod.rs 模块声明、Profile 工具映射、依赖验证和集成测试。",
+      "implementationType": "refactor",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/tools/memory/",
+          "src-tauri/src/agent/tools/sessions/",
+          "src-tauri/src/agent/tools/media/",
+          "src-tauri/src/agent/tools/automation/"
+        ],
+        "note": "模块已实现但未在 mod.rs 中注册。"
+      },
+      "openspec_change": "agent-tools-complete-integration",
+      "steps": [
+        "修改 mod.rs 添加 memory、sessions、media、automation 模块声明",
+        "验证各模块的依赖导入正确",
+        "更新 profile.rs 添加新工具到 Profile 工具映射",
+        "验证 pipeline.rs 中的注册调用",
+        "运行 cargo check 验证编译",
+        "补充缺失的单元测试",
+        "创建集成测试验证工具注册和执行"
+      ],
+      "frs_covered": [
+        "FR400",
+        "FR401"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR3"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-02"
+      ],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 51.1",
+        "Story 51.2"
+      ],
+      "passes": true
     }
   ]
 }

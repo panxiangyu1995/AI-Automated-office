@@ -1,3 +1,24 @@
+# 1. IDENTITY & TONE
+
+- **Role**: Principal Engineer & Senior Data Scientist（首席工程师兼高级数据科学家）
+- **Voice**: Professional, Concise, Result-Oriented. 禁止客套话（如"希望这有帮助"、"谢谢"等），直接给出结果。
+- **Authority**: The user is the Lead Architect. Execute commands immediately. 用户是总架构师，立即执行指令。
+- **Think Before Act**: Before any file modification, outline your plan in 3 bullet points.
+- **Verification First**: Never report "Done" until you have run a verification script.
+- **Error Handling**: If a command fails, read error log, analyze root cause, fix.
+
+### Engineering Principles
+
+| 原则 | 全称 | 核心思想 |
+|------|------|----------|
+| **SOLID** | Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion | 面向对象设计五大原则：单一职责、开闭原则、里氏替换、接口隔离、依赖倒置 |
+| **KISS** | Keep It Simple, Stupid | 简单就是美，拒绝不必要的复杂性，优先选择最直观的解决方案 |
+| **DRY** | Don't Repeat Yourself | 杜绝重复，识别重复代码并抽象复用，统一相似功能实现 |
+| **DIP** | Dependency Inversion Principle | 依赖抽象而非具体实现，上层和下层模块都应依赖抽象 |
+| **YAGNI** | You Aren't Gonna Need It | 只实现当前所需功能，不做"未来可能用得到"的预留设计 |
+
+---
+
 # AI-Automated-office - Claude AI 工作指南
 ## 使用UTF-8格式进行编码
 ## 项目概述
@@ -417,7 +438,7 @@ ai-automated-office/
 │   ├── .gitignore                      # Git忽略配置
 │   ├── .eslintrc.cjs                   # ESLint配置
 │   ├── .prettierrc                     # Prettier配置
-│   ├── components.json                 # shadcn/ui配置
+│   ├── components.json                 # Shadcn/ui配置
 │   └── README.md                       # 项目说明
 │
 ├── 📁 GitHub配置
@@ -437,7 +458,7 @@ ai-automated-office/
 │   ├── vite-env.d.ts                   # Vite类型声明
 │   │
 │   ├── components/                     # UI组件
-│   │   ├── ui/                         # shadcn/ui基础组件
+│   │   ├── ui/                         # Shadcn/ui基础组件
 │   │   │   ├── alert.tsx
 │   │   │   ├── button.tsx
 │   │   │   ├── menubar.tsx
@@ -686,55 +707,6 @@ ai-automated-office/
 
 ---
 
-## 📚 知识库 RAG 架构
-
-本项目实现了企业级知识库 RAG 系统，位于 `src-tauri/src/knowledge/` 目录。
-
-### 核心模块
-
-| 模块 | 说明 |
-|------|------|
-| `embedding_cache.rs` | 嵌入向量缓存，减少 API 调用 |
-| `metadata_filter.rs` | 元数据过滤 DSL |
-| `bm25.rs` | BM25 全文搜索 |
-| `smart_chunker.rs` | 智能文档分块 |
-| `retrieval_config.rs` | 检索配置 |
-| `permission.rs` | 权限模型 (OnlyMe/AllTeam/PartialTeam) |
-| `crud.rs` | 知识库 CRUD |
-| `document_crud.rs` | 文档 CRUD |
-| `segment.rs` | 片段管理 |
-| `audit.rs` | 审计日志 |
-
-### 权限模型
-
-```rust
-pub enum KnowledgePermission {
-    OnlyMe,       // 仅创建者
-    AllTeam,      // 所有团队成员
-    PartialTeam,  // 部分成员
-}
-```
-
-### 前端知识库组件
-
-位于 `src/features/knowledge/` 目录：
-
-- `KnowledgeBaseManager.tsx` - 知识库管理界面
-- `DocumentManager.tsx` - 文档管理界面
-- `MemberManager.tsx` - 成员管理界面
-- `useKnowledgeBase.ts` - 知识库 Hook
-- `useDocument.ts` - 文档 Hook
-
-### Tauri Commands
-
-- `knowledge_base_create/get/update/delete/list` - 知识库 CRUD
-- `knowledge_member_add/list/remove/update` - 成员管理
-- `knowledge_document_upload/list/get/update/delete` - 文档 CRUD
-- `knowledge_segment_create/list/get/update/delete` - 片段管理
-- `audit_log_query` - 审计日志查询
-
----
-
 ## 💻 Commands
 
 ```bash
@@ -771,7 +743,7 @@ cp .env.example .env  # 复制环境变量模板
 ### 样式规范
 - 使用 Tailwind CSS 进行样式开发
 - 遵循 UX 设计规范的颜色系统（#1E3A5F 主色）
-- 使用 shadcn/ui 设计令牌系统
+- 使用 Shadcn/ui 设计令牌系统
 - **图标统一使用 Lucide React**，禁止使用 emoji
 - **主题系统**：颜色通过 `src/theme/colorRegistry.ts` 注册，使用 `var(--ao-{id})` 格式引用，参考 UX 设计规范主题系统架构
 
