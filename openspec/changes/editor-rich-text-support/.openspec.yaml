@@ -1,0 +1,23 @@
+# OpenSpec Change Configuration
+
+## Change Metadata
+- **name**: editor-rich-text-support
+- **version**: 1.0.0
+- **created**: 2026-04-07
+- **epic**: Epic 22
+- **story**: Story 22.1
+
+## Schema
+spec-driven
+
+## Artifacts
+- proposal.md: required
+- design.md: required
+- tasks.md: required
+- specs/spec.md: required
+
+## Status
+- proposal.md: pending
+- design.md: pending
+- tasks.md: pending
+- specs/spec.md: pending

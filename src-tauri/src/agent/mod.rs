@@ -7,6 +7,7 @@ pub mod error_recovery;
 pub mod events;
 pub mod execution;
 pub mod heartbeat;
+pub mod intercom;
 pub mod knowledge_retrieval;
 pub mod llm_agent_provider;
 pub mod memory;

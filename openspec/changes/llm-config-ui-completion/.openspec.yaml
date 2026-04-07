@@ -1,0 +1,23 @@
+# OpenSpec Change Configuration
+
+## Change Metadata
+- **name**: llm-config-ui-completion
+- **version**: 1.0.0
+- **created**: 2026-04-07
+- **epic**: Epic 20
+- **story**: Story 20.1
+
+## Schema
+spec-driven
+
+## Artifacts
+- proposal.md: required
+- design.md: required
+- tasks.md: required
+- specs/spec.md: required
+
+## Status
+- proposal.md: pending
+- design.md: pending
+- tasks.md: pending
+- specs/spec.md: pending

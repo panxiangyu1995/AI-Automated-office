@@ -2,6 +2,8 @@
 
 mod commands;
 pub mod types;
+pub mod group;
+pub mod group_message;
 
 pub use commands::*;
 pub use types::*;

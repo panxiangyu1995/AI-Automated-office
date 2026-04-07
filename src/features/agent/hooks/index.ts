@@ -6,3 +6,5 @@ export { useChatStore, useActiveChatSession, useActiveMessages, useStreamingStat
 export { useAgentRuntime } from './useAgentRuntime'
 export { useCheckpointStore, useLatestCheckpoint } from './useCheckpointStore'
 export { useBusinessCompression } from './useBusinessCompression'
+export { useAgentIntercom } from './useAgentIntercom'
+export type { AgentContact, AgentMessage, AgentPermission, IntercomConfig } from './useAgentIntercom'

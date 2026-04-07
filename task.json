@@ -1,12 +1,48 @@
 {
-  "version": "4.0.0",
-  "lastUpdated": "2026-04-06",
+  "version": "5.0.0",
+  "lastUpdated": "2026-04-07",
   "scope": "MVP completion gap analysis and next iteration plan",
-  "batch": "Phase 2 - MVP Finalization",
-  "range": "Task 146-165",
+  "batch": "Phase 3 - MVP Finalization",
+  "range": "Task 166-220",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
   "sourceOfTruth": "PRD MVP Definition + task-archived.json series",
-  "activeNote": "MVP gap analysis completed. 6 Epic categories with 35 tasks remaining for MVP completion.",
+  "activeNote": "Task 171/174/175重复Task已移除。新增27个OpenSpec目录。所有未完成任务已有对应OpenSpec。P2/P3任务可延后实现。",
+  "gapAnalysis": {
+    "summary": "基于PRD铁律(857条FR)与实际代码对比，发现以下核心差距",
+    "已完成": [
+      "桌面端基础架构 (TopBar/MenuBar/Sidebar/ActivityBar/Workbench/AiChatPanel)",
+      "用户与权限管理 (RBAC/部门权限/细粒度权限)",
+      "AI对话核心 (Agent Runtime/SubAgent/意图路由)",
+      "工具系统 (工具注册/执行管道/财务工具/会话工具)",
+      "记忆系统 (三层架构/存储/检索/更新)",
+      "Skill系统 (SkillRegistry/SkillDiscovery/SkillLoader)",
+      "检查点存储 (CheckpointStore基础)",
+      "上下文压缩 (CompressionStrategy/TokenBudget)",
+      "编辑器宿主 (EditorHost/注册机制)",
+      "MCP集成 (MCP Client/Registry/Bridge)",
+      "部门能力包 (CapabilityPackage/CapabilityRegistry)",
+      "知识库RAG (DocumentPipeline/RagContextBuilder)"
+    ],
+    "核心差距_P0": [
+      "Agent-to-Agent通信 (FR59-FR68) - 前端组件已创建，后端集成缺失",
+      "审批中心完整功能 (FR120-FR179) - 基础CRUD完成，AI辅助/委托/催办缺失",
+      "统一消息系统 (FR90-FR98, FR600-FR662) - 基础消息API完成，群聊/Agent通信缺失",
+      "检查点系统集成 (FR17-1至FR17-25) - Store完成，与Runtime集成缺失"
+    ],
+    "核心差距_P1": [
+      "心跳机制完善 (FR1127-FR1145) - 后端骨架完成，HEARTBEAT.md解析/预检缺失",
+      "工具权限沙箱 (FR1020-FR1027) - 权限中间件存在，执行隔离缺失",
+      "三层记忆集成 (FR14-4至FR14-12) - 存储完成，与Agent Runtime集成缺失",
+      "SubAgent完整委派 (FR930-FR934) - 路由存在，与主Agent集成缺失",
+      "财务部门AI能力 (FR160-FR179) - 工具存在，与业务模块集成缺失"
+    ],
+    "核心差距_P2": [
+      "编辑器完整功能 (FR1201-FR1212) - 宿主框架完成，RichText/Markdown编辑器缺失",
+      "定时任务系统 (FR15, FR1127-FR1145) - cron_schedule存在，cron_cancel/skill触发缺失",
+      "LLM三级配置 (ADR-054) - ProviderConfig存在，UI配置面板不完整",
+      "纠偏反馈学习 (FR81-FR89) - 错题集UI缺失"
+    ]
+  },
   "implementationNotes": {
     "已完成里程碑": [
       "Epic 1: 桌面端基础架构 (Task 1-16) - 100% 完成",
@@ -23,9 +59,15 @@
       "Epic 55: 治理与审计 (Task 118-121, 128) - 85% 完成",
       "Epic 60: SubAgent体系 (Task 204-210) - 80% 完成",
       "Epic 1 Theme: 主题系统 (Task 200-203) - 100% 完成",
-      "Epic 41 Workspace: 工作区增强 (Task 140-143) - 90% 完成"
+      "Epic 41 Workspace: 工作区增强 (Task 140-143) - 90% 完成",
+      "部门模块框架: Task 146-155 - 100% 完成",
+      "核心部门模块: Task 147-152 - 100% 完成"
     ],
-    "MVP核心差距": "6大模块共35个任务待完成",
+    "MVP核心差距_P0": "4项核心功能缺失，阻塞MVP发布",
+    "MVP核心差距_P1": "5项核心功能缺失，影响用户体验",
+    "MVP核心差距_P2": "4项增强功能，可延后实现",
+    "新任务总数": "27个任务（原30个，移除3个重复）",
+    "已创建OpenSpec目录": "27个",
     "优先级策略": "P0=阻塞MVP发布, P1=核心功能缺失, P2=增强功能"
   },
   "tasks": [
@@ -1032,6 +1074,2110 @@
         "Task 164"
       ],
       "passes": true
+    },
+    {
+      "id": 166,
+      "epic": "Epic 10",
+      "story": "Story 10.1",
+      "title": "Agent-to-Agent通信后端集成",
+      "description": "将AgentIntercom组件与后端通信服务集成，实现Agent间消息传递、权限控制、审计日志。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P0核心",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/AgentIntercom.tsx"
+        ],
+        "backend": [],
+        "note": "前端组件已创建，后端通信服务缺失。"
+      },
+      "openspec_change": "agent-to-agent-backend-integration",
+      "steps": [
+        "创建Agent间消息数据模型",
+        "实现Agent消息路由服务",
+        "实现消息权限校验中间件",
+        "实现审计日志记录",
+        "实现消息状态追踪(已发送/已送达/已读)",
+        "与前端AgentIntercom组件集成"
+      ],
+      "frs_covered": [
+        "FR59",
+        "FR60",
+        "FR61",
+        "FR62",
+        "FR63",
+        "FR64",
+        "FR65",
+        "FR66",
+        "FR67",
+        "FR68"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-021"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": true
+    },
+    {
+      "id": 167,
+      "epic": "Epic 11",
+      "story": "Story 11.1",
+      "title": "统一消息系统群聊功能",
+      "description": "实现群聊功能，包括群创建/邀请/移除、Agent跟随入群、@提及响应。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P0核心",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "群聊功能完全缺失。"
+      },
+      "openspec_change": "group-chat-backend",
+      "steps": [
+        "创建群组数据模型",
+        "实现群组CRUD API",
+        "实现成员管理API(邀请/移除)",
+        "实现Agent跟随入群逻辑",
+        "实现@提及检测和响应",
+        "实现群消息推送"
+      ],
+      "frs_covered": [
+        "FR631",
+        "FR632",
+        "FR633",
+        "FR634",
+        "FR635",
+        "FR636",
+        "FR637",
+        "FR638",
+        "FR639",
+        "FR640",
+        "FR641",
+        "FR642",
+        "FR643",
+        "FR644",
+        "FR645",
+        "FR646",
+        "FR647",
+        "FR648",
+        "FR649"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 153",
+        "Task 166"
+      ],
+      "passes": true
+    },
+    {
+      "id": 168,
+      "epic": "Epic 12",
+      "story": "Story 12.1",
+      "title": "审批增强功能-委托与催办",
+      "description": "实现审批委托(FR143-FR148)和催办机制(FR154-FR163)。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P0核心",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/approval/components/"
+        ],
+        "backend": [
+          "src-tauri/src/approval/"
+        ],
+        "note": "审批基础CRUD已完成，委托和催办缺失。"
+      },
+      "openspec_change": "approval-delegation-reminder",
+      "steps": [
+        "实现审批委托数据模型",
+        "实现委托类型(全权/分类/金额)",
+        "实现委托有效期管理",
+        "实现催办机制和频率限制",
+        "实现紧急催办分级",
+        "实现自动抄送上级的逻辑"
+      ],
+      "frs_covered": [
+        "FR143",
+        "FR144",
+        "FR145",
+        "FR146",
+        "FR147",
+        "FR148",
+        "FR154",
+        "FR155",
+        "FR156",
+        "FR157",
+        "FR158",
+        "FR159",
+        "FR160",
+        "FR161",
+        "FR162",
+        "FR163"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 148"
+      ],
+      "passes": true
+    },
+    {
+      "id": 169,
+      "epic": "Epic 12",
+      "story": "Story 12.2",
+      "title": "审批AI辅助能力",
+      "description": "实现AI辅助审批(FR175-FR179)，包括风险提示、审批摘要、智能填充。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "AI辅助审批功能缺失。"
+      },
+      "openspec_change": "approval-ai-assistance",
+      "steps": [
+        "实现审批风险检测工具",
+        "实现AI审批摘要生成",
+        "实现智能表单填充",
+        "实现历史数据预测",
+        "实现AI风险提示UI"
+      ],
+      "frs_covered": [
+        "FR175",
+        "FR176",
+        "FR177",
+        "FR178",
+        "FR179"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 148",
+        "Task 168"
+      ],
+      "passes": true
+    },
+    {
+      "id": 170,
+      "epic": "Epic 13",
+      "story": "Story 13.1",
+      "title": "检查点系统Runtime集成",
+      "description": "将CheckpointStore与AgentRuntime集成，实现自动检查点创建和回滚。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P0核心",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/storage/checkpoint_store.rs"
+        ],
+        "note": "CheckpointStore已存在，与Runtime集成缺失。"
+      },
+      "openspec_change": "checkpoint-runtime-integration",
+      "steps": [
+        "实现用户发送消息时自动创建检查点",
+        "实现检查点列表API",
+        "实现回滚API(仅对话/对话+文件)",
+        "实现编辑重试分支功能",
+        "实现检查点管理UI"
+      ],
+      "frs_covered": [
+        "FR17-1",
+        "FR17-2",
+        "FR17-3",
+        "FR17-4",
+        "FR17-5",
+        "FR17-6",
+        "FR17-7",
+        "FR17-8",
+        "FR17-9",
+        "FR17-10",
+        "FR17-11",
+        "FR17-12",
+        "FR17-13",
+        "FR17-19",
+        "FR17-20",
+        "FR17-21",
+        "FR17-22",
+        "FR17-23",
+        "FR17-24",
+        "FR17-25"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-026",
+        "ADR-027",
+        "ADR-028"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": false
+    },
+    {
+      "id": 172,
+      "epic": "Epic 15",
+      "story": "Story 15.1",
+      "title": "工具权限沙箱实现",
+      "description": "实现工具权限沙箱(FR1020-FR1027)，包括命令黑白名单、执行隔离。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/permission/"
+        ],
+        "note": "权限中间件存在，执行隔离缺失。"
+      },
+      "openspec_change": "tool-sandbox-implementation",
+      "steps": [
+        "实现命令黑名单匹配引擎",
+        "实现命令白名单机制",
+        "实现灰名单需确认模式",
+        "实现工具执行隔离",
+        "实现敏感操作告警",
+        "实现权限审计日志"
+      ],
+      "frs_covered": [
+        "FR1020",
+        "FR1021",
+        "FR1022",
+        "FR1023",
+        "FR1024",
+        "FR1025",
+        "FR1026",
+        "FR1027"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-022",
+        "ADR-022-1",
+        "ADR-052"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": false
+    },
+    {
+      "id": 173,
+      "epic": "Epic 16",
+      "story": "Story 16.1",
+      "title": "三层记忆与Runtime集成",
+      "description": "将三层记忆系统与AgentRuntime集成，实现记忆自动捕获和检索注入。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/CompressionMemoryHints.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/memory/"
+        ],
+        "note": "记忆存储完成，与Runtime集成缺失。"
+      },
+      "openspec_change": "memory-runtime-integration",
+      "steps": [
+        "实现Hook事件自动捕获",
+        "实现记忆检索注入PromptBuilder",
+        "实现记忆更新决策引擎",
+        "实现关键事实提取到L1层",
+        "创建记忆管理UI",
+        "编写记忆系统E2E测试"
+      ],
+      "frs_covered": [
+        "FR14-4",
+        "FR14-5",
+        "FR14-6",
+        "FR14-7",
+        "FR14-8",
+        "FR14-9",
+        "FR14-10",
+        "FR14-11",
+        "FR14-12"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-043",
+        "ADR-044"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 158"
+      ],
+      "passes": false
+    },
+    {
+      "id": 176,
+      "epic": "Epic 19",
+      "story": "Story 19.1",
+      "title": "定时任务系统完善",
+      "description": "完善定时任务系统(cron)，实现cron_cancel、skill触发、结果通知。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/ScheduledTaskCenter.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/tools/automation/"
+        ],
+        "note": "cron_schedule存在，cancel和skill触发缺失。"
+      },
+      "openspec_change": "cron-task-completion",
+      "steps": [
+        "实现cron_cancel取消任务",
+        "实现cron_list任务列表",
+        "实现Skill触发定时任务",
+        "实现任务执行结果通知",
+        "实现cron表达式验证"
+      ],
+      "frs_covered": [
+        "FR15",
+        "FR1127",
+        "FR1128",
+        "FR1129"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-048"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 160"
+      ],
+      "passes": false
+    },
+    {
+      "id": 177,
+      "epic": "Epic 20",
+      "story": "Story 20.1",
+      "title": "LLM三级配置UI完善",
+      "description": "完善LLM三级配置UI(ADR-054)，实现平台/租户/用户级配置界面。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/ModelProviderSettings.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/commands/provider_config.rs"
+        ],
+        "note": "后端ProviderConfig存在，UI不完整。"
+      },
+      "openspec_change": "llm-config-ui-completion",
+      "steps": [
+        "实现平台官方API配置界面",
+        "实现租户级配置界面",
+        "实现用户级配置界面",
+        "实现配置优先级预览",
+        "实现Plan/Act双配置UI"
+      ],
+      "frs_covered": [
+        "FR18",
+        "FR19"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-054",
+        "ADR-055"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 134"
+      ],
+      "passes": false
+    },
+    {
+      "id": 178,
+      "epic": "Epic 21",
+      "story": "Story 21.1",
+      "title": "纠偏反馈学习系统",
+      "description": "实现纠偏反馈学习(FR81-FR89)，包括错题集、规则提取、效果追踪。",
+      "implementationType": "new",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "纠偏反馈系统完全缺失。"
+      },
+      "openspec_change": "correction-feedback-system",
+      "steps": [
+        "创建纠偏数据结构模型",
+        "实现规则提取和存储",
+        "实现错题集管理API",
+        "创建错题集UI",
+        "实现规则应用追踪"
+      ],
+      "frs_covered": [
+        "FR81",
+        "FR82",
+        "FR83",
+        "FR84",
+        "FR85",
+        "FR86",
+        "FR87",
+        "FR88",
+        "FR89"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 173"
+      ],
+      "passes": false
+    },
+    {
+      "id": 179,
+      "epic": "Epic 22",
+      "story": "Story 22.1",
+      "title": "编辑器RichText/Markdown支持",
+      "description": "完善编辑器系统(FR1201-FR1212)，实现RichText和Markdown编辑器。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/components/workspace/"
+        ],
+        "backend": [],
+        "note": "编辑器宿主存在，RichText/Markdown编辑器缺失。"
+      },
+      "openspec_change": "editor-rich-text-support",
+      "steps": [
+        "实现RichText编辑器组件",
+        "实现Markdown编辑器组件",
+        "实现编辑器注册机制",
+        "实现动态模板渲染引擎",
+        "实现模板设计器基础"
+      ],
+      "frs_covered": [
+        "FR1201",
+        "FR1202",
+        "FR1203",
+        "FR1204",
+        "FR1205"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-035",
+        "ADR-036",
+        "ADR-037"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 43"
+      ],
+      "passes": false
+    },
+    {
+      "id": 180,
+      "epic": "Epic 23",
+      "story": "Story 23.1",
+      "title": "通讯录与员工目录",
+      "description": "实现员工通讯录(FR650-FR662)，包括部门分组、搜索、名片。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/EmployeeDirectory.tsx",
+          "src/features/agent/components/EmployeeCard.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/hr/"
+        ],
+        "note": "员工管理存在，通讯录UI需要完善。"
+      },
+      "openspec_change": "employee-directory-completion",
+      "steps": [
+        "实现通讯录数据聚合API",
+        "实现员工搜索和筛选",
+        "实现在线状态管理",
+        "完善员工名片UI",
+        "实现快速发起对话"
+      ],
+      "frs_covered": [
+        "FR650",
+        "FR651",
+        "FR652",
+        "FR653",
+        "FR654",
+        "FR655",
+        "FR656",
+        "FR657",
+        "FR658",
+        "FR659",
+        "FR660",
+        "FR661",
+        "FR662"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 147"
+      ],
+      "passes": false
+    },
+    {
+      "id": 181,
+      "epic": "Epic 24",
+      "story": "Story 24.1",
+      "title": "工作卡片消息系统",
+      "description": "实现工作卡片消息(FR607-FR614)，支持在消息中直接操作业务对象。",
+      "implementationType": "new",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/WorkCardMessage.tsx"
+        ],
+        "backend": [],
+        "note": "UI组件存在，后端实现缺失。"
+      },
+      "openspec_change": "workcard-message-backend",
+      "steps": [
+        "创建工作卡片数据模型",
+        "实现卡片生成API",
+        "实现卡片操作处理",
+        "实现操作结果反馈",
+        "实现卡片模板系统"
+      ],
+      "frs_covered": [
+        "FR607",
+        "FR608",
+        "FR609",
+        "FR610"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 166"
+      ],
+      "passes": false
+    },
+    {
+      "id": 182,
+      "epic": "Epic 25",
+      "story": "Story 25.1",
+      "title": "消息搜索与筛选增强",
+      "description": "实现消息搜索(FR611-FR614)，支持内容搜索、参与者筛选、置顶收藏。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/MessageSearchManager.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/message/"
+        ],
+        "note": "消息基础存在，搜索增强缺失。"
+      },
+      "openspec_change": "message-search-enhancement",
+      "steps": [
+        "实现全文搜索索引",
+        "实现多维度筛选API",
+        "实现消息置顶收藏",
+        "实现消息导出功能"
+      ],
+      "frs_covered": [
+        "FR611",
+        "FR612",
+        "FR613",
+        "FR614"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 153"
+      ],
+      "passes": false
+    },
+    {
+      "id": 183,
+      "epic": "Epic 26",
+      "story": "Story 26.1",
+      "title": "Agent可观测性面板",
+      "description": "完善Agent可观测性(FR1100-FR1106)，实现Trace/Span链路追踪和监控。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/session/components/AgentObservabilityPanel.tsx",
+          "src/features/agent/components/TaskTraceAnalysis.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/monitoring.rs"
+        ],
+        "note": "监控模块存在，Trace链路集成缺失。"
+      },
+      "openspec_change": "observability-trace-integration",
+      "steps": [
+        "实现Trace/Span数据模型",
+        "实现链路追踪收集器",
+        "实现监控面板数据聚合",
+        "实现性能指标展示",
+        "实现慢操作告警"
+      ],
+      "frs_covered": [
+        "FR1100",
+        "FR1101",
+        "FR1102",
+        "FR1103",
+        "FR1104",
+        "FR1105",
+        "FR1106"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-023"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": false
+    },
+    {
+      "id": 184,
+      "epic": "Epic 27",
+      "story": "Story 27.1",
+      "title": "Pilot部门集成完善",
+      "description": "完善Pilot集成(Finance/Approval/Sales)，实现部门工具绑定和执行监控。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/FinancePilotIntegration.tsx",
+          "src/features/agent/components/ApprovalPilotIntegration.tsx",
+          "src/features/agent/components/SalesPilotIntegration.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/tools/finance/",
+          "src-tauri/src/approval/"
+        ],
+        "note": "Pilot UI存在，工具绑定和执行集成缺失。"
+      },
+      "openspec_change": "pilot-integration-completion",
+      "steps": [
+        "实现部门工具自动绑定",
+        "实现执行结果格式转换",
+        "实现Pilot状态同步",
+        "实现错误处理和重试",
+        "与前端Pilot组件集成"
+      ],
+      "frs_covered": [
+        "FR400",
+        "FR401",
+        "FR402",
+        "FR403"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 148",
+        "Task 150",
+        "Task 149"
+      ],
+      "passes": false
+    },
+    {
+      "id": 185,
+      "epic": "Epic 28",
+      "story": "Story 28.1",
+      "title": "MCP工具自动审批",
+      "description": "实现MCP工具自动审批(ADR-057)，支持Per-Tool Auto-Approve策略。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/MCPServiceConfig.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/mcp/"
+        ],
+        "note": "MCP Client存在，Per-Tool审批策略缺失。"
+      },
+      "openspec_change": "mcp-auto-approve-policy",
+      "steps": [
+        "实现Per-Tool配置存储",
+        "实现正则匹配Auto-Approve",
+        "实现STDIO文件监视",
+        "实现动态启用/禁用",
+        "与前端MCP配置UI集成"
+      ],
+      "frs_covered": [
+        "FR13"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-051",
+        "ADR-057"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 164"
+      ],
+      "passes": false
+    },
+    {
+      "id": 186,
+      "epic": "Epic 29",
+      "story": "Story 29.1",
+      "title": "插件运行时自愈机制",
+      "description": "实现插件运行时自愈(FR1170-FR1186)，包括错误检测、自动重启。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/PluginRuntimeSelfHealing.tsx"
+        ],
+        "backend": [],
+        "note": "UI存在，后端自愈机制缺失。"
+      },
+      "openspec_change": "plugin-self-healing-backend",
+      "steps": [
+        "实现插件健康检测",
+        "实现错误分类和处理",
+        "实现自动重启机制",
+        "实现重启次数限制",
+        "实现故障告警"
+      ],
+      "frs_covered": [
+        "FR1170",
+        "FR1171",
+        "FR1172",
+        "FR1173",
+        "FR1174"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 162"
+      ],
+      "passes": false
+    },
+    {
+      "id": 187,
+      "epic": "Epic 30",
+      "story": "Story 30.1",
+      "title": "错误处理与故障恢复",
+      "description": "完善错误处理(FR1146-FR1169)，实现错误分类、故障转移、重试策略。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/ErrorClassificationGuidance.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/error_recovery.rs"
+        ],
+        "note": "错误恢复模块存在，集成不完整。"
+      },
+      "openspec_change": "error-handling-completion",
+      "steps": [
+        "实现错误分类引擎",
+        "实现故障转移机制",
+        "实现Auth Profile轮换",
+        "实现循环检测熔断",
+        "完善错误提示UI"
+      ],
+      "frs_covered": [
+        "FR1146",
+        "FR1147",
+        "FR1148",
+        "FR1149",
+        "FR1150",
+        "FR1151",
+        "FR1152"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": false
+    },
+    {
+      "id": 188,
+      "epic": "Epic 31",
+      "story": "Story 31.1",
+      "title": "路由模式四档完善",
+      "description": "完善路由模式(ADR-056)，实现Yolo/Auto/Manual/Hybrid四档。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/YoloModeConfig.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/commands/provider_config.rs"
+        ],
+        "note": "YoloMode存在，其他模式集成缺失。"
+      },
+      "openspec_change": "routing-mode-completion",
+      "steps": [
+        "实现Manual逐项审批模式",
+        "实现Auto智能评估模式",
+        "实现Hybrid混合模式",
+        "实现敏感度分级",
+        "实现二次确认防误触"
+      ],
+      "frs_covered": [
+        "FR400"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-056"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 134",
+        "Task 135"
+      ],
+      "passes": false
+    },
+    {
+      "id": 189,
+      "epic": "Epic 32",
+      "story": "Story 32.1",
+      "title": "会话故障转移修复",
+      "description": "完善会话故障转移(FR17-6至FR17-10)，实现FailoverSessionRepair。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/FailoverSessionRepair.tsx"
+        ],
+        "backend": [],
+        "note": "UI存在，后端故障转移缺失。"
+      },
+      "openspec_change": "session-failover-backend",
+      "steps": [
+        "实现会话状态检测",
+        "实现自动修复机制",
+        "实现回滚到检查点",
+        "实现会话恢复通知",
+        "与前端FailoverSessionRepair集成"
+      ],
+      "frs_covered": [
+        "FR17-6",
+        "FR17-7",
+        "FR17-8",
+        "FR17-9",
+        "FR17-10"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-024"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 170"
+      ],
+      "passes": false
+    },
+    {
+      "id": 190,
+      "epic": "Epic 33",
+      "story": "Story 33.1",
+      "title": "资源执行审计完善",
+      "description": "完善资源执行审计(FR1100-FR1106)，实现ResourceSecurityManagement。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/ResourceSecurityManagement.tsx"
+        ],
+        "backend": [],
+        "note": "UI存在，后端审计缺失。"
+      },
+      "openspec_change": "resource-audit-backend",
+      "steps": [
+        "实现资源访问日志",
+        "实现敏感操作审计",
+        "实现审计日志查询API",
+        "实现审计报告生成",
+        "实现告警规则配置"
+      ],
+      "frs_covered": [
+        "FR1100",
+        "FR1101",
+        "FR1102"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 183"
+      ],
+      "passes": false
+    },
+    {
+      "id": 191,
+      "epic": "Epic 34",
+      "story": "Story 34.1",
+      "title": "配置缓存覆盖机制",
+      "description": "实现配置缓存四层覆盖(ADR-058)，实现防抖持久化。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "配置缓存机制缺失。"
+      },
+      "openspec_change": "config-cache-mechanism",
+      "steps": [
+        "实现Remote配置加载",
+        "实现Session覆盖",
+        "实现Task设置",
+        "实现Global默认",
+        "实现防抖持久化"
+      ],
+      "frs_covered": [
+        "FR1010"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-058"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 177"
+      ],
+      "passes": false
+    },
+    {
+      "id": 192,
+      "epic": "Epic 35",
+      "story": "Story 35.1",
+      "title": "消息状态追踪完善",
+      "description": "实现消息已发送/已送达/已读状态(FR622-FFR624)。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "消息状态追踪缺失。"
+      },
+      "openspec_change": "message-status-tracking",
+      "steps": [
+        "实现消息状态数据模型",
+        "实现已发送/送达/已读API",
+        "实现状态变更通知",
+        "实现离线消息同步"
+      ],
+      "frs_covered": [
+        "FR622",
+        "FR623",
+        "FR624",
+        "FR625",
+        "FR626"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 153"
+      ],
+      "passes": false
+    },
+    {
+      "id": 193,
+      "epic": "Epic 36",
+      "story": "Story 36.1",
+      "title": "工具调用可见性增强",
+      "description": "完善工具调用可见性(FR69-FR80)，实现实时状态、参数返回。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/session/components/ToolHistory.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/tools/"
+        ],
+        "note": "工具历史存在，实时可见性缺失。"
+      },
+      "openspec_change": "tool-call-visibility",
+      "steps": [
+        "实现工具调用实时推送",
+        "实现参数和结果展示",
+        "实现失败重试UI",
+        "实现手动输入结果",
+        "实现批量断点续传"
+      ],
+      "frs_covered": [
+        "FR69",
+        "FR70",
+        "FR71",
+        "FR72",
+        "FR73",
+        "FR74",
+        "FR75",
+        "FR76",
+        "FR77",
+        "FR78",
+        "FR79",
+        "FR80"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": false
+    },
+    {
+      "id": 194,
+      "epic": "Epic 37",
+      "story": "Story 37.1",
+      "title": "审批附件与流程追溯",
+      "description": "实现审批附件(FR137-FR142)和完整时间线追溯。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P0核心",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/approval/"
+        ],
+        "note": "审批基础存在，附件和追溯缺失。"
+      },
+      "openspec_change": "approval-attachment-trace",
+      "steps": [
+        "实现附件上传和存储",
+        "实现附件预览和下载",
+        "实现时间线追溯视图",
+        "实现操作记录审计"
+      ],
+      "frs_covered": [
+        "FR137",
+        "FR138",
+        "FR139",
+        "FR140",
+        "FR141",
+        "FR142"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 148"
+      ],
+      "passes": false
+    },
+    {
+      "id": 195,
+      "epic": "Epic 38",
+      "story": "Story 38.1",
+      "title": "财务部门AI能力完善",
+      "description": "完善财务部门AI能力，将工具与业务模块集成。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/finance/components/FinancePanel.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/tools/finance/"
+        ],
+        "note": "财务工具存在，与业务模块集成缺失。"
+      },
+      "openspec_change": "finance-ai-integration",
+      "steps": [
+        "实现发票OCR识别",
+        "实现台账自动生成",
+        "实现应收应付联动",
+        "实现与销售模块数据对接",
+        "完善财务报表UI"
+      ],
+      "frs_covered": [
+        "FR160",
+        "FR161",
+        "FR162",
+        "FR163",
+        "FR164",
+        "FR165"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 150",
+        "Task 184"
+      ],
+      "passes": false
+    },
+    {
+      "id": 196,
+      "epic": "Epic 39",
+      "story": "Story 39.1",
+      "title": "动态投递策略实现",
+      "description": "实现动态投递策略(ADR-060)，根据紧急程度选择投递渠道。",
+      "implementationType": "new",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/TaskNotifications.tsx"
+        ],
+        "backend": [],
+        "note": "UI存在，后端投递策略缺失。"
+      },
+      "openspec_change": "dynamic-delivery-strategy",
+      "steps": [
+        "实现紧急程度评估",
+        "实现动态通知卡片",
+        "实现投递偏好管理",
+        "实现免打扰时段控制",
+        "与消息系统集成"
+      ],
+      "frs_covered": [
+        "FR48"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-060"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 153"
+      ],
+      "passes": false
+    },
+    {
+      "id": 197,
+      "epic": "Epic 40",
+      "story": "Story 40.1",
+      "title": "部门能力包版本管理",
+      "description": "实现能力包版本管理和更新机制。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/marketplace/components/MarketplacePanel.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/capability/"
+        ],
+        "note": "能力包基础存在，版本管理缺失。"
+      },
+      "openspec_change": "capability-version-management",
+      "steps": [
+        "实现版本检测API",
+        "实现增量更新机制",
+        "实现回滚能力",
+        "实现版本兼容性检查",
+        "完善市场UI"
+      ],
+      "frs_covered": [
+        "FR800",
+        "FR801",
+        "FR802"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 155",
+        "Task 156"
+      ],
+      "passes": false
+    },
+    {
+      "id": 198,
+      "epic": "Epic 41",
+      "story": "Story 41.1",
+      "title": "提示词安全护栏完善",
+      "description": "实现提示词安全三层护栏(ADR-041)。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "提示词安全机制缺失。"
+      },
+      "openspec_change": "prompt-security-guardrails",
+      "steps": [
+        "实现禁止清单检查",
+        "实现需确认事项提示",
+        "实现幻觉红旗阻断",
+        "实现审计链路集成"
+      ],
+      "frs_covered": [
+        "FR701"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-041"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 175"
+      ],
+      "passes": false
+    },
+    {
+      "id": 199,
+      "epic": "Epic 42",
+      "story": "Story 42.1",
+      "title": "Personal Agent本地存储",
+      "description": "实现Personal Agent(ADR-059)，仅本地存储，仅供用户本人使用。",
+      "implementationType": "new",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/settings/components/PersonalAgentManager.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/subagent/personal_loader.rs"
+        ],
+        "note": "Personal Loader存在，与主Agent集成缺失。"
+      },
+      "openspec_change": "personal-agent-integration",
+      "steps": [
+        "实现Personal Agent创建",
+        "实现本地存储隔离",
+        "实现权限继承上限",
+        "实现与主Agent切换",
+        "完善Personal Agent UI"
+      ],
+      "frs_covered": [
+        "FR930"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-059"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 174"
+      ],
+      "passes": false
+    },
+    {
+      "id": 200,
+      "epic": "Epic 43",
+      "story": "Story 43.1",
+      "title": "消息撤回与编辑",
+      "description": "实现消息撤回(FR628)和编辑(FR629)。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "消息撤回和编辑功能缺失。"
+      },
+      "openspec_change": "message-recall-edit",
+      "steps": [
+        "实现2分钟内撤回API",
+        "实现文本消息编辑API",
+        "实现撤回通知",
+        "实现编辑历史"
+      ],
+      "frs_covered": [
+        "FR628",
+        "FR629",
+        "FR630"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 153"
+      ],
+      "passes": false
+    },
+    {
+      "id": 201,
+      "epic": "Epic 44",
+      "story": "Story 44.1",
+      "title": "部门模板系统",
+      "description": "实现审批模板系统(FR132-FR136)，预置20+模板。",
+      "implementationType": "new",
+      "phase": "Phase 3 - P1核心",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "审批模板系统缺失。"
+      },
+      "openspec_change": "approval-template-system",
+      "steps": [
+        "创建模板数据模型",
+        "实现20+预置模板",
+        "实现模板版本管理",
+        "实现AI模板推荐",
+        "实现模板预览UI"
+      ],
+      "frs_covered": [
+        "FR132",
+        "FR133",
+        "FR134",
+        "FR135",
+        "FR136"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 148"
+      ],
+      "passes": false
+    },
+    {
+      "id": 202,
+      "epic": "Epic 45",
+      "story": "Story 45.1",
+      "title": "多模态附件输入",
+      "description": "实现多模态附件输入(ADR-053)，支持拖拽、粘贴、文件选择。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "多模态附件输入缺失。"
+      },
+      "openspec_change": "multimodal-attachment",
+      "steps": [
+        "实现图片附件(PNG/JPEG/GIF/WebP)",
+        "实现文档附件(PDF)预览",
+        "实现拖拽上传",
+        "实现粘贴上传",
+        "实现附件权限跟随"
+      ],
+      "frs_covered": [
+        "FR53"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ADR-053"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 153"
+      ],
+      "passes": false
+    },
+    {
+      "id": 203,
+      "epic": "Epic 46",
+      "story": "Story 46.1",
+      "title": "Token刷新服务完善",
+      "description": "完善Token刷新服务(FR1010-FR1017)，支持OAuth Token自动刷新。",
+      "implementationType": "enhancement",
+      "phase": "Phase 3 - P2增强",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "Token刷新服务缺失。"
+      },
+      "openspec_change": "token-refresh-service",
+      "steps": [
+        "实现OAuth Token刷新",
+        "实现Token过期检测",
+        "实现自动刷新机制",
+        "实现刷新失败告警"
+      ],
+      "frs_covered": [
+        "FR1010",
+        "FR1011",
+        "FR1012"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 177"
+      ],
+      "passes": false
+    },
+    {
+      "id": 204,
+      "epic": "Epic 47",
+      "story": "Story 47.1",
+      "title": "Webhook与自动化触发",
+      "description": "实现Webhook触发机制，支持外部系统集成。",
+      "implementationType": "new",
+      "phase": "Phase 4 - 扩展",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "Webhook机制缺失。"
+      },
+      "openspec_change": "webhook-automation",
+      "steps": [
+        "实现Webhook注册API",
+        "实现事件触发机制",
+        "实现签名验证",
+        "实现重试策略"
+      ],
+      "frs_covered": [
+        "FR1080"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 176"
+      ],
+      "passes": false
+    },
+    {
+      "id": 205,
+      "epic": "Epic 48",
+      "story": "Story 48.1",
+      "title": "缓存策略优化",
+      "description": "实现多租户缓存策略，优化性能。",
+      "implementationType": "enhancement",
+      "phase": "Phase 4 - 扩展",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "缓存策略缺失。"
+      },
+      "openspec_change": "cache-strategy-optimization",
+      "steps": [
+        "实现多租户缓存隔离",
+        "实现LRU缓存淘汰",
+        "实现缓存预热",
+        "实现缓存统计"
+      ],
+      "frs_covered": [
+        "FR20"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 157"
+      ],
+      "passes": false
+    },
+    {
+      "id": 206,
+      "epic": "Epic 49",
+      "story": "Story 49.1",
+      "title": "负载均衡与高可用",
+      "description": "实现负载均衡和高可用支持。",
+      "implementationType": "new",
+      "phase": "Phase 4 - 扩展",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "负载均衡缺失。"
+      },
+      "openspec_change": "load-balancing-ha",
+      "steps": [
+        "实现健康检查机制",
+        "实现负载均衡策略",
+        "实现故障转移",
+        "实现SLA监控"
+      ],
+      "frs_covered": [
+        "FR1120"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 203"
+      ],
+      "passes": false
+    },
+    {
+      "id": 207,
+      "epic": "Epic 50",
+      "story": "Story 50.1",
+      "title": "数据导出与迁移",
+      "description": "实现数据导出(FR1090-FR1095)和迁移工具。",
+      "implementationType": "new",
+      "phase": "Phase 4 - 扩展",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "数据导出迁移缺失。"
+      },
+      "openspec_change": "data-export-migration",
+      "steps": [
+        "实现多格式导出(CSV/Excel/JSON)",
+        "实现数据迁移API",
+        "实现导入验证",
+        "实现迁移回滚"
+      ],
+      "frs_covered": [
+        "FR1090",
+        "FR1091",
+        "FR1092",
+        "FR1093",
+        "FR1094",
+        "FR1095"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 165"
+      ],
+      "passes": false
+    },
+    {
+      "id": 208,
+      "epic": "Epic 51",
+      "story": "Story 51.1",
+      "title": "SLA与运维监控",
+      "description": "实现SLA监控(FR1120-FR1126)和运维看板。",
+      "implementationType": "new",
+      "phase": "Phase 4 - 扩展",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "SLA监控缺失。"
+      },
+      "openspec_change": "sla-monitoring",
+      "steps": [
+        "实现SLA指标收集",
+        "实现告警规则引擎",
+        "实现运维看板",
+        "实现SLA报告生成"
+      ],
+      "frs_covered": [
+        "FR1120",
+        "FR1121",
+        "FR1122",
+        "FR1123",
+        "FR1124",
+        "FR1125",
+        "FR1126"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 183",
+        "Task 206"
+      ],
+      "passes": false
+    },
+    {
+      "id": 209,
+      "epic": "Epic 52",
+      "story": "Story 52.1",
+      "title": "MVP最终集成测试",
+      "description": "完成MVP版本的最终集成测试，验证所有核心功能协同工作。",
+      "implementationType": "integration",
+      "phase": "Phase 5 - MVP发布",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "需要整体集成测试。"
+      },
+      "openspec_change": "mvp-final-integration-2",
+      "steps": [
+        "执行P0核心功能集成测试",
+        "执行部门模块集成测试",
+        "执行Agent对话集成测试",
+        "执行权限系统集成测试",
+        "执行消息通知集成测试",
+        "执行完整E2E测试",
+        "性能测试和优化",
+        "安全漏洞扫描"
+      ],
+      "frs_covered": [
+        "FR1",
+        "FR9",
+        "FR12",
+        "FR14",
+        "FR20",
+        "FR27",
+        "FR30",
+        "FR44",
+        "FR59",
+        "FR69",
+        "FR99",
+        "FR120",
+        "FR140",
+        "FR160",
+        "FR180",
+        "FR200"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR20",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 166",
+        "Task 167",
+        "Task 168",
+        "Task 170",
+        "Task 171",
+        "Task 173",
+        "Task 174",
+        "Task 180",
+        "Task 181",
+        "Task 184",
+        "Task 187",
+        "Task 188",
+        "Task 189",
+        "Task 193",
+        "Task 194",
+        "Task 195",
+        "Task 199"
+      ],
+      "passes": false
+    },
+    {
+      "id": 210,
+      "epic": "Epic 53",
+      "story": "Story 53.1",
+      "title": "MVP发布准备",
+      "description": "完成MVP发布准备工作，包括文档、部署配置、监控告警。",
+      "implementationType": "release",
+      "phase": "Phase 5 - MVP发布",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "发布准备缺失。"
+      },
+      "openspec_change": "mvp-release-preparation",
+      "steps": [
+        "完善用户文档",
+        "完善API文档",
+        "配置生产环境",
+        "配置监控告警",
+        "配置日志收集",
+        "配置备份策略",
+        "制定回滚方案"
+      ],
+      "frs_covered": [
+        "FR1"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 209"
+      ],
+      "passes": false
     }
   ]
 }

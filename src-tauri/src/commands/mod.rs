@@ -4,9 +4,13 @@
 
 pub mod agent;
 pub mod agent_registry;
+pub mod approval_ai;
+pub mod approval_enhancement;
 pub mod auth;
 pub mod config;
+pub mod group;
 pub mod hardware;
+pub mod intercom;
 pub mod network;
 pub mod provider_config;
 pub mod session;

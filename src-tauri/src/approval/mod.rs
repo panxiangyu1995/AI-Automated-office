@@ -3,6 +3,9 @@
 mod commands;
 mod db;
 pub mod types;
+pub mod delegation;
+pub mod reminder;
+pub mod ai_assist;
 
 pub use commands::*;
 pub use types::*;
