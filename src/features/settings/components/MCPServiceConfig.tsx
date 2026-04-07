@@ -8,7 +8,8 @@
  * - 持久化 MCP 服务记录
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import { 
   Server, Plus, Trash2, Edit, Play, Pause, 
   Settings, Terminal, Shield, 
@@ -372,12 +373,56 @@ function ServiceCard({
 
 // Main Component
 export function MCPServiceConfig() {
-  const [services] = useState<MCPServiceConfig[]>(generateMockServices())
+  const [services, setServices] = useState<MCPServiceConfig[]>(generateMockServices())
   const [records] = useState<MCPServiceRecord[]>(generateMockRecords())
   const [activeTab, setActiveTab] = useState<string>('services')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedService, setSelectedService] = useState<MCPServiceConfig | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Fetch services from backend
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setIsLoading(true)
+        const response = await invoke<{ success: boolean; data?: any[]; error?: string }>('mcp_list_services')
+        if (response.success && response.data) {
+          // Transform backend data to frontend format
+          const backendServices = response.data.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            description: s.description || '',
+            type: s.transport || 'stdio',
+            command: s.command || '',
+            args: s.args || [],
+            env: s.env || [],
+            runtimePolicy: 'on_demand' as const,
+            autoRestart: s.auto_start || false,
+            maxRestarts: s.max_concurrent || 3,
+            timeout: s.timeout_secs || 30,
+            logLevel: 'info' as const,
+            status: s.status || 'stopped',
+            pid: s.pid,
+            startedAt: s.started_at,
+            lastError: s.last_error,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: 'system',
+            version: 1,
+          }))
+          if (backendServices.length > 0) {
+            setServices(backendServices)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch MCP services:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchServices()
+  }, [])
 
   // Form state
   const [formData, setFormData] = useState<Partial<MCPServiceConfig>>({
@@ -431,12 +476,41 @@ export function MCPServiceConfig() {
     setEditDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true)
-    setTimeout(() => {
+    try {
+      const config = {
+        id: selectedService?.id || `mcp-${Date.now()}`,
+        name: formData.name,
+        description: formData.description || '',
+        transport_type: formData.type || 'stdio',
+        command: formData.type === 'stdio' ? formData.command : undefined,
+        args: formData.args?.map((a: MCPServiceArg) => a.value) || [],
+        env: formData.env?.reduce((acc, e) => ({ ...acc, [e.key]: e.value }), {} as Record<string, string>),
+        url: formData.type === 'http' ? formData.command : undefined,
+        ws_url: formData.type === 'websocket' ? formData.command : undefined,
+        auto_start: formData.autoRestart,
+        max_concurrent: formData.maxRestarts,
+        timeout_secs: formData.timeout,
+      }
+
+      const response = await invoke<{ success: boolean; data?: any; error?: string }>('mcp_add_service', config)
+
+      if (response.success) {
+        setEditDialogOpen(false)
+        setSelectedService(null)
+        // Refresh services list
+        // In real implementation, would trigger a refresh
+      } else {
+        console.error('Failed to save service:', response.error)
+        alert(`保存失败: ${response.error}`)
+      }
+    } catch (error) {
+      console.error('Failed to save MCP service:', error)
+      alert('保存失败，请重试')
+    } finally {
       setIsSaving(false)
-      setEditDialogOpen(false)
-    }, 1000)
+    }
   }
 
   const handleAddArg = () => {

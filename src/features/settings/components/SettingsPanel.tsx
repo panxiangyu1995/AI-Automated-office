@@ -61,6 +61,7 @@ import { SubAgentRegistry } from './SubAgentRegistry'
 import { SubAgentRouting } from './SubAgentRouting'
 import { SubAgentToolBinding } from './SubAgentToolBinding'
 import { TicketKnowledgeGeneration } from './TicketKnowledgeGeneration'
+import { DepartmentPanel } from '../../department'
 
 const SETTINGS_FAVORITES_STORAGE_KEY = 'settings-favorite-sections'
 const SETTINGS_RECENTS_STORAGE_KEY = 'settings-recent-sections'
@@ -1058,6 +1059,8 @@ export function SettingsPanel() {
         return <SubAgentRouting />
       case 'sub-agent-execution':
         return <SubAgentExecutionMonitor />
+      case 'department-list':
+        return <DepartmentPanel />
       case 'knowledge':
         return <KnowledgeDocUpload />
       case 'knowledge-qa':

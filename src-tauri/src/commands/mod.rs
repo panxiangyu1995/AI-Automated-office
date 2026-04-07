@@ -16,3 +16,5 @@ pub mod system;
 pub mod tools;
 pub mod update;
 pub mod subagent;
+pub mod skill;
+pub mod mcp;

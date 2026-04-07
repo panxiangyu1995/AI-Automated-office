@@ -3,15 +3,27 @@
 //! 提供前端调用的 Subagent 相关命令
 
 use std::sync::Arc;
+use std::collections::HashMap;
 use tauri::State;
+use tokio::sync::RwLock;
 
 use crate::agent::subagent::{
     get_subagent_manager, init_subagent_manager,
-    types::{AgentConfig, SubagentResult},
+    types::{AgentConfig, SubagentResult, DelegationContext},
     CreatePersonalSubagentRequest, PersonalLoader, UpdatePersonalSubagentRequest,
+    executor::{SubagentExecutor, DelegationOutcome, DelegationStatus},
 };
 use crate::agent::subagent::manager::SubagentStats;
 use crate::agent::subagent::types::{ModelProvider, TriggerConfig, ToolPermissions, LimitsConfig};
+use crate::agent::routing::{SubAgentRoutingService, RoutingContext, RoutingDecision, RoutingOutcome};
+
+/// 全局 Subagent Executor 实例
+static SUBAGENT_EXECUTOR: once_cell::sync::Lazy<Arc<RwLock<SubagentExecutor>>> =
+    once_cell::sync::Lazy::new(|| Arc::new(RwLock::new(SubagentExecutor::default())));
+
+/// 全局 Routing Service 实例
+static ROUTING_SERVICE: once_cell::sync::Lazy<Arc<RwLock<SubAgentRoutingService>>> =
+    once_cell::sync::Lazy::new(|| Arc::new(RwLock::new(SubAgentRoutingService::new())));
 
 /// 获取当前用户 ID（临时实现，后续从认证系统获取）
 fn get_current_user_id() -> String {
@@ -226,4 +238,90 @@ pub fn init_subagent_commands() {
         temperature: 0.7,
         max_tokens: 4096,
     }));
+}
+
+// ============================================================================
+// 路由相关命令
+// ============================================================================
+
+/// 获取路由决策
+#[tauri::command]
+pub async fn route_message(
+    session_id: String,
+    trace_id: String,
+    message: String,
+) -> Result<RoutingDecision, String> {
+    let context = RoutingContext {
+        session_id,
+        trace_id,
+        user_message: message,
+        intent: None,
+        scenario: None,
+        tool_name: None,
+        metadata: None,
+    };
+
+    let service = ROUTING_SERVICE.read().await;
+    Ok(service.make_decision(&context).await)
+}
+
+/// 执行委派
+#[tauri::command]
+pub async fn delegate_to_subagent(
+    subagent_id: String,
+    message: String,
+) -> Result<DelegationOutcome, String> {
+    let context = DelegationContext {
+        user_message: message,
+        extracted_entities: HashMap::new(),
+        previous_results: None,
+    };
+
+    let executor = SUBAGENT_EXECUTOR.read().await;
+    executor
+        .execute(&subagent_id, context, 300000) // 5分钟超时
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// 获取委派历史
+#[tauri::command]
+pub async fn get_delegation_history(limit: Option<usize>) -> Result<Vec<DelegationOutcome>, String> {
+    let executor = SUBAGENT_EXECUTOR.read().await;
+    Ok(executor.get_history(limit).await)
+}
+
+/// 获取路由历史
+#[tauri::command]
+pub async fn get_routing_history(session_id: Option<String>, limit: Option<usize>) -> Result<Vec<RoutingOutcome>, String> {
+    let service = ROUTING_SERVICE.read().await;
+    let limit = limit.unwrap_or(100);
+
+    if let Some(sid) = session_id {
+        Ok(service.get_outcomes_by_session(&sid).await.into_iter().take(limit).collect())
+    } else {
+        // 返回最近的路由结果
+        Ok(Vec::new())
+    }
+}
+
+/// 获取路由规则列表
+#[tauri::command]
+pub async fn get_routing_rules() -> Result<Vec<crate::agent::routing::RoutingRule>, String> {
+    let service = ROUTING_SERVICE.read().await;
+    Ok(service.get_rules().await)
+}
+
+/// 添加路由规则
+#[tauri::command]
+pub async fn add_routing_rule(rule: crate::agent::routing::RoutingRule) -> Result<(), String> {
+    let service = ROUTING_SERVICE.read().await;
+    service.add_rule(rule).await.map_err(|e| e.to_string())
+}
+
+/// 删除路由规则
+#[tauri::command]
+pub async fn delete_routing_rule(rule_id: String) -> Result<(), String> {
+    let service = ROUTING_SERVICE.read().await;
+    service.delete_rule(&rule_id).await.map_err(|e| e.to_string())
 }

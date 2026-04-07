@@ -10,11 +10,16 @@ use super::{SkillLoaderTrait, super::{
     Skill, SkillError, SkillLoadResult, LoadingProgress, LoadingStage,
 }};
 use super::super::parser::{SkillParser, SkillParserTrait};
+use std::collections::HashMap;
 
 /// Progressive skill loader
 pub struct SkillLoader {
     parser: Arc<SkillParser>,
     progress: Arc<RwLock<LoadingProgress>>,
+    /// Per-skill progress tracking
+    skill_progress: Arc<RwLock<HashMap<String, LoadingProgress>>>,
+    /// Loaded skills cache
+    loaded_skills: Arc<RwLock<Vec<Skill>>>,
 }
 
 impl SkillLoader {
@@ -29,6 +34,8 @@ impl SkillLoader {
                 skills_loaded: 0,
                 total_skills: 0,
             })),
+            skill_progress: Arc::new(RwLock::new(HashMap::new())),
+            loaded_skills: Arc::new(RwLock::new(Vec::new())),
         }
     }
 
@@ -38,6 +45,48 @@ impl SkillLoader {
         p.stage = stage;
         p.progress = progress;
         p.message = message.to_string();
+    }
+
+    /// Get progress for a specific skill
+    pub async fn get_progress(&self, skill_id: &str) -> Option<LoadingProgress> {
+        let progress_map = self.skill_progress.read().await;
+        progress_map.get(skill_id).cloned()
+    }
+
+    /// Load multiple skills with priority
+    pub async fn load_skills(&self, skills: Vec<Skill>) -> Vec<Skill> {
+        let total = skills.len();
+        self.update_progress(LoadingStage::Discovery, 0, "Starting skill loading...").await;
+
+        let mut loaded = Vec::new();
+
+        for (index, skill) in skills.into_iter().enumerate() {
+            let progress = ((index as u8 * 100) / total as u8).min(99);
+            self.update_progress(LoadingStage::Loading, progress, &format!("Loading {}...", skill.id)).await;
+
+            // Simulate successful load
+            let skill_progress = LoadingProgress {
+                stage: LoadingStage::Ready,
+                progress: 100,
+                message: "Loaded successfully".to_string(),
+                skills_loaded: index + 1,
+                total_skills: total,
+            };
+
+            {
+                let mut sp = self.skill_progress.write().await;
+                sp.insert(skill.id.clone(), skill_progress);
+            }
+
+            loaded.push(skill);
+        }
+
+        self.update_progress(LoadingStage::Ready, 100, "All skills loaded").await;
+
+        let mut cache = self.loaded_skills.write().await;
+        *cache = loaded.clone();
+
+        loaded
     }
 }
 

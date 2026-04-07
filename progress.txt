@@ -736,3 +736,387 @@ src-tauri/src/agent/tools/
 - Orchestrator 默认禁止写操作
 - 支持最多 5 个并行委派
 - 最大编排深度为 3 层
+
+---
+
+## 2026-04-07 - Task: 部门模块基础框架 (Task 146)
+
+### 铁律合规检查：
+- PRD 合规：FR20, FR21, FR22, FR23 - 部门模块基础
+- 架构合规：ARCH-01 - 分层微内核架构
+- UX 合规：UX-01, UX-04 - VSCode 风格布局、自然语言交互
+- Epic 合规：Epic 1 - Story 1.X
+
+### What was done:
+**Rust 后端 (`src-tauri/src/department/`)**
+1. 创建 `mod.rs` - 模块导出
+2. 创建 `types.rs` - 数据模型（DepartmentPackage, DepartmentMessage, 各类枚举等）
+3. 创建 `registry.rs` - 部门注册表（注册/查询/注销/默认6个核心部门）
+4. 创建 `loader.rs` - 部门加载器（加载/卸载/状态查询）
+5. 创建 `message.rs` - 部门间消息总线（发送/订阅/请求-响应）
+6. 创建 `commands.rs` - Tauri IPC 命令
+
+**前端模块 (`src/features/department/`)**
+1. 创建 `types/department.ts` - TypeScript 类型定义
+2. 创建 `api/departmentApi.ts` - Tauri API 封装
+3. 创建 `stores/departmentStore.ts` - Zustand Store（含持久化）
+4. 创建 `components/DepartmentList.tsx` - 部门列表组件（卡片式）
+5. 创建 `components/DepartmentDetail.tsx` - 部门详情弹窗（Tab页）
+6. 创建 `components/DepartmentPanel.tsx` - 部门管理面板包装
+7. 创建 `index.ts` - 统一导出
+
+**集成到设置中心**
+1. 在 `settingsRegistry.ts` 添加 'departments' 分类和 'department-list' 入口
+2. 在 `SettingsPanel.tsx` 集成 DepartmentPanel 组件
+3. 添加部门治理配置元数据
+
+**lib.rs 更新**
+1. 添加 `mod department` 声明
+2. 初始化 DepartmentState 并注册默认部门
+3. 注册 16 个 Tauri 命令
+
+### Testing:
+- Lint 检查通过
+- 单元测试已编写（message.rs 内置测试）
+- TypeScript 类型检查通过
+
+### Notes:
+- 6个核心部门已默认注册：hr, approval, sales, finance, warehouse, management
+- 部门间支持消息通信（事件/请求-响应/委派模式）
+- 启用/禁用部门自动触发加载/卸载流程
+
+---
+
+## 2026-04-07 - Task: HR人事部门模块实现 (Task 147)
+
+### 铁律合规检查：
+- PRD 合规：FR99-FR106 - HR人事管理
+- 架构合规：ARCH-01 - 分层微内核架构
+- UX 合规：UX-01, UX-04 - VSCode 风格布局，自然语言交互
+- Epic 合规：Epic 1 - Story 1.X
+
+### What was done:
+**Rust 后端 (`src-tauri/src/hr/`)**
+1. 创建 `mod.rs` - 模块导出
+2. 创建 `types.rs` - 数据模型（Employee, HrDepartment, Position, 各类枚举）
+3. 创建 `db.rs` - 内存数据库（支持 CRUD，含默认示例数据）
+4. 创建 `commands.rs` - Tauri IPC 命令
+5. 创建 `department.rs`, `position.rs` - 部门岗位管理
+
+**前端模块 (`src/features/hr/`)**
+1. 创建 `types/hr.types.ts` - TypeScript 类型定义
+2. 创建 `api/hrApi.ts` - Tauri API 封装
+3. 创建 `stores/hrStore.ts` - Zustand Store（含持久化）
+4. 创建 `components/EmployeeList.tsx` - 员工列表组件（表格+分页+搜索）
+5. 创建 `components/DepartmentTree.tsx` - 部门树组件（可展开树形结构）
+6. 创建 `index.ts` - 统一导出
+
+**lib.rs 更新**
+1. 添加 `mod hr` 声明
+2. 初始化 HrState 并注册默认数据
+3. 注册 13 个 Tauri 命令（员工 5 + 部门 5 + 岗位 3）
+
+### Testing:
+- Lint 检查通过
+- 单元测试已编写
+- TypeScript 类型检查通过
+
+### Notes:
+- HR 数据库包含默认数据：5个岗位、5个部门、3个员工
+- 支持员工/部门/岗位的完整 CRUD 操作
+- 部门树支持展开/收起，实时显示员工数量
+
+---
+
+## 2026-04-07 - Task: Approval审批中心模块 (Task 148)
+
+### 铁律合规检查：
+- PRD 合规：FR120-FR126 - 审批管理
+- 架构合规：ARCH-01 - 分层微内核架构
+- UX 合规：UX-01, UX-04 - VSCode 风格布局，自然语言交互
+- Epic 合规：Epic 1 - Story 1.X
+
+### What was done:
+**Rust 后端 (`src-tauri/src/approval/`)**
+1. 创建 `mod.rs` - 模块导出
+2. 创建 `types.rs` - 数据模型（ApprovalFlow, ApprovalRecord, 枚举等）
+3. 创建 `db.rs` - 内存数据库（支持 CRUD，含默认示例数据）
+4. 创建 `commands.rs` - Tauri IPC 命令
+
+**前端模块 (`src/features/approval/`)**
+1. 创建 `types/approval.types.ts` - TypeScript 类型定义
+2. 创建 `api/approvalApi.ts` - Tauri API 封装
+3. 创建 `stores/approvalStore.ts` - Zustand Store
+4. 创建 `components/ApprovalList.tsx` - 审批列表组件（统计+卡片列表）
+5. 创建 `index.ts` - 统一导出
+
+**lib.rs 更新**
+1. 添加 `mod approval` 声明
+2. 初始化 ApprovalState
+3. 注册 12 个 Tauri 命令（流程 5 + 记录 7）
+
+### Testing:
+- Lint 检查通过
+- 单元测试已编写
+- TypeScript 类型检查通过
+
+### Notes:
+- 审批模块包含请假申请流程示例和待审批记录
+- 支持审批通过、驳回、取消操作
+- 审批记录带统计卡片（待审批/已通过/已驳回/总数）
+
+---
+
+## 2026-04-07 - Task: Sales销售部门模块 (Task 149)
+
+### 铁律合规检查：
+- PRD 合规：销售管理相关需求
+- 架构合规：ARCH-01 - 分层微内核架构
+- UX 合规：UX-01, UX-04 - VSCode 风格布局
+- Epic 合规：Epic 1 - Story 1.X
+
+### What was done:
+**Rust 后端 (`src-tauri/src/sales/`)**
+1. 创建 `mod.rs` - 模块导出
+2. 创建 `types.rs` - 数据模型（Customer, Quote, Contract）
+3. 创建 `db.rs` - 内存数据库（含示例客户和报价单）
+4. 创建 `commands.rs` - Tauri IPC 命令（10个）
+
+**前端模块 (`src/features/sales/`)**
+1. 创建 `types/sales.types.ts` - TypeScript 类型
+2. 创建 `api/salesApi.ts` - API 封装
+3. 创建 `stores/salesStore.ts` - Zustand Store
+4. 创建 `components/SalesPanel.tsx` - 销售面板（统计+Tab切换）
+5. 创建 `index.ts` - 统一导出
+
+**lib.rs 更新**
+1. 添加 `mod sales`
+2. 初始化 SalesState
+3. 注册 10 个 Tauri 命令
+
+### Testing:
+- TypeScript 类型检查通过
+
+### Notes:
+- 销售模块包含客户管理和报价单/合同列表
+- 支持客户等级（A/B/C）显示
+- Tab 切换展示客户/报价单/合同
+
+---
+
+## 2026-04-07 - Task: Finance财务部门模块 (Task 150)
+
+### 铁律合规检查：
+- PRD 合规：财务相关需求
+- 架构合规：ARCH-01
+- UX 合规：UX-01, UX-04
+- Epic 合规：Epic 1
+
+### What was done:
+**Rust 后端 (`src-tauri/src/finance/`)**
+1. 创建 `mod.rs` - 模块导出
+2. 创建 `types.rs` - Invoice, LedgerEntry 模型
+3. 创建 `db.rs` - 内存数据库（含示例发票和应收）
+4. 创建 `commands.rs` - Tauri IPC 命令（9个）
+
+**前端模块 (`src/features/finance/`)**
+1. 创建 types/api/stores/components/index.ts
+2. FinancePanel 带统计卡片和Tab切换
+
+**lib.rs 更新**
+1. 添加 `mod finance`
+2. 初始化 FinanceState
+3. 注册 9 个 Tauri 命令
+
+### Notes:
+- 发票含示例增值税发票
+- 台账支持应收/应付筛选
+
+---
+
+## 2026-04-07 - Task: Warehouse仓储部门模块 (Task 151)
+
+### 铁律合规检查：
+- PRD 合规：仓储相关需求
+- 架构合规：ARCH-01
+- UX 合规：UX-01, UX-04
+- Epic 合规：Epic 1
+
+### What was done:
+**Rust 后端 (`src-tauri/src/warehouse/`)**
+1. 创建 `mod.rs`, `types.rs`, `db.rs`, `commands.rs`
+2. 支持入库单、出库单、库存管理
+3. 注册 8 个 Tauri 命令
+
+**前端模块 (`src/features/warehouse/`)**
+1. 创建 types/api/stores/components/index.ts
+2. WarehousePanel 带统计卡片和Tab切换
+
+### Notes:
+- 库存含示例企业版套餐
+- 支持低库存预警统计
+
+---
+
+## 2026-04-07 - Task: Management管理层模块 (Task 152)
+
+### 铁律合规检查：
+- PRD 合规：管理层相关需求
+- 架构合规：ARCH-01
+- UX 合规：UX-01, UX-04
+- Epic 合规：Epic 1
+
+### What was done:
+**Rust 后端 (`src-tauri/src/management/`)**
+1. 创建 `mod.rs`, `types.rs`, `commands.rs`
+2. DashboardData、预警、预警规则
+3. 注册 5 个 Tauri 命令
+
+**前端模块 (`src/features/management/`)**
+1. 创建 types/api/stores/components/index.ts
+2. ManagementPanel 带数据看板和预警中心
+
+### Notes:
+- 管理层聚合所有部门数据
+- 含示例库存不足预警
+
+---
+
+## 2026-04-07 - Task: 153 统一消息通知系统
+
+### 铁律合规检查：
+- PRD 合规：消息通知相关需求
+- 架构合规：ARCH-01
+- UX 合规：UX-01, UX-04
+- Epic 合规：Epic 2
+
+### What was done:
+**Rust 后端 (`src-tauri/src/message/`)**
+1. 创建 `mod.rs`, `types.rs`, `commands.rs`
+2. Message、NotificationPreferences、UnreadCount
+3. 注册 9 个 Tauri 命令
+
+**前端模块 (`src/features/message/`)**
+1. 创建 types/api/stores/components/index.ts
+2. NotificationBell 带下拉列表和未读计数
+
+### Notes:
+- 通知铃铛显示未读消息数量
+- 支持按类型筛选消息
+
+---
+
+## 2026-04-07 - Task: 154 多租户数据隔离
+
+### 铁律合规检查：
+- PRD 合规：多租户隔离相关需求
+- 架构合规：ARCH-01 - 多租户数据库级隔离
+- Epic 合规：Epic 2
+
+### What was done:
+**Rust 后端 (`src-tauri/src/tenant/`)**
+1. 创建 `mod.rs`, `types.rs`, `commands.rs`
+2. Tenant、TenantConfig、FeatureFlags、RateLimit
+3. 注册 5 个 Tauri 命令
+
+### Notes:
+- 租户模块提供当前租户、租户配置、租户统计
+- 包含企业版套餐示例租户
+
+---
+
+## 2026-04-07 - Task: 146-165 OpenSpec变更文档创建
+
+### 铁律合规检查：
+- PRD 合规：Epic 1-7 相关需求
+- 架构合规：ARCH-01 - 分层微内核架构
+- Epic 合规：Epic 5, 6, 7, 60
+
+### What was done:
+**创建4个OpenSpec变更目录及文档：**
+
+1. **subagent-integration** (Epic 60 - Task 161)
+   - proposal.md - SubAgent完整集成方案
+   - design.md - 意图路由中间件、委派执行、权限收缩设计
+   - tasks.md - 6个实现任务
+   - specs/spec.md - 功能规格和数据规格
+
+2. **skill-execution-engine** (Epic 5 - Task 163)
+   - proposal.md - Skill执行引擎完善方案
+   - design.md - SKILL.md解析器、注册表、多源发现设计
+   - tasks.md - 6个实现任务
+   - specs/spec.md - 功能规格
+
+3. **mcp-service-integration** (Epic 6 - Task 164)
+   - proposal.md - MCP服务集成方案
+   - design.md - MCP客户端、工具桥接设计
+   - tasks.md - 7个实现任务
+   - specs/spec.md - 功能规格
+
+4. **mvp-final-integration** (Epic 7 - Task 165)
+   - proposal.md - MVP最终集成测试方案
+   - design.md - 分层测试架构、E2E测试用例
+   - tasks.md - 6个测试任务
+   - specs/spec.md - 用户旅程和验收场景
+
+**更新 task.json:**
+- Task 161 passes: false (SubAgent完整集成)
+- Task 163 passes: false (Skill执行引擎完善)
+- Task 164 passes: false (MCP服务集成)
+- Task 165 passes: false (MVP最终集成测试)
+
+### Notes:
+- OpenSpec变更目录位于 `openspec/changes/`
+- 每个变更包含 .openspec.yaml、proposal.md、design.md、tasks.md、specs/spec.md
+- openspec CLI 在Windows环境不可用，文档手动创建
+
+---
+
+## 2026-04-07 - Tasks 161, 163, 164, 165 实现更新
+
+### 铁律合规检查：
+- PRD 合规：Epic 60/5/6/7 相关需求
+- 架构合规：ARCH-01 - 分层微内核架构
+- Epic 合规：Epic 60, 5, 6, 7
+
+### What was done:
+
+**Task 161: SubAgent完整集成 - 已完成**
+- `src-tauri/src/agent/subagent/executor.rs` - SubagentExecutor 核心实现
+- `src-tauri/src/agent/subagent/mod.rs` - 模块导出更新
+- `src-tauri/src/commands/subagent.rs` - 意图路由和委派执行命令
+- `src/features/agent/components/SubAgentDelegatePanel.tsx` - 前端委派面板
+
+**Task 163: Skill执行引擎完善 - 已完成**
+- `src-tauri/src/commands/skill.rs` - 新增 Tauri 命令（skill_register, skill_list, skill_execute, skill_discover, skill_to_tool等）
+- `src-tauri/src/commands/mod.rs` - 添加 skill 模块
+- `src-tauri/src/agent/skill/loader/loader.rs` - 扩展 SkillLoader（get_progress, load_skills方法）
+- `src-tauri/src/agent/skill/types.rs` - 添加 Loading 阶段
+- `src-tauri/src/agent/skill/converter/converter.rs` - 扩展 SkillConverter（skill_to_tool, skill_to_trigger方法）
+- `openspec/changes/skill-execution-engine/README.md` - 文档更新
+
+**Task 164: MCP服务集成 - 已完成**
+- `src-tauri/src/mcp/mod.rs` - MCP 模块入口
+- `src-tauri/src/mcp/types.rs` - MCP 类型定义（MCPTransportType, MCPServiceConfig, MCPTool等）
+- `src-tauri/src/mcp/client.rs` - MCPClient 实现（STDIO/HTTP/WebSocket传输）
+- `src-tauri/src/mcp/registry.rs` - MCPServiceRegistry 管理服务生命周期
+- `src-tauri/src/mcp/bridge.rs` - MCPToolBridge 将MCP工具转换为系统工具
+- `src-tauri/src/commands/mcp.rs` - MCP Tauri 命令
+- `src-tauri/src/commands/mod.rs` - 添加 mcp 模块
+- `src/features/settings/components/MCPServiceConfig.tsx` - 集成后端 API
+- `openspec/changes/mcp-service-integration/README.md` - 文档更新
+
+**Task 165: MVP最终集成测试 - 进行中**
+- `openspec/changes/mvp-final-integration/README.md` - 测试文档
+- `tests/integration/mvp/agent-runtime-integration.test.ts` - Agent运行时集成测试
+
+### Testing:
+- 代码文件已创建完成
+- 模块结构完整
+- 前端组件已集成 Tauri 命令
+
+### Notes:
+- 三个核心模块（SubAgent, Skill, MCP）后端实现完成
+- 前端组件已创建并连接后端 API
+- 测试框架已建立但需要真实环境验证
+

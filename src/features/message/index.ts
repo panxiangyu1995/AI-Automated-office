@@ -1,6 +1,9 @@
 /**
- * Message Feature Module
- * Task 61: Story 43.2 - Message and Part Model
+ * Message 模块 - 统一导出
  */
 
-export * from './runtime'
+export * from './types/message.types'
+export { messageApi } from './api/messageApi'
+export * from './api/messageApi'
+export { useMessageStore, useUnreadCount } from './stores/messageStore'
+export { NotificationBell } from './components/NotificationBell'

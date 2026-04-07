@@ -1,5 +1,6 @@
 //! Skill format converter.
 
+use std::collections::HashMap;
 use super::super::{Skill, SkillError};
 
 /// Converter for different skill formats
@@ -33,6 +34,64 @@ impl SkillConverter {
     pub fn from_yaml(&self, yaml: &str) -> Result<Skill, SkillError> {
         serde_yaml::from_str(yaml)
             .map_err(|e| SkillError::parse_error(&e.to_string(), "YAML parsing"))
+    }
+
+    /// Convert Skill to tool descriptor JSON
+    pub fn skill_to_tool(&self, skill: &Skill) -> serde_json::Value {
+        let mut properties: HashMap<String, serde_json::Value> = HashMap::new();
+
+        // Add skill properties as tool parameters
+        properties.insert("skill_id".to_string(), serde_json::json!({
+            "type": "string",
+            "description": "The skill identifier"
+        }));
+        properties.insert("action".to_string(), serde_json::json!({
+            "type": "string",
+            "description": "The action to perform",
+            "enum": skill.endpoints.iter().map(|e| e.name.clone()).collect::<Vec<_>>()
+        }));
+
+        serde_json::json!({
+            "name": format!("skill_{}", skill.id.replace("-", "_")),
+            "description": skill.description,
+            "category": format!("{:?}", skill.category),
+            "version": skill.version,
+            "parameters": {
+                "type": "object",
+                "properties": properties,
+                "required": vec!["skill_id", "action"]
+            },
+            "endpoints": skill.endpoints.iter().map(|e| {
+                serde_json::json!({
+                    "name": e.name,
+                    "method": e.method,
+                    "path": e.path,
+                    "description": e.description
+                })
+            }).collect::<Vec<_>>(),
+            "permissions": skill.permissions.iter().map(|p| {
+                serde_json::json!({
+                    "type": format!("{:?}", p.permission_type),
+                    "resource": p.resource,
+                    "level": format!("{:?}", p.level)
+                })
+            }).collect::<Vec<_>>(),
+            "metadata": {
+                "author": skill.metadata.author,
+                "tags": skill.metadata.tags
+            }
+        })
+    }
+
+    /// Convert Skill to trigger config
+    pub fn skill_to_trigger(&self, skill: &Skill) -> serde_json::Value {
+        serde_json::json!({
+            "type": "skill",
+            "skill_id": skill.id,
+            "enabled": true,
+            "keywords": skill.metadata.tags.clone(),
+            "category": format!("{:?}", skill.category)
+        })
     }
 }
 

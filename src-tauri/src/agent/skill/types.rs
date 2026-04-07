@@ -212,6 +212,8 @@ pub enum LoadingStage {
     Dependencies,
     /// Loading resources
     Resources,
+    /// Loading skill in progress
+    Loading,
     /// Ready for execution
     Ready,
 }

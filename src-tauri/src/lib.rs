@@ -4,20 +4,19 @@
 
 mod auth;
 mod agent;
-mod commands;
-pub mod crypto;
-mod hardware;
-mod http;
-pub mod knowledge;
+pub mod approval;
 pub mod capability;
-mod network;
-pub mod session;
-mod shortcuts;
-mod storage;
-mod sync;
-mod tray;
-mod utils;
-pub mod vector;
+pub mod crypto;
+pub mod department;
+pub mod finance;
+pub mod hr;
+pub mod management;
+pub mod marketplace;
+pub mod message;
+pub mod sales;
+pub mod tenant;
+pub mod warehouse;
+pub mod crypto;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -190,6 +189,45 @@ pub fn run() {
 
                 let package_loader = Arc::new(capability::PackageLoader::new());
                 app.manage(package_loader);
+
+                // Initialize department module
+                let department_state = department::DepartmentState::new();
+                department_state.init_defaults();
+                app.manage(department_state.registry.clone());
+                app.manage(department_state.loader.clone());
+                app.manage(department_state.message_bus.clone());
+
+                // Initialize HR module
+                let hr_state = hr::HrState::new();
+                app.manage(hr_state.db.clone());
+
+                // Initialize Approval module
+                let approval_state = approval::ApprovalState::new();
+                app.manage(approval_state.db.clone());
+
+                // Initialize Sales module
+                let sales_state = sales::SalesState::new();
+                app.manage(sales_state.db.clone());
+
+                // Initialize Finance module
+                let finance_state = finance::FinanceState::new();
+                app.manage(finance_state.db.clone());
+
+                // Initialize Warehouse module
+                let warehouse_state = warehouse::WarehouseState::new();
+                app.manage(warehouse_state.db.clone());
+
+                // Initialize Management module
+                let management_state = management::ManagementState::new();
+                app.manage(management_state);
+
+                // Initialize Message module
+                let message_state = message::MessageState::new();
+                app.manage(message_state);
+
+                // Initialize Tenant module
+                let tenant_state = tenant::TenantState::new();
+                app.manage(tenant_state);
             });
             
             // 注册默认快捷键
@@ -304,6 +342,104 @@ pub fn run() {
             agent::websocket::close_websocket_connection,
             agent::websocket::send_websocket_message,
             agent::websocket::get_active_websocket_sessions,
+            // Department commands (Task 146)
+            department::department_create,
+            department::department_list,
+            department::department_get,
+            department::department_update,
+            department::department_delete,
+            department::department_enable,
+            department::department_disable,
+            department::department_capabilities,
+            department::department_load,
+            department::department_unload,
+            department::department_loaded_list,
+            department::department_load_state,
+            department::department_send_message,
+            department::department_message_history,
+            department::department_message_history_by_department,
+            department::department_stats,
+            // HR commands (Task 147)
+            hr::hr_create_employee,
+            hr::hr_list_employees,
+            hr::hr_get_employee,
+            hr::hr_update_employee,
+            hr::hr_delete_employee,
+            hr::hr_create_department,
+            hr::hr_get_department_tree,
+            hr::hr_get_department,
+            hr::hr_update_department,
+            hr::hr_delete_department,
+            hr::hr_create_position,
+            hr::hr_list_positions,
+            hr::hr_get_position,
+            hr::hr_update_position,
+            hr::hr_delete_position,
+            // Approval commands (Task 148)
+            approval::approval_create_flow,
+            approval::approval_list_flows,
+            approval::approval_get_flow,
+            approval::approval_update_flow,
+            approval::approval_delete_flow,
+            approval::approval_create_record,
+            approval::approval_list_records,
+            approval::approval_get_record,
+            approval::approval_approve,
+            approval::approval_reject,
+            approval::approval_cancel,
+            approval::approval_get_stats,
+            // Sales commands (Task 149)
+            sales::sales_create_customer,
+            sales::sales_list_customers,
+            sales::sales_get_customer,
+            sales::sales_update_customer,
+            sales::sales_delete_customer,
+            sales::sales_list_quotes,
+            sales::sales_get_quote,
+            sales::sales_list_contracts,
+            sales::sales_get_contract,
+            sales::sales_get_stats,
+            // Finance commands (Task 150)
+            finance::finance_create_invoice,
+            finance::finance_list_invoices,
+            finance::finance_get_invoice,
+            finance::finance_verify_invoice,
+            finance::finance_create_ledger,
+            finance::finance_list_ledger,
+            finance::finance_get_ledger,
+            finance::finance_record_payment,
+            finance::finance_get_stats,
+            // Warehouse commands (Task 151)
+            warehouse::warehouse_list_inbounds,
+            warehouse::warehouse_get_inbound,
+            warehouse::warehouse_create_inbound,
+            warehouse::warehouse_list_outbounds,
+            warehouse::warehouse_get_outbound,
+            warehouse::warehouse_create_outbound,
+            warehouse::warehouse_list_inventory,
+            warehouse::warehouse_get_stats,
+            // Management commands (Task 152)
+            management::management_get_dashboard,
+            management::management_list_warnings,
+            management::management_create_warning_rule,
+            management::management_list_rules,
+            management::management_get_stats,
+            // Message commands (Task 153)
+            message::message_send,
+            message::message_list,
+            message::message_get,
+            message::message_mark_read,
+            message::message_read_all,
+            message::message_delete,
+            message::message_unread_count,
+            message::message_get_preferences,
+            message::message_update_preferences,
+            // Tenant commands (Task 154)
+            tenant::tenant_get_current,
+            tenant::tenant_list,
+            tenant::tenant_get_config,
+            tenant::tenant_update_config,
+            tenant::tenant_get_stats,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

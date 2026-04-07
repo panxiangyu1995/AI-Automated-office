@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Wrench,
+  Building2,
 } from 'lucide-react'
 
 export type SettingsCategoryKey =
@@ -21,6 +22,7 @@ export type SettingsCategoryKey =
   | 'plugins'
   | 'security'
   | 'system'
+  | 'departments'
 
 export type SettingsSectionKey =
   | 'general'
@@ -104,6 +106,12 @@ export const SETTINGS_CATEGORIES: SettingsCategoryDescriptor[] = [
     title: 'Sub-Agent 与 Skills',
     description: '管理子代理角色、能力绑定、权限策略与调用路由。',
     icon: Bot,
+  },
+  {
+    key: 'departments',
+    title: '部门管理',
+    description: '管理企业部门模块，启用/禁用部门能力包，配置部门间通信。',
+    icon: Building2,
   },
   {
     key: 'knowledge',
@@ -339,6 +347,14 @@ export const SETTINGS_SECTIONS: SettingsSectionDescriptor[] = [
     keywords: ['更新', 'update', 'release'],
   },
   {
+    key: 'department-list',
+    category: 'departments',
+    title: '部门列表',
+    description: '查看和管理企业所有部门模块。',
+    kind: 'config',
+    keywords: ['部门', 'department', '模块'],
+  },
+  {
     key: 'prompt-debug',
     category: 'system',
     title: '提示词调试',
@@ -368,6 +384,7 @@ export const DEFAULT_SECTION_BY_CATEGORY: Record<
   plugins: 'plugin-adaptation',
   security: 'resource-security',
   system: 'updates',
+  departments: 'department-list',
 }
 
 export const SETTINGS_SECTION_GOVERNANCE: Record<
@@ -589,6 +606,14 @@ export const SETTINGS_SECTION_GOVERNANCE: Record<
     governanceNote: '健康监控主要用于发现问题与恢复判断，不应承担正式配置入口。',
     changeImpact: '本页主要影响运维判断与故障恢复路径。',
     auditTrail: '异常事件、重试和降级状态构成运维审计证据。',
+  },
+  'department-list': {
+    audience: '平台管理员',
+    riskLevel: 'medium',
+    saveMode: 'managed',
+    governanceNote: '部门模块是企业能力边界，启停和配置变更应保持一致性。',
+    changeImpact: '会影响部门可用性、能力范围和跨部门协作路径。',
+    auditTrail: '部门启停和配置变更应进入平台治理审计链路。',
   },
 }
 
