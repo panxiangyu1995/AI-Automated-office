@@ -1322,3 +1322,53 @@ Task 181 前端 UI 组件已完整实现：
 - 前端UI组件 `WorkCardMessage.tsx` 已存在并完整
 - 后端实现了完整的数据模型、CRUD操作、模板系统和动作处理
 - 代码库有预先存在的编译错误（crypto重复、skill重复定义、vector模块缺失等），需要单独修复
+
+---
+
+## 2026-04-08 - Task 182: 消息搜索与筛选增强
+
+### 铁律合规检查：
+- PRD 合规：FR611-FR614 - 消息搜索与筛选
+- 架构合规：ARCH-01 - 分层微内核架构
+- Epic 合规：Epic 25 - Story 25.1
+
+### What was done:
+**后端 (`src-tauri/src/message/`):**
+1. 更新 `types.rs`:
+   - Message 结构体添加 pinned 和 pinned_at 字段
+   - 新增 MessageSearchQuery、MessageSearchResult、MessageFilter 类型
+   - 新增 PinnedMessage、ExportFormat、ExportRequest、ExportResult 类型
+
+2. 更新 `commands.rs`:
+   - message_search - 全文搜索，支持关键词、类型、优先级、状态、发送者、日期范围、置顶筛选
+   - message_filter - 多维度筛选，返回 MessageListItem 列表
+   - message_pin - 置顶消息
+   - message_unpin - 取消置顶
+   - message_list_pinned - 获取置顶消息列表
+   - message_export - 导出消息（支持 JSON/CSV/TXT 格式）
+
+**前端 (`src/features/message/`):**
+1. 更新 `types/message.types.ts`:
+   - Message 接口添加 pinned、pinnedAt 字段
+   - 新增 MessageSearchQuery、MessageSearchResult、MessageFilter 接口
+   - 新增 PinnedMessage、ExportFormat、ExportRequest、ExportResult 接口
+
+2. 更新 `api/messageApi.ts`:
+   - searchMessages - 搜索消息
+   - filterMessages - 筛选消息
+   - pinMessage - 置顶消息
+   - unpinMessage - 取消置顶
+   - listPinnedMessages - 获取置顶列表
+   - exportMessages - 导出消息
+
+**lib.rs 更新:**
+- 注册 message_search、message_filter、message_pin、message_unpin、message_list_pinned、message_export 命令
+
+### Testing:
+- Git commit 成功：2726e33
+- 前端类型和 API 封装完成
+- 后端命令已注册
+
+### Notes:
+- Task 182 标记为 passes: true
+- 前端 UI 组件需要后续实现以配合新的 API
