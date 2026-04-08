@@ -234,6 +234,10 @@ pub fn run() {
                 // Initialize WorkCard module
                 let workcard_state = commands::workcard::WorkCardState::default();
                 app.manage(workcard_state);
+
+                // Initialize Monitoring module
+                let monitoring_state = commands::monitoring::MonitoringState::default();
+                app.manage(monitoring_state);
             });
             
             // 注册默认快捷键
@@ -464,6 +468,18 @@ pub fn run() {
             commands::workcard::get_card_statuses,
             commands::workcard::get_card_priorities,
             commands::workcard::get_card_action_types,
+            // Monitoring commands (Task 183)
+            commands::monitoring::get_all_metrics,
+            commands::monitoring::get_sub_agent_metrics,
+            commands::monitoring::get_session_stats,
+            commands::monitoring::get_session_diagnostics,
+            commands::monitoring::get_diagnostic_summary,
+            commands::monitoring::get_active_executions,
+            commands::monitoring::get_monitoring_config,
+            commands::monitoring::update_monitoring_config,
+            commands::monitoring::get_session_traces,
+            commands::monitoring::get_trace,
+            commands::monitoring::get_span,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");
