@@ -1,4 +1,4 @@
-import { attachTauriRuntimeEventBridge, BackendRuntimeEvent } from './runtimeEventBridgeTauri'
+import { attachTauriRuntimeEventBridge } from './runtimeEventBridgeTauri'
 import {
   createWebSocketConnection,
   closeWebSocketConnection,
@@ -304,6 +304,4 @@ export async function checkWebSocketHealth(
   }
 }
 
-// Re-export Tauri bridge for convenience
-export { attachTauriRuntimeEventBridge }
-export type { BackendRuntimeEvent }
+// Re-export Tauri bridge from runtimeEventBridgeTauri for backward compatibility
