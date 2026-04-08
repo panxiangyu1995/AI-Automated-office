@@ -20,7 +20,7 @@ interface SalesState {
   clearError: () => void
 }
 
-export const useSalesStore = create<SalesState>((set, get) => ({
+export const useSalesStore = create<SalesState>((set) => ({
   customers: [],
   quotes: [],
   contracts: [],

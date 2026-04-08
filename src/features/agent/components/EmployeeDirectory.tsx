@@ -92,7 +92,7 @@ export interface EmployeeDirectoryProps {
 
 // ==================== API Hooks ====================
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect } from 'react'
 import { listEmployees, getDepartmentTree } from '@/features/hr/api/hrApi'
 import type { EmployeeListItem, DepartmentTreeNode } from '@/features/hr/types/hr.types'
 
@@ -101,23 +101,23 @@ function convertToEmployee(item: EmployeeListItem): Employee {
   return {
     id: item.id,
     name: item.name,
-    avatar: item.avatar,
-    department: item.department_name,
-    position: item.position_name,
+    avatar: undefined,
+    department: item.departmentName || '',
+    position: item.positionName || '',
     email: item.email,
-    phone: item.phone,
+    phone: undefined,
     status: item.status === 'active' ? 'online' : 'offline',
-    isCurrentUser: item.is_current_user || false,
+    isCurrentUser: false,
   }
 }
 
 // Convert API Department to UI Department
 function convertToDepartment(node: DepartmentTreeNode, employees: Employee[]): Department {
   return {
-    id: node.id,
-    name: node.name,
-    employeeCount: node.employee_count,
-    employees: employees.filter((e) => e.department === node.name),
+    id: node.department.id,
+    name: node.department.name,
+    employeeCount: node.employeeCount,
+    employees: employees.filter((e) => e.department === node.department.name),
     expanded: true,
   }
 }
@@ -287,26 +287,6 @@ const MOCK_EMPLOYEES: Employee[] = [
   },
 ]
 
-// Group employees by department
-function groupByDepartment(employees: Employee[]): Department[] {
-  const departmentMap = new Map<string, Employee[]>()
-
-  employees.forEach((emp) => {
-    const existing = departmentMap.get(emp.department) || []
-    departmentMap.set(emp.department, [...existing, emp])
-  })
-
-  return Array.from(departmentMap.entries())
-    .map(([name, emps], index) => ({
-      id: `dept-${index}`,
-      name,
-      employeeCount: emps.length,
-      employees: emps,
-      expanded: true,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name))
-}
-
 // Calculate stats
 function calculateStats(employees: Employee[], selectedIds: string[]): DirectoryStats {
   return {
@@ -367,8 +347,8 @@ export function EmployeeDirectory({
   const [activeTab, setActiveTab] = useState<string>('department')
 
   // Fetch employees and departments from API
-  const { employees, loading: employeesLoading } = useEmployees()
-  const { departments: apiDepartments, loading: deptsLoading } = useDepartments(employees)
+  const { employees } = useEmployees()
+  const { departments: apiDepartments } = useDepartments(employees)
 
   // Use API departments if available, otherwise fallback to mock grouping
   const allDepartments = useMemo(() => {

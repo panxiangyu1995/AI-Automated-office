@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils'
 import { Bold, Italic, Code, Link, List, ListOrdered, Quote, Heading, Eye, Edit, SplitSquareHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface MarkdownEditorProps {
   value?: string
@@ -44,7 +43,7 @@ const defaultToolbarButtons: MarkdownToolbarButton[] = [
 
 // Simple markdown to HTML converter
 function parseMarkdownToHtml(markdown: string): string {
-  let html = markdown
+  const html = markdown
     // Escape HTML
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

@@ -1,0 +1,1525 @@
+{
+  "plan_version": "1.0",
+  "plan_date": "2026-04-08",
+  "description": "AI-Automated-office 开发规划任务清单",
+  "total_tasks": 85,
+  "completed_tasks": 0,
+  "tasks": [
+    {
+      "id": 1,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "创建 knowledge/commands.rs 实现Tauri命令",
+      "description": "实现知识库相关的Tauri IPC命令，包括创建、查询、更新、删除知识库和知识条目",
+      "steps": [
+        "创建 knowledge/commands.rs 文件",
+        "实现知识库 CRUD 命令",
+        "实现知识条目 CRUD 命令",
+        "实现知识检索命令",
+        "实现知识审核命令"
+      ],
+      "frs_covered": ["FR250", "FR251", "FR252", "FR253"],
+      "workload": "3天",
+      "dependencies": ["knowledge/types.rs"],
+      "passes": false
+    },
+    {
+      "id": 2,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "创建 knowledge/db.rs 实现SQLite存储",
+      "description": "实现知识库的本地SQLite存储，包括知识库表、知识条目表、文档表的创建和操作",
+      "steps": [
+        "创建 knowledge/db.rs 文件",
+        "实现数据库初始化",
+        "实现知识库表操作",
+        "实现知识条目表操作",
+        "实现文档表操作"
+      ],
+      "frs_covered": ["FR250"],
+      "workload": "3天",
+      "dependencies": ["1"],
+      "passes": false
+    },
+    {
+      "id": 3,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "实现向量嵌入服务",
+      "description": "实现文本向量嵌入服务，支持本地嵌入和云端Qdrant服务",
+      "steps": [
+        "设计嵌入服务接口",
+        "实现本地嵌入生成器",
+        "实现Qdrant云端集成",
+        "实现嵌入缓存机制"
+      ],
+      "frs_covered": ["FR254"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 4,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "实现混合检索引擎(向量+BM25)",
+      "description": "实现结合向量相似度和BM25关键词的混合检索引擎",
+      "steps": [
+        "实现向量检索",
+        "实现BM25关键词检索",
+        "实现混合打分机制",
+        "实现重排序逻辑"
+      ],
+      "frs_covered": ["FR251", "FR254"],
+      "workload": "5天",
+      "dependencies": ["3"],
+      "passes": false
+    },
+    {
+      "id": 5,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "实现知识审核流程",
+      "description": "实现知识草稿提交、审核、驳回的完整流程",
+      "steps": [
+        "实现知识草稿提交",
+        "实现知识审核列表",
+        "实现审核通过/驳回",
+        "实现驳回原因记录"
+      ],
+      "frs_covered": ["FR949", "FR950", "FR951", "FR952", "FR953", "FR955"],
+      "workload": "3天",
+      "dependencies": ["1", "2"],
+      "passes": false
+    },
+    {
+      "id": 6,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "完善知识库管理前端",
+      "description": "完善 KnowledgePanel.tsx，实现知识库创建、编辑、删除、文档上传等功能",
+      "steps": [
+        "实现知识库列表界面",
+        "实现知识库创建/编辑对话框",
+        "实现知识条目列表和详情",
+        "实现文档上传组件"
+      ],
+      "frs_covered": ["FR250", "FR251", "FR252", "FR253", "FR957", "FR958", "FR959"],
+      "workload": "3天",
+      "dependencies": ["1", "2"],
+      "passes": false
+    },
+    {
+      "id": 7,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "实现文档解析服务",
+      "description": "实现PDF、DOCX、MD、TXT格式文档的解析和内容提取",
+      "steps": [
+        "实现PDF解析",
+        "实现DOCX解析",
+        "实现MD解析",
+        "实现TXT解析",
+        "实现分块策略"
+      ],
+      "frs_covered": ["FR943", "FR944"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 8,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "知识库RAG",
+      "title": "实现多知识库配置",
+      "description": "实现多知识库管理和Agent绑定功能",
+      "steps": [
+        "实现知识库创建/编辑",
+        "实现知识库权限设置",
+        "实现Agent知识库绑定",
+        "实现知识库列表展示"
+      ],
+      "frs_covered": ["FR940", "FR941", "FR942", "FR945", "FR946", "FR947", "FR948"],
+      "workload": "3天",
+      "dependencies": ["1", "2"],
+      "passes": false
+    },
+    {
+      "id": 9,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现消息存储和CRUD",
+      "description": "实现消息的后端存储和基本操作",
+      "steps": [
+        "完善 message/commands.rs",
+        "创建 message/db.rs",
+        "实现消息创建",
+        "实现消息查询",
+        "实现消息状态更新"
+      ],
+      "frs_covered": ["FR90", "FR91", "FR92", "FR93"],
+      "workload": "5天",
+      "dependencies": ["message/types.rs"],
+      "passes": false
+    },
+    {
+      "id": 10,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现一对一聊天界面",
+      "description": "实现用户间一对一聊天的前端界面",
+      "steps": [
+        "创建聊天会话列表",
+        "创建聊天窗口组件",
+        "实现消息发送/接收",
+        "实现消息时间显示"
+      ],
+      "frs_covered": ["FR90", "FR91", "FR92", "FR93"],
+      "workload": "5天",
+      "dependencies": ["9"],
+      "passes": false
+    },
+    {
+      "id": 11,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现群组聊天功能",
+      "description": "实现群组创建、成员管理、群聊消息功能",
+      "steps": [
+        "实现群组创建/编辑",
+        "实现成员邀请/移除",
+        "实现群聊消息收发",
+        "实现群公告"
+      ],
+      "frs_covered": ["FR631", "FR632", "FR633", "FR637", "FR638", "FR647", "FR648"],
+      "workload": "8天",
+      "dependencies": ["10"],
+      "passes": false
+    },
+    {
+      "id": 12,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现消息状态追踪",
+      "description": "实现消息已读/未读、已送达状态追踪",
+      "steps": [
+        "实现消息状态模型",
+        "实现已读标记",
+        "实现状态同步"
+      ],
+      "frs_covered": ["FR622", "FR623", "FR624"],
+      "workload": "3天",
+      "dependencies": ["10"],
+      "passes": false
+    },
+    {
+      "id": 13,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现消息撤回和编辑",
+      "description": "实现消息撤回(2分钟内)和编辑功能",
+      "steps": [
+        "实现消息撤回",
+        "实现消息编辑",
+        "实现修改记录"
+      ],
+      "frs_covered": ["FR628", "FR629"],
+      "workload": "3天",
+      "dependencies": ["10"],
+      "passes": false
+    },
+    {
+      "id": 14,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "完善Agent间通信",
+      "description": "完善Agent间消息传递、协作通知功能",
+      "steps": [
+        "完善intercom模块",
+        "实现Agent消息发送",
+        "实现消息确认机制",
+        "实现Agent协作通知"
+      ],
+      "frs_covered": ["FR59", "FR60", "FR61", "FR62", "FR63", "FR64", "FR65", "FR66", "FR67", "FR68"],
+      "workload": "5天",
+      "dependencies": ["intercom/"],
+      "passes": false
+    },
+    {
+      "id": 15,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现消息全文检索",
+      "description": "实现消息内容搜索功能",
+      "steps": [
+        "实现搜索索引",
+        "实现搜索接口",
+        "实现高亮显示"
+      ],
+      "frs_covered": ["FR611", "FR612"],
+      "workload": "3天",
+      "dependencies": ["9"],
+      "passes": false
+    },
+    {
+      "id": 16,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现离线消息同步",
+      "description": "实现离线消息队列和上线同步",
+      "steps": [
+        "实现消息队列",
+        "实现同步协议",
+        "实现冲突处理"
+      ],
+      "frs_covered": ["FR625", "FR626", "FR627"],
+      "workload": "5天",
+      "dependencies": ["9"],
+      "passes": false
+    },
+    {
+      "id": 17,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "设计同步数据模型",
+      "description": "设计同步所需的数据结构和协议",
+      "steps": [
+        "设计同步实体",
+        "设计同步协议",
+        "设计冲突标记"
+      ],
+      "frs_covered": ["FR38"],
+      "workload": "2天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 18,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现SQLite本地存储",
+      "description": "实现核心数据的本地SQLite存储",
+      "steps": [
+        "创建同步存储模块",
+        "实现数据表设计",
+        "实现CRUD操作"
+      ],
+      "frs_covered": ["FR38"],
+      "workload": "5天",
+      "dependencies": ["17"],
+      "passes": false
+    },
+    {
+      "id": 19,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现增量同步协议",
+      "description": "实现基于变更日志的增量同步机制",
+      "steps": [
+        "实现变更追踪",
+        "实现增量打包",
+        "实现同步校验"
+      ],
+      "frs_covered": ["FR38", "FR39"],
+      "workload": "8天",
+      "dependencies": ["18"],
+      "passes": false
+    },
+    {
+      "id": 20,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现冲突检测机制",
+      "description": "实现数据冲突的检测和标记",
+      "steps": [
+        "实现版本检测",
+        "实现冲突标记",
+        "实现冲突通知"
+      ],
+      "frs_covered": ["FR40", "FR41"],
+      "workload": "5天",
+      "dependencies": ["19"],
+      "passes": false
+    },
+    {
+      "id": 21,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现冲突解决策略",
+      "description": "实现多种冲突解决策略(服务端权威、时间戳优先等)",
+      "steps": [
+        "实现服务端权威策略",
+        "实现时间戳优先策略",
+        "实现用户选择策略",
+        "实现策略配置"
+      ],
+      "frs_covered": ["FR40", "FR41"],
+      "workload": "5天",
+      "dependencies": ["20"],
+      "passes": false
+    },
+    {
+      "id": 22,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现同步状态管理前端",
+      "description": "实现同步状态展示和用户操作界面",
+      "steps": [
+        "实现状态显示组件",
+        "实现手动同步按钮",
+        "实现冲突解决界面"
+      ],
+      "frs_covered": ["FR39", "FR40", "FR41"],
+      "workload": "3天",
+      "dependencies": ["20", "21"],
+      "passes": false
+    },
+    {
+      "id": 23,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现离线队列",
+      "description": "实现离线操作队列和重放机制",
+      "steps": [
+        "实现离线队列",
+        "实现操作重放",
+        "实现队列管理"
+      ],
+      "frs_covered": ["FR38"],
+      "workload": "5天",
+      "dependencies": ["19"],
+      "passes": false
+    },
+    {
+      "id": 24,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "数据同步",
+      "title": "实现多端同步",
+      "description": "实现桌面端和移动端的数据同步",
+      "steps": [
+        "实现设备注册",
+        "实现全量同步",
+        "实现增量同步"
+      ],
+      "frs_covered": ["FR627"],
+      "workload": "8天",
+      "dependencies": ["23"],
+      "passes": false
+    },
+    {
+      "id": 25,
+      "phase": "Phase 1",
+      "priority": "P1",
+      "epic": "技术债务",
+      "title": "修复硬编码用户ID",
+      "description": "修复 commands/subagent.rs 中的硬编码 get_current_user_id()",
+      "steps": [
+        "实现用户认证获取",
+        "替换硬编码",
+        "验证权限正确"
+      ],
+      "frs_covered": [],
+      "workload": "1天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 26,
+      "phase": "Phase 1",
+      "priority": "P1",
+      "epic": "技术债务",
+      "title": "实现前端存储持久化",
+      "description": "完善Zustand store的持久化，确保数据正确保存",
+      "steps": [
+        "检查store持久化配置",
+        "实现持久化中间件",
+        "测试数据恢复"
+      ],
+      "frs_covered": [],
+      "workload": "3天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 27,
+      "phase": "Phase 1",
+      "priority": "P1",
+      "epic": "技术债务",
+      "title": "完善Skill渐进式加载",
+      "description": "完善Skill的按需加载机制，控制上下文体积",
+      "steps": [
+        "分析上下文预算",
+        "实现按需加载",
+        "实现加载策略"
+      ],
+      "frs_covered": [],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 28,
+      "phase": "Phase 1",
+      "priority": "P1",
+      "epic": "技术债务",
+      "title": "完善MCP工具自动注册",
+      "description": "实现MCP工具的自动发现和注册",
+      "steps": [
+        "实现工具发现",
+        "实现自动注册",
+        "实现注册通知"
+      ],
+      "frs_covered": [],
+      "workload": "3天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 29,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现文本编辑器核心",
+      "description": "实现基于CodeMirror或Monaco Editor的文本编辑器",
+      "steps": [
+        "选型CodeMirror/Monaco",
+        "实现基础编辑功能",
+        "实现多语言支持",
+        "实现撤销/重做"
+      ],
+      "frs_covered": ["FR1201", "FR1202", "FR1203", "FR1204", "FR1205", "FR1206"],
+      "workload": "8天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 30,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现Markdown实时预览",
+      "description": "实现Markdown编辑器的左右分栏实时预览",
+      "steps": [
+        "实现MD解析",
+        "实现分栏布局",
+        "实现实时渲染"
+      ],
+      "frs_covered": ["FR1239", "FR1240", "FR1241", "FR1242", "FR1243"],
+      "workload": "5天",
+      "dependencies": ["29"],
+      "passes": false
+    },
+    {
+      "id": 31,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现代码高亮和折叠",
+      "description": "实现代码语法高亮和代码块折叠",
+      "steps": [
+        "集成语法高亮库",
+        "实现代码折叠",
+        "实现括号匹配"
+      ],
+      "frs_covered": ["FR1234", "FR1235", "FR1236", "FR1237", "FR1238"],
+      "workload": "5天",
+      "dependencies": ["29"],
+      "passes": false
+    },
+    {
+      "id": 32,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现图像预览组件",
+      "description": "实现图片格式预览和基础操作",
+      "steps": [
+        "实现图片加载",
+        "实现缩放/旋转",
+        "实现格式支持"
+      ],
+      "frs_covered": ["FR1244", "FR1245", "FR1246", "FR1247", "FR1248"],
+      "workload": "3天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 33,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现编辑器标签页管理",
+      "description": "实现多标签页的打开、切换、关闭管理",
+      "steps": [
+        "实现标签页组件",
+        "实现标签页状态",
+        "实现右键菜单"
+      ],
+      "frs_covered": ["FR1202"],
+      "workload": "3天",
+      "dependencies": ["29"],
+      "passes": false
+    },
+    {
+      "id": 34,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现文件树和操作",
+      "description": "实现工作区的文件树浏览和基本文件操作",
+      "steps": [
+        "实现文件树组件",
+        "实现文件操作",
+        "实现右键菜单"
+      ],
+      "frs_covered": ["FR1201", "FR1204"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 35,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现编辑器历史快照",
+      "description": "实现文档的本地历史快照功能",
+      "steps": [
+        "设计快照存储",
+        "实现快照创建",
+        "实现快照对比"
+      ],
+      "frs_covered": ["FR1211", "FR1211-1", "FR1211-2"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 36,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "设计模板数据模型",
+      "description": "设计模板的JSON/YAML数据结构",
+      "steps": [
+        "设计模板Schema",
+        "设计图层定义",
+        "设计数据绑定"
+      ],
+      "frs_covered": ["FR1261", "FR1262", "FR1263", "FR1264"],
+      "workload": "2天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 37,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现模板存储服务",
+      "description": "实现模板的创建、更新、删除和版本管理",
+      "steps": [
+        "实现模板CRUD",
+        "实现版本管理",
+        "实现权限控制"
+      ],
+      "frs_covered": ["FR1291", "FR1292", "FR1293", "FR1294", "FR1295"],
+      "workload": "3天",
+      "dependencies": ["36"],
+      "passes": false
+    },
+    {
+      "id": 38,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现模板解析引擎",
+      "description": "实现模板文件的解析和验证",
+      "steps": [
+        "实现JSON/YAML解析",
+        "实现条件渲染",
+        "实现循环渲染"
+      ],
+      "frs_covered": ["FR1265", "FR1266"],
+      "workload": "5天",
+      "dependencies": ["36", "37"],
+      "passes": false
+    },
+    {
+      "id": 39,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现Canvas渲染引擎",
+      "description": "实现基于Canvas 2D的图形渲染引擎",
+      "steps": [
+        "实现画布初始化",
+        "实现图形绘制",
+        "实现图层管理",
+        "实现性能优化"
+      ],
+      "frs_covered": ["FR1249", "FR1250", "FR1251", "FR1252", "FR1253", "FR1254"],
+      "workload": "8天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 40,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现图层管理系统",
+      "description": "实现图层的增删改查和拖拽排序",
+      "steps": [
+        "实现图层列表",
+        "实现图层操作",
+        "实现拖拽排序"
+      ],
+      "frs_covered": ["FR1255", "FR1256", "FR1257", "FR1258", "FR1259", "FR1260"],
+      "workload": "5天",
+      "dependencies": ["39"],
+      "passes": false
+    },
+    {
+      "id": 41,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现模板设计器UI",
+      "description": "实现可视化模板设计界面",
+      "steps": [
+        "实现工具栏",
+        "实现属性面板",
+        "实现图层面板",
+        "实现实时预览"
+      ],
+      "frs_covered": ["FR1279", "FR1280", "FR1281", "FR1282", "FR1283", "FR1284"],
+      "workload": "8天",
+      "dependencies": ["39", "40"],
+      "passes": false
+    },
+    {
+      "id": 42,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现AI数据填充",
+      "description": "实现AI根据业务数据自动填充模板",
+      "steps": [
+        "实现数据查询",
+        "实现数据映射",
+        "实现填充预览"
+      ],
+      "frs_covered": ["FR1267", "FR1268", "FR1269", "FR1270", "FR1271", "FR1272"],
+      "workload": "5天",
+      "dependencies": ["38"],
+      "passes": false
+    },
+    {
+      "id": 43,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "工作卡片",
+      "title": "设计工作卡片数据模型",
+      "description": "设计工作卡片的数据结构和交互协议",
+      "steps": [
+        "设计卡片Schema",
+        "设计操作协议",
+        "设计状态同步"
+      ],
+      "frs_covered": ["FR607", "FR608"],
+      "workload": "1天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 44,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "工作卡片",
+      "title": "实现工作卡片组件",
+      "description": "实现任务、审批、报表等类型的工作卡片组件",
+      "steps": [
+        "实现卡片基础组件",
+        "实现任务卡片",
+        "实现审批卡片",
+        "实现报表卡片"
+      ],
+      "frs_covered": ["FR607"],
+      "workload": "5天",
+      "dependencies": ["43"],
+      "passes": false
+    },
+    {
+      "id": 45,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "工作卡片",
+      "title": "实现卡片操作交互",
+      "description": "实现卡片的批准、驳回、查看详情等操作",
+      "steps": [
+        "实现操作按钮",
+        "实现确认对话框",
+        "实现操作反馈"
+      ],
+      "frs_covered": ["FR608", "FR610"],
+      "workload": "5天",
+      "dependencies": ["44"],
+      "passes": false
+    },
+    {
+      "id": 46,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "工作卡片",
+      "title": "实现消息嵌入卡片",
+      "description": "实现工作卡片嵌入消息列表",
+      "steps": [
+        "实现消息解析",
+        "实现卡片渲染",
+        "实现交互集成"
+      ],
+      "frs_covered": ["FR609"],
+      "workload": "3天",
+      "dependencies": ["44"],
+      "passes": false
+    },
+    {
+      "id": 47,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "Skill系统",
+      "title": "实现Skill执行引擎",
+      "description": "实现Skill的解析和执行机制",
+      "steps": [
+        "实现Skill解析",
+        "实现执行计划",
+        "实现执行调度"
+      ],
+      "frs_covered": [],
+      "workload": "8天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 48,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "Skill系统",
+      "title": "完善Skill渐进式加载",
+      "description": "实现Skill的按上下文加载和缓存",
+      "steps": [
+        "实现上下文分析",
+        "实现按需加载",
+        "实现缓存管理"
+      ],
+      "frs_covered": [],
+      "workload": "5天",
+      "dependencies": ["47"],
+      "passes": false
+    },
+    {
+      "id": 49,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "AI纠偏",
+      "title": "设计错题集数据模型",
+      "description": "设计错题集和纠偏规则的数据结构",
+      "steps": [
+        "设计错题集Schema",
+        "设计规则Schema",
+        "设计追踪Schema"
+      ],
+      "frs_covered": ["FR81", "FR82", "FR83"],
+      "workload": "2天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 50,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "AI纠偏",
+      "title": "实现纠偏记录存储",
+      "description": "实现错题集的存储和查询",
+      "steps": [
+        "实现存储模块",
+        "实现基本CRUD",
+        "实现搜索查询"
+      ],
+      "frs_covered": ["FR83", "FR84"],
+      "workload": "3天",
+      "dependencies": ["49"],
+      "passes": false
+    },
+    {
+      "id": 51,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "AI纠偏",
+      "title": "实现规则提取引擎",
+      "description": "实现从纠偏对话中提取结构化规则",
+      "steps": [
+        "实现对话解析",
+        "实现规则提取",
+        "实现规则验证"
+      ],
+      "frs_covered": ["FR82"],
+      "workload": "5天",
+      "dependencies": ["50"],
+      "passes": false
+    },
+    {
+      "id": 52,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "AI纠偏",
+      "title": "实现错题集UI",
+      "description": "实现错题集管理和展示界面",
+      "steps": [
+        "实现列表页面",
+        "实现详情页面",
+        "实现管理功能"
+      ],
+      "frs_covered": ["FR84", "FR85", "FR86"],
+      "workload": "5天",
+      "dependencies": ["50"],
+      "passes": false
+    },
+    {
+      "id": 53,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "AI纠偏",
+      "title": "实现纠偏对话交互",
+      "description": "实现选中文本后的纠偏对话功能",
+      "steps": [
+        "实现选中文本",
+        "实现对话输入",
+        "实现规则确认"
+      ],
+      "frs_covered": ["FR81"],
+      "workload": "5天",
+      "dependencies": ["52"],
+      "passes": false
+    },
+    {
+      "id": 54,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "AI纠偏",
+      "title": "实现效果统计看板",
+      "description": "实现规则应用效果统计和展示",
+      "steps": [
+        "实现统计计算",
+        "实现图表展示",
+        "实现趋势分析"
+      ],
+      "frs_covered": ["FR87", "FR88"],
+      "workload": "3天",
+      "dependencies": ["51"],
+      "passes": false
+    },
+    {
+      "id": 55,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "Trace系统",
+      "title": "设计Trace数据模型",
+      "description": "设计Trace/Span的数据结构",
+      "steps": [
+        "设计Trace Schema",
+        "设计Span Schema",
+        "设计关联关系"
+      ],
+      "frs_covered": ["FR1541", "FR1542"],
+      "workload": "2天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 56,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "Trace系统",
+      "title": "实现Span追踪",
+      "description": "实现会话、工具调用、审批等的Span追踪",
+      "steps": [
+        "实现Span生成",
+        "实现Span关联",
+        "实现性能指标"
+      ],
+      "frs_covered": ["FR1541", "FR1542", "FR1543"],
+      "workload": "5天",
+      "dependencies": ["55"],
+      "passes": false
+    },
+    {
+      "id": 57,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "Trace系统",
+      "title": "实现Trace存储",
+      "description": "实现Trace数据的高效存储和查询",
+      "steps": [
+        "实现存储设计",
+        "实现写入优化",
+        "实现查询接口"
+      ],
+      "frs_covered": ["FR1549"],
+      "workload": "3天",
+      "dependencies": ["56"],
+      "passes": false
+    },
+    {
+      "id": 58,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "Trace系统",
+      "title": "实现Trace展示UI",
+      "description": "实现Trace的层级展示和时间线",
+      "steps": [
+        "实现时间线视图",
+        "实现Span详情",
+        "实现过滤搜索"
+      ],
+      "frs_covered": ["FR1543"],
+      "workload": "5天",
+      "dependencies": ["57"],
+      "passes": false
+    },
+    {
+      "id": 59,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "Trace系统",
+      "title": "实现失败分析报告",
+      "description": "实现基于Trace的失败分析和建议",
+      "steps": [
+        "实现失败识别",
+        "实现原因分析",
+        "实现建议生成"
+      ],
+      "frs_covered": ["FR1550"],
+      "workload": "3天",
+      "dependencies": ["58"],
+      "passes": false
+    },
+    {
+      "id": 60,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "平台治理",
+      "title": "实现审批对象模型增强",
+      "description": "完善审批对象的状态机和审计",
+      "steps": [
+        "实现状态机",
+        "实现审计记录",
+        "实现Resume Gate"
+      ],
+      "frs_covered": ["FR1525", "FR1526", "FR1527", "FR1528", "FR1529", "FR1530", "FR1531", "FR1532"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 61,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "平台治理",
+      "title": "实现文档资产系统",
+      "description": "实现文档资产的版本管理和修订链",
+      "steps": [
+        "实现文档模型",
+        "实现版本管理",
+        "实现来源追踪"
+      ],
+      "frs_covered": ["FR1533", "FR1534", "FR1535", "FR1536", "FR1537", "FR1538", "FR1539", "FR1540"],
+      "workload": "8天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 62,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "平台治理",
+      "title": "实现能力治理看板",
+      "description": "实现工具/Skill/MCP的健康度监控",
+      "steps": [
+        "实现指标采集",
+        "实现看板展示",
+        "实现告警机制"
+      ],
+      "frs_covered": ["FR1551", "FR1552", "FR1553"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 63,
+      "phase": "Phase 3",
+      "priority": "P3",
+      "epic": "图记忆",
+      "title": "设计图数据模型",
+      "description": "设计实体关系图谱的数据结构",
+      "steps": [
+        "设计节点Schema",
+        "设计边Schema",
+        "设计属性Schema"
+      ],
+      "frs_covered": ["FR14-L3"],
+      "workload": "3天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 64,
+      "phase": "Phase 3",
+      "priority": "P3",
+      "epic": "图记忆",
+      "title": "实现图数据库存储",
+      "description": "实现图结构的存储和索引",
+      "steps": [
+        "选型图数据库",
+        "实现存储模块",
+        "实现索引优化"
+      ],
+      "frs_covered": ["FR14-L3"],
+      "workload": "10天",
+      "dependencies": ["63"],
+      "passes": false
+    },
+    {
+      "id": 65,
+      "phase": "Phase 3",
+      "priority": "P3",
+      "epic": "图记忆",
+      "title": "实现图查询引擎",
+      "description": "实现图遍历和关系查询",
+      "steps": [
+        "实现遍历算法",
+        "实现查询优化",
+        "实现路径查询"
+      ],
+      "frs_covered": ["FR14-L3"],
+      "workload": "8天",
+      "dependencies": ["64"],
+      "passes": false
+    },
+    {
+      "id": 66,
+      "phase": "Phase 3",
+      "priority": "P3",
+      "epic": "图记忆",
+      "title": "实现知识推理引擎",
+      "description": "实现基于图的知识推理",
+      "steps": [
+        "实现推理规则",
+        "实现推理执行",
+        "实现结果验证"
+      ],
+      "frs_covered": ["FR14-L3"],
+      "workload": "10天",
+      "dependencies": ["65"],
+      "passes": false
+    },
+    {
+      "id": 67,
+      "phase": "测试",
+      "priority": "P0",
+      "epic": "测试",
+      "title": "配置Jest/Vitest测试框架",
+      "description": "配置前端单元测试和集成测试环境",
+      "steps": [
+        "配置Vitest",
+        "配置测试覆盖率",
+        "配置CI集成"
+      ],
+      "frs_covered": [],
+      "workload": "2天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 68,
+      "phase": "测试",
+      "priority": "P0",
+      "epic": "测试",
+      "title": "配置Playwright E2E测试",
+      "description": "配置E2E测试环境和核心流程测试",
+      "steps": [
+        "安装Playwright",
+        "配置浏览器",
+        "编写基础测试"
+      ],
+      "frs_covered": [],
+      "workload": "2天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 69,
+      "phase": "测试",
+      "priority": "P1",
+      "epic": "测试",
+      "title": "编写Agent核心单元测试",
+      "description": "覆盖Agent编排、路由、执行的单元测试",
+      "steps": [
+        "编写编排器测试",
+        "编写路由器测试",
+        "编写执行器测试"
+      ],
+      "frs_covered": [],
+      "workload": "5天",
+      "dependencies": ["67"],
+      "passes": false
+    },
+    {
+      "id": 70,
+      "phase": "测试",
+      "priority": "P1",
+      "epic": "测试",
+      "title": "编写工具系统单元测试",
+      "description": "覆盖工具注册、执行、权限的单元测试",
+      "steps": [
+        "编写注册测试",
+        "编写执行测试",
+        "编写权限测试"
+      ],
+      "frs_covered": [],
+      "workload": "5天",
+      "dependencies": ["67"],
+      "passes": false
+    },
+    {
+      "id": 71,
+      "phase": "测试",
+      "priority": "P1",
+      "epic": "测试",
+      "title": "编写部门模块集成测试",
+      "description": "覆盖HR、审批、销售、财务等模块的集成测试",
+      "steps": [
+        "编写HR模块测试",
+        "编写审批模块测试",
+        "编写销售模块测试"
+      ],
+      "frs_covered": [],
+      "workload": "8天",
+      "dependencies": ["67"],
+      "passes": false
+    },
+    {
+      "id": 72,
+      "phase": "测试",
+      "priority": "P1",
+      "epic": "测试",
+      "title": "编写E2E核心流程测试",
+      "description": "覆盖登录、对话、审批等核心流程的E2E测试",
+      "steps": [
+        "编写登录测试",
+        "编写对话测试",
+        "编写审批测试"
+      ],
+      "frs_covered": [],
+      "workload": "10天",
+      "dependencies": ["68"],
+      "passes": false
+    },
+    {
+      "id": 73,
+      "phase": "Phase 1",
+      "priority": "P1",
+      "epic": "技术债务",
+      "title": "完善部门市场搜索",
+      "description": "完善MarketplacePanel的搜索和筛选功能",
+      "steps": [
+        "实现搜索功能",
+        "实现分类筛选",
+        "实现排序功能"
+      ],
+      "frs_covered": ["FR20", "FR21", "FR22", "FR23"],
+      "workload": "3天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 74,
+      "phase": "Phase 1",
+      "priority": "P1",
+      "epic": "技术债务",
+      "title": "完善数据看板跨部门汇总",
+      "description": "实现管理模块的跨部门数据汇总",
+      "steps": [
+        "实现数据聚合",
+        "实现报表生成",
+        "实现实时更新"
+      ],
+      "frs_covered": ["FR200", "FR201", "FR202", "FR203", "FR204", "FR205", "FR206", "FR207", "FR208", "FR209"],
+      "workload": "5天",
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 75,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现编辑器快捷键",
+      "description": "实现常用编辑器快捷键(保存、撤销、重做等)",
+      "steps": [
+        "实现快捷键绑定",
+        "实现命令面板",
+        "实现自定义快捷键"
+      ],
+      "frs_covered": ["FR1206"],
+      "workload": "2天",
+      "dependencies": ["29"],
+      "passes": false
+    },
+    {
+      "id": 76,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "编辑器",
+      "title": "实现编辑器恢复功能",
+      "description": "实现编辑器崩溃后的状态恢复",
+      "steps": [
+        "实现状态保存",
+        "实现恢复机制",
+        "实现用户提示"
+      ],
+      "frs_covered": ["FR1211"],
+      "workload": "3天",
+      "dependencies": ["35"],
+      "passes": false
+    },
+    {
+      "id": 77,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "动态模板",
+      "title": "实现模板库管理",
+      "description": "实现部门模板库的创建、分享和管理",
+      "steps": [
+        "实现模板列表",
+        "实现模板分享",
+        "实现模板导入导出"
+      ],
+      "frs_covered": ["FR1291", "FR1292", "FR1293", "FR1294", "FR1295", "FR1296"],
+      "workload": "5天",
+      "dependencies": ["41"],
+      "passes": false
+    },
+    {
+      "id": 78,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "Skill系统",
+      "title": "实现Skill版本管理",
+      "description": "实现Skill的版本更新和回滚功能",
+      "steps": [
+        "实现版本记录",
+        "实现更新检查",
+        "实现回滚功能"
+      ],
+      "frs_covered": [],
+      "workload": "3天",
+      "dependencies": ["47"],
+      "passes": false
+    },
+    {
+      "id": 79,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "Skill系统",
+      "title": "实现Skill市场界面",
+      "description": "实现Skill的浏览、安装、评价界面",
+      "steps": [
+        "实现浏览界面",
+        "实现安装流程",
+        "实现评价功能"
+      ],
+      "frs_covered": [],
+      "workload": "5天",
+      "dependencies": ["78"],
+      "passes": false
+    },
+    {
+      "id": 80,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "工作卡片",
+      "title": "实现卡片状态同步",
+      "description": "实现卡片操作后的状态同步",
+      "steps": [
+        "实现状态更新",
+        "实现通知推送",
+        "实现冲突处理"
+      ],
+      "frs_covered": ["FR610"],
+      "workload": "3天",
+      "dependencies": ["45"],
+      "passes": false
+    },
+    {
+      "id": 81,
+      "phase": "Phase 2",
+      "priority": "P1",
+      "epic": "Skill系统",
+      "title": "实现Skill配置界面",
+      "description": "实现Skill的启用、禁用、参数配置界面",
+      "steps": [
+        "实现配置列表",
+        "实现参数配置",
+        "实现启用禁用"
+      ],
+      "frs_covered": [],
+      "workload": "3天",
+      "dependencies": ["79"],
+      "passes": false
+    },
+    {
+      "id": 82,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现群聊Agent跟随",
+      "description": "实现员工入群时Agent自动跟随功能",
+      "steps": [
+        "实现跟随逻辑",
+        "实现权限控制",
+        "实现退出处理"
+      ],
+      "frs_covered": ["FR634", "FR635", "FR636", "FR639", "FR640", "FR641", "FR642", "FR643", "FR644", "FR645", "FR646", "FR649"],
+      "workload": "5天",
+      "dependencies": ["11"],
+      "passes": false
+    },
+    {
+      "id": 83,
+      "phase": "Phase 1",
+      "priority": "P0",
+      "epic": "消息IM",
+      "title": "实现Agent发言控制",
+      "description": "实现Agent在群聊中的静默和选择性发言",
+      "steps": [
+        "实现发言条件",
+        "实现发言内容生成",
+        "实现发言权限"
+      ],
+      "frs_covered": ["FR640", "FR641", "FR642", "FR643", "FR644", "FR645", "FR646"],
+      "workload": "5天",
+      "dependencies": ["82"],
+      "passes": false
+    },
+    {
+      "id": 84,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "平台治理",
+      "title": "实现修订链管理",
+      "description": "实现文档修订链的完整管理",
+      "steps": [
+        "实现修订记录",
+        "实现差异对比",
+        "实现版本回退"
+      ],
+      "frs_covered": ["FR1534"],
+      "workload": "5天",
+      "dependencies": ["61"],
+      "passes": false
+    },
+    {
+      "id": 85,
+      "phase": "Phase 3",
+      "priority": "P2",
+      "epic": "平台治理",
+      "title": "实现Principal Membership",
+      "description": "实现统一的主体成员关系模型",
+      "steps": [
+        "设计成员模型",
+        "实现关系管理",
+        "实现权限继承"
+      ],
+      "frs_covered": ["FR1556", "FR1557", "FR1558"],
+      "workload": "3天",
+      "dependencies": [],
+      "passes": false
+    }
+  ],
+  "phases": [
+    {
+      "name": "Phase 1",
+      "description": "MVP收尾",
+      "priority": "P0",
+      "tasks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 73, 74, 82, 83],
+      "estimated_duration": "2-3个月",
+      "milestones": [
+        "M1.1: 知识库RAG完整上线",
+        "M1.2: 消息IM系统基础功能上线",
+        "M1.3: 数据同步引擎完成"
+      ]
+    },
+    {
+      "name": "Phase 2",
+      "description": "平台能力",
+      "priority": "P1",
+      "tasks": [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 75, 76, 77, 78, 79, 80, 81],
+      "estimated_duration": "3-4个月",
+      "milestones": [
+        "M2.1: 编辑器系统Beta版",
+        "M2.2: 动态模板系统Beta版",
+        "M2.3: 工作卡片上线"
+      ]
+    },
+    {
+      "name": "Phase 3",
+      "description": "高级功能",
+      "priority": "P2",
+      "tasks": [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 84, 85],
+      "estimated_duration": "持续迭代",
+      "milestones": [
+        "M3.1: AI纠偏反馈系统上线",
+        "M3.2: Trace系统上线",
+        "M3.3: 平台治理增强完成"
+      ]
+    },
+    {
+      "name": "测试",
+      "description": "测试体系建设",
+      "priority": "P0",
+      "tasks": [67, 68, 69, 70, 71, 72],
+      "estimated_duration": "贯穿全程",
+      "milestones": [
+        "单元测试覆盖率 ≥80%",
+        "集成测试覆盖率 ≥60%",
+        "核心流程E2E 100%"
+      ]
+    }
+  ]
+}

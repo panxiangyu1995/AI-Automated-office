@@ -12,7 +12,6 @@ import type {
   DepartmentTreeNode,
   PositionListItem,
   EmployeeQueryParams,
-  PagedResult,
 } from '../types/hr.types'
 import { hrApi } from '../api/hrApi'
 

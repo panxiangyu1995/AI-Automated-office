@@ -57,7 +57,7 @@ class ProjectSearchProviderImpl implements SearchProvider {
     const limit = options?.limit ?? MAX_RESULTS_PER_PROVIDER
     const results: Array<SearchResult & { matchScore: number }> = []
     
-    for (const [id, project] of this.projects) {
+    for (const [_id, project] of this.projects) {
       const titleScore = fuzzyMatch(query, project.title)
       const subtitleScore = fuzzyMatch(query, project.subtitle)
       const maxScore = Math.max(titleScore, subtitleScore)
@@ -125,7 +125,7 @@ class DocumentSearchProviderImpl implements SearchProvider {
     const limit = options?.limit ?? MAX_RESULTS_PER_PROVIDER
     const results: Array<SearchResult & { matchScore: number }> = []
     
-    for (const [id, doc] of this.documents) {
+    for (const [_id, doc] of this.documents) {
       const titleScore = fuzzyMatch(query, doc.title)
       const subtitleScore = fuzzyMatch(query, doc.subtitle)
       const maxScore = Math.max(titleScore, subtitleScore)
@@ -190,7 +190,7 @@ class TemplateSearchProviderImpl implements SearchProvider {
     const limit = options?.limit ?? MAX_RESULTS_PER_PROVIDER
     const results: Array<SearchResult & { matchScore: number }> = []
     
-    for (const [id, template] of this.templates) {
+    for (const [_id, template] of this.templates) {
       const titleScore = fuzzyMatch(query, template.title)
       const subtitleScore = fuzzyMatch(query, template.subtitle)
       const maxScore = Math.max(titleScore, subtitleScore)
@@ -255,7 +255,7 @@ class KnowledgeSearchProviderImpl implements SearchProvider {
     const limit = options?.limit ?? MAX_RESULTS_PER_PROVIDER
     const results: Array<SearchResult & { matchScore: number }> = []
     
-    for (const [id, item] of this.knowledgeItems) {
+    for (const [_id, item] of this.knowledgeItems) {
       const titleScore = fuzzyMatch(query, item.title)
       const subtitleScore = fuzzyMatch(query, item.subtitle)
       const maxScore = Math.max(titleScore, subtitleScore)
@@ -320,7 +320,7 @@ class UserSearchProviderImpl implements SearchProvider {
     const limit = options?.limit ?? MAX_RESULTS_PER_PROVIDER
     const results: Array<SearchResult & { matchScore: number }> = []
     
-    for (const [id, user] of this.users) {
+    for (const [_id, user] of this.users) {
       const titleScore = fuzzyMatch(query, user.title)
       const subtitleScore = fuzzyMatch(query, user.subtitle)
       const maxScore = Math.max(titleScore, subtitleScore)

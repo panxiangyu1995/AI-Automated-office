@@ -5,7 +5,7 @@
  * Component for selecting and switching between layout presets.
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useLayoutPresetStore } from '../../stores/layoutPresetStore'
 import { useUIStore } from '../../stores/uiStore'
 import { useCurrentWorkspace } from '../../stores/workspaceStore'
@@ -211,7 +211,9 @@ export function PresetPicker({ isOpen, onClose }: PresetPickerProps) {
 
   // Get presets
   const builtInPresets = getBuiltInPresets()
-  const customPresets = workspaceId ? getCustomPresets(workspaceId) : []
+  const customPresets = useMemo(() => {
+    return workspaceId ? getCustomPresets(workspaceId) : []
+  }, [workspaceId, getCustomPresets])
 
   const filteredBuiltIn = filter === 'custom' ? [] : builtInPresets
   const filteredCustom = filter === 'builtin' ? [] : customPresets

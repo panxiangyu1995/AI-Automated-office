@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useKnowledgeBase } from '../hooks/useKnowledgeBase';
-import type { AccessLevel, KnowledgeMember } from '../types';
+import type { AccessLevel } from '../types';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,6 @@ import {
 import {
   Plus,
   MoreHorizontal,
-  Pencil,
   Trash2,
   Users,
   Shield,

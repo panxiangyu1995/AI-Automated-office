@@ -1,8 +1,7 @@
 import type {
-  NeverCompressType,
   CompressibleType,
 } from '../../types/compact.types'
-import { NEVER_COMPRESS_TYPES, COMPRESSIBLE_TYPES } from './constants'
+import { COMPRESSIBLE_TYPES } from './constants'
 
 const DOCUMENT_REFERENCE_PATTERN = /\b(doc|文档|文件|合同|报告|方案)\s*[#：:]\s*(\w+)/gi
 const APPROVAL_REFERENCE_PATTERN = /\b(审批|approve)\s*[#：:]\s*(\w+)/gi

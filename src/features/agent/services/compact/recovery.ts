@@ -1,5 +1,5 @@
 import type { RecoveryAction, RecoveryResult } from '../../types/compact.types'
-import { AUTO_RECOVERY_RULES, RECOVERY_CACHE_CONFIG } from './constants'
+import { AUTO_RECOVERY_RULES } from './constants'
 
 interface RecoveryCacheItem {
   entityId: string

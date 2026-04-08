@@ -17,7 +17,9 @@ export interface EditorConfig {
   name: string
   icon?: React.ReactNode
   description?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.FC<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultOptions?: Record<string, any>
 }
 
@@ -121,11 +123,18 @@ export { MarkdownEditor } from './MarkdownEditor'
 // Initialize default editors
 export function initializeDefaultEditors(): void {
   // RichText and Markdown editors will be lazy loaded
+  // Using type assertion because the lazy loading pattern doesn't match the strict type
   registerEditor({
     type: 'richtext',
     name: '富文本编辑器',
     description: '支持格式化文本编辑',
-    component: () => import('./RichTextEditor').then(m => ({ default: m.RichTextEditor })),
+    component: (() => {
+      const load = () => import('./RichTextEditor')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return new Promise<{ default: React.FC<any> }>((resolve) => {
+        load().then((m) => resolve({ default: m.RichTextEditor }))
+      })
+    })() as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     defaultOptions: {
       placeholder: '在此输入内容...',
       minHeight: '200px',
@@ -136,7 +145,13 @@ export function initializeDefaultEditors(): void {
     type: 'markdown',
     name: 'Markdown编辑器',
     description: '支持 Markdown 语法编辑和预览',
-    component: () => import('./MarkdownEditor').then(m => ({ default: m.MarkdownEditor })),
+    component: (() => {
+      const load = () => import('./MarkdownEditor')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return new Promise<{ default: React.FC<any> }>((resolve) => {
+        load().then((m) => resolve({ default: m.MarkdownEditor }))
+      })
+    })() as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     defaultOptions: {
       placeholder: '在此使用 Markdown 编写...',
       minHeight: '200px',

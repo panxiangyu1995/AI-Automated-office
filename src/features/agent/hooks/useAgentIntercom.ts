@@ -78,7 +78,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [config, setConfig] = useState<IntercomConfig>(defaultConfig);
+  const [config] = useState<IntercomConfig>(defaultConfig);
 
   // 初始化：加载联系人和消息
   const initialize = useCallback(async () => {
@@ -192,7 +192,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   ): Promise<boolean> => {
     setError(null);
     try {
-      const result = await invoke<AgentMessage>('confirm_agent_message', {
+      await invoke<AgentMessage>('confirm_agent_message', {
         messageId,
         approved,
       });

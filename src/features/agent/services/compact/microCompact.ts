@@ -1,13 +1,12 @@
 import type { Message, CompressibleType, MicroCompactResult } from '../../types/compact.types'
 import { DEFAULT_CONFIG } from './constants'
-import { canCompressContentType } from './neverCompress'
 
 export class MicroCompactService {
   execute(messages: Message[]): MicroCompactResult {
     const startTime = Date.now()
     const clearedItems: MicroCompactResult['clearedItems'] = []
     const keptItems: MicroCompactResult['keptItems'] = []
-    let tokensFreed = 0
+    const tokensFreed = 0
 
     const sortedMessages = [...messages].sort((a, b) => {
       const aTime = a.createdAt || 0

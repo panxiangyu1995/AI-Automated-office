@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Search, Plus, Loader2, RefreshCw, MoreHorizontal, Mail, Phone, Calendar } from 'lucide-react'
+import { Search, Plus, Loader2, RefreshCw, Mail, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {

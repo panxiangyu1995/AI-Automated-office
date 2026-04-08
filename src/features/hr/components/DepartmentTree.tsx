@@ -4,9 +4,9 @@
  */
 
 import { useEffect, useState } from 'react'
-import { ChevronRight, ChevronDown, Users, Plus, Loader2, Building2 } from 'lucide-react'
+import { ChevronRight, ChevronDown, Plus, Loader2, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { useHrStore } from '../stores/hrStore'
 import type { DepartmentTreeNode } from '../types/hr.types'
 

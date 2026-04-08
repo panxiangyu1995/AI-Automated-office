@@ -4,7 +4,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Building2, Users, CheckCircle2 } from 'lucide-react'
+import { Building2, CheckCircle2 } from 'lucide-react'
 
 export function TenantSettings() {
   return (

@@ -11,7 +11,6 @@ import type {
   DepartmentDetailResponse,
   DepartmentStats,
   DepartmentMessage,
-  DepartmentLoadState,
 } from '../types/department'
 import { departmentApi } from '../api/departmentApi'
 

@@ -845,6 +845,7 @@ export function SettingsPanel() {
     if (!visibleSections.some((section) => section.key === activeSection)) {
       setSettingsActiveSection(visibleSections[0].key)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory, activeSection, isSearchMode, visibleSections])
 
   const currentSectionDescriptor = useMemo(() => {

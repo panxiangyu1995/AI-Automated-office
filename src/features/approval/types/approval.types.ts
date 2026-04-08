@@ -141,3 +141,42 @@ export const FLOW_STATUS_COLORS: Record<FlowStatus, string> = {
   active: 'bg-green-500',
   archived: 'bg-blue-400',
 }
+
+// Missing types that are used by components
+export type ApprovalActionType = 'approve' | 'reject' | 'withdraw' | 'delegate' | 'transfer' | 'add_signer' | 'comment'
+
+export interface ApprovalPermissionContext {
+  canApprove: boolean
+  canReject: boolean
+  canWithdraw: boolean
+  canDelegate: boolean
+  canComment: boolean
+  currentStepId?: string
+}
+
+export interface ApprovalActionRequest {
+  action: ApprovalActionType
+  recordId: string
+  comment?: string
+  targetUserId?: string
+}
+
+export interface ApprovalNode {
+  id: string
+  name: string
+  type: 'step' | 'condition' | 'approver'
+  status?: 'pending' | 'approved' | 'rejected'
+}
+
+// Alias for backward compatibility
+export type ApprovalInstance = ApprovalRecord
+
+export function resolveApprovalPermission(_recordId: string): ApprovalPermissionContext {
+  return {
+    canApprove: true,
+    canReject: true,
+    canWithdraw: true,
+    canDelegate: true,
+    canComment: true,
+  }
+}

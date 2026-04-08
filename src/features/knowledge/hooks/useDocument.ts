@@ -52,8 +52,8 @@ export function useDocument(): UseDocumentReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper to get user context
-  const getUserContext = useCallback(() => ({
+  // Helper to get user context (kept for future use)
+  const _getUserContext = useCallback(() => ({
     user_id: 'current_user', // TODO: Get from auth store
     tenant_id: 'current_tenant', // TODO: Get from auth store
     department_id: undefined,

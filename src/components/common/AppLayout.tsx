@@ -14,10 +14,8 @@ import { LayoutSettingsDialog } from './LayoutSettingsDialog'
 import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
 import { Search, CornerDownLeft, ArrowUp, ArrowDown, FolderOpen, FileText, BookOpen, Users } from 'lucide-react'
 import { useQuickOpen } from '../../features/workspace/search'
-import { resourceTypeIcons, SearchResult as AppSearchResult } from '../../features/workspace/search/types'
-
-// Re-export for backwards compatibility
-type SearchResult = AppSearchResult
+import { resourceTypeIcons } from '../../features/workspace/search/providers'
+import type { SearchResult as AppSearchResult } from '../../features/workspace/search/types'
 
 // Icon mapping for legacy SearchResult type
 const legacyIconMap: Record<string, ComponentType<{ className?: string }>> = {
@@ -29,8 +27,10 @@ const legacyIconMap: Record<string, ComponentType<{ className?: string }>> = {
 
 export function AppLayout() {
   const location = useLocation()
-  const { toggleTopBar, setActiveActivityItem, quickSearchOpen: storeQuickSearchOpen, openQuickSearch: storeOpenQuickSearch, closeQuickSearch: storeCloseQuickSearch } = useUIStore(
+  const { topBarVisible, sidebarCollapsed, toggleTopBar, setActiveActivityItem, quickSearchOpen: storeQuickSearchOpen, openQuickSearch: storeOpenQuickSearch, closeQuickSearch: storeCloseQuickSearch } = useUIStore(
     useShallow((state) => ({
+      topBarVisible: state.topBarVisible,
+      sidebarCollapsed: state.sidebarCollapsed,
       quickSearchOpen: state.quickSearchOpen,
       openQuickSearch: state.openQuickSearch,
       closeQuickSearch: state.closeQuickSearch,
@@ -46,15 +46,12 @@ export function AppLayout() {
   const {
     query: searchValue,
     results: searchResults,
-    isOpen: localQuickSearchOpen,
-    openSearch: localOpenQuickSearch,
-    closeSearch: localCloseQuickSearch,
-    setSelectedIndex,
     selectedIndex,
     navigateUp,
     navigateDown,
     selectCurrent,
     hasResults,
+    search,
   } = useQuickOpen({
     externalIsOpen: storeQuickSearchOpen,
     externalOpen: storeOpenQuickSearch,
@@ -91,9 +88,11 @@ export function AppLayout() {
         break
       case 'Enter':
         event.preventDefault()
-        const selected = selectCurrent()
-        if (selected) {
-          handleSelectResult(selected)
+        {
+          const selected = selectCurrent()
+          if (selected) {
+            handleSelectResult(selected)
+          }
         }
         break
       case 'Escape':

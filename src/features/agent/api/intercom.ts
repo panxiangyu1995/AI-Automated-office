@@ -18,6 +18,9 @@ export interface AgentMessageDTO {
     text?: string;
     command?: string;
     args?: string[];
+    file_id?: string;
+    alt_text?: string;
+    message?: string;
   };
   status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
   requiresConfirmation: boolean;

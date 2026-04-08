@@ -11,6 +11,7 @@ export interface TemplateVariable {
   name: string
   type: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object'
   description?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue?: any
   required?: boolean
 }
@@ -28,6 +29,7 @@ export interface Template {
 }
 
 export interface RenderOptions {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   variables: Record<string, any>
   strict?: boolean
   dateFormat?: string
@@ -116,7 +118,7 @@ export class TemplateEngine {
     let content = template.content
 
     // Replace {{variable}} patterns
-    content = content.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (match, varPath) => {
+    content = content.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (_match, varPath) => {
       const value = this.resolvePath(variables, varPath)
       
       if (value === undefined || value === null) {
@@ -162,8 +164,8 @@ export class TemplateEngine {
         
         // Replace {{this}} with current item
         if (typeof item === 'object') {
-          itemContent = itemContent.replace(/\{\{this\.(\w+)\}\}/g, (_, prop) => {
-            return item[prop] !== undefined ? String(item[prop]) : ''
+          itemContent = itemContent.replace(/\{\{this\.(\w+)\}\}/g, (_: string, prop: string) => {
+            return item[prop as keyof typeof item] !== undefined ? String(item[prop as keyof typeof item]) : ''
           })
           itemContent = itemContent.replace(/\{\{this\}\}/g, JSON.stringify(item))
         } else {
@@ -201,23 +203,25 @@ export class TemplateEngine {
   /**
    * Resolve nested path in object
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private resolvePath(obj: Record<string, any>, path: string): any {
     const parts = path.split('.')
     let current = obj
-    
+
     for (const part of parts) {
       if (current === null || current === undefined) {
         return undefined
       }
       current = current[part]
     }
-    
+
     return current
   }
 
   /**
    * Format value based on type
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private formatValue(value: any, dateFormat: string): string {
     if (value === null || value === undefined) {
       return ''

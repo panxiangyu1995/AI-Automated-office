@@ -3,7 +3,7 @@
  */
 
 import { useEffect } from 'react'
-import { Users, FileText, Handshake, TrendingUp, Loader2, RefreshCw, Building2, User } from 'lucide-react'
+import { Users, FileText, TrendingUp, Loader2, RefreshCw, Building2, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -62,7 +62,7 @@ export function SalesPanel() {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2">
-                <Handshake className="h-5 w-5 text-purple-500" />
+                <Users className="h-5 w-5 text-purple-500" />
                 <div className="text-2xl font-bold">{stats.totalContracts}</div>
               </div>
               <p className="text-xs text-muted-foreground">合同</p>

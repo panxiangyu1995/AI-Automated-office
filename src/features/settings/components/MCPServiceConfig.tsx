@@ -8,7 +8,7 @@
  * - 持久化 MCP 服务记录
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { 
   Server, Plus, Trash2, Edit, Play, Pause, 
@@ -379,16 +379,18 @@ export function MCPServiceConfig() {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedService, setSelectedService] = useState<MCPServiceConfig | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [, setIsLoading] = useState(false)
 
   // Fetch services from backend
   useEffect(() => {
     const fetchServices = async () => {
       try {
         setIsLoading(true)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response = await invoke<{ success: boolean; data?: any[]; error?: string }>('mcp_list_services')
         if (response.success && response.data) {
           // Transform backend data to frontend format
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const backendServices = response.data.map((s: any) => ({
             id: s.id,
             name: s.name,
@@ -494,6 +496,7 @@ export function MCPServiceConfig() {
         timeout_secs: formData.timeout,
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = await invoke<{ success: boolean; data?: any; error?: string }>('mcp_add_service', config)
 
       if (response.success) {

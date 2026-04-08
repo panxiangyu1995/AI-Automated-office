@@ -19,8 +19,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { StagedReviewPanel } from './StagedReviewPanel'
-import { CompressionStatus } from './CompressionStatus'
-import { CompressionHistory } from './CompressionHistory'
+import { CompressionStatus } from './chat/CompressionStatus'
+import { CompressionHistory } from './chat/CompressionHistory'
 import { 
   useChatStore, 
   useActiveChatSession
@@ -56,7 +56,6 @@ function CompressionStatusBar({ activeSessionId, className }: CompressionStatusB
     tokenCount,
     thresholdStatus,
     compressionCount,
-    triggerManual,
     shouldTrigger,
     executeCompression,
     config,

@@ -3,7 +3,7 @@
  */
 
 import { useEffect } from 'react'
-import { Package, Download, Trash2, Loader2, RefreshCw, Check, Zap } from 'lucide-react'
+import { Download, Trash2, Loader2, RefreshCw, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

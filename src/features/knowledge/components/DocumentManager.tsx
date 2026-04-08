@@ -30,7 +30,6 @@ import {
   Label,
 } from '@/components/ui';
 import {
-  Plus,
   Search,
   MoreHorizontal,
   Pencil,

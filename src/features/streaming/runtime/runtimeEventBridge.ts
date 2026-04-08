@@ -1,15 +1,19 @@
-import { listen } from '@tauri-apps/api/event'
-import { attachTauriRuntimeEventBridge, BackendRuntimeEvent, RuntimeEventBridgeOptions } from './runtimeEventBridgeTauri'
-import type { RuntimeEventEmitter } from './runtimeEvents'
-import type { SyncEngine } from './syncEngine'
-import type { ReconnectHandler } from './reconnectHandler'
+import { attachTauriRuntimeEventBridge, BackendRuntimeEvent } from './runtimeEventBridgeTauri'
 import {
   createWebSocketConnection,
   closeWebSocketConnection,
   isWebSocketConnected,
   type WebSocketConfig,
   type WebSocketEvent,
-} from '../../lib/tauri'
+} from '../../../lib/tauri'
+
+// RuntimeEventBridgeOptions - minimal interface for the WebSocket bridge
+export interface RuntimeEventBridgeOptions {
+  sessionId: string
+  eventEmitter: {
+    emitExternal: (event: unknown) => void
+  }
+}
 
 export interface WebSocketRuntimeEventBridgeOptions extends RuntimeEventBridgeOptions {
   wsConfig: WebSocketConfig
@@ -27,9 +31,9 @@ export interface WebSocketBridgeState {
 }
 
 /**
- * WebSocket event handler
+ * WebSocket event handler (placeholder for future WebSocket event subscription)
  */
-function handleWebSocketEvent(
+function _handleWebSocketEvent(
   event: WebSocketEvent,
   options: WebSocketRuntimeEventBridgeOptions
 ): void {
@@ -162,7 +166,7 @@ function convertWsEventToRuntimeEvent(event: WebSocketEvent): import('./runtimeE
         timestamp: event.timestamp ?? Date.now(),
         sequence: 0,
         messageId: event.message_id,
-        code: (event.payload?.code as import('./runtimeEvents').ErrorCode) ?? 'UNKNOWN_ERROR',
+        code: (event.payload?.code as 'UNKNOWN_ERROR' | 'INVALID_INPUT' | 'PERMISSION_DENIED' | 'TIMEOUT' | 'NETWORK_ERROR' | 'RATE_LIMIT') ?? 'UNKNOWN_ERROR',
         message: (event.payload?.message as string) ?? 'Unknown runtime error',
         recoverable: Boolean(event.payload?.recoverable),
       }

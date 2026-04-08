@@ -3,7 +3,6 @@
  * 压缩状态指示器组件
  */
 
-import React from 'react'
 import { cn } from '@/lib/utils'
 import { Loader2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 
@@ -20,7 +19,6 @@ interface CompressionStatusProps {
 export function CompressionStatus({
   status,
   tokenCount = 0,
-  warningThreshold = 100000,
   errorThreshold = 150000,
   compressionCount = 0,
   compactingLayer,

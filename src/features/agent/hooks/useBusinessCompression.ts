@@ -3,7 +3,7 @@
  * 业务上下文压缩状态管理
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   compactTriggerService,
   businessCompactService,
@@ -12,10 +12,8 @@ import {
   reactiveCompactService,
   recoveryService,
   type CompressionLayer,
-  type CompressionStatus,
   type TriggerType,
   type BusinessCompressionConfig,
-  type CompressionRecord,
   DEFAULT_CONFIG,
 } from '../services/compact'
 
@@ -125,9 +123,11 @@ export function useBusinessCompression(options: UseBusinessCompressionOptions): 
   const formatRecoveryResult = useCallback((result: { success: boolean; error?: string; entityType?: string; entityId?: string }): string => {
     return recoveryService.formatRecoveryResult({
       ...result,
+      entityId: result.entityId || 'unknown',
+      entityType: result.entityType || 'message',
       content: null,
       retrievedAt: new Date(),
-      source: 'message_history',
+      source: 'message_history' as const,
     })
   }, [])
 

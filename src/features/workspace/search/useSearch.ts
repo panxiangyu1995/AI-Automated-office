@@ -7,7 +7,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   SearchResult,
-  SearchResponse,
   SearchRequest,
   SearchableResourceType,
   SEARCH_DEBOUNCE_MS,
@@ -70,9 +69,9 @@ export function useWorkspaceSearch(options?: UseWorkspaceSearchOptions) {
   
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-  
-  const trackAccess = useTrackAccess()
-  
+
+  const _trackAccess = useTrackAccess()
+
   // Set current workspace
   useEffect(() => {
     searchAggregator.setCurrentWorkspace(workspaceId ?? null)

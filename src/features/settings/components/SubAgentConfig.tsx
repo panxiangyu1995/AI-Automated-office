@@ -18,23 +18,17 @@ import { useState, useMemo, useCallback } from 'react'
 import {
   Bot,
   Settings,
-  Plus,
   Clock,
   History,
   Route,
   ArrowRight,
   Zap,
-  UserCheck,
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  RefreshCw,
   Loader2,
   Play,
   Pause,
-  Eye,
-  Edit,
-  Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
