@@ -1,741 +1,644 @@
-//! Correction Rule Module
+//! 纠偏反馈学习系统
 //!
-//! This module implements:
-//! - Correction rule read and match capability
-//! - Rule suggestions injection into planner/runtime
-//! - Rule hits linking to failure and audit records
-//! - Reviewable improvement suggestions output
-//!
-//! Story 53.3 - Controlled correction-rule baseline
+//! 实现FR81-FR89: 纠偏反馈学习功能
+//! - 纠偏数据结构模型
+//! - 规则提取和存储
+//! - 错题集管理
+//! - 规则应用追踪
 
-use anyhow::Result;
-use chrono::Utc;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-/// Correction status
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum CorrectionStatus {
+/// 反馈类型
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum FeedbackType {
+    /// 错误纠正
+    Correction,
+    /// 偏好设置
+    Preference,
+    /// 风格调整
+    Style,
+    /// 知识更新
+    Knowledge,
+    /// 行为禁止
+    Prohibition,
+}
+
+/// 纠偏级别
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CorrectionLevel {
+    /// 低 - 建议性质
+    Low,
+    /// 中 - 参考性质
+    Medium,
+    /// 高 - 必须遵守
+    High,
+    /// 强制 - 绝对禁止
+    Forced,
+}
+
+/// 纠偏规则
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CorrectionRule {
+    /// 规则ID
+    pub id: String,
+    /// 规则内容
+    pub content: String,
+    /// 触发关键词
+    pub trigger_keywords: Vec<String>,
+    /// 上下文模式
+    pub context_pattern: Option<String>,
+    /// 纠偏类型
+    pub feedback_type: FeedbackType,
+    /// 纠偏级别
+    pub level: CorrectionLevel,
+    /// 来源反馈ID
+    pub source_feedback_id: Option<String>,
+    /// 生效时间
+    pub effective_from: DateTime<Utc>,
+    /// 失效时间 (可选)
+    pub effective_until: Option<DateTime<Utc>>,
+    /// 状态
+    pub status: RuleStatus,
+    /// 应用计数
+    pub application_count: u32,
+    /// 成功率
+    pub success_rate: f32,
+    /// 创建时间
+    pub created_at: DateTime<Utc>,
+    /// 更新时间
+    pub updated_at: DateTime<Utc>,
+}
+
+impl CorrectionRule {
+    pub fn new(
+        content: String,
+        feedback_type: FeedbackType,
+        level: CorrectionLevel,
+    ) -> Self {
+        let now = Utc::now();
+        
+        Self {
+            id: Uuid::new_v4().to_string(),
+            content,
+            trigger_keywords: Vec::new(),
+            context_pattern: None,
+            feedback_type,
+            level,
+            source_feedback_id: None,
+            effective_from: now,
+            effective_until: None,
+            status: RuleStatus::Active,
+            application_count: 0,
+            success_rate: 0.0,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        let now = Utc::now();
+        if self.status != RuleStatus::Active {
+            return false;
+        }
+        if now < self.effective_from {
+            return false;
+        }
+        if let Some(until) = self.effective_until {
+            if now > until {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+/// 规则状态
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum RuleStatus {
     Active,
     Inactive,
-    Deprecated,
-    Testing,
+    Archived,
 }
 
-impl std::fmt::Display for CorrectionStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            CorrectionStatus::Active => write!(f, "active"),
-            CorrectionStatus::Inactive => write!(f, "inactive"),
-            CorrectionStatus::Deprecated => write!(f, "deprecated"),
-            CorrectionStatus::Testing => write!(f, "testing"),
-        }
-    }
-}
-
-/// Rule category
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum RuleCategory {
-    OutputFormat,
-    ContentAccuracy,
-    Behavior,
-    Safety,
-    Performance,
-}
-
-impl std::fmt::Display for RuleCategory {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RuleCategory::OutputFormat => write!(f, "output_format"),
-            RuleCategory::ContentAccuracy => write!(f, "content_accuracy"),
-            RuleCategory::Behavior => write!(f, "behavior"),
-            RuleCategory::Safety => write!(f, "safety"),
-            RuleCategory::Performance => write!(f, "performance"),
-        }
-    }
-}
-
-/// Trigger type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum TriggerType {
-    Keyword,
-    Pattern,
-    Context,
-    ToolOutput,
-}
-
-impl std::fmt::Display for TriggerType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TriggerType::Keyword => write!(f, "keyword"),
-            TriggerType::Pattern => write!(f, "pattern"),
-            TriggerType::Context => write!(f, "context"),
-            TriggerType::ToolOutput => write!(f, "tool_output"),
-        }
-    }
-}
-
-/// Application scope
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum ApplicationScope {
-    Global,
-    User,
-    Session,
-    Tool,
-}
-
-impl std::fmt::Display for ApplicationScope {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ApplicationScope::Global => write!(f, "global"),
-            ApplicationScope::User => write!(f, "user"),
-            ApplicationScope::Session => write!(f, "session"),
-            ApplicationScope::Tool => write!(f, "tool"),
-        }
-    }
-}
-
-/// Correction case
+/// 反馈记录
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CorrectionCase {
+#[serde(rename_all = "camelCase")]
+pub struct Feedback {
+    /// 反馈ID
     pub id: String,
-    pub original_output: String,
-    pub corrected_output: String,
-    pub correction_reason: String,
-    pub tool_name: Option<String>,
-    pub session_id: String,
-    pub timestamp: i64,
+    /// 用户ID
     pub user_id: String,
-    pub extracted_rules: Vec<String>,
+    /// 会话ID
+    pub session_id: String,
+    /// 反馈类型
+    pub feedback_type: FeedbackType,
+    /// 原始内容
+    pub original_content: String,
+    /// 期望内容
+    pub expected_content: Option<String>,
+    /// 反馈说明
+    pub description: Option<String>,
+    /// 是否已处理
+    pub is_processed: bool,
+    /// 是否生成规则
+    pub rule_generated: bool,
+    /// 生成规则ID
+    pub generated_rule_id: Option<String>,
+    /// 创建时间
+    pub created_at: DateTime<Utc>,
 }
 
-/// Learning correction rule
+/// 错题集项
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LearningCorrectionRule {
+#[serde(rename_all = "camelCase")]
+pub struct ErrorItem {
+    /// 错题ID
     pub id: String,
-    pub name: String,
-    pub description: String,
-    pub category: RuleCategory,
-    pub trigger_type: TriggerType,
-    pub trigger_condition: String,
-    pub correction_action: String,
-    pub status: CorrectionStatus,
-    pub scope: ApplicationScope,
-    pub priority: i32,
-    pub success_rate: f64,
-    pub applications_count: i64,
-    pub source_case_id: Option<String>,
-    pub created_at: i64,
-    pub updated_at: i64,
-    pub created_by: String,
+    /// 用户ID
+    pub user_id: String,
+    /// 问题描述
+    pub question: String,
+    /// AI错误回答
+    pub wrong_answer: String,
+    /// 正确回答
+    pub correct_answer: String,
+    /// 解释
+    pub explanation: Option<String>,
+    /// 相关规则ID
+    pub related_rule_id: Option<String>,
+    /// 标签
     pub tags: Vec<String>,
+    /// 复习次数
+    pub review_count: u32,
+    /// 下次复习时间
+    pub next_review_at: Option<DateTime<Utc>>,
+    /// 掌握程度 (0-1)
+    pub mastery_level: f32,
+    /// 创建时间
+    pub created_at: DateTime<Utc>,
+    /// 更新时间
+    pub updated_at: DateTime<Utc>,
 }
 
-/// Rule statistics
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleStats {
-    pub total_rules: i64,
-    pub active_rules: i64,
-    pub total_corrections: i64,
-    pub avg_success_rate: f64,
-    pub by_category: HashMap<String, i64>,
-    pub by_status: HashMap<String, i64>,
-    pub recent_applications: i64,
-    pub top_rules: Vec<RuleApplicationCount>,
+impl ErrorItem {
+    pub fn new(
+        user_id: String,
+        question: String,
+        wrong_answer: String,
+        correct_answer: String,
+    ) -> Self {
+        let now = Utc::now();
+        
+        Self {
+            id: Uuid::new_v4().to_string(),
+            user_id,
+            question,
+            wrong_answer,
+            correct_answer,
+            explanation: None,
+            related_rule_id: None,
+            tags: Vec::new(),
+            review_count: 0,
+            next_review_at: None,
+            mastery_level: 0.0,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    /// 基于艾宾浩斯遗忘曲线更新掌握程度
+    pub fn update_mastery(&mut self, recalled: bool) {
+        self.review_count += 1;
+        
+        // 简化算法：每次回忆正确增加15%，错误减少20%
+        if recalled {
+            self.mastery_level = (self.mastery_level + 0.15).min(1.0);
+            
+            // 设置下次复习时间（根据掌握程度调整）
+            let days = match self.mastery_level {
+                x if x < 0.3 => 1,
+                x if x < 0.5 => 3,
+                x if x < 0.7 => 7,
+                x if x < 0.9 => 14,
+                _ => 30,
+            };
+            self.next_review_at = Some(Utc::now() + chrono::Duration::days(days));
+        } else {
+            self.mastery_level = (self.mastery_level - 0.2).max(0.0);
+            self.next_review_at = Some(Utc::now() + chrono::Duration::days(1));
+        }
+        
+        self.updated_at = Utc::now();
+    }
 }
 
-/// Rule application count
+/// 规则应用追踪
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleApplicationCount {
-    pub rule_id: String,
-    pub name: String,
-    pub applications: i64,
-}
-
-/// Rule match result
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleMatch {
-    pub rule_id: String,
-    pub rule_name: String,
-    pub category: RuleCategory,
-    pub trigger_type: TriggerType,
-    pub trigger_condition: String,
-    pub correction_action: String,
-    pub confidence: f64,
-    pub match_context: String,
-    pub priority: i32,
-}
-
-/// Rule suggestion
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleSuggestion {
+#[serde(rename_all = "camelCase")]
+pub struct RuleApplication {
+    /// 应用ID
     pub id: String,
+    /// 规则ID
     pub rule_id: String,
-    pub rule_name: String,
-    pub category: RuleCategory,
-    pub correction_action: String,
-    pub priority: i32,
-    pub reason: String,
-    pub requires_human_review: bool,
+    /// 会话ID
     pub session_id: String,
-    pub trace_id: String,
-    pub created_at: i64,
+    /// 触发内容
+    pub triggered_content: String,
+    /// 应用结果
+    pub result: ApplicationResult,
+    /// 用户反馈
+    pub user_feedback: Option<bool>,
+    /// 创建时间
+    pub created_at: DateTime<Utc>,
 }
 
-/// Rule hit record
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleHitRecord {
-    pub id: String,
-    pub rule_id: String,
-    pub session_id: String,
-    pub trace_id: String,
-    pub match_context: String,
-    pub applied: bool,
-    pub review_status: String,
-    pub created_at: i64,
+/// 应用结果
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ApplicationResult {
+    Applied,
+    Rejected,
+    Skipped,
 }
 
-/// Context for rule matching
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleMatchContext {
-    pub session_id: String,
-    pub trace_id: String,
-    pub tool_name: Option<String>,
-    pub tool_output: Option<String>,
-    pub user_message: Option<String>,
-    pub agent_response: Option<String>,
-    pub error_message: Option<String>,
-    pub metadata: Option<serde_json::Value>,
+/// 纠偏服务
+pub struct CorrectionService {
+    /// 纠偏规则存储
+    rules: Arc<RwLock<HashMap<String, CorrectionRule>>>,
+    /// 反馈记录存储
+    feedbacks: Arc<RwLock<HashMap<String, Feedback>>>,
+    /// 错题集存储
+    error_items: Arc<RwLock<HashMap<String, Vec<ErrorItem>>>>,
+    /// 规则应用追踪
+    applications: Arc<RwLock<Vec<RuleApplication>>>,
+    /// 用户规则索引
+    user_rules: Arc<RwLock<HashMap<String, Vec<String>>>>,
 }
 
-/// Default correction rules
-fn get_default_correction_rules() -> Vec<LearningCorrectionRule> {
-    let now = Utc::now().timestamp();
-
-    vec![
-        LearningCorrectionRule {
-            id: "rule_output_detail".to_string(),
-            name: "详细输出规则".to_string(),
-            description: "当提供方案建议时，必须包含具体实施步骤".to_string(),
-            category: RuleCategory::OutputFormat,
-            trigger_type: TriggerType::Keyword,
-            trigger_condition: "建议|方案|推荐".to_string(),
-            correction_action: "添加详细实施步骤和预期结果".to_string(),
-            status: CorrectionStatus::Active,
-            scope: ApplicationScope::Global,
-            priority: 1,
-            success_rate: 0.92,
-            applications_count: 156,
-            source_case_id: None,
-            created_at: now - 86400 * 30,
-            updated_at: now - 3600,
-            created_by: "system".to_string(),
-            tags: vec!["输出格式".to_string(), "详细性".to_string()],
-        },
-        LearningCorrectionRule {
-            id: "rule_error_info".to_string(),
-            name: "错误信息增强规则".to_string(),
-            description: "错误信息应包含问题描述和解决方案建议".to_string(),
-            category: RuleCategory::ContentAccuracy,
-            trigger_type: TriggerType::Pattern,
-            trigger_condition: "(error|错误|失败)".to_string(),
-            correction_action: "添加问题分析和解决方案建议".to_string(),
-            status: CorrectionStatus::Active,
-            scope: ApplicationScope::Global,
-            priority: 2,
-            success_rate: 0.88,
-            applications_count: 89,
-            source_case_id: None,
-            created_at: now - 86400 * 15,
-            updated_at: now - 86400,
-            created_by: "system".to_string(),
-            tags: vec!["错误处理".to_string(), "用户体验".to_string()],
-        },
-        LearningCorrectionRule {
-            id: "rule_exec_result".to_string(),
-            name: "执行结果详情规则".to_string(),
-            description: "工具执行结果应包含详细的操作记录".to_string(),
-            category: RuleCategory::OutputFormat,
-            trigger_type: TriggerType::ToolOutput,
-            trigger_condition: "shell_execute|fs_*".to_string(),
-            correction_action: "列出所有执行的操作和结果".to_string(),
-            status: CorrectionStatus::Active,
-            scope: ApplicationScope::Tool,
-            priority: 3,
-            success_rate: 0.95,
-            applications_count: 234,
-            source_case_id: None,
-            created_at: now - 86400 * 20,
-            updated_at: now - 86400 * 2,
-            created_by: "system".to_string(),
-            tags: vec!["工具输出".to_string(), "透明性".to_string()],
-        },
-    ]
-}
-
-/// Correction rule service
-#[derive(Clone)]
-pub struct CorrectionRuleService {
-    rules: Arc<RwLock<Vec<LearningCorrectionRule>>>,
-    hit_records: Arc<RwLock<Vec<RuleHitRecord>>>,
-}
-
-impl CorrectionRuleService {
+impl CorrectionService {
     pub fn new() -> Self {
         Self {
-            rules: Arc::new(RwLock::new(get_default_correction_rules())),
-            hit_records: Arc::new(RwLock::new(Vec::new())),
+            rules: Arc::new(RwLock::new(HashMap::new())),
+            feedbacks: Arc::new(RwLock::new(HashMap::new())),
+            error_items: Arc::new(RwLock::new(HashMap::new())),
+            applications: Arc::new(RwLock::new(Vec::new())),
+            user_rules: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    /// Generate unique ID
-    pub fn generate_id(prefix: &str) -> String {
-        format!("{}_{}", prefix, uuid::Uuid::new_v4())
+    /// 提交反馈
+    pub async fn submit_feedback(&self, feedback: Feedback) -> Result<Feedback, String> {
+        let mut feedbacks = self.feedbacks.write().await;
+        
+        feedbacks.insert(feedback.id.clone(), feedback.clone());
+        
+        Ok(feedback)
     }
 
-    /// Get all rules
-    pub async fn get_rules(&self) -> Vec<LearningCorrectionRule> {
-        self.rules.read().await.clone()
-    }
-
-    /// Get active rules
-    pub async fn get_active_rules(&self) -> Vec<LearningCorrectionRule> {
-        self.rules
-            .read()
-            .await
-            .iter()
-            .filter(|r| r.status == CorrectionStatus::Active)
-            .cloned()
-            .collect()
-    }
-
-    /// Get rules by category
-    pub async fn get_rules_by_category(&self, category: &RuleCategory) -> Vec<LearningCorrectionRule> {
-        self.rules
-            .read()
-            .await
-            .iter()
-            .filter(|r| r.category == *category)
-            .cloned()
-            .collect()
-    }
-
-    /// Get rules by scope
-    pub async fn get_rules_by_scope(&self, scope: &ApplicationScope) -> Vec<LearningCorrectionRule> {
-        self.rules
-            .read()
-            .await
-            .iter()
-            .filter(|r| r.scope == *scope || r.scope == ApplicationScope::Global)
-            .cloned()
-            .collect()
-    }
-
-    /// Match rules against context
-    pub async fn match_rules(&self, context: &RuleMatchContext) -> Vec<RuleMatch> {
-        let rules = self.rules.read().await;
-        let mut matches = Vec::new();
-
-        for rule in rules.iter() {
-            if rule.status != CorrectionStatus::Active {
-                continue;
-            }
-
-            // Check scope
-            if rule.scope != ApplicationScope::Global {
-                match rule.scope {
-                    ApplicationScope::Session => {
-                        // Rule only applies to specific session
-                        continue;
-                    }
-                    ApplicationScope::User => {
-                        // Rule only applies to specific user
-                        continue;
-                    }
-                    ApplicationScope::Tool => {
-                        // Rule only applies to specific tool
-                        if let Some(ref tool_name) = context.tool_name {
-                            if !Self::matches_tool_pattern(&rule.trigger_condition, tool_name) {
-                                continue;
-                            }
-                        } else {
-                            continue;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-
-            // Check trigger
-            let (matched, match_context) = Self::check_trigger(
-                &rule.trigger_type,
-                &rule.trigger_condition,
-                context,
-            );
-
-            if matched {
-                let confidence = Self::calculate_confidence(&rule, &match_context);
-
-                matches.push(RuleMatch {
-                    rule_id: rule.id.clone(),
-                    rule_name: rule.name.clone(),
-                    category: rule.category.clone(),
-                    trigger_type: rule.trigger_type.clone(),
-                    trigger_condition: rule.trigger_condition.clone(),
-                    correction_action: rule.correction_action.clone(),
-                    confidence,
-                    match_context,
-                    priority: rule.priority,
-                });
-
-                // Record hit
-                self.record_hit(&rule.id, context).await;
-            }
-        }
-
-        // Sort by priority then confidence
-        matches.sort_by(|a, b| {
-            let priority_cmp = b.priority.cmp(&a.priority);
-            if priority_cmp == std::cmp::Ordering::Equal {
-                b.confidence.partial_cmp(&a.confidence).unwrap_or(std::cmp::Ordering::Equal)
-            } else {
-                priority_cmp
-            }
-        });
-
-        matches
-    }
-
-    /// Check if trigger matches
-    fn check_trigger(
-        trigger_type: &TriggerType,
-        trigger_condition: &str,
-        context: &RuleMatchContext,
-    ) -> (bool, String) {
-        match trigger_type {
-            TriggerType::Keyword => {
-                let text = context
-                    .tool_output
-                    .as_ref()
-                    .or(context.user_message.as_ref())
-                    .or(context.agent_response.as_ref())
-                    .or(context.error_message.as_ref());
-
-                if let Some(text) = text {
-                    let keywords: Vec<&str> = trigger_condition.split('|').collect();
-                    for keyword in keywords {
-                        if text.contains(keyword) {
-                            return (true, format!("Keyword '{}' found", keyword));
-                        }
-                    }
-                }
-                (false, String::new())
-            }
-            TriggerType::Pattern => {
-                let text = context
-                    .tool_output
-                    .as_ref()
-                    .or(context.error_message.as_ref())
-                    .or(context.agent_response.as_ref());
-
-                if let Some(text) = text {
-                    // Simple regex-like matching (supports basic patterns)
-                    if Self::regex_matches(trigger_condition, text) {
-                        return (true, format!("Pattern '{}' matched", trigger_condition));
-                    }
-                }
-                (false, String::new())
-            }
-            TriggerType::ToolOutput => {
-                if let Some(ref tool_name) = context.tool_name {
-                    if Self::matches_tool_pattern(trigger_condition, tool_name) {
-                        return (true, format!("Tool '{}' output", tool_name));
-                    }
-                }
-                (false, String::new())
-            }
-            TriggerType::Context => {
-                // Context-based triggers use metadata
-                if let Some(ref metadata) = context.metadata {
-                    let condition_json: serde_json::Value =
-                        serde_json::from_str(trigger_condition).unwrap_or(serde_json::Value::Null);
-                    if let Some(obj) = metadata.as_object() {
-                        for (key, value) in obj {
-                            if let Some(expected) = condition_json.get(key) {
-                                if value == expected {
-                                    return (true, format!("Context '{}' matched", key));
-                                }
-                            }
-                        }
-                    }
-                }
-                (false, String::new())
-            }
-        }
-    }
-
-    /// Simple regex matching for patterns
-    fn regex_matches(pattern: &str, text: &str) -> bool {
-        // Handle common regex patterns
-        if pattern.starts_with('(') && pattern.ends_with(')') {
-            // Group pattern like (error|错误|失败)
-            let inner = &pattern[1..pattern.len() - 1];
-            let alternatives: Vec<&str> = inner.split('|').collect();
-            for alt in alternatives {
-                if text.contains(alt) {
-                    return true;
-                }
-            }
-        } else if pattern.contains('*') {
-            // Glob pattern
-            let prefix = pattern.trim_end_matches('*');
-            if text.starts_with(prefix) || text.contains(prefix) {
-                return true;
-            }
-        } else if text.contains(pattern) {
-            return true;
-        }
-        false
-    }
-
-    /// Check if tool matches pattern
-    fn matches_tool_pattern(pattern: &str, tool_name: &str) -> bool {
-        Self::regex_matches(pattern, tool_name)
-    }
-
-    /// Calculate match confidence
-    fn calculate_confidence(rule: &LearningCorrectionRule, _match_context: &str) -> f64 {
-        // Base confidence from rule's historical success rate
-        // Could be enhanced with contextual factors
-        rule.success_rate * 0.8 + 0.1_f64.min(rule.applications_count as f64 / 100.0)
-    }
-
-    /// Record rule hit
-    async fn record_hit(&self, rule_id: &str, context: &RuleMatchContext) {
-        let mut records = self.hit_records.write().await;
-        records.push(RuleHitRecord {
-            id: Self::generate_id("hit"),
-            rule_id: rule_id.to_string(),
-            session_id: context.session_id.clone(),
-            trace_id: context.trace_id.clone(),
-            match_context: context
-                .tool_output
-                .clone()
-                .or_else(|| context.error_message.clone())
-                .unwrap_or_default(),
-            applied: false,
-            review_status: "pending".to_string(),
-            created_at: Utc::now().timestamp(),
-        });
-
-        // Update rule application count
-        let mut rules = self.rules.write().await;
-        if let Some(rule) = rules.iter_mut().find(|r| r.id == rule_id) {
-            rule.applications_count += 1;
-        }
-    }
-
-    /// Generate suggestions for planner/runtime
-    pub async fn generate_suggestions(
+    /// 从反馈生成规则
+    pub async fn generate_rule_from_feedback(
         &self,
-        context: &RuleMatchContext,
-    ) -> Vec<RuleSuggestion> {
-        let matches = self.match_rules(context).await;
+        feedback_id: &str,
+    ) -> Result<CorrectionRule, String> {
+        let feedbacks = self.feedbacks.read().await;
+        let feedback = feedbacks.get(feedback_id)
+            .ok_or("反馈不存在")?
+            .clone();
+        drop(feedbacks);
+        
+        // 创建规则
+        let mut rule = CorrectionRule::new(
+            feedback.expected_content.clone().unwrap_or_default(),
+            feedback.feedback_type,
+            CorrectionLevel::Medium,
+        );
+        rule.source_feedback_id = Some(feedback_id.to_string());
+        
+        // 提取触发关键词
+        rule.trigger_keywords = self.extract_keywords(&feedback.original_content);
+        
+        // 保存规则
+        let mut rules = self.rules.write().await;
+        rules.insert(rule.id.clone(), rule.clone());
+        
+        // 更新用户规则索引
+        let mut user_rules = self.user_rules.write().await;
+        user_rules
+            .entry(feedback.user_id.clone())
+            .or_insert_with(Vec::new)
+            .push(rule.id.clone());
+        
+        // 更新反馈状态
+        let mut feedbacks = self.feedbacks.write().await;
+        if let Some(fb) = feedbacks.get_mut(feedback_id) {
+            fb.is_processed = true;
+            fb.rule_generated = true;
+            fb.generated_rule_id = Some(rule.id.clone());
+        }
+        
+        Ok(rule)
+    }
 
-        matches
+    /// 提取关键词
+    fn extract_keywords(&self, content: &str) -> Vec<String> {
+        let stop_words = vec![
+            "的", "了", "在", "是", "我", "你", "他", "她", "它",
+            "这个", "那个", "一个", "什么", "怎么", "如何",
+        ];
+        
+        let words: Vec<String> = content
+            .split(|c: char| !c.is_alphanumeric() && c != '_')
+            .filter(|w| w.len() >= 2)
+            .filter(|w| !stop_words.contains(w))
+            .map(|w| w.to_string())
+            .take(5)
+            .collect();
+        
+        words
+    }
+
+    /// 添加错题
+    pub async fn add_error_item(&self, item: ErrorItem) -> Result<ErrorItem, String> {
+        let mut error_items = self.error_items.write().await;
+        
+        error_items
+            .entry(item.user_id.clone())
+            .or_insert_with(Vec::new)
+            .push(item.clone());
+        
+        Ok(item)
+    }
+
+    /// 获取用户的错题集
+    pub async fn get_error_items(&self, user_id: &str) -> Vec<ErrorItem> {
+        let error_items = self.error_items.read().await;
+        error_items.get(user_id)
+            .map(|items| items.clone())
+            .unwrap_or_default()
+    }
+
+    /// 获取待复习的错题
+    pub async fn get_due_items(&self, user_id: &str) -> Vec<ErrorItem> {
+        let now = Utc::now();
+        
+        self.get_error_items(user_id).await
             .into_iter()
-            .map(|m| RuleSuggestion {
-                id: Self::generate_id("sug"),
-                rule_id: m.rule_id,
-                rule_name: m.rule_name,
-                category: m.category,
-                correction_action: m.correction_action,
-                priority: 0, // Will be set based on rule priority
-                reason: m.match_context,
-                requires_human_review: true, // Always require human review per spec
-                session_id: context.session_id.clone(),
-                trace_id: context.trace_id.clone(),
-                created_at: Utc::now().timestamp(),
+            .filter(|item| {
+                item.next_review_at
+                    .map(|dt| dt <= now)
+                    .unwrap_or(true)
             })
             .collect()
     }
 
-    /// Link rule hits to failure records
-    pub async fn link_to_failure(
+    /// 更新错题掌握程度
+    pub async fn update_mastery(
         &self,
-        trace_id: &str,
-        session_id: &str,
-        error_context: &str,
-    ) -> Vec<RuleSuggestion> {
-        let context = RuleMatchContext {
-            session_id: session_id.to_string(),
-            trace_id: trace_id.to_string(),
-            tool_name: None,
-            tool_output: None,
-            user_message: None,
-            agent_response: None,
-            error_message: Some(error_context.to_string()),
-            metadata: None,
-        };
-
-        self.generate_suggestions(&context).await
+        user_id: &str,
+        item_id: &str,
+        recalled: bool,
+    ) -> Result<(), String> {
+        let mut error_items = self.error_items.write().await;
+        
+        if let Some(items) = error_items.get_mut(user_id) {
+            if let Some(item) = items.iter_mut().find(|i| i.id == item_id) {
+                item.update_mastery(recalled);
+                return Ok(());
+            }
+        }
+        
+        Err("错题不存在")
     }
 
-    /// Add a new rule
-    pub async fn add_rule(&self, rule: LearningCorrectionRule) -> Result<()> {
-        let mut rules = self.rules.write().await;
-        rules.push(rule);
-        Ok(())
+    /// 检查内容触发规则
+    pub async fn check_content(
+        &self,
+        user_id: &str,
+        content: &str,
+    ) -> Vec<CorrectionRule> {
+        let rules = self.rules.read().await;
+        let user_rules = self.user_rules.read().await;
+        
+        let user_rule_ids = user_rules.get(user_id)
+            .map(|ids| ids.clone())
+            .unwrap_or_default();
+        
+        rules.values()
+            .filter(|rule| {
+                // 检查规则是否激活
+                if !rule.is_active() {
+                    return false;
+                }
+                
+                // 检查是否是用户的规则
+                if !user_rule_ids.contains(&rule.id) {
+                    return false;
+                }
+                
+                // 检查触发关键词
+                for keyword in &rule.trigger_keywords {
+                    if content.contains(keyword) {
+                        return true;
+                    }
+                }
+                
+                false
+            })
+            .cloned()
+            .collect()
     }
 
-    /// Update rule status
-    pub async fn update_rule_status(
+    /// 记录规则应用
+    pub async fn record_application(
         &self,
         rule_id: &str,
-        status: CorrectionStatus,
-    ) -> Result<()> {
+        session_id: &str,
+        triggered_content: String,
+        result: ApplicationResult,
+    ) -> RuleApplication {
+        let application = RuleApplication {
+            id: Uuid::new_v4().to_string(),
+            rule_id: rule_id.to_string(),
+            session_id: session_id.to_string(),
+            triggered_content,
+            result,
+            user_feedback: None,
+            created_at: Utc::now(),
+        };
+        
+        let mut applications = self.applications.write().await;
+        applications.push(application.clone());
+        
+        // 更新规则统计
+        drop(applications);
+        self.update_rule_stats(rule_id, result).await;
+        
+        application
+    }
+
+    /// 更新规则统计
+    async fn update_rule_stats(&self, rule_id: &str, result: ApplicationResult) {
         let mut rules = self.rules.write().await;
-        if let Some(rule) = rules.iter_mut().find(|r| r.id == rule_id) {
-            rule.status = status;
-            rule.updated_at = Utc::now().timestamp();
+        
+        if let Some(rule) = rules.get_mut(rule_id) {
+            rule.application_count += 1;
+            
+            // 更新成功率
+            let total = rule.application_count as f32;
+            let current_success = rule.success_rate * (total - 1.0);
+            let new_success = match result {
+                ApplicationResult::Applied => 1.0,
+                ApplicationResult::Rejected => 0.0,
+                ApplicationResult::Skipped => 0.5,
+            };
+            rule.success_rate = (current_success + new_success) / total;
         }
+    }
+
+    /// 获取用户的所有规则
+    pub async fn get_user_rules(&self, user_id: &str) -> Vec<CorrectionRule> {
+        let rules = self.rules.read().await;
+        let user_rules = self.user_rules.read().await;
+        
+        let user_rule_ids = user_rules.get(user_id)
+            .map(|ids| ids.clone())
+            .unwrap_or_default();
+        
+        rules.values()
+            .filter(|rule| user_rule_ids.contains(&rule.id))
+            .cloned()
+            .collect()
+    }
+
+    /// 删除规则
+    pub async fn delete_rule(&self, user_id: &str, rule_id: &str) -> Result<(), String> {
+        let mut user_rules = self.user_rules.write().await;
+        
+        if let Some(ids) = user_rules.get_mut(user_id) {
+            ids.retain(|id| id != rule_id);
+        }
+        
+        let mut rules = self.rules.write().await;
+        rules.remove(rule_id);
+        
         Ok(())
     }
 
-    /// Get rule statistics
-    pub async fn get_stats(&self) -> RuleStats {
+    /// 获取应用统计
+    pub async fn get_stats(&self) -> CorrectionStats {
         let rules = self.rules.read().await;
-
-        let total_rules = rules.len() as i64;
-        let active_rules = rules.iter().filter(|r| r.status == CorrectionStatus::Active).count() as i64;
-
-        let mut by_category: HashMap<String, i64> = HashMap::new();
-        let mut by_status: HashMap<String, i64> = HashMap::new();
-
-        for rule in rules.iter() {
-            *by_category.entry(rule.category.to_string()).or_insert(0) += 1;
-            *by_status.entry(rule.status.to_string()).or_insert(0) += 1;
-        }
-
-        let avg_success_rate = if rules.is_empty() {
-            0.0
-        } else {
-            rules.iter().map(|r| r.success_rate).sum::<f64>() / rules.len() as f64
-        };
-
-        let recent_applications: i64 = rules.iter().map(|r| r.applications_count).sum();
-
-        let mut top_rules: Vec<RuleApplicationCount> = rules
-            .iter()
-            .map(|r| RuleApplicationCount {
-                rule_id: r.id.clone(),
-                name: r.name.clone(),
-                applications: r.applications_count,
-            })
-            .collect();
-        top_rules.sort_by(|a, b| b.applications.cmp(&a.applications));
-        top_rules.truncate(5);
-
-        RuleStats {
+        let applications = self.applications.read().await;
+        
+        let total_rules = rules.len();
+        let active_rules = rules.values()
+            .filter(|r| r.is_active())
+            .count();
+        
+        let total_applications = applications.len();
+        let successful = applications.iter()
+            .filter(|a| a.result == ApplicationResult::Applied)
+            .count();
+        
+        CorrectionStats {
             total_rules,
             active_rules,
-            total_corrections: recent_applications,
-            avg_success_rate,
-            by_category,
-            by_status,
-            recent_applications,
-            top_rules,
+            total_applications,
+            success_rate: if total_applications > 0 {
+                successful as f32 / total_applications as f32
+            } else {
+                0.0
+            },
         }
-    }
-
-    /// Get hit records for a session
-    pub async fn get_hits_by_session(&self, session_id: &str) -> Vec<RuleHitRecord> {
-        self.hit_records
-            .read()
-            .await
-            .iter()
-            .filter(|r| r.session_id == session_id)
-            .cloned()
-            .collect()
-    }
-
-    /// Get hit records for a trace
-    pub async fn get_hits_by_trace(&self, trace_id: &str) -> Vec<RuleHitRecord> {
-        self.hit_records
-            .read()
-            .await
-            .iter()
-            .filter(|r| r.trace_id == trace_id)
-            .cloned()
-            .collect()
     }
 }
 
-impl Default for CorrectionRuleService {
+impl Default for CorrectionService {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// 纠偏统计
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CorrectionStats {
+    pub total_rules: usize,
+    pub active_rules: usize,
+    pub total_applications: usize,
+    pub success_rate: f32,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_correction_status_display() {
-        assert_eq!(CorrectionStatus::Active.to_string(), "active");
-        assert_eq!(CorrectionStatus::Inactive.to_string(), "inactive");
-        assert_eq!(CorrectionStatus::Deprecated.to_string(), "deprecated");
-        assert_eq!(CorrectionStatus::Testing.to_string(), "testing");
-    }
-
-    #[test]
-    fn test_rule_category_display() {
-        assert_eq!(RuleCategory::OutputFormat.to_string(), "output_format");
-        assert_eq!(RuleCategory::ContentAccuracy.to_string(), "content_accuracy");
-    }
-
-    #[test]
-    fn test_trigger_type_display() {
-        assert_eq!(TriggerType::Keyword.to_string(), "keyword");
-        assert_eq!(TriggerType::Pattern.to_string(), "pattern");
+    #[tokio::test]
+    async fn test_add_error_item() {
+        let service = CorrectionService::new();
+        
+        let item = ErrorItem::new(
+            "user-1".to_string(),
+            "如何创建函数?".to_string(),
+            "使用 def 创建".to_string(),
+            "使用 function 关键字创建".to_string(),
+        );
+        
+        let result = service.add_error_item(item).await;
+        assert!(result.is_ok());
+        
+        let items = service.get_error_items("user-1").await;
+        assert_eq!(items.len(), 1);
     }
 
     #[tokio::test]
-    async fn test_default_rules_loaded() {
-        let service = CorrectionRuleService::new();
-        let rules = service.get_rules().await;
-        assert!(!rules.is_empty());
+    async fn test_update_mastery() {
+        let service = CorrectionService::new();
+        
+        let item = ErrorItem::new(
+            "user-1".to_string(),
+            "测试问题".to_string(),
+            "错误答案".to_string(),
+            "正确答案".to_string(),
+        );
+        
+        let item = service.add_error_item(item).await.unwrap();
+        
+        // 回忆正确
+        service.update_mastery("user-1", &item.id, true).await.unwrap();
+        
+        let items = service.get_error_items("user-1").await;
+        assert!(items[0].mastery_level > 0.0);
     }
 
     #[tokio::test]
-    async fn test_match_keyword_trigger() {
-        let service = CorrectionRuleService::new();
-        let context = RuleMatchContext {
-            session_id: "test_session".to_string(),
-            trace_id: "test_trace".to_string(),
-            tool_name: None,
-            tool_output: None,
-            user_message: Some("我建议使用A方案".to_string()),
-            agent_response: None,
-            error_message: None,
-            metadata: None,
-        };
-
-        let matches = service.match_rules(&context).await;
-        assert!(!matches.is_empty());
-    }
-
-    #[tokio::test]
-    async fn test_regex_matches() {
-        assert!(CorrectionRuleService::regex_matches("(error|错误)", "这是一个错误"));
-        assert!(CorrectionRuleService::regex_matches("(error|错误)", "这是一个error"));
-        assert!(!CorrectionRuleService::regex_matches("(error|错误)", "这是一个正确的文本"));
+    async fn test_check_content() {
+        let service = CorrectionService::new();
+        
+        // 添加规则
+        let mut rule = CorrectionRule::new(
+            "使用双引号".to_string(),
+            FeedbackType::Correction,
+            CorrectionLevel::Medium,
+        );
+        rule.trigger_keywords = vec!["字符串".to_string()];
+        
+        let mut rules = service.rules.write().await;
+        rules.insert(rule.id.clone(), rule);
+        
+        let mut user_rules = service.user_rules.write().await;
+        user_rules.insert("user-1".to_string(), vec![rule.id.clone()]);
+        
+        // 检查触发
+        let matched = service.check_content("user-1", "这是一个字符串测试").await;
+        assert_eq!(matched.len(), 1);
     }
 }

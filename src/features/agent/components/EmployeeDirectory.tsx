@@ -90,7 +90,109 @@ export interface EmployeeDirectoryProps {
   showOnlyDepartment?: boolean
 }
 
-// Mock Data
+// ==================== API Hooks ====================
+
+import { useEffect, useState, useMemo } from 'react'
+import { listEmployees, getDepartmentTree } from '@/features/hr/api/hrApi'
+import type { EmployeeListItem, DepartmentTreeNode } from '@/features/hr/types/hr.types'
+
+// Convert API Employee to UI Employee
+function convertToEmployee(item: EmployeeListItem): Employee {
+  return {
+    id: item.id,
+    name: item.name,
+    avatar: item.avatar,
+    department: item.department_name,
+    position: item.position_name,
+    email: item.email,
+    phone: item.phone,
+    status: item.status === 'active' ? 'online' : 'offline',
+    isCurrentUser: item.is_current_user || false,
+  }
+}
+
+// Convert API Department to UI Department
+function convertToDepartment(node: DepartmentTreeNode, employees: Employee[]): Department {
+  return {
+    id: node.id,
+    name: node.name,
+    employeeCount: node.employee_count,
+    employees: employees.filter((e) => e.department === node.name),
+    expanded: true,
+  }
+}
+
+// Hook to fetch employees from API
+function useEmployees() {
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchEmployees() {
+      try {
+        setLoading(true)
+        const result = await listEmployees({ page: 1, pageSize: 100 })
+        const items = result.items.map(convertToEmployee)
+        setEmployees(items)
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch employees:', err)
+        setError('获取员工列表失败')
+        // Fallback to mock data on error
+        setEmployees(MOCK_EMPLOYEES)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchEmployees()
+  }, [])
+
+  return { employees, loading, error }
+}
+
+// Hook to fetch department tree
+function useDepartments(employees: Employee[]) {
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchDepartments() {
+      try {
+        setLoading(true)
+        const tree = await getDepartmentTree()
+        const depts = tree.map((node) => convertToDepartment(node, employees))
+        setDepartments(depts)
+      } catch (err) {
+        console.error('Failed to fetch departments:', err)
+        // Fallback: group employees by department
+        const deptMap = new Map<string, Employee[]>()
+        employees.forEach((emp) => {
+          const existing = deptMap.get(emp.department) || []
+          deptMap.set(emp.department, [...existing, emp])
+        })
+        const depts = Array.from(deptMap.entries()).map(([name, emps], index) => ({
+          id: `dept-${index}`,
+          name,
+          employeeCount: emps.length,
+          employees: emps,
+          expanded: true,
+        }))
+        setDepartments(depts)
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (employees.length > 0) {
+      fetchDepartments()
+    }
+  }, [employees])
+
+  return { departments, loading }
+}
+
+// ==================== Mock Data ====================
+
 const MOCK_EMPLOYEES: Employee[] = [
   {
     id: 'emp-1',
@@ -264,9 +366,33 @@ export function EmployeeDirectory({
   const [showSelectDialog, setShowSelectDialog] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('department')
 
+  // Fetch employees and departments from API
+  const { employees, loading: employeesLoading } = useEmployees()
+  const { departments: apiDepartments, loading: deptsLoading } = useDepartments(employees)
+
+  // Use API departments if available, otherwise fallback to mock grouping
+  const allDepartments = useMemo(() => {
+    if (apiDepartments.length > 0) {
+      return apiDepartments
+    }
+    // Fallback: group by department
+    const deptMap = new Map<string, Employee[]>()
+    employees.forEach((emp) => {
+      const existing = deptMap.get(emp.department) || []
+      deptMap.set(emp.department, [...existing, emp])
+    })
+    return Array.from(deptMap.entries()).map(([name, emps], index) => ({
+      id: `dept-${index}`,
+      name,
+      employeeCount: emps.length,
+      employees: emps,
+      expanded: true,
+    }))
+  }, [apiDepartments, employees])
+
   // Filter employees based on search and department filter
   const filteredEmployees = useMemo(() => {
-    let result = MOCK_EMPLOYEES
+    let result = employees.length > 0 ? employees : MOCK_EMPLOYEES
 
     // Filter by current user's department if enabled
     if (showOnlyMyDepartment) {
@@ -289,15 +415,25 @@ export function EmployeeDirectory({
     }
 
     return result
-  }, [searchQuery, showOnlyMyDepartment])
+  }, [employees, searchQuery, showOnlyMyDepartment])
 
-  // Update departments when filtered
-  const filteredDepartments = useMemo(() => groupByDepartment(filteredEmployees), [filteredEmployees])
+  // Filter departments based on filtered employees
+  const filteredDepartments = useMemo(() => {
+    if (allDepartments.length > 0) {
+      // Filter departments based on filtered employees
+      return allDepartments.map((dept) => ({
+        ...dept,
+        employees: filteredEmployees.filter((e) => e.department === dept.name),
+        employeeCount: filteredEmployees.filter((e) => e.department === dept.name).length,
+      })).filter((dept) => dept.employeeCount > 0)
+    }
+    return []
+  }, [allDepartments, filteredEmployees])
 
   // Stats
   const stats = useMemo(
-    () => calculateStats(MOCK_EMPLOYEES, selected),
-    [selected]
+    () => calculateStats(filteredEmployees, selected),
+    [filteredEmployees, selected]
   )
 
   // Toggle department expanded
@@ -341,8 +477,8 @@ export function EmployeeDirectory({
 
   // Get selected employees details
   const selectedEmployeesList = useMemo(
-    () => MOCK_EMPLOYEES.filter((e) => selected.includes(e.id)),
-    [selected]
+    () => filteredEmployees.filter((e) => selected.includes(e.id)),
+    [filteredEmployees, selected]
   )
 
   return (

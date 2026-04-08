@@ -30,6 +30,7 @@
 
 pub mod types;
 pub mod config;
+pub mod runtime_integration;
 pub mod storage;
 pub mod hooks;
 pub mod retrieval;
