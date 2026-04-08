@@ -26,6 +26,8 @@ export interface Message {
   metadata?: Record<string, unknown>
   createdAt: number
   readAt?: number
+  pinned?: boolean
+  pinnedAt?: number
 }
 
 export interface DoNotDisturb {
@@ -98,4 +100,61 @@ export const MESSAGE_PRIORITY_COLORS: Record<MessagePriority, string> = {
   normal: 'text-blue-400',
   high: 'text-yellow-500',
   urgent: 'text-red-500',
+}
+
+// ============================================================================
+// Search and Filter Types (Task 182)
+// ============================================================================
+
+export interface MessageSearchQuery {
+  keyword?: string
+  msgType?: MessageType
+  priority?: MessagePriority
+  status?: MessageStatus
+  senderId?: string
+  startDate?: number
+  endDate?: number
+  pinnedOnly?: boolean
+  page?: number
+  pageSize?: number
+}
+
+export interface MessageSearchResult {
+  messages: MessageListItem[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface MessageFilter {
+  msgType?: MessageType
+  priority?: MessagePriority
+  status?: MessageStatus
+  senderId?: string
+  startDate?: number
+  endDate?: number
+  pinnedOnly: boolean
+  searchKeyword?: string
+}
+
+export interface PinnedMessage {
+  messageId: string
+  pinnedAt: number
+  reason?: string
+}
+
+export type ExportFormat = 'csv' | 'json' | 'txt'
+
+export interface ExportRequest {
+  filter: MessageFilter
+  format: ExportFormat
+  includeContent: boolean
+}
+
+export interface ExportResult {
+  format: ExportFormat
+  filename: string
+  data: string
+  messageCount: number
 }

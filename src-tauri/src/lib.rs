@@ -440,6 +440,13 @@ pub fn run() {
             message::message_unread_count,
             message::message_get_preferences,
             message::message_update_preferences,
+            // Message search and filter commands (Task 182)
+            message::message_search,
+            message::message_filter,
+            message::message_pin,
+            message::message_unpin,
+            message::message_list_pinned,
+            message::message_export,
             // Tenant commands (Task 154)
             tenant::tenant_get_current,
             tenant::tenant_list,

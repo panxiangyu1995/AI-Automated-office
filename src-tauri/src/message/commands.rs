@@ -28,6 +28,8 @@ impl MessageState {
             metadata: None,
             created_at: chrono::Utc::now().timestamp(),
             read_at: None,
+            pinned: false,
+            pinned_at: None,
         });
         messages.push(Message {
             id: "msg-002".to_string(),
@@ -43,6 +45,8 @@ impl MessageState {
             metadata: None,
             created_at: chrono::Utc::now().timestamp(),
             read_at: None,
+            pinned: false,
+            pinned_at: None,
         });
 
         let unread = UnreadCount { total: 2, system: 1, approval: 1, task: 0, mention: 0, chat: 0 };
@@ -81,6 +85,8 @@ pub async fn message_send(state: State<'_, MessageState>, request: CreateMessage
         metadata: None,
         created_at: chrono::Utc::now().timestamp(),
         read_at: None,
+        pinned: false,
+        pinned_at: None,
     };
     state.messages.lock().unwrap().push(msg.clone());
     let mut unread = state.unread_counts.lock().unwrap();
@@ -155,4 +161,325 @@ pub async fn message_get_preferences(state: State<'_, MessageState>) -> Result<N
 pub async fn message_update_preferences(state: State<'_, MessageState>, preferences: NotificationPreferences) -> Result<(), String> {
     *state.preferences.lock().unwrap() = preferences;
     Ok(())
+}
+
+// ============================================================================
+// Search and Filter Commands (Task 182)
+// ============================================================================
+
+/// Search messages with full-text search and filters
+#[tauri::command]
+pub async fn message_search(
+    state: State<'_, MessageState>,
+    query: MessageSearchQuery,
+) -> Result<MessageSearchResult, String> {
+    let msgs = state.messages.lock().unwrap();
+
+    let filtered: Vec<Message> = msgs.iter()
+        .filter(|m| {
+            // Keyword filter (search in title and content)
+            if let Some(ref kw) = query.keyword {
+                let keyword_lower = kw.to_lowercase();
+                if !m.title.to_lowercase().contains(&keyword_lower)
+                    && !m.content.to_lowercase().contains(&keyword_lower) {
+                    return false;
+                }
+            }
+
+            // Type filter
+            if let Some(t) = query.msg_type {
+                if m.msg_type != t { return false; }
+            }
+
+            // Priority filter
+            if let Some(p) = query.priority {
+                if m.priority != p { return false; }
+            }
+
+            // Status filter
+            if let Some(s) = query.status {
+                if m.status != s { return false; }
+            }
+
+            // Sender filter
+            if let Some(ref sid) = query.sender_id {
+                if m.sender.id != *sid { return false; }
+            }
+
+            // Date range filter
+            if let Some(start) = query.start_date {
+                if m.created_at < start { return false; }
+            }
+            if let Some(end) = query.end_date {
+                if m.created_at > end { return false; }
+            }
+
+            // Pinned filter
+            if query.pinned_only.unwrap_or(false) {
+                if !m.pinned { return false; }
+            }
+
+            true
+        })
+        .cloned()
+        .collect();
+
+    let total = filtered.len() as u32;
+    let page = query.page.max(1);
+    let page_size = query.page_size.max(1);
+    let total_pages = (total + page_size - 1) / page_size;
+
+    let start = ((page - 1) * page_size) as usize;
+    let end = (start + page_size as usize).min(filtered.len());
+
+    let page_messages: Vec<MessageListItem> = filtered[start..end]
+        .iter()
+        .map(|m| MessageListItem {
+            id: m.id.clone(),
+            msg_type: m.msg_type,
+            title: m.title.clone(),
+            sender_name: m.sender.name.clone(),
+            status: m.status,
+            priority: m.priority,
+            created_at: m.created_at,
+        })
+        .collect();
+
+    Ok(MessageSearchResult {
+        messages: page_messages,
+        total,
+        page,
+        page_size,
+        total_pages,
+    })
+}
+
+/// Filter messages with multi-dimensional filters
+#[tauri::command]
+pub async fn message_filter(
+    state: State<'_, MessageState>,
+    filter: MessageFilter,
+) -> Result<Vec<MessageListItem>, String> {
+    let msgs = state.messages.lock().unwrap();
+
+    let filtered: Vec<MessageListItem> = msgs.iter()
+        .filter(|m| {
+            if let Some(t) = filter.msg_type {
+                if m.msg_type != t { return false; }
+            }
+            if let Some(p) = filter.priority {
+                if m.priority != p { return false; }
+            }
+            if let Some(s) = filter.status {
+                if m.status != s { return false; }
+            }
+            if let Some(ref sid) = filter.sender_id {
+                if m.sender.id != *sid { return false; }
+            }
+            if let Some(start) = filter.start_date {
+                if m.created_at < start { return false; }
+            }
+            if let Some(end) = filter.end_date {
+                if m.created_at > end { return false; }
+            }
+            if filter.pinned_only && !m.pinned {
+                return false;
+            }
+            if let Some(ref kw) = filter.search_keyword {
+                let keyword_lower = kw.to_lowercase();
+                if !m.title.to_lowercase().contains(&keyword_lower)
+                    && !m.content.to_lowercase().contains(&keyword_lower) {
+                    return false;
+                }
+            }
+            true
+        })
+        .map(|m| MessageListItem {
+            id: m.id.clone(),
+            msg_type: m.msg_type,
+            title: m.title.clone(),
+            sender_name: m.sender.name.clone(),
+            status: m.status,
+            priority: m.priority,
+            created_at: m.created_at,
+        })
+        .collect();
+
+    Ok(filtered)
+}
+
+/// Pin a message
+#[tauri::command]
+pub async fn message_pin(
+    state: State<'_, MessageState>,
+    id: String,
+    reason: Option<String>,
+) -> Result<PinnedMessage, String> {
+    let mut msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter_mut().find(|m| m.id == id) {
+        msg.pinned = true;
+        msg.pinned_at = Some(chrono::Utc::now().timestamp());
+        info!("Pinned message: {} (reason: {:?})", id, reason);
+        Ok(PinnedMessage {
+            message_id: id,
+            pinned_at: msg.pinned_at.unwrap_or(chrono::Utc::now().timestamp()),
+            reason,
+        })
+    } else {
+        Err("消息不存在".into())
+    }
+}
+
+/// Unpin a message
+#[tauri::command]
+pub async fn message_unpin(
+    state: State<'_, MessageState>,
+    id: String,
+) -> Result<(), String> {
+    let mut msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter_mut().find(|m| m.id == id) {
+        msg.pinned = false;
+        msg.pinned_at = None;
+        info!("Unpinned message: {}", id);
+        Ok(())
+    } else {
+        Err("消息不存在".into())
+    }
+}
+
+/// Get pinned messages
+#[tauri::command]
+pub async fn message_list_pinned(
+    state: State<'_, MessageState>,
+) -> Result<Vec<PinnedMessage>, String> {
+    let msgs = state.messages.lock().unwrap();
+    let pinned: Vec<PinnedMessage> = msgs.iter()
+        .filter(|m| m.pinned)
+        .map(|m| PinnedMessage {
+            message_id: m.id.clone(),
+            pinned_at: m.pinned_at.unwrap_or(m.created_at),
+            reason: None,
+        })
+        .collect();
+    Ok(pinned)
+}
+
+/// Export messages to specified format
+#[tauri::command]
+pub async fn message_export(
+    state: State<'_, MessageState>,
+    request: ExportRequest,
+) -> Result<ExportResult, String> {
+    let msgs = state.messages.lock().unwrap();
+
+    // Apply filter
+    let filtered: Vec<&Message> = msgs.iter()
+        .filter(|m| {
+            if let Some(t) = request.filter.msg_type {
+                if m.msg_type != t { return false; }
+            }
+            if let Some(p) = request.filter.priority {
+                if m.priority != p { return false; }
+            }
+            if let Some(s) = request.filter.status {
+                if m.status != s { return false; }
+            }
+            if let Some(ref sid) = request.filter.sender_id {
+                if m.sender.id != *sid { return false; }
+            }
+            if let Some(start) = request.filter.start_date {
+                if m.created_at < start { return false; }
+            }
+            if let Some(end) = request.filter.end_date {
+                if m.created_at > end { return false; }
+            }
+            if request.filter.pinned_only && !m.pinned {
+                return false;
+            }
+            true
+        })
+        .collect();
+
+    let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
+    let count = filtered.len() as u32;
+
+    match request.format {
+        ExportFormat::Json => {
+            let data = if request.include_content {
+                serde_json::to_string_pretty(&filtered).unwrap_or_default()
+            } else {
+                let simplified: Vec<_> = filtered.iter().map(|m| {
+                    serde_json::json!({
+                        "id": m.id,
+                        "type": m.msg_type,
+                        "title": m.title,
+                        "sender": m.sender.name,
+                        "status": m.status,
+                        "priority": m.priority,
+                        "createdAt": m.created_at
+                    })
+                }).collect();
+                serde_json::to_string_pretty(&simplified).unwrap_or_default()
+            };
+            Ok(ExportResult {
+                format: ExportFormat::Json,
+                filename: format!("messages_export_{}.json", timestamp),
+                data,
+                message_count: count,
+            })
+        },
+        ExportFormat::Csv => {
+            let mut csv_data = String::from("ID,Type,Title,Sender,Status,Priority,CreatedAt");
+            if request.include_content {
+                csv_data.push_str(",Content");
+            }
+            csv_data.push('\n');
+
+            for m in filtered {
+                csv_data.push_str(&format!(
+                    "{},{:?},\"{}\",\"{}\",{:?},{:?},{}\n",
+                    m.id,
+                    m.msg_type,
+                    m.title.replace('"', "\"\""),
+                    m.sender.name,
+                    m.status,
+                    m.priority,
+                    m.created_at
+                ));
+                if request.include_content {
+                    csv_data.push_str(&format!(
+                        ",\"{}\"\n",
+                        m.content.replace('"', "\"\"")
+                    ));
+                }
+            }
+            Ok(ExportResult {
+                format: ExportFormat::Csv,
+                filename: format!("messages_export_{}.csv", timestamp),
+                data: csv_data,
+                message_count: count,
+            })
+        },
+        ExportFormat::Txt => {
+            let mut txt_data = String::new();
+            for m in filtered {
+                txt_data.push_str(&format!("=== {} ===\n", m.title));
+                txt_data.push_str(&format!("Type: {:?}\n", m.msg_type));
+                txt_data.push_str(&format!("From: {}\n", m.sender.name));
+                txt_data.push_str(&format!("Status: {:?}\n", m.status));
+                txt_data.push_str(&format!("Priority: {:?}\n", m.priority));
+                if request.include_content {
+                    txt_data.push_str(&format!("Content:\n{}\n", m.content));
+                }
+                txt_data.push_str(&format!("Created: {}\n", m.created_at));
+                txt_data.push_str("---\n\n");
+            }
+            Ok(ExportResult {
+                format: ExportFormat::Txt,
+                filename: format!("messages_export_{}.txt", timestamp),
+                data: txt_data,
+                message_count: count,
+            })
+        },
+    }
 }

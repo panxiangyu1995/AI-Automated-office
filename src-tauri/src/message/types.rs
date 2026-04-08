@@ -41,6 +41,10 @@ pub struct Message {
     pub metadata: Option<serde_json::Value>,
     pub created_at: i64,
     pub read_at: Option<i64>,
+    #[serde(default)]
+    pub pinned: bool,
+    #[serde(default)]
+    pub pinned_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,4 +116,86 @@ pub struct UnreadCount {
     pub task: i64,
     pub mention: i64,
     pub chat: i64,
+}
+
+// ============================================================================
+// Search and Filter Types (Task 182)
+// ============================================================================
+
+/// Search query parameters
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MessageSearchQuery {
+    pub keyword: Option<String>,
+    pub msg_type: Option<MessageType>,
+    pub priority: Option<MessagePriority>,
+    pub status: Option<MessageStatus>,
+    pub sender_id: Option<String>,
+    pub start_date: Option<i64>,
+    pub end_date: Option<i64>,
+    pub pinned_only: Option<bool>,
+    #[serde(default)]
+    pub page: u32,
+    #[serde(default = "default_page_size")]
+    pub page_size: u32,
+}
+
+fn default_page_size() -> u32 { 20 }
+
+/// Search result with highlighted matches
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MessageSearchResult {
+    pub messages: Vec<MessageListItem>,
+    pub total: u32,
+    pub page: u32,
+    pub page_size: u32,
+    pub total_pages: u32,
+}
+
+/// Filter criteria for message listing
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MessageFilter {
+    pub msg_type: Option<MessageType>,
+    pub priority: Option<MessagePriority>,
+    pub status: Option<MessageStatus>,
+    pub sender_id: Option<String>,
+    pub start_date: Option<i64>,
+    pub end_date: Option<i64>,
+    pub pinned_only: bool,
+    pub search_keyword: Option<String>,
+}
+
+/// Pinned message info
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PinnedMessage {
+    pub message_id: String,
+    pub pinned_at: i64,
+    pub reason: Option<String>,
+}
+
+/// Export format for messages
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ExportFormat { Csv, Json,Txt }
+
+/// Export request
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportRequest {
+    pub filter: MessageFilter,
+    pub format: ExportFormat,
+    pub include_content: bool,
+}
+
+/// Export result with download URL or data
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportResult {
+    pub format: ExportFormat,
+    pub filename: String,
+    pub data: String,
+    pub message_count: u32,
 }
