@@ -12,7 +12,7 @@ use super::types::{AgentPermission, AgentIntercomError, MessageContent};
 /// 权限校验中间件
 pub struct AgentPermissionMiddleware {
     /// Agent权限映射表
-    permissions: Arc<RwLock<HashMap<String, AgentPermission>>),
+    permissions: Arc<RwLock<HashMap<String, AgentPermission>>>,
     /// 发送速率追踪
     rate_limiter: Arc<RwLock<HashMap<String, (u32, i64)>>>,
 }

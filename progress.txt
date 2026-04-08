@@ -1275,3 +1275,50 @@ Task 181 前端 UI 组件已完整实现：
 - 三级配置层级：用户级 > 租户级 > 平台官方
 - Plan模式用于生成任务计划（只读工具），Act模式用于执行计划（所有工具）
 - 后端API loadConfigFromBackend和saveConfigToBackend为占位实现，需要后续与实际后端集成
+
+---
+
+## 2026-04-08 - Task: 工作卡片消息系统后端实现 (Task 181)
+
+### 铁律合规检查：
+- PRD 合规：FR607-FR614 - 工作卡片消息系统
+- 架构合规：遵循架构文档中定义的模块化设计
+- UX 合规：遵循UX设计规范，前端组件使用Shadcn/ui
+
+### What was done:
+- 创建 `src-tauri/src/workcard/mod.rs` 后端模块：
+  - 定义枚举类型：CardStatus, CardPriority, CardActionType, ResultType, FieldType
+  - 定义结构体：CardField, CardAction, ActionResult, AuditTrailEntry, WorkCard
+  - 实现模板系统：WorkCardTemplate, TemplateField, TemplateAction
+  - 实现服务层：WorkCardService with CRUD + execute_action + generate_from_template
+  - 包含单元测试
+
+- 创建 `src-tauri/src/commands/workcard.rs` Tauri命令模块：
+  - create_work_card - 创建工作卡片
+  - get_work_card - 获取工作卡片
+  - list_work_cards - 列出所有工作卡片
+  - delete_work_card - 删除工作卡片
+  - execute_card_action - 执行卡片操作
+  - generate_card_from_template - 从模板生成卡片
+  - list_card_templates - 列出所有模板
+  - get_card_statuses/priorities/action_types - 工具API
+
+- 创建前端类型和API封装：
+  - `src/features/workcard/types/workcard.types.ts` - TypeScript类型定义
+  - `src/features/workcard/api/workcardApi.ts` - API封装
+  - `src/features/workcard/index.ts` - 模块导出
+
+- 修复预先存在的错误：
+  - 修复 `src-tauri/src/agent/intercom/permission.rs` 语法错误（多余的右括号）
+  - 修复 `src-tauri/src/lib.rs` 中重复的crypto模块声明
+  - 添加缺失的 `pub mod commands` 和 `pub mod workcard` 声明
+
+### Testing:
+- Rust代码使用与其他命令相同的模式（state.0访问）
+- TypeScript类型定义与前端组件 WorkCardMessage.tsx 兼容
+- 新创建的文件通过 lint 和 TypeScript 检查
+
+### Notes:
+- 前端UI组件 `WorkCardMessage.tsx` 已存在并完整
+- 后端实现了完整的数据模型、CRUD操作、模板系统和动作处理
+- 代码库有预先存在的编译错误（crypto重复、skill重复定义、vector模块缺失等），需要单独修复

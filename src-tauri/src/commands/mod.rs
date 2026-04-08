@@ -25,3 +25,4 @@ pub mod update;
 pub mod subagent;
 pub mod skill;
 pub mod mcp;
+pub mod workcard;

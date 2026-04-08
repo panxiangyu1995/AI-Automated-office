@@ -16,7 +16,9 @@ pub mod message;
 pub mod sales;
 pub mod tenant;
 pub mod warehouse;
-pub mod crypto;
+pub mod workcard;
+
+pub mod commands;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -228,6 +230,10 @@ pub fn run() {
                 // Initialize Tenant module
                 let tenant_state = tenant::TenantState::new();
                 app.manage(tenant_state);
+
+                // Initialize WorkCard module
+                let workcard_state = commands::workcard::WorkCardState::default();
+                app.manage(workcard_state);
             });
             
             // 注册默认快捷键
@@ -440,6 +446,17 @@ pub fn run() {
             tenant::tenant_get_config,
             tenant::tenant_update_config,
             tenant::tenant_get_stats,
+            // WorkCard commands (Task 181)
+            commands::workcard::create_work_card,
+            commands::workcard::get_work_card,
+            commands::workcard::list_work_cards,
+            commands::workcard::delete_work_card,
+            commands::workcard::execute_card_action,
+            commands::workcard::generate_card_from_template,
+            commands::workcard::list_card_templates,
+            commands::workcard::get_card_statuses,
+            commands::workcard::get_card_priorities,
+            commands::workcard::get_card_action_types,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");
