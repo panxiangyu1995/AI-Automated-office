@@ -34,6 +34,7 @@ pub mod context_compression_integration;
 pub mod subagent;
 pub mod router;
 pub mod model_router;
+pub mod pilot;
 
 use std::collections::HashSet;
 use std::sync::Arc;

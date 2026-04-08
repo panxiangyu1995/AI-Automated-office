@@ -48,13 +48,16 @@ export function ApprovalDetailPage({
 
   // Resolve permission context
   const permissionContext = useMemo<ApprovalPermissionContext>(
-    () => resolveApprovalPermission(instance, currentUserId, currentUserRoles),
-    [instance, currentUserId, currentUserRoles]
+    () => resolveApprovalPermission(instance.id, currentUserId, currentUserRoles),
+    [instance.id, currentUserId, currentUserRoles]
   )
 
   // Get current approval node
   const currentNode = useMemo(
-    () => instance.flow.nodes.find((n) => n.id === instance.flow.currentNodeId),
+    () => {
+      const flowData = typeof instance.flow === 'object' ? instance.flow : null
+      return flowData?.nodes?.find((n) => n.id === flowData.currentNodeId)
+    },
     [instance]
   )
 
@@ -115,7 +118,7 @@ export function ApprovalDetailPage({
       </main>
 
       {/* Fixed Action Panel - Always visible at bottom */}
-      {permissionContext.allowedActions.length > 0 && (
+      {permissionContext.allowedActions && permissionContext.allowedActions.length > 0 && (
         <footer className="sticky bottom-0 z-10">
           <ApprovalActionPanel
             permissionContext={permissionContext}

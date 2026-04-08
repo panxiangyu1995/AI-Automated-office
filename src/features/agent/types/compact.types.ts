@@ -146,11 +146,16 @@ export interface CompressionRecord {
   sessionId: string
   timestamp: Date
   trigger: TriggerType
+  triggerType?: TriggerType
   layer: CompressionLayer
   beforeTokenCount: number
   beforeMessageCount: number
   afterTokenCount: number
   afterMessageCount: number
+  beforeTokens?: number
+  afterTokens?: number
+  compressionRatio?: number
+  success?: boolean
   summary?: BusinessCompactSummary
   status: CompressionStatus
   duration: number
@@ -168,5 +173,26 @@ export interface MicroCompactResult {
   clearedItems: Array<{ messageId: string; contentType: CompressibleType; originalTokens: number; summary?: string }>
   keptItems: Array<{ messageId: string; contentType: CompressibleType; retained: 'full' | 'summary' | 'reference' }>
   tokensFreed: number
+  duration: number
+}
+
+// Message type for agent conversations
+export interface Message {
+  id: string
+  role: 'user' | 'assistant' | 'system' | 'tool'
+  parts?: Array<{ type: 'text'; content: string } | { type: 'file'; content: string } | { type: 'tool_call'; content: string }>
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+// CompressionResult type for compression operations
+export interface CompressionResult {
+  keptMessages: Message[]
+  compressedMessages: Message[]
+  summary: BusinessCompactSummary
+  preCompactTokenCount: number
+  postCompactTokenCount: number
+  compressionRatio: number
+  layer: CompressionLayer
   duration: number
 }

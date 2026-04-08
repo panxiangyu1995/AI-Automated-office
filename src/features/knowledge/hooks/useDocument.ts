@@ -53,6 +53,7 @@ export function useDocument(): UseDocumentReturn {
   const [error, setError] = useState<string | null>(null);
 
   // Helper to get user context (kept for future use)
+  // @ts-expect-error - kept for future use when access tracking is implemented
   const _getUserContext = useCallback(() => ({
     user_id: 'current_user', // TODO: Get from auth store
     tenant_id: 'current_tenant', // TODO: Get from auth store

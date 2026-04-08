@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useMessageStore } from '../stores/messageStore'
 import { MESSAGE_TYPE_LABELS, MESSAGE_PRIORITY_LABELS, MESSAGE_PRIORITY_COLORS } from '../types/message.types'
-import type { MessageStatus } from '../types/message.types'
+import type { MessageListItem, MessageStatus } from '../types/message.types'
 
 const STATUS_COLORS: Record<MessageStatus, string> = { unread: 'bg-blue-500', read: 'bg-gray-400', archived: 'bg-gray-300' }
 

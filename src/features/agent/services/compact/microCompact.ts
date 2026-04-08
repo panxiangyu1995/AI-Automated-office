@@ -9,8 +9,8 @@ export class MicroCompactService {
     const tokensFreed = 0
 
     const sortedMessages = [...messages].sort((a, b) => {
-      const aTime = a.createdAt || 0
-      const bTime = b.createdAt || 0
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0
       return aTime - bTime
     })
 

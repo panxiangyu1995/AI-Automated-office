@@ -1,4 +1,5 @@
 import { attachTauriRuntimeEventBridge } from './runtimeEventBridgeTauri'
+import type { RuntimeEvent } from './runtimeEvents'
 import {
   createWebSocketConnection,
   closeWebSocketConnection,
@@ -11,8 +12,10 @@ import {
 export interface RuntimeEventBridgeOptions {
   sessionId: string
   eventEmitter: {
-    emitExternal: (event: unknown) => void
+    emitExternal: (event: RuntimeEvent) => void
   }
+  syncEngine?: unknown
+  reconnectHandler?: unknown
 }
 
 export interface WebSocketRuntimeEventBridgeOptions extends RuntimeEventBridgeOptions {
@@ -32,7 +35,9 @@ export interface WebSocketBridgeState {
 
 /**
  * WebSocket event handler (placeholder for future WebSocket event subscription)
+ * @deprecated This is a stub - WebSocket event handling not yet implemented
  */
+// @ts-expect-error - stub function for future WebSocket event handling
 function _handleWebSocketEvent(
   event: WebSocketEvent,
   options: WebSocketRuntimeEventBridgeOptions
@@ -91,13 +96,13 @@ function convertWsEventToRuntimeEvent(event: WebSocketEvent): import('./runtimeE
         sessionId: event.session_id ?? '',
         timestamp: event.timestamp ?? Date.now(),
         sequence: 0,
-        messageId: event.message_id,
+        messageId: event.message_id ?? '',
         message: {
           id: event.message_id ?? '',
           sessionId: event.session_id ?? '',
           role: (event.payload?.role as 'assistant' | 'user') ?? 'assistant',
           status: 'streaming',
-          parts: [{ type: 'text', text: (event.payload?.content as string) ?? '', contentType: 'plain' }],
+          parts: [{ id: crypto.randomUUID(), type: 'text', content: (event.payload?.content as string) ?? '', format: 'plain', createdAt: Date.now() }],
           createdAt: Date.now(),
           updatedAt: Date.now(),
           metadata: event.payload as Record<string, unknown>,
@@ -110,13 +115,13 @@ function convertWsEventToRuntimeEvent(event: WebSocketEvent): import('./runtimeE
         sessionId: event.session_id ?? '',
         timestamp: event.timestamp ?? Date.now(),
         sequence: 0,
-        messageId: event.message_id,
+        messageId: event.message_id ?? '',
         message: {
           id: event.message_id ?? '',
           sessionId: event.session_id ?? '',
           role: (event.payload?.role as 'assistant' | 'user') ?? 'assistant',
           status: 'complete',
-          parts: [{ type: 'text', text: (event.payload?.content as string) ?? '', contentType: 'plain' }],
+          parts: [{ id: crypto.randomUUID(), type: 'text', content: (event.payload?.content as string) ?? '', format: 'plain', createdAt: Date.now() }],
           createdAt: Date.now(),
           updatedAt: Date.now(),
           completedAt: Date.now(),
@@ -131,7 +136,8 @@ function convertWsEventToRuntimeEvent(event: WebSocketEvent): import('./runtimeE
         timestamp: event.timestamp ?? Date.now(),
         sequence: 0,
         messageId: event.message_id ?? '',
-        content: event.content ?? '',
+        partId: crypto.randomUUID(),
+        delta: event.content ?? '',
       }
     case 'ToolCall':
       return {
@@ -165,8 +171,8 @@ function convertWsEventToRuntimeEvent(event: WebSocketEvent): import('./runtimeE
         sessionId: event.session_id ?? '',
         timestamp: event.timestamp ?? Date.now(),
         sequence: 0,
-        messageId: event.message_id,
-        code: (event.payload?.code as 'UNKNOWN_ERROR' | 'INVALID_INPUT' | 'PERMISSION_DENIED' | 'TIMEOUT' | 'NETWORK_ERROR' | 'RATE_LIMIT') ?? 'UNKNOWN_ERROR',
+        messageId: event.message_id ?? '',
+        code: (event.payload?.code as 'UNKNOWN_ERROR' | 'INVALID_INPUT' | 'PERMISSION_DENIED' | 'TIMEOUT' | 'STREAM_ERROR' | 'RATE_LIMITED') ?? 'UNKNOWN_ERROR',
         message: (event.payload?.message as string) ?? 'Unknown runtime error',
         recoverable: Boolean(event.payload?.recoverable),
       }

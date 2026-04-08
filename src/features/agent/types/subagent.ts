@@ -136,6 +136,7 @@ export interface AgentConfig {
   displayName: string;
   description: string;
   models: ModelConfig;
+  prompt?: string;
   tools: ToolPermissions;
   trigger: TriggerConfig;
   limits: LimitsConfig;

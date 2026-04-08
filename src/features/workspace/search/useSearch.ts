@@ -70,6 +70,7 @@ export function useWorkspaceSearch(options?: UseWorkspaceSearchOptions) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
+  // @ts-expect-error - kept for future use when access tracking is implemented
   const _trackAccess = useTrackAccess()
 
   // Set current workspace

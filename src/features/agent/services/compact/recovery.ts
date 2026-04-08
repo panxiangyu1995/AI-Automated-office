@@ -10,10 +10,15 @@ interface RecoveryCacheItem {
 }
 
 export class RecoveryService {
-  private cache: Map<string, RecoveryCacheItem>
+  private _cache: Map<string, RecoveryCacheItem>
 
   constructor() {
-    this.cache = new Map()
+    this._cache = new Map()
+  }
+
+  // Get cache size for monitoring
+  getCacheSize(): number {
+    return this._cache.size
   }
 
   detectAutoRecovery(userMessage: string): RecoveryAction[] {

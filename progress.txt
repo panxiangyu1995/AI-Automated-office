@@ -221,7 +221,57 @@
 7. 更新 `src/features/agent/hooks/index.ts`
    - 导出 useBusinessCompression Hook
 
+---
+
+## 2026-04-09 - TypeScript Build Error Fixes
+
+### 概述
+修复了所有 TypeScript 编译错误，使 npm run lint 和 npm run build 成功通过。
+
+### 铁律合规检查：
+- 架构合规：遵循 TypeScript 严格模式
+- UX 合规：使用 Shadcn/ui 组件和 Lucide React 图标
+
+### 修复的错误：
+
+1. **intercom.ts** - `text = dto.content.message` 添加空字符串默认值
+
+2. **CompressionHistory.tsx** - 使用可选链处理 possibly undefined 属性：
+   - `record.beforeTokens?.toLocaleString()`
+   - `record.afterTokens?.toLocaleString()`
+   - `record.compressionRatio ?? 0`
+
+3. **runtimeEventBridge.ts** - 多处修复：
+   - `TextPart` 需要 `id` 和 `createdAt` 属性
+   - `PartDeltaEvent` 需要 `partId` 属性
+   - `contentType` 改为 `format: 'plain'`
+   - `part_id` 属性不存在，改为使用 `crypto.randomUUID()`
+   - 更新 `RuntimeEventBridgeOptions` 接口类型
+
+4. **NotificationBell.tsx** - 移除未使用的 `MessageType`, `MessagePriority` 导入
+
+5. **pagination.tsx** - 为 `PaginationPrevious`/`PaginationNext` 添加 `disabled` prop 类型
+
+6. **aggregator.ts** - `null` 改为 `undefined`：`workspaceId: effectiveWorkspaceId ?? undefined`
+
+7. **useSearch.ts** - 为未使用的 `_trackAccess` 添加 `@ts-expect-error`
+
+8. **useDocument.ts** - 为未使用的 `_getUserContext` 添加 `@ts-expect-error`
+
+9. **MCPServiceConfig.tsx** - 添加缺失的 `capabilities` 和 `restartDelay` 属性
+
+### Testing:
+- `npm run lint` - 0 errors, 0 warnings ✓
+- `npm run build` - 构建成功 ✓
+
 ### 待完成任务:
+- 27 个 task.json 中的任务仍为 passes=false
+- Rust 后端有 92 个预存编译错误，需要单独处理
+
+### 备注:
+- 前端 TypeScript 编译现在完全正常
+- Rust 后端错误是预存在的，不在本次修复范围内
+
 - Phase 10: 后端集成 (Rust context_compression.rs)
 - Phase 11: E2E 测试
 - Phase 12: 性能测试

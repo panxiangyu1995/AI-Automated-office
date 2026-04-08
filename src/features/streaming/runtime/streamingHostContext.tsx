@@ -13,7 +13,7 @@ import type { SyncState, StreamChunkConsumer } from './syncEngine'
 import { SyncEngine, createSyncEngine } from './syncEngine'
 import type { ReconnectState } from './reconnectHandler'
 import { ReconnectHandler, createReconnectHandler } from './reconnectHandler'
-import { attachTauriRuntimeEventBridge } from './runtimeEventBridge'
+import { attachTauriRuntimeEventBridge } from './runtimeEventBridgeTauri'
 
 // ==================== Context Types ====================
 

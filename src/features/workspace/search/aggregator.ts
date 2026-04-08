@@ -86,7 +86,7 @@ export class SearchAggregator {
     // Execute search in parallel
     const searchPromises = targetProviders.map(provider =>
       provider.search(query, {
-        workspaceId: effectiveWorkspaceId,
+        workspaceId: effectiveWorkspaceId ?? undefined,
         limit: MAX_RESULTS_PER_PROVIDER,
       }).catch(error => {
         console.error(`Search failed for ${provider.type}:`, error)

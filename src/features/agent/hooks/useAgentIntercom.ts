@@ -345,4 +345,3 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   };
 }
 
-export type { AgentContact, AgentMessage, AgentPermission, IntercomConfig };

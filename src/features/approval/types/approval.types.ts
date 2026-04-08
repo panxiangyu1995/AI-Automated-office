@@ -3,6 +3,8 @@
  * Task 148 - Approval审批中心模块
  */
 
+import type { DetailSectionSchema } from '@/features/forms/runtime/detailSectionSchema'
+
 export type FlowStatus = 'draft' | 'active' | 'archived'
 export type RecordStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 
@@ -48,12 +50,25 @@ export interface ApprovalHistory {
   timestamp: number
 }
 
+export interface ApprovalFlowData {
+  initiatorName?: string
+  startedAt?: number
+  nodes?: ApprovalNode[]
+  currentNodeId?: string
+}
+
 export interface ApprovalRecord {
   id: string
+  instanceId?: string
   flowId: string
   flowName: string
+  flow?: ApprovalFlowData | string
+  title?: string
+  typeName?: string
+  contentSchema?: { detailSchema?: DetailSectionSchema } & Record<string, unknown>
   applicantId: string
   applicantName: string
+  createdByName?: string
   status: RecordStatus
   currentStep: number
   formData: Record<string, unknown>
@@ -151,14 +166,21 @@ export interface ApprovalPermissionContext {
   canWithdraw: boolean
   canDelegate: boolean
   canComment: boolean
+  canView?: boolean
+  canEditForm?: boolean
+  allowedActions?: ApprovalActionType[]
   currentStepId?: string
 }
 
 export interface ApprovalActionRequest {
   action: ApprovalActionType
-  recordId: string
+  instanceId?: string
+  recordId?: string
+  nodeId?: string
   comment?: string
   targetUserId?: string
+  delegateTo?: string
+  transferTo?: string
 }
 
 export interface ApprovalNode {
@@ -166,17 +188,24 @@ export interface ApprovalNode {
   name: string
   type: 'step' | 'condition' | 'approver'
   status?: 'pending' | 'approved' | 'rejected'
+  operatorName?: string
+  order?: number
 }
 
 // Alias for backward compatibility
 export type ApprovalInstance = ApprovalRecord
 
-export function resolveApprovalPermission(_recordId: string): ApprovalPermissionContext {
+export function resolveApprovalPermission(
+  _recordId: string,
+  _currentUserId?: string,
+  _currentUserRoles?: string[]
+): ApprovalPermissionContext {
   return {
     canApprove: true,
     canReject: true,
     canWithdraw: true,
     canDelegate: true,
     canComment: true,
+    allowedActions: ['approve', 'reject', 'withdraw', 'delegate', 'comment'],
   }
 }

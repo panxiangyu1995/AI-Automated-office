@@ -22,29 +22,31 @@ export function ApprovalContentRenderer({
   onRelationClick,
   onAttachmentClick,
 }: ApprovalContentRendererProps) {
-  const { contentSchema, formData } = instance
+  const { contentSchema, formData, flow } = instance
 
   // Build permission context for detail section renderer
   const rendererPermissionContext = useMemo(
     () => ({
-      canView: permissionContext.canView,
-      canEdit: permissionContext.canEditForm,
+      canView: permissionContext.canView ?? true,
+      canEdit: permissionContext.canEditForm ?? false,
     }),
     [permissionContext]
   )
 
+  // Get flow data (handle both string and object cases)
+  const flowData = typeof flow === 'object' ? flow : null
+
   // Filter sections based on approval status and visibility rules
   const filteredSchema = useMemo<DetailSectionSchema>(() => {
-    const schema = contentSchema.detailSchema
+    const schema = contentSchema?.detailSchema
 
     // Return schema with enriched data
     return {
-      ...schema,
-      // Add approval-specific sections if not already defined
-      sections: [
-        // Standard sections from schema
-        ...schema.sections,
-      ],
+      id: schema?.id ?? 'approval-content',
+      title: schema?.title ?? '审批内容',
+      version: schema?.version ?? { version: '1.0' },
+      sections: schema?.sections ?? [],
+      fields: schema?.fields ?? [],
     }
   }, [contentSchema])
 
@@ -56,8 +58,8 @@ export function ApprovalContentRenderer({
           ...formData,
           __approval: {
             status: instance.status,
-            initiator: instance.flow.initiatorName,
-            startedAt: instance.flow.startedAt,
+            initiator: flowData?.initiatorName,
+            startedAt: flowData?.startedAt,
           },
         }}
         permissionContext={rendererPermissionContext}
@@ -73,7 +75,13 @@ export function ApprovalContentRenderer({
  * Renders approval flow progress
  */
 export function ApprovalFlowProgress({ flow }: { flow: ApprovalInstance['flow'] }) {
-  const sortedNodes = [...flow.nodes].sort((a, b) => a.order - b.order)
+  // Handle flow being string or undefined
+  const flowData = typeof flow === 'object' ? flow : null
+  if (!flowData?.nodes) {
+    return null
+  }
+
+  const sortedNodes = [...flowData.nodes].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 
   return (
     <div className="approval-flow-progress border-b border-slate-200 bg-slate-50 p-4">
@@ -82,7 +90,7 @@ export function ApprovalFlowProgress({ flow }: { flow: ApprovalInstance['flow'] 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {sortedNodes.map((node, index) => (
           <div key={node.id} className="flex items-center">
-            <FlowNodeIndicator node={node} isActive={node.id === flow.currentNodeId} />
+            <FlowNodeIndicator node={node} isActive={node.id === flowData.currentNodeId} />
             {index < sortedNodes.length - 1 && (
               <div className="mx-2 h-px w-8 bg-slate-300" />
             )}
@@ -97,6 +105,7 @@ export function ApprovalFlowProgress({ flow }: { flow: ApprovalInstance['flow'] 
  * Individual flow node indicator
  */
 function FlowNodeIndicator({ node, isActive }: { node: ApprovalNode; isActive: boolean }) {
+  const nodeStatus = node.status ?? 'pending'
   const statusColor = {
     draft: 'bg-slate-300',
     pending: isActive ? 'bg-blue-500 animate-pulse' : 'bg-slate-300',
@@ -104,7 +113,7 @@ function FlowNodeIndicator({ node, isActive }: { node: ApprovalNode; isActive: b
     rejected: 'bg-red-500',
     withdrawn: 'bg-amber-500',
     cancelled: 'bg-slate-400',
-  }[node.status]
+  }[nodeStatus] ?? 'bg-slate-300'
 
   const statusIcon = {
     draft: '○',
@@ -113,7 +122,7 @@ function FlowNodeIndicator({ node, isActive }: { node: ApprovalNode; isActive: b
     rejected: '✕',
     withdrawn: '↩',
     cancelled: '—',
-  }[node.status]
+  }[nodeStatus] ?? '○'
 
   return (
     <div className="flex flex-col items-center">

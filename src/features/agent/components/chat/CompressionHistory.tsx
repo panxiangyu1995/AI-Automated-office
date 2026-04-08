@@ -17,20 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import type { CompressionLayer, TriggerType } from '@/features/agent/services/compact'
-
-interface CompressionRecord {
-  id: string
-  timestamp: Date
-  layer: CompressionLayer
-  triggerType: TriggerType
-  beforeTokens: number
-  afterTokens: number
-  compressionRatio: number
-  duration: number
-  success: boolean
-  error?: string
-}
+import type { CompressionLayer, TriggerType, CompressionRecord } from '@/features/agent/services/compact'
 
 interface CompressionHistoryProps {
   records: CompressionRecord[]
@@ -55,12 +42,12 @@ const LAYER_ICONS: Record<CompressionLayer, React.ReactNode> = {
 }
 
 const TRIGGER_LABELS: Record<TriggerType, string> = {
-  threshold: '阈值触发',
+  token_threshold: '阈值触发',
   department_change: '部门切换',
   approval_change: '审批变更',
-  time_inactive: '超时触发',
+  time_based: '超时触发',
   manual: '手动触发',
-  error_recovery: '错误恢复',
+  api_error: '错误恢复',
 }
 
 export function CompressionHistory({
@@ -157,7 +144,7 @@ export function CompressionHistory({
                     {LAYER_LABELS[record.layer]}
                   </span>
                   <Badge variant="outline" className="text-xs">
-                    {TRIGGER_LABELS[record.triggerType]}
+                    {TRIGGER_LABELS[record.trigger]}
                   </Badge>
                 </div>
                 
@@ -165,9 +152,9 @@ export function CompressionHistory({
                   <span>{formatTime(record.timestamp)}</span>
                   {record.success ? (
                     <>
-                      <span>{record.beforeTokens.toLocaleString()} → {record.afterTokens.toLocaleString()}</span>
-                      <span className={getCompressionRatioColor(record.compressionRatio)}>
-                        -{record.compressionRatio.toFixed(0)}%
+                      <span>{record.beforeTokens?.toLocaleString() ?? '0'} → {record.afterTokens?.toLocaleString() ?? '0'}</span>
+                      <span className={getCompressionRatioColor(record.compressionRatio ?? 0)}>
+                        -{(record.compressionRatio ?? 0).toFixed(0)}%
                       </span>
                       <span>{formatDuration(record.duration)}</span>
                     </>

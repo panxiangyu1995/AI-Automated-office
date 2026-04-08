@@ -62,7 +62,7 @@ function CompressionStatusBar({ activeSessionId, className }: CompressionStatusB
   } = useBusinessCompression({
     sessionId: activeSessionId || 'default',
     config: {
-      autoCompactEnabled: true,
+      autoCompress: true,
       autoCompactBufferTokens: 80000,
       warningThreshold: 100000,
       errorThreshold: 150000,
@@ -92,14 +92,21 @@ function CompressionStatusBar({ activeSessionId, className }: CompressionStatusB
       // 记录压缩
       const newRecord: CompressionRecord = {
         id: `compact-${Date.now()}`,
+        sessionId: activeSessionId || 'default',
         timestamp: new Date(),
-        layer: triggerResult.strategy || 'micro',
+        trigger: triggerResult.triggerType || 'manual',
         triggerType: triggerResult.triggerType || 'manual',
+        layer: triggerResult.strategy || 'micro',
+        beforeTokenCount: estimatedTokens,
+        beforeMessageCount: 0,
+        afterTokenCount: Math.floor(estimatedTokens * 0.4),
+        afterMessageCount: 0,
         beforeTokens: estimatedTokens,
         afterTokens: Math.floor(estimatedTokens * 0.4),
         compressionRatio: 60,
         duration: 1000,
         success: true,
+        status: 'completed',
       }
       setCompressionRecords(prev => [newRecord, ...prev].slice(0, 50))
     }

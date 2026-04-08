@@ -192,7 +192,7 @@ export function toAgentMessage(dto: AgentMessageDTO): {
     text = `[图片] ${dto.content.alt_text || ''}`;
     type = 'image';
   } else if (dto.content.type === 'system') {
-    text = dto.content.message;
+    text = dto.content.message ?? '';
     type = 'system';
   }
 

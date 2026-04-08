@@ -62,7 +62,7 @@ export function ApprovalActionPanel({
   const [showDialog, setShowDialog] = useState(false)
 
   const availableActions = ACTION_CONFIGS.filter((action) =>
-    permissionContext.allowedActions.includes(action.id)
+    permissionContext.allowedActions?.includes(action.id)
   )
 
   const handleActionClick = (action: ApprovalActionType) => {

@@ -48,6 +48,7 @@ export type SettingsSectionKey =
   | 'plugin-adaptation'
   | 'clawhub-market'
   | 'private-market'
+  | 'department-list'
   | 'resource-security'
   | 'resource-execution-audit'
   | 'connector-framework'

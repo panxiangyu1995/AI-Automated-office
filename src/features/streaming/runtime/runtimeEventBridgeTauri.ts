@@ -1,6 +1,3 @@
-// Re-export from runtimeEventBridge.ts for backward compatibility
-export * from './runtimeEventBridge'
-
 // Tauri runtime event bridge - stub implementation
 import type { RuntimeEventBridgeOptions } from './runtimeEventBridge'
 
