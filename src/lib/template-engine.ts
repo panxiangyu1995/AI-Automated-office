@@ -132,25 +132,25 @@ export class TemplateEngine {
     })
 
     // Replace conditional blocks {{#if condition}}...{{/if}}
-    content = content.replace(/\{\{#if\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/if\}\}/g, (match, condition, innerContent) => {
+    content = content.replace(/\{\{#if\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/if\}\}/g, (_match, condition, innerContent) => {
       const value = this.resolvePath(variables, condition)
       const isTruthy = Boolean(value) && value !== null && value !== undefined
-      
+
       if (!isTruthy) {
         return ''
       }
-      
+
       // Also handle {{else}}
       return innerContent.replace(/\{\{else\}\}/g, '')
     })
 
     // Replace {{else}} (remove if preceding condition was true)
-    content = content.replace(/\{\{#if[\s\S]*?\}\}[\s\S]*?\{\{else\}\}[\s\S]*?\{\{\/if\}\}/g, (match) => {
-      return match.replace(/\{\{else\}\}[\s\S]*$/, '')
+    content = content.replace(/\{\{#if[\s\S]*?\}\}[\s\S]*?\{\{else\}\}[\s\S]*?\{\{\/if\}\}/g, (_match) => {
+      return _match.replace(/\{\{else\}\}[\s\S]*$/, '')
     })
 
     // Replace loops {{#each array}}...{{/each}}
-    content = content.replace(/\{\{#each\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, arrayPath, itemTemplate) => {
+    content = content.replace(/\{\{#each\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/each\}\}/g, (_match, arrayPath, itemTemplate) => {
       const array = this.resolvePath(variables, arrayPath)
       
       if (!Array.isArray(array)) {
@@ -179,13 +179,13 @@ export class TemplateEngine {
     })
 
     // Replace default values {{variable|default}}
-    content = content.replace(/\{\{(\w+(?:\.\w+)*)\|([^{}]+)\}\}/g, (match, varPath, defaultValue) => {
+    content = content.replace(/\{\{(\w+(?:\.\w+)*)\|([^{}]+)\}\}/g, (_match, varPath, defaultValue) => {
       const value = this.resolvePath(variables, varPath)
       return value !== undefined && value !== null ? String(value) : defaultValue
     })
 
     // Apply filters {{variable|filter}}
-    content = content.replace(/\{\{(\w+(?:\.\w+)*)\|(\w+)\}\}/g, (match, varPath, filter) => {
+    content = content.replace(/\{\{(\w+(?:\.\w+)*)\|(\w+)\}\}/g, (_match, varPath, filter) => {
       const value = this.resolvePath(variables, varPath)
       if (value === undefined || value === null) return ''
       
