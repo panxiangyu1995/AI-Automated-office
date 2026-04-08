@@ -156,6 +156,112 @@ impl Default for MonitoringConfig {
     }
 }
 
+// ============================================================================
+// Trace and Span Types (Task 183)
+// ============================================================================
+
+/// Trace representing a complete execution chain
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Trace {
+    pub trace_id: String,
+    pub session_id: String,
+    pub root_span_id: String,
+    pub started_at: i64,
+    pub finished_at: Option<i64>,
+    pub total_duration_ms: Option<i64>,
+    pub status: TraceStatus,
+    pub spans: Vec<Span>,
+    pub metadata: Option<TraceMetadata>,
+}
+
+/// Trace execution status
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum TraceStatus {
+    Running,
+    Completed,
+    Failed,
+    Cancelled,
+}
+
+/// Trace metadata
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TraceMetadata {
+    pub user_id: Option<String>,
+    pub tenant_id: Option<String>,
+    pub agent_id: Option<String>,
+    pub model_used: Option<String>,
+    pub total_tokens: Option<i64>,
+}
+
+/// Span representing a single operation within a trace
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Span {
+    pub span_id: String,
+    pub parent_span_id: Option<String>,
+    pub trace_id: String,
+    pub operation_name: String,
+    pub span_type: SpanType,
+    pub started_at: i64,
+    pub finished_at: Option<i64>,
+    pub duration_ms: Option<i64>,
+    pub status: SpanStatus,
+    pub attributes: Vec<SpanAttribute>,
+    pub events: Vec<SpanEvent>,
+    pub children: Vec<String>,  // child span IDs
+}
+
+/// Type of span operation
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum SpanType {
+    LlmCall,
+    ToolExecution,
+    SubAgentCall,
+    UserInteraction,
+    SystemEvent,
+    Custom,
+}
+
+/// Span execution status
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum SpanStatus {
+    Ok,
+    Error,
+    Timeout,
+}
+
+/// Key-value attribute for spans
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpanAttribute {
+    pub key: String,
+    pub value: AttributeValue,
+}
+
+/// Attribute value types
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum AttributeValue {
+    String(String),
+    Number(f64),
+    Boolean(bool),
+}
+
+/// Events that happen during a span
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpanEvent {
+    pub name: String,
+    pub timestamp: i64,
+    pub attributes: Vec<SpanAttribute>,
+}
+
 /// Monitoring service for Sub-Agent diagnostics
 #[derive(Clone)]
 pub struct SubAgentMonitoringService {
