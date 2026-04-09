@@ -2080,3 +2080,130 @@ completion promise 条件**不满足**：
 - 兼容性检查会分析major/minor/patch版本变化影响
 - 增量更新跟踪changes列表
 - 版本缓存支持批量查询
+
+---
+
+## 2026-04-09 - Task: 审批附件与流程追溯 (Task 194)
+
+### 铁律合规检查：
+- PRD 合规：FR137-FR142 - 审批附件管理和流程追溯
+- 架构合规：遵循分层微内核架构
+- Epic 合规：Epic 37 - 审批增强
+
+### What was done:
+- 创建 `src-tauri/src/approval/attachment.rs`
+  - AttachmentService: 附件 CRUD 操作
+  - AuditEntryService: 审批记录审计
+  - TimelineEventService: 时间线事件跟踪
+  - 支持附件与审批记录的关联
+  - 支持操作历史查询和时间线展示
+- 创建 `src-tauri/src/commands/approval_attachment.rs`
+  - 13 个 Tauri 命令
+  - add_attachment, get_attachment, get_record_attachments, delete_attachment
+  - add_audit_entry, add_audit_with_state, get_record_audits, get_all_audits, query_audits
+  - add_timeline_event, get_record_timeline, has_timeline
+
+### Testing:
+- ✅ cargo check: 0 errors
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- 附件存储支持文件路径和内容
+- 审计条目支持状态变更记录
+- 时间线事件支持多维度查询
+
+---
+
+## 2026-04-09 - Task: 动态消息投递策略 (Task 196)
+
+### 铁律合规检查：
+- PRD 合规：ADR-060 - 动态投递策略
+- 架构合规：遵循分层微内核架构
+- Epic 合规：Epic 41 - AI Agent 核心能力
+
+### What was done:
+- 创建 `src-tauri/src/agent/delivery/strategy.rs`
+  - DeliveryChannel enum: notification, chat, list, workbench
+  - Urgency enum: critical, high, normal, low
+  - TaskType enum: approval, notification, reminder, alert, info
+  - DeliveryStrategyService: 动态投递策略服务
+  - 支持忙碌时间静默模式
+  - 支持批量任务评估和优先级排序
+  - 支持用户偏好设置
+- 创建 `src-tauri/src/commands/delivery_strategy.rs`
+  - evaluate_delivery_strategy, set_delivery_preference, get_delivery_preference
+  - evaluate_delivery_batch, get_ready_batches, get_urgency_levels, get_delivery_channels
+
+### Testing:
+- ✅ cargo check: 0 errors
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- 忙碌时间自动降级为低优先级
+- 支持批量任务合并以减少打扰
+- 投递渠道根据紧迫程度自动选择
+
+---
+
+## 2026-04-09 - Task: 能力包版本管理 (Task 197)
+
+### 铁律合规检查：
+- PRD 合规：FR800-FR802 - 版本管理和更新机制
+- 架构合规：遵循分层微内核架构
+- Epic 合规：Epic 40 - 部门能力包
+
+### What was done:
+- 创建 `src-tauri/src/capability/version_manager.rs`
+  - VersionManagerService: 版本管理服务
+  - 支持版本检测、增量更新、回滚
+  - SemanticVersion 解析和兼容性检查
+  - 支持最多 5 个回滚点 per package
+- 创建 `src-tauri/src/commands/capability_version.rs`
+  - check_package_version, check_package_version_with_marketplace
+  - start_package_update, complete_package_update, fail_package_update
+  - get_package_update_history, create_rollback_point, get_rollback_points
+  - rollback_package, check_package_compatibility, get_all_version_infos
+  - clear_version_cache, get_update_status_values
+
+### Testing:
+- ✅ cargo check: 0 errors
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- 版本缓存支持批量查询
+- 兼容性检查分析 major/minor/patch 变化
+- 增量更新跟踪 changes 列表
+
+---
+
+## 2026-04-09 - Task: 提示词安全护栏完善 (Task 198)
+
+### 铁律合规检查：
+- PRD 合规：FR701 - 提示词安全机制
+- 架构合规：遵循 ADR-041 三层护栏设计
+- Epic 合规：Epic 41 - AI Agent 核心能力
+
+### What was done:
+- 创建 `src-tauri/src/agent/prompt_guardrails.rs`
+  - GuardrailLayer enum: Blocklist, ConfirmationRequired, HallucinationRedFlag
+  - GuardrailResult, GuardrailHit, HallucinationResult 结构体
+  - PromptGuardrailsService: 三层护栏服务
+    - Layer 1: 禁止清单检查（绝对禁止）
+    - Layer 2: 确认要求检查（删除、外部分享、权限 escalation、批量操作）
+    - Layer 3: 幻觉检测（结论与事实矛盾时阻断）
+  - 支持模式匹配和审计记录
+- 创建 `src-tauri/src/commands/prompt_guardrails.rs`
+  - check_prompt_guardrails, check_hallucination
+  - add_guardrail_blocklist_pattern, remove_guardrail_blocklist_pattern
+  - add_guardrail_confirmation_pattern, get_guardrail_hits
+  - get_guardrail_stats, set_hallucination_detection
+
+### Testing:
+- ✅ cargo check: 0 errors (621 warnings, 0 errors)
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- 禁止清单默认 10 个模式
+- 确认模式默认 10 个模式
+- 审计记录保留最近 1000 条
+- 幻觉检测支持无来源数字检测

@@ -99,7 +99,11 @@ pub fn run() {
                 app.manage(agent::tools::ToolVisibilityService::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
                 app.manage(agent::delivery::DeliveryStrategyService::new());
-                
+
+                // Initialize Prompt Guardrails Service (Task 198 - ADR-041)
+                let prompt_guardrails = Arc::new(agent::prompt_guardrails::PromptGuardrailsService::new());
+                app.manage(prompt_guardrails);
+
                 // Initialize WebSocket connection manager (Task 136)
                 let ws_manager = Arc::new(agent::websocket::WebSocketConnectionManager::new());
                 app.manage(ws_manager);
@@ -602,6 +606,15 @@ pub fn run() {
             commands::delivery_strategy::get_ready_batches,
             commands::delivery_strategy::get_urgency_levels,
             commands::delivery_strategy::get_delivery_channels,
+            // Prompt guardrails commands (Task 198 - ADR-041)
+            commands::prompt_guardrails::check_prompt_guardrails,
+            commands::prompt_guardrails::check_hallucination,
+            commands::prompt_guardrails::add_guardrail_blocklist_pattern,
+            commands::prompt_guardrails::remove_guardrail_blocklist_pattern,
+            commands::prompt_guardrails::add_guardrail_confirmation_pattern,
+            commands::prompt_guardrails::get_guardrail_hits,
+            commands::prompt_guardrails::get_guardrail_stats,
+            commands::prompt_guardrails::set_hallucination_detection,
             // Capability version commands (Task 197 - FR800-FR802)
             commands::capability_version::check_package_version,
             commands::capability_version::check_package_version_with_marketplace,

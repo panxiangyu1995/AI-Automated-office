@@ -20,6 +20,7 @@ pub mod network;
 pub mod config_cache;
 pub mod failover;
 pub mod provider_config;
+pub mod prompt_guardrails;
 pub mod resource_security;
 pub mod sandbox;
 pub mod session;

@@ -40,6 +40,7 @@ pub mod subagent;
 pub mod router;
 pub mod model_router;
 pub mod pilot;
+pub mod prompt_guardrails;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
