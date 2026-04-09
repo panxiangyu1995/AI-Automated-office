@@ -8,6 +8,7 @@
 //! - Dependency resolution with conflict detection
 //! - Package permission control with audit logging
 //! - Package loader for entry points, tools, skills, and triggers
+//! - Version manager for update and rollback
 //!
 //! # Architecture
 //!
@@ -15,6 +16,7 @@
 //! - `marketplace/`: Marketplace clients
 //! - `clawhub_adapter/`: ClawHub format adapter
 //! - `version/`: Semantic version management
+//! - `version_manager/`: Version update and rollback management
 //! - `dependency/`: Dependency resolver
 //! - `permission/`: Permission controller
 //! - `loader/`: Package loader
@@ -24,6 +26,7 @@ pub mod registry;
 pub mod marketplace;
 pub mod clawhub_adapter;
 pub mod version;
+pub mod version_manager;
 pub mod dependency;
 pub mod permission;
 pub mod loader;
@@ -33,6 +36,7 @@ pub use registry::{CapabilityPackageRegistry, FilePackageStorage, RegistryConfig
 pub use marketplace::{CloudMarketClient, LocalMarketplaceClient, MarketplaceClient};
 pub use clawhub_adapter::ClawHubFormatAdapter;
 pub use version::VersionError;
+pub use version_manager::VersionManagerService;
 pub use dependency::{DependencyResolver, PackageRegistryProvider};
 pub use permission::{PackagePermissionController, PermissionService, AuditLogger, SimplePermissionService, SimpleAuditLogger};
 pub use loader::PackageLoader;

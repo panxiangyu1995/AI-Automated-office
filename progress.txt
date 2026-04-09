@@ -2016,3 +2016,67 @@ completion promise 条件**不满足**：
 - 免打扰时段支持跨天配置（如22:00-08:00）
 - 支持渠道覆盖（用户可自定义不同任务类型的默认渠道）
 - 批量聚合支持时间窗口和最小数量触发
+
+---
+
+## 2026-04-10 - Task 197: 部门能力包版本管理 (Phase 2 Loop)
+
+### 铁律合规检查：
+- PRD 合规：FR800-FR802 - 部门能力包版本管理
+- 架构合规：遵循 ARCH-01 分层架构
+- UX 合规：遵循 UX-01, UX-04
+
+### What was done:
+
+#### 后端实现:
+1. **src-tauri/src/capability/version_manager.rs** - 版本管理服务:
+   - `UpdateStatus` 枚举 - 更新状态
+   - `VersionUpdate` 结构 - 版本更新记录
+   - `VersionChange` 结构 - 版本变更记录
+   - `RollbackPoint` 结构 - 回滚点
+   - `CompatibilityResult` 结构 - 兼容性检查结果
+   - `CompatibilityIssue` 结构 - 兼容性问题
+   - `VersionInfo` 结构 - 版本信息
+   - `VersionManagerService` 服务:
+     - check_version/check_version_with_marketplace - 版本检测
+     - start_update/complete_update/fail_update - 更新管理
+     - get_update_history - 更新历史查询
+     - create_rollback_point/get_rollback_points/rollback - 回滚管理
+     - check_compatibility - 版本兼容性检查
+     - get_all_version_infos/clear_cache - 缓存管理
+
+2. **src-tauri/src/commands/capability_version.rs** - 13个Tauri命令:
+   - check_package_version, check_package_version_with_marketplace
+   - start_package_update, complete_package_update, fail_package_update
+   - get_package_update_history
+   - create_rollback_point, get_rollback_points, rollback_package
+   - check_package_compatibility
+   - get_all_version_infos, clear_version_cache
+   - get_update_status_values
+
+3. **capability/mod.rs** 更新:
+   - 添加 `pub mod version_manager;`
+   - 导出 `VersionManagerService`
+
+4. **commands/mod.rs** 更新:
+   - 添加 `pub mod capability_version;`
+
+5. **lib.rs** 更新:
+   - 添加 `app.manage(capability::VersionManagerService::new())`
+   - 注册所有 capability_version 命令到 invoke_handler
+
+#### 验收标准:
+- ✅ 版本检测API - check_version/check_version_with_marketplace 实现
+- ✅ 增量更新机制 - start/complete/fail_update 实现
+- ✅ 回滚能力 - create_rollback_point/get_rollback_points/rollback 实现
+- ✅ 版本兼容性检查 - check_compatibility 实现
+
+### Testing:
+- ✅ npm run lint: 0 错误
+- ✅ cargo check: 只有 warnings, 0 errors
+
+### Notes:
+- 支持最多5个回滚点per package
+- 兼容性检查会分析major/minor/patch版本变化影响
+- 增量更新跟踪changes列表
+- 版本缓存支持批量查询

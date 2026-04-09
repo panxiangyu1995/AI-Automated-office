@@ -212,6 +212,10 @@ pub fn run() {
                 let package_loader = Arc::new(capability::PackageLoader::new());
                 app.manage(package_loader);
 
+                // Initialize Version Manager Service (Task 197)
+                let version_manager = Arc::new(capability::VersionManagerService::new());
+                app.manage(version_manager);
+
                 // Initialize department module
                 let department_state = department::DepartmentState::new();
                 department_state.init_defaults();
@@ -598,6 +602,20 @@ pub fn run() {
             commands::delivery_strategy::get_ready_batches,
             commands::delivery_strategy::get_urgency_levels,
             commands::delivery_strategy::get_delivery_channels,
+            // Capability version commands (Task 197 - FR800-FR802)
+            commands::capability_version::check_package_version,
+            commands::capability_version::check_package_version_with_marketplace,
+            commands::capability_version::start_package_update,
+            commands::capability_version::complete_package_update,
+            commands::capability_version::fail_package_update,
+            commands::capability_version::get_package_update_history,
+            commands::capability_version::create_rollback_point,
+            commands::capability_version::get_rollback_points,
+            commands::capability_version::rollback_package,
+            commands::capability_version::check_package_compatibility,
+            commands::capability_version::get_all_version_infos,
+            commands::capability_version::clear_version_cache,
+            commands::capability_version::get_update_status_values,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

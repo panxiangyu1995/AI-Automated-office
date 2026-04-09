@@ -8,6 +8,7 @@ pub mod approval_ai;
 pub mod approval_attachment;
 pub mod approval_enhancement;
 pub mod auth;
+pub mod capability_version;
 pub mod checkpoint;
 pub mod config;
 pub mod correction;
