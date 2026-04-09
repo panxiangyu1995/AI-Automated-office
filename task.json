@@ -2861,8 +2861,12 @@
       "backendRequired": true,
       "existingCode": {
         "frontend": [],
-        "backend": [],
-        "note": "Webhook机制缺失。"
+        "backend": [
+          "src-tauri/src/webhook/mod.rs",
+          "src-tauri/src/webhook/service.rs",
+          "src-tauri/src/commands/webhook.rs"
+        ],
+        "note": "Webhook模块已创建：注册/更新/删除/列表API，事件触发机制，SHA256签名验证，重试策略。"
       },
       "openspec_change": "webhook-automation",
       "steps": [

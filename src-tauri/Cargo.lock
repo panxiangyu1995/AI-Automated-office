@@ -80,6 +80,8 @@ dependencies = [
  "futures",
  "futures-util",
  "glob",
+ "hex",
+ "hmac",
  "jsonwebtoken",
  "lru",
  "machine-uid",

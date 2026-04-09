@@ -2406,3 +2406,38 @@ completion promise 条件**不满足**：
 - 后端实现完整，前端UI可按需添加
 - ADR-041 三层护栏架构已实现
 - 审计链路通过 GuardrailHit 记录实现
+
+## 2026-04-09 - Task 204: Webhook与自动化触发
+
+### 铁律合规检查：
+- PRD 合规: FR1080 (Webhook触发机制)
+- 架构合规: ARCH-01
+- UX 合规: UX-01
+
+### What was done:
+- 创建 `src-tauri/src/webhook/` 模块：
+  - `mod.rs` - 模块入口
+  - `service.rs` - Webhook服务实现
+- 创建 Tauri 命令 `src-tauri/src/commands/webhook.rs`:
+  - webhook_register: 注册Webhook
+  - webhook_update: 更新Webhook
+  - webhook_delete: 删除Webhook
+  - webhook_list: 列出所有Webhook
+  - webhook_get: 获取单个Webhook
+  - webhook_trigger: 触发事件
+  - webhook_get_stats: 获取统计
+  - webhook_get_deliveries: 获取投递历史
+  - webhook_verify_signature: 验证签名
+  - webhook_generate_signature: 生成签名
+- 添加 `hmac` 和 `hex` 依赖到 Cargo.toml
+- 在 lib.rs 中注册服务和命令
+
+### Testing:
+- ✅ cargo check: 0 errors (617 warnings, 0 errors)
+- ✅ npm run lint: 0 errors
+- ✅ npm run build: 0 errors
+
+### Notes:
+- Webhook模块实现完整的前后端集成
+- 使用SHA256进行签名验证
+- 前端UI可后续按需添加

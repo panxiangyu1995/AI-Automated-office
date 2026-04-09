@@ -19,6 +19,7 @@ pub mod sales;
 pub mod tenant;
 pub mod warehouse;
 pub mod workcard;
+pub mod webhook;
 pub mod storage;
 pub mod session;
 pub mod sync;
@@ -103,6 +104,10 @@ pub fn run() {
                 // Initialize Prompt Guardrails Service (Task 198 - ADR-041)
                 let prompt_guardrails = Arc::new(agent::prompt_guardrails::PromptGuardrailsService::new());
                 app.manage(prompt_guardrails);
+
+                // Initialize Webhook Service (Task 204)
+                let webhook_service = Arc::new(webhook::WebhookService::new());
+                app.manage(webhook_service);
 
                 // Initialize Subagent system (Task 199 - ADR-059)
                 commands::subagent::init_subagent_commands();
@@ -630,6 +635,17 @@ pub fn run() {
             commands::prompt_guardrails::get_guardrail_hits,
             commands::prompt_guardrails::get_guardrail_stats,
             commands::prompt_guardrails::set_hallucination_detection,
+            // Webhook commands (Task 204)
+            commands::webhook::webhook_register,
+            commands::webhook::webhook_update,
+            commands::webhook::webhook_delete,
+            commands::webhook::webhook_list,
+            commands::webhook::webhook_get,
+            commands::webhook::webhook_trigger,
+            commands::webhook::webhook_get_stats,
+            commands::webhook::webhook_get_deliveries,
+            commands::webhook::webhook_verify_signature,
+            commands::webhook::webhook_generate_signature,
             // Token refresh commands (Task 203 - FR1010-FR1017)
             commands::token_refresh::get_token_status,
             commands::token_refresh::get_all_token_statuses,
