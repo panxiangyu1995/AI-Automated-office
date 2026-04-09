@@ -106,6 +106,7 @@ pub fn run() {
                 app.manage(provider_config_state.clone());
                 app.manage(commands::provider_config::RoutingModeState::new());
                 app.manage(commands::failover::FailoverState::new());
+                app.manage(commands::resource_security::ResourceSecurityState::new());
 
                 // Initialize real LLM provider from configuration (Phase 7: T7.4)
                 // Priority: User config > Tenant config > Official config
@@ -374,6 +375,21 @@ pub fn run() {
             commands::failover::update_repair_status,
             commands::failover::get_failover_stats,
             commands::failover::evaluate_session_health,
+            // Resource Security commands (Task 190)
+            commands::resource_security::init_resource_security,
+            commands::resource_security::get_security_validations,
+            commands::resource_security::get_security_validation,
+            commands::resource_security::get_security_scans,
+            commands::resource_security::get_security_scan,
+            commands::resource_security::get_pending_security_approvals,
+            commands::resource_security::get_security_approval,
+            commands::resource_security::add_security_approval,
+            commands::resource_security::update_security_approval_status,
+            commands::resource_security::get_security_audit_log,
+            commands::resource_security::add_security_audit_entry,
+            commands::resource_security::get_security_policy,
+            commands::resource_security::update_security_policy,
+            commands::resource_security::get_resource_security_stats,
             // WebSocket commands (Task 136)
             agent::websocket::create_websocket_connection,
             agent::websocket::get_websocket_connection_state,

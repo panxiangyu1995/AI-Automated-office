@@ -16,6 +16,7 @@ pub mod intercom;
 pub mod network;
 pub mod failover;
 pub mod provider_config;
+pub mod resource_security;
 pub mod sandbox;
 pub mod session;
 pub mod shortcuts;
