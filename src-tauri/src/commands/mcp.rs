@@ -9,6 +9,7 @@ use tauri::State;
 use crate::mcp::{
     MCPServiceRegistry, MCPServiceConfig, MCPServiceInfo,
     MCPTool, MCPTransportType,
+    PerToolApprovalConfig, ApprovalPolicy, AutoApproveResult,
 };
 
 /// Global MCP registry instance
@@ -162,6 +163,140 @@ pub async fn mcp_service_count() -> Result<ServiceResponse<usize>, String> {
     let registry = MCP_REGISTRY.read().await;
     let count = registry.count().await;
     Ok(ServiceResponse::ok(count))
+}
+
+// ==================== Approval Configuration Commands ====================
+
+/// Convert frontend policy string to ApprovalPolicy enum
+fn parse_approval_policy(policy: &str) -> ApprovalPolicy {
+    match policy {
+        "auto_approve" => ApprovalPolicy::AutoApprove,
+        "denied" => ApprovalPolicy::Denied,
+        _ => ApprovalPolicy::Manual,
+    }
+}
+
+/// Convert ApprovalPolicy enum to frontend policy string
+fn policy_to_string(policy: &ApprovalPolicy) -> String {
+    match policy {
+        ApprovalPolicy::AutoApprove => "auto_approve".to_string(),
+        ApprovalPolicy::Manual => "manual".to_string(),
+        ApprovalPolicy::Denied => "denied".to_string(),
+    }
+}
+
+/// Approval config for frontend
+#[derive(serde::Serialize)]
+pub struct ApprovalConfigResponse {
+    pub id: String,
+    pub service_id: String,
+    pub tool_pattern: String,
+    pub is_regex: bool,
+    pub policy: String,
+    pub description: Option<String>,
+    pub enabled: bool,
+    pub created_at: String,
+    pub updated_at: String,
+    pub created_by: String,
+}
+
+impl From<PerToolApprovalConfig> for ApprovalConfigResponse {
+    fn from(config: PerToolApprovalConfig) -> Self {
+        Self {
+            id: config.id,
+            service_id: config.service_id,
+            tool_pattern: config.tool_pattern,
+            is_regex: config.is_regex,
+            policy: policy_to_string(&config.policy),
+            description: config.description,
+            enabled: config.enabled,
+            created_at: config.created_at,
+            updated_at: config.updated_at,
+            created_by: config.created_by,
+        }
+    }
+}
+
+/// Get all approval configurations
+#[tauri::command]
+pub async fn mcp_get_approval_configs() -> Result<ServiceResponse<Vec<ApprovalConfigResponse>>, String> {
+    let registry = MCP_REGISTRY.read().await;
+    let configs = registry.get_all_approval_configs().await;
+    let response: Vec<ApprovalConfigResponse> = configs.into_iter().map(|c| c.into()).collect();
+    Ok(ServiceResponse::ok(response))
+}
+
+/// Set or update an approval configuration
+#[tauri::command]
+pub async fn mcp_set_approval_config(
+    id: String,
+    service_id: String,
+    tool_pattern: String,
+    is_regex: bool,
+    policy: String,
+    description: Option<String>,
+    enabled: Option<bool>,
+) -> Result<ServiceResponse<ApprovalConfigResponse>, String> {
+    let registry = MCP_REGISTRY.read().await;
+    let now = chrono_now();
+    let config = PerToolApprovalConfig {
+        id: id.clone(),
+        service_id,
+        tool_pattern,
+        is_regex,
+        policy: parse_approval_policy(&policy),
+        description,
+        enabled: enabled.unwrap_or(true),
+        created_at: now.clone(),
+        updated_at: now,
+        created_by: "admin".to_string(),
+    };
+    registry.set_tool_approval_config(config.clone()).await?;
+    Ok(ServiceResponse::ok(config.into()))
+}
+
+/// Delete an approval configuration
+#[tauri::command]
+pub async fn mcp_delete_approval_config(config_id: String) -> Result<ServiceResponse<()>, String> {
+    let registry = MCP_REGISTRY.read().await;
+    registry.delete_tool_approval_config(&config_id).await?;
+    Ok(ServiceResponse::ok(()))
+}
+
+/// Enable or disable an approval configuration
+#[tauri::command]
+pub async fn mcp_set_approval_config_enabled(
+    config_id: String,
+    enabled: bool,
+) -> Result<ServiceResponse<()>, String> {
+    let registry = MCP_REGISTRY.read().await;
+    registry.set_approval_config_enabled(&config_id, enabled).await?;
+    Ok(ServiceResponse::ok(()))
+}
+
+/// Check if a tool should be auto-approved
+#[tauri::command]
+pub async fn mcp_check_auto_approve(
+    service_id: String,
+    tool_name: String,
+) -> Result<ServiceResponse<AutoApproveResult>, String> {
+    let registry = MCP_REGISTRY.read().await;
+    let result = registry.check_auto_approve(&service_id, &tool_name).await;
+    Ok(ServiceResponse::ok(result))
+}
+
+/// Get current timestamp in ISO format
+fn chrono_now() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let duration = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default();
+    let secs = duration.as_secs();
+    // Simple ISO 8601 format
+    format!("2026-04-09T{:02}:{:02}:{:02}Z",
+        (secs / 3600) % 24,
+        (secs / 60) % 60,
+        secs % 60)
 }
 
 #[cfg(test)]

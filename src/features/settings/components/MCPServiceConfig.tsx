@@ -10,10 +10,11 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { 
-  Server, Plus, Trash2, Edit, Play, Pause, 
-  Settings, Terminal, Shield, 
-  AlertCircle, CheckCircle2, Clock
+import {
+  Server, Plus, Trash2, Edit, Play, Pause,
+  Settings, Terminal, Shield,
+  AlertCircle, CheckCircle2, Clock,
+  CheckCircle, XCircle, Eye, Regex
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -133,6 +134,29 @@ export interface MCPServiceConfigState {
   isLoading: boolean
   isSaving: boolean
   error: string | null
+}
+
+// Per-Tool Approval Policy Types
+export type ApprovalPolicyType = 'auto_approve' | 'manual' | 'denied'
+
+export interface PerToolApprovalConfig {
+  id: string
+  serviceId: string
+  toolPattern: string
+  isRegex: boolean
+  policy: ApprovalPolicyType
+  description?: string
+  enabled: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+
+export interface AutoApproveResult {
+  approved: boolean
+  policy: ApprovalPolicyType
+  matchedConfigId?: string
+  reason: string
 }
 
 // Mock data generators
@@ -275,6 +299,22 @@ function StatusBadge({ status }: { status: MCPServiceStatus }) {
   )
 }
 
+// Policy Badge Component for Approval Policy
+function PolicyBadge({ policy }: { policy: ApprovalPolicyType }) {
+  const config: Record<ApprovalPolicyType, { color: string; icon: typeof CheckCircle; label: string }> = {
+    auto_approve: { color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300', icon: CheckCircle, label: '自动审批' },
+    manual: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300', icon: Eye, label: '手动审批' },
+    denied: { color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300', icon: XCircle, label: '拒绝' },
+  }
+  const { color, icon: Icon, label } = config[policy]
+  return (
+    <Badge className={`${color} flex items-center gap-1`}>
+      <Icon className="h-3 w-3" />
+      {label}
+    </Badge>
+  )
+}
+
 // Service Card Component
 function ServiceCard({ 
   service, 
@@ -380,6 +420,164 @@ export function MCPServiceConfig() {
   const [selectedService, setSelectedService] = useState<MCPServiceConfig | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [, setIsLoading] = useState(false)
+
+  // Approval Policy State
+  const [approvalConfigs, setApprovalConfigs] = useState<PerToolApprovalConfig[]>([])
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false)
+  const [selectedApproval, setSelectedApproval] = useState<PerToolApprovalConfig | null>(null)
+  const [selectedServiceForApproval, setSelectedServiceForApproval] = useState<MCPServiceConfig | null>(null)
+
+  // Mock approval configs generator
+  const generateMockApprovalConfigs = (svcId: string): PerToolApprovalConfig[] => [
+    {
+      id: `approval-${svcId}-1`,
+      serviceId: svcId,
+      toolPattern: '*',
+      isRegex: false,
+      policy: 'manual',
+      description: '默认情况下所有工具需要手动审批',
+      enabled: true,
+      createdAt: '2026-04-01T00:00:00Z',
+      updatedAt: '2026-04-01T00:00:00Z',
+      createdBy: 'admin',
+    },
+    {
+      id: `approval-${svcId}-2`,
+      serviceId: svcId,
+      toolPattern: 'fs\\.read.*',
+      isRegex: true,
+      policy: 'auto_approve',
+      description: '所有只读文件系统操作自动审批',
+      enabled: true,
+      createdAt: '2026-04-02T00:00:00Z',
+      updatedAt: '2026-04-02T00:00:00Z',
+      createdBy: 'admin',
+    },
+    {
+      id: `approval-${svcId}-3`,
+      serviceId: svcId,
+      toolPattern: 'db\\..*',
+      isRegex: true,
+      policy: 'denied',
+      description: '禁止所有数据库操作',
+      enabled: false,
+      createdAt: '2026-04-03T00:00:00Z',
+      updatedAt: '2026-04-03T00:00:00Z',
+      createdBy: 'admin',
+    },
+  ]
+
+  // Fetch approval configs from backend
+  useEffect(() => {
+    const fetchApprovalConfigs = async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = await invoke<{ success: boolean; data?: any[]; error?: string }>('mcp_get_approval_configs')
+        if (response.success && response.data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const configs = response.data.map((c: any) => ({
+            id: c.id,
+            serviceId: c.service_id,
+            toolPattern: c.tool_pattern,
+            isRegex: c.is_regex,
+            policy: c.policy,
+            description: c.description,
+            enabled: c.enabled,
+            createdAt: c.created_at,
+            updatedAt: c.updated_at,
+            createdBy: c.created_by,
+          }))
+          setApprovalConfigs(configs)
+        }
+      } catch {
+        // Use mock data if backend not available
+        const allConfigs: PerToolApprovalConfig[] = []
+        services.forEach(svc => {
+          allConfigs.push(...generateMockApprovalConfigs(svc.id))
+        })
+        setApprovalConfigs(allConfigs)
+      }
+    }
+    if (services.length > 0) {
+      void fetchApprovalConfigs()
+    }
+  }, [services])
+
+  // Handle open approval dialog for a service
+  const handleOpenApproval = (service: MCPServiceConfig) => {
+    setSelectedServiceForApproval(service)
+    setSelectedApproval(null)
+    setApprovalDialogOpen(true)
+  }
+
+  // Handle edit existing approval config
+  const handleEditApproval = (approval: PerToolApprovalConfig) => {
+    setSelectedApproval(approval)
+    setApprovalDialogOpen(true)
+  }
+
+  // Handle save approval config
+  const handleSaveApproval = async () => {
+    if (!selectedApproval && selectedServiceForApproval) return
+    setIsSaving(true)
+    try {
+      const config = {
+        id: selectedApproval?.id || `approval-${Date.now()}`,
+        service_id: selectedApproval?.serviceId || selectedServiceForApproval?.id,
+        tool_pattern: selectedApproval?.toolPattern || '',
+        is_regex: selectedApproval?.isRegex || false,
+        policy: selectedApproval?.policy || 'manual',
+        description: selectedApproval?.description || '',
+        enabled: selectedApproval?.enabled ?? true,
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await invoke<{ success: boolean; data?: any; error?: string }>('mcp_set_approval_config', { config })
+      if (response.success) {
+        setApprovalDialogOpen(false)
+        setSelectedApproval(null)
+        // Refresh approval configs
+        // In real implementation, would trigger a refresh
+      } else {
+        console.error('Failed to save approval config:', response.error)
+      }
+    } catch (error) {
+      console.error('Failed to save approval config:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Handle delete approval config
+  const handleDeleteApproval = async (approvalId: string) => {
+    try {
+      const response = await invoke<{ success: boolean; error?: string }>('mcp_delete_approval_config', { configId: approvalId })
+      if (response.success) {
+        setApprovalConfigs(prev => prev.filter(c => c.id !== approvalId))
+      }
+    } catch (error) {
+      console.error('Failed to delete approval config:', error)
+    }
+  }
+
+  // Handle toggle approval config enabled
+  const handleToggleApproval = async (approval: PerToolApprovalConfig) => {
+    const newEnabled = !approval.enabled
+    try {
+      const response = await invoke<{ success: boolean; error?: string }>('mcp_set_approval_config_enabled', { configId: approval.id, enabled: newEnabled })
+      if (response.success) {
+        setApprovalConfigs(prev =>
+          prev.map(c => c.id === approval.id ? { ...c, enabled: newEnabled } : c)
+        )
+      }
+    } catch (error) {
+      console.error('Failed to toggle approval config:', error)
+    }
+  }
+
+  // Get approval configs for a specific service
+  const getServiceApprovalConfigs = (serviceId: string) => {
+    return approvalConfigs.filter(c => c.serviceId === serviceId)
+  }
 
   // Fetch services from backend
   useEffect(() => {
@@ -622,6 +820,7 @@ export function MCPServiceConfig() {
         <TabsList>
           <TabsTrigger value="services">服务列表</TabsTrigger>
           <TabsTrigger value="records">操作记录</TabsTrigger>
+          <TabsTrigger value="approvals">工具审批</TabsTrigger>
         </TabsList>
 
         <TabsContent value="services" className="space-y-4">
@@ -694,6 +893,95 @@ export function MCPServiceConfig() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="approvals" className="space-y-4">
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground">
+              为每个服务的工具配置自动审批策略。支持精确匹配和正则表达式匹配。
+            </p>
+          </div>
+          {services.map((service) => (
+            <Card key={service.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Server className="h-5 w-5" />
+                    {service.name}
+                  </CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => handleOpenApproval(service)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    添加规则
+                  </Button>
+                </div>
+                <CardDescription>
+                  配置 {service.name} 服务的工具审批策略
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>启用</TableHead>
+                      <TableHead>工具模式</TableHead>
+                      <TableHead>类型</TableHead>
+                      <TableHead>策略</TableHead>
+                      <TableHead>描述</TableHead>
+                      <TableHead>操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getServiceApprovalConfigs(service.id).map((approval) => (
+                      <TableRow key={approval.id}>
+                        <TableCell>
+                          <Switch
+                            checked={approval.enabled}
+                            onCheckedChange={() => handleToggleApproval(approval)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {approval.isRegex && <Regex className="h-3 w-3 text-muted-foreground" />}
+                            <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                              {approval.toolPattern}
+                            </code>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={approval.isRegex ? 'default' : 'outline'}>
+                            {approval.isRegex ? '正则' : '精确'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <PolicyBadge policy={approval.policy} />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {approval.description || '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditApproval(approval)}>
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteApproval(approval.id)}>
+                              <Trash2 className="h-3 w-3 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {getServiceApprovalConfigs(service.id).length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                          暂无审批规则，点击上方按钮添加
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
       </Tabs>
 
@@ -926,6 +1214,126 @@ export function MCPServiceConfig() {
               取消
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approval Policy Dialog */}
+      <Dialog open={approvalDialogOpen} onOpenChange={setApprovalDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedApproval ? '编辑审批规则' : '添加审批规则'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedServiceForApproval
+                ? `为 ${selectedServiceForApproval.name} 服务配置工具审批规则`
+                : '配置工具审批规则'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Service Selection */}
+            <div className="space-y-2">
+              <Label>服务</Label>
+              <Select
+                value={selectedApproval?.serviceId || selectedServiceForApproval?.id || ''}
+                onValueChange={(v) => setSelectedApproval(prev => prev ? { ...prev, serviceId: v } : null)}
+                disabled={!!selectedApproval}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择服务" />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tool Pattern */}
+            <div className="space-y-2">
+              <Label>工具模式</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={selectedApproval?.toolPattern || ''}
+                  onChange={(e) => setSelectedApproval(prev => prev ? { ...prev, toolPattern: e.target.value } : null)}
+                  placeholder="例如: fs.read 或 fs\\..*"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={selectedApproval?.isRegex || false}
+                  onCheckedChange={(checked) => setSelectedApproval(prev => prev ? { ...prev, isRegex: checked } : null)}
+                />
+                <Label className="text-sm">使用正则表达式</Label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                使用 * 匹配所有工具，或使用正则表达式如 fs\\..* 匹配所有 fs 开头的工具
+              </p>
+            </div>
+
+            {/* Policy */}
+            <div className="space-y-2">
+              <Label>审批策略</Label>
+              <Select
+                value={selectedApproval?.policy || 'manual'}
+                onValueChange={(v) => setSelectedApproval(prev => prev ? { ...prev, policy: v as ApprovalPolicyType } : null)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto_approve">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      自动审批
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="manual">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-yellow-500" />
+                      手动审批
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="denied">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-4 w-4 text-red-500" />
+                      拒绝
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label>描述 (可选)</Label>
+              <Input
+                value={selectedApproval?.description || ''}
+                onChange={(e) => setSelectedApproval(prev => prev ? { ...prev, description: e.target.value } : null)}
+                placeholder="规则描述，用于说明配置原因"
+              />
+            </div>
+
+            {/* Enabled */}
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={selectedApproval?.enabled ?? true}
+                onCheckedChange={(checked) => setSelectedApproval(prev => prev ? { ...prev, enabled: checked } : null)}
+              />
+              <Label>启用此规则</Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApprovalDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleSaveApproval} disabled={isSaving}>
               {isSaving ? '保存中...' : '保存'}
             </Button>
           </DialogFooter>

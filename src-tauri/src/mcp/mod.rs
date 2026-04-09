@@ -11,4 +11,5 @@ pub use bridge::MCPToolBridge;
 pub use types::{
     MCPServiceConfig, MCPServiceStatus, MCPServiceInfo, MCPTransportType,
     MCPTool, MCPToolCall, MCPToolResult,
+    ApprovalPolicy, PerToolApprovalConfig, AutoApproveResult,
 };

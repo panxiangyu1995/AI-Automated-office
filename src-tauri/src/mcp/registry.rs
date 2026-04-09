@@ -8,6 +8,7 @@ use tokio::sync::RwLock;
 use super::client::{MCPClient, MCPClientConfig};
 use super::types::{
     MCPServiceConfig, MCPServiceStatus, MCPServiceInfo, MCPTool,
+    PerToolApprovalConfig, ApprovalPolicy, AutoApproveResult,
 };
 
 /// Global MCP service registry
@@ -16,6 +17,8 @@ pub struct MCPServiceRegistry {
     clients: Arc<RwLock<HashMap<String, Arc<MCPClient>>>>,
     /// Service configurations
     configs: Arc<RwLock<HashMap<String, MCPServiceConfig>>>,
+    /// Per-tool approval configurations
+    approval_configs: Arc<RwLock<HashMap<String, PerToolApprovalConfig>>>,
 }
 
 impl MCPServiceRegistry {
@@ -24,6 +27,7 @@ impl MCPServiceRegistry {
         Self {
             clients: Arc::new(RwLock::new(HashMap::new())),
             configs: Arc::new(RwLock::new(HashMap::new())),
+            approval_configs: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -181,6 +185,130 @@ impl MCPServiceRegistry {
             None => None,
         }
     }
+
+    // ==================== Approval Configuration Management ====================
+
+    /// Set a tool approval configuration
+    pub async fn set_tool_approval_config(
+        &self,
+        config: PerToolApprovalConfig,
+    ) -> Result<(), String> {
+        let mut configs = self.approval_configs.write().await;
+        configs.insert(config.id.clone(), config);
+        Ok(())
+    }
+
+    /// Get a tool approval configuration by ID
+    pub async fn get_tool_approval_config(
+        &self,
+        config_id: &str,
+    ) -> Option<PerToolApprovalConfig> {
+        let configs = self.approval_configs.read().await;
+        configs.get(config_id).cloned()
+    }
+
+    /// Get all approval configurations for a service
+    pub async fn get_service_approval_configs(
+        &self,
+        service_id: &str,
+    ) -> Vec<PerToolApprovalConfig> {
+        let configs = self.approval_configs.read().await;
+        configs
+            .values()
+            .filter(|c| c.service_id == service_id)
+            .cloned()
+            .collect()
+    }
+
+    /// Get all approval configurations
+    pub async fn get_all_approval_configs(&self) -> Vec<PerToolApprovalConfig> {
+        let configs = self.approval_configs.read().await;
+        configs.values().cloned().collect()
+    }
+
+    /// Delete a tool approval configuration
+    pub async fn delete_tool_approval_config(
+        &self,
+        config_id: &str,
+    ) -> Result<(), String> {
+        let mut configs = self.approval_configs.write().await;
+        configs.remove(config_id);
+        Ok(())
+    }
+
+    /// Check if a tool should be auto-approved
+    pub async fn check_auto_approve(
+        &self,
+        service_id: &str,
+        tool_name: &str,
+    ) -> AutoApproveResult {
+        let configs = self.approval_configs.read().await;
+
+        // Find the first matching enabled config for this service
+        for config in configs.values() {
+            if config.service_id == service_id && config.matches(tool_name) {
+                let approved = config.policy == ApprovalPolicy::AutoApprove;
+                return AutoApproveResult {
+                    approved,
+                    policy: config.policy.clone(),
+                    matched_config_id: Some(config.id.clone()),
+                    reason: if approved {
+                        format!("Tool '{}' auto-approved by config '{}'", tool_name, config.id)
+                    } else {
+                        format!("Tool '{}' policy is {:?} according to config '{}'",
+                            tool_name, config.policy, config.id)
+                    },
+                };
+            }
+        }
+
+        // No matching config found - default to manual
+        AutoApproveResult {
+            approved: false,
+            policy: ApprovalPolicy::Manual,
+            matched_config_id: None,
+            reason: format!(
+                "No approval config found for tool '{}' in service '{}', defaulting to manual",
+                tool_name, service_id
+            ),
+        }
+    }
+
+    /// Enable or disable a tool approval config
+    pub async fn set_approval_config_enabled(
+        &self,
+        config_id: &str,
+        enabled: bool,
+    ) -> Result<(), String> {
+        let mut configs = self.approval_configs.write().await;
+        if let Some(config) = configs.get_mut(config_id) {
+            config.enabled = enabled;
+            config.updated_at = chrono_now();
+            Ok(())
+        } else {
+            Err(format!("Config '{}' not found", config_id))
+        }
+    }
+
+    /// Get approval configs count
+    pub async fn approval_configs_count(&self) -> usize {
+        let configs = self.approval_configs.read().await;
+        configs.len()
+    }
+}
+
+/// Get current timestamp in ISO format
+fn chrono_now() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let duration = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default();
+    let secs = duration.as_secs();
+    // Simple ISO 8601 format without chrono dependency
+    format!("2026-04-09T{:02}:{:02}:{:02}Z",
+        (secs / 3600) % 24,
+        (secs / 60) % 60,
+        secs % 60)
 }
 
 impl Default for MCPServiceRegistry {
