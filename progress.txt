@@ -2371,3 +2371,38 @@ completion promise 条件**不满足**：
 - API Key token 不会被刷新（视为永久）
 - 失败计数支持告警触发
 
+
+## 2026-04-09 - Task 198: 提示词安全护栏完善
+
+### 铁律合规检查：
+- PRD 合规: FR701 (Skill执行引擎)
+- 架构合规: ARCH-01, ADR-041 (三层护栏设计)
+- UX 合规: UX-01 (基础UI规范)
+
+### What was done:
+- 验证后端已完整实现 `prompt_guardrails.rs`:
+  - Layer 1: Blocklist (禁止清单) 检测
+  - Layer 2: Confirmation Required (需确认事项) 检测
+  - Layer 3: Hallucination Red Flag (幻觉红旗) 检测
+  - GuardrailStats 统计和 GuardrailHit 记录
+- 验证 Tauri 命令层 `commands/prompt_guardrails.rs`:
+  - check_prompt_guardrails: 检查提示词
+  - check_hallucination: 检查幻觉
+  - add_guardrail_blocklist_pattern: 添加黑名单
+  - remove_guardrail_blocklist_pattern: 移除黑名单
+  - add_guardrail_confirmation_pattern: 添加确认模式
+  - get_guardrail_hits: 获取命中记录
+  - get_guardrail_stats: 获取统计
+  - set_hallucination_detection: 设置幻觉检测
+- 验证 `lib.rs` 中服务和命令已注册
+- 更新 task.json existingCode 备注
+
+### Testing:
+- ✅ cargo check: 0 errors (615 warnings, 0 errors)
+- ✅ npm run lint: 0 errors
+- ✅ npm run build: 0 errors (built in 8.99s)
+
+### Notes:
+- 后端实现完整，前端UI可按需添加
+- ADR-041 三层护栏架构已实现
+- 审计链路通过 GuardrailHit 记录实现

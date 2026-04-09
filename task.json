@@ -2591,8 +2591,11 @@
       "backendRequired": true,
       "existingCode": {
         "frontend": [],
-        "backend": [],
-        "note": "提示词安全机制缺失。"
+        "backend": [
+          "src-tauri/src/agent/prompt_guardrails.rs",
+          "src-tauri/src/commands/prompt_guardrails.rs"
+        ],
+        "note": "提示词安全三层护栏已完整实现(ADR-041)：Blocklist/Confirmation/Hallucination检测，Tauri命令已注册。"
       },
       "openspec_change": "prompt-security-guardrails",
       "steps": [
@@ -2619,7 +2622,7 @@
       "dependencies": [
         "Task 175"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 199,
