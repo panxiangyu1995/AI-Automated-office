@@ -36,4 +36,5 @@ pub mod skill;
 pub mod mcp;
 pub mod monitoring;
 pub mod self_healing;
+pub mod token_refresh;
 pub mod workcard;

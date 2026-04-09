@@ -2334,3 +2334,40 @@ completion promise 条件**不满足**：
 - 需要添加 PDF 预览库才能实现完整的 PDF 预览
 - 附件权限跟随需要与后端权限系统集成
 
+---
+
+## 2026-04-09 - Task: Token刷新服务完善 (Task 203)
+
+### 铁律合规检查：
+- PRD 合规：FR1010, FR1011, FR1012 - Token刷新服务
+- 架构合规：遵循分层微内核架构
+- Epic 合规：Epic 46 - Token刷新服务
+
+### What was done:
+- TokenRefreshService 已存在于 `agent/llm_provider/token_refresh.rs`
+  - TokenRefreshConfig: 配置结构（检查间隔、提前刷新时间、启用开关）
+  - TokenRefreshService: 服务实现（初始化、获取、刷新、后台任务）
+  - start_background_refresh(): 后台自动刷新任务
+- 新增 Tauri 命令 (commands/token_refresh.rs)
+  - get_token_status: 获取单个 provider 的 token 状态
+  - get_all_token_statuses: 获取所有 provider 的 token 状态
+  - refresh_token: 手动触发 token 刷新
+  - check_tokens_needing_refresh: 检查哪些 token 需要刷新
+  - initialize_token: 初始化 token（支持 API Key 和 OAuth）
+  - get_refresh_config: 获取刷新配置
+  - update_refresh_config: 更新刷新配置
+  - get_refresh_stats: 获取刷新统计信息
+  - check_refresh_alert: 检查是否触发刷新失败告警
+- 新增 config() getter 方法到 TokenRefreshService
+- 创建 TokenRefreshState 管理刷新状态和失败计数
+
+### Testing:
+- ✅ cargo check: 0 errors (615 warnings, 0 errors)
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- TokenRefreshService 已初始化并启动后台刷新任务
+- OAuth token 支持自动刷新
+- API Key token 不会被刷新（视为永久）
+- 失败计数支持告警触发
+

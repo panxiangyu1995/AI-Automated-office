@@ -155,11 +155,13 @@ pub fn run() {
 
                 // Initialize Token Refresh Service (Phase 8: T8.2)
                 use agent::llm_provider::TokenRefreshService;
+                use commands::token_refresh::TokenRefreshState;
                 let token_refresh_service = Arc::new(TokenRefreshService::with_default_config());
                 // Start background refresh task for OAuth tokens
                 let refresh_service_clone = token_refresh_service.clone();
                 refresh_service_clone.start_background_refresh();
-                app.manage(token_refresh_service);
+                let token_refresh_state = TokenRefreshState::new(token_refresh_service);
+                app.manage(token_refresh_state);
                 tracing::info!("Token refresh service initialized");
 
                 // Initialize memory service
@@ -628,6 +630,16 @@ pub fn run() {
             commands::prompt_guardrails::get_guardrail_hits,
             commands::prompt_guardrails::get_guardrail_stats,
             commands::prompt_guardrails::set_hallucination_detection,
+            // Token refresh commands (Task 203 - FR1010-FR1017)
+            commands::token_refresh::get_token_status,
+            commands::token_refresh::get_all_token_statuses,
+            commands::token_refresh::refresh_token,
+            commands::token_refresh::check_tokens_needing_refresh,
+            commands::token_refresh::initialize_token,
+            commands::token_refresh::get_refresh_config,
+            commands::token_refresh::update_refresh_config,
+            commands::token_refresh::get_refresh_stats,
+            commands::token_refresh::check_refresh_alert,
             // Subagent commands (Task 199 - ADR-059 Personal Agent)
             commands::subagent::get_available_subagents,
             commands::subagent::get_subagent_config,

@@ -89,6 +89,11 @@ impl TokenRefreshService {
         Arc::clone(&self.token_cache)
     }
 
+    /// Get the refresh configuration
+    pub fn config(&self) -> &TokenRefreshConfig {
+        &self.config
+    }
+
     /// Set a callback for token refresh events
     pub fn set_refresh_callback(&self, callback: TokenRefreshCallback) {
         let mut cb = tokio::runtime::Handle::current().block_on(self.refresh_callback.write());

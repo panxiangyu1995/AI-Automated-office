@@ -2798,7 +2798,7 @@
       "dependencies": [
         "Task 153"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 203,
@@ -2812,8 +2812,11 @@
       "backendRequired": true,
       "existingCode": {
         "frontend": [],
-        "backend": [],
-        "note": "Token刷新服务缺失。"
+        "backend": [
+          "src-tauri/src/agent/llm_provider/token_refresh.rs",
+          "src-tauri/src/agent/llm_provider/token_cache.rs"
+        ],
+        "note": "TokenRefreshService已实现基础功能，已创建Tauri命令。"
       },
       "openspec_change": "token-refresh-service",
       "steps": [
@@ -2840,7 +2843,7 @@
       "dependencies": [
         "Task 177"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 204,
