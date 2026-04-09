@@ -2266,3 +2266,46 @@ completion promise 条件**不满足**：
 - 仅消息发送者可撤回/编辑
 - 撤回/编辑时限2分钟
 
+---
+
+## 2026-04-09 - Task: 部门模板系统 (Task 201)
+
+### 铁律合规检查：
+- PRD 合规：FR132, FR133, FR134, FR135, FR136 - 审批模板系统
+- 架构合规：遵循 ADR-016 审批模板系统设计
+- Epic 合规：Epic 44 - 审批中心
+
+### What was done:
+- 创建审批模板服务 (approval/template.rs)
+  - TemplateCategory: 7种类别（请假/报销/采购/差旅/加班/设备/通用）
+  - TemplateVersion: 模板版本历史
+  - ApprovalTemplate: 完整模板结构
+  - TemplateService: 异步模板管理服务
+  - 21个预置模板年假、病假、一般报销、差旅报销、办公采购、国内出差、国外出差、工作日加班、周末加班、笔记本申请、显示器申请、远程办公、证明申请、事假、产假、丧假、招待费报销、固定资产采购、会议出差、离职申请等
+- 创建模板命令 (commands/approval_template.rs)
+  - get_approval_templates: 获取所有模板
+  - get_approval_templates_by_category: 按类别获取
+  - get_active_approval_templates: 获取活跃模板
+  - get_builtin_approval_templates: 获取内置模板
+  - get_approval_template: 获取单个模板
+  - search_approval_templates: 搜索模板
+  - create/update/delete_approval_template: CRUD操作
+  - get_approval_template_previews: 获取预览列表
+  - recommend_approval_templates: AI推荐模板
+  - get_approval_template_stats: 获取统计信息
+  - get_template_categories: 获取所有类别
+- 修复 template.rs 编译错误
+  - TemplateCategory 添加 Hash trait
+  - score 变量添加显式类型 f32
+  - ApprovalCondition 添加缺失的 value 字段
+
+### Testing:
+- ✅ cargo check: 0 errors (621 warnings, 0 errors)
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- 21个预置模板覆盖常见审批场景
+- AI推荐基于关键词匹配和表单schema分析
+- 模板版本历史支持追溯
+- 模板使用统计支持分析
+

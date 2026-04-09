@@ -239,6 +239,10 @@ pub fn run() {
                 app.manage(approval_state.db.clone());
                 app.manage(approval::attachment::AttachmentService::new());
 
+                // Initialize Approval Template Service (Task 201 - FR132-FR136)
+                let template_service = Arc::new(approval::template::TemplateService::new());
+                app.manage(template_service);
+
                 // Initialize Sales module
                 let sales_state = sales::SalesState::new();
                 app.manage(sales_state.db.clone());
@@ -656,6 +660,20 @@ pub fn run() {
             commands::capability_version::get_all_version_infos,
             commands::capability_version::clear_version_cache,
             commands::capability_version::get_update_status_values,
+            // Approval template commands (Task 201 - FR132-FR136)
+            commands::approval_template::get_approval_templates,
+            commands::approval_template::get_approval_templates_by_category,
+            commands::approval_template::get_active_approval_templates,
+            commands::approval_template::get_builtin_approval_templates,
+            commands::approval_template::get_approval_template,
+            commands::approval_template::search_approval_templates,
+            commands::approval_template::create_approval_template,
+            commands::approval_template::update_approval_template,
+            commands::approval_template::delete_approval_template,
+            commands::approval_template::get_approval_template_previews,
+            commands::approval_template::recommend_approval_templates,
+            commands::approval_template::get_approval_template_stats,
+            commands::approval_template::get_template_categories,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

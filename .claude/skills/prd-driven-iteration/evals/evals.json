@@ -1,0 +1,38 @@
+{
+  "skill_name": "prd-driven-iteration",
+  "description": "PRD驱动的功能优化迭代执行器 - 工作流：分析代码 → 生成task.json → 生成OpenSpec → 执行 → 更新task.json → 记录progress.txt",
+  "evals": [
+    {
+      "id": 1,
+      "name": "optimize-agent-module",
+      "prompt": "优化agent模块的代码，分析问题并生成任务。",
+      "expected_output": "应输出：代码分析报告 → task.json任务生成 → OpenSpec生成 → 执行 → 更新task.json → 记录progress.txt",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "optimize-tools-system",
+      "prompt": "优化工具系统的代码，分析问题并执行迭代。",
+      "expected_output": "应输出：代码扫描报告 → 生成优化任务 → OpenSpec变更 → 执行完成 → task.json更新 → progress.txt记录",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "scan-and-generate-tasks",
+      "prompt": "扫描agent模块的代码问题，生成优化任务清单。",
+      "expected_output": "应输出：TODO/FIXME/unwrap/DRY分析报告 → task.json任务条目（多个）",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 4,
+      "name": "full-iteration-flow",
+      "prompt": "对记忆系统进行完整的优化迭代。",
+      "expected_output": "应输出：代码分析 → 任务生成 → OpenSpec → 执行 → 验证通过 → task.json更新 → progress.txt记录",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}
