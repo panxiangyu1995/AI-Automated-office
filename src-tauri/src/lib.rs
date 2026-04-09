@@ -107,6 +107,7 @@ pub fn run() {
                 app.manage(commands::provider_config::RoutingModeState::new());
                 app.manage(commands::failover::FailoverState::new());
                 app.manage(commands::resource_security::ResourceSecurityState::new());
+                app.manage(commands::config_cache::ConfigCacheState::new());
 
                 // Initialize real LLM provider from configuration (Phase 7: T7.4)
                 // Priority: User config > Tenant config > Official config
@@ -390,6 +391,20 @@ pub fn run() {
             commands::resource_security::get_security_policy,
             commands::resource_security::update_security_policy,
             commands::resource_security::get_resource_security_stats,
+            // Config Cache commands (Task 191)
+            commands::config_cache::init_config_cache,
+            commands::config_cache::load_remote_config,
+            commands::config_cache::has_remote_config,
+            commands::config_cache::get_remote_config_url,
+            commands::config_cache::set_session_config_override,
+            commands::config_cache::remove_session_config_override,
+            commands::config_cache::clear_session_config_overrides,
+            commands::config_cache::set_task_config_setting,
+            commands::config_cache::remove_task_config_setting,
+            commands::config_cache::set_global_config_default,
+            commands::config_cache::remove_global_config_default,
+            commands::config_cache::get_config_value,
+            commands::config_cache::get_all_config_values,
             // WebSocket commands (Task 136)
             agent::websocket::create_websocket_connection,
             agent::websocket::get_websocket_connection_state,

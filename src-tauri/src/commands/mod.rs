@@ -14,6 +14,7 @@ pub mod group;
 pub mod hardware;
 pub mod intercom;
 pub mod network;
+pub mod config_cache;
 pub mod failover;
 pub mod provider_config;
 pub mod resource_security;
