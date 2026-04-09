@@ -39,3 +39,4 @@ pub mod self_healing;
 pub mod token_refresh;
 pub mod webhook;
 pub mod workcard;
+pub mod cache_stats;

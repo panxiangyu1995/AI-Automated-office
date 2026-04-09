@@ -1,12 +1,12 @@
 {
-  "version": "5.0.0",
-  "lastUpdated": "2026-04-07",
+  "version": "5.0.1",
+  "lastUpdated": "2026-04-09",
   "scope": "MVP completion gap analysis and next iteration plan",
   "batch": "Phase 3 - MVP Finalization",
   "range": "Task 166-220",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
   "sourceOfTruth": "PRD MVP Definition + task-archived.json series",
-  "activeNote": "Task 171/174/175重复Task已移除。新增27个OpenSpec目录。所有未完成任务已有对应OpenSpec。P2/P3任务可延后实现。",
+  "activeNote": "Task 171/174/175重复Task已移除。新增27个OpenSpec目录。所有未完成任务已有对应OpenSpec。P2/P3任务可延后实现。2026-04-09: 新增Task 211-215 agent模块6维度优化任务。",
   "gapAnalysis": {
     "summary": "基于PRD铁律(857条FR)与实际代码对比，发现以下核心差距",
     "已完成": [
@@ -2932,7 +2932,7 @@
       "dependencies": [
         "Task 157"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 206,
@@ -3188,6 +3188,200 @@
       "dependencies": [
         "Task 209"
       ],
+      "passes": false
+    },
+    {
+      "id": 211,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "Agent模块-安全漏洞修复",
+      "description": "修复Agent模块的安全漏洞：XSS风险(dangerouslySetInnerHTML)、敏感数据localStorage存储、SQL拼接注入风险。",
+      "implementationType": "fix",
+      "phase": "Phase X - 代码质量优化",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": ["src/features/agent/components/ChatMessage.tsx", "src/features/agent/hooks/useCheckpointStore.ts"],
+        "backend": ["src-tauri/src/agent/subagent/personal_loader.rs"],
+        "note": "发现XSS漏洞1处、敏感数据存储3处、SQL拼接风险20+处"
+      },
+      "openspec_change": "agent-security-fix",
+      "steps": [
+        "修复ChatMessage.tsx的dangerouslySetInnerHTML XSS风险",
+        "审查并加固useCheckpointStore.ts的localStorage存储",
+        "重构personal_loader.rs的SQL拼接为参数化查询",
+        "添加XSS过滤库依赖",
+        "运行cargo clippy验证",
+        "运行npm run lint验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR22"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 212,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "Agent模块-unwrap消除",
+      "description": "消除Agent模块中的unwrap()滥用问题，将200+处unwrap改为?或match错误处理，避免运行时panic。",
+      "implementationType": "refactor",
+      "phase": "Phase X - 代码质量优化",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/subagent/manager.rs",
+          "src-tauri/src/agent/failover.rs",
+          "src-tauri/src/agent/routing.rs",
+          "src-tauri/src/agent/monitoring.rs",
+          "src-tauri/src/agent/tools/browser.rs",
+          "src-tauri/src/agent/tools/registry.rs",
+          "src-tauri/src/agent/subagent/personal_loader.rs"
+        ],
+        "note": "发现200+处unwrap无错误处理"
+      },
+      "openspec_change": "agent-unwrap-elimination",
+      "steps": [
+        "建立统一的错误类型定义",
+        "将manager.rs中的unwrap改为Result处理",
+        "将failover.rs中的unwrap改为Result处理",
+        "将routing.rs中的unwrap改为Result处理",
+        "将monitoring.rs中的unwrap改为Result处理",
+        "将browser.rs中的unwrap改为Result处理",
+        "将registry.rs中的unwrap改为Result处理",
+        "将personal_loader.rs中的unwrap改为Result处理",
+        "运行cargo clippy验证无警告"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 213,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "Agent模块-TODO清理与调试代码移除",
+      "description": "清理Agent模块中的TODO遗留(4处)和调试代码(console.log/println 13处)，提升代码完成度。",
+      "implementationType": "optimize",
+      "phase": "Phase X - 代码质量优化",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/hooks/useAgentRuntime.ts",
+          "src/features/agent/components/AgentChatPanel.tsx",
+          "src/features/agent/components/FailoverSessionRepair.tsx",
+          "src/features/agent/components/ErrorClassificationGuidance.tsx",
+          "src/features/agent/components/ScheduledTaskCenter.tsx"
+        ],
+        "backend": [
+          "src-tauri/src/agent/intercom/mod.rs",
+          "src-tauri/src/agent/intercom/service.rs",
+          "src-tauri/src/agent/message_sync.rs",
+          "src-tauri/src/agent/heartbeat/delivery.rs",
+          "src-tauri/src/agent/subagent/manager.rs"
+        ],
+        "note": "TODO 4处，调试代码13处"
+      },
+      "openspec_change": "agent-todo-cleanup",
+      "steps": [
+        "实现intercom/mod.rs内容安全检查",
+        "实现intercom/service.rs内容安全检查",
+        "实现message_sync.rs实际同步逻辑",
+        "添加heartbeat/delivery.rs HTTP客户端",
+        "移除前端的console.log调试代码",
+        "移除后端的println!/dbg!调试代码",
+        "运行cargo clippy验证",
+        "运行npm run lint验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 211", "Task 212"],
+      "passes": false
+    },
+    {
+      "id": 214,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "Agent模块-UX错误信息友好化",
+      "description": "优化Agent模块的错误提示，将技术错误转为用户友好的消息，添加错误toast提示，改善用户体验。",
+      "implementationType": "optimize",
+      "phase": "Phase X - UX优化",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/components/AgentChatPanel.tsx",
+          "src/features/agent/components/EmployeeDirectory.tsx",
+          "src/features/agent/components/ChatMessage.tsx",
+          "src/features/agent/components/SubAgentDelegatePanel.tsx"
+        ],
+        "backend": [],
+        "note": "错误信息技术化、无友好提示、mock数据静默切换"
+      },
+      "openspec_change": "agent-ux-error-friendly",
+      "steps": [
+        "创建错误翻译层errTranslator.ts",
+        "重构AgentChatPanel.tsx错误展示",
+        "优化EmployeeDirectory.tsx错误处理和提示",
+        "优化ChatMessage.tsx错误卡片展示",
+        "添加SubAgentDelegatePanel.tsx错误toast",
+        "添加必填项即时提示",
+        "运行npm run lint验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR8"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": ["UX-04"],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 215,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "Agent模块-前后端集成对齐",
+      "description": "审查和修复Agent模块的前后端命令对齐问题，确保Tauri命令和前端invoke调用参数类型一致。",
+      "implementationType": "fix",
+      "phase": "Phase X - 集成优化",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/agent/api/intercom.ts",
+          "src/features/agent/services/subagent.ts",
+          "src/features/agent/hooks/useAgentIntercom.ts"
+        ],
+        "backend": [
+          "src-tauri/src/commands/intercom.rs",
+          "src-tauri/src/commands/subagent.rs"
+        ],
+        "note": "命令契约需审查和类型对齐"
+      },
+      "openspec_change": "agent-integration-align",
+      "steps": [
+        "审查intercom.ts与intercom.rs命令契约",
+        "审查subagent.ts与subagent.rs命令契约",
+        "生成TypeScript类型定义",
+        "修复参数类型不匹配",
+        "添加参数验证",
+        "运行cargo build验证",
+        "运行npm run build验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": [],
       "passes": false
     }
   ]

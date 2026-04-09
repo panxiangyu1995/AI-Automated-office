@@ -32,6 +32,7 @@ pub mod self_healing;
 pub mod utils;
 pub mod tray;
 pub mod vector;
+pub mod cache;
 
 pub mod commands;
 
@@ -281,6 +282,10 @@ pub fn run() {
                 // Initialize Monitoring module
                 let monitoring_state = commands::monitoring::MonitoringState::default();
                 app.manage(monitoring_state);
+
+                // Initialize Cache Stats module (Task 205)
+                let cache_stats_state = commands::cache_stats::CacheStatsState::new();
+                app.manage(cache_stats_state);
             });
             
             // 注册默认快捷键
@@ -702,6 +707,14 @@ pub fn run() {
             commands::approval_template::recommend_approval_templates,
             commands::approval_template::get_approval_template_stats,
             commands::approval_template::get_template_categories,
+            // Cache stats commands (Task 205)
+            commands::cache_stats::get_embedding_cache_stats,
+            commands::cache_stats::get_token_cache_stats,
+            commands::cache_stats::get_config_cache_stats,
+            commands::cache_stats::get_all_cache_stats,
+            commands::cache_stats::clear_cache_stats,
+            commands::cache_stats::record_cache_hit,
+            commands::cache_stats::record_cache_miss,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");
