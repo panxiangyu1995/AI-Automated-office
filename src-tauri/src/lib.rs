@@ -98,6 +98,7 @@ pub fn run() {
                 app.manage(agent::tools::ToolExecutionPipeline::new());
                 app.manage(agent::tools::ToolVisibilityService::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
+                app.manage(agent::delivery::DeliveryStrategyService::new());
                 
                 // Initialize WebSocket connection manager (Task 136)
                 let ws_manager = Arc::new(agent::websocket::WebSocketConnectionManager::new());
@@ -589,6 +590,14 @@ pub fn run() {
             commands::approval_attachment::add_timeline_event,
             commands::approval_attachment::get_record_timeline,
             commands::approval_attachment::has_timeline,
+            // Delivery strategy commands (Task 196 - ADR-060)
+            commands::delivery_strategy::evaluate_delivery_strategy,
+            commands::delivery_strategy::set_delivery_preference,
+            commands::delivery_strategy::get_delivery_preference,
+            commands::delivery_strategy::evaluate_delivery_batch,
+            commands::delivery_strategy::get_ready_batches,
+            commands::delivery_strategy::get_urgency_levels,
+            commands::delivery_strategy::get_delivery_channels,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

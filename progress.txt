@@ -1956,3 +1956,63 @@ completion promise 条件**不满足**：
 - 支持软删除 (status = Deleted)
 - 审计条目支持状态变更前后对比
 - 时间线事件按时间戳排序
+
+---
+
+## 2026-04-10 - Task 196: 动态投递策略实现 (Phase 2 Loop)
+
+### 铁律合规检查：
+- PRD 合规：FR48 - 动态投递策略
+- 架构合规：遵循 ARCH-01 分层架构，ADR-060 动态投递策略
+- UX 合规：遵循 UX-01, UX-04
+
+### What was done:
+
+#### 后端实现:
+1. **src-tauri/src/agent/delivery/strategy.rs** - 动态投递策略模块:
+   - `DeliveryChannel` 枚举 - 投递渠道 (notification/chat/list/workbench)
+   - `Urgency` 枚举 - 紧急程度 (critical/high/normal/low)
+   - `DeliveryStrategy` 结构 - 投递策略结果
+   - `TaskType` 枚举 - 任务类型 (Approval/Cron/UserRequest/Sync/System)
+   - `TaskContext` 结构 - 任务上下文
+   - `DeliveryItem` 结构 - 投递项
+   - `DeliveryPreference` 结构 - 用户投递偏好
+   - `BatchEntry` 结构 - 批量聚合条目
+   - `DeliveryStrategyService` 服务:
+     - evaluate - 紧急度评估和渠道选择
+     - set_preference/get_preference - 偏好管理
+     - evaluate_batch - 批量评估
+     - add_to_batch/get_ready_batches - 批量聚合
+
+2. **src-tauri/src/commands/delivery_strategy.rs** - 7个Tauri命令:
+   - evaluate_delivery_strategy - 评估单个投递策略
+   - set_delivery_preference/get_delivery_preference - 偏好管理
+   - evaluate_delivery_batch - 批量评估
+   - get_ready_batches - 获取就绪批次
+   - get_urgency_levels/get_delivery_channels - 枚举查询
+
+3. **agent/mod.rs** 更新:
+   - 添加 `pub mod delivery;`
+
+4. **commands/mod.rs** 更新:
+   - 添加 `pub mod delivery_strategy;`
+
+5. **lib.rs** 更新:
+   - 添加 `app.manage(agent::delivery::DeliveryStrategyService::new())`
+   - 注册所有 delivery_strategy 命令到 invoke_handler
+
+#### 验收标准:
+- ✅ 紧急程度能够正确评估 - TaskType::evaluate_urgency 实现
+- ✅ 投递偏好能够生效 - DeliveryPreference 支持 quiet_hours/channel_overrides
+- ✅ 免打扰时段能够正常工作 - is_quiet_hours 方法实现
+
+### Testing:
+- ✅ npm run lint: 0 错误
+- ✅ cargo check: 只有 warnings, 0 errors
+
+### Notes:
+- 紧急度评估规则：overdue approval → critical, cron with alert → high, user_request → normal, sync → low
+- 渠道选择规则：critical/high → notification, normal (interactive) → workbench, normal → chat, low → list
+- 免打扰时段支持跨天配置（如22:00-08:00）
+- 支持渠道覆盖（用户可自定义不同任务类型的默认渠道）
+- 批量聚合支持时间窗口和最小数量触发

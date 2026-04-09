@@ -11,6 +11,7 @@ pub mod auth;
 pub mod checkpoint;
 pub mod config;
 pub mod correction;
+pub mod delivery_strategy;
 pub mod group;
 pub mod hardware;
 pub mod intercom;

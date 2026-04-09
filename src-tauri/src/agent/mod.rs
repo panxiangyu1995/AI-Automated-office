@@ -4,6 +4,7 @@ pub mod audit;
 pub mod config_cache;
 pub mod context_compression;
 pub mod correction;
+pub mod delivery;
 pub mod error_recovery;
 pub mod failover;
 pub mod resource_security;
