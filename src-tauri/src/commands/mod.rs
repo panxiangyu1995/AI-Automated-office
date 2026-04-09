@@ -5,6 +5,7 @@
 pub mod agent;
 pub mod agent_registry;
 pub mod approval_ai;
+pub mod approval_attachment;
 pub mod approval_enhancement;
 pub mod auth;
 pub mod checkpoint;

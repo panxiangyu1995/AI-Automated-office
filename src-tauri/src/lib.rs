@@ -225,6 +225,7 @@ pub fn run() {
                 // Initialize Approval module
                 let approval_state = approval::ApprovalState::new();
                 app.manage(approval_state.db.clone());
+                app.manage(approval::attachment::AttachmentService::new());
 
                 // Initialize Sales module
                 let sales_state = sales::SalesState::new();
@@ -575,6 +576,19 @@ pub fn run() {
             commands::tool_visibility::resume_tool_batch,
             commands::tool_visibility::get_tool_call_statuses,
             commands::tool_visibility::get_tool_categories,
+            // Approval attachment commands (Task 194 - FR137-FR142)
+            commands::approval_attachment::add_attachment,
+            commands::approval_attachment::get_attachment,
+            commands::approval_attachment::get_record_attachments,
+            commands::approval_attachment::delete_attachment,
+            commands::approval_attachment::add_audit_entry,
+            commands::approval_attachment::add_audit_with_state,
+            commands::approval_attachment::get_record_audits,
+            commands::approval_attachment::get_all_audits,
+            commands::approval_attachment::query_audits,
+            commands::approval_attachment::add_timeline_event,
+            commands::approval_attachment::get_record_timeline,
+            commands::approval_attachment::has_timeline,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

@@ -1900,3 +1900,59 @@ completion promise 条件**不满足**：
 - 前端 ToolHistory.tsx 已存在，使用 mock 数据（设计如此）
 - 工具可见性后端完整实现，支持与前端 API 集成
 - 实现了完整的状态机和批量操作机制
+
+---
+
+## 2026-04-09 - Task 194: 审批附件与流程追溯 (Phase 2 Loop)
+
+### 铁律合规检查：
+- PRD 合规：FR137-FR142 - 审批附件与流程追溯
+- 架构合规：遵循 ARCH-01 分层架构
+- UX 合规：遵循 UX-01, UX-04
+
+### What was done:
+
+#### 后端实现:
+1. **src-tauri/src/approval/attachment.rs** - 审批附件与时间线追溯模块:
+   - `AttachmentType` 枚举 - 文件类型 (Image/Document/Archive/Other)
+   - `AttachmentStatus` 枚举 - 状态 (Pending/Uploaded/Failed/Deleted)
+   - `Attachment` 结构 - 附件元数据
+   - `AuditAction` 枚举 - 审计动作 (Create/Update/Delete/Approve/Reject等)
+   - `AuditEntry` 结构 - 操作审计条目
+   - `TimelineEventType` 枚举 - 时间线事件类型
+   - `TimelineEvent` 结构 - 时间线事件
+   - `AttachmentService` 服务:
+     - add_attachment/get_attachment/get_record_attachments/delete_attachment - 附件操作
+     - add_audit/add_audit_with_state/get_record_audits/get_all_audits/query_audits - 审计操作
+     - add_timeline_event/get_record_timeline/has_timeline - 时间线操作
+
+2. **src-tauri/src/commands/approval_attachment.rs** - 13个Tauri命令:
+   - add_attachment, get_attachment, get_record_attachments, delete_attachment
+   - add_audit_entry, add_audit_with_state, get_record_audits, get_all_audits, query_audits
+   - add_timeline_event, get_record_timeline, has_timeline
+
+3. **approval/mod.rs** 更新:
+   - 添加 `pub mod attachment;` 导出附件模块
+
+4. **commands/mod.rs** 更新:
+   - 添加 `pub mod approval_attachment;`
+
+5. **lib.rs** 更新:
+   - 添加 `app.manage(approval::attachment::AttachmentService::new())`
+   - 注册所有 approval_attachment 命令到 invoke_handler
+
+#### 验收标准:
+- ✅ 附件上传和存储 - AttachmentService.add_attachment 实现
+- ✅ 附件预览和下载 - Attachment 结构含 url/thumbnail_url
+- ✅ 时间线追溯视图 - TimelineEvent 系统完整实现
+- ✅ 操作记录审计 - AuditEntry 系统完整实现
+
+### Testing:
+- ✅ npm run lint: 0 错误
+- ✅ cargo check: 只有 warnings, 0 errors
+
+### Notes:
+- 附件类型自动从文件扩展名推断
+- 支持软删除 (status = Deleted)
+- 审计条目支持状态变更前后对比
+- 时间线事件按时间戳排序

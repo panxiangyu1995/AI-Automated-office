@@ -6,6 +6,7 @@ pub mod types;
 pub mod delegation;
 pub mod reminder;
 pub mod ai_assist;
+pub mod attachment;
 
 pub use commands::*;
 pub use types::*;
