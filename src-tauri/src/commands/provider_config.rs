@@ -4,6 +4,8 @@
 //! - Provider config management (Plan/Act dual config)
 //! - Routing mode control (Manual/Auto/Yolo/Hybrid)
 //! - YOLO mode activation and management
+//! - Approval queue for Manual mode
+//! - Double confirmation for anti-misclick
 
 use tauri::State;
 use std::sync::Arc;
@@ -13,7 +15,10 @@ use crate::agent::llm_provider::config::{
     AgentMode, ConfigLevel, ProviderConfig, RoutingConfig,
 };
 use crate::agent::llm_provider::ProviderConfigService;
-use crate::agent::routing::{RoutingMode, YoloTtl};
+use crate::agent::routing::{
+    ApprovalItem, ApprovalStatus, ConfirmationState, RiskEvaluation,
+    RoutingContext, RoutingMode, RoutingRule, SubAgentRoutingService, YoloTtl,
+};
 
 /// Provider config service state
 #[derive(Clone)]
@@ -47,6 +52,26 @@ impl Default for RoutingModeState {
 }
 
 impl RoutingModeState {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+/// Routing service state for approval queue and confirmation
+#[derive(Clone)]
+pub struct RoutingServiceState {
+    pub service: Arc<SubAgentRoutingService>,
+}
+
+impl Default for RoutingServiceState {
+    fn default() -> Self {
+        Self {
+            service: Arc::new(SubAgentRoutingService::new()),
+        }
+    }
+}
+
+impl RoutingServiceState {
     pub fn new() -> Self {
         Self::default()
     }
@@ -285,4 +310,167 @@ pub async fn get_routing_config(
         .map_err(|e| e.to_string())?;
 
     Ok(config.and_then(|c| c.routing_config))
+}
+
+// ============================================================================
+// Approval Queue Commands (Manual Mode)
+// ============================================================================
+
+/// Get all pending approval items
+#[tauri::command]
+pub async fn get_pending_approvals(
+    state: State<'_, RoutingServiceState>,
+) -> Result<Vec<ApprovalItem>, String> {
+    Ok(state.service.get_pending_approvals().await)
+}
+
+/// Add an approval item
+#[tauri::command]
+pub async fn add_approval_item(
+    item: ApprovalItem,
+    state: State<'_, RoutingServiceState>,
+) -> Result<(), String> {
+    state
+        .service
+        .add_approval_item(item)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Approve an item
+#[tauri::command]
+pub async fn approve_item(
+    item_id: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<ApprovalItem, String> {
+    state
+        .service
+        .approve_item(&item_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Reject an item
+#[tauri::command]
+pub async fn reject_item(
+    item_id: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<ApprovalItem, String> {
+    state
+        .service
+        .reject_item(&item_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Cancel an approval
+#[tauri::command]
+pub async fn cancel_approval(
+    item_id: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<(), String> {
+    state
+        .service
+        .cancel_approval(&item_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Expire old pending items
+#[tauri::command]
+pub async fn expire_pending_approvals(
+    max_age_seconds: i64,
+    state: State<'_, RoutingServiceState>,
+) -> Result<usize, String> {
+    Ok(state.service.expire_pending_items(max_age_seconds).await)
+}
+
+// ============================================================================
+// Double Confirmation Commands (Anti-misclick)
+// ============================================================================
+
+/// Start double confirmation for an action
+#[tauri::command]
+pub async fn start_confirmation(
+    action_id: String,
+    action_desc: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<ConfirmationState, String> {
+    Ok(state.service.start_confirmation(action_id, action_desc).await)
+}
+
+/// Confirm an action (second click)
+#[tauri::command]
+pub async fn confirm_action(
+    action_id: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<bool, String> {
+    state
+        .service
+        .confirm_action(&action_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Cancel pending confirmation
+#[tauri::command]
+pub async fn cancel_confirmation(
+    state: State<'_, RoutingServiceState>,
+) -> Result<(), String> {
+    state.service.cancel_confirmation().await;
+    Ok(())
+}
+
+/// Get current confirmation state
+#[tauri::command]
+pub async fn get_confirmation_state(
+    state: State<'_, RoutingServiceState>,
+) -> Result<ConfirmationState, String> {
+    Ok(state.service.get_confirmation_state().await)
+}
+
+// ============================================================================
+// Risk Evaluation Commands
+// ============================================================================
+
+/// Evaluate risk for an action
+#[tauri::command]
+pub async fn evaluate_action_risk(
+    action_type: String,
+    session_id: String,
+    trace_id: String,
+    user_message: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<RiskEvaluation, String> {
+    let context = RoutingContext {
+        session_id,
+        trace_id,
+        user_message,
+        intent: None,
+        scenario: None,
+        tool_name: Some(action_type.clone()),
+        metadata: None,
+    };
+    Ok(state.service.evaluate_risk(&action_type, &context))
+}
+
+/// Check if action requires confirmation based on current mode
+#[tauri::command]
+pub async fn requires_confirmation(
+    action_type: String,
+    session_id: String,
+    trace_id: String,
+    user_message: String,
+    state: State<'_, RoutingServiceState>,
+) -> Result<bool, String> {
+    let context = RoutingContext {
+        session_id,
+        trace_id,
+        user_message,
+        intent: None,
+        scenario: None,
+        tool_name: Some(action_type.clone()),
+        metadata: None,
+    };
+    Ok(state.service.requires_confirmation(&action_type, &context).await)
 }

@@ -112,6 +112,58 @@ impl std::fmt::Display for ConfidenceLevel {
     }
 }
 
+/// Sensitivity level for actions
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum SensitivityLevel {
+    /// Low risk - auto-execute without confirmation
+    Low,
+    /// Medium risk - requires single confirmation
+    Medium,
+    /// High risk - requires double confirmation
+    High,
+    /// Critical risk - requires explicit approval each time
+    Critical,
+}
+
+impl SensitivityLevel {
+    /// Check if this level requires confirmation
+    pub fn requires_confirmation(&self) -> bool {
+        matches!(self, SensitivityLevel::Medium | SensitivityLevel::High | SensitivityLevel::Critical)
+    }
+
+    /// Check if this level requires double confirmation
+    pub fn requires_double_confirmation(&self) -> bool {
+        matches!(self, SensitivityLevel::High | SensitivityLevel::Critical)
+    }
+
+    /// Check if this level requires manual approval
+    pub fn requires_manual_approval(&self) -> bool {
+        matches!(self, SensitivityLevel::Critical)
+    }
+
+    /// Get threshold score for auto-execution based on mode
+    pub fn auto_threshold(&self) -> f64 {
+        match self {
+            SensitivityLevel::Low => 0.0,
+            SensitivityLevel::Medium => 0.3,
+            SensitivityLevel::High => 0.6,
+            SensitivityLevel::Critical => 0.9,
+        }
+    }
+}
+
+impl std::fmt::Display for SensitivityLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SensitivityLevel::Low => write!(f, "low"),
+            SensitivityLevel::Medium => write!(f, "medium"),
+            SensitivityLevel::High => write!(f, "high"),
+            SensitivityLevel::Critical => write!(f, "critical"),
+        }
+    }
+}
+
 /// Routing rule
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RoutingRule {
@@ -202,6 +254,98 @@ pub struct RoutingResult {
     pub outcome_record: RoutingOutcome,
 }
 
+/// Approval item for Manual mode
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApprovalItem {
+    pub id: String,
+    pub session_id: String,
+    pub trace_id: String,
+    pub action_description: String,
+    pub action_type: String,
+    pub sensitivity_level: SensitivityLevel,
+    pub risk_score: f64,
+    pub suggested_action: Option<String>,
+    pub context: HashMap<String, serde_json::Value>,
+    pub created_at: i64,
+    pub requires_double_confirm: bool,
+    pub first_confirmed: bool,
+    pub first_confirmed_at: Option<i64>,
+    pub status: ApprovalStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ApprovalStatus {
+    Pending,
+    Approved,
+    Rejected,
+    Expired,
+    Cancelled,
+}
+
+/// Confirmation state for anti-misclick
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConfirmationState {
+    pub pending_confirmation_id: Option<String>,
+    pub first_click_time: Option<i64>,
+    pub first_click_action: Option<String>,
+    pub confirmation_window_ms: u64,
+}
+
+impl Default for ConfirmationState {
+    fn default() -> Self {
+        Self {
+            pending_confirmation_id: None,
+            first_click_time: None,
+            first_click_action: None,
+            confirmation_window_ms: 3000, // 3 seconds default
+        }
+    }
+}
+
+impl ConfirmationState {
+    /// Check if a second click is within the confirmation window
+    pub fn is_within_window(&self, current_time: i64) -> bool {
+        if let (Some(first_time), _) = (self.first_click_time, self.first_click_action.as_ref()) {
+            let elapsed = current_time - first_time;
+            return elapsed < self.confirmation_window_ms as i64;
+        }
+        false
+    }
+
+    /// Clear the confirmation state
+    pub fn clear(&mut self) {
+        self.pending_confirmation_id = None;
+        self.first_click_time = None;
+        self.first_click_action = None;
+    }
+}
+
+/// Risk evaluation result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RiskEvaluation {
+    pub risk_score: f64,
+    pub sensitivity_level: SensitivityLevel,
+    pub risk_factors: Vec<String>,
+    pub recommendation: RiskRecommendation,
+    pub can_auto_execute: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RiskRecommendation {
+    /// Execute immediately without confirmation
+    Execute,
+    /// Execute after first confirmation
+    ConfirmOnce,
+    /// Execute after double confirmation
+    ConfirmTwice,
+    /// Require manual approval
+    ManualApproval,
+    /// Block execution
+    Block,
+}
+
 /// Default routing rules
 fn get_default_routing_rules() -> Vec<RoutingRule> {
     vec![
@@ -271,6 +415,10 @@ pub struct SubAgentRoutingService {
     rules: Arc<RwLock<Vec<RoutingRule>>>,
     outcomes: Arc<RwLock<Vec<RoutingOutcome>>>,
     routing_mode: RoutingMode,
+    /// Approval queue for Manual mode
+    approval_queue: Arc<RwLock<Vec<ApprovalItem>>>,
+    /// Confirmation state for double confirmation anti-misclick
+    confirmation_state: Arc<RwLock<ConfirmationState>>,
 }
 
 impl SubAgentRoutingService {
@@ -279,6 +427,8 @@ impl SubAgentRoutingService {
             rules: Arc::new(RwLock::new(get_default_routing_rules())),
             outcomes: Arc::new(RwLock::new(Vec::new())),
             routing_mode: RoutingMode::Hybrid,
+            approval_queue: Arc::new(RwLock::new(Vec::new())),
+            confirmation_state: Arc::new(RwLock::new(ConfirmationState::default())),
         }
     }
 
@@ -619,6 +769,267 @@ impl SubAgentRoutingService {
         // If subagent is selected, verify routing is allowed
         let subagent_id = decision.selected_sub_agent_id.as_ref().unwrap();
         self.can_route_to_subagent(subagent_id, context)
+    }
+
+    // =========================================================================
+    // Manual Mode: Approval Queue
+    // =========================================================================
+
+    /// Add an item to the approval queue (Manual mode)
+    pub async fn add_approval_item(&self, item: ApprovalItem) -> Result<()> {
+        let mut queue = self.approval_queue.write().await;
+        queue.push(item);
+        Ok(())
+    }
+
+    /// Get all pending approval items
+    pub async fn get_pending_approvals(&self) -> Vec<ApprovalItem> {
+        self.approval_queue
+            .read()
+            .await
+            .iter()
+            .filter(|item| item.status == ApprovalStatus::Pending)
+            .cloned()
+            .collect()
+    }
+
+    /// Approve an item
+    pub async fn approve_item(&self, item_id: &str) -> Result<ApprovalItem> {
+        let mut queue = self.approval_queue.write().await;
+        if let Some(item) = queue.iter_mut().find(|i| i.id == item_id) {
+            if item.requires_double_confirm && !item.first_confirmed {
+                // First confirmation for double-confirm items
+                item.first_confirmed = true;
+                item.first_confirmed_at = Some(chrono::Utc::now().timestamp());
+                return Ok(item.clone());
+            }
+            item.status = ApprovalStatus::Approved;
+            return Ok(item.clone());
+        }
+        anyhow::bail!("Approval item not found: {}", item_id)
+    }
+
+    /// Reject an item
+    pub async fn reject_item(&self, item_id: &str) -> Result<ApprovalItem> {
+        let mut queue = self.approval_queue.write().await;
+        if let Some(item) = queue.iter_mut().find(|i| i.id == item_id) {
+            item.status = ApprovalStatus::Rejected;
+            return Ok(item.clone());
+        }
+        anyhow::bail!("Approval item not found: {}", item_id)
+    }
+
+    /// Cancel an approval item
+    pub async fn cancel_approval(&self, item_id: &str) -> Result<()> {
+        let mut queue = self.approval_queue.write().await;
+        if let Some(item) = queue.iter_mut().find(|i| i.id == item_id) {
+            item.status = ApprovalStatus::Cancelled;
+        }
+        Ok(())
+    }
+
+    /// Expire old pending items
+    pub async fn expire_pending_items(&self, max_age_seconds: i64) -> usize {
+        let now = chrono::Utc::now().timestamp();
+        let mut queue = self.approval_queue.write().await;
+        let before = queue.len();
+        queue.retain(|item| {
+            if item.status != ApprovalStatus::Pending {
+                return true;
+            }
+            now - item.created_at < max_age_seconds
+        });
+        before - queue.len()
+    }
+
+    // =========================================================================
+    // Double Confirmation: Anti-misclick
+    // =========================================================================
+
+    /// Start double confirmation for an action
+    pub async fn start_confirmation(&self, action_id: String, action_desc: String) -> ConfirmationState {
+        let mut state = self.confirmation_state.write().await;
+        state.pending_confirmation_id = Some(action_id);
+        state.first_click_time = Some(chrono::Utc::now().timestamp());
+        state.first_click_action = Some(action_desc);
+        state.clone()
+    }
+
+    /// Check if confirmation is needed and process second click
+    pub async fn confirm_action(&self, action_id: &str) -> Result<bool> {
+        let now = chrono::Utc::now().timestamp();
+        let mut state = self.confirmation_state.write().await;
+
+        // Check if there's a pending confirmation
+        if let Some(pending_id) = &state.pending_confirmation_id {
+            if pending_id != action_id {
+                // Different action - clear state and require new confirmation
+                state.clear();
+                return Ok(false);
+            }
+
+            // Check if within confirmation window
+            if state.is_within_window(now) {
+                // Valid second click within window
+                state.clear();
+                return Ok(true);
+            }
+
+            // Outside confirmation window - clear and require re-confirmation
+            state.clear();
+            return Ok(false);
+        }
+
+        Ok(false)
+    }
+
+    /// Cancel pending confirmation
+    pub async fn cancel_confirmation(&self) {
+        let mut state = self.confirmation_state.write().await;
+        state.clear();
+    }
+
+    /// Get current confirmation state
+    pub async fn get_confirmation_state(&self) -> ConfirmationState {
+        self.confirmation_state.read().await.clone()
+    }
+
+    // =========================================================================
+    // Risk Evaluation
+    // =========================================================================
+
+    /// Evaluate risk for an action based on context
+    pub fn evaluate_risk(&self, action_type: &str, context: &RoutingContext) -> RiskEvaluation {
+        let sensitivity = self.classify_action_sensitivity(action_type);
+        let risk_score = self.calculate_risk_score(action_type, context);
+        let risk_factors = self.identify_risk_factors(action_type, context);
+        let recommendation = self.determine_recommendation(&sensitivity, risk_score);
+        let can_auto = matches!(recommendation, RiskRecommendation::Execute);
+
+        RiskEvaluation {
+            risk_score,
+            sensitivity_level: sensitivity,
+            risk_factors,
+            recommendation,
+            can_auto_execute: can_auto,
+        }
+    }
+
+    /// Classify action sensitivity based on action type
+    fn classify_action_sensitivity(&self, action_type: &str) -> SensitivityLevel {
+        let critical_keywords = ["delete", "remove", "drop", "destroy", "terminate", "cancel"];
+        let high_keywords = ["create", "update", "modify", "edit", "write", "send", "execute"];
+        let medium_keywords = ["read", "query", "search", "get", "list", "fetch"];
+
+        let lower_action = action_type.to_lowercase();
+
+        if critical_keywords.iter().any(|k| lower_action.contains(k)) {
+            SensitivityLevel::Critical
+        } else if high_keywords.iter().any(|k| lower_action.contains(k)) {
+            SensitivityLevel::High
+        } else if medium_keywords.iter().any(|k| lower_action.contains(k)) {
+            SensitivityLevel::Medium
+        } else {
+            SensitivityLevel::Low
+        }
+    }
+
+    /// Calculate risk score based on action and context
+    fn calculate_risk_score(&self, action_type: &str, context: &RoutingContext) -> f64 {
+        let mut score: f64 = 0.0;
+
+        // Base score from action type
+        let sensitivity = self.classify_action_sensitivity(action_type);
+        match sensitivity {
+            SensitivityLevel::Critical => score += 0.9,
+            SensitivityLevel::High => score += 0.6,
+            SensitivityLevel::Medium => score += 0.3,
+            SensitivityLevel::Low => score += 0.1,
+        }
+
+        // Increase score for certain keywords in user message
+        let msg_lower = context.user_message.to_lowercase();
+        let high_risk_patterns = ["all", "批量", "删除", "全部", "every", "批量处理"];
+        for pattern in high_risk_patterns {
+            if msg_lower.contains(pattern) {
+                score = (score + 0.2).min(1.0);
+            }
+        }
+
+        score
+    }
+
+    /// Identify risk factors for the action
+    fn identify_risk_factors(&self, action_type: &str, context: &RoutingContext) -> Vec<String> {
+        let mut factors = Vec::new();
+        let sensitivity = self.classify_action_sensitivity(action_type);
+
+        match sensitivity {
+            SensitivityLevel::Critical => factors.push("Critical action - requires explicit approval".to_string()),
+            SensitivityLevel::High => factors.push("High-risk action - confirmation required".to_string()),
+            SensitivityLevel::Medium => factors.push("Medium-risk action - standard monitoring".to_string()),
+            SensitivityLevel::Low => factors.push("Low-risk action - auto-execution allowed".to_string()),
+        }
+
+        // Check for batch operations
+        let msg_lower = context.user_message.to_lowercase();
+        if msg_lower.contains("批量") || msg_lower.contains("batch") || msg_lower.contains("all") {
+            factors.push("Batch operation detected - elevated risk".to_string());
+        }
+
+        factors
+    }
+
+    /// Determine recommendation based on sensitivity and risk score
+    fn determine_recommendation(&self, sensitivity: &SensitivityLevel, risk_score: f64) -> RiskRecommendation {
+        match sensitivity {
+            SensitivityLevel::Critical => RiskRecommendation::ManualApproval,
+            SensitivityLevel::High => {
+                if risk_score > 0.7 {
+                    RiskRecommendation::ManualApproval
+                } else if risk_score > 0.5 {
+                    RiskRecommendation::ConfirmTwice
+                } else {
+                    RiskRecommendation::ConfirmOnce
+                }
+            }
+            SensitivityLevel::Medium => {
+                if risk_score > 0.5 {
+                    RiskRecommendation::ConfirmOnce
+                } else {
+                    RiskRecommendation::Execute
+                }
+            }
+            SensitivityLevel::Low => RiskRecommendation::Execute,
+        }
+    }
+
+    // =========================================================================
+    // Mode-based Execution Decision
+    // =========================================================================
+
+    /// Determine if an action requires confirmation based on current mode
+    pub async fn requires_confirmation(&self, action_type: &str, context: &RoutingContext) -> bool {
+        let evaluation = self.evaluate_risk(action_type, context);
+
+        match self.routing_mode {
+            RoutingMode::Manual => true, // Always require approval in Manual mode
+            RoutingMode::Auto => {
+                // Auto mode: only confirm for high/critical sensitivity
+                evaluation.sensitivity_level.requires_confirmation()
+            }
+            RoutingMode::Hybrid => {
+                // Hybrid mode: confirm based on risk evaluation
+                evaluation.recommendation != RiskRecommendation::Execute
+            }
+            RoutingMode::Yolo => false, // YOLO mode never confirms
+        }
+    }
+
+    /// Get the routing mode
+    #[allow(dead_code)]
+    pub fn get_routing_mode(&self) -> RoutingMode {
+        self.routing_mode.clone()
     }
 }
 

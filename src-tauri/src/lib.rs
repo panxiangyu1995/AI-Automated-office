@@ -27,6 +27,7 @@ pub mod hardware;
 pub mod http;
 pub mod knowledge;
 pub mod mcp;
+pub mod self_healing;
 pub mod utils;
 pub mod tray;
 pub mod vector;

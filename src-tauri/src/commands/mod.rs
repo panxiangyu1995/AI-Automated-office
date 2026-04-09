@@ -26,4 +26,5 @@ pub mod subagent;
 pub mod skill;
 pub mod mcp;
 pub mod monitoring;
+pub mod self_healing;
 pub mod workcard;
