@@ -511,6 +511,16 @@ pub fn run() {
             message::message_unpin,
             message::message_list_pinned,
             message::message_export,
+            // Message status tracking commands (Task 192)
+            message::get_message_delivery_status,
+            message::mark_message_delivered,
+            message::mark_message_read,
+            message::batch_mark_messages_read,
+            message::get_recipient_delivery_status,
+            message::get_delivery_unread_count,
+            message::queue_offline_messages,
+            message::sync_offline_messages,
+            message::get_pending_delivery_entries,
             // Tenant commands (Task 154)
             tenant::tenant_get_current,
             tenant::tenant_list,

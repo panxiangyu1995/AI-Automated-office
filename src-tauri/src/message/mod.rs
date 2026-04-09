@@ -4,6 +4,8 @@ mod commands;
 pub mod types;
 pub mod group;
 pub mod group_message;
+pub mod status;
 
 pub use commands::*;
 pub use types::*;
+pub use status::*;

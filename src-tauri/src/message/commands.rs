@@ -1,7 +1,8 @@
 //! Message 模块 Tauri 命令
 
 use crate::message::types::*;
-use std::sync::Mutex;
+use crate::message::status::{DeliveryStatus, MessageStatusEntry, StatusChangeEvent, OfflineMessage, MessageStatusService};
+use std::sync::{Mutex, Arc};
 use tauri::State;
 use tracing::info;
 
@@ -9,6 +10,7 @@ pub struct MessageState {
     pub messages: Mutex<Vec<Message>>,
     pub unread_counts: Mutex<UnreadCount>,
     pub preferences: Mutex<NotificationPreferences>,
+    pub status_service: Arc<MessageStatusService>,
 }
 
 impl MessageState {
@@ -62,6 +64,7 @@ impl MessageState {
             messages: Mutex::new(messages),
             unread_counts: Mutex::new(unread),
             preferences: Mutex::new(preferences),
+            status_service: Arc::new(MessageStatusService::new()),
         }
     }
 }
@@ -71,13 +74,15 @@ impl Default for MessageState { fn default() -> Self { Self::new() } }
 #[tauri::command]
 pub async fn message_send(state: State<'_, MessageState>, request: CreateMessageRequest) -> Result<Message, String> {
     info!("发送消息: {}", request.title);
+    let sender_id = "current_user".to_string();
+    let recipient_id = request.recipient_id.clone();
     let msg = Message {
         id: uuid::Uuid::new_v4().to_string(),
         msg_type: request.msg_type,
         title: request.title,
         content: request.content,
-        sender: Sender { id: "current_user".to_string(), name: "当前用户".to_string(), avatar: None },
-        recipient_id: request.recipient_id,
+        sender: Sender { id: sender_id.clone(), name: "当前用户".to_string(), avatar: None },
+        recipient_id: recipient_id.clone(),
         recipient_type: request.recipient_type,
         priority: request.priority.unwrap_or_default(),
         status: MessageStatus::Unread,
@@ -88,6 +93,17 @@ pub async fn message_send(state: State<'_, MessageState>, request: CreateMessage
         pinned: false,
         pinned_at: None,
     };
+
+    // Create status tracking entry
+    state.status_service.create_entry(
+        msg.id.clone(),
+        sender_id,
+        recipient_id,
+    ).await;
+
+    // Mark as sent immediately for outgoing messages
+    state.status_service.mark_sent(&msg.id).await;
+
     state.messages.lock().unwrap().push(msg.clone());
     let mut unread = state.unread_counts.lock().unwrap();
     unread.total += 1;
@@ -482,4 +498,93 @@ pub async fn message_export(
             })
         },
     }
+}
+
+// ============================================================================
+// Message Status Tracking Commands (Task 192 - FR622-FR626)
+// ============================================================================
+
+/// Get message delivery status
+#[tauri::command]
+pub async fn get_message_delivery_status(
+    state: State<'_, MessageState>,
+    message_id: String,
+) -> Result<Option<MessageStatusEntry>, String> {
+    Ok(state.status_service.get_entry(&message_id).await)
+}
+
+/// Mark message as delivered
+#[tauri::command]
+pub async fn mark_message_delivered(
+    state: State<'_, MessageState>,
+    message_id: String,
+) -> Result<Option<StatusChangeEvent>, String> {
+    Ok(state.status_service.mark_delivered(&message_id).await)
+}
+
+/// Mark message as read
+#[tauri::command]
+pub async fn mark_message_read(
+    state: State<'_, MessageState>,
+    message_id: String,
+    reader_id: Option<String>,
+) -> Result<Option<StatusChangeEvent>, String> {
+    Ok(state.status_service.mark_read(&message_id, reader_id).await)
+}
+
+/// Batch mark messages as read
+#[tauri::command]
+pub async fn batch_mark_messages_read(
+    state: State<'_, MessageState>,
+    message_ids: Vec<String>,
+    reader_id: Option<String>,
+) -> Result<Vec<StatusChangeEvent>, String> {
+    Ok(state.status_service.batch_mark_read(&message_ids, reader_id).await)
+}
+
+/// Get all delivery status entries for a recipient
+#[tauri::command]
+pub async fn get_recipient_delivery_status(
+    state: State<'_, MessageState>,
+    recipient_id: String,
+) -> Result<Vec<MessageStatusEntry>, String> {
+    Ok(state.status_service.get_recipient_entries(&recipient_id).await)
+}
+
+/// Get unread delivery count for a recipient
+#[tauri::command]
+pub async fn get_delivery_unread_count(
+    state: State<'_, MessageState>,
+    recipient_id: String,
+) -> Result<i64, String> {
+    Ok(state.status_service.get_unread_count(&recipient_id).await)
+}
+
+/// Queue offline messages for sync
+#[tauri::command]
+pub async fn queue_offline_messages(
+    state: State<'_, MessageState>,
+    messages: Vec<OfflineMessage>,
+) -> Result<(), String> {
+    for msg in messages {
+        state.status_service.queue_offline(msg).await;
+    }
+    Ok(())
+}
+
+/// Sync offline messages (mark as delivered)
+#[tauri::command]
+pub async fn sync_offline_messages(
+    state: State<'_, MessageState>,
+    recipient_id: String,
+) -> Result<Vec<StatusChangeEvent>, String> {
+    Ok(state.status_service.sync_offline_messages(&recipient_id).await)
+}
+
+/// Get pending status entries
+#[tauri::command]
+pub async fn get_pending_delivery_entries(
+    state: State<'_, MessageState>,
+) -> Result<Vec<MessageStatusEntry>, String> {
+    Ok(state.status_service.get_entries_by_status(DeliveryStatus::Pending).await)
 }
