@@ -2235,3 +2235,34 @@ completion promise 条件**不满足**：
 - 支持与主 Agent 切换
 - 权限继承上限设计已就绪
 
+---
+
+## 2026-04-09 - Task: 消息撤回与编辑 (Task 200)
+
+### 铁律合规检查：
+- PRD 合规：FR628, FR629, FR630 - 消息撤回与编辑
+- 架构合规：遵循分层微内核架构
+- Epic 合规：Epic 43 - 消息功能增强
+
+### What was done:
+- 更新 Message 类型 (types.rs)
+  - 添加 edited, edited_at, edit_history 字段
+  - 添加 recalled, recalled_at, original_content 字段
+  - 添加 EditHistoryEntry 类型
+- 添加消息撤回和编辑命令 (commands.rs)
+  - recall_message: 2分钟内撤回
+  - edit_message: 编辑聊天消息
+  - get_message_edit_history: 获取编辑历史
+  - can_recall_message: 检查是否可撤回
+  - can_edit_message: 检查是否可编辑
+- 2分钟撤回/编辑时限常量 (RECALL_DEADLINE_SECONDS)
+
+### Testing:
+- ✅ cargo check: 0 errors
+- ✅ npm run lint: 0 errors
+
+### Notes:
+- 仅聊天消息可编辑
+- 仅消息发送者可撤回/编辑
+- 撤回/编辑时限2分钟
+

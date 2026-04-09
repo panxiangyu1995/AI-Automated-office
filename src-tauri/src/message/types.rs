@@ -45,6 +45,29 @@ pub struct Message {
     pub pinned: bool,
     #[serde(default)]
     pub pinned_at: Option<i64>,
+    // Recall and Edit fields (FR628, FR629)
+    #[serde(default)]
+    pub edited: bool,
+    #[serde(default)]
+    pub edited_at: Option<i64>,
+    #[serde(default)]
+    pub edit_history: Vec<EditHistoryEntry>,
+    #[serde(default)]
+    pub recalled: bool,
+    #[serde(default)]
+    pub recalled_at: Option<i64>,
+    #[serde(default)]
+    pub original_content: Option<String>,
+}
+
+/// Edit history entry for a message
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EditHistoryEntry {
+    pub edited_at: i64,
+    pub old_content: String,
+    pub new_content: String,
+    pub edited_by: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

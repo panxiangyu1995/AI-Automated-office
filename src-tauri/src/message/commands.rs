@@ -2,6 +2,7 @@
 
 use crate::message::types::*;
 use crate::message::status::{DeliveryStatus, MessageStatusEntry, StatusChangeEvent, OfflineMessage, MessageStatusService};
+use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, Arc};
 use tauri::State;
 use tracing::info;
@@ -32,6 +33,12 @@ impl MessageState {
             read_at: None,
             pinned: false,
             pinned_at: None,
+            edited: false,
+            edited_at: None,
+            edit_history: Vec::new(),
+            recalled: false,
+            recalled_at: None,
+            original_content: None,
         });
         messages.push(Message {
             id: "msg-002".to_string(),
@@ -49,6 +56,12 @@ impl MessageState {
             read_at: None,
             pinned: false,
             pinned_at: None,
+            edited: false,
+            edited_at: None,
+            edit_history: Vec::new(),
+            recalled: false,
+            recalled_at: None,
+            original_content: None,
         });
 
         let unread = UnreadCount { total: 2, system: 1, approval: 1, task: 0, mention: 0, chat: 0 };
@@ -92,6 +105,12 @@ pub async fn message_send(state: State<'_, MessageState>, request: CreateMessage
         read_at: None,
         pinned: false,
         pinned_at: None,
+        edited: false,
+        edited_at: None,
+        edit_history: Vec::new(),
+        recalled: false,
+        recalled_at: None,
+        original_content: None,
     };
 
     // Create status tracking entry
@@ -587,4 +606,207 @@ pub async fn get_pending_delivery_entries(
     state: State<'_, MessageState>,
 ) -> Result<Vec<MessageStatusEntry>, String> {
     Ok(state.status_service.get_entries_by_status(DeliveryStatus::Pending).await)
+}
+
+// ============================================================================
+// Message Recall and Edit Commands (Task 200 - FR628, FR629)
+// ============================================================================
+
+/// Recall deadline in seconds (2 minutes)
+const RECALL_DEADLINE_SECONDS: i64 = 120;
+
+/// Edit message request
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EditMessageRequest {
+    pub new_content: String,
+}
+
+/// Recall result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecallResult {
+    pub success: bool,
+    pub message_id: String,
+    pub recalled_at: i64,
+    pub reason: Option<String>,
+}
+
+/// Edit result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EditResult {
+    pub success: bool,
+    pub message_id: String,
+    pub edited_at: i64,
+    pub old_content: String,
+    pub new_content: String,
+}
+
+/// Recall a message within 2 minutes of sending
+#[tauri::command]
+pub async fn recall_message(
+    state: State<'_, MessageState>,
+    message_id: String,
+    user_id: Option<String>,
+) -> Result<RecallResult, String> {
+    let mut msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter_mut().find(|m| m.id == message_id) {
+        // Check if already recalled
+        if msg.recalled {
+            return Err("消息已被撤回".into());
+        }
+
+        // Check if user is the sender
+        let current_user = user_id.unwrap_or_else(|| "current_user".to_string());
+        if msg.sender.id != current_user {
+            return Err("只能撤回自己发送的消息".into());
+        }
+
+        // Check recall deadline (2 minutes)
+        let now = chrono::Utc::now().timestamp();
+        let elapsed = now - msg.created_at;
+        if elapsed > RECALL_DEADLINE_SECONDS {
+            return Ok(RecallResult {
+                success: false,
+                message_id: message_id.clone(),
+                recalled_at: now,
+                reason: Some("超过2分钟撤回时限".to_string()),
+            });
+        }
+
+        // Mark as recalled
+        msg.recalled = true;
+        msg.recalled_at = Some(now);
+
+        info!("Recalled message: {} by user: {}", message_id, current_user);
+
+        Ok(RecallResult {
+            success: true,
+            message_id,
+            recalled_at: now,
+            reason: None,
+        })
+    } else {
+        Err("消息不存在".into())
+    }
+}
+
+/// Edit a text message
+#[tauri::command]
+pub async fn edit_message(
+    state: State<'_, MessageState>,
+    message_id: String,
+    request: EditMessageRequest,
+    user_id: Option<String>,
+) -> Result<EditResult, String> {
+    let mut msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter_mut().find(|m| m.id == message_id) {
+        // Check if already recalled
+        if msg.recalled {
+            return Err("消息已被撤回，无法编辑".into());
+        }
+
+        // Check if user is the sender
+        let current_user = user_id.unwrap_or_else(|| "current_user".to_string());
+        if msg.sender.id != current_user {
+            return Err("只能编辑自己发送的消息".into());
+        }
+
+        // Check edit deadline (2 minutes like recall)
+        let now = chrono::Utc::now().timestamp();
+        let elapsed = now - msg.created_at;
+        if elapsed > RECALL_DEADLINE_SECONDS {
+            return Err("超过2分钟编辑时限".into());
+        }
+
+        // Only chat messages can be edited
+        if msg.msg_type != MessageType::Chat {
+            return Err("仅聊天消息可编辑".into());
+        }
+
+        // Store original content if first edit
+        if msg.original_content.is_none() {
+            msg.original_content = Some(msg.content.clone());
+        }
+
+        // Create edit history entry
+        let edit_entry = EditHistoryEntry {
+            edited_at: now,
+            old_content: msg.content.clone(),
+            new_content: request.new_content.clone(),
+            edited_by: current_user.clone(),
+        };
+        msg.edit_history.push(edit_entry);
+
+        // Update content
+        msg.content = request.new_content.clone();
+        msg.edited = true;
+        msg.edited_at = Some(now);
+
+        info!("Edited message: {} by user: {}", message_id, current_user);
+
+        Ok(EditResult {
+            success: true,
+            message_id,
+            edited_at: now,
+            old_content: msg.content.clone(),
+            new_content: request.new_content,
+        })
+    } else {
+        Err("消息不存在".into())
+    }
+}
+
+/// Get edit history of a message
+#[tauri::command]
+pub async fn get_message_edit_history(
+    state: State<'_, MessageState>,
+    message_id: String,
+) -> Result<Vec<EditHistoryEntry>, String> {
+    let msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter().find(|m| m.id == message_id) {
+        Ok(msg.edit_history.clone())
+    } else {
+        Err("消息不存在".into())
+    }
+}
+
+/// Check if a message can be recalled (within 2 minutes)
+#[tauri::command]
+pub async fn can_recall_message(
+    state: State<'_, MessageState>,
+    message_id: String,
+    user_id: Option<String>,
+) -> Result<bool, String> {
+    let msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter().find(|m| m.id == message_id) {
+        let current_user = user_id.unwrap_or_else(|| "current_user".to_string());
+        let is_sender = msg.sender.id == current_user;
+        let is_within_deadline = (chrono::Utc::now().timestamp() - msg.created_at) <= RECALL_DEADLINE_SECONDS;
+        let not_already_recalled = !msg.recalled;
+        Ok(is_sender && is_within_deadline && not_already_recalled)
+    } else {
+        Err("消息不存在".into())
+    }
+}
+
+/// Check if a message can be edited (within 2 minutes, chat type only)
+#[tauri::command]
+pub async fn can_edit_message(
+    state: State<'_, MessageState>,
+    message_id: String,
+    user_id: Option<String>,
+) -> Result<bool, String> {
+    let msgs = state.messages.lock().unwrap();
+    if let Some(msg) = msgs.iter().find(|m| m.id == message_id) {
+        let current_user = user_id.unwrap_or_else(|| "current_user".to_string());
+        let is_sender = msg.sender.id == current_user;
+        let is_within_deadline = (chrono::Utc::now().timestamp() - msg.created_at) <= RECALL_DEADLINE_SECONDS;
+        let is_chat_type = msg.msg_type == MessageType::Chat;
+        let not_recalled = !msg.recalled;
+        Ok(is_sender && is_within_deadline && is_chat_type && not_recalled)
+    } else {
+        Err("消息不存在".into())
+    }
 }

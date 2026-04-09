@@ -535,6 +535,12 @@ pub fn run() {
             message::queue_offline_messages,
             message::sync_offline_messages,
             message::get_pending_delivery_entries,
+            // Message recall and edit commands (Task 200 - FR628, FR629)
+            message::recall_message,
+            message::edit_message,
+            message::get_message_edit_history,
+            message::can_recall_message,
+            message::can_edit_message,
             // Tenant commands (Task 154)
             tenant::tenant_get_current,
             tenant::tenant_list,
