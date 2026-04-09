@@ -2309,3 +2309,28 @@ completion promise 条件**不满足**：
 - 模板版本历史支持追溯
 - 模板使用统计支持分析
 
+---
+
+## 2026-04-09 - Task: 多模态附件输入 (Task 202) - 未完成
+
+### 铁律合规检查：
+- PRD 合规：FR53, FR401 - 多模态输入
+- 架构合规：遵循 ADR-053 多模态附件输入设计
+- Epic 合规：Epic 45 - 附件增强
+
+### 当前状态：
+- ✅ 拖拽上传 - MessageInput 已实现 (handleDragEnter/DragOver/Drop)
+- ✅ 粘贴上传 - MessageInput 已实现 (handlePaste)
+- ✅ 图片附件 (PNG/JPEG/GIF/WebP) - base64 preview
+- ⚠️ PDF 附件 - 只有 FileText 图标，无完整预览
+- ❌ 附件权限跟随 - 需要后端支持
+
+### 待完成：
+1. PDF 文档预览功能（需要引入 pdfjs-dist 或使用 iframe/object）
+2. 附件权限跟随功能（需要后端实现）
+
+### Notes:
+- MessageInput 已具备基本的多模态输入能力
+- 需要添加 PDF 预览库才能实现完整的 PDF 预览
+- 附件权限跟随需要与后端权限系统集成
+
