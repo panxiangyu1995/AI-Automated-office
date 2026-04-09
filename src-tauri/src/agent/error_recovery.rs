@@ -84,6 +84,228 @@ impl Default for RecoveryStrategyConfig {
     }
 }
 
+/// Circuit breaker configuration for loop detection
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CircuitBreakerConfig {
+    /// Failure threshold to open circuit
+    pub failure_threshold: u32,
+    /// Success threshold to close circuit
+    pub success_threshold: u32,
+    /// Time window in seconds
+    pub window_secs: u64,
+    /// Timeout in seconds before attempting half-open
+    pub timeout_secs: u64,
+}
+
+impl Default for CircuitBreakerConfig {
+    fn default() -> Self {
+        Self {
+            failure_threshold: 5,
+            success_threshold: 2,
+            window_secs: 60,
+            timeout_secs: 30,
+        }
+    }
+}
+
+/// Circuit breaker state
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CircuitState {
+    Closed,
+    Open,
+    HalfOpen,
+}
+
+/// Error classifier result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ErrorClassification {
+    pub category: String,
+    pub is_retryable: bool,
+    pub should_circuit_break: bool,
+    pub severity: String,
+    pub auth_profile_rotation: bool,
+}
+
+/// Circuit breaker for loop detection
+#[derive(Debug, Clone)]
+pub struct CircuitBreaker {
+    config: CircuitBreakerConfig,
+    state: CircuitState,
+    failure_count: u32,
+    success_count: u32,
+    last_failure_time: Option<i64>,
+    state_changed_at: i64,
+}
+
+impl CircuitBreaker {
+    pub fn new(config: CircuitBreakerConfig) -> Self {
+        Self {
+            config,
+            state: CircuitState::Closed,
+            failure_count: 0,
+            success_count: 0,
+            last_failure_time: None,
+            state_changed_at: Utc::now().timestamp(),
+        }
+    }
+
+    /// Record a failure and potentially open the circuit
+    pub fn record_failure(&mut self) {
+        self.failure_count += 1;
+        self.last_failure_time = Some(Utc::now().timestamp());
+
+        if self.state == CircuitState::HalfOpen {
+            self.state = CircuitState::Open;
+            self.state_changed_at = Utc::now().timestamp();
+        } else if self.failure_count >= self.config.failure_threshold {
+            self.state = CircuitState::Open;
+            self.state_changed_at = Utc::now().timestamp();
+        }
+    }
+
+    /// Record a success and potentially close the circuit
+    pub fn record_success(&mut self) {
+        self.success_count += 1;
+
+        if self.state == CircuitState::HalfOpen {
+            if self.success_count >= self.config.success_threshold {
+                self.state = CircuitState::Closed;
+                self.state_changed_at = Utc::now().timestamp();
+                self.failure_count = 0;
+                self.success_count = 0;
+            }
+        }
+    }
+
+    /// Check if circuit allows requests
+    pub fn allow_request(&mut self) -> bool {
+        let now = Utc::now().timestamp();
+
+        if self.state == CircuitState::Open {
+            let elapsed = now - self.state_changed_at;
+            if elapsed >= self.config.timeout_secs as i64 {
+                self.state = CircuitState::HalfOpen;
+                self.state_changed_at = now;
+                self.success_count = 0;
+                return true;
+            }
+            return false;
+        }
+
+        true
+    }
+
+    /// Get current circuit state
+    pub fn state(&self) -> CircuitState {
+        self.state
+    }
+
+    /// Get failure count
+    pub fn failure_count(&self) -> u32 {
+        self.failure_count
+    }
+}
+
+impl Default for CircuitBreaker {
+    fn default() -> Self {
+        Self::new(CircuitBreakerConfig::default())
+    }
+}
+
+/// Classify an error into a category
+pub fn classify_error(error_code: &str, error_message: &str) -> ErrorClassification {
+    let error_code_upper = error_code.to_uppercase();
+    let message_lower = error_message.to_lowercase();
+
+    // Network errors - retryable
+    if error_code_upper.contains("NETWORK")
+        || error_code_upper.contains("TIMEOUT")
+        || error_code_upper.contains("ECONN")
+        || message_lower.contains("connection")
+        || message_lower.contains("timeout")
+    {
+        return ErrorClassification {
+            category: "network".to_string(),
+            is_retryable: true,
+            should_circuit_break: false,
+            severity: "medium".to_string(),
+            auth_profile_rotation: false,
+        };
+    }
+
+    // Auth errors - may need profile rotation
+    if error_code_upper.contains("AUTH")
+        || error_code_upper.contains("401")
+        || error_code_upper.contains("403")
+        || error_code_upper.contains("TOKEN")
+        || message_lower.contains("authentication")
+        || message_lower.contains("permission")
+    {
+        return ErrorClassification {
+            category: "auth".to_string(),
+            is_retryable: false,
+            should_circuit_break: false,
+            severity: "high".to_string(),
+            auth_profile_rotation: true,
+        };
+    }
+
+    // Loop errors - should circuit break
+    if error_code_upper.contains("LOOP")
+        || error_code_upper.contains("CYCLE")
+        || message_lower.contains("infinite loop")
+        || message_lower.contains("repeated")
+    {
+        return ErrorClassification {
+            category: "loop".to_string(),
+            is_retryable: false,
+            should_circuit_break: true,
+            severity: "critical".to_string(),
+            auth_profile_rotation: false,
+        };
+    }
+
+    // Resource errors - retryable with backoff
+    if error_code_upper.contains("RESOURCE")
+        || error_code_upper.contains("MEMORY")
+        || error_code_upper.contains("OOM")
+        || message_lower.contains("memory")
+        || message_lower.contains("resource")
+    {
+        return ErrorClassification {
+            category: "resource".to_string(),
+            is_retryable: true,
+            should_circuit_break: false,
+            severity: "high".to_string(),
+            auth_profile_rotation: false,
+        };
+    }
+
+    // Rate limit errors - retryable after delay
+    if error_code_upper.contains("RATE")
+        || error_code_upper.contains("429")
+        || message_lower.contains("rate limit")
+    {
+        return ErrorClassification {
+            category: "rate_limit".to_string(),
+            is_retryable: true,
+            should_circuit_break: false,
+            severity: "low".to_string(),
+            auth_profile_rotation: false,
+        };
+    }
+
+    // Default: unknown error
+    ErrorClassification {
+        category: "unknown".to_string(),
+        is_retryable: false,
+        should_circuit_break: false,
+        severity: "medium".to_string(),
+        auth_profile_rotation: false,
+    }
+}
+
 /// Recovery context
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecoveryContext {

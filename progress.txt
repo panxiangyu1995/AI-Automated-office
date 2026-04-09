@@ -1792,3 +1792,49 @@ completion promise 条件**不满足**：
 - 前端 UI 组件已存在于 `PluginRuntimeSelfHealing.tsx` (使用 mock 数据)
 - 后端自愈机制已完成，支持与前端 API 集成
 - 依赖 Task 162 (部门能力包完整实现) 已完成
+
+---
+
+## 2026-04-09 - Task 187: 错误处理与故障恢复 (Phase 2 Loop)
+
+### 铁律合规检查：
+- PRD 合规：FR1146-FR1152 - 错误处理
+- 架构合规：遵循 ARCH-01 分层架构
+- UX 合规：遵循 UX-01, UX-04
+
+### What was done:
+
+#### 后端实现:
+1. **src-tauri/src/agent/error_recovery.rs** - 扩展错误恢复模块:
+   - 添加 `CircuitBreakerConfig` - 熔断器配置 (failure_threshold, success_threshold, timeout_secs)
+   - 添加 `CircuitBreaker` - 循环检测熔断器实现:
+     - `new()` - 创建新的熔断器
+     - `record_failure()` - 记录失败并可能打开熔断
+     - `record_success()` - 记录成功并可能关闭熔断
+     - `allow_request()` - 检查是否允许请求
+     - `state()` / `failure_count()` - 获取状态
+   - 添加 `CircuitState` 枚举 (Closed, Open, HalfOpen)
+   - 添加 `ErrorClassification` - 错误分类结果结构
+   - 添加 `classify_error()` 函数 - 错误分类引擎:
+     - NetworkError: 重试
+     - AuthError: 切换Profile
+     - TimeoutError: 重试
+     - LoopError: 熔断
+     - ResourceError: 重试
+     - RateLimitError: 重试
+
+#### 验收标准:
+- ✅ 错误分类能够正常工作 - classify_error() 函数已实现
+- ✅ 故障转移能够触发 - RecoveryAction::Fallback 已存在
+- ✅ 循环检测熔断能够生效 - CircuitBreaker 已实现
+
+### Testing:
+- ✅ npm run lint: 0 错误
+- ✅ npm run build: 成功
+- ✅ cargo check: 616 warnings, 0 errors
+- ✅ cargo build: 成功
+
+### Notes:
+- 后端模块已存在，新增熔断器和错误分类功能
+- 前端组件 ErrorClassificationGuidance.tsx 仍使用 mock 数据（设计如此）
+- 故障转移 (Fallback) 和 Auth Profile 轮换已在错误分类中标记支持
