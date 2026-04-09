@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use serde::{Deserialize, Serialize};
 
 use super::types::{AgentConfig, AgentType, ModelProvider, SubagentError, SubagentResult};
 use super::loader::{SubagentLoader, get_builtin_hidden_agents};
@@ -192,7 +193,7 @@ impl Default for SubagentManager {
 }
 
 /// Subagent 统计信息
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubagentStats {
     /// Hidden Subagent 数量
     pub hidden: usize,

@@ -104,6 +104,9 @@ pub fn run() {
                 let prompt_guardrails = Arc::new(agent::prompt_guardrails::PromptGuardrailsService::new());
                 app.manage(prompt_guardrails);
 
+                // Initialize Subagent system (Task 199 - ADR-059)
+                commands::subagent::init_subagent_commands();
+
                 // Initialize WebSocket connection manager (Task 136)
                 let ws_manager = Arc::new(agent::websocket::WebSocketConnectionManager::new());
                 app.manage(ws_manager);
@@ -615,6 +618,24 @@ pub fn run() {
             commands::prompt_guardrails::get_guardrail_hits,
             commands::prompt_guardrails::get_guardrail_stats,
             commands::prompt_guardrails::set_hallucination_detection,
+            // Subagent commands (Task 199 - ADR-059 Personal Agent)
+            commands::subagent::get_available_subagents,
+            commands::subagent::get_subagent_config,
+            commands::subagent::get_subagent_stats,
+            commands::subagent::match_subagents_by_keywords,
+            commands::subagent::create_personal_subagent,
+            commands::subagent::update_personal_subagent,
+            commands::subagent::delete_personal_subagent,
+            commands::subagent::list_personal_subagents,
+            commands::subagent::list_department_subagents,
+            commands::subagent::list_hidden_subagents,
+            commands::subagent::route_message,
+            commands::subagent::delegate_to_subagent,
+            commands::subagent::get_delegation_history,
+            commands::subagent::get_routing_history,
+            commands::subagent::get_routing_rules,
+            commands::subagent::add_routing_rule,
+            commands::subagent::delete_routing_rule,
             // Capability version commands (Task 197 - FR800-FR802)
             commands::capability_version::check_package_version,
             commands::capability_version::check_package_version_with_marketplace,
