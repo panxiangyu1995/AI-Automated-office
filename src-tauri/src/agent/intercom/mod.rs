@@ -65,7 +65,8 @@ impl AgentIntercom {
         self.deliver_message(&message).await?;
         
         // 6. 审计日志
-        self.audit.record_send(&message).await?;
+        self.audit.record_send(&message).await
+            .map_err(|e| types::AgentIntercomError::InternalError { message: e })?;
         
         Ok(message)
     }
@@ -78,7 +79,7 @@ impl AgentIntercom {
     ) -> Result<Vec<types::AgentMessage>, types::AgentIntercomError> {
         let state = self.state.read().await;
         let messages = state.get_agent_messages(agent_id);
-        
+
         let limit = limit.unwrap_or(100);
         Ok(messages.into_iter().rev().take(limit).collect())
     }
@@ -89,12 +90,15 @@ impl AgentIntercom {
         message_id: &str,
         status: types::MessageStatus,
     ) -> Result<(), types::AgentIntercomError> {
+        // Use write lock and call the method
         let mut state = self.state.write().await;
-        state.update_message_status(message_id, status.clone()).await?;
-        
+        state.update_message_status(message_id, status.clone()).await
+            .map_err(|e| e)?;
+
         // 记录状态变更到审计日志
-        self.audit.record_status_change(message_id, status).await?;
-        
+        self.audit.record_status_change(message_id, status).await
+            .map_err(|e| types::AgentIntercomError::InternalError { message: e })?;
+
         Ok(())
     }
 

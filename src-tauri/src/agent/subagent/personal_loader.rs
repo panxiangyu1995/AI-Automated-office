@@ -3,7 +3,7 @@
 //! 从本地 SQLite 加载 Personal Subagent
 
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::sync::RwLock;
 
 use rusqlite::{Connection, params};
@@ -19,8 +19,8 @@ use super::loader::SubagentLoader;
 ///
 /// 从本地 SQLite 加载用户创建的 Subagent
 pub struct PersonalLoader {
-    /// 数据库连接
-    db: Arc<Connection>,
+    /// 数据库连接 (使用 Mutex 保证线程安全)
+    db: Arc<Mutex<Connection>>,
     /// 用户 ID
     user_id: String,
     /// 内存缓存
@@ -31,12 +31,12 @@ impl PersonalLoader {
     /// 创建新的 PersonalLoader
     pub fn new(db_path: PathBuf, user_id: String) -> SubagentResult<Self> {
         let db = Connection::open(&db_path)?;
-        
+
         // 初始化表
         Self::init_table(&db)?;
-        
+
         Ok(Self {
-            db: Arc::new(db),
+            db: Arc::new(Mutex::new(db)),
             user_id,
             cache: Arc::new(RwLock::new(Vec::new())),
         })
@@ -46,12 +46,12 @@ impl PersonalLoader {
     #[allow(dead_code)]
     pub fn new_in_memory(user_id: String) -> SubagentResult<Self> {
         let db = Connection::open_in_memory()?;
-        
+
         // 初始化表
         Self::init_table(&db)?;
-        
+
         Ok(Self {
-            db: Arc::new(db),
+            db: Arc::new(Mutex::new(db)),
             user_id,
             cache: Arc::new(RwLock::new(Vec::new())),
         })
@@ -110,11 +110,14 @@ impl PersonalLoader {
         let now = chrono::Utc::now().to_rfc3339();
 
         // 检查名称唯一性
-        let count: i32 = self.db.query_row(
-            "SELECT COUNT(*) FROM personal_subagents WHERE name = ? AND creator_id = ?",
-            params![request.name, self.user_id],
-            |row| row.get(0),
-        )?;
+        let count: i32 = {
+            let db = self.db.lock().unwrap();
+            db.query_row(
+                "SELECT COUNT(*) FROM personal_subagents WHERE name = ? AND creator_id = ?",
+                params![request.name, self.user_id],
+                |row| row.get(0),
+            )?
+        };
 
         if count > 0 {
             return Err(SubagentError::ConfigInvalid(
@@ -123,11 +126,14 @@ impl PersonalLoader {
         }
 
         // 检查数量限制
-        let count: i32 = self.db.query_row(
-            "SELECT COUNT(*) FROM personal_subagents WHERE creator_id = ? AND enabled = 1",
-            params![self.user_id],
-            |row| row.get(0),
-        )?;
+        let count: i32 = {
+            let db = self.db.lock().unwrap();
+            db.query_row(
+                "SELECT COUNT(*) FROM personal_subagents WHERE creator_id = ? AND enabled = 1",
+                params![self.user_id],
+                |row| row.get(0),
+            )?
+        };
 
         const MAX_PERSONAL_SUBAGENTS: i32 = 10;
         if count >= MAX_PERSONAL_SUBAGENTS {
@@ -144,31 +150,34 @@ impl PersonalLoader {
         let denied_tools = serde_json::to_string(&request.tools.denied)?;
         let knowledge_sources = serde_json::to_string(&request.knowledge_sources)?;
 
-        self.db.execute(
-            "INSERT INTO personal_subagents (
-                id, name, display_name, description, creator_id,
-                model_provider, model_id, temperature, max_tokens,
-                prompt, trigger_keywords, trigger_conditions, trigger_mode, priority,
-                allowed_tools, denied_tools, knowledge_sources,
-                max_steps, max_concurrent, timeout_seconds,
-                enabled, version, created_at, updated_at
-            ) VALUES (
-                ?1, ?2, ?3, ?4, ?5,
-                ?6, ?7, ?8, ?9,
-                ?10, ?11, ?12, ?13, ?14,
-                ?15, ?16, ?17,
-                ?18, ?19, ?20,
-                1, 1, ?21, ?22
-            )",
-            params![
-                id, request.name, request.display_name, request.description.as_deref().unwrap_or(""), self.user_id,
-                request.model.provider, request.model.model_id, request.model.temperature, request.model.max_tokens as i32,
-                request.prompt, trigger_keywords, trigger_conditions, trigger_mode, request.trigger.priority as i32,
-                allowed_tools, denied_tools, knowledge_sources,
-                request.limits.max_steps as i32, request.limits.max_concurrent as i32, request.limits.timeout_seconds as i32,
-                now.clone(), now
-            ],
-        )?;
+        {
+            let db = self.db.lock().unwrap();
+            db.execute(
+                "INSERT INTO personal_subagents (
+                    id, name, display_name, description, creator_id,
+                    model_provider, model_id, temperature, max_tokens,
+                    prompt, trigger_keywords, trigger_conditions, trigger_mode, priority,
+                    allowed_tools, denied_tools, knowledge_sources,
+                    max_steps, max_concurrent, timeout_seconds,
+                    enabled, version, created_at, updated_at
+                ) VALUES (
+                    ?1, ?2, ?3, ?4, ?5,
+                    ?6, ?7, ?8, ?9,
+                    ?10, ?11, ?12, ?13, ?14,
+                    ?15, ?16, ?17,
+                    ?18, ?19, ?20,
+                    1, 1, ?21, ?22
+                )",
+                params![
+                    id, request.name, request.display_name, request.description.as_deref().unwrap_or(""), self.user_id,
+                    request.model.provider, request.model.model_id, request.model.temperature, request.model.max_tokens as i32,
+                    request.prompt, trigger_keywords, trigger_conditions, trigger_mode, request.trigger.priority as i32,
+                    allowed_tools, denied_tools, knowledge_sources,
+                    request.limits.max_steps as i32, request.limits.max_concurrent as i32, request.limits.timeout_seconds as i32,
+                    now.clone(), now
+                ],
+            )?;
+        }
 
         // 清除缓存
         {
@@ -176,7 +185,7 @@ impl PersonalLoader {
             *cache = Vec::new();
         }
 
-        self.load(&request.name)
+        self.load(&request.name)?.ok_or_else(|| SubagentError::NotFound(format!("Subagent '{}' not found", request.name)))
     }
 
     /// 更新 Subagent
@@ -185,11 +194,14 @@ impl PersonalLoader {
         let now = chrono::Utc::now().to_rfc3339();
 
         // 检查是否存在
-        let exists: i32 = self.db.query_row(
-            "SELECT COUNT(*) FROM personal_subagents WHERE name = ? AND creator_id = ?",
-            params![name, self.user_id],
-            |row| row.get(0),
-        )?;
+        let exists: i32 = {
+            let db = self.db.lock().unwrap();
+            db.query_row(
+                "SELECT COUNT(*) FROM personal_subagents WHERE name = ? AND creator_id = ?",
+                params![name, self.user_id],
+                |row| row.get(0),
+            )?
+        };
 
         if exists == 0 {
             return Err(SubagentError::NotFound(format!("Subagent '{}' not found", name)));
@@ -253,13 +265,14 @@ impl PersonalLoader {
                 name.replace("'", "''"),
                 self.user_id.replace("'", "''")
             );
-            
+
             // 构建参数
             let params: Vec<&dyn rusqlite::ToSql> = values.iter()
                 .map(|v| v.as_ref() as &dyn rusqlite::ToSql)
                 .collect();
-            
-            self.db.execute(&sql, params.as_slice())?;
+
+            let db = self.db.lock().unwrap();
+            db.execute(&sql, params.as_slice())?;
         }
 
         // 清除缓存
@@ -268,7 +281,7 @@ impl PersonalLoader {
             *cache = Vec::new();
         }
 
-        self.load(name)
+        self.load(name)?.ok_or_else(|| SubagentError::NotFound(format!("Subagent '{}' not found", name)))
     }
 
     /// 删除 Subagent
@@ -276,11 +289,14 @@ impl PersonalLoader {
     pub async fn delete(&self, name: &str) -> SubagentResult<()> {
         let safe_name = name.replace("'", "''");
         let safe_user_id = self.user_id.replace("'", "''");
-        
-        self.db.execute(
-            &format!("DELETE FROM personal_subagents WHERE name = '{}' AND creator_id = '{}'", safe_name, safe_user_id),
-            [],
-        )?;
+
+        {
+            let db = self.db.lock().unwrap();
+            db.execute(
+                &format!("DELETE FROM personal_subagents WHERE name = '{}' AND creator_id = '{}'", safe_name, safe_user_id),
+                [],
+            )?;
+        }
 
         // 清除缓存
         {
@@ -379,7 +395,8 @@ fn row_to_agent_config(row: &rusqlite::Row) -> rusqlite::Result<AgentConfig> {
 impl SubagentLoader for PersonalLoader {
     fn load_all(&self) -> SubagentResult<Vec<AgentConfig>> {
         let safe_user_id = self.user_id.replace("'", "''");
-        let mut stmt = self.db.prepare(
+        let db = self.db.lock().unwrap();
+        let mut stmt = db.prepare(
             &format!("SELECT * FROM personal_subagents WHERE creator_id = '{}' AND enabled = 1", safe_user_id)
         )?;
 
@@ -393,8 +410,9 @@ impl SubagentLoader for PersonalLoader {
     fn load(&self, name: &str) -> SubagentResult<Option<AgentConfig>> {
         let safe_name = name.replace("'", "''");
         let safe_user_id = self.user_id.replace("'", "''");
-        
-        let mut stmt = self.db.prepare(
+
+        let db = self.db.lock().unwrap();
+        let mut stmt = db.prepare(
             &format!("SELECT * FROM personal_subagents WHERE name = '{}' AND creator_id = '{}'", safe_name, safe_user_id)
         )?;
 
@@ -408,6 +426,10 @@ impl SubagentLoader for PersonalLoader {
 
     fn name(&self) -> &str {
         "personal"
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 

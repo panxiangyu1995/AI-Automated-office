@@ -233,7 +233,7 @@ impl AuditLogger {
     /// 查询审计日志
     pub async fn query(&self, filter: AuditLogFilter) -> Vec<AuditLogEntry> {
         let logs = self.logs.read().await;
-        
+
         logs.iter()
             .filter(|entry| {
                 if let Some(since) = filter.since {
@@ -256,13 +256,15 @@ impl AuditLogger {
                         return false;
                     }
                 }
-                if let Some(event_type) = filter.event_type {
-                    if entry.event_type != event_type {
+                // Use filter.event_type directly with a reference pattern
+                if let Some(ref event_type) = filter.event_type {
+                    if &entry.event_type != event_type {
                         return false;
                     }
                 }
-                if let Some(result) = filter.result {
-                    if entry.result != result {
+                // Use filter.result directly with a reference pattern
+                if let Some(ref result) = filter.result {
+                    if &entry.result != result {
                         return false;
                     }
                 }
@@ -341,17 +343,17 @@ mod tests {
     #[tokio::test]
     async fn test_audit_log() {
         let logger = AuditLogger::new();
-        
+
         // 创建一个模拟消息
-        let message = super::super::types::AgentMessage::new(
+        let message = super::types::AgentMessage::new(
             "agent-1".to_string(),
             "agent-2".to_string(),
             super::types::MessageContent::text("Test message"),
         );
-        
+
         // 记录发送
         logger.record_send(&message).await.unwrap();
-        
+
         // 检查统计
         let stats = logger.get_stats().await;
         assert_eq!(stats.total, 1);
@@ -361,14 +363,14 @@ mod tests {
     #[tokio::test]
     async fn test_query() {
         let logger = AuditLogger::new();
-        
+
         // 创建两个不同发送者的消息
-        let msg1 = super::super::types::AgentMessage::new(
+        let msg1 = super::types::AgentMessage::new(
             "agent-1".to_string(),
             "agent-2".to_string(),
             super::types::MessageContent::text("Test 1"),
         );
-        let msg2 = super::super::types::AgentMessage::new(
+        let msg2 = super::types::AgentMessage::new(
             "agent-3".to_string(),
             "agent-2".to_string(),
             super::types::MessageContent::text("Test 2"),

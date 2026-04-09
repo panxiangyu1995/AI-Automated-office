@@ -90,10 +90,19 @@ impl<T> MiddlewareResult<T> {
 }
 
 /// Permission middleware for tool execution
+#[derive(Clone)]
 pub struct PermissionMiddleware {
     engine: Arc<PermissionEngine>,
     field_checker: Arc<FieldPermissionChecker>,
     default_timeout_ms: u64,
+}
+
+impl std::fmt::Debug for PermissionMiddleware {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PermissionMiddleware")
+            .field("default_timeout_ms", &self.default_timeout_ms)
+            .finish()
+    }
 }
 
 impl Default for PermissionMiddleware {
@@ -260,11 +269,11 @@ impl PermissionMiddleware {
             error: None,
             data: Some(FullCheckResult {
                 allowed_tools: vec![tool_id.to_string()],
-                allowed_fields,
-                scope_filter,
+                allowed_fields: allowed_fields.clone(),
+                scope_filter: scope_filter.clone(),
             }),
             scope_filter,
-            allowed_fields: Some(allowed_fields.clone()),
+            allowed_fields: Some(allowed_fields),
         })
     }
 

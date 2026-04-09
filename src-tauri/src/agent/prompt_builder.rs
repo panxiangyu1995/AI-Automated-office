@@ -722,6 +722,8 @@ impl RetryPolicy {
             AgentError::ProviderNotConfigured => false,
             AgentError::Interrupted => false,
             AgentError::Storage(_) => true, // Storage errors might be transient
+            AgentError::ProviderCreation(_) => false, // Provider creation errors are not transient
+            AgentError::Config(_) => false, // Config errors are not transient
         }
     }
 }

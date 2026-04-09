@@ -41,7 +41,7 @@ impl MessageState {
             recipient_type: "user".to_string(),
             priority: MessagePriority::High,
             status: MessageStatus::Unread,
-            action_url: Some("/approval"),
+            action_url: Some("/approval".to_string()),
             metadata: None,
             created_at: chrono::Utc::now().timestamp(),
             read_at: None,

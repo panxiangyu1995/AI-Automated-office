@@ -6,7 +6,7 @@ use tokio::sync::RwLock;
 
 use tauri::State;
 
-use crate::agent::mcp::{
+use crate::mcp::{
     MCPServiceRegistry, MCPServiceConfig, MCPServiceInfo,
     MCPTool, MCPTransportType,
 };

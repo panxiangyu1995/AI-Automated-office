@@ -416,7 +416,7 @@ impl CorrectionService {
             }
         }
         
-        Err("错题不存在")
+        Err("错题不存在".to_string())
     }
 
     /// 检查内容触发规则

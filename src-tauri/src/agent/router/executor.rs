@@ -184,7 +184,7 @@ impl DelegationExecutor {
         let session = self.create_session(&contract).await?;
 
         // 3. Execute with timeout
-        let result = self.execute_with_timeout(session, contract).await;
+        let result = self.execute_with_timeout(session.clone(), contract).await;
 
         // 4. Cleanup session
         if let Err(e) = self.cleanup_session(&session).await {

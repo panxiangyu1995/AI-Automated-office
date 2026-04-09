@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -271,6 +272,7 @@ impl MentionHandler {
 }
 
 /// Agent群聊响应接口
+#[async_trait]
 pub trait AgentGroupResponder: Send + Sync {
     /// 响应@提及
     async fn respond_to_mention(

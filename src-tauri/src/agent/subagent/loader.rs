@@ -2,12 +2,13 @@
 //!
 //! 定义 Subagent 加载器的通用接口
 
+use std::any::Any;
 use super::types::{AgentConfig, AgentType, SubagentError, SubagentResult};
 
 /// Subagent 加载器 trait
 ///
 /// 所有 Subagent 加载器必须实现此 trait
-pub trait SubagentLoader: Send + Sync {
+pub trait SubagentLoader: Send + Sync + Any {
     /// 加载所有 Subagent
     fn load_all(&self) -> SubagentResult<Vec<AgentConfig>>;
 
@@ -21,6 +22,9 @@ pub trait SubagentLoader: Send + Sync {
     fn name(&self) -> &str {
         "unknown"
     }
+
+    /// As any type for downcasting
+    fn as_any(&self) -> &dyn Any;
 }
 
 /// Hidden Agent 配置

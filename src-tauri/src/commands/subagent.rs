@@ -13,6 +13,7 @@ use crate::agent::subagent::{
     CreatePersonalSubagentRequest, PersonalLoader, UpdatePersonalSubagentRequest,
     executor::{SubagentExecutor, DelegationOutcome, DelegationStatus},
 };
+use crate::agent::subagent::loader::SubagentLoader;
 use crate::agent::subagent::manager::SubagentStats;
 use crate::agent::subagent::types::{ModelProvider, TriggerConfig, ToolPermissions, LimitsConfig};
 use crate::agent::routing::{SubAgentRoutingService, RoutingContext, RoutingDecision, RoutingOutcome};
@@ -94,6 +95,7 @@ pub async fn create_personal_subagent(
         .map_err(|e| e.to_string())?;
 
     let loader = loader
+        .as_any()
         .downcast_ref::<PersonalLoader>()
         .ok_or("Failed to get PersonalLoader")?;
 
@@ -155,6 +157,7 @@ pub async fn update_personal_subagent(
         .map_err(|e| e.to_string())?;
 
     let loader = loader
+        .as_any()
         .downcast_ref::<PersonalLoader>()
         .ok_or("Failed to get PersonalLoader")?;
 
@@ -184,6 +187,7 @@ pub async fn delete_personal_subagent(name: String) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let loader = loader
+        .as_any()
         .downcast_ref::<PersonalLoader>()
         .ok_or("Failed to get PersonalLoader")?;
 
@@ -262,7 +266,8 @@ pub async fn route_message(
     };
 
     let service = ROUTING_SERVICE.read().await;
-    Ok(service.make_decision(&context).await)
+    let result = service.make_decision(&context).await;
+    Ok(result.decision)
 }
 
 /// 执行委派

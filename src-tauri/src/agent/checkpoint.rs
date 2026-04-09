@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -298,9 +299,20 @@ impl CheckpointService {
         if let Some(git_hash) = &checkpoint.git_commit_hash {
             if let Some(git) = &self.git_manager {
                 // 从Git获取文件状态
-                let file_states = git.get_files_at_commit(git_hash).await
+                let files: std::collections::HashMap<String, String> = git.get_files_at_commit(git_hash).await
                     .map_err(|_| CheckpointError::GitError)?;
-                
+
+                // Convert to FileState HashMap
+                let timestamp = chrono::Utc::now().timestamp();
+                let file_states: std::collections::HashMap<String, FileState> = files
+                    .into_iter()
+                    .map(|(path, content)| (path.clone(), FileState {
+                        path,
+                        content,
+                        timestamp,
+                    }))
+                    .collect();
+
                 let context = SessionContext {
                     session_id: checkpoint.session_id.clone(),
                     messages: Vec::new(),
@@ -309,7 +321,7 @@ impl CheckpointService {
                     turn_count: checkpoint.conversation_turn,
                     file_states,
                 };
-                
+
                 return Ok(context);
             }
         }
@@ -451,10 +463,11 @@ impl Default for CheckpointService {
 }
 
 /// Git提交管理器接口
+#[async_trait]
 pub trait GitCommitManager: Send + Sync {
     /// 提交检查点
     async fn commit(&self, checkpoint: &Checkpoint) -> Result<(String, String), String>;
-    
+
     /// 获取指定提交的文件状态
     async fn get_files_at_commit(&self, commit_hash: &str) -> Result<HashMap<String, String>, String>;
 }

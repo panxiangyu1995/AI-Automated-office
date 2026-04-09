@@ -9,7 +9,7 @@ pub enum CustomerType { Individual, Corporate }
 impl Default for CustomerType { fn default() -> Self { Self::Individual } }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "uppercase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CustomerLevel { A, B, C }
 impl Default for CustomerLevel { fn default() -> Self { Self::C } }
 

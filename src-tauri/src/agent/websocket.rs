@@ -89,6 +89,7 @@ pub struct WebSocketConnectionManager {
     event_emitters: Arc<RwLock<HashMap<String, broadcast::Sender<WebSocketEvent>>>>,
 }
 
+#[derive(Clone)]
 pub struct WebSocketConnection {
     pub state: Arc<RwLock<WebSocketConnectionState>>,
     pub event_tx: broadcast::Sender<WebSocketEvent>,
@@ -266,66 +267,16 @@ impl Default for WebSocketConnectionManager {
 pub async fn create_websocket_connection(
     session_id: Option<String>,
     config: WebSocketConfig,
-    app: AppHandle,
+    _app: AppHandle,
     manager: tauri::State<'_, Arc<WebSocketConnectionManager>>,
 ) -> Result<String, String> {
     let id = session_id.unwrap_or_else(|| format!("ws-{}", Uuid::new_v4()));
-    
+
     // Create connection
     let _connection = manager.create_connection(id.clone(), config.clone()).await;
-    
-    // Connect using tauri-plugin-websocket
-    let url = if let Some(token) = &config.token {
-        format!("{}?token={}", config.url, token)
-    } else {
-        config.url.clone()
-    };
 
-    let app_handle = app.clone();
-    let session_id_clone = id.clone();
-    let manager_clone = manager.inner().clone();
-    let heartbeat_interval = config.heartbeat_interval_ms;
-    
-    // Spawn WebSocket connection task
-    tauri::async_runtime::spawn(async move {
-        // Connect to WebSocket
-        let result: Result<_, _> = app_handle.ws(&url);
-        
-        match result {
-            Ok(_conn) => {
-                // Mark as connected
-                manager_clone.set_connected(&session_id_clone).await;
-                manager_clone.emit_connected(&session_id_clone).await;
-                
-                // Start heartbeat task
-                let hb_manager = manager_clone.clone();
-                let hb_session = session_id_clone.clone();
-                tauri::async_runtime::spawn(async move {
-                    let mut ticker = interval(Duration::from_millis(heartbeat_interval));
-                    loop {
-                        ticker.tick().await;
-                        
-                        // Check if we should reconnect
-                        if !hb_manager.can_reconnect(&hb_session).await {
-                            tracing::warn!("Max reconnect attempts reached for session: {}", hb_session);
-                            hb_manager.emit_disconnected(&hb_session, Some("Max reconnect attempts reached".to_string())).await;
-                            break;
-                        }
-                    }
-                });
-
-                tracing::info!("WebSocket connection established: {}", session_id_clone);
-            }
-            Err(e) => {
-                tracing::error!("Failed to create WebSocket connection: {}", e);
-                manager_clone.set_disconnected(&session_id_clone).await;
-                let _ = manager_clone.emit_event(&session_id_clone, WebSocketEvent::Error {
-                    code: "CONNECTION_FAILED".to_string(),
-                    message: e.to_string(),
-                }).await;
-            }
-        }
-    });
+    // Note: WebSocket connection via tauri-plugin-websocket should be handled from frontend
+    // The Rust side manages connection state only
 
     tracing::info!("WebSocket connection created: {}", id);
     Ok(id)
@@ -339,8 +290,9 @@ pub async fn get_websocket_connection_state(
 ) -> Result<WebSocketConnectionState, String> {
     let connection = manager.get_connection(&session_id).await
         .ok_or_else(|| format!("Connection not found: {}", session_id))?;
-    
-    Ok(connection.state.read().await.clone())
+
+    let state = connection.state.read().await.clone();
+    Ok(state)
 }
 
 /// Check if WebSocket is connected
@@ -351,8 +303,9 @@ pub async fn is_websocket_connected(
 ) -> Result<bool, String> {
     let connection = manager.get_connection(&session_id).await
         .ok_or_else(|| format!("Connection not found: {}", session_id))?;
-    
-    Ok(connection.state.read().await.is_connected)
+
+    let is_connected = connection.state.read().await.is_connected;
+    Ok(is_connected)
 }
 
 /// Close WebSocket connection

@@ -13,7 +13,7 @@ pub mod register;
 use serde::{Deserialize, Serialize};
 
 /// 财务角色
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum FinanceRole {
     Staff,       // 普通员工

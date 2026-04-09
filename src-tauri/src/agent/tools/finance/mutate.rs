@@ -133,6 +133,8 @@ impl FinanceMutateTool {
             amount: params.amount,
         };
 
+        let action_str = format!("{:?}", operation.action).to_lowercase();
+
         {
             let mut history = self.history.write().await;
             history.push(operation);
@@ -144,7 +146,7 @@ impl FinanceMutateTool {
             "message": format!("报销申请 {} 成功", params.action),
             "data": {
                 "expenseId": params.expense_id,
-                "action": format!("{:?}", operation.action).to_lowercase(),
+                "action": action_str,
                 "operator": user_id,
                 "timestamp": chrono::Utc::now().to_rfc3339(),
             }
@@ -169,6 +171,8 @@ impl Tool for FinanceMutateTool {
             requires_confirmation: true,
             is_read_only: false,
             has_side_effects: true,
+            supports_retry: false,
+            estimated_duration: None,
         }
     }
 
@@ -180,7 +184,7 @@ impl Tool for FinanceMutateTool {
                 description: "操作类型".to_string(),
                 required: true,
                 default: None,
-                enum_: Some(vec![
+                r#enum: Some(vec![
                     "submit".to_string(),
                     "approve".to_string(),
                     "reject".to_string(),
@@ -200,7 +204,7 @@ impl Tool for FinanceMutateTool {
                 description: "报销单ID".to_string(),
                 required: true,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,
@@ -213,7 +217,7 @@ impl Tool for FinanceMutateTool {
                 description: "操作原因".to_string(),
                 required: false,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,
@@ -226,7 +230,7 @@ impl Tool for FinanceMutateTool {
                 description: "调整金额".to_string(),
                 required: false,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: Some(0.0),
                 maximum: None,
                 pattern: None,

@@ -48,9 +48,9 @@ pub fn register_memory_tools(
             is_read_only: true,
             has_side_effects: false,
             supports_retry: true,
-            estimated_duration: Some(std::time::Duration::from_millis(500)),
+            estimated_duration: Some(500),
         },
-        permissions: Some(vec!["memory:read".to_string()]),
+        permissions: None,
         dependencies: None,
         context_requirements: None,
         metadata: ToolMetadata {
@@ -92,9 +92,9 @@ pub fn register_memory_tools(
             is_read_only: true,
             has_side_effects: false,
             supports_retry: false,
-            estimated_duration: Some(std::time::Duration::from_millis(100)),
+            estimated_duration: Some(100),
         },
-        permissions: Some(vec!["memory:read".to_string()]),
+        permissions: None,
         dependencies: None,
         context_requirements: None,
         metadata: ToolMetadata {

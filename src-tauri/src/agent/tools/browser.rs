@@ -596,12 +596,28 @@ impl ToolExecutor for BrowserInteractExecutor {
         }
 
         let state = get_or_init_state();
-        let mut cdp = self.cdp_client.write().unwrap();
 
         let result = match action.as_str() {
             // === Browser Control ===
             "status" => execute_status(state),
-            "start" => execute_start(&map, &mut cdp).await,
+            "start" => {
+                // Take ownership of cdp client, do async work, put it back
+                let cdp_client = self.cdp_client.write().unwrap().take();
+                let (result, new_client) = execute_start(&map, cdp_client).await;
+                // Put the new client back if successful
+                if result.as_ref().map(|r| r.success).unwrap_or(false) {
+                    if let Some(client) = new_client {
+                        *self.cdp_client.write().unwrap() = Some(client);
+                    }
+                } else if new_client.is_some() {
+                    // Put back original client on failure
+                    *self.cdp_client.write().unwrap() = new_client;
+                } else {
+                    // Put back original client if no new client was created
+                    *self.cdp_client.write().unwrap() = result.as_ref().ok().and_then(|_| None);
+                }
+                result
+            }
             "stop" => execute_stop(),
             "profiles" => execute_profiles(state),
             "tabs" => execute_tabs(state),
@@ -701,8 +717,8 @@ fn execute_status(state: BrowserState) -> Result<BrowserInteractResult, ToolExec
 
 async fn execute_start(
     params: &serde_json::Map<String, serde_json::Value>,
-    cdp: &mut Option<CdpClient>,
-) -> Result<BrowserInteractResult, ToolExecutionError> {
+    _cdp: Option<CdpClient>,
+) -> (Result<BrowserInteractResult, ToolExecutionError>, Option<CdpClient>) {
     let profile = params
         .get("profile")
         .and_then(|v| v.as_str())
@@ -711,27 +727,29 @@ async fn execute_start(
     let mut state = get_or_init_state();
 
     if state.running {
-        return Ok(BrowserInteractResult {
-            action: "start".to_string(),
-            success: false,
-            message: Some("Browser is already running".to_string()),
-            state: Some(state),
-            tabs: None,
-            snapshot: None,
-            screenshot: None,
-            console_messages: None,
-            network_requests: None,
-            cookies: None,
-            storage: None,
-        });
+        return (
+            Ok(BrowserInteractResult {
+                action: "start".to_string(),
+                success: false,
+                message: Some("Browser is already running".to_string()),
+                state: Some(state),
+                tabs: None,
+                snapshot: None,
+                screenshot: None,
+                console_messages: None,
+                network_requests: None,
+                cookies: None,
+                storage: None,
+            }),
+            _cdp,
+        );
     }
 
     // Try to connect to Playwright CDP server
-    if CdpClient::is_available() {
+    let new_client = if CdpClient::is_available() {
         let mut client = CdpClient::new("http://localhost:9222");
         match client.launch(profile.as_deref().unwrap_or("default")).await {
             Ok(browser_id) => {
-                *cdp = Some(client);
                 state.running = true;
                 state.profile = profile;
                 state.tabs = vec![BrowserTab {
@@ -741,21 +759,25 @@ async fn execute_start(
                     active: true,
                     loading: false,
                 }];
+                Some(client)
             }
             Err(e) => {
-                return Ok(BrowserInteractResult {
-                    action: "start".to_string(),
-                    success: false,
-                    message: Some(format!("Failed to launch browser: {}", e)),
-                    state: Some(state),
-                    tabs: None,
-                    snapshot: None,
-                    screenshot: None,
-                    console_messages: None,
-                    network_requests: None,
-                    cookies: None,
-                    storage: None,
-                });
+                return (
+                    Ok(BrowserInteractResult {
+                        action: "start".to_string(),
+                        success: false,
+                        message: Some(format!("Failed to launch browser: {}", e)),
+                        state: Some(state),
+                        tabs: None,
+                        snapshot: None,
+                        screenshot: None,
+                        console_messages: None,
+                        network_requests: None,
+                        cookies: None,
+                        storage: None,
+                    }),
+                    _cdp,
+                );
             }
         }
     } else {
@@ -769,23 +791,27 @@ async fn execute_start(
             active: true,
             loading: false,
         }];
-    }
+        None
+    };
 
     update_state(state.clone());
 
-    Ok(BrowserInteractResult {
-        action: "start".to_string(),
-        success: true,
-        message: Some("Browser started (mock mode - Playwright integration pending)".to_string()),
-        state: Some(state),
-        tabs: None,
-        snapshot: None,
-        screenshot: None,
-        console_messages: None,
-        network_requests: None,
-        cookies: None,
-        storage: None,
-    })
+    (
+        Ok(BrowserInteractResult {
+            action: "start".to_string(),
+            success: true,
+            message: Some("Browser started (mock mode - Playwright integration pending)".to_string()),
+            state: Some(state),
+            tabs: None,
+            snapshot: None,
+            screenshot: None,
+            console_messages: None,
+            network_requests: None,
+            cookies: None,
+            storage: None,
+        }),
+        new_client,
+    )
 }
 
 fn execute_stop() -> Result<BrowserInteractResult, ToolExecutionError> {
@@ -1423,6 +1449,8 @@ async fn execute_arm_dialog(
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
 
+    let has_prompt = prompt_text.is_some();
+
     let mut state = get_or_init_state();
     state.armed_dialog = Some(DialogArm {
         accept,
@@ -1436,7 +1464,7 @@ async fn execute_arm_dialog(
         message: Some(format!(
             "Dialog armed (accept: {}, prompt: {})",
             accept,
-            prompt_text.is_some()
+            has_prompt
         )),
         state: Some(state),
         tabs: None,

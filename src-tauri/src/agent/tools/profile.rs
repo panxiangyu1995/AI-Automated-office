@@ -389,14 +389,14 @@ impl ProfileManager {
         let profile = self.get_current_profile();
         let config = self.config.read().unwrap();
         let profile_config = config.profile_overrides.get(&profile.to_string());
-        check_tool_access(tool_id, profile, profile_config.as_ref())
+        check_tool_access(tool_id, profile, profile_config)
     }
 
     pub fn get_allowed_tools(&self) -> Vec<String> {
         let profile = self.get_current_profile();
         let config = self.config.read().unwrap();
         let profile_config = config.profile_overrides.get(&profile.to_string());
-        resolve_allowed_tools(profile, profile_config.as_ref())
+        resolve_allowed_tools(profile, profile_config)
     }
 }
 

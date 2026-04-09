@@ -238,14 +238,25 @@ Respond with ONLY a JSON object in this format:
             context.roles
         );
 
-        let response = client.chat(vec![
-            crate::agent::llm_provider::ChatMessage::user(&prompt)
-        ], Some(0.3)).await
+        let request = crate::agent::llm_provider::LlmRequest {
+            session_id: "classifier".to_string(),
+            trace_id: "classifier".to_string(),
+            messages: vec![
+                crate::agent::llm_provider::LlmMessage { role: "user".to_string(), content: prompt, tool_calls: None }
+            ],
+            tools: None,
+            stream: false,
+            metadata: None,
+        };
+        let response = client.as_ref().complete(request).await
             .map_err(|e| super::ClassificationError::SemanticFailed(e.to_string()))?;
 
         // Parse JSON response
-        let json_str = response.content
-            .ok_or_else(|| super::ClassificationError::SemanticFailed("Empty response".to_string()))?;
+        let json_str = if response.content.is_empty() {
+            return Err(super::ClassificationError::SemanticFailed("Empty response".to_string()).into());
+        } else {
+            response.content
+        };
 
         let parsed: serde_json::Value = serde_json::from_str(&json_str)
             .map_err(|e| super::ClassificationError::SemanticFailed(format!("JSON parse error: {}", e)))?;

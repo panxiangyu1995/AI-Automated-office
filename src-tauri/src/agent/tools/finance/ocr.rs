@@ -94,7 +94,7 @@ impl FinanceOcrTool {
             buyer,
             invoice_type: Some(InvoiceType::Vat),
             verified: false, // 验真需要后续调用
-            confidence: 0.85 + rand_f64() * 0.14,
+            confidence: (0.85 + rand_f64() * 0.14) as f32,
         }
     }
 
@@ -206,6 +206,8 @@ impl Tool for FinanceOcrTool {
             requires_confirmation: false,
             is_read_only: false,
             has_side_effects: false,
+            supports_retry: false,
+            estimated_duration: None,
         }
     }
 
@@ -217,7 +219,7 @@ impl Tool for FinanceOcrTool {
                 description: "发票图片（base64或URL）".to_string(),
                 required: true,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,
@@ -230,7 +232,7 @@ impl Tool for FinanceOcrTool {
                 description: "发票类型（vat/normal/receipt/electronic/train/airplane/hotel）".to_string(),
                 required: false,
                 default: None,
-                enum_: Some(vec![
+                r#enum: Some(vec![
                     "vat".to_string(),
                     "normal".to_string(),
                     "receipt".to_string(),
@@ -251,7 +253,7 @@ impl Tool for FinanceOcrTool {
                 description: "是否验真".to_string(),
                 required: false,
                 default: Some(serde_json::json!(false)),
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,

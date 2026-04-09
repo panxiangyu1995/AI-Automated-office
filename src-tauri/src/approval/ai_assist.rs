@@ -288,7 +288,7 @@ impl ApprovalAIAssist {
 
     /// 时间异常检测
     fn check_time_anomaly(&self, approval: &ApprovalData) -> Option<RiskAlert> {
-        use chrono::{Utc, Timelike, Weekday};
+        use chrono::{Utc, Timelike, Weekday, Datelike};
         
         let now = Utc::now();
         
@@ -453,7 +453,7 @@ impl ApprovalAIAssist {
     /// 预测审批结果
     pub fn predict_outcome(&self, approval: &ApprovalData) -> PredictionResult {
         let mut reasons = Vec::new();
-        let mut base_confidence = 0.5;
+        let mut base_confidence: f64 = 0.5;
         
         // 基于金额预测
         if approval.amount > 100_000.0 {

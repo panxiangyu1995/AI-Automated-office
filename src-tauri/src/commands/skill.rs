@@ -10,6 +10,7 @@ use crate::agent::skill::{
     SkillRegistry, SkillDiscoveryService, SkillLoader, SkillConverter,
 };
 use crate::agent::skill::types::ParametersSchema;
+use crate::agent::skill::parser::SkillParserTrait;
 
 /// Global skill registry instance
 static SKILL_REGISTRY: once_cell::sync::Lazy<Arc<RwLock<SkillRegistry>>> =
@@ -115,7 +116,6 @@ pub struct ExecuteRequest {
 }
 
 /// Register a skill from SKILL.md content
-#[tauri::command]
 pub async fn skill_register(content: String) -> Result<SkillResponse<SkillInfo>, String> {
     let parser = crate::agent::skill::parser::SkillParser::new();
 
@@ -132,7 +132,6 @@ pub async fn skill_register(content: String) -> Result<SkillResponse<SkillInfo>,
 }
 
 /// Unregister a skill
-#[tauri::command]
 pub async fn skill_unregister(skill_id: String) -> Result<SkillResponse<()>, String> {
     let registry = SKILL_REGISTRY.read().await;
     match registry.unregister(&skill_id).await {
@@ -142,7 +141,6 @@ pub async fn skill_unregister(skill_id: String) -> Result<SkillResponse<()>, Str
 }
 
 /// List all registered skills
-#[tauri::command]
 pub async fn skill_list() -> Result<SkillResponse<Vec<SkillInfo>>, String> {
     let registry = SKILL_REGISTRY.read().await;
     let skills = registry.list().await;
@@ -151,7 +149,6 @@ pub async fn skill_list() -> Result<SkillResponse<Vec<SkillInfo>>, String> {
 }
 
 /// Get a skill by ID
-#[tauri::command]
 pub async fn skill_get(skill_id: String) -> Result<SkillResponse<Option<SkillInfo>>, String> {
     let registry = SKILL_REGISTRY.read().await;
     let skill = registry.get(&skill_id).await;
@@ -159,20 +156,25 @@ pub async fn skill_get(skill_id: String) -> Result<SkillResponse<Option<SkillInf
 }
 
 /// Execute a skill endpoint
-#[tauri::command]
 pub async fn skill_execute(
     skill_id: String,
     endpoint: String,
     parameters: serde_json::Value,
 ) -> Result<SkillResponse<SkillExecutionResult>, String> {
+    // Convert serde_json::Value to HashMap
+    let parameters_map: std::collections::HashMap<String, serde_json::Value> =
+        parameters.as_object()
+            .map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
+            .unwrap_or_default();
+
     let ctx = SkillExecutionContext {
         skill_id: skill_id.clone(),
         endpoint: endpoint.clone(),
-        parameters: parameters.clone(),
+        parameters: parameters_map,
         user_id: None,
-        tenant_id: None,
+        tenant_id: String::new(), // Default empty tenant
         session_id: None,
-        metadata: Default::default(),
+        timestamp: chrono::Utc::now().to_rfc3339(),
     };
 
     let registry = SKILL_REGISTRY.read().await;
@@ -183,7 +185,6 @@ pub async fn skill_execute(
 }
 
 /// Discover skills from all sources
-#[tauri::command]
 pub async fn skill_discover() -> Result<SkillResponse<DiscoveryResult>, String> {
     let service = DISCOVERY_SERVICE.read().await;
     match service.discover_all().await {
@@ -200,7 +201,6 @@ pub async fn skill_discover() -> Result<SkillResponse<DiscoveryResult>, String> 
 }
 
 /// Search skills by query
-#[tauri::command]
 pub async fn skill_search(query: String) -> Result<SkillResponse<Vec<SkillInfo>>, String> {
     let service = DISCOVERY_SERVICE.read().await;
     let skills = service.search(&query).await;
@@ -209,24 +209,22 @@ pub async fn skill_search(query: String) -> Result<SkillResponse<Vec<SkillInfo>>
 }
 
 /// Get loading progress for a skill
-#[tauri::command]
 pub async fn skill_loading_progress(skill_id: String) -> Result<SkillResponse<LoadingProgress>, String> {
     let loader = SKILL_LOADER.read().await;
     match loader.get_progress(&skill_id).await {
         Some(progress) => Ok(SkillResponse::ok(LoadingProgress {
-            skill_id: progress.skill_id,
-            skill_name: progress.skill_name,
-            progress: progress.progress,
-            status: format!("{:?}", progress.status),
-            dependencies_loaded: progress.dependencies_loaded,
-            dependencies_total: progress.dependencies_total,
+            skill_id: skill_id.clone(),
+            skill_name: String::new(), // Not available from progress
+            progress: progress.progress as f32 / 100.0, // Convert 0-100 to 0.0-1.0
+            status: format!("{:?}", progress.stage),
+            dependencies_loaded: progress.skills_loaded,
+            dependencies_total: progress.total_skills,
         })),
         None => Ok(SkillResponse::err(format!("Skill {} not found or not loading", skill_id))),
     }
 }
 
 /// Load skills progressively
-#[tauri::command]
 pub async fn skill_load_all() -> Result<SkillResponse<Vec<SkillInfo>>, String> {
     let discovery = DISCOVERY_SERVICE.read().await;
     let result = discovery.discover_all().await;
@@ -244,7 +242,6 @@ pub async fn skill_load_all() -> Result<SkillResponse<Vec<SkillInfo>>, String> {
 }
 
 /// Convert a skill to tool descriptor
-#[tauri::command]
 pub async fn skill_to_tool(skill_id: String) -> Result<SkillResponse<serde_json::Value>, String> {
     let registry = SKILL_REGISTRY.read().await;
     match registry.get(&skill_id).await {
@@ -257,7 +254,6 @@ pub async fn skill_to_tool(skill_id: String) -> Result<SkillResponse<serde_json:
 }
 
 /// Get skill count
-#[tauri::command]
 pub async fn skill_count() -> Result<SkillResponse<usize>, String> {
     let registry = SKILL_REGISTRY.read().await;
     let count = registry.count().await;

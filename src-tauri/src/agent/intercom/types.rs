@@ -302,7 +302,7 @@ pub struct AuditLogEntry {
     pub details: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AuditEventType {
     Send,
@@ -314,7 +314,7 @@ pub enum AuditEventType {
     ContentModeration,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AuditResult {
     Success,

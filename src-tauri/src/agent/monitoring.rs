@@ -276,7 +276,7 @@ pub struct SubAgentMonitoringService {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct ExecutionStatus {
+pub struct ExecutionStatus {
     pub execution_id: String,
     pub sub_agent_id: String,
     pub sub_agent_name: String,

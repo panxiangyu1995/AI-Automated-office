@@ -154,6 +154,7 @@ pub struct IntentRouter {
     routing_table: HashMap<String, RouteRule>,
 }
 
+#[derive(Clone)]
 struct RouteRule {
     target: SubagentType,
     required_permissions: Vec<String>,

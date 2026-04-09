@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use regex::Regex;
 
 /// 匹配模式
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum MatchPattern {
     /// 精确匹配
@@ -131,7 +131,7 @@ pub struct ToolSandbox {
     /// 分组规则
     groups: Arc<RwLock<HashMap<String, Vec<MatchPattern>>>>,
     /// 配置
-    config: Arc<RwLock<SandboxConfig>>>,
+    config: Arc<RwLock<SandboxConfig>>,
     /// 统计
     stats: Arc<RwLock<SandboxStats>>,
 }

@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{info, warn, error};
+use tracing::info;
 
 /// Pilot department type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -41,11 +41,19 @@ pub enum BindingStatus {
 pub struct ToolBinding {
     pub tool_id: String,
     pub tool_name: String,
+    pub department: String,
     pub status: BindingStatus,
     pub permission: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_used: Option<u64>,
     pub usage_count: u32,
+}
+
+impl ToolBinding {
+    /// Check if this binding matches the given department
+    pub fn department_matches(&self, department: &str) -> bool {
+        self.department == department
+    }
 }
 
 /// Pilot execution result
@@ -91,11 +99,13 @@ impl PilotState {
     pub async fn bind_tools(&self, department: PilotDepartment, tools: Vec<String>) -> Result<Vec<ToolBinding>, String> {
         info!("Binding {} tools to pilot: {}", tools.len(), department);
 
+        let dept_str = department.to_string();
         let mut bindings = Vec::new();
         for tool_id in tools {
             let binding = ToolBinding {
                 tool_id: tool_id.clone(),
                 tool_name: tool_id.clone(),
+                department: dept_str.clone(),
                 status: BindingStatus::Bound,
                 permission: "read".to_string(),
                 last_used: None,

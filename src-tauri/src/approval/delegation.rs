@@ -144,11 +144,11 @@ impl DelegationStore {
         // 保存委托
         let mut delegations = self.delegations.write().await;
         delegations.insert(id.clone(), delegation);
-        
+
         // 更新用户映射
         let mut user_delegations = self.user_delegations.write().await;
-        user_delegations.insert(delegator_id, id);
-        
+        user_delegations.insert(delegator_id, id.clone());
+
         Ok(delegations.get(&id).unwrap().clone())
     }
 
@@ -159,21 +159,22 @@ impl DelegationStore {
         user_id: &str,
     ) -> Result<(), DelegationError> {
         let mut delegations = self.delegations.write().await;
-        
-        let delegation = delegations.get(delegation_id)
+
+        // Get mutable reference to check and modify
+        let delegation = delegations.get_mut(delegation_id)
             .ok_or(DelegationError::NotFound)?;
-        
+
         // 只能本人取消
         if delegation.delegator_id != user_id {
             return Err(DelegationError::PermissionDenied);
         }
-        
+
         delegation.is_active = false;
-        
+
         // 清理用户映射
         let mut user_delegations = self.user_delegations.write().await;
         user_delegations.remove(&delegation.delegator_id);
-        
+
         Ok(())
     }
 
@@ -183,12 +184,11 @@ impl DelegationStore {
         user_id: &str,
     ) -> Option<ApprovalDelegation> {
         let user_delegations = self.user_delegations.read().await;
-        
-        user_delegations.get(user_id)
-            .and_then(|id| {
-                let delegations = self.delegations.read().await;
-                delegations.get(id).cloned()
-            })
+
+        user_delegations.get(user_id).cloned().and_then(|id| {
+            let delegations = self.delegations.blocking_read();
+            delegations.get(&id).cloned()
+        })
     }
 
     /// 获取作为被委托人的委托列表

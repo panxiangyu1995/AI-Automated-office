@@ -5,10 +5,10 @@ mod registry;
 mod bridge;
 mod types;
 
-pub use client::{MCPClient, MCPClientConfig, MCPTransport};
-pub use registry::{MCPServiceRegistry, MCPService};
+pub use client::{MCPClient, MCPClientConfig};
+pub use registry::MCPServiceRegistry;
 pub use bridge::MCPToolBridge;
 pub use types::{
-    MCPServiceConfig, MCPServiceStatus, MCPServiceInfo,
+    MCPServiceConfig, MCPServiceStatus, MCPServiceInfo, MCPTransportType,
     MCPTool, MCPToolCall, MCPToolResult,
 };

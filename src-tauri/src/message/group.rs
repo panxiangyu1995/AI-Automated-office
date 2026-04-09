@@ -408,7 +408,7 @@ impl GroupStore {
             .ok_or(GroupError::GroupNotFound)?;
         
         // 只有群主可以设置管理员
-        if !group.is_owner(setter_id) {
+        if group.owner_id != setter_id {
             return Err(GroupError::PermissionDenied);
         }
         

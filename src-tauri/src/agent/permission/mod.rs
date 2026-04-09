@@ -10,7 +10,22 @@
 pub mod ruleset;
 
 // Re-export ruleset types for convenience
-pub use ruleset::{PermissionAction, PermissionRule, Ruleset};
+pub use ruleset::{PermissionAction, PermissionRule, Ruleset, PermissionChecker};
+
+// Sandbox module
+pub mod sandbox;
+
+/// Get the default office ruleset
+pub fn default_office_ruleset() -> Ruleset {
+    vec![
+        PermissionRule::new("department", "*", PermissionAction::Allow),
+        PermissionRule::new("approval", "*", PermissionAction::Allow),
+        PermissionRule::new("document", "*", PermissionAction::Allow),
+        PermissionRule::new("employee", "*", PermissionAction::Allow),
+        PermissionRule::new("finance", "*", PermissionAction::Ask),
+        PermissionRule::new("warehouse", "*", PermissionAction::Ask),
+    ]
+}
 
 // Permission engine - three-layer permission calculation
 pub mod engine;
@@ -68,7 +83,6 @@ impl Role {
     pub fn level(&self) -> u8 {
         match self {
             Role::Admin => 100,
-            Role::Executive => 90,
             Role::Manager => 70,
             Role::Specialist => 50,
             Role::Staff => 30,

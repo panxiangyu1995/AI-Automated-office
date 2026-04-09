@@ -20,7 +20,7 @@ pub struct FinancePermissionConfig {
 }
 
 /// 数据范围
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FinanceDataScope {
     /// 仅本人数据
     Personal,

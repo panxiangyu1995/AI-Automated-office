@@ -423,16 +423,16 @@ pub struct WorkCardService {
 
 impl WorkCardService {
     pub fn new() -> Self {
-        let store = WorkCardStore::new();
+        let mut store = WorkCardStore::new();
         // Initialize with default templates
-        Self::init_default_templates(store);
+        Self::init_default_templates(&mut store);
         Self {
             store: Arc::new(RwLock::new(store)),
         }
     }
 
     /// Initialize default templates
-    fn init_default_templates(mut store: WorkCardStore) {
+    fn init_default_templates(store: &mut WorkCardStore) {
         // Task card template
         let task_template = WorkCardTemplate {
             id: "task_default".to_string(),
@@ -575,71 +575,83 @@ impl WorkCardService {
 
         let card = store.get_mut(card_id).ok_or("Card not found")?;
 
-        // Find the action
-        let action = card
+        // Find the action index
+        let action_index = card
             .actions
             .iter_mut()
-            .find(|a| a.id == action_id)
+            .position(|a| a.id == action_id)
             .ok_or("Action not found")?;
 
+        // Copy action type and clone label to avoid borrow conflict
+        let action_type = card.actions[action_index].action_type;
+        let action_label = card.actions[action_index].label.clone();
+
         // Execute the action based on type
-        let result = match action.action_type {
-            CardActionType::Approve => {
-                card.update_status(CardStatus::Completed);
+        let (result, new_status) = match action_type {
+            CardActionType::Approve => (
                 ActionResult {
                     result_type: ResultType::Success,
                     message: "已批准".to_string(),
-                }
-            }
-            CardActionType::Reject => {
-                card.update_status(CardStatus::Failed);
+                },
+                Some(CardStatus::Completed),
+            ),
+            CardActionType::Reject => (
                 ActionResult {
                     result_type: ResultType::Warning,
                     message: "已拒绝".to_string(),
-                }
-            }
-            CardActionType::Confirm => {
-                card.update_status(CardStatus::InProgress);
+                },
+                Some(CardStatus::Failed),
+            ),
+            CardActionType::Confirm => (
                 ActionResult {
                     result_type: ResultType::Success,
                     message: "已确认".to_string(),
-                }
-            }
-            CardActionType::Cancel => {
-                card.update_status(CardStatus::Cancelled);
+                },
+                Some(CardStatus::InProgress),
+            ),
+            CardActionType::Cancel => (
                 ActionResult {
                     result_type: ResultType::Info,
                     message: "已取消".to_string(),
-                }
-            }
-            CardActionType::Edit => {
+                },
+                Some(CardStatus::Cancelled),
+            ),
+            CardActionType::Edit => (
                 ActionResult {
                     result_type: ResultType::Info,
                     message: "请编辑卡片内容".to_string(),
-                }
-            }
-            CardActionType::Delete => {
+                },
+                None,
+            ),
+            CardActionType::Delete => (
                 ActionResult {
                     result_type: ResultType::Warning,
                     message: "确认删除此卡片？".to_string(),
-                }
-            }
-            CardActionType::Custom => {
+                },
+                None,
+            ),
+            CardActionType::Custom => (
                 ActionResult {
                     result_type: ResultType::Info,
                     message: "操作已执行".to_string(),
-                }
-            }
+                },
+                None,
+            ),
         };
 
+        // Update card status if needed
+        if let Some(status) = new_status {
+            card.update_status(status);
+        }
+
         // Update action result
-        action.result = Some(result.clone());
+        card.actions[action_index].result = Some(result.clone());
 
         // Add audit trail
         card.add_audit_entry(
-            format!("执行操作: {}", action.label),
+            format!("执行操作: {}", action_label),
             actor_name.to_string(),
-            Some(format!("操作类型: {}", action.action_type)),
+            Some(format!("操作类型: {}", action_type)),
         );
 
         tracing::info!(

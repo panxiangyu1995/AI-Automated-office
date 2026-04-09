@@ -131,8 +131,8 @@ impl FinanceSubagentConfig {
     /// 注册到 SubagentManager
     pub fn register(&self, manager: &SubagentManager) -> Result<(), String> {
         let config = self.to_agent_config();
-        let loader = futures::executor::block_on(manager.department_loader());
-        
+        let loader = manager.department_loader();
+
         futures::executor::block_on(loader.register(config))
             .map_err(|e| e.to_string())
     }

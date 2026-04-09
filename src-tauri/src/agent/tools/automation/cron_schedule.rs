@@ -44,7 +44,7 @@ pub struct ScheduledTask {
 /// Global task store
 static TASK_STORE: RwLock<Option<TaskStore>> = RwLock::new(None);
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct TaskStore {
     tasks: HashMap<String, ScheduledTask>,
 }

@@ -97,7 +97,7 @@ impl AgentIntercomService {
         
         // 10. 记录审计日志
         self.audit.record_send(&message).await.map_err(|e| {
-            AgentIntercomError::InternalError { message: e }
+            AgentIntercomError::InternalError { message: e.to_string() }
         })?;
         
         Ok(message)
@@ -169,7 +169,7 @@ impl AgentIntercomService {
     ) -> Result<(), AgentIntercomError> {
         // 更新状态追踪
         self.status_tracker.update_status(message_id, status.clone()).await
-            .map_err(|e| AgentIntercomError::InternalError { message: e })?;
+            .map_err(|e| AgentIntercomError::InternalError { message: e.to_string() })?;
         
         // 更新消息缓存中的状态
         let mut messages = self.messages.write().await;
@@ -210,7 +210,7 @@ impl AgentIntercomService {
         agent_id: &str,
     ) -> Result<AgentPermission, AgentIntercomError> {
         self.permission.get_permission(agent_id).await.map_err(|e| {
-            AgentIntercomError::InternalError { message: e }
+            AgentIntercomError::InternalError { message: e.to_string() }
         })
     }
 

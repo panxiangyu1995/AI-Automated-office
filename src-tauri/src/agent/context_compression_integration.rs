@@ -15,6 +15,7 @@ use tokio::sync::RwLock;
 use crate::agent::context_compression::{
     CompressionStrategy, CompressedContext, ContextCompressor, MessageTokens,
     SessionSummary, SessionSummaryService, SessionSummaryManager, ThresholdStatus, TokenBudget,
+    CompressionStats,
 };
 use crate::agent::runtime_session::RuntimeSessionService;
 use crate::agent::AgentError;
@@ -253,7 +254,7 @@ impl ContextCompressionIntegration {
 
         // Use hybrid strategy: keep recent + summarize middle
         let compressed = self.compressor.compress(
-            messages,
+            messages.clone(),
             self.config.preserve_recent,
         );
 

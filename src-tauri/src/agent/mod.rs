@@ -17,6 +17,7 @@ pub mod monitoring;
 pub mod config;
 pub mod mode;
 pub mod nested;
+pub mod checkpoint;
 pub mod permission;
 pub mod result;
 pub mod routing;
@@ -36,7 +37,7 @@ pub mod router;
 pub mod model_router;
 pub mod pilot;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -137,7 +138,12 @@ pub struct AgentRuntimeState {
     cancellations: Arc<RwLock<HashSet<String>>>,
     /// Provider configuration
     config: Arc<RwLock<Option<RuntimeConfig>>>,
+    /// Agent messages storage for intercom
+    messages: Arc<RwLock<HashMap<String, intercom::types::AgentMessage>>>,
 }
+
+/// Alias for backward compatibility
+pub type AgentState = AgentRuntimeState;
 
 impl AgentRuntimeState {
     /// Create AgentRuntimeState with MockProvider (default - for backward compatibility)
@@ -146,17 +152,19 @@ impl AgentRuntimeState {
             provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProvider::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
+            messages: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
     /// Create AgentRuntimeState with a real LLM provider from configuration
     pub async fn with_config(config: RuntimeConfig) -> Result<Self, AgentError> {
         let provider = Self::create_provider_from_config(&config).await?;
-        
+
         Ok(Self {
             provider: Arc::new(RwLock::new(Arc::new(provider))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(Some(config))),
+            messages: Arc::new(RwLock::new(HashMap::new())),
         })
     }
 
@@ -221,6 +229,7 @@ impl AgentRuntimeState {
             provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProvider::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
+            messages: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -230,6 +239,7 @@ impl AgentRuntimeState {
             provider: Arc::new(RwLock::new(Arc::new(mock_provider::MockProviderWithTools::new()))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
+            messages: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -240,6 +250,7 @@ impl AgentRuntimeState {
             provider: Arc::new(RwLock::new(Arc::new(agent_provider))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
+            messages: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -293,5 +304,62 @@ impl AgentRuntimeState {
     pub async fn interrupt(&self, session_id: &str) -> bool {
         let mut cancellations = self.cancellations.write().await;
         cancellations.insert(session_id.to_string())
+    }
+
+    // =========================================================================
+    // Agent Intercom Methods (FR59-FR68)
+    // =========================================================================
+
+    /// Get all messages for a specific agent
+    pub fn get_agent_messages(&self, agent_id: &str) -> Vec<intercom::types::AgentMessage> {
+        let messages = self.messages.blocking_read();
+        messages.values()
+            .filter(|m| m.receiver_id == agent_id || m.sender_id == agent_id)
+            .cloned()
+            .collect()
+    }
+
+    /// Update message status
+    pub async fn update_message_status(
+        &mut self,
+        message_id: &str,
+        status: intercom::types::MessageStatus,
+    ) -> Result<(), intercom::types::AgentIntercomError> {
+        let mut messages = self.messages.write().await;
+        if let Some(msg) = messages.get_mut(message_id) {
+            msg.status = status;
+            Ok(())
+        } else {
+            Err(intercom::types::AgentIntercomError::MessageNotFound {
+                message_id: message_id.to_string(),
+            })
+        }
+    }
+
+    /// Save an agent message
+    pub async fn save_agent_message(
+        &mut self,
+        message: &intercom::types::AgentMessage,
+    ) -> Result<(), intercom::types::AgentIntercomError> {
+        let mut messages = self.messages.write().await;
+        messages.insert(message.id.clone(), message.clone());
+        Ok(())
+    }
+
+    /// Deliver an agent message (mark as delivered)
+    pub async fn deliver_agent_message(
+        &mut self,
+        message: &intercom::types::AgentMessage,
+    ) -> Result<(), intercom::types::AgentIntercomError> {
+        let mut messages = self.messages.write().await;
+        if let Some(msg) = messages.get_mut(&message.id) {
+            msg.status = intercom::types::MessageStatus::Delivered;
+            msg.delivered_at = Some(chrono::Utc::now());
+            Ok(())
+        } else {
+            Err(intercom::types::AgentIntercomError::MessageNotFound {
+                message_id: message.id.clone(),
+            })
+        }
     }
 }

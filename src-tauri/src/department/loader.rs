@@ -9,7 +9,7 @@ use std::sync::{Arc, RwLock};
 use tracing::{error, info, warn};
 
 /// 部门加载状态
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct DepartmentLoadState {
     /// 部门 ID
     pub department_id: String,

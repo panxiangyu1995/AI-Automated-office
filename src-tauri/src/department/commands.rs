@@ -225,7 +225,10 @@ pub async fn department_load_state(
     state: State<'_, DepartmentState>,
     id: String,
 ) -> Result<Option<crate::department::loader::DepartmentLoadState>, String> {
-    Ok(state.loader.get_load_state(&id))
+    match state.loader.get_load_state(&id) {
+        Some(s) => Ok(Some(s)),
+        None => Err("Department not loaded".to_string()),
+    }
 }
 
 /// 发送部门消息

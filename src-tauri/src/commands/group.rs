@@ -21,15 +21,13 @@ pub async fn create_group(
     group_type: String,
 ) -> Result<Group, String> {
     let store = state.0.read().await;
-    
+
     let gt = match group_type.to_lowercase().as_str() {
         "private" => GroupType::Private,
         _ => GroupType::Public,
     };
-    
-    store.create_group(name, owner_id, gt)
-        .await
-        .map_err(|e| e.to_string())
+
+    Ok(store.create_group(name, owner_id, gt).await)
 }
 
 /// 更新群组

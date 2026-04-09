@@ -68,9 +68,9 @@ impl DepartmentRegistry {
     pub fn get_by_code(&self, code: &DepartmentCode) -> Option<DepartmentPackage> {
         let code_str = code.to_string();
         let code_map = self.code_map.read().unwrap();
-        if let Some(id) = code_map.get(&code_str) {
+        if let Some(id) = code_map.get(&code_str).cloned() {
             drop(code_map);
-            return self.get_by_id(id);
+            return self.get_by_id(&id);
         }
         None
     }

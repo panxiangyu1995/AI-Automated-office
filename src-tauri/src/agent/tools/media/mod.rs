@@ -47,9 +47,9 @@ pub fn register_media_tools(
             is_read_only: true,
             has_side_effects: false,
             supports_retry: true,
-            estimated_duration: Some(std::time::Duration::from_secs(5)),
+            estimated_duration: Some(5000),
         },
-        permissions: Some(vec!["media:read".to_string()]),
+        permissions: None,
         dependencies: None,
         context_requirements: None,
         metadata: ToolMetadata {
@@ -97,9 +97,9 @@ pub fn register_media_tools(
             is_read_only: false,
             has_side_effects: true,
             supports_retry: true,
-            estimated_duration: Some(std::time::Duration::from_secs(3)),
+            estimated_duration: Some(3000),
         },
-        permissions: Some(vec!["media:write".to_string()]),
+        permissions: None,
         dependencies: None,
         context_requirements: None,
         metadata: ToolMetadata {

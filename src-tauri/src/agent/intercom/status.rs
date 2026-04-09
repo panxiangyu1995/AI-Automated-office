@@ -97,7 +97,7 @@ impl MessageStatusTracker {
         let mut statuses = self.statuses.write().await;
         
         let info = statuses.get_mut(message_id)
-            .ok_else(|| format!("消息不存在: {}", message_id))?;
+            .ok_or_else(|| format!("消息不存在: {}", message_id))?;
         
         info.current_status = MessageStatus::Failed;
         info.failed_at = Some(Utc::now());

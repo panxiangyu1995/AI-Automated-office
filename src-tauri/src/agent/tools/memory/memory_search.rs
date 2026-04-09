@@ -14,7 +14,7 @@ use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, To
 use crate::agent::tools::pipeline::ToolErrorCode;
 
 /// Memory source types
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MemorySource {
     /// Personal memory entries

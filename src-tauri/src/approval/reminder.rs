@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Utc, Timelike, Weekday};
+use chrono::{DateTime, Utc, Timelike, Weekday, Datelike};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -284,14 +284,14 @@ impl ReminderService {
         records.get(approval_id).cloned().unwrap_or_default()
     }
 
-    /// 获取用户的催办统计
+    /// 获取用户的催inder_stats
     pub async fn get_reminder_stats(&self, approver_id: &str) -> ReminderStats {
         let daily_counts = self.daily_counts.read().await;
         let (count, _) = daily_counts.get(approver_id).cloned().unwrap_or((0, Utc::now()));
-        
+
         ReminderStats {
             today_count: count,
-            remaining: 3.saturating_sub(count),
+            remaining: (3usize).saturating_sub(count),
             next_reset_at: self.get_next_reset_time(),
         }
     }
@@ -299,7 +299,7 @@ impl ReminderService {
     /// 获取下次重置时间 (次日0点)
     fn get_next_reset_time(&self) -> DateTime<Utc> {
         let now = Utc::now();
-        let tomorrow = now.date_naive() + chrono::NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
+        let tomorrow = now.date_naive() + chrono::Duration::days(1);
         tomorrow.and_hms_opt(0, 0, 0).unwrap().and_utc()
     }
 

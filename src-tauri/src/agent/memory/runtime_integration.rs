@@ -397,7 +397,7 @@ impl MemoryRuntimeIntegration {
 
     /// 计算重要性
     fn calculate_importance(&self, content: &str) -> f32 {
-        let mut score = 0.5; // 基础分
+        let mut score: f32 = 0.5; // 基础分
         
         // 长度贡献
         if content.len() > 100 { score += 0.1; }

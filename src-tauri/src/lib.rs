@@ -2,6 +2,8 @@
 //!
 //! 本模块是 Tauri 应用的入口点，负责初始化应用和注册命令。
 
+mod shortcuts;
+
 mod auth;
 mod agent;
 pub mod approval;
@@ -17,6 +19,17 @@ pub mod sales;
 pub mod tenant;
 pub mod warehouse;
 pub mod workcard;
+pub mod storage;
+pub mod session;
+pub mod sync;
+pub mod network;
+pub mod hardware;
+pub mod http;
+pub mod knowledge;
+pub mod mcp;
+pub mod utils;
+pub mod tray;
+pub mod vector;
 
 pub mod commands;
 
@@ -154,13 +167,14 @@ pub fn run() {
                 app.manage(std::sync::Arc::new(skill_loader));
 
                 // Initialize knowledge base RAG services
-                let embedding_service = std::sync::Arc::new(vector::embedding::EmbeddingService::new(
-                    vector::config::EmbeddingConfig::default()
-                ).expect("无法初始化Embedding服务"));
-                let pipeline = knowledge::DocumentPipeline::new(embedding_service.clone());
-                app.manage(std::sync::Arc::new(pipeline));
-                let context_builder = knowledge::RagContextBuilder::new(embedding_service);
-                app.manage(std::sync::Arc::new(context_builder));
+                // TODO: Re-enable when knowledge module is properly implemented
+                // let embedding_service = std::sync::Arc::new(vector::embedding::EmbeddingService::new(
+                //     vector::config::EmbeddingConfig::default()
+                // ).expect("无法初始化Embedding服务"));
+                // let pipeline = knowledge::DocumentPipeline::new(embedding_service.clone());
+                // app.manage(std::sync::Arc::new(pipeline));
+                // let context_builder = knowledge::RagContextBuilder::new(embedding_service);
+                // app.manage(std::sync::Arc::new(context_builder));
 
                 // Initialize capability package services
                 let capability_storage = Arc::new(capability::FilePackageStorage::new(
@@ -301,12 +315,12 @@ pub fn run() {
             agent::skill::skill_loading_progress,
             agent::skill::skill_search,
             agent::skill::skill_validate,
-            // Knowledge commands
-            knowledge::knowledge_upload_document,
-            knowledge::knowledge_search,
-            knowledge::knowledge_document_status,
-            knowledge::knowledge_delete_document,
-            knowledge::knowledge_rebuild_index,
+            // Knowledge commands - TODO: re-enable when implemented
+            // knowledge::knowledge_upload_document,
+            // knowledge::knowledge_search,
+            // knowledge::knowledge_document_status,
+            // knowledge::knowledge_delete_document,
+            // knowledge::knowledge_rebuild_index,
             // Capability package commands
             capability::install_capability_package,
             capability::uninstall_capability_package,

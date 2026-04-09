@@ -106,10 +106,10 @@ pub async fn set_agent_permission(
     permission: AgentPermission,
 ) -> Result<(), String> {
     let service = state.0.read().await;
-    
+
     if let Some(svc) = service.as_ref() {
         let mut perm = permission;
-        perm.agent_id = agent_id;
+        perm.agent_id = agent_id.clone();
         svc.set_permission(&agent_id, perm)
             .await
             .map_err(|e| e.to_string())

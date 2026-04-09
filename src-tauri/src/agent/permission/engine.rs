@@ -637,18 +637,15 @@ impl PermissionEngine {
         let cache = self.cache.read().await;
         let key = self.cache_key(context);
 
-        cache.get(&key).map(|entry| {
-            let now = chrono::Utc::now().timestamp();
-            if now - entry.timestamp < self.config.cache_ttl_secs as i64 {
-                entry.permissions.clone()
-            } else {
-                // Cache expired
-                drop(cache);
-                // We need to invalidate, but this is async
-                // For simplicity, just return None
-                None
-            }
-        }).flatten()
+        let entry = cache.get(&key)?;
+        let now = chrono::Utc::now().timestamp();
+        if now - entry.timestamp < self.config.cache_ttl_secs as i64 {
+            Some(entry.permissions.clone())
+        } else {
+            // Cache expired - we need to invalidate, but this is async
+            // For simplicity, just return None
+            None
+        }
     }
 
     /// Update cache

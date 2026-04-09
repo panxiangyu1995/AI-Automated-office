@@ -14,7 +14,7 @@ use super::filesystem;
 use super::media;
 use super::automation;
 use super::memory;
-use super::profile::{resolve_allowed_tools, check_tool_access, ToolProfile, ToolProfileConfig, ToolsConfig};
+use super::profile::{resolve_allowed_tools, check_tool_access, ToolProfile, ToolProfileConfig, ToolsConfig, ProfileManager, filter_tools_by_profile};
 use super::sessions;
 use super::shell;
 use super::web;
@@ -148,7 +148,7 @@ pub trait ToolExecutor: Send + Sync {
 pub struct ToolExecutionPipeline {
     registry: Arc<ToolRegistry>,
     executors: Arc<HashMap<String, Arc<dyn ToolExecutor>>>,
-    profile_manager: profile::ProfileManager,
+    profile_manager: ProfileManager,
     default_timeout_ms: u64,
     max_timeout_ms: u64,
 }
@@ -172,14 +172,14 @@ impl ToolExecutionPipeline {
         Self {
             registry: Arc::new(registry),
             executors: Arc::new(executors),
-            profile_manager: profile::ProfileManager::new(),
+            profile_manager: ProfileManager::new(),
             default_timeout_ms: 30000,
             max_timeout_ms: 300000,
         }
     }
 
     /// Get the profile manager for runtime profile switching
-    pub fn profile_manager(&self) -> &profile::ProfileManager {
+    pub fn profile_manager(&self) -> &ProfileManager {
         &self.profile_manager
     }
 
@@ -195,7 +195,7 @@ impl ToolExecutionPipeline {
 
     /// List all tools allowed for the current profile
     pub fn list_allowed_tools(&self) -> Vec<ToolDescriptor> {
-        profile::filter_tools_by_profile(&self.list_tools(), self.get_profile())
+        filter_tools_by_profile(&self.list_tools(), self.get_profile())
     }
 
     /// Check if a tool is allowed for the current profile

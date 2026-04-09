@@ -11,7 +11,7 @@ pub mod router;
 pub mod executor;
 
 pub use classifier::{IntentClassifier, IntentResult, KeywordRule};
-pub use router::{IntentRouter, RouteDecision, RoutingError};
+pub use router::{IntentRouter, RouteDecision};
 pub use executor::{DelegationExecutor, DelegationContext, ExecutionError};
 
 use serde::{Deserialize, Serialize};

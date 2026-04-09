@@ -132,6 +132,8 @@ impl Tool for FinanceExportTool {
             requires_confirmation: false,
             is_read_only: false,
             has_side_effects: false,
+            supports_retry: false,
+            estimated_duration: None,
         }
     }
 
@@ -143,7 +145,7 @@ impl Tool for FinanceExportTool {
                 description: "导出格式".to_string(),
                 required: true,
                 default: None,
-                enum_: Some(vec![
+                r#enum: Some(vec![
                     "excel".to_string(),
                     "pdf".to_string(),
                     "csv".to_string(),
@@ -161,7 +163,7 @@ impl Tool for FinanceExportTool {
                 description: "日期范围".to_string(),
                 required: false,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,
@@ -174,7 +176,7 @@ impl Tool for FinanceExportTool {
                 description: "部门".to_string(),
                 required: false,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,
@@ -271,6 +273,8 @@ impl Tool for FinanceReportTool {
             requires_confirmation: true,
             is_read_only: false,
             has_side_effects: false,
+            supports_retry: false,
+            estimated_duration: None,
         }
     }
 
@@ -282,7 +286,7 @@ impl Tool for FinanceReportTool {
                 description: "报表类型".to_string(),
                 required: true,
                 default: None,
-                enum_: Some(vec![
+                r#enum: Some(vec![
                     "monthly".to_string(),
                     "quarterly".to_string(),
                     "annual".to_string(),
@@ -301,7 +305,7 @@ impl Tool for FinanceReportTool {
                 description: "日期范围".to_string(),
                 required: true,
                 default: None,
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,
@@ -314,7 +318,7 @@ impl Tool for FinanceReportTool {
                 description: "是否包含图表".to_string(),
                 required: false,
                 default: Some(serde_json::json!(true)),
-                enum_: None,
+                r#enum: None,
                 minimum: None,
                 maximum: None,
                 pattern: None,

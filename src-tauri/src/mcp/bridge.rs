@@ -44,25 +44,53 @@ impl MCPToolBridge {
 
         for tool in tools {
             let tool_name = format!("mcp_{}_{}", service_id, tool.name);
-            
+
             // Create tool descriptor
             let descriptor = ToolDescriptor {
+                id: format!("mcp_{}_{}", service_id, tool.name),
                 name: tool_name.clone(),
-                description: tool.description,
-                category: "mcp".to_string(),
-                parameters: tool.input_schema,
-                handler: format!("mcp_tool:{}:{}", service_id, tool.name),
-                permissions: Vec::new(),
-                experimental: tool.experimental,
+                description: tool.description.clone(),
+                category: crate::agent::tools::descriptor::ToolCategory::Mcp,
+                parameters: Vec::new(), // MCP tools may have different schema
+                return_type: None,
+                execution_mode: crate::agent::tools::descriptor::ToolExecutionMode::Async,
+                capabilities: crate::agent::tools::descriptor::ToolCapabilities {
+                    supports_streaming: false,
+                    supports_cancellation: false,
+                    requires_permission: false,
+                    requires_confirmation: false,
+                    is_read_only: true,
+                    has_side_effects: false,
+                    supports_retry: false,
+                    estimated_duration: None,
+                },
+                permissions: None,
+                dependencies: None,
+                context_requirements: None,
+                metadata: crate::agent::tools::descriptor::ToolMetadata {
+                    author: None,
+                    version: "1.0.0".to_string(),
+                    license: None,
+                    homepage: None,
+                    repository: None,
+                    tags: vec!["mcp".to_string()],
+                    category: "mcp".to_string(),
+                    subcategory: Some(service_id.to_string()),
+                },
+                enabled: true,
+                deprecated: None,
+                deprecation_message: None,
+                handler_module: Some(format!("mcp_tool:{}", service_id)),
+                handler_function: Some(tool.name.clone()),
             };
 
             // Register with tool registry if available
             if let Some(ref tr) = *self.tool_registry.read().await {
-                let _ = tr.register(descriptor).await;
+                tr.register(descriptor);
             }
 
             // Store mapping
-            tool_map.insert(tool_name, service_id.to_string());
+            tool_map.insert(tool_name.clone(), service_id.to_string());
             registered.push(tool_name);
         }
 
@@ -83,7 +111,7 @@ impl MCPToolBridge {
         // Unregister from tool registry
         if let Some(ref tr) = *self.tool_registry.read().await {
             for tool_name in &tools_to_remove {
-                let _ = tr.unregister(tool_name).await;
+                tr.unregister(tool_name);
             }
         }
 
@@ -102,11 +130,12 @@ impl MCPToolBridge {
         arguments: serde_json::Value,
     ) -> Result<serde_json::Value, String> {
         // Look up service ID from tool name
-        let tool_map = self.tool_service_map.read().await;
-        let service_id = tool_map.get(tool_name)
-            .ok_or_else(|| format!("Tool {} not registered", tool_name))?;
+        let service_id = {
+            let tool_map = self.tool_service_map.read().await;
+            tool_map.get(tool_name).cloned()
+        };
 
-        drop(tool_map);
+        let service_id = service_id.ok_or_else(|| format!("Tool {} not registered", tool_name))?;
 
         // Extract the MCP tool name from the full name
         let mcp_tool_name = tool_name
@@ -116,7 +145,7 @@ impl MCPToolBridge {
 
         // Call the tool
         self.registry
-            .call_tool(service_id, mcp_tool_name, arguments)
+            .call_tool(&service_id, mcp_tool_name, arguments)
             .await
     }
 

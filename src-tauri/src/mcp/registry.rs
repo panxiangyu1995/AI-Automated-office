@@ -114,7 +114,10 @@ impl MCPServiceRegistry {
     /// Get a specific service info
     pub async fn get_service(&self, service_id: &str) -> Option<MCPServiceInfo> {
         let clients = self.clients.read().await;
-        clients.get(service_id).map(|c| c.service_info())
+        match clients.get(service_id) {
+            Some(c) => Some(c.service_info().await),
+            None => None,
+        }
     }
 
     /// Call a tool on a service
@@ -124,11 +127,12 @@ impl MCPServiceRegistry {
         tool_name: String,
         arguments: serde_json::Value,
     ) -> Result<serde_json::Value, String> {
-        let clients = self.clients.read().await;
-        let client = clients.get(service_id)
-            .ok_or_else(|| format!("Service {} not found", service_id))?;
+        let client = {
+            let clients = self.clients.read().await;
+            clients.get(service_id).cloned()
+        };
 
-        drop(clients);
+        let client = client.ok_or_else(|| format!("Service {} not found", service_id))?;
 
         let args_map: std::collections::HashMap<String, serde_json::Value> =
             serde_json::from_value(arguments)
@@ -172,7 +176,10 @@ impl MCPServiceRegistry {
     /// Get service status
     pub async fn status(&self, service_id: &str) -> Option<MCPServiceStatus> {
         let clients = self.clients.read().await;
-        clients.get(service_id).map(|c| c.status())
+        match clients.get(service_id) {
+            Some(c) => Some(c.status().await),
+            None => None,
+        }
     }
 }
 
@@ -195,7 +202,7 @@ mod tests {
             id: "test-service".to_string(),
             name: "Test Service".to_string(),
             description: "A test service".to_string(),
-            transport: super::types::MCPTransportType::Http,
+            transport: crate::mcp::MCPTransportType::Http,
             command: None,
             args: Vec::new(),
             env: HashMap::new(),

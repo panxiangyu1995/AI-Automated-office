@@ -108,7 +108,7 @@ impl ToolExecutor for CronListExecutor {
         }
 
         let store = get_or_init_store();
-        let mut tasks: Vec<ScheduledTask> = store.list_tasks().cloned().collect();
+        let mut tasks: Vec<ScheduledTask> = store.list_tasks().into_iter().map(|t| (*t).clone()).collect();
 
         // Apply status filter if provided
         if let Some(ref status_str) = list_params.status_filter {

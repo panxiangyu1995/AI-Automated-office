@@ -55,72 +55,61 @@ impl DepartmentMessageBus {
             message.from, message.to, message.message_type
         );
 
-        // 查找订阅者
-        let handlers = {
+        // 查找并筛选订阅者，处理消息，同时保持锁
+        let (errors, response_data) = {
             let subscribers = self.subscribers.read().unwrap();
-            subscribers.get(&target_code).cloned()
-        };
-
-        if let Some(subs) = handlers {
-            // 筛选匹配的消息类型处理器
-            let matching_handlers: Vec<_> = subs
-                .into_iter()
-                .filter(|s| s.message_types.contains(&message.message_type) || s.message_types.is_empty())
-                .collect();
+            let matching_handlers: Vec<&Subscriber> = match subscribers.get(&target_code) {
+                Some(subs) => subs
+                    .iter()
+                    .filter(|s| s.message_types.contains(&message.message_type) || s.message_types.is_empty())
+                    .collect(),
+                None => Vec::new(),
+            };
 
             if matching_handlers.is_empty() {
                 warn!("目标部门 {} 没有处理此类型消息的处理器", target_code);
             }
 
             // 调用处理器
-            let mut errors = Vec::new();
+            let mut errors: Vec<String> = Vec::new();
             let mut response_data: Option<serde_json::Value> = None;
 
             for handler_info in matching_handlers {
-                match (handler_info.handler)(message.clone()) {
+                let handler: &MessageHandler = &handler_info.handler;
+                match handler(message.clone()) {
                     Ok(data) => {
                         if response_data.is_none() {
                             response_data = Some(data);
                         }
                     }
                     Err(e) => {
-                        errors.push(e);
+                        errors.push(e.clone());
                         error!("消息处理失败: {}", e);
                     }
                 }
             }
 
-            // 记录消息历史
-            self.add_to_history(message);
+            (errors, response_data)
+        }; // Guard dropped here
 
-            // 返回响应
-            Ok(MessageResponse {
-                message_id,
-                status: if errors.is_empty() {
-                    MessageStatus::Completed
-                } else {
-                    MessageStatus::Failed
-                },
-                response_data,
-                error: if errors.is_empty() {
-                    None
-                } else {
-                    Some(errors.join("; "))
-                },
-            })
-        } else {
-            warn!("目标部门 {} 未订阅消息", target_code);
+        // 记录消息历史
+        self.add_to_history(message);
 
-            // 仍然记录消息历史
-            self.add_to_history(message);
-
-            Ok(MessageResponse {
-                message_id,
-                status: MessageStatus::Pending,
-                response_data: None,
-                error: Some(format!("目标部门 {} 未订阅消息", target_code)),
-            })
-        }
+        // 返回响应
+        Ok(MessageResponse {
+            message_id,
+            status: if errors.is_empty() {
+                MessageStatus::Completed
+            } else {
+                MessageStatus::Failed
+            },
+            response_data,
+            error: if errors.is_empty() {
+                None
+            } else {
+                Some(errors.join("; "))
+            },
+        })
     }
 
     /// 发送请求并等待响应（请求/响应模式）
