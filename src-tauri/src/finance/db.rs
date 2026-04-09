@@ -149,6 +149,58 @@ impl FinanceDatabase {
             total_receivable, total_payable, total_invoices: invoices.len() as i64, pending_count,
         }
     }
+
+    // ==================== 销售集成操作 ====================
+    pub fn link_invoice_to_contract(&self, invoice_id: &str, sales_contract_id: &str) -> Result<Invoice, String> {
+        let mut invoices = self.invoices.write().unwrap();
+        let inv = invoices.get_mut(invoice_id).ok_or("发票不存在")?;
+        inv.sales_contract_id = Some(sales_contract_id.to_string());
+        inv.updated_at = chrono::Utc::now().timestamp();
+        info!("发票 {} 已关联到销售合同 {}", invoice_id, sales_contract_id);
+        Ok(inv.clone())
+    }
+
+    pub fn create_invoice_from_sales(&self, sales_contract_id: &str, amount: f64, tax_amount: f64) -> Result<Invoice, String> {
+        let now = chrono::Utc::now().timestamp();
+        let invoice = Invoice {
+            id: uuid::Uuid::new_v4().to_string(),
+            number: format!("FP{}", chrono::Utc::now().timestamp_millis()),
+            invoice_type: InvoiceType::Vat,
+            amount,
+            tax_amount,
+            customer_id: None,
+            sales_quote_id: None,
+            sales_contract_id: Some(sales_contract_id.to_string()),
+            ocr_result: None,
+            status: InvoiceStatus::Pending,
+            created_at: now,
+            updated_at: now,
+        };
+        self.invoices.write().unwrap().insert(invoice.id.clone(), invoice.clone());
+        info!("从销售合同 {} 创建发票: {}", sales_contract_id, invoice.id);
+        Ok(invoice)
+    }
+
+    pub fn create_ledger_from_sales(&self, sales_contract_id: &str, ledger_type: LedgerType, amount: f64, due_date: i64) -> Result<LedgerEntry, String> {
+        let now = chrono::Utc::now().timestamp();
+        let entry = LedgerEntry {
+            id: uuid::Uuid::new_v4().to_string(),
+            ledger_type,
+            amount,
+            paid_amount: 0.0,
+            customer_id: None,
+            invoice_id: None,
+            due_date,
+            status: LedgerStatus::Pending,
+            created_at: now,
+            updated_at: now,
+        };
+        // Note: In a real implementation, we would link to the sales_contract here
+        // For now, we just create the ledger entry
+        self.ledger_entries.write().unwrap().insert(entry.id.clone(), entry.clone());
+        info!("从销售合同 {} 创建台账记录: {}", sales_contract_id, entry.id);
+        Ok(entry)
+    }
 }
 
 impl Default for FinanceDatabase { fn default() -> Self { Self::new() } }

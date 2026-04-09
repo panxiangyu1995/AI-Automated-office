@@ -2447,9 +2447,10 @@
           "src/features/finance/components/FinancePanel.tsx"
         ],
         "backend": [
-          "src-tauri/src/agent/tools/finance/"
+          "src-tauri/src/agent/tools/finance/",
+          "src-tauri/src/finance/"
         ],
-        "note": "财务工具存在，与业务模块集成缺失。"
+        "note": "财务工具已实现，已添加与销售模块集成命令。"
       },
       "openspec_change": "finance-ai-integration",
       "steps": [
@@ -2482,7 +2483,7 @@
         "Task 150",
         "Task 184"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 196,

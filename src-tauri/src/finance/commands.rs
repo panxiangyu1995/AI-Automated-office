@@ -63,3 +63,41 @@ pub async fn finance_record_payment(state: State<'_, FinanceState>, id: String, 
 pub async fn finance_get_stats(state: State<'_, FinanceState>) -> Result<FinanceStats, String> {
     Ok(state.db.get_stats())
 }
+
+#[tauri::command]
+pub async fn finance_link_invoice_to_contract(
+    state: State<'_, FinanceState>,
+    invoice_id: String,
+    sales_contract_id: String,
+) -> Result<Invoice, String> {
+    info!("关联发票 {} 到销售合同 {}", invoice_id, sales_contract_id);
+    state.db.link_invoice_to_contract(&invoice_id, &sales_contract_id)
+}
+
+#[tauri::command]
+pub async fn finance_create_invoice_from_sales(
+    state: State<'_, FinanceState>,
+    sales_contract_id: String,
+    amount: f64,
+    tax_amount: f64,
+) -> Result<Invoice, String> {
+    info!("从销售合同 {} 创建发票", sales_contract_id);
+    state.db.create_invoice_from_sales(&sales_contract_id, amount, tax_amount)
+}
+
+#[tauri::command]
+pub async fn finance_create_ledger_from_sales(
+    state: State<'_, FinanceState>,
+    sales_contract_id: String,
+    ledger_type: String,
+    amount: f64,
+    due_date: i64,
+) -> Result<LedgerEntry, String> {
+    info!("从销售合同 {} 创建台账记录", sales_contract_id);
+    let lt = match ledger_type.as_str() {
+        "receivable" => LedgerType::Receivable,
+        "payable" => LedgerType::Payable,
+        _ => return Err("Invalid ledger type".to_string()),
+    };
+    state.db.create_ledger_from_sales(&sales_contract_id, lt, amount, due_date)
+}
