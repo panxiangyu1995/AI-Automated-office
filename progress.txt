@@ -1838,3 +1838,65 @@ completion promise 条件**不满足**：
 - 后端模块已存在，新增熔断器和错误分类功能
 - 前端组件 ErrorClassificationGuidance.tsx 仍使用 mock 数据（设计如此）
 - 故障转移 (Fallback) 和 Auth Profile 轮换已在错误分类中标记支持
+
+---
+
+## 2026-04-09 - Task 193: 工具调用可见性增强 (Phase 2 Loop)
+
+### 铁律合规检查：
+- PRD 合规：FR69-FR80 - 工具调用可见性
+- 架构合规：遵循 ARCH-01 分层架构
+- UX 合规：遵循 UX-01, UX-04
+
+### What was done:
+
+#### 后端实现:
+1. **src-tauri/src/agent/tools/visibility.rs** - 工具调用可见性追踪模块:
+   - `ToolCallStatus` 枚举 - 状态 (Pending/Running/Success/Failed/Timeout/Cancelled/Retrying)
+   - `ToolCategory` 枚举 - 类别 (General/Platform/Department/Restricted)
+   - `ToolCallEntry` 结构 - 单个工具调用记录
+   - `ToolVisibilityStats` 结构 - 统计信息
+   - `ToolCallFilter` 结构 - 查询过滤器
+   - `BatchOperation` 结构 - 批量操作（断点续传）
+   - `ToolVisibilityService` 服务:
+     - create_entry/get_entry - 创建和获取条目
+     - mark_started/mark_success/mark_failed/mark_timeout/mark_cancelled - 状态更新
+     - mark_retry - 重试标记
+     - set_manual_result - 手动输入结果
+     - query_entries - 多维度查询
+     - get_retriable_entries/get_pending_retries - 获取重试列表
+     - batch 操作 - create/start/update/resume
+
+2. **src-tauri/src/commands/tool_visibility.rs** - 20个Tauri命令:
+   - create_tool_call_entry, get_tool_call_entry
+   - mark_tool_call_started, mark_tool_call_success, mark_tool_call_failed
+   - mark_tool_call_retry, set_tool_call_manual_result, mark_tool_call_retained
+   - query_tool_call_entries, get_session_tool_calls
+   - get_retriable_tool_calls, get_pending_retries
+   - get_tool_visibility_stats, delete_tool_call_entry, clear_all_tool_calls
+   - create_tool_batch, start_tool_batch, update_tool_batch_progress
+   - get_tool_batch, get_pending_batches, resume_tool_batch
+   - get_tool_call_statuses, get_tool_categories
+
+3. **lib.rs** 更新:
+   - 添加 `app.manage(agent::tools::ToolVisibilityService::new())`
+   - 注册所有 tool_visibility 命令到 invoke_handler
+
+4. **agent/tools/mod.rs** 更新:
+   - 添加 `pub mod visibility;` 和 `pub use visibility::*;`
+
+#### 验收标准:
+- ✅ 工具调用实时状态追踪 - ToolCallStatus 完整实现
+- ✅ 参数和结果展示 - ToolCallEntry 包含 input/output
+- ✅ 失败重试追踪 - mark_retry/get_retriable_entries
+- ✅ 手动输入结果 - set_manual_result
+- ✅ 批量断点续传 - BatchOperation 完整实现
+
+### Testing:
+- ✅ npm run lint: 0 错误
+- ✅ cargo check: 只有 warnings, 0 errors
+
+### Notes:
+- 前端 ToolHistory.tsx 已存在，使用 mock 数据（设计如此）
+- 工具可见性后端完整实现，支持与前端 API 集成
+- 实现了完整的状态机和批量操作机制

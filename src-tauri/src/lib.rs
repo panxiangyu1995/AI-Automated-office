@@ -96,6 +96,7 @@ pub fn run() {
                 app.manage(session_cache);
                 app.manage(agent::AgentRuntimeState::new());
                 app.manage(agent::tools::ToolExecutionPipeline::new());
+                app.manage(agent::tools::ToolVisibilityService::new());
                 app.manage(agent::heartbeat::create_heartbeat_manager());
                 
                 // Initialize WebSocket connection manager (Task 136)
@@ -550,6 +551,30 @@ pub fn run() {
             commands::monitoring::get_session_traces,
             commands::monitoring::get_trace,
             commands::monitoring::get_span,
+            // Tool visibility commands (Task 193 - FR69-FR80)
+            commands::tool_visibility::create_tool_call_entry,
+            commands::tool_visibility::get_tool_call_entry,
+            commands::tool_visibility::mark_tool_call_started,
+            commands::tool_visibility::mark_tool_call_success,
+            commands::tool_visibility::mark_tool_call_failed,
+            commands::tool_visibility::mark_tool_call_retry,
+            commands::tool_visibility::set_tool_call_manual_result,
+            commands::tool_visibility::mark_tool_call_retained,
+            commands::tool_visibility::query_tool_call_entries,
+            commands::tool_visibility::get_session_tool_calls,
+            commands::tool_visibility::get_retriable_tool_calls,
+            commands::tool_visibility::get_pending_retries,
+            commands::tool_visibility::get_tool_visibility_stats,
+            commands::tool_visibility::delete_tool_call_entry,
+            commands::tool_visibility::clear_all_tool_calls,
+            commands::tool_visibility::create_tool_batch,
+            commands::tool_visibility::start_tool_batch,
+            commands::tool_visibility::update_tool_batch_progress,
+            commands::tool_visibility::get_tool_batch,
+            commands::tool_visibility::get_pending_batches,
+            commands::tool_visibility::resume_tool_batch,
+            commands::tool_visibility::get_tool_call_statuses,
+            commands::tool_visibility::get_tool_categories,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

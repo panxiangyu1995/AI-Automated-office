@@ -17,9 +17,11 @@ pub mod registry;
 pub mod sensitivity;
 pub mod sessions;
 pub mod shell;
+pub mod visibility;
 pub mod web;
 
 pub use descriptor::*;
 pub use pipeline::*;
 pub use profile::*;
 pub use registry::*;
+pub use visibility::*;

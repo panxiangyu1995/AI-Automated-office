@@ -24,6 +24,7 @@ pub mod shortcuts;
 pub mod storage;
 pub mod system;
 pub mod tools;
+pub mod tool_visibility;
 pub mod update;
 pub mod subagent;
 pub mod skill;
