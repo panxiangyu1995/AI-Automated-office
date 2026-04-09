@@ -4,6 +4,7 @@ pub mod audit;
 pub mod context_compression;
 pub mod correction;
 pub mod error_recovery;
+pub mod failover;
 pub mod events;
 pub mod execution;
 pub mod heartbeat;

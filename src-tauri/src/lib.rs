@@ -105,6 +105,7 @@ pub fn run() {
                 let provider_config_state = commands::provider_config::ProviderConfigState::default();
                 app.manage(provider_config_state.clone());
                 app.manage(commands::provider_config::RoutingModeState::new());
+                app.manage(commands::failover::FailoverState::new());
 
                 // Initialize real LLM provider from configuration (Phase 7: T7.4)
                 // Priority: User config > Tenant config > Official config
@@ -360,6 +361,19 @@ pub fn run() {
             commands::provider_config::activate_yolo_mode,
             commands::provider_config::deactivate_yolo_mode,
             commands::provider_config::get_yolo_status,
+            // Failover commands (Task 189)
+            commands::failover::init_failover_service,
+            commands::failover::get_failover_providers,
+            commands::failover::get_failover_provider,
+            commands::failover::update_provider_status,
+            commands::failover::get_failover_records,
+            commands::failover::execute_failover,
+            commands::failover::get_session_repairs,
+            commands::failover::get_pending_repairs,
+            commands::failover::create_repair,
+            commands::failover::update_repair_status,
+            commands::failover::get_failover_stats,
+            commands::failover::evaluate_session_health,
             // WebSocket commands (Task 136)
             agent::websocket::create_websocket_connection,
             agent::websocket::get_websocket_connection_state,
