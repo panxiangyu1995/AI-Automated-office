@@ -2,30 +2,40 @@ use tauri::State;
 use serde::{Deserialize, Serialize};
 use crate::auth::{AuthService, User};
 
+/// Login request with optional tenant_id (defaults to "default")
 #[derive(Deserialize)]
 pub struct LoginRequest {
-    username: String,
-    password: String,
-    remember_me: bool,
+    pub username: String,
+    pub password: String,
+    pub remember_me: bool,
+    #[serde(default = "default_tenant_id")]
+    pub tenant_id: String,
+}
+
+fn default_tenant_id() -> String {
+    "default".to_string()
+}
+
+/// Register request with optional tenant_id (defaults to "default")
+#[derive(Deserialize)]
+pub struct RegisterRequest {
+    pub username: String,
+    pub password: String,
+    pub name: String,
+    pub department: Option<String>,
+    #[serde(default = "default_tenant_id")]
+    pub tenant_id: String,
 }
 
 #[derive(Serialize)]
 pub struct LoginResponse {
-    user: User,
-    token: String,
-}
-
-#[derive(Deserialize)]
-pub struct RegisterRequest {
-    username: String,
-    password: String,
-    name: String,
-    department: Option<String>,
+    pub user: User,
+    pub token: String,
 }
 
 #[derive(Serialize)]
 pub struct RegisterResponse {
-    user: User,
+    pub user: User,
 }
 
 #[tauri::command]
@@ -34,7 +44,7 @@ pub async fn login(
     auth_service: State<'_, AuthService>,
 ) -> Result<LoginResponse, String> {
     let (user, token) = auth_service
-        .login(&request.username, &request.password, request.remember_me)
+        .login(&request.tenant_id, &request.username, &request.password)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -48,6 +58,7 @@ pub async fn register(
 ) -> Result<RegisterResponse, String> {
     let user = auth_service
         .register(
+            &request.tenant_id,
             &request.username,
             &request.password,
             &request.name,
@@ -61,7 +72,6 @@ pub async fn register(
 
 #[tauri::command]
 pub async fn logout() -> Result<(), String> {
-    // Logout is handled client-side by removing token
     Ok(())
 }
 
@@ -70,5 +80,5 @@ pub async fn get_current_user(
     token: String,
     auth_service: State<'_, AuthService>,
 ) -> Result<Option<User>, String> {
-    auth_service.get_current_user(&token).await.map_err(|e| e.to_string())
+    auth_service.verify_token(&token).await.map_err(|e| e.to_string())
 }

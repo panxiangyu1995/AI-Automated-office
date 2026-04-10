@@ -22,6 +22,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use tracing;
 
 /// Configuration for a single agent
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -133,7 +134,7 @@ impl AgentConfigLoader {
                 match self.load_file(&path) {
                     Ok(config) => configs.push(config),
                     Err(e) => {
-                        eprintln!("Warning: Failed to load {:?}: {}", path, e);
+                        tracing::warn!("Failed to load {:?}: {}", path, e);
                     }
                 }
             }

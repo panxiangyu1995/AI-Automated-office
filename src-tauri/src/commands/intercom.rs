@@ -23,6 +23,19 @@ pub async fn send_agent_message(
     receiver_id: String,
     content: String,
 ) -> Result<AgentMessage, String> {
+    if sender_id.is_empty() {
+        return Err("sender_id 不能为空".to_string());
+    }
+    if receiver_id.is_empty() {
+        return Err("receiver_id 不能为空".to_string());
+    }
+    if content.is_empty() {
+        return Err("content 不能为空".to_string());
+    }
+    if content.len() > 65535 {
+        return Err("content 超出最大长度限制 (65535)".to_string());
+    }
+
     let service = state.0.read().await;
     
     if let Some(svc) = service.as_ref() {
@@ -142,6 +155,13 @@ pub async fn recall_agent_message(
     message_id: String,
     sender_id: String,
 ) -> Result<(), String> {
+    if message_id.is_empty() {
+        return Err("message_id 不能为空".to_string());
+    }
+    if sender_id.is_empty() {
+        return Err("sender_id 不能为空".to_string());
+    }
+
     let service = state.0.read().await;
     
     if let Some(svc) = service.as_ref() {
@@ -166,4 +186,59 @@ pub fn init_intercom_service() -> IntercomServiceState {
         .build();
     
     IntercomServiceState(Arc::new(RwLock::new(Some(service))))
+}
+
+/// Agent联系人信息
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct AgentContactInfo {
+    pub id: String,
+    pub name: String,
+    pub role_type: String,
+    pub department: String,
+    pub status: String,
+    pub security_level: String,
+    pub permission_level: String,
+    pub last_seen: Option<i64>,
+    pub unread_count: i32,
+}
+
+/// 获取Agent联系人列表
+#[tauri::command]
+pub async fn get_agent_contacts(
+    state: State<'_, IntercomServiceState>,
+    agent_id: String,
+) -> Result<Vec<AgentContactInfo>, String> {
+    let service = state.0.read().await;
+    if service.is_none() {
+        return Err("Agent通信服务未初始化".to_string());
+    }
+    let svc = service.as_ref().unwrap();
+
+    let messages = svc.get_messages(&agent_id, Some(100)).await
+        .map_err(|e| e.to_string())?;
+
+    // 从消息中提取联系人（基于senderId去重）
+    let mut contact_map: std::collections::HashMap<String, AgentContactInfo> =
+        std::collections::HashMap::new();
+
+    for msg in &messages {
+        let contact_id = &msg.sender_id;
+        if !contact_map.contains_key(contact_id) {
+            contact_map.insert(contact_id.clone(), AgentContactInfo {
+                id: contact_id.clone(),
+                name: format!("Agent-{}", &contact_id[..8.min(contact_id.len())]),
+                role_type: msg.sender_type.clone(),
+                department: "未知".to_string(),
+                status: "offline".to_string(),
+                security_level: "verified".to_string(),
+                permission_level: "read".to_string(),
+                last_seen: Some(msg.created_at.timestamp()),
+                unread_count: 0,
+            });
+        }
+    }
+
+    let mut contacts: Vec<_> = contact_map.into_values().collect();
+    contacts.sort_by(|a, b| b.last_seen.cmp(&a.last_seen));
+    Ok(contacts)
 }

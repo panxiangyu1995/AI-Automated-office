@@ -84,12 +84,12 @@ pub fn run() {
             tauri::async_runtime::block_on(async {
                 let pool = storage::sqlite::create_pool("default").await.expect("无法创建数据库连接池");
                 storage::migrations::run_migrations(&pool).await.expect("无法运行数据库迁移");
-                
-                let auth_service = auth::AuthService::new(pool);
-                auth_service.ensure_default_user().await.expect("无法初始化默认用户");
-                
+
+                let auth_service = auth::AuthService::new(pool.clone());
+                auth_service.ensure_default_user("default").await.expect("无法初始化默认用户");
+
                 app.manage(auth_service);
-                
+
                 // Initialize session cache
                 let app_data_dir = get_app_data_dir();
                 let session_cache = session::SessionCache::new(app_data_dir.clone())
@@ -271,8 +271,10 @@ pub fn run() {
                 let message_state = message::MessageState::new();
                 app.manage(message_state);
 
-                // Initialize Tenant module
-                let tenant_state = tenant::TenantState::new();
+                // Initialize Tenant module with SQLite persistence
+                let tenant_state = tenant::TenantState::new(pool.clone());
+                tenant::init_default_tenant(&tenant_state).await
+                    .expect("无法初始化默认租户");
                 app.manage(tenant_state);
 
                 // Initialize WorkCard module

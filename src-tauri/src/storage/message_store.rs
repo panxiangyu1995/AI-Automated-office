@@ -12,16 +12,18 @@ pub struct Message {
     pub tool_call_id: Option<String>,
     pub metadata: Option<serde_json::Value>,
     pub created_at: i64,
+    pub tenant_id: String,
 }
 
 #[derive(Clone)]
 pub struct MessageStore {
     pool: SqlitePool,
+    tenant_id: String,
 }
 
 impl MessageStore {
-    pub fn new(pool: SqlitePool) -> Self {
-        Self { pool }
+    pub fn new(pool: SqlitePool, tenant_id: String) -> Self {
+        Self { pool, tenant_id }
     }
 
     pub async fn create(&self, message: &Message) -> Result<()> {
@@ -37,8 +39,8 @@ impl MessageStore {
             .transpose()?;
 
         sqlx::query(
-            "INSERT INTO messages (id, session_id, role, content, tool_calls, tool_call_id, metadata, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+            "INSERT INTO messages (id, session_id, role, content, tool_calls, tool_call_id, metadata, created_at, tenant_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
         )
         .bind(&message.id)
         .bind(&message.session_id)
@@ -48,6 +50,7 @@ impl MessageStore {
         .bind(&message.tool_call_id)
         .bind(metadata)
         .bind(message.created_at)
+        .bind(&self.tenant_id)
         .execute(&self.pool)
         .await?;
 
@@ -56,10 +59,11 @@ impl MessageStore {
 
     pub async fn get_by_id(&self, id: &str) -> Result<Option<Message>> {
         let row = sqlx::query(
-            "SELECT id, session_id, role, content, tool_calls, tool_call_id, metadata, created_at
-             FROM messages WHERE id = ? LIMIT 1;",
+            "SELECT id, session_id, role, content, tool_calls, tool_call_id, metadata, created_at, tenant_id
+             FROM messages WHERE id = ? AND tenant_id = ? LIMIT 1;",
         )
         .bind(id)
+        .bind(&self.tenant_id)
         .fetch_optional(&self.pool)
         .await?;
 
@@ -68,10 +72,11 @@ impl MessageStore {
 
     pub async fn list_by_session(&self, session_id: &str) -> Result<Vec<Message>> {
         let rows = sqlx::query(
-            "SELECT id, session_id, role, content, tool_calls, tool_call_id, metadata, created_at
-             FROM messages WHERE session_id = ? ORDER BY created_at ASC;",
+            "SELECT id, session_id, role, content, tool_calls, tool_call_id, metadata, created_at, tenant_id
+             FROM messages WHERE session_id = ? AND tenant_id = ? ORDER BY created_at ASC;",
         )
         .bind(session_id)
+        .bind(&self.tenant_id)
         .fetch_all(&self.pool)
         .await?;
 
@@ -79,8 +84,9 @@ impl MessageStore {
     }
 
     pub async fn delete(&self, id: &str) -> Result<()> {
-        sqlx::query("DELETE FROM messages WHERE id = ?;")
+        sqlx::query("DELETE FROM messages WHERE id = ? AND tenant_id = ?;")
             .bind(id)
+            .bind(&self.tenant_id)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -94,6 +100,7 @@ fn map_message(row: sqlx::sqlite::SqliteRow) -> Message {
     let metadata: Option<String> = row.try_get("metadata").unwrap_or(None);
     let metadata = metadata
         .and_then(|value| serde_json::from_str(&value).ok());
+    let tenant_id: String = row.try_get("tenant_id").unwrap_or_default();
 
     Message {
         id: row.get("id"),
@@ -104,5 +111,6 @@ fn map_message(row: sqlx::sqlite::SqliteRow) -> Message {
         tool_call_id: row.get("tool_call_id"),
         metadata,
         created_at: row.get("created_at"),
+        tenant_id,
     }
 }

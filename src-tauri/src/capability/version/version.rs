@@ -124,20 +124,6 @@ impl SemanticVersion {
             build: None,
         }
     }
-
-    /// Convert to string
-    pub fn to_string(&self) -> String {
-        let mut result = format!("{}.{}.{}", self.major, self.minor, self.patch);
-        if let Some(ref pre) = self.pre_release {
-            result.push('-');
-            result.push_str(pre);
-        }
-        if let Some(ref build) = self.build {
-            result.push('+');
-            result.push_str(build);
-        }
-        result
-    }
 }
 
 impl FromStr for SemanticVersion {

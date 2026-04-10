@@ -1,9 +1,20 @@
 //! MCP service registry for managing multiple MCP services.
+//! 
+//! 使用委托模式，将职责分离到子模块：
+//! - ServiceManager: 服务生命周期管理
+//! - ConfigStore: 配置存储
+//! - PolicyEngine: 审批策略管理
+
+// 引用同目录下的模块（已在 mcp/mod.rs 中声明）
+pub use super::manager::ServiceManager;
+pub use super::store::ConfigStore;
+pub use super::engine::PolicyEngine;
 
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
+
 
 use super::client::{MCPClient, MCPClientConfig};
 use super::types::{
@@ -12,131 +23,100 @@ use super::types::{
 };
 
 /// Global MCP service registry
+/// 
+/// 使用委托模式，将职责分离到三个子模块：
+/// - service_manager: 管理服务生命周期
+/// - config_store: 管理配置持久化
+/// - policy_engine: 管理审批策略
 pub struct MCPServiceRegistry {
-    /// Active clients by service ID
-    clients: Arc<RwLock<HashMap<String, Arc<MCPClient>>>>,
-    /// Service configurations
-    configs: Arc<RwLock<HashMap<String, MCPServiceConfig>>>,
-    /// Per-tool approval configurations
-    approval_configs: Arc<RwLock<HashMap<String, PerToolApprovalConfig>>>,
+    /// 服务管理器
+    service_manager: Arc<ServiceManager>,
+    /// 配置存储
+    config_store: Arc<ConfigStore>,
+    /// 审批策略引擎
+    policy_engine: Arc<PolicyEngine>,
 }
 
 impl MCPServiceRegistry {
-    /// Create a new registry
+    /// 创建新的registry
     pub fn new() -> Self {
         Self {
-            clients: Arc::new(RwLock::new(HashMap::new())),
-            configs: Arc::new(RwLock::new(HashMap::new())),
-            approval_configs: Arc::new(RwLock::new(HashMap::new())),
+            service_manager: Arc::new(ServiceManager::new()),
+            config_store: Arc::new(ConfigStore::new()),
+            policy_engine: Arc::new(PolicyEngine::new()),
         }
     }
 
-    /// Add and start a service
+    /// 添加服务
     pub async fn add_service(&self, config: MCPServiceConfig) -> Result<MCPServiceInfo, String> {
-        // Check if service already exists
-        {
-            let clients = self.clients.read().await;
-            if clients.contains_key(&config.id) {
-                return Err(format!("Service {} already exists", config.id));
-            }
-        }
-
-        // Create client
-        let client_config = MCPClientConfig::from_service(config.clone());
-        let client = Arc::new(MCPClient::new(client_config));
-
-        // Store config
-        {
-            let mut configs = self.configs.write().await;
-            configs.insert(config.id.clone(), config.clone());
-        }
-
-        // Start service if auto_start is enabled
-        if config.auto_start {
-            client.start().await.map_err(|e| e.to_string())?;
-        }
-
-        // Store client
-        {
-            let mut clients = self.clients.write().await;
-            clients.insert(config.id.clone(), client.clone());
-        }
-
-        Ok(client.service_info().await)
+        // 先保存配置
+        self.config_store.save(config.clone()).await?;
+        // 再添加服务
+        self.service_manager.add_service(config).await
     }
 
-    /// Remove a service
+    /// 移除服务
     pub async fn remove_service(&self, service_id: &str) -> Result<(), String> {
-        // Stop the service first
-        if let Some(client) = {
-            let clients = self.clients.read().await;
-            clients.get(service_id).cloned()
-        } {
-            let _ = client.stop().await;
-        }
-
-        // Remove from registry
-        let mut clients = self.clients.write().await;
-        clients.remove(service_id);
-
-        let mut configs = self.configs.write().await;
-        configs.remove(service_id);
-
+        // 先停止服务
+        self.service_manager.remove_service(service_id).await?;
+        // 再删除配置
+        let _ = self.config_store.delete(service_id).await;
         Ok(())
     }
 
-    /// Start a service
+    /// 启动服务
     pub async fn start_service(&self, service_id: &str) -> Result<(), String> {
-        let clients = self.clients.read().await;
-        let client = clients.get(service_id)
-            .ok_or_else(|| format!("Service {} not found", service_id))?;
-
-        client.start().await
+        self.service_manager.start_service(service_id).await
     }
 
-    /// Stop a service
+    /// 停止服务
     pub async fn stop_service(&self, service_id: &str) -> Result<(), String> {
-        let clients = self.clients.read().await;
-        let client = clients.get(service_id)
-            .ok_or_else(|| format!("Service {} not found", service_id))?;
-
-        client.stop().await
+        self.service_manager.stop_service(service_id).await
     }
 
-    /// List all services
+    /// 列出所有服务
     pub async fn list_services(&self) -> Vec<MCPServiceInfo> {
-        let clients = self.clients.read().await;
-        let mut infos = Vec::new();
-
-        for (_, client) in clients.iter() {
-            infos.push(client.service_info().await);
-        }
-
-        infos
+        self.service_manager.list_services().await
     }
 
-    /// Get a specific service info
+    /// 获取服务信息
     pub async fn get_service(&self, service_id: &str) -> Option<MCPServiceInfo> {
-        let clients = self.clients.read().await;
-        match clients.get(service_id) {
-            Some(c) => Some(c.service_info().await),
-            None => None,
-        }
+        let _ = self.service_manager.get_client(service_id).await?;
+        // 简化实现，直接返回基本信息
+        let status = self.service_manager.status(service_id).await;
+        let config = self.config_store.load(service_id).await;
+        Some(MCPServiceInfo {
+            id: service_id.to_string(),
+            name: config.map(|c| c.name).unwrap_or_default(),
+            status: status.unwrap_or(MCPServiceStatus::Stopped),
+            pid: None,
+            last_error: None,
+            tool_count: 0,
+            started_at: None,
+            uptime_secs: 0,
+        })
     }
 
-    /// Call a tool on a service
+    /// 调用工具
     pub async fn call_tool(
         &self,
         service_id: &str,
         tool_name: String,
         arguments: serde_json::Value,
     ) -> Result<serde_json::Value, String> {
-        let client = {
-            let clients = self.clients.read().await;
-            clients.get(service_id).cloned()
-        };
+        // 检查审批策略
+        let approval = self.policy_engine.check(service_id, &tool_name).await;
+        if !approval.approved {
+            return Err(format!(
+                "Tool '{}' requires approval: {}",
+                tool_name,
+                approval.reason
+            ));
+        }
 
-        let client = client.ok_or_else(|| format!("Service {} not found", service_id))?;
+        // 获取client并调用
+        let client = self.service_manager.get_client(service_id).await
+            .ok_or_else(|| format!("Service {} not found", service_id))?;
 
         let args_map: std::collections::HashMap<String, serde_json::Value> =
             serde_json::from_value(arguments)
@@ -156,159 +136,92 @@ impl MCPServiceRegistry {
         }
     }
 
-    /// Discover tools from a service
+    /// 发现工具
     pub async fn discover_tools(&self, service_id: &str) -> Result<Vec<MCPTool>, String> {
-        let clients = self.clients.read().await;
-        let client = clients.get(service_id)
+        let client = self.service_manager.get_client(service_id).await
             .ok_or_else(|| format!("Service {} not found", service_id))?;
-
         client.discover_tools().await
     }
 
-    /// Get service count
+    /// 获取服务数量
     pub async fn count(&self) -> usize {
-        let clients = self.clients.read().await;
-        clients.len()
+        self.service_manager.count().await
     }
 
-    /// Check if service exists
+    /// 检查服务是否存在
     pub async fn contains(&self, service_id: &str) -> bool {
-        let clients = self.clients.read().await;
-        clients.contains_key(service_id)
+        self.service_manager.contains(service_id).await
     }
 
-    /// Get service status
+    /// 获取服务状态
     pub async fn status(&self, service_id: &str) -> Option<MCPServiceStatus> {
-        let clients = self.clients.read().await;
-        match clients.get(service_id) {
-            Some(c) => Some(c.status().await),
-            None => None,
-        }
+        self.service_manager.status(service_id).await
     }
 
     // ==================== Approval Configuration Management ====================
 
-    /// Set a tool approval configuration
+    /// 设置工具审批配置
     pub async fn set_tool_approval_config(
         &self,
         config: PerToolApprovalConfig,
     ) -> Result<(), String> {
-        let mut configs = self.approval_configs.write().await;
-        configs.insert(config.id.clone(), config);
-        Ok(())
+        self.policy_engine.set_config(config).await
     }
 
-    /// Get a tool approval configuration by ID
+    /// 获取工具审批配置
     pub async fn get_tool_approval_config(
         &self,
         config_id: &str,
     ) -> Option<PerToolApprovalConfig> {
-        let configs = self.approval_configs.read().await;
-        configs.get(config_id).cloned()
+        self.policy_engine.get_config(config_id).await
     }
 
-    /// Get all approval configurations for a service
+    /// 获取服务所有审批配置
     pub async fn get_service_approval_configs(
         &self,
         service_id: &str,
     ) -> Vec<PerToolApprovalConfig> {
-        let configs = self.approval_configs.read().await;
-        configs
-            .values()
-            .filter(|c| c.service_id == service_id)
-            .cloned()
-            .collect()
+        self.policy_engine.list_configs(service_id).await
     }
 
-    /// Get all approval configurations
+    /// 获取所有审批配置
     pub async fn get_all_approval_configs(&self) -> Vec<PerToolApprovalConfig> {
-        let configs = self.approval_configs.read().await;
-        configs.values().cloned().collect()
+        self.policy_engine.list_all_configs().await
     }
 
-    /// Delete a tool approval configuration
+    /// 删除工具审批配置
     pub async fn delete_tool_approval_config(
         &self,
         config_id: &str,
     ) -> Result<(), String> {
-        let mut configs = self.approval_configs.write().await;
-        configs.remove(config_id);
-        Ok(())
+        self.policy_engine.delete_config(config_id)
+            .await
+            .map(|_| ())
+            .ok_or_else(|| format!("Config '{}' not found", config_id))
     }
 
-    /// Check if a tool should be auto-approved
+    /// 检查工具是否应该自动批准
     pub async fn check_auto_approve(
         &self,
         service_id: &str,
         tool_name: &str,
     ) -> AutoApproveResult {
-        let configs = self.approval_configs.read().await;
-
-        // Find the first matching enabled config for this service
-        for config in configs.values() {
-            if config.service_id == service_id && config.matches(tool_name) {
-                let approved = config.policy == ApprovalPolicy::AutoApprove;
-                return AutoApproveResult {
-                    approved,
-                    policy: config.policy.clone(),
-                    matched_config_id: Some(config.id.clone()),
-                    reason: if approved {
-                        format!("Tool '{}' auto-approved by config '{}'", tool_name, config.id)
-                    } else {
-                        format!("Tool '{}' policy is {:?} according to config '{}'",
-                            tool_name, config.policy, config.id)
-                    },
-                };
-            }
-        }
-
-        // No matching config found - default to manual
-        AutoApproveResult {
-            approved: false,
-            policy: ApprovalPolicy::Manual,
-            matched_config_id: None,
-            reason: format!(
-                "No approval config found for tool '{}' in service '{}', defaulting to manual",
-                tool_name, service_id
-            ),
-        }
+        self.policy_engine.check(service_id, tool_name).await
     }
 
-    /// Enable or disable a tool approval config
+    /// 启用/禁用审批配置
     pub async fn set_approval_config_enabled(
         &self,
         config_id: &str,
         enabled: bool,
     ) -> Result<(), String> {
-        let mut configs = self.approval_configs.write().await;
-        if let Some(config) = configs.get_mut(config_id) {
-            config.enabled = enabled;
-            config.updated_at = chrono_now();
-            Ok(())
-        } else {
-            Err(format!("Config '{}' not found", config_id))
-        }
+        self.policy_engine.set_enabled(config_id, enabled).await
     }
 
-    /// Get approval configs count
+    /// 获取审批配置数量
     pub async fn approval_configs_count(&self) -> usize {
-        let configs = self.approval_configs.read().await;
-        configs.len()
+        self.policy_engine.count().await
     }
-}
-
-/// Get current timestamp in ISO format
-fn chrono_now() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let duration = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default();
-    let secs = duration.as_secs();
-    // Simple ISO 8601 format without chrono dependency
-    format!("2026-04-09T{:02}:{:02}:{:02}Z",
-        (secs / 3600) % 24,
-        (secs / 60) % 60,
-        secs % 60)
 }
 
 impl Default for MCPServiceRegistry {
@@ -325,7 +238,7 @@ mod tests {
     async fn test_registry_operations() {
         let registry = MCPServiceRegistry::new();
 
-        // Add service
+        // 添加服务
         let config = MCPServiceConfig {
             id: "test-service".to_string(),
             name: "Test Service".to_string(),
@@ -344,12 +257,41 @@ mod tests {
         let info = registry.add_service(config).await.unwrap();
         assert_eq!(info.id, "test-service");
 
-        // List services
+        // 列出服务
         let services = registry.list_services().await;
         assert_eq!(services.len(), 1);
 
-        // Remove service
+        // 移除服务
         registry.remove_service("test-service").await.unwrap();
         assert_eq!(registry.count().await, 0);
+    }
+
+    #[tokio::test]
+    async fn test_approval_config() {
+        let registry = MCPServiceRegistry::new();
+        
+        let config = PerToolApprovalConfig {
+            id: "test-approval".to_string(),
+            service_id: "test-svc".to_string(),
+            tool_pattern: "*.read".to_string(),
+            is_regex: false,
+            policy: ApprovalPolicy::AutoApprove,
+            description: Some("Auto-approve read tools".to_string()),
+            enabled: true,
+            created_at: "2026-04-10T00:00:00Z".to_string(),
+            updated_at: "2026-04-10T00:00:00Z".to_string(),
+            created_by: "admin".to_string(),
+        };
+
+        registry.set_tool_approval_config(config).await.unwrap();
+
+        let all_configs = registry.get_all_approval_configs().await;
+        assert_eq!(all_configs.len(), 1);
+
+        let check_result = registry.check_auto_approve("test-svc", "file.read").await;
+        assert!(check_result.approved);
+
+        registry.delete_tool_approval_config("test-approval").await.unwrap();
+        assert_eq!(registry.approval_configs_count().await, 0);
     }
 }

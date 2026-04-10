@@ -33,9 +33,9 @@ impl StorageManager {
         let pool = sqlite::create_pool(tenant_id).await?;
         migrations::run_migrations(&pool).await?;
 
-        // 创建防抖存储管理器
-        let session_store = SessionStore::new(pool.clone());
-        let message_store = MessageStore::new(pool.clone());
+        // 创建防抖存储管理器（传递 tenant_id）
+        let session_store = SessionStore::new(pool.clone(), tenant_id.to_string());
+        let message_store = MessageStore::new(pool.clone(), tenant_id.to_string());
         let debounced = DebouncedStorageManager::with_default_delay(session_store, message_store);
 
         Ok(Self {
@@ -54,11 +54,11 @@ impl StorageManager {
     }
 
     pub fn session_store(&self) -> SessionStore {
-        SessionStore::new(self.pool.clone())
+        SessionStore::new(self.pool.clone(), self.tenant_id.clone())
     }
 
     pub fn message_store(&self) -> MessageStore {
-        MessageStore::new(self.pool.clone())
+        MessageStore::new(self.pool.clone(), self.tenant_id.clone())
     }
 
     pub fn sync_queue_store(&self) -> SyncQueueStore {
@@ -66,7 +66,7 @@ impl StorageManager {
     }
 
     pub fn memory_store(&self) -> MemoryStore {
-        MemoryStore::new(self.pool.clone())
+        MemoryStore::new(self.pool.clone(), self.tenant_id.clone())
     }
 
     pub fn checkpoint_store(&self) -> CheckpointStore {

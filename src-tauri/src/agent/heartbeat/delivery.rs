@@ -50,13 +50,18 @@ pub struct DeliveryResult {
 
 /// Delivery service for sending heartbeat notifications
 pub struct DeliveryService {
-    // TODO: Add HTTP client for webhook delivery
+    http_client: reqwest::Client,
 }
 
 impl DeliveryService {
     /// Create a new delivery service
     pub fn new() -> Self {
-        Self {}
+        Self {
+            http_client: reqwest::Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
+        }
     }
 
     /// Send a notification to the specified delivery target
@@ -132,13 +137,41 @@ impl DeliveryService {
         notification: &HeartbeatNotification,
         url: &str,
     ) -> DeliveryResult {
-        tracing::info!("Webhook notification to {}: {}", url, notification.title);
+        let payload = serde_json::json!({
+            "title": notification.title,
+            "content": notification.content,
+            "level": notification.level,
+        });
 
-        DeliveryResult {
-            success: true,
-            channel: "webhook".to_string(),
-            error: None,
-            timestamp: chrono::Utc::now().timestamp_millis(),
+        match self.http_client.post(url).json(&payload).send().await {
+            Ok(resp) if resp.status().is_success() => {
+                tracing::info!("Webhook delivered successfully to {}", url);
+                DeliveryResult {
+                    success: true,
+                    channel: "webhook".to_string(),
+                    error: None,
+                    timestamp: chrono::Utc::now().timestamp_millis(),
+                }
+            }
+            Ok(resp) => {
+                let err = format!("HTTP {}", resp.status());
+                tracing::warn!("Webhook delivery failed to {}: {}", url, err);
+                DeliveryResult {
+                    success: false,
+                    channel: "webhook".to_string(),
+                    error: Some(err),
+                    timestamp: chrono::Utc::now().timestamp_millis(),
+                }
+            }
+            Err(e) => {
+                tracing::warn!("Webhook delivery error to {}: {}", url, e);
+                DeliveryResult {
+                    success: false,
+                    channel: "webhook".to_string(),
+                    error: Some(e.to_string()),
+                    timestamp: chrono::Utc::now().timestamp_millis(),
+                }
+            }
         }
     }
 

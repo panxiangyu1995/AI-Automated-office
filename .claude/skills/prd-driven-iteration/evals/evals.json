@@ -1,36 +1,36 @@
 {
   "skill_name": "prd-driven-iteration",
-  "description": "PRD驱动的功能优化迭代执行器 - 工作流：分析代码 → 生成task.json → 生成OpenSpec → 执行 → 更新task.json → 记录progress.txt",
+  "description": "PRD驱动的功能优化迭代执行器 - 工作流：6维度分析代码 → 生成task.json → 生成OpenSpec → 执行 → 更新task.json → 记录progress.txt",
   "evals": [
     {
       "id": 1,
-      "name": "optimize-agent-module",
-      "prompt": "优化agent模块的代码，分析问题并生成任务。",
-      "expected_output": "应输出：代码分析报告 → task.json任务生成 → OpenSpec生成 → 执行 → 更新task.json → 记录progress.txt",
+      "name": "full-6-dimension-analysis",
+      "prompt": "对agent模块进行完整的6维度代码分析：代码质量、前后端集成、云端集成、业务逻辑、安全漏洞、UX交互。",
+      "expected_output": "应输出：6个维度的详细分析报告，包含问题位置、严重性、影响描述",
       "files": [],
       "assertions": []
     },
     {
       "id": 2,
-      "name": "optimize-tools-system",
-      "prompt": "优化工具系统的代码，分析问题并执行迭代。",
-      "expected_output": "应输出：代码扫描报告 → 生成优化任务 → OpenSpec变更 → 执行完成 → task.json更新 → progress.txt记录",
+      "name": "security-vulnerability-analysis",
+      "prompt": "分析工具系统模块的安全漏洞，检查注入、XSS、权限绕过、敏感数据泄露等问题。",
+      "expected_output": "应输出：安全漏洞分析报告，包含SQL注入、XSS、CSRF、权限问题、敏感数据泄露等",
       "files": [],
       "assertions": []
     },
     {
       "id": 3,
-      "name": "scan-and-generate-tasks",
-      "prompt": "扫描agent模块的代码问题，生成优化任务清单。",
-      "expected_output": "应输出：TODO/FIXME/unwrap/DRY分析报告 → task.json任务条目（多个）",
+      "name": "integration-security-analysis",
+      "prompt": "分析前后端集成问题和云端集成问题的安全性。",
+      "expected_output": "应输出：集成安全问题报告、API安全配置、认证鉴权问题",
       "files": [],
       "assertions": []
     },
     {
       "id": 4,
-      "name": "full-iteration-flow",
-      "prompt": "对记忆系统进行完整的优化迭代。",
-      "expected_output": "应输出：代码分析 → 任务生成 → OpenSpec → 执行 → 验证通过 → task.json更新 → progress.txt记录",
+      "name": "ux-anti-human-analysis",
+      "prompt": "分析记忆系统模块的UX反人类问题，找出用户体验上的不足。",
+      "expected_output": "应输出：UX问题分析报告，包含加载反馈、错误提示、操作确认、表单验证、空状态等问题",
       "files": [],
       "assertions": []
     }

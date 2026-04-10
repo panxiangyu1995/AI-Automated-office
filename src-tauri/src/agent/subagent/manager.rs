@@ -71,9 +71,10 @@ impl SubagentManager {
 
         // 创建新的 PersonalLoader
         let loader = PersonalLoader::new_in_memory(user_id.to_string())?;
-        loaders.insert(user_id.to_string(), Arc::new(loader));
+        let loader: Arc<dyn SubagentLoader> = Arc::new(loader);
+        loaders.insert(user_id.to_string(), Arc::clone(&loader));
 
-        Ok(Arc::clone(loaders.get(user_id).unwrap()))
+        Ok(loader)
     }
 
     /// 获取所有可用的 Subagent（根据用户权限过滤）
@@ -267,9 +268,6 @@ mod tests {
         let manager = create_test_manager();
         let matched = manager.match_by_keywords("user1", &["财务".to_string()]).await.unwrap();
         
-        // 应该能匹配到标题生成器（包含 "title" 中的 "i" 不匹配 "财务"）
-        // 实际测试时可能为空，因为默认没有配置触发关键词
-        println!("Matched: {:?}", matched.len());
     }
 
     #[tokio::test]

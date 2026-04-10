@@ -51,8 +51,8 @@ export async function sendAgentMessage(
   content: string
 ): Promise<AgentMessageDTO> {
   return invoke<AgentMessageDTO>('send_agent_message', {
-    senderId,
-    receiverId,
+    sender_id: senderId,
+    receiver_id: receiverId,
     content,
   });
 }
@@ -65,7 +65,7 @@ export async function getAgentMessages(
   limit?: number
 ): Promise<AgentMessageDTO[]> {
   return invoke<AgentMessageDTO[]>('get_agent_messages', {
-    agentId,
+    agent_id: agentId,
     limit,
   });
 }
@@ -78,7 +78,7 @@ export async function updateAgentMessageStatus(
   status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
 ): Promise<void> {
   return invoke('update_agent_message_status', {
-    messageId,
+    message_id: messageId,
     status,
   });
 }
@@ -91,7 +91,7 @@ export async function confirmAgentMessage(
   approved: boolean
 ): Promise<AgentMessageDTO> {
   return invoke<AgentMessageDTO>('confirm_agent_message', {
-    messageId,
+    message_id: messageId,
     approved,
   });
 }
@@ -116,7 +116,7 @@ export async function getAgentPermission(
   agentId: string
 ): Promise<AgentPermissionDTO> {
   return invoke<AgentPermissionDTO>('get_agent_permission', {
-    agentId,
+    agent_id: agentId,
   });
 }
 
@@ -128,8 +128,8 @@ export async function recallAgentMessage(
   senderId: string
 ): Promise<void> {
   return invoke('recall_agent_message', {
-    messageId,
-    senderId,
+    message_id: messageId,
+    sender_id: senderId,
   });
 }
 
@@ -140,7 +140,7 @@ export async function getAgentContacts(
   agentId: string
 ): Promise<AgentContactDTO[]> {
   return invoke<AgentContactDTO[]>('get_agent_contacts', {
-    agentId,
+    agent_id: agentId,
   });
 }
 

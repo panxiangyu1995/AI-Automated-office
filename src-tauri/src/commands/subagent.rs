@@ -87,6 +87,25 @@ pub async fn create_personal_subagent(
     trigger_keywords: Vec<String>,
     allowed_tools: Vec<String>,
 ) -> Result<AgentConfig, String> {
+    if name.is_empty() {
+        return Err("name 不能为空".to_string());
+    }
+    if name.len() > 64 {
+        return Err("name 超出最大长度限制 (64)".to_string());
+    }
+    if !name.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
+        return Err("name 只能包含字母、数字、下划线和连字符".to_string());
+    }
+    if display_name.is_empty() {
+        return Err("display_name 不能为空".to_string());
+    }
+    if display_name.len() > 128 {
+        return Err("display_name 超出最大长度限制 (128)".to_string());
+    }
+    if prompt.is_empty() {
+        return Err("prompt 不能为空".to_string());
+    }
+
     let user_id = get_current_user_id();
     let manager = get_subagent_manager();
 
@@ -149,6 +168,23 @@ pub async fn update_personal_subagent(
     prompt: Option<String>,
     enabled: Option<bool>,
 ) -> Result<AgentConfig, String> {
+    if name.is_empty() {
+        return Err("name 不能为空".to_string());
+    }
+    if let Some(ref dn) = display_name {
+        if dn.is_empty() {
+            return Err("display_name 不能为空".to_string());
+        }
+        if dn.len() > 128 {
+            return Err("display_name 超出最大长度限制 (128)".to_string());
+        }
+    }
+    if let Some(ref p) = prompt {
+        if p.is_empty() {
+            return Err("prompt 不能为空".to_string());
+        }
+    }
+
     let user_id = get_current_user_id();
     let manager = get_subagent_manager();
 

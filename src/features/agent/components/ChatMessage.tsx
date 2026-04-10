@@ -16,6 +16,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { User, Bot, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { sanitizeMarkdownHtml } from '@/lib/sanitize'
 import type { Message, Part, TextPart, ToolCallPart, ToolResultPart, ErrorPart } from '../../message/runtime/messageModel'
 
 // ==================== Types ====================
@@ -33,6 +34,8 @@ interface ChatMessageProps {
  * 支持标题、粗体、斜体、代码块、行内代码、列表
  * 
  * TODO: 后续可替换为 react-markdown + remark-gfm
+ * 
+ * 安全：所有渲染后的HTML都经过sanitizeMarkdownHtml过滤，防止XSS攻击
  */
 function SimpleMarkdown({ content }: { content: string }) {
   const rendered = useMemo(() => {
@@ -71,7 +74,8 @@ function SimpleMarkdown({ content }: { content: string }) {
     // 换行
     html = html.replace(/\n/g, '<br />')
     
-    return html
+    // XSS防护：过滤所有渲染后的HTML
+    return sanitizeMarkdownHtml(html)
   }, [content])
   
   return (

@@ -168,3 +168,58 @@
 - 任务执行以 `task.json` 中 `id 43-59` 为主顺序。
 - 开发细节优先参考各 change 目录英文文档。
 - 对外汇报或团队同步可直接引用本中文说明文件。
+
+---
+
+## Agent模块代码质量优化
+
+### Task 211 - Agent模块-安全漏洞修复
+- `change`: `agent-security-fix`
+- 目标：修复XSS漏洞、敏感数据存储问题、SQL注入风险。
+- 实施步骤：
+1. 安装sanitize-html依赖
+2. 创建XSS过滤工具sanitize.ts
+3. 修复ChatMessage.tsx的dangerouslySetInnerHTML
+4. 审查useCheckpointStore.ts的localStorage
+5. 重构personal_loader.rs的SQL为参数化查询
+
+### Task 212 - Agent模块-unwrap消除
+- `change`: `agent-unwrap-elimination`
+- 目标：消除200+处unwrap()滥用，避免运行时panic。
+- 实施步骤：
+1. 创建统一AgentError错误类型
+2. 重构manager.rs/failover.rs/routing.rs
+3. 重构browser.rs/registry.rs
+4. 重构personal_loader.rs
+5. 运行cargo clippy验证
+
+### Task 213 - Agent模块-TODO清理与调试代码移除
+- `change`: `agent-todo-cleanup`
+- 目标：清理4处TODO和13处调试代码。
+- 实施步骤：
+1. 实现intercom内容安全检查
+2. 实现message_sync同步逻辑
+3. 添加heartbeat HTTP客户端
+4. 移除前端console.log
+5. 移除后端println!/dbg!
+
+### Task 214 - Agent模块-UX错误信息友好化
+- `change`: `agent-ux-error-friendly`
+- 目标：将技术错误转为用户友好的消息。
+- 实施步骤：
+1. 创建错误翻译层errTranslator.ts
+2. 优化AgentChatPanel错误展示
+3. 添加EmployeeDirectory错误toast
+4. 优化表单实时验证
+5. npm run lint/build验证
+
+### Task 215 - Agent模块-前后端集成对齐
+- `change`: `agent-integration-align`
+- 目标：审查和修复前后端命令契约对齐。
+- 实施步骤：
+1. 审查intercom命令契约
+2. 审查subagent命令契约
+3. 生成TypeScript类型定义
+4. 添加参数验证
+5. cargo/npm build验证
+

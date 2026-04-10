@@ -14,7 +14,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Clock3, MessageSquare, Plus, AlertCircle, Zap } from 'lucide-react'
+import { Clock3, MessageSquare, Plus, AlertCircle, Zap, RefreshCw } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
@@ -27,6 +27,7 @@ import {
 } from '../hooks/useChatStore'
 import { useAgentRuntime } from '../hooks/useAgentRuntime'
 import { useBusinessCompression } from '../hooks/useBusinessCompression'
+import { getFriendlyError } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import type { CompressionRecord } from '../services/compact'
 
@@ -271,8 +272,8 @@ export function AgentChatPanel({
     onError: (err) => {
       console.error('[AgentChatPanel] Runtime error:', err)
     },
-    onSessionEnd: (reason, duration) => {
-      console.log(`[AgentChatPanel] Session ended: ${reason}, duration: ${duration}ms`)
+    onSessionEnd: (_reason, _duration) => {
+      // Session ended, duration: ${_duration}ms
     },
   })
 
@@ -364,19 +365,27 @@ export function AgentChatPanel({
         </div>
       )}
 
-      {/* Error display */}
+      {/* Error display - 用户友好的错误提示 */}
       {hasError && (
-        <div className="px-4 py-2 bg-red-50 border-b border-red-200 flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-red-500" />
-          <span className="text-xs text-red-700">
-            {runtimeError}
-          </span>
-          <button
-            onClick={() => void initSession()}
-            className="ml-auto text-xs text-red-600 hover:text-red-800 underline"
-          >
-            重试连接
-          </button>
+        <div className="px-4 py-3 bg-red-50 border-b border-red-200">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-red-800">
+                {getFriendlyError(runtimeError).title}
+              </p>
+              <p className="text-xs text-red-600 mt-1">
+                {getFriendlyError(runtimeError).message}
+              </p>
+            </div>
+            <button
+              onClick={() => void initSession()}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+            >
+              <RefreshCw className="h-3 w-3" />
+              重试
+            </button>
+          </div>
         </div>
       )}
 

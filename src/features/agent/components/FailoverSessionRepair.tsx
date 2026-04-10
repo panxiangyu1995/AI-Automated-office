@@ -631,12 +631,12 @@ export function FailoverSessionRepair({
     setDetailsOpen(true)
   }
 
-  const handleFailover = (provider: Provider) => {
-    console.log('Initiating failover for:', provider.name)
+  const handleFailover = (_provider: Provider) => {
+    // Initiating failover for provider
   }
 
-  const handleRollback = (repair: SessionRepair) => {
-    console.log('Rolling back repair:', repair.id)
+  const handleRollback = (_repair: SessionRepair) => {
+    // Rolling back repair
   }
 
   return (

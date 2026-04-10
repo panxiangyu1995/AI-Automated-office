@@ -74,16 +74,16 @@ export async function createPersonalSubagent(
 ): Promise<AgentConfig> {
   return invoke<AgentConfig>('create_personal_subagent', {
     name: request.name,
-    displayName: request.displayName,
+    display_name: request.displayName,
     description: request.description,
-    modelProvider: request.model.provider,
-    modelId: request.model.modelId,
+    model_provider: request.model.provider,
+    model_id: request.model.modelId,
     temperature: request.model.temperature,
-    maxTokens: request.model.maxTokens,
+    max_tokens: request.model.maxTokens,
     prompt: request.prompt,
-    triggerMode: request.trigger.mode,
-    triggerKeywords: request.trigger.keywords,
-    allowedTools: request.tools.allowed,
+    trigger_mode: request.trigger.mode,
+    trigger_keywords: request.trigger.keywords,
+    allowed_tools: request.tools.allowed,
   });
 }
 
@@ -96,7 +96,7 @@ export async function updatePersonalSubagent(
 ): Promise<AgentConfig> {
   return invoke<AgentConfig>('update_personal_subagent', {
     name,
-    displayName: request.displayName,
+    display_name: request.displayName,
     description: request.description,
     prompt: request.prompt,
     enabled: request.enabled,

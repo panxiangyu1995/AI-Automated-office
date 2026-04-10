@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use super::{Role, DataScopeType, ToolConstraint};
+use crate::session::TenantContext;
 
 /// Permission domain types
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -112,6 +113,19 @@ impl ExecutionContext {
     pub fn with_scope(mut self, scope: DataScopeType) -> Self {
         self.requested_scope = Some(scope);
         self
+    }
+    
+    /// Create ExecutionContext from TenantContext
+    pub fn from_tenant_context(ctx: &TenantContext) -> Self {
+        Self {
+            tenant_id: ctx.tenant_id.clone(),
+            user_id: ctx.user_id.clone(),
+            role: ctx.role.clone(),
+            department_id: ctx.department_id.clone(),
+            tool_id: None,
+            requested_scope: None,
+            metadata: HashMap::new(),
+        }
     }
 }
 
@@ -367,6 +381,17 @@ impl PermissionEngine {
         }
 
         Ok(final_perms)
+    }
+    
+    /// Calculate permissions from TenantContext
+    /// 
+    /// This is a convenience method that converts TenantContext to ExecutionContext
+    pub async fn calculate_permissions_from_context(
+        &self,
+        tenant_ctx: &TenantContext,
+    ) -> Result<UserPermissions, PermissionError> {
+        let exec_ctx = ExecutionContext::from_tenant_context(tenant_ctx);
+        self.calculate_permissions(&exec_ctx).await
     }
 
     /// Check if a specific tool is allowed for a user

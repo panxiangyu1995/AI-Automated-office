@@ -1,12 +1,12 @@
 {
   "version": "5.0.1",
-  "lastUpdated": "2026-04-09",
+  "lastUpdated": "2026-04-10",
   "scope": "MVP completion gap analysis and next iteration plan",
   "batch": "Phase 3 - MVP Finalization",
   "range": "Task 166-220",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
   "sourceOfTruth": "PRD MVP Definition + task-archived.json series",
-  "activeNote": "Task 171/174/175重复Task已移除。新增27个OpenSpec目录。所有未完成任务已有对应OpenSpec。P2/P3任务可延后实现。2026-04-09: 新增Task 211-215 agent模块6维度优化任务。",
+  "activeNote": "Task 171/174/175重复Task已移除。新增27个OpenSpec目录。所有未完成任务已有对应OpenSpec。P2/P3任务可延后实现。2026-04-09: 新增Task 211-215 agent模块6维度优化任务。2026-04-10: 新增Task 216-219 MCP模块架构优化任务（Transport层策略模式、注册表职责分离、协议层抽取、桥接层解耦）。2026-04-10: 新增Task 220-223 多租户架构优化任务（租户持久化、用户-租户关联、租户上下文传播、存储层隔离强化）。",
   "gapAnalysis": {
     "summary": "基于PRD铁律(857条FR)与实际代码对比，发现以下核心差距",
     "已完成": [
@@ -3261,7 +3261,7 @@
       "arch_covered": ["ARCH-01"],
       "ux_covered": [],
       "dependencies": [],
-      "passes": false
+      "passes": false,
     },
     {
       "id": 213,
@@ -3343,7 +3343,7 @@
       "arch_covered": ["ARCH-01"],
       "ux_covered": ["UX-04"],
       "dependencies": [],
-      "passes": false
+      "passes": true
     },
     {
       "id": 215,
@@ -3382,7 +3382,368 @@
       "arch_covered": ["ARCH-01"],
       "ux_covered": [],
       "dependencies": [],
-      "passes": false
+      "passes": true
+    },
+    {
+      "id": 216,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "MCP模块-Transport层策略模式重构",
+      "description": "将MCP模块的Transport层从紧耦合实现重构为策略模式，定义Transport trait，实现StdioTransport/HttpTransport/WebSocketTransport分离，提升可测试性和可维护性。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/mcp/client.rs",
+          "src-tauri/src/mcp/types.rs"
+        ],
+        "note": "MCPClient中STDIO/HTTP/WebSocket混在一起，HTTP和WebSocket是mock实现"
+      },
+      "openspec_change": "mcp-transport-strategy-refactor",
+      "steps": [
+        "定义Transport trait接口",
+        "实现StdioTransport替换现有start_stdio",
+        "实现HttpTransport替换mock实现",
+        "实现WebSocketTransport替换mock实现",
+        "重构MCPClient使用Transport trait",
+        "添加单元测试覆盖各Transport实现",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR3"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "Tauri命令接口（mcp_add_service, mcp_call_tool等）",
+          "MCPServiceConfig结构",
+          "MCPToolResult响应格式",
+          "MCPTransportType枚举"
+        ],
+        "verificationMethod": ["cargo build", "cargo test", "cargo clippy"],
+        "rollbackPlan": ["回退client.rs到修改前版本"]
+      }
+    },
+    {
+      "id": 217,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "MCP模块-注册表职责分离重构",
+      "description": "将MCPServiceRegistry的职责分离，拆分PolicyEngine审批策略模块和ConfigStore配置模块，提升职责清晰度和可维护性。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/mcp/registry.rs"
+        ],
+        "note": "MCPServiceRegistry混合了服务管理、配置存储、审批策略三种职责"
+      },
+      "openspec_change": "mcp-registry-responsibility-split",
+      "steps": [
+        "拆分PolicyEngine模块处理审批逻辑",
+        "拆分ConfigStore模块处理配置持久化",
+        "重构MCPServiceRegistry委托给子模块",
+        "保持Tauri命令接口兼容",
+        "添加单元测试覆盖各模块",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 216"],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "审批策略逻辑（ApprovalPolicy/AutoApprove）",
+          "工具调用接口",
+          "服务生命周期管理"
+        ],
+        "verificationMethod": ["cargo build", "cargo test", "cargo clippy"],
+        "rollbackPlan": ["回退registry.rs到修改前版本"]
+      }
+    },
+    {
+      "id": 218,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "MCP模块-协议层JSON-RPC抽取",
+      "description": "创建独立的MCPProtocol模块处理JSON-RPC协议编解码、消息验证，与Transport层解耦，符合Rust MCP 2026最佳实践。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/mcp/types.rs",
+          "src-tauri/src/mcp/client.rs"
+        ],
+        "note": "MCPMessage枚举存在但缺少完整的JSON-RPC序列化/反序列化逻辑"
+      },
+      "openspec_change": "mcp-protocol-layer-extraction",
+      "steps": [
+        "创建protocol子模块目录和mod.rs",
+        "实现JSON-RPC Request/Response序列化",
+        "实现消息验证器Validator",
+        "实现MessageHandler处理消息流",
+        "重构client.rs使用protocol模块",
+        "添加单元测试覆盖协议处理",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR3"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 216"],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "MCPMessage枚举定义",
+          "MCPToolCall/MCPToolResult结构",
+          "现有错误处理逻辑"
+        ],
+        "verificationMethod": ["cargo build", "cargo test", "cargo clippy"],
+        "rollbackPlan": ["删除protocol目录，恢复client.rs原始逻辑"]
+      }
+    },
+    {
+      "id": 219,
+      "epic": "Epic 2",
+      "story": "Story 2.X",
+      "title": "MCP模块-桥接层解耦重构",
+      "description": "将MCPToolBridge与agent::tools的紧耦合改为trait抽象，支持多工具系统（Agent/Plugin/Custom），实现工具系统的热插拔。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/mcp/bridge.rs",
+          "src-tauri/src/agent/tools/registry.rs"
+        ],
+        "note": "MCPToolBridge硬编码依赖ToolRegistry，工具系统扩展困难"
+      },
+      "openspec_change": "mcp-bridge-decouple-refactor",
+      "steps": [
+        "定义ToolBridge trait接口",
+        "实现AgentToolBridge适配ToolRegistry",
+        "实现PluginToolBridge适配插件系统",
+        "重构MCPToolBridge使用trait",
+        "更新MCPToolBridge调用处使用泛化接口",
+        "添加单元测试覆盖各Bridge实现",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 216", "Task 217"],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "工具注册/注销功能",
+          "工具调用路由逻辑",
+          "mcp_{service}_{tool}命名约定"
+        ],
+        "verificationMethod": ["cargo build", "cargo test", "cargo clippy"],
+        "rollbackPlan": ["回退bridge.rs到修改前版本"]
+      }
+    },
+    {
+      "id": 220,
+      "epic": "Epic 5",
+      "story": "Story 5.X",
+      "title": "多租户-租户持久化改造",
+      "description": "将TenantState从内存存储改为SQLite持久化，实现TenantRepository trait和数据访问抽象，支持租户数据的长期存储和重启后恢复。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/tenant/mod.rs",
+          "src-tauri/src/tenant/commands.rs",
+          "src-tauri/src/tenant/types.rs"
+        ],
+        "note": "TenantState使用Mutex内存存储，无持久化，重启后租户配置丢失"
+      },
+      "openspec_change": "tenant-persistence-refactor",
+      "steps": [
+        "创建v7_tenant_tables迁移文件，定义tenants和tenant_configs表",
+        "定义TenantRepository和TenantConfigRepository trait接口",
+        "实现SqliteTenantRepository结构体",
+        "重构TenantState使用Repository而非直接操作内存",
+        "更新tenant_get_current/tenant_list/tenant_get_config等命令使用Repository",
+        "添加单元测试覆盖租户CRUD操作",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "租户列表查询(tenant_list)",
+          "当前租户获取(tenant_get_current)",
+          "租户配置管理(tenant_get_config, tenant_update_config)",
+          "租户统计(tenant_get_stats)"
+        ],
+        "verificationMethod": ["cargo build", "cargo test tenant", "cargo clippy"],
+        "rollbackPlan": ["删除v7迁移文件", "回退TenantState到内存存储版本"]
+      }
+    },
+    {
+      "id": 221,
+      "epic": "Epic 5",
+      "story": "Story 5.X",
+      "title": "多租户-用户-租户关联",
+      "description": "为User表增加tenant_id字段，建立用户与租户的关联，支持同一租户内用户唯一性约束，支持多租户场景下的用户隔离。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/auth/mod.rs",
+          "src-tauri/src/storage/migrations/v3_users.rs",
+          "src-tauri/src/session/metadata.rs"
+        ],
+        "note": "User表无tenant_id字段，用户与租户解耦，多租户场景下无法隔离"
+      },
+      "openspec_change": "user-tenant-association",
+      "steps": [
+        "创建v8_users_tenant_id迁移文件，为users表增加tenant_id字段",
+        "更新User结构体增加tenant_id字段",
+        "更新AuthService的login和register方法增加tenant_id参数",
+        "更新User查询逻辑按tenant_id过滤",
+        "确保用户名在租户内唯一（tenant_id + username唯一索引）",
+        "更新SessionMetadata保持与User的tenant_id一致",
+        "添加单元测试覆盖多租户用户场景",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR5"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 220"],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "用户登录(auth/login)",
+          "用户注册(auth/register)",
+          "用户信息查询(get_current_user)",
+          "默认用户创建(ensure_default_user)"
+        ],
+        "verificationMethod": ["cargo build", "cargo test auth", "cargo clippy"],
+        "rollbackPlan": ["删除v8迁移文件", "回退User结构体和AuthService到无tenant_id版本"]
+      }
+    },
+    {
+      "id": 222,
+      "epic": "Epic 5",
+      "story": "Story 5.X",
+      "title": "多租户-租户上下文传播",
+      "description": "在Agent执行流程中传递TenantContext，实现权限计算和数据访问的租户隔离，使PermissionEngine真正使用tenant_id进行数据隔离。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/permission/engine.rs",
+          "src-tauri/src/agent/execution.rs",
+          "src-tauri/src/session/metadata.rs"
+        ],
+        "note": "PermissionEngine的ExecutionContext有tenant_id字段但未实际使用，权限计算未按租户隔离"
+      },
+      "openspec_change": "tenant-context-propagation",
+      "steps": [
+        "创建session/context.rs定义TenantContext结构体",
+        "实现TenantContext::from_metadata()方法",
+        "修改PermissionEngine.calculate_permissions使用TenantContext",
+        "在Agent执行流程中传递TenantContext",
+        "确保所有工具调用通过TenantContext进行权限校验",
+        "添加单元测试覆盖租户隔离场景",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR5"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 221"],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "权限计算(calculate_permissions)",
+          "工具权限检查(check_tool_permission)",
+          "三层权限合并(Platform/Department/Role)"
+        ],
+        "verificationMethod": ["cargo build", "cargo test permission", "cargo clippy"],
+        "rollbackPlan": ["回退PermissionEngine到未使用TenantContext版本"]
+      }
+    },
+    {
+      "id": 223,
+      "epic": "Epic 5",
+      "story": "Story 5.X",
+      "title": "多租户-存储层隔离强化",
+      "description": "确保所有存储操作(SessionStore/MessageStore/MemoryStore)通过tenant_id进行数据隔离，防止跨租户数据访问。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/storage/mod.rs",
+          "src-tauri/src/storage/session_store.rs",
+          "src-tauri/src/storage/message_store.rs",
+          "src-tauri/src/storage/memory_store.rs"
+        ],
+        "note": "StorageManager按tenant_id分离数据库文件，但Store查询未增加tenant_id条件"
+      },
+      "openspec_change": "storage-tenant-isolation",
+      "steps": [
+        "为SessionStore增加tenant_id字段",
+        "为MessageStore增加tenant_id字段",
+        "为MemoryStore增加tenant_id字段",
+        "更新所有查询方法增加tenant_id过滤条件",
+        "更新所有插入方法设置tenant_id",
+        "添加单元测试覆盖跨租户数据隔离",
+        "运行cargo clippy验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR1", "NFR5", "NFR8"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": ["Task 222"],
+      "passes": true,
+      "optimization": {
+        "preserveFunctions": [
+          "会话列表查询",
+          "会话创建/更新/删除",
+          "消息列表查询",
+          "消息创建/更新/删除",
+          "记忆Fact存储"
+        ],
+        "verificationMethod": ["cargo build", "cargo test storage", "cargo clippy"],
+        "rollbackPlan": ["回退Store结构体到无tenant_id字段版本"]
+      }
     }
   ]
 }

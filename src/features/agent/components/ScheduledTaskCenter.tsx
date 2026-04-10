@@ -685,16 +685,16 @@ export function ScheduledTaskCenter({
     setDetailDialogOpen(true)
   }
 
-  const handleTaskRun = (taskId: string) => {
-    console.log('Run task:', taskId)
+  const handleTaskRun = (_taskId: string) => {
+    // Run task
   }
 
-  const handleTaskPause = (taskId: string) => {
-    console.log('Pause task:', taskId)
+  const handleTaskPause = (_taskId: string) => {
+    // Pause task
   }
 
-  const handleTaskResume = (taskId: string) => {
-    console.log('Resume task:', taskId)
+  const handleTaskResume = (_taskId: string) => {
+    // Resume task
   }
 
   return (

@@ -724,6 +724,15 @@ impl RetryPolicy {
             AgentError::Storage(_) => true, // Storage errors might be transient
             AgentError::ProviderCreation(_) => false, // Provider creation errors are not transient
             AgentError::Config(_) => false, // Config errors are not transient
+            // Task 212: Additional error variants - don't retry
+            AgentError::SubagentNotFound(_) => false,
+            AgentError::ProviderNotAvailable(_) => false,
+            AgentError::RoutingError(_) => false,
+            AgentError::ToolExecutionError(_) => false,
+            AgentError::RegistryError(_) => false,
+            AgentError::LockError(_) => false,
+            AgentError::ParseError(_) => false,
+            AgentError::DatabaseError(_) => false,
         }
     }
 }

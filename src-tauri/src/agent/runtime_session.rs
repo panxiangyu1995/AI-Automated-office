@@ -56,6 +56,7 @@ impl RuntimeSessionService {
             synced_at: None,
             is_deleted: false,
             version: 1,
+            tenant_id: self.tenant_id.clone(),
         };
 
         // 使用防抖存储，立即保存到缓存（延迟写入数据库）
@@ -88,6 +89,7 @@ impl RuntimeSessionService {
             synced_at: None,
             is_deleted: false,
             version: 1,
+            tenant_id: self.tenant_id.clone(),
         };
 
         // 使用防抖存储，立即保存到缓存（延迟写入数据库）
@@ -119,6 +121,7 @@ impl RuntimeSessionService {
             tool_call_id: None,
             metadata,
             created_at: Utc::now().timestamp(),
+            tenant_id: self.tenant_id.clone(),
         };
 
         // 使用防抖存储，立即保存到缓存（延迟写入数据库）

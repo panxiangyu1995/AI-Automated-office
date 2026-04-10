@@ -8,6 +8,9 @@ mod v3_users;
 mod v4_session_summaries;
 mod v5_provider_tables;
 mod v6_provider_routing_config;
+mod v7_tenant_tables;
+mod v8_users_tenant_id;
+mod v9_store_tenant_id;
 
 pub struct Migration {
     pub version: i64,
@@ -31,6 +34,9 @@ pub fn all_migrations() -> Vec<Migration> {
         v4_session_summaries::migration(),
         v5_provider_tables::migration(),
         v6_provider_routing_config::migration(),
+        v7_tenant_tables::migration(),
+        v8_users_tenant_id::migration(),
+        v9_store_tenant_id::migration(),
     ]
 }
 

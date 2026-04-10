@@ -68,6 +68,23 @@ pub enum AgentError {
     ProviderCreation(String),
     #[error("configuration error: {0}")]
     Config(String),
+    // 扩展错误类型 - Task 212 unwrap消除
+    #[error("subagent not found: {0}")]
+    SubagentNotFound(String),
+    #[error("provider not available: {0}")]
+    ProviderNotAvailable(String),
+    #[error("routing error: {0}")]
+    RoutingError(String),
+    #[error("tool execution error: {0}")]
+    ToolExecutionError(String),
+    #[error("registry error: {0}")]
+    RegistryError(String),
+    #[error("lock error: {0}")]
+    LockError(String),
+    #[error("parse error: {0}")]
+    ParseError(String),
+    #[error("database error: {0}")]
+    DatabaseError(String),
 }
 
 pub type AgentResult<T> = Result<T, AgentError>;

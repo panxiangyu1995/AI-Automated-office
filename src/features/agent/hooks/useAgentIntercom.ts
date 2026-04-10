@@ -173,7 +173,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   ) => {
     try {
       await invoke('update_agent_message_status', {
-        messageId,
+        message_id: messageId,
         status,
       });
 
@@ -231,7 +231,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
       };
 
       await invoke('set_agent_permission', {
-        agentId,
+        agent_id: agentId,
         permission: fullPermission,
       });
 
@@ -253,8 +253,8 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
     setError(null);
     try {
       await invoke('recall_agent_message', {
-        messageId,
-        senderId: currentAgentId,
+        message_id: messageId,
+        sender_id: currentAgentId,
       });
 
       setMessages(prev => prev.map(m =>

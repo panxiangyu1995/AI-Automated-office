@@ -977,7 +977,18 @@ export const useCheckpointStore = create<CheckpointStoreState>()(
     }),
     {
       name: 'checkpoint-store',
-      // 持久化到 localStorage
+      // 安全说明：
+      // 存储的数据包括：检查点元数据、会话映射、恢复历史、分支记录
+      // 这些数据是应用程序正常功能所必需的，用于支持会话恢复和分支执行
+      // 
+      // 潜在敏感信息：
+      // - messageSnapshot.lastMessageContent: 消息内容快照
+      // - branches.originalMessage: 分支的原始消息
+      // 
+      // 安全措施：
+      // 1. 这些数据存储在本地localStorage，不会上传到服务器
+      // 2. 如果需要更高的安全性（如多用户共享设备），应使用Tauri secure storage
+      // 3. 建议添加用户认证后加密存储
       partialize: (state) => ({
         checkpoints: state.checkpoints,
         sessionCheckpoints: state.sessionCheckpoints,

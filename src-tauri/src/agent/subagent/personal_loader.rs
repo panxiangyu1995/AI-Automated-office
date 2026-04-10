@@ -111,7 +111,8 @@ impl PersonalLoader {
 
         // 检查名称唯一性
         let count: i32 = {
-            let db = self.db.lock().unwrap();
+            let db = self.db.lock()
+                .map_err(|e| SubagentError::LockError(e.to_string()))?;
             db.query_row(
                 "SELECT COUNT(*) FROM personal_subagents WHERE name = ? AND creator_id = ?",
                 params![request.name, self.user_id],
@@ -127,7 +128,8 @@ impl PersonalLoader {
 
         // 检查数量限制
         let count: i32 = {
-            let db = self.db.lock().unwrap();
+            let db = self.db.lock()
+                .map_err(|e| SubagentError::LockError(e.to_string()))?;
             db.query_row(
                 "SELECT COUNT(*) FROM personal_subagents WHERE creator_id = ? AND enabled = 1",
                 params![self.user_id],
@@ -151,7 +153,8 @@ impl PersonalLoader {
         let knowledge_sources = serde_json::to_string(&request.knowledge_sources)?;
 
         {
-            let db = self.db.lock().unwrap();
+            let db = self.db.lock()
+                .map_err(|e| SubagentError::LockError(e.to_string()))?;
             db.execute(
                 "INSERT INTO personal_subagents (
                     id, name, display_name, description, creator_id,
@@ -195,7 +198,8 @@ impl PersonalLoader {
 
         // 检查是否存在
         let exists: i32 = {
-            let db = self.db.lock().unwrap();
+            let db = self.db.lock()
+                .map_err(|e| SubagentError::LockError(e.to_string()))?;
             db.query_row(
                 "SELECT COUNT(*) FROM personal_subagents WHERE name = ? AND creator_id = ?",
                 params![name, self.user_id],
@@ -258,20 +262,26 @@ impl PersonalLoader {
         values.push(Box::new(now));
         updates.push("version = version + 1");
 
+        // 安全：WHERE子句使用参数化查询，防止SQL注入
         if !updates.is_empty() {
+            // 构建SET子句
+            let set_clause = updates.join(", ");
             let sql = format!(
-                "UPDATE personal_subagents SET {} WHERE name = '{}' AND creator_id = '{}'",
-                updates.join(", "),
-                name.replace("'", "''"),
-                self.user_id.replace("'", "''")
+                "UPDATE personal_subagents SET {} WHERE name = ?1 AND creator_id = ?2",
+                set_clause
             );
 
-            // 构建参数
-            let params: Vec<&dyn rusqlite::ToSql> = values.iter()
+            // 构建参数：动态字段值 + name + user_id
+            let mut all_params: Vec<Box<dyn rusqlite::ToSql + Send + Sync>> = values;
+            all_params.push(Box::new(name.to_string()));
+            all_params.push(Box::new(self.user_id.clone()));
+
+            let params: Vec<&dyn rusqlite::ToSql> = all_params.iter()
                 .map(|v| v.as_ref() as &dyn rusqlite::ToSql)
                 .collect();
 
-            let db = self.db.lock().unwrap();
+            let db = self.db.lock()
+                .map_err(|e| SubagentError::LockError(e.to_string()))?;
             db.execute(&sql, params.as_slice())?;
         }
 
@@ -287,14 +297,14 @@ impl PersonalLoader {
     /// 删除 Subagent
     #[allow(dead_code)]
     pub async fn delete(&self, name: &str) -> SubagentResult<()> {
-        let safe_name = name.replace("'", "''");
-        let safe_user_id = self.user_id.replace("'", "''");
-
+        // 安全：使用参数化查询，防止SQL注入
+        // 注意：name和user_id都通过bind()参数化，避免字符串拼接
         {
-            let db = self.db.lock().unwrap();
+            let db = self.db.lock()
+                .map_err(|e| SubagentError::LockError(e.to_string()))?;
             db.execute(
-                &format!("DELETE FROM personal_subagents WHERE name = '{}' AND creator_id = '{}'", safe_name, safe_user_id),
-                [],
+                "DELETE FROM personal_subagents WHERE name = ?1 AND creator_id = ?2",
+                params![name, self.user_id],
             )?;
         }
 
@@ -394,13 +404,14 @@ fn row_to_agent_config(row: &rusqlite::Row) -> rusqlite::Result<AgentConfig> {
 
 impl SubagentLoader for PersonalLoader {
     fn load_all(&self) -> SubagentResult<Vec<AgentConfig>> {
-        let safe_user_id = self.user_id.replace("'", "''");
-        let db = self.db.lock().unwrap();
+        // 安全：使用参数化查询，防止SQL注入
+        let db = self.db.lock()
+            .map_err(|e| SubagentError::LockError(e.to_string()))?;
         let mut stmt = db.prepare(
-            &format!("SELECT * FROM personal_subagents WHERE creator_id = '{}' AND enabled = 1", safe_user_id)
+            "SELECT * FROM personal_subagents WHERE creator_id = ?1 AND enabled = 1"
         )?;
 
-        let configs = stmt.query_map([], row_to_agent_config)?
+        let configs = stmt.query_map([&self.user_id], row_to_agent_config)?
             .filter_map(|r| r.ok())
             .collect();
 
@@ -408,15 +419,14 @@ impl SubagentLoader for PersonalLoader {
     }
 
     fn load(&self, name: &str) -> SubagentResult<Option<AgentConfig>> {
-        let safe_name = name.replace("'", "''");
-        let safe_user_id = self.user_id.replace("'", "''");
-
-        let db = self.db.lock().unwrap();
+        // 安全：使用参数化查询，防止SQL注入
+        let db = self.db.lock()
+            .map_err(|e| SubagentError::LockError(e.to_string()))?;
         let mut stmt = db.prepare(
-            &format!("SELECT * FROM personal_subagents WHERE name = '{}' AND creator_id = '{}'", safe_name, safe_user_id)
+            "SELECT * FROM personal_subagents WHERE name = ?1 AND creator_id = ?2"
         )?;
 
-        let config = stmt.query_row([], row_to_agent_config).ok();
+        let config = stmt.query_row(params![name, self.user_id], row_to_agent_config).ok();
         Ok(config)
     }
 

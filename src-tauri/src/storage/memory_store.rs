@@ -16,22 +16,24 @@ pub struct MemoryFact {
     pub last_accessed_at: Option<i64>,
     pub access_count: i64,
     pub is_deleted: bool,
+    pub tenant_id: String,
 }
 
 #[derive(Clone)]
 pub struct MemoryStore {
     pool: SqlitePool,
+    tenant_id: String,
 }
 
 impl MemoryStore {
-    pub fn new(pool: SqlitePool) -> Self {
-        Self { pool }
+    pub fn new(pool: SqlitePool, tenant_id: String) -> Self {
+        Self { pool, tenant_id }
     }
 
     pub async fn create(&self, fact: &MemoryFact) -> Result<()> {
         sqlx::query(
-            "INSERT INTO memory_facts (id, key, value, category, confidence, source, embedding, created_at, updated_at, last_accessed_at, access_count, is_deleted)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            "INSERT INTO memory_facts (id, key, value, category, confidence, source, embedding, created_at, updated_at, last_accessed_at, access_count, is_deleted, tenant_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
         )
         .bind(&fact.id)
         .bind(&fact.key)
@@ -45,6 +47,7 @@ impl MemoryStore {
         .bind(fact.last_accessed_at)
         .bind(fact.access_count)
         .bind(if fact.is_deleted { 1 } else { 0 })
+        .bind(&self.tenant_id)
         .execute(&self.pool)
         .await?;
 
@@ -53,10 +56,11 @@ impl MemoryStore {
 
     pub async fn get_by_id(&self, id: &str) -> Result<Option<MemoryFact>> {
         let row = sqlx::query(
-            "SELECT id, key, value, category, confidence, source, embedding, created_at, updated_at, last_accessed_at, access_count, is_deleted
-             FROM memory_facts WHERE id = ? LIMIT 1;",
+            "SELECT id, key, value, category, confidence, source, embedding, created_at, updated_at, last_accessed_at, access_count, is_deleted, tenant_id
+             FROM memory_facts WHERE id = ? AND tenant_id = ? LIMIT 1;",
         )
         .bind(id)
+        .bind(&self.tenant_id)
         .fetch_optional(&self.pool)
         .await?;
 
@@ -67,7 +71,7 @@ impl MemoryStore {
         sqlx::query(
             "UPDATE memory_facts
              SET key = ?, value = ?, category = ?, confidence = ?, source = ?, embedding = ?, created_at = ?, updated_at = ?, last_accessed_at = ?, access_count = ?, is_deleted = ?
-             WHERE id = ?;",
+             WHERE id = ? AND tenant_id = ?;",
         )
         .bind(&fact.key)
         .bind(&fact.value)
@@ -81,6 +85,7 @@ impl MemoryStore {
         .bind(fact.access_count)
         .bind(if fact.is_deleted { 1 } else { 0 })
         .bind(&fact.id)
+        .bind(&self.tenant_id)
         .execute(&self.pool)
         .await?;
 
@@ -88,8 +93,9 @@ impl MemoryStore {
     }
 
     pub async fn soft_delete(&self, id: &str) -> Result<()> {
-        sqlx::query("UPDATE memory_facts SET is_deleted = 1 WHERE id = ?;")
+        sqlx::query("UPDATE memory_facts SET is_deleted = 1 WHERE id = ? AND tenant_id = ?;")
             .bind(id)
+            .bind(&self.tenant_id)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -110,5 +116,6 @@ fn map_fact(row: sqlx::sqlite::SqliteRow) -> MemoryFact {
         last_accessed_at: row.get("last_accessed_at"),
         access_count: row.get("access_count"),
         is_deleted: row.get::<i64, _>("is_deleted") != 0,
+        tenant_id: row.try_get("tenant_id").unwrap_or_default(),
     }
 }

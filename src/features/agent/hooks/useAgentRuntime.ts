@@ -204,8 +204,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
               updateStreamingContent(content)
             }
           } else if (role === 'user') {
-            // User messages are added by the caller, just log here
-            console.log('[AgentRuntime] User message confirmed:', event.messageId)
+            // User messages are added by the caller
           }
           break
         }
@@ -219,13 +218,12 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
         case 'tool_call': {
           // Tool calls are logged but don't need streaming updates
           // They will be shown in the debug panel
-          console.log('[AgentRuntime] Tool call:', event.payload)
           break
         }
 
         case 'tool_result': {
           // Tool results are logged but don't need streaming updates
-          console.log('[AgentRuntime] Tool result:', event.payload)
+          // They will be shown in the debug panel
           break
         }
 

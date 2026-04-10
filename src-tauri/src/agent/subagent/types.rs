@@ -494,6 +494,9 @@ pub enum SubagentError {
 
     #[error("Execution failed: {0}")]
     Execution(String),
+
+    #[error("Lock error: {0}")]
+    LockError(String),
 }
 
 impl From<rusqlite::Error> for SubagentError {

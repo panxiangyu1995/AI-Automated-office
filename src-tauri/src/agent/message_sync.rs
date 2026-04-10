@@ -131,19 +131,153 @@ impl MessageSyncEngine {
     }
     
     async fn do_sync_to_remote(&self) -> Result<SyncResult, String> {
-        // TODO: Implement actual sync logic
-        // 1. Query pending messages from local DB
-        // 2. Send to remote API
-        // 3. Update local sync status
-        // 4. Handle conflicts
-        
+        let started = chrono::Utc::now().timestamp_millis();
+
+        let pending = self.get_pending_messages_batch(100).await
+            .map_err(|e| format!("获取待同步消息失败: {}", e))?;
+
+        if pending.is_empty() {
+            return Ok(SyncResult {
+                synced_count: 0,
+                failed_count: 0,
+                conflict_count: 0,
+                started_at: started,
+                completed_at: chrono::Utc::now().timestamp_millis(),
+            });
+        }
+
+        let token = self.get_api_token().await;
+        let mut synced_count = 0u32;
+        let mut failed_count = 0u32;
+        let mut conflict_count = 0u32;
+
+        for msg in &pending {
+            let url = format!("{}/api/messages/sync", self.api_base_url.trim_end_matches('/'));
+            let client = reqwest::Client::new();
+            let mut req = client.post(&url);
+            if let Some(ref t) = token {
+                req = req.header("Authorization", format!("Bearer {}", t));
+            }
+            req = req.json(&msg);
+
+            match req.send().await {
+                Ok(resp) if resp.status().is_success() => {
+                    if let Err(e) = self.mark_message_synced(&msg.id).await {
+                        tracing::warn!("标记消息已同步失败 {}: {}", msg.id, e);
+                    }
+                    synced_count += 1;
+                }
+                Ok(resp) => {
+                    let err_body = resp.text().await.unwrap_or_default();
+                    if let Err(e) = self.mark_message_sync_failed(&msg.id, &err_body).await {
+                        tracing::warn!("标记消息同步失败 {}: {}", msg.id, e);
+                    }
+                    failed_count += 1;
+                    tracing::warn!("消息同步失败 {}: {}", msg.id, err_body);
+                }
+                Err(e) => {
+                    if let Err(err) = self.mark_message_sync_failed(&msg.id, &e.to_string()).await {
+                        tracing::warn!("标记消息同步失败 {}: {}", msg.id, err);
+                    }
+                    failed_count += 1;
+                    tracing::warn!("消息同步请求失败 {}: {}", msg.id, e);
+                }
+            }
+        }
+
+        {
+            let mut state = self.sync_state.write().await;
+            state.pending_count = state.pending_count.saturating_sub(synced_count);
+            state.failed_count += failed_count;
+        }
+
         Ok(SyncResult {
-            synced_count: 0,
-            failed_count: 0,
-            conflict_count: 0,
-            started_at: chrono::Utc::now().timestamp_millis(),
+            synced_count,
+            failed_count,
+            conflict_count,
+            started_at: started,
             completed_at: chrono::Utc::now().timestamp_millis(),
         })
+    }
+
+    /// 批量获取待同步消息
+    async fn get_pending_messages_batch(
+        &self,
+        limit: u32,
+    ) -> Result<Vec<SyncableMessage>, String> {
+        let rows = sqlx::query(
+            "SELECT id, remote_id, session_id, role, content, tool_calls, tool_call_id,
+                    metadata, created_at, updated_at, deleted_at, sync_status, synced_at, sync_error
+             FROM messages
+             WHERE sync_status IN ('pending', 'failed')
+             ORDER BY created_at ASC
+             LIMIT ?"
+        )
+        .bind(limit)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        let messages: Vec<SyncableMessage> = rows.iter().map(|row| {
+            let sync_status_str: String = row.try_get("sync_status").unwrap_or_default();
+            SyncableMessage {
+                id: row.get("id"),
+                remote_id: row.try_get("remote_id").ok(),
+                session_id: row.get("session_id"),
+                role: row.get("role"),
+                content: row.try_get("content").ok(),
+                tool_calls: row.try_get::<String, _>("tool_calls").ok()
+                    .and_then(|s| serde_json::from_str(&s).ok()),
+                tool_call_id: row.try_get("tool_call_id").ok(),
+                metadata: row.try_get::<String, _>("metadata").ok()
+                    .and_then(|s| serde_json::from_str(&s).ok()),
+                created_at: row.get("created_at"),
+                updated_at: row.try_get("updated_at").unwrap_or(0),
+                deleted_at: row.try_get("deleted_at").ok(),
+                sync_status: parse_sync_status(&sync_status_str),
+                synced_at: row.try_get("synced_at").ok(),
+                sync_error: row.try_get("sync_error").ok(),
+                version: 1,
+            }
+        }).collect();
+
+        Ok(messages)
+    }
+
+    /// 标记消息已同步
+    async fn mark_message_synced(&self, message_id: &str) -> Result<(), String> {
+        let now = chrono::Utc::now().timestamp();
+        sqlx::query("UPDATE messages SET sync_status = 'synced', synced_at = ? WHERE id = ?")
+            .bind(now)
+            .bind(message_id)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    /// 标记消息同步失败
+    async fn mark_message_sync_failed(&self, message_id: &str, error: &str) -> Result<(), String> {
+        let now = chrono::Utc::now().timestamp();
+        sqlx::query("UPDATE messages SET sync_status = 'failed', sync_error = ? WHERE id = ?")
+            .bind(error)
+            .bind(message_id)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+}
+
+/// Parse sync status string to MessageSyncStatus enum
+fn parse_sync_status(s: &str) -> MessageSyncStatus {
+    match s {
+        "pending" => MessageSyncStatus::Pending,
+        "syncing" => MessageSyncStatus::Syncing,
+        "synced" => MessageSyncStatus::Synced,
+        "failed" => MessageSyncStatus::Failed,
+        "delete_pending" => MessageSyncStatus::DeletePending,
+        _ => MessageSyncStatus::Pending,
     }
 }
 
@@ -248,13 +382,3 @@ pub async fn get_pending_messages(
     Ok(messages)
 }
 
-fn parse_sync_status(s: &str) -> MessageSyncStatus {
-    match s {
-        "pending" => MessageSyncStatus::Pending,
-        "syncing" => MessageSyncStatus::Syncing,
-        "synced" => MessageSyncStatus::Synced,
-        "failed" => MessageSyncStatus::Failed,
-        "delete_pending" => MessageSyncStatus::DeletePending,
-        _ => MessageSyncStatus::Pending,
-    }
-}

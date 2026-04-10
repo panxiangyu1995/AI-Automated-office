@@ -2,6 +2,12 @@
 
 use serde::{Deserialize, Serialize};
 
+pub use super::errors::TenantError;
+pub use super::repository::{
+    TenantRepository, TenantConfigRepository,
+    SqliteTenantRepository, SqliteTenantConfigRepository,
+};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Tenant {

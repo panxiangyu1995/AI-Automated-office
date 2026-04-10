@@ -11,6 +11,11 @@ description: |
 
   核心工作流：
   1. 分析代码问题（扫描TODO/FIXME/DRY/安全）
+     - 代码质量问题
+     - 前后端集成问题
+     - 云端集成问题
+     - 业务逻辑问题
+     - UX/交互反人类问题
   2. 根据分析结果生成task.json任务条目
   3. 为任务生成/检查OpenSpec change
   4. 使用openspec-apply-change执行
@@ -32,8 +37,16 @@ metadata:
 
 **核心工作流：**
 ```
-分析代码问题 → 生成task.json → 生成OpenSpec → 执行实现 → 更新task.json → 记录progress.txt
+分析代码问题（6大维度）→ 生成task.json → 生成OpenSpec → 执行实现 → 更新task.json → 记录progress.txt
 ```
+
+**6大分析维度：**
+1. 代码质量问题（TODO/FIXME/unwrap/DRY）
+2. 前后端集成问题（命令契约/API类型/错误处理）
+3. 云端集成问题（API配置/同步/离线/认证）
+4. 业务逻辑问题（边界条件/状态机/并发/一致性）
+5. 安全漏洞（注入/XSS/权限/敏感数据泄露）
+6. UX/交互反人类问题（反馈/确认/路径/快捷键/空状态）
 
 ---
 
@@ -55,10 +68,11 @@ metadata:
 **确定扫描范围：**
 - 根据用户指定的模块（如"agent模块"、"工具系统"）
 - 定位对应的源代码目录
-- 确定前后端文件范围
+- 确定前后端文件范围：前端(Frontend)、后端(Tauri/Rust)、云端(Cloud/API)
 
 #### 1.1 执行代码扫描
 
+**基础代码扫描：**
 ```bash
 # Rust代码扫描
 grep -rn "TODO\|FIXME\|XXX\|HACK" src-tauri/src/[模块]/ --include="*.rs"
@@ -77,7 +91,150 @@ grep -rn "// @ts-ignore\|console.log" src/[模块]/ --include="*.ts" --include="
 - 结构相似但变量名不同的代码
 - 不同文件实现相同功能
 
-#### 1.3 输出扫描报告
+#### 1.3 前后端集成问题分析
+
+**检查前后端契约一致性：**
+```bash
+# 检查Tauri命令定义 vs 前端调用
+grep -rn "invoke\|command" src/[模块]/ --include="*.ts" --include="*.tsx"
+grep -rn "#\[tauri::command\]" src-tauri/src/[模块]/ --include="*.rs"
+
+# 检查类型定义一致性
+grep -rn "interface\|type\|class" src/[模块]/types/ --include="*.ts"
+grep -rn "struct\|enum" src-tauri/src/[模块]/ --include="*.rs"
+```
+
+**识别集成问题：**
+- 命令名称不匹配（前端调用 vs 后端定义）
+- 参数类型不一致（TS类型 vs Rust类型）
+- 返回值结构不匹配
+- 错误处理不一致（前端期望 vs 后端返回）
+- 异步处理差异（Promise vs Result）
+- 缺少必要的命令导出
+
+#### 1.4 云端集成问题分析
+
+**检查API调用层：**
+```bash
+# 检查API调用
+grep -rn "fetch\|axios\|api\." src/lib/ --include="*.ts"
+grep -rn "BASE_URL\|API_URL\|endpoint" src/[模块]/ --include="*.ts"
+
+# 检查云端同步逻辑
+grep -rn "sync\|upload\|download\|pull\|push" src-tauri/src/[模块]/ --include="*.rs"
+grep -rn "sync\|offline\|online\|connectivity" src/[模块]/ --include="*.ts" --include="*.tsx"
+```
+
+**识别云端集成问题：**
+- API端点配置缺失或错误
+- 认证/鉴权token处理不一致
+- 网络错误处理不完善
+- 离线场景未处理
+- 数据同步冲突未处理
+- 超时/重试逻辑缺失
+- 请求/响应拦截器缺失
+
+#### 1.5 业务逻辑问题分析
+
+**检查业务规则实现：**
+```bash
+# 检查业务规则/验证
+grep -rn "validate\|verify\|check\|assert" src/[模块]/ --include="*.ts" --include="*.tsx"
+grep -rn "validate\|verify\|check" src-tauri/src/[模块]/ --include="*.rs"
+
+# 检查状态机/流程控制
+grep -rn "state\|status\|flow\|process" src/[模块]/ --include="*.ts" --include="*.tsx"
+grep -rn "State\|Status" src-tauri/src/[模块]/ --include="*.rs"
+```
+
+**识别业务逻辑问题：**
+- 边界条件未处理
+- 状态转换缺少校验
+- 业务规则分散/重复
+- 并发控制缺失
+- 事务边界不清晰
+- 数据一致性保证缺失
+
+#### 1.6 UX/交互反人类问题分析
+
+**检查用户体验问题：**
+```bash
+# 检查加载状态
+grep -rn "loading\|spinner\|skeleton\|placeholder" src/[模块]/ --include="*.tsx"
+
+# 检查错误提示
+grep -rn "error\|Error\|alert\|toast\|notification" src/[模块]/ --include="*.tsx"
+
+# 检查表单交互
+grep -rn "onChange\|onSubmit\|onClick\|disabled\|readonly" src/[模块]/ --include="*.tsx"
+```
+
+**识别UX反人类问题：**
+- 加载中无反馈（无spinner/骨架屏）
+- 错误信息不友好（显示技术错误而非用户友好信息）
+- 操作无确认（删除/修改无二次确认）
+- 表单验证时机不当（提交后才提示）
+- 必填项未标注
+- 按钮状态混乱（可点击但实际不可用）
+- 操作路径过长（需要多步才能完成任务）
+- 缺少快捷操作/快捷键
+- 导航层级过深
+- 数据分页/搜索不直观
+- 空状态无引导
+- 移动端适配问题
+
+#### 1.6 安全漏洞分析
+
+**检查认证鉴权：**
+```bash
+# 检查JWT/token处理
+grep -rn "token\|jwt\|auth\|bearer" src/lib/ --include="*.ts"
+grep -rn "Authorization\|Bearer" src/[模块]/ --include="*.ts" --include="*.tsx"
+
+# 检查密码/敏感数据处理
+grep -rn "password\|secret\|credential\|api_key\|apikey" src/ --include="*.ts" --include="*.tsx"
+grep -rn "password\|secret\|credential" src-tauri/src/ --include="*.rs"
+```
+
+**检查输入验证与SQL注入：**
+```bash
+# 检查原始SQL拼接
+grep -rn "SELECT\|INSERT\|UPDATE\|DELETE" src-tauri/src/[模块]/ --include="*.rs"
+grep -rn "query\|execute" src-tauri/src/[模块]/ --include="*.rs"
+
+# 检查用户输入处理
+grep -rn "innerHTML\|dangerouslySetInnerHTML" src/[模块]/ --include="*.tsx"
+grep -rn "eval\|new Function\|script" src/[模块]/ --include="*.ts" --include="*.tsx"
+```
+
+**检查XSS/CSRF防护：**
+```bash
+# 检查XSS风险
+grep -rn "innerHTML\|dangerouslySetInnerHTML" src/[模块]/ --include="*.tsx"
+grep -rn "localStorage\|sessionStorage" src/[模块]/ --include="*.ts" --include="*.tsx"
+
+# 检查CORS配置
+grep -rn "CORS\|Access-Control-Allow-Origin" src-tauri/src/ --include="*.rs"
+```
+
+**检查权限控制：**
+```bash
+# 检查权限验证
+grep -rn "permission\|authorize\|role\|admin\|root" src-tauri/src/[模块]/ --include="*.rs"
+grep -rn "role\|permission\|isAdmin" src/[模块]/ --include="*.ts" --include="*.tsx"
+```
+
+**识别安全漏洞：**
+- 敏感信息硬编码（API密钥、密码、token明文存储）
+- SQL注入风险（原始SQL拼接而非参数化查询）
+- XSS漏洞（用户输入未转义直接渲染）
+- CSRF漏洞（缺少token验证）
+- 权限绕过（关键操作缺少权限校验）
+- 敏感数据泄露（localStorage存token、错误信息泄露敏感路径）
+- 不安全的随机数（用于安全用途）
+- 加密算法不安全（使用已知不安全的算法）
+
+#### 1.7 输出分析报告
 
 ```markdown
 ## [模块名] 代码分析报告
@@ -85,24 +242,105 @@ grep -rn "// @ts-ignore\|console.log" src/[模块]/ --include="*.ts" --include="
 ### 扫描范围
 - backend: src-tauri/src/[模块]/
 - frontend: src/[模块]/
+- cloud: src/lib/api.ts, cloud-server/
 
-### 发现的问题
+### 一、代码质量问题
 
 | 类型 | 数量 | 严重性 |
 |------|------|--------|
 | TODO/FIXME | X个 | 🟡中 |
 | unwrap()无处理 | X个 | 🔴高 |
 | DRY违规 | X处 | 🟡中 |
-| 安全问题 | X个 | 🔴高 |
+| 安全漏洞 | X个 | 🔴高 |
 
-### 问题详情
+### 二、前后端集成问题
 
-#### 🔴 高优先级问题
-- [问题1描述及位置]
-- [问题2描述及位置]
+| 问题 | 位置 | 严重性 | 影响 |
+|------|------|--------|------|
+| [问题描述] | [文件:行号] | 🔴/🟡 | [影响描述] |
 
-#### 🟡 中优先级问题
-- [问题描述及位置]
+**常见集成问题类型：**
+- 命令名称不一致
+- 参数类型不匹配
+- 缺少错误处理
+- 异步处理差异
+
+### 三、云端集成问题
+
+| 问题 | 位置 | 严重性 | 影响 |
+|------|------|--------|------|
+| [问题描述] | [文件:行号] | 🔴/🟡 | [影响描述] |
+
+**常见云端问题类型：**
+- API端点配置错误
+- 网络错误处理缺失
+- 离线场景未处理
+- 认证token处理不一致
+- 数据同步冲突
+
+### 四、业务逻辑问题
+
+| 问题 | 位置 | 严重性 | 影响 |
+|------|------|--------|------|
+| [问题描述] | [文件:行号] | 🔴/🟡 | [影响描述] |
+
+**常见业务逻辑问题：**
+- 边界条件未处理
+- 状态转换缺少校验
+- 并发控制缺失
+- 数据一致性不保证
+
+### 五、安全漏洞
+
+| 问题 | 位置 | 严重性 | 风险 |
+|------|------|--------|------|
+| [问题描述] | [文件:行号] | 🔴/🟡 | [安全风险描述] |
+
+**常见安全漏洞类型：**
+- 敏感信息硬编码（API密钥、密码、token明文）
+- SQL注入风险（原始SQL拼接）
+- XSS漏洞（用户输入未转义）
+- CSRF漏洞（缺少token验证）
+- 权限绕过（关键操作缺少权限校验）
+- 敏感数据泄露（localStorage存token）
+- 不安全的随机数
+- 加密算法不安全
+
+### 六、UX/交互反人类问题
+
+| 问题 | 位置 | 严重性 | 用户影响 |
+|------|------|--------|---------|
+| [问题描述] | [文件:行号] | 🔴/🟡 | [用户困扰描述] |
+
+**常见UX问题类型：**
+- 🔴 无加载反馈
+- 🔴 错误信息不友好
+- 🔴 操作无确认
+- 🟡 表单验证时机不当
+- 🟡 按钮状态混乱
+- 🟡 操作路径过长
+- 🟡 缺少快捷操作
+- 🟡 空状态无引导
+
+### 七、问题汇总
+
+| 严重性 | 数量 |
+|--------|------|
+| 🔴 高 | X个 |
+| 🟡 中 | X个 |
+| 🟢 低 | X个 |
+
+**P0问题（安全/阻塞问题）：**
+1. [问题1]
+2. [问题2]
+
+**P1问题（影响体验）：**
+1. [问题1]
+2. [问题2]
+
+**P2问题（可优化）：**
+1. [问题1]
+2. [问题2]
 ```
 
 ---
@@ -413,18 +651,21 @@ agent模块优化完成！
 用户触发优化迭代
     │
     ▼
-【Step 1】分析代码问题
+【Step 1】分析代码问题（6大维度）
     │
-    ├─→ 扫描TODO/FIXME/unwrap
-    ├─→ DRY原则分析
-    ├─→ 安全问题检查
-    └─→ 输出分析报告
+    ├─→ 代码质量问题（TODO/FIXME/unwrap/DRY）
+    ├─→ 前后端集成问题（命令契约/API类型/错误处理）
+    ├─→ 云端集成问题（API配置/同步/离线/认证）
+    ├─→ 业务逻辑问题（边界条件/状态机/并发/一致性）
+    ├─→ 安全漏洞（注入/XSS/权限/敏感数据泄露）
+    └─→ UX/交互反人类问题（反馈/确认/路径/快捷键/空状态）
+    └─→ 输出5维度分析报告
     │
     ▼
 【Step 2】生成task.json
     │
     ├─→ 读取当前最大ID
-    ├─→ 根据问题生成任务
+    ├─→ 根据问题生成任务（按优先级）
     ├─→ 按优先级排序
     └─→ 写入task.json
     │
@@ -500,8 +741,13 @@ agent模块优化完成！
 ## 七、执行检查清单
 
 - [ ] 确定扫描范围（用户指定的模块）
-- [ ] 执行代码扫描（TODO/FIXME/unwrap/DRY/安全）
-- [ ] 输出分析报告
+- [ ] 执行代码质量问题扫描（TODO/FIXME/unwrap/DRY）
+- [ ] 执行前后端集成问题分析（命令契约/API类型/错误处理）
+- [ ] 执行云端集成问题分析（API配置/同步/离线/认证）
+- [ ] 执行业务逻辑问题分析（边界条件/状态机/并发/一致性）
+- [ ] 执行安全漏洞分析（注入/XSS/权限/敏感数据泄露）
+- [ ] 执行UX/交互反人类问题分析（反馈/确认/路径/快捷键/空状态）
+- [ ] 输出6维度分析报告
 - [ ] 根据分析结果生成task.json任务
 - [ ] 将任务写入task.json
 - [ ] 为任务生成/检查OpenSpec change

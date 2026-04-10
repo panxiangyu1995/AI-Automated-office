@@ -563,16 +563,16 @@ export function ErrorClassificationGuidance({
     setDetailsOpen(true)
   }
 
-  const handleApplyFix = (error: ErrorInstance) => {
-    console.log('Applying fix for:', error.errorCode)
+  const handleApplyFix = (_error: ErrorInstance) => {
+    // Applying fix for error
   }
 
-  const handleRetry = (error: ErrorInstance) => {
-    console.log('Retrying:', error.errorCode)
+  const handleRetry = (_error: ErrorInstance) => {
+    // Retrying error
   }
 
-  const handleResolve = (error: ErrorInstance) => {
-    console.log('Resolving:', error.errorCode)
+  const handleResolve = (_error: ErrorInstance) => {
+    // Resolving error
   }
 
   return (

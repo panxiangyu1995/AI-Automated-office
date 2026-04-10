@@ -289,9 +289,27 @@ impl AgentIntercomService {
 
     /// 内容安全检查
     fn check_content_safety(&self, content: &MessageContent) -> Result<(), AgentIntercomError> {
-        // TODO: 实现内容安全检查
-        // - 敏感词过滤
-        // - 恶意内容检测
+        let text = match content.as_text() {
+            Some(t) => t,
+            None => return Ok(()),
+        };
+        if text.len() > 65535 {
+            return Err(AgentIntercomError::ContentModerationFailed {
+                reason: "内容超出最大长度限制 (65535 字符)".to_string(),
+            });
+        }
+        let sensitive_patterns = [
+            "password", "secret", "api_key", "apikey", "token",
+            "credential", "private_key", "-----BEGIN",
+        ];
+        let lower = text.to_lowercase();
+        for pattern in &sensitive_patterns {
+            if lower.contains(pattern) {
+                return Err(AgentIntercomError::ContentModerationFailed {
+                    reason: format!("内容包含敏感关键词: {}", pattern),
+                });
+            }
+        }
         Ok(())
     }
 

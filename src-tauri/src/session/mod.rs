@@ -4,10 +4,12 @@
 //! supporting offline session recovery while maintaining security.
 
 mod cache;
+mod context;
 mod metadata;
 mod security_check;
 
 pub use cache::SessionCache;
+pub use context::TenantContext;
 pub use metadata::SessionMetadata;
 pub use security_check::SecurityChecker;
 
