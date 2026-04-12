@@ -31,6 +31,11 @@ export interface SidebarResourceEntry {
   target: SidebarOpenTarget
 }
 
+export interface ActivityBarBadge {
+  count: number | string
+  color?: string
+}
+
 interface UIState {
   sidebarWidth: number
   sidebarCollapsed: boolean
@@ -45,6 +50,7 @@ interface UIState {
   dynamicSidebarEntries: SidebarResourceEntry[]
   editorSidebarEntries: SidebarResourceEntry[]
   recentSidebarEntries: SidebarResourceEntry[]
+  activityBarBadges: Record<string, ActivityBarBadge>
   // Settings navigation state (for sidebar integration)
   settingsActiveCategory: SettingsCategoryKey
   settingsActiveSection: SettingsSectionKey
@@ -74,6 +80,7 @@ interface UIState {
   setActiveActivityItem: (item: ActivityBarItem) => void
   setDynamicSidebarEntries: (entries: SidebarResourceEntry[]) => void
   setEditorSidebarEntries: (entries: SidebarResourceEntry[]) => void
+  setActivityBarBadge: (targetId: string, count: number | string, color?: string) => void
   registerRecentSidebarEntry: (entry: SidebarResourceEntry) => void
   clearRecentSidebarEntries: () => void
   // Settings navigation actions
@@ -150,6 +157,7 @@ export const useUIStore = create<UIState>()(
       dynamicSidebarEntries: [],
       editorSidebarEntries: [],
       recentSidebarEntries: [],
+      activityBarBadges: {},
       settingsActiveCategory: 'workspace',
       settingsActiveSection: 'general',
       setSidebarWidth: (width) => set({ sidebarWidth: width }),
@@ -173,13 +181,20 @@ export const useUIStore = create<UIState>()(
       toggleBottomPanel: () => set({ bottomPanelCollapsed: !get().bottomPanelCollapsed }),
       toggleTopBar: () => set({ topBarVisible: !get().topBarVisible }),
       toggleAiPanel: () => set({ aiPanelVisible: !get().aiPanelVisible }),
-      resetLayout: () => set({ ...defaultLayout, agentSecondarySurface: 'none' }),
+      resetLayout: () => set({ ...defaultLayout, agentSecondarySurface: 'none', activityBarBadges: {} }),
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
       toggleQuickSearch: () => set({ quickSearchOpen: !get().quickSearchOpen }),
       setActiveActivityItem: (item) => set({ activeActivityItem: item }),
       setDynamicSidebarEntries: (entries) => set({ dynamicSidebarEntries: entries }),
       setEditorSidebarEntries: (entries) => set({ editorSidebarEntries: entries }),
+      setActivityBarBadge: (targetId, count, color) =>
+        set((state) => ({
+          activityBarBadges: {
+            ...state.activityBarBadges,
+            [targetId]: { count, color },
+          },
+        })),
       registerRecentSidebarEntry: (entry) =>
         set((state) => {
           const nextEntries = [
@@ -225,6 +240,7 @@ export const useUIStore = create<UIState>()(
           agentSecondarySurface: 'none',
           activePresetId: null,
           activePresetMode: null,
+          activityBarBadges: {},
         }),
     }),
     {

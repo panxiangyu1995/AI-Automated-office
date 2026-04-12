@@ -1,9 +1,16 @@
 // 布局组件导出
 export { AppLayout } from './AppLayout'
+export { CommandPalette } from './CommandPalette'
 export { TopBar } from './TopBar'
 export { ActivityBar } from './ActivityBar'
 export { Sidebar } from './Sidebar'
 export { Workbench } from './Workbench'
+export { Tab } from './Tab'
+export { TabBar } from './TabBar'
+export { WorkbenchTabs } from './WorkbenchTabs'
+export type { TabProps } from './Tab'
+export type { TabBarProps } from './TabBar'
+export type { WorkbenchTabsProps } from './WorkbenchTabs'
 export { RouteContainer } from './RouteContainer'
 export { WorkbenchHostErrorBoundary, WorkbenchHostRenderer } from './workbenchHost'
 export type {

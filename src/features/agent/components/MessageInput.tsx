@@ -41,6 +41,7 @@ export interface MediaAttachment {
 interface MessageInputProps {
   onSend: (content: string, attachments?: MediaAttachment[]) => void
   onStop?: () => void
+  onInputChange?: (value: string) => void
   disabled?: boolean
   placeholder?: string
   className?: string
@@ -84,6 +85,7 @@ const readFileAsBase64 = (file: File): Promise<string> => {
 export function MessageInput({
   onSend,
   onStop,
+  onInputChange,
   disabled = false,
   placeholder = '输入消息，或拖放文件...',
   className,
@@ -394,7 +396,7 @@ export function MessageInput({
             <textarea
               ref={textareaRef}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => { setInputValue(e.target.value); onInputChange?.(e.target.value) }}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder={placeholder}

@@ -21,10 +21,9 @@ import { MessageInput } from './MessageInput'
 import { StagedReviewPanel } from './StagedReviewPanel'
 import { CompressionStatus } from './chat/CompressionStatus'
 import { CompressionHistory } from './chat/CompressionHistory'
-import { 
-  useChatStore, 
-  useActiveChatSession
-} from '../hooks/useChatStore'
+import { PluginRecommendationCard } from '@/components/common/PluginRecommendationCard'
+import { usePluginRecommendation } from '@/hooks/usePluginRecommendation'
+import { useChatStore, useActiveChatSession } from '../hooks/useChatStore'
 import { useAgentRuntime } from '../hooks/useAgentRuntime'
 import { useBusinessCompression } from '../hooks/useBusinessCompression'
 import { getFriendlyError } from '@/lib/errors'
@@ -280,6 +279,9 @@ export function AgentChatPanel({
   // Track if we've initialized the backend session
   const hasInitializedBackend = useRef(false)
 
+  // Plugin recommendation
+  const { recommendations, hasRecommendations, dismiss: dismissRecommendation, match: matchRecommendations } = usePluginRecommendation()
+
   // Combined loading state for UI
   const isAgentRunning = frontendIsStreaming || isExecuting
 
@@ -330,6 +332,15 @@ export function AgentChatPanel({
     // Otherwise, execute through real backend runtime
     await executeAgent(content)
   }, [activeSessionId, onSendMessage, executeAgent, stopStreaming])
+
+  // Handle input change for plugin recommendations
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const handleInputChange = useCallback((value: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      matchRecommendations(value)
+    }, 500)
+  }, [matchRecommendations])
 
   // Handle stop generation - interrupt backend runtime
   const handleStop = useCallback(async () => {
@@ -389,6 +400,21 @@ export function AgentChatPanel({
         </div>
       )}
 
+      {/* Plugin Recommendations */}
+      {hasRecommendations && (
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+          <div className="text-xs text-slate-500 mb-2 font-medium">您可能需要：</div>
+          {recommendations.map((rec) => (
+            <PluginRecommendationCard
+              key={rec.plugin.pluginId}
+              plugin={rec.plugin}
+              matchedKeywords={rec.matchedKeywords}
+              onDismiss={() => dismissRecommendation(rec.plugin.pluginId)}
+            />
+          ))}
+        </div>
+      )}
+
       <StagedReviewPanel sessionId={activeSessionId} />
       
       {/* Compression Status Bar */}
@@ -401,6 +427,7 @@ export function AgentChatPanel({
       <MessageInput
         onSend={handleSend}
         onStop={handleStop}
+        onInputChange={handleInputChange}
         disabled={!isInitialized || !backendSessionId || isAgentRunning}
         placeholder={
           !isInitialized 
