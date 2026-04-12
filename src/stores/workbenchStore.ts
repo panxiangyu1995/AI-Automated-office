@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type TabType = 'file' | 'report' | 'detail' | 'form' | 'custom'
+export type TabType = 'file' | 'report' | 'detail' | 'form' | 'custom' | 'list'
 
 export interface WorkbenchTab {
   id: string
@@ -53,7 +53,7 @@ export const useWorkbenchStore = create<WorkbenchStore>()((set, get) => ({
   ...defaultState,
 
   addTab: (tabData) => {
-    const { tabs, maxTabs, activeTabId } = get()
+    const { tabs, maxTabs } = get()
 
     if (tabs.length >= maxTabs) {
       console.warn(`[WorkbenchStore] Tab数量已达上限 (${maxTabs})，请先关闭不需要的Tab`)
@@ -167,7 +167,7 @@ export const useWorkbenchStore = create<WorkbenchStore>()((set, get) => ({
   },
 
   reorderTabs: (fromIndex, toIndex) => {
-    const { tabs, activeTabId } = get()
+    const { tabs } = get()
 
     if (
       fromIndex < 0 ||
@@ -213,7 +213,7 @@ export const useWorkbenchStore = create<WorkbenchStore>()((set, get) => ({
 
   // 路由相关方法
   openTabByRoute: (routeKey, params) => {
-    const { tabs, maxTabs, addTab, setActiveTab } = get()
+    const { tabs, addTab, setActiveTab } = get()
 
     const existingTab = tabs.find((t) => t.routeKey === routeKey)
     if (existingTab) {

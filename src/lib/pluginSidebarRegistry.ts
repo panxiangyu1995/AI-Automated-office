@@ -7,7 +7,7 @@
  */
 
 import type { LucideIcon } from 'lucide-react'
-import type { SidebarResourceEntry } from '@/stores/uiStore'
+import type { SidebarResourceEntry, ActivityBarItem } from '@/stores/uiStore'
 
 export interface PluginSidebarEntryConfig {
   id: string
@@ -67,7 +67,7 @@ class PluginSidebarRegistryImpl {
           target: {
             path: entry.path,
             mode: 'dynamic' as const,
-            activityItem: entry.activityItem as any,
+            activityItem: entry.activityItem as ActivityBarItem,
           },
         })
       }

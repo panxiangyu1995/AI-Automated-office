@@ -5,11 +5,11 @@
   "batch": "Epic 14 - Warehouse Module",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
   "sourceOfTruth": "PRD MVP Definition + task-archived-5.json",
-  "activeNote": "Epic 14仓库模块9个Story（Task 222-230）全部完成。UI优化任务（218-221）全部完成。",
+  "activeNote": "Epic 14仓库模块9个Story（Task 222-230）全部完成。UI优化任务（218-221）全部完成。Task 209-210 MVP集成测试和发布准备已完成。",
   "summary": {
     "total": 25,
-    "completed": 20,
-    "remaining": 5,
+    "completed": 22,
+    "remaining": 3,
     "byPriority": {
       "critical": 2,
       "high": 5,
@@ -28,6 +28,7 @@
     }
   },
   "tasks": [
+    {
       "id": 206,
       "epic": "Epic 49",
       "story": "Story 49.1",
@@ -237,7 +238,7 @@
         "Task 195",
         "Task 199"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 210,
@@ -281,7 +282,7 @@
       "dependencies": [
         "Task 209"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 211,

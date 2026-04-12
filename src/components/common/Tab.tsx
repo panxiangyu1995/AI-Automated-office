@@ -1,12 +1,13 @@
-import { X, FileText, BarChart3, FileCheck, FilePen, Layout } from 'lucide-react'
+import { X, FileText, BarChart3, FileCheck, FileEdit, Layout, List } from 'lucide-react'
 import type { WorkbenchTab } from '../../stores/workbenchStore'
 
 const TAB_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   file: FileText,
   report: BarChart3,
   detail: FileCheck,
-  form: FilePen,
+  form: FileEdit,
   custom: Layout,
+  list: List,
 }
 
 export interface TabProps {

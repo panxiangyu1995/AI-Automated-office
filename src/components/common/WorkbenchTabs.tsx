@@ -8,7 +8,7 @@ export interface WorkbenchTabsProps {
 }
 
 export function WorkbenchTabs({ renderContent, emptyState, className = '' }: WorkbenchTabsProps) {
-  const { tabs, activeTabId, addTab, removeTab, setActiveTab } = useWorkbenchStore()
+  const { tabs, activeTabId } = useWorkbenchStore()
 
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? null
 

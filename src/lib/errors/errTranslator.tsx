@@ -7,7 +7,7 @@
  * - UX-04: 用户友好的错误提示
  */
 
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * 用户友好的错误结构
@@ -210,7 +210,8 @@ export function getFriendlyError(error: Error | string | null | undefined): User
   }
 
   const errorMessage = typeof error === 'string' ? error : error.message || String(error);
-  const errorCode = typeof error === 'string' ? error : (error as Error).code || errorMessage;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const errorCode = typeof error === 'string' ? error : (error as any).code || errorMessage;
 
   // 首先尝试直接匹配错误码
   if (ERROR_MESSAGES[errorCode]) {

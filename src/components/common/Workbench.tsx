@@ -112,7 +112,8 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
         routeKey: `route:${location.pathname}`,
       })
     }
-  }, [location.pathname])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, addTab])
 
   return (
     <main

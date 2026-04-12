@@ -26,7 +26,6 @@ export function AiSuggestionsPanel({
   onDismiss,
 }: AiSuggestionsPanelProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const handleAccept = useCallback(
     (id: string) => {
