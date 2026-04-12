@@ -80,20 +80,26 @@ pub struct Cookie {
 }
 
 fn get_or_init_state() -> BrowserState {
-    let state = BROWSER_STATE.read().unwrap();
+    // 安全：使用expect处理锁错误（OnceLock+Mutex中毒极少见）
+    let state = BROWSER_STATE.read()
+        .expect("BROWSER_STATE poison: Failed to read browser state");
     if let Some(ref s) = *state {
         return s.clone();
     }
     drop(state);
-    let mut write = BROWSER_STATE.write().unwrap();
+    let mut write = BROWSER_STATE.write()
+        .expect("BROWSER_STATE poison: Failed to write browser state");
     if write.is_none() {
         *write = Some(BrowserState::default());
     }
-    write.clone().unwrap()
+    // 安全：上面已确保write不为None
+    write.clone().expect("BROWSER_STATE: Failed to clone initialized state")
 }
 
 fn update_state(state: BrowserState) {
-    let mut write = BROWSER_STATE.write().unwrap();
+    // 安全：使用expect处理锁错误
+    let mut write = BROWSER_STATE.write()
+        .expect("BROWSER_STATE poison: Failed to write browser state");
     *write = Some(state);
 }
 
@@ -123,8 +129,10 @@ impl CdpClient {
     /// Launch browser with profile
     pub async fn launch(&mut self, profile: &str) -> Result<String, String> {
         // Placeholder - would use Playwright CDP server
-        self.browser_id = Some(format!("browser_{}", uuid::Uuid::new_v4()));
-        Ok(self.browser_id.clone().unwrap())
+        let id = format!("browser_{}", uuid::Uuid::new_v4());
+        self.browser_id = Some(id.clone());
+        // 安全：browser_id刚被设置为Some
+        Ok(id)
     }
 
     /// Execute CDP command
@@ -968,10 +976,12 @@ async fn execute_close(
     state.tabs.retain(|tab| tab.id != target_id.as_ref().map(|s| s.as_str()).unwrap_or(""));
 
     if state.tabs.len() == initial_len && target_id.is_some() {
+        // 安全：unwrap前已检查is_some()
+        let tab_id = target_id.as_ref().expect("target_id should exist");
         return Ok(BrowserInteractResult {
             action: "close".to_string(),
             success: false,
-            message: Some(format!("Tab not found: {}", target_id.as_ref().unwrap())),
+            message: Some(format!("Tab not found: {}", tab_id)),
             state: Some(state),
             tabs: None,
             snapshot: None,
@@ -1077,15 +1087,14 @@ async fn execute_navigate(
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let url = params
         .get("url")
+        .and_then(|v| v.as_str())
         .ok_or_else(|| ToolExecutionError {
             code: ToolErrorCode::ValidationError,
-            message: "URL is required for navigate action".to_string(),
+            message: "URL is required and must be a string for navigate action".to_string(),
             details: None,
             recoverable: true,
             retryable: false,
         })?
-        .as_str()
-        .unwrap()
         .to_string();
 
     let target_id = params

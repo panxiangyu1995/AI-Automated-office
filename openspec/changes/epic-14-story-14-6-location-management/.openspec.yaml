@@ -1,0 +1,21 @@
+---
+schema: openspec/v1
+name: epic-14-story-14-6-location-management
+version: "1.0"
+type: feature
+epic: Epic 14
+story: Story 14.6
+title: 仓储位置管理
+description: 实现仓储位置管理，创建库位，分配商品到库位
+status: draft
+created: 2026-04-12
+artifacts:
+  - proposal.md
+  - design.md
+  - specs/spec.md
+  - tasks.md
+tags:
+  - warehouse
+  - location
+requires:
+  - epic-14-story-14-1-inventory-management

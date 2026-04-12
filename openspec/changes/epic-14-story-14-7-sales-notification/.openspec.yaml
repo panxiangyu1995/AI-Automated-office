@@ -1,0 +1,22 @@
+---
+schema: openspec/v1
+name: epic-14-story-14-7-sales-notification
+version: "1.0"
+type: feature
+epic: Epic 14
+story: Story 14.7
+title: 销售发货通知接收
+description: 实现销售发货通知接收，接收销售订单，自动生成出库单
+status: draft
+created: 2026-04-12
+artifacts:
+  - proposal.md
+  - design.md
+  - specs/spec.md
+  - tasks.md
+tags:
+  - warehouse
+  - sales-integration
+  - event-bus
+requires:
+  - epic-14-story-14-3-outbound-management

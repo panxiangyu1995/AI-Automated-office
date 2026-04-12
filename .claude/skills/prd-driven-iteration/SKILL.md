@@ -10,24 +10,26 @@ description: |
   - 用户说"执行优化迭代"、"运行优化流程"
 
   核心工作流：
-  1. 分析代码问题（扫描TODO/FIXME/DRY/安全）
-     - 代码质量问题
-     - 前后端集成问题
-     - 云端集成问题
-     - 业务逻辑问题
-     - UX/交互反人类问题
-  2. 根据分析结果生成task.json任务条目
-  3. 为任务生成/检查OpenSpec change
-  4. 使用openspec-apply-change执行
-  5. 更新task.json passes状态
-  6. 记录实施情况到progress.txt
+  1. 检查代码实现与PRD文档的差距（首要维度）
+  2. 分析代码问题（6大维度）
+     - 代码质量问题（含TODO分类）
+     - 前后端集成问题（命令契约/API类型/错误处理）
+     - 云端集成问题（API配置/同步/离线/认证）
+     - 业务逻辑问题（边界条件/状态机/并发/一致性）
+     - 安全漏洞（注入/XSS/权限/敏感数据泄露）
+     - UX/交互反人类问题（反馈/确认/路径/快捷键/空状态）
+  3. 根据分析结果生成task.json任务条目
+  4. 为任务生成/检查OpenSpec change
+  5. 使用openspec-apply-change执行
+  6. 更新task.json passes状态
+  7. 记录实施情况到progress.txt
 
   如果用户只想做代码分析（不生成任务），请使用openspec-explore skill。
   如果用户只想读取现有task.json执行，请使用openspec-apply-change skill。
 compatibility: 需要访问 _bmad-output/planning-artifacts/ 目录、openspec CLI
 metadata:
   author: AI-Automated-office
-  version: "3.0"
+  version: "4.0"
   language: zh
 ---
 
@@ -37,11 +39,12 @@ metadata:
 
 **核心工作流：**
 ```
-分析代码问题（6大维度）→ 生成task.json → 生成OpenSpec → 执行实现 → 更新task.json → 记录progress.txt
+分析代码问题（7大维度：0首要+6核心）→ 生成task.json → 生成OpenSpec → 执行实现 → 更新task.json → 记录progress.txt
 ```
 
-**6大分析维度：**
-1. 代码质量问题（TODO/FIXME/unwrap/DRY）
+**7大分析维度（第0维度为首要维度）：**
+0. **PRD需求覆盖度检查（首要维度）** - 检查代码实现与PRD文档的差距
+1. 代码质量问题（TODO/FIXME/unwrap/DRY，含TODO分类）
 2. 前后端集成问题（命令契约/API类型/错误处理）
 3. 云端集成问题（API配置/同步/离线/认证）
 4. 业务逻辑问题（边界条件/状态机/并发/一致性）
@@ -70,6 +73,80 @@ metadata:
 - 定位对应的源代码目录
 - 确定前后端文件范围：前端(Frontend)、后端(Tauri/Rust)、云端(Cloud/API)
 
+#### 0.1 PRD需求覆盖度检查（首要维度）
+
+**重要性：** 在分析任何代码问题前，必须先确认代码实现与PRD需求的差距。这是迭代优化的基准线。
+
+**执行步骤：**
+
+```bash
+# Step 1: 读取PRD文档，获取该模块对应的FR编号
+# PRD文档位置：_bmad-output/planning-artifacts/prd.md
+# 搜索模块相关需求，如 "agent"、"工具系统"、"记忆" 等关键词
+
+# Step 2: 扫描代码实现，识别已实现的功能
+grep -rn "fn\|struct\|impl\|pub" src-tauri/src/[模块]/ --include="*.rs"
+grep -rn "function\|const\|interface\|export" src/[模块]/ --include="*.ts" --include="*.tsx"
+
+# Step 3: 交叉对比，输出覆盖度报告
+```
+
+**TODO分类标准：**
+
+| 分类 | 定义 | 处理方式 |
+|------|------|----------|
+| **PRD内** | TODO对应PRD中定义的FR需求 | 必须实现，生成task.json任务 |
+| **PRD后续** | TODO是PRD中未包含但合理的功能建议 | 记录到"后续迭代"清单，暂不实现 |
+| **不必实现** | TODO是过度设计/YAGNI违规/已过时的需求 | 直接删除，不计入任务 |
+
+**PRD覆盖度分析输出模板：**
+
+```markdown
+### 第零维度：PRD需求覆盖度检查
+
+#### 扫描范围
+- 模块：[模块名称]
+- PRD参考：_bmad-output/planning-artifacts/prd.md
+- 代码范围：
+  - Backend: src-tauri/src/[模块]/
+  - Frontend: src/[模块]/
+
+#### PRD需求列表（该模块相关FR）
+| FR编号 | 需求描述 | 状态 | 代码位置 | 说明 |
+|--------|----------|------|----------|------|
+| FR-XX | [需求1] | ✅已实现 | [文件:行号] | - |
+| FR-XX | [需求2] | ⚠️部分实现 | [文件:行号] | 缺少[某个功能] |
+| FR-XX | [需求3] | ❌未实现 | - | - |
+
+#### TODO分类统计
+| 分类 | 数量 | 说明 |
+|------|------|------|
+| **PRD内** | X个 | 必须实现，已加入任务清单 |
+| **PRD后续** | X个 | 合理但非当前迭代范围 |
+| **不必实现** | X个 | YAGNI违规/已过时/过度设计 |
+
+#### PRD内TODO详情（必须实现）
+| 位置 | TODO内容 | 对应FR | 实现建议 |
+|------|----------|--------|----------|
+| [文件:行号] | [TODO描述] | FR-XX | [实现方案] |
+
+#### PRD后续TODO详情（暂不实现）
+| 位置 | TODO内容 | 分析理由 |
+|------|----------|----------|
+| [文件:行号] | [TODO描述] | [为何不是当前优先级] |
+
+#### 不必实现TODO详情（可直接删除）
+| 位置 | TODO内容 | 移除理由 |
+|------|----------|----------|
+| [文件:行号] | [TODO描述] | [YAGNI/过时/过度设计] |
+```
+
+**关键原则：**
+- TODO分类必须对照PRD文档，不能凭主观判断
+- 优先确保PRD定义的FR都已实现或计划实现
+- 严格遵循YAGNI原则：不是PRD需求的，原则上不实现
+- 只有PRD后续分类的TODO需要人工确认后才可延后
+
 #### 1.1 执行代码扫描
 
 **基础代码扫描：**
@@ -82,6 +159,33 @@ grep -rn "unsafe\|println!\|dbg!" src-tauri/src/[模块]/ --include="*.rs"
 # TypeScript代码扫描
 grep -rn "TODO\|FIXME\|XXX\|HACK" src/[模块]/ --include="*.ts" --include="*.tsx"
 grep -rn "// @ts-ignore\|console.log" src/[模块]/ --include="*.ts" --include="*.tsx"
+```
+
+**TODO分类分析：**
+
+```bash
+# 提取所有TODO及其上下文（用于PRD对照分析）
+grep -rn -B2 -A2 "TODO\|FIXME" src-tauri/src/[模块]/ --include="*.rs"
+grep -rn -B2 -A2 "TODO\|FIXME" src/[模块]/ --include="*.ts" --include="*.tsx"
+```
+
+**TODO分类决策树：**
+
+```
+发现TODO
+    │
+    ▼
+该TODO对应的功能是否在PRD文档中有定义？
+    │
+    ├─→ 是（FR编号）→ PRD内TODO → 生成task.json任务
+    │
+    ├─→ 否 → 该功能是否合理/有价值？
+    │    │
+    │    ├─→ 是（合理但非当前迭代）→ PRD后续TODO → 记录清单
+    │    │
+    │    └─→ 否（YAGNI/过时/过度设计）→ 不必实现TODO → 直接删除
+    │
+    └─→ 不确定 → 标记为"需人工确认"
 ```
 
 #### 1.2 DRY原则分析
@@ -243,6 +347,38 @@ grep -rn "role\|permission\|isAdmin" src/[模块]/ --include="*.ts" --include="*
 - backend: src-tauri/src/[模块]/
 - frontend: src/[模块]/
 - cloud: src/lib/api.ts, cloud-server/
+- PRD: _bmad-output/planning-artifacts/prd.md
+
+### 第零维度：PRD需求覆盖度检查
+
+#### PRD需求实现状态
+| FR编号 | 需求描述 | 实现状态 | 代码位置 | 差距说明 |
+|--------|----------|----------|----------|----------|
+| FR-XX | [需求1] | ✅已实现 | [文件:行号] | - |
+| FR-XX | [需求2] | ⚠️部分实现 | [文件:行号] | 缺少[某个功能] |
+| FR-XX | [需求3] | ❌未实现 | - | - |
+
+#### TODO分类汇总
+| 分类 | 数量 | 处理方式 |
+|------|------|----------|
+| **PRD内** | X个 | 必须实现，已加入任务清单 |
+| **PRD后续** | X个 | 暂不实现，记录后续迭代清单 |
+| **不必实现** | X个 | 直接删除 |
+
+#### PRD内TODO详情
+| 位置 | TODO内容 | 对应FR | 优先级 |
+|------|----------|--------|--------|
+| [文件:行号] | [TODO描述] | FR-XX | 🔴高/🟡中/🟢低 |
+
+#### PRD后续TODO详情
+| 位置 | TODO内容 | 延后理由 |
+|------|----------|----------|
+| [文件:行号] | [TODO描述] | [合理性分析] |
+
+#### 不必实现TODO详情
+| 位置 | TODO内容 | 移除理由 |
+|------|----------|----------|
+| [文件:行号] | [TODO描述] | [YAGNI/过时/过度设计] |
 
 ### 一、代码质量问题
 
@@ -341,6 +477,13 @@ grep -rn "role\|permission\|isAdmin" src/[模块]/ --include="*.ts" --include="*
 **P2问题（可优化）：**
 1. [问题1]
 2. [问题2]
+
+**任务生成建议：**
+- 🔴 P0问题 → 立即生成task.json任务，优先执行
+- 🟡 P1问题 → 生成task.json任务，排入迭代计划
+- 🟢 P2问题 → 可选实现，资源允许时处理
+- PRD后续TODO → 记录到后续迭代清单，需人工确认后才延后
+- 不必实现TODO → 直接删除，遵循YAGNI原则
 ```
 
 ---
@@ -356,6 +499,11 @@ grep -o '"id": [0-9]*' task.json | sort -t: -k2 -n | tail -1
 
 **根据分析结果生成任务条目：**
 
+**注意：** TODO分类决定任务生成策略：
+- **PRD内TODO** → 必须生成task.json任务
+- **PRD后续TODO** → 不生成任务，仅记录到后续清单（需人工确认后才延后）
+- **不必实现TODO** → 直接删除，不生成任务
+
 ```json
 {
   "id": [下一个可用ID],
@@ -366,6 +514,11 @@ grep -o '"id": [0-9]*' task.json | sort -t: -k2 -n | tail -1
   "implementationType": "optimize|refactor|fix",
   "phase": "Phase X - 迭代名称",
   "priority": "[critical|high|medium|low]",
+  "prdCoverage": {
+    "frs": ["FR-XX"],  // 对应的PRD FR编号
+    "todoCategory": "prd_inner|prd_future|not_needed",  // TODO分类
+    "todoReason": "[分类理由]"
+  },
   "backendRequired": true|false,
   "existingCode": {
     "frontend": ["相关前端文件"],
@@ -378,7 +531,7 @@ grep -o '"id": [0-9]*' task.json | sort -t: -k2 -n | tail -1
     "[修复步骤2]",
     "[修复步骤3]"
   ],
-  "frs_covered": [],
+  "frs_covered": ["FR-XX"],
   "nfrs_covered": ["NFR1"],
   "arch_covered": ["ARCH-01"],
   "ux_covered": [],
@@ -387,7 +540,7 @@ grep -o '"id": [0-9]*' task.json | sort -t: -k2 -n | tail -1
 }
 ```
 
-**生成多个任务时：**
+**生成的多个任务时：**
 
 ```markdown
 ## 生成的task.json任务
@@ -603,28 +756,50 @@ tail -30 progress.txt
 ```
 收到。将对agent模块进行代码分析，生成优化任务，执行迭代优化。
 
-【Step 1】分析代码问题
-扫描范围：src-tauri/src/agent/, src/features/agent/
+【Step 1】分析代码问题（7大维度）
 
-发现的问题：
+【第零维度】PRD需求覆盖度检查（首要）
+扫描范围：src-tauri/src/agent/, src/features/agent/
+PRD参考：_bmad-output/planning-artifacts/prd.md
+
+PRD需求实现状态：
+| FR编号 | 需求描述 | 状态 | 代码位置 |
+|--------|----------|------|----------|
+| FR-01 | Agent核心框架 | ✅已实现 | agent/mod.rs |
+| FR-02 | LLM适配器 | ✅已实现 | agent/llm/ |
+| FR-03 | 工具系统 | ⚠️部分实现 | agent/tools/ 缺少MCP支持 |
+| FR-04 | 记忆系统 | ❌未实现 | - |
+
+TODO分类：
+| 分类 | 数量 | 说明 |
+|------|------|------|
+| **PRD内** | 3个 | 必须实现 |
+| **PRD后续** | 2个 | 暂不实现 |
+| **不必实现** | 1个 | 直接删除 |
+
+【第一维度】代码质量问题
 | 类型 | 数量 | 严重性 |
 |------|------|--------|
-| TODO/FIXME | 5个 | 🟡中 |
+| TODO/FIXME | 6个 | 🟡中 |
 | unwrap()无处理 | 8个 | 🔴高 |
 | DRY违规 | 3处 | 🟡中 |
 | 安全问题 | 1个 | 🔴高 |
 
 【Step 2】生成task.json任务
-- Task 221: 消除unwrap()调用（critical）
-- Task 222: DRY优化-统一错误处理（high）
-- Task 223: 消除TODO遗留（medium）
+- Task 221: 消除unwrap()调用（critical，PRD内）
+- Task 222: 实现记忆系统FR-04（critical，PRD内）
+- Task 223: 消除TODO遗留-PRD内部分（medium，PRD内）
+- Task 224: DRY优化-统一错误处理（high）
+- [PRD后续TODO记录到后续清单，需人工确认]
+- [不必实现TODO已直接删除]
 
 [已写入task.json]
 
 【Step 3】生成OpenSpec
 - agent-unwrap-elimination/
-- agent-error-handling-dry/
+- agent-memory-system/
 - agent-todo-cleanup/
+- agent-error-handling-dry/
 
 【Step 4】执行OpenSpec
 开始执行Task 221...
@@ -651,22 +826,35 @@ agent模块优化完成！
 用户触发优化迭代
     │
     ▼
-【Step 1】分析代码问题（6大维度）
+【Step 1】分析代码问题（7大维度）
     │
-    ├─→ 代码质量问题（TODO/FIXME/unwrap/DRY）
-    ├─→ 前后端集成问题（命令契约/API类型/错误处理）
-    ├─→ 云端集成问题（API配置/同步/离线/认证）
-    ├─→ 业务逻辑问题（边界条件/状态机/并发/一致性）
-    ├─→ 安全漏洞（注入/XSS/权限/敏感数据泄露）
-    └─→ UX/交互反人类问题（反馈/确认/路径/快捷键/空状态）
-    └─→ 输出5维度分析报告
+    ├─→ 第零维度：PRD需求覆盖度检查（首要）
+    │    │
+    │    ├─→ 读取PRD文档，获取该模块相关FR编号
+    │    ├─→ 扫描代码实现，对照FR检查覆盖度
+    │    ├─→ TODO分类：
+    │    │    ├─→ PRD内TODO → 必须实现
+    │    │    ├─→ PRD后续TODO → 暂不实现（需人工确认）
+    │    │    └─→ 不必实现 → 直接删除
+    │    └─→ 输出PRD覆盖度报告
+    │
+    ├─→ 第一维度：代码质量问题（TODO/FIXME/unwrap/DRY）
+    ├─→ 第二维度：前后端集成问题（命令契约/API类型/错误处理）
+    ├─→ 第三维度：云端集成问题（API配置/同步/离线/认证）
+    ├─→ 第四维度：业务逻辑问题（边界条件/状态机/并发/一致性）
+    ├─→ 第五维度：安全漏洞（注入/XSS/权限/敏感数据泄露）
+    └─→ 第六维度：UX/交互反人类问题（反馈/确认/路径/快捷键/空状态）
+    │
+    └─→ 输出6维度分析报告
     │
     ▼
 【Step 2】生成task.json
     │
     ├─→ 读取当前最大ID
-    ├─→ 根据问题生成任务（按优先级）
-    ├─→ 按优先级排序
+    ├─→ PRD内TODO → 必须生成任务
+    ├─→ PRD后续TODO → 仅记录清单，不生成任务
+    ├─→ 不必实现TODO → 直接删除
+    ├─→ 根据其他维度问题生成任务（按优先级）
     └─→ 写入task.json
     │
     ▼
@@ -740,14 +928,24 @@ agent模块优化完成！
 
 ## 七、执行检查清单
 
-- [ ] 确定扫描范围（用户指定的模块）
+**第零维度（首要）：PRD需求覆盖度检查**
+- [ ] 读取PRD文档，获取该模块相关的FR编号
+- [ ] 扫描代码实现，识别已实现的功能
+- [ ] 对比PRD需求与代码实现，输出覆盖度报告
+- [ ] 对TODO进行分类：PRD内/PRD后续/不必实现
+- [ ] PRD后续TODO记录到后续清单（需人工确认）
+- [ ] 不必实现TODO直接删除
+
+**6大核心维度**
 - [ ] 执行代码质量问题扫描（TODO/FIXME/unwrap/DRY）
 - [ ] 执行前后端集成问题分析（命令契约/API类型/错误处理）
 - [ ] 执行云端集成问题分析（API配置/同步/离线/认证）
 - [ ] 执行业务逻辑问题分析（边界条件/状态机/并发/一致性）
 - [ ] 执行安全漏洞分析（注入/XSS/权限/敏感数据泄露）
 - [ ] 执行UX/交互反人类问题分析（反馈/确认/路径/快捷键/空状态）
-- [ ] 输出6维度分析报告
+- [ ] 输出7维度分析报告
+
+**后续步骤**
 - [ ] 根据分析结果生成task.json任务
 - [ ] 将任务写入task.json
 - [ ] 为任务生成/检查OpenSpec change

@@ -1,0 +1,22 @@
+version: "1.0"
+changeId: agent-todo-cleanup
+title: "Agent模块-TODO清理与调试代码移除"
+type: optimize
+status: completed
+created: "2026-04-09"
+epic: "Epic 2"
+story: "Story 2.X"
+priority: medium
+taskId: 213
+frs: []
+nfrs:
+  - NFR1
+arch:
+  - ARCH-01
+ux: []
+dependencies:
+  - task: 211
+    reason: "需要先完成安全漏洞修复"
+  - task: 212
+    reason: "需要先完成unwrap消除"
+blocks: []

@@ -157,11 +157,13 @@ export function registerBuiltinCapabilities() {
     pluginId: 'warehouse',
     pluginName: '仓储管理',
     description: '管理库存、出入库、盘点、物流等仓储业务',
-    keywords: ['库存', '入库', '出库', '盘点', '仓储', '物流', '仓库', '商品', '批次'],
+    keywords: ['库存', '入库', '出库', '盘点', '仓储', '物流', '仓库', '商品', '批次', '补货', '预警'],
     actions: [
-      { name: '库存查询', description: '查询当前库存情况', commandId: 'nav.warehouse' },
-      { name: '入库管理', description: '管理商品入库', commandId: 'nav.warehouse' },
-      { name: '出库管理', description: '管理商品出库', commandId: 'nav.warehouse' },
+      { name: '库存查询', description: '查询当前库存情况', commandId: 'warehouse.inventory' },
+      { name: '入库登记', description: '创建入库单', commandId: 'warehouse.inbound' },
+      { name: '出库登记', description: '创建出库单', commandId: 'warehouse.outbound' },
+      { name: '库存盘点', description: '进行库存盘点', commandId: 'warehouse.stocktaking' },
+      { name: '查看预警', description: '查看库存预警', commandId: 'warehouse.inventory' },
     ],
   })
 

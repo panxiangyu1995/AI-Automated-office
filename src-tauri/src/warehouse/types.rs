@@ -129,3 +129,62 @@ pub struct WarehouseStats {
     pub pending_inbound: i64,
     pub pending_outbound: i64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StocktakingRequest {
+    pub product_id: String,
+    pub actual_quantity: f64,
+    pub remark: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StocktakingRecord {
+    pub id: String,
+    pub product_id: String,
+    pub product_name: String,
+    pub before_quantity: f64,
+    pub after_quantity: f64,
+    pub adjustment: f64,
+    pub remark: Option<String>,
+    pub created_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListInventoryRequest {
+    pub page: Option<usize>,
+    pub page_size: Option<usize>,
+    pub keyword: Option<String>,
+    pub category: Option<String>,
+    pub stock_status: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InventoryDetailItem {
+    pub id: String,
+    pub product_id: String,
+    pub product_name: String,
+    pub sku: String,
+    pub category: String,
+    pub warehouse_id: String,
+    pub warehouse_name: String,
+    pub quantity: f64,
+    pub available_quantity: f64,
+    pub reserved_quantity: f64,
+    pub stock_status: String,
+    pub min_stock: f64,
+    pub max_stock: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListInventoryResponse {
+    pub items: Vec<InventoryDetailItem>,
+    pub total: usize,
+    pub page: usize,
+    pub page_size: usize,
+    pub categories: Vec<String>,
+}

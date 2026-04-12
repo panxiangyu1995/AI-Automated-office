@@ -1,0 +1,18 @@
+version: "1.0"
+changeId: agent-unwrap-elimination
+title: "Agent模块-unwrap消除"
+type: refactor
+status: completed
+created: "2026-04-09"
+epic: "Epic 2"
+story: "Story 2.X"
+priority: high
+taskId: 212
+frs: []
+nfrs:
+  - NFR1
+arch:
+  - ARCH-01
+ux: []
+dependencies: []
+blocks: []

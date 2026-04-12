@@ -6,7 +6,7 @@
  */
 
 import { CommandRegistry } from './commandRegistry'
-import { Plus, FolderOpen, Save, Copy, Clipboard, Search, PanelLeftClose, Eye, PanelRightClose, Terminal, RefreshCw, Download, Upload, Settings, User, Bell, Users, Shield, Info, HelpCircle, Bug } from 'lucide-react'
+import { Plus, FolderOpen, Save, Copy, Clipboard, Search, PanelLeftClose, Eye, PanelRightClose, Terminal, RefreshCw, Download, Upload, Settings, User, Bell, Users, Shield, Info, HelpCircle, Bug, Package, ClipboardList, ArrowDownToLine, ArrowUpFromLine, MapPin } from 'lucide-react'
 
 export interface SystemCommands {
   /** Initialize all system commands */
@@ -247,9 +247,49 @@ function initSystemCommands() {
       id: 'nav.warehouse',
       label: '仓储管理',
       description: '跳转到仓储管理模块',
-      icon: Download,
+      icon: Package,
       category: 'navigation' as const,
       action: () => console.log('[Command] nav.warehouse'),
+    },
+    {
+      id: 'warehouse.inventory',
+      label: '库存查询',
+      description: '查看当前库存状况',
+      icon: Package,
+      category: 'plugin' as const,
+      keywords: ['库存', '商品', '查询', '盘点'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.inventory'),
+    },
+    {
+      id: 'warehouse.inbound',
+      label: '入库登记',
+      description: '创建入库单',
+      icon: ArrowDownToLine,
+      category: 'plugin' as const,
+      keywords: ['入库', '采购', '收货'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.inbound'),
+    },
+    {
+      id: 'warehouse.outbound',
+      label: '出库登记',
+      description: '创建出库单',
+      icon: ArrowUpFromLine,
+      category: 'plugin' as const,
+      keywords: ['出库', '发货', '销售'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.outbound'),
+    },
+    {
+      id: 'warehouse.stocktaking',
+      label: '库存盘点',
+      description: '进行库存盘点',
+      icon: ClipboardList,
+      category: 'plugin' as const,
+      keywords: ['盘点', '清点', '核对'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.stocktaking'),
     },
     {
       id: 'nav.sales',

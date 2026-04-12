@@ -1,7 +1,9 @@
-# 下一阶段 Stories 中文说明（Epic 41 / 39 / 40 / 42）
+# 下一阶段 Stories 中文说明
 
-本文件是新增 OpenSpec changes 的中文执行说明。  
+本文件是新增 OpenSpec changes 的中文执行说明。
 英文原版仍以各 change 目录内的 `README.md`、`proposal.md`、`design.md`、`tasks.md` 为准。
+
+> **最近更新：2026-04-10** - 新增 L1-L4 工作台层级系统任务（Task 214-217）
 
 ## Epic 41：页面容器与渲染宿主
 
@@ -223,3 +225,98 @@
 4. 添加参数验证
 5. cargo/npm build验证
 
+---
+
+## L1-L4 工作台层级系统
+
+> 依据 UX 设计规范 **"工作台层级导航体系 (L1–L4)"**（`ux-design-specification.md` 第 937-1023 行）
+>
+> | 层级 | 组件 | 显示面板 | 职责定位 |
+> |:----:|------|----------|----------|
+> | L1 | ActivityBar | 最左侧图标选项栏 | 切换活动域 |
+> | L2 | Sidebar | L1 右侧侧边栏 | 当前域内的视图切换和二级导航 |
+> | L3 | Workbench（Tab + 内容区） | 最中间工作区 | 主内容渲染区，支持多标签页 |
+> | L4 | Bottom Panel | 底部面板 | L3 工作区内容的更详细信息展示 |
+
+### Task 214 - L3工作区-多标签页(Tab)系统
+- `change`: `workbench-tab-system`
+- 目标：实现 L3 工作区的多标签页能力，支持同时打开多个文件、报表、详情。
+- 优先级：**high**（L3 核心能力缺失）
+- 实施步骤：
+1. 创建 `workbenchStore.ts`（Tab 状态管理）
+2. 创建 `Tab.tsx`（单个 Tab 组件）
+3. 创建 `TabBar.tsx`（多标签页容器）
+4. 创建 `WorkbenchTabs.tsx`（Tab 管理器）
+5. 集成到 `Workbench.tsx`
+6. 导出组件到 `common/index.ts`
+- 依赖：无
+- 验收标准：
+  - [ ] 可以同时打开多个 Tab
+  - [ ] 点击 Tab 可以切换内容
+  - [ ] 点击关闭按钮可以关闭 Tab
+  - [ ] 有未保存内容时显示圆点指示器
+  - [ ] 关闭有未保存内容的 Tab 时弹出确认
+  - [ ] Tab 超出容器宽度时显示滚动按钮
+
+### Task 215 - L3工作区-Tab快捷键支持
+- `change`: `workbench-tab-shortcuts`
+- 目标：实现 Tab 键盘快捷键支持。
+- 优先级：**medium**
+- 实施步骤：
+1. 创建 `useTabShortcuts.ts` Hook
+2. 集成到 `TabBar.tsx`
+3. 处理快捷键冲突
+- 依赖：**Task 214**（需先完成 Tab 基础功能）
+- 快捷键定义：
+  | 快捷键 | 操作 |
+  |--------|------|
+  | `Ctrl+Tab` | 切换到下一个 Tab |
+  | `Ctrl+Shift+Tab` | 切换到上一个 Tab |
+  | `Ctrl+W` | 关闭当前 Tab |
+  | `Ctrl+T` | 新建空白 Tab |
+  | `Ctrl+1~9` | 切换到第 N 个 Tab |
+
+### Task 216 - L3工作区-Tab与路由系统集成
+- `change`: `workbench-tab-integration`
+- 目标：将 Tab 系统与 React Router 集成。
+- 优先级：**medium**
+- 实施步骤：
+1. 定义路由键常量（`src/lib/routes.ts`）
+2. 扩展 `workbenchStore` 路由方法
+3. 实现路由监听
+4. 实现 Tab 切换同步路由
+5. 实现 AI 打开 Tab
+- 依赖：**Task 214**
+- 验收标准：
+  - [ ] 通过路由导航可以打开/激活 Tab
+  - [ ] 点击 Tab 可以同步更新路由
+  - [ ] AI 可以通过 `openTabByRoute` 打开 Tab
+  - [ ] 同一路由的多个 Tab 可以区分
+
+### Task 217 - L4底部面板-内容类型实现
+- `change`: `bottom-panel-content`
+- 目标：实现 L4 Bottom Panel 的多种内容类型。
+- 优先级：**low**（L4 为 L3 补充，非核心）
+- 实施步骤：
+1. 创建面板类型定义
+2. 实现 `PropertiesPanel` 组件
+3. 实现 `DiagnosticsPanel` 组件
+4. 实现 `PreviewPanel` 组件
+5. 实现 `AiSuggestionsPanel` 组件
+6. 整合到 `BottomPanel` 内容管理器
+7. 集成到 Tab 系统
+- 依赖：**Task 214**
+- 内容类型：
+  | 面板类型 | 说明 |
+  |----------|------|
+  | PropertiesPanel | 显示属性信息 |
+  | DiagnosticsPanel | 显示诊断信息 |
+  | PreviewPanel | 显示预览内容 |
+  | AiSuggestionsPanel | 显示 AI 建议 |
+
+## 任务执行建议
+
+1. **优先执行 Task 214**（L3 核心能力）
+2. Task 215 和 Task 216 可并行开发（都依赖 Task 214）
+3. Task 217 可在 Task 214 完成后单独开发
+4. 开发细节优先参考各 change 目录英文文档

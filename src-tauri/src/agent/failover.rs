@@ -341,17 +341,21 @@ impl FailoverService {
             .clone();
 
         // Get target provider
-        let to_provider = providers.get_mut(to_provider_id)
+        let mut to_provider = providers.get_mut(to_provider_id)
             .ok_or_else(|| anyhow!("Target provider not found: {}", to_provider_id))?
             .clone();
 
-        // Update source provider status to failed
-        providers.get_mut(from_provider_id).unwrap().status = ProviderStatus::Failed;
-        providers.get_mut(from_provider_id).unwrap().failover_count += 1;
-        providers.get_mut(from_provider_id).unwrap().last_failover = Some(Utc::now().timestamp());
+        // Update source provider status to failed (已通过上面的ok_or_else保证存在)
+        providers.get_mut(from_provider_id)
+            .map(|p| {
+                p.status = ProviderStatus::Failed;
+                p.failover_count += 1;
+                p.last_failover = Some(Utc::now().timestamp());
+            });
 
         // Update target provider to active
-        providers.get_mut(to_provider_id).unwrap().status = ProviderStatus::Active;
+        to_provider.status = ProviderStatus::Active;
+        providers.insert(to_provider_id.to_string(), to_provider.clone());
 
         // Create failover record
         let mut record = FailoverRecord::new(

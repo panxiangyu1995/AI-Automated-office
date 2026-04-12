@@ -8,6 +8,7 @@ pub struct WarehouseDatabase {
     inbounds: std::sync::RwLock<HashMap<String, InboundOrder>>,
     outbounds: std::sync::RwLock<HashMap<String, OutboundOrder>>,
     inventory: std::sync::RwLock<HashMap<String, Inventory>>,
+    stocktaking: std::sync::RwLock<Vec<StocktakingRecord>>,
 }
 
 impl WarehouseDatabase {
@@ -17,22 +18,50 @@ impl WarehouseDatabase {
             inbounds: std::sync::RwLock::new(HashMap::new()),
             outbounds: std::sync::RwLock::new(HashMap::new()),
             inventory: std::sync::RwLock::new(HashMap::new()),
+            stocktaking: std::sync::RwLock::new(Vec::new()),
         }
     }
 
     pub fn init_defaults(&self) {
-        // 示例库存
-        let inv = Inventory {
+        // 示例库存 - 电脑
+        let inv1 = Inventory {
             id: "inv-001".to_string(),
             product_id: "prod-001".to_string(),
-            product_name: "企业版套餐".to_string(),
+            product_name: "联想ThinkPad笔记本".to_string(),
             warehouse_id: "wh-001".to_string(),
-            quantity: 100.0,
-            reserved_quantity: 10.0,
-            available_quantity: 90.0,
+            quantity: 15.0,
+            reserved_quantity: 0.0,
+            available_quantity: 15.0,
             updated_at: chrono::Utc::now().timestamp(),
         };
-        self.inventory.write().unwrap().insert(inv.id.clone(), inv);
+        self.inventory.write().unwrap().insert(inv1.id.clone(), inv1);
+
+        // 示例库存 - 鼠标（库存不足）
+        let inv2 = Inventory {
+            id: "inv-002".to_string(),
+            product_id: "prod-002".to_string(),
+            product_name: "罗技无线鼠标".to_string(),
+            warehouse_id: "wh-001".to_string(),
+            quantity: 5.0,
+            reserved_quantity: 0.0,
+            available_quantity: 5.0,
+            updated_at: chrono::Utc::now().timestamp(),
+        };
+        self.inventory.write().unwrap().insert(inv2.id.clone(), inv2);
+
+        // 示例库存 - 显示器（库存过剩）
+        let inv3 = Inventory {
+            id: "inv-003".to_string(),
+            product_id: "prod-003".to_string(),
+            product_name: "Dell显示器27寸".to_string(),
+            warehouse_id: "wh-001".to_string(),
+            quantity: 45.0,
+            reserved_quantity: 0.0,
+            available_quantity: 45.0,
+            updated_at: chrono::Utc::now().timestamp(),
+        };
+        self.inventory.write().unwrap().insert(inv3.id.clone(), inv3);
+
         info!("仓储默认数据初始化完成");
     }
 
@@ -107,6 +136,114 @@ impl WarehouseDatabase {
             total_inventory: inventory.len() as i64, low_stock_count,
             pending_inbound, pending_outbound,
         }
+    }
+
+    pub fn list_inventory_detail(&self, req: ListInventoryRequest) -> ListInventoryResponse {
+        let page = req.page.unwrap_or(1).max(1);
+        let page_size = req.page_size.unwrap_or(20).min(100);
+        let offset = (page - 1) * page_size;
+
+        let inventory = self.inventory.read().unwrap();
+        let mut items: Vec<InventoryDetailItem> = inventory.values().map(|i| {
+            let stock_status = if i.available_quantity < 10.0 {
+                "low".to_string()
+            } else if i.available_quantity > 80.0 {
+                "excess".to_string()
+            } else {
+                "normal".to_string()
+            };
+            InventoryDetailItem {
+                id: i.id.clone(),
+                product_id: i.product_id.clone(),
+                product_name: i.product_name.clone(),
+                sku: format!("SKU-{}", &i.product_id[5..]),
+                category: if i.product_name.contains("笔记本") || i.product_name.contains("显示器") { "电脑设备".to_string() } else { "配件".to_string() },
+                warehouse_id: i.warehouse_id.clone(),
+                warehouse_name: "主仓库".to_string(),
+                quantity: i.quantity,
+                available_quantity: i.available_quantity,
+                reserved_quantity: i.reserved_quantity,
+                stock_status,
+                min_stock: 10.0,
+                max_stock: 80.0,
+            }
+        }).collect();
+
+        // Apply filters
+        if let Some(keyword) = &req.keyword {
+            let kw = keyword.to_lowercase();
+            items.retain(|item| {
+                item.product_name.to_lowercase().contains(&kw) ||
+                item.sku.to_lowercase().contains(&kw)
+            });
+        }
+
+        if let Some(category) = &req.category {
+            items.retain(|item| item.category == *category);
+        }
+
+        if let Some(status) = &req.stock_status {
+            if status != "all" {
+                items.retain(|item| item.stock_status == *status);
+            }
+        }
+
+        // Extract categories
+        let categories: Vec<String> = items.iter().map(|i| i.category.clone()).collect::<std::collections::HashSet<_>>().into_iter().collect();
+
+        let total = items.len();
+        items = items.into_iter().skip(offset).take(page_size).collect();
+
+        ListInventoryResponse {
+            items,
+            total,
+            page,
+            page_size,
+            categories,
+        }
+    }
+
+    pub fn get_inventory_by_product(&self, product_id: &str) -> Option<Inventory> {
+        self.inventory.read().unwrap().values().find(|i| i.product_id == product_id).cloned()
+    }
+
+    pub fn stocktaking(&self, req: StocktakingRequest) -> Result<StocktakingRecord, String> {
+        let now = chrono::Utc::now().timestamp();
+        let inventory = self.inventory.read().unwrap();
+        let inv = inventory.values().find(|i| i.product_id == req.product_id)
+            .ok_or_else(|| "商品不存在".to_string())?;
+        let before_quantity = inv.quantity;
+        let after_quantity = req.actual_quantity;
+        let adjustment = after_quantity - before_quantity;
+        drop(inventory);
+
+        let record = StocktakingRecord {
+            id: uuid::Uuid::new_v4().to_string(),
+            product_id: req.product_id.clone(),
+            product_name: self.inventory.read().unwrap().get(&format!("inv-{}", &req.product_id[5..]))
+                .map(|i| i.product_name.clone())
+                .unwrap_or_else(|| "未知商品".to_string()),
+            before_quantity,
+            after_quantity,
+            adjustment,
+            remark: req.remark,
+            created_at: now,
+        };
+
+        // Update inventory
+        let mut inv = self.inventory.write().unwrap();
+        if let Some(item) = inv.values_mut().find(|i| i.product_id == req.product_id) {
+            item.quantity = after_quantity;
+            item.available_quantity = after_quantity - item.reserved_quantity;
+            item.updated_at = now;
+        }
+
+        self.stocktaking.write().unwrap().push(record.clone());
+        Ok(record)
+    }
+
+    pub fn list_stocktaking(&self) -> Vec<StocktakingRecord> {
+        self.stocktaking.read().unwrap().clone()
     }
 }
 

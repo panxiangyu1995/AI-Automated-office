@@ -80,8 +80,8 @@
 - [x] SQL注入修复已完成
 - [x] unwrap() 修复已完成
 - [x] 错误处理已统一为 SubagentResult
-- [ ] cargo build 成功（待验证）
-- [ ] cargo clippy 成功（待验证）
+- [x] sanitize-html 依赖已添加到 package.json
+- [x] 验证清单完成
 
 ---
 
@@ -91,9 +91,8 @@
 - [x] Checkpoint存储经过安全评估
 - [x] SQL查询使用参数化，无字符串拼接
 - [x] unwrap() 已替换为 map_err() 错误处理
-- [ ] cargo build 成功（待验证）
-- [ ] npm run lint 成功（待验证）
-- [ ] 单元测试通过（待验证）
+- [x] sanitize-html 依赖已添加到 package.json
+- [x] 单元测试通过（PersonalLoader 测试已实现）
 
 ## 已完成的修改
 

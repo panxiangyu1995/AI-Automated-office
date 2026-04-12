@@ -51,3 +51,32 @@ pub async fn warehouse_list_inventory(state: State<'_, WarehouseState>) -> Resul
 pub async fn warehouse_get_stats(state: State<'_, WarehouseState>) -> Result<WarehouseStats, String> {
     Ok(state.db.get_stats())
 }
+
+#[tauri::command]
+pub async fn warehouse_list_inventory_detail(
+    state: State<'_, WarehouseState>,
+    request: Option<ListInventoryRequest>,
+) -> Result<ListInventoryResponse, String> {
+    let req = request.unwrap_or(ListInventoryRequest {
+        page: Some(1),
+        page_size: Some(20),
+        keyword: None,
+        category: None,
+        stock_status: None,
+    });
+    Ok(state.db.list_inventory_detail(req))
+}
+
+#[tauri::command]
+pub async fn warehouse_stocktaking(
+    state: State<'_, WarehouseState>,
+    request: StocktakingRequest,
+) -> Result<StocktakingRecord, String> {
+    info!("执行库存盘点: {:?}", request);
+    state.db.stocktaking(request)
+}
+
+#[tauri::command]
+pub async fn warehouse_list_stocktaking(state: State<'_, WarehouseState>) -> Result<Vec<StocktakingRecord>, String> {
+    Ok(state.db.list_stocktaking())
+}

@@ -1,0 +1,21 @@
+---
+schema: openspec/v1
+name: epic-14-story-14-5-logistics-tracking
+version: "1.0"
+type: feature
+epic: Epic 14
+story: Story 14.5
+title: 物流信息追踪
+description: 实现物流信息追踪，查询物流轨迹，显示预计到达时间
+status: draft
+created: 2026-04-12
+artifacts:
+  - proposal.md
+  - design.md
+  - specs/spec.md
+  - tasks.md
+tags:
+  - warehouse
+  - logistics
+requires:
+  - epic-14-story-14-3-outbound-management

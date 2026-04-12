@@ -33,6 +33,9 @@ pub mod utils;
 pub mod tray;
 pub mod vector;
 pub mod cache;
+pub mod load_balancing;
+pub mod export;
+pub mod sla;
 
 pub mod commands;
 
@@ -123,6 +126,9 @@ pub fn run() {
                 app.manage(commands::failover::FailoverState::new());
                 app.manage(commands::resource_security::ResourceSecurityState::new());
                 app.manage(commands::config_cache::ConfigCacheState::new());
+                app.manage(load_balancing::LoadBalancingState::new());
+                app.manage(export::ExportMigrationState::new());
+                app.manage(sla::SlaMonitoringState::new());
 
                 // Initialize real LLM provider from configuration (Phase 7: T7.4)
                 // Priority: User config > Tenant config > Official config
@@ -511,7 +517,7 @@ pub fn run() {
             finance::finance_get_ledger,
             finance::finance_record_payment,
             finance::finance_get_stats,
-            // Warehouse commands (Task 151)
+            // Warehouse commands (Task 151, 222)
             warehouse::warehouse_list_inbounds,
             warehouse::warehouse_get_inbound,
             warehouse::warehouse_create_inbound,
@@ -520,6 +526,9 @@ pub fn run() {
             warehouse::warehouse_create_outbound,
             warehouse::warehouse_list_inventory,
             warehouse::warehouse_get_stats,
+            warehouse::warehouse_list_inventory_detail,
+            warehouse::warehouse_stocktaking,
+            warehouse::warehouse_list_stocktaking,
             // Management commands (Task 152)
             management::management_get_dashboard,
             management::management_list_warnings,
@@ -717,6 +726,68 @@ pub fn run() {
             commands::cache_stats::clear_cache_stats,
             commands::cache_stats::record_cache_hit,
             commands::cache_stats::record_cache_miss,
+            // Load balancing commands (Task 206)
+            commands::load_balancing::get_health_status,
+            commands::load_balancing::list_health_nodes,
+            commands::load_balancing::check_health,
+            commands::load_balancing::register_health_node,
+            commands::load_balancing::unregister_health_node,
+            commands::load_balancing::select_balanced_node,
+            commands::load_balancing::add_load_balancer_node,
+            commands::load_balancing::remove_load_balancer_node,
+            commands::load_balancing::update_node_weight,
+            commands::load_balancing::set_node_availability,
+            commands::load_balancing::list_load_balancer_nodes,
+            commands::load_balancing::set_balance_strategy,
+            commands::load_balancing::register_failover_pair,
+            commands::load_balancing::trigger_failover,
+            commands::load_balancing::trigger_recovery,
+            commands::load_balancing::get_failover_state,
+            commands::load_balancing::get_failover_history,
+            commands::load_balancing::get_failed_nodes,
+            commands::load_balancing::record_sla_request,
+            commands::load_balancing::get_sla_report,
+            commands::load_balancing::get_all_sla_reports,
+            commands::load_balancing::configure_sla_alert,
+            commands::load_balancing::get_sla_alerts,
+            commands::load_balancing::get_sla_summary,
+            // Export commands (Task 207)
+            commands::export::export_csv,
+            commands::export::export_json,
+            commands::export::export_excel,
+            commands::export::get_csv_export_config,
+            commands::export::get_json_export_config,
+            commands::export::get_excel_export_config,
+            commands::export::create_migration,
+            commands::export::complete_migration,
+            commands::export::rollback_migration,
+            commands::export::get_migration,
+            commands::export::get_migration_history,
+            commands::export::get_rollbackable_migrations,
+            commands::export::validate_import,
+            commands::export::execute_import,
+            commands::export::get_migration_stats,
+            // SLA monitoring commands (Task 208)
+            commands::sla::record_sla_metric,
+            commands::sla::get_sla_metric,
+            commands::sla::list_sla_metrics,
+            commands::sla::get_metric_statistics,
+            commands::sla::calculate_metric_aggregate,
+            commands::sla::reset_sla_metric,
+            commands::sla::create_alert_rule,
+            commands::sla::get_alert_rules,
+            commands::sla::delete_alert_rule,
+            commands::sla::get_active_alerts,
+            commands::sla::acknowledge_alert,
+            commands::sla::resolve_alert,
+            commands::sla::get_alert_statistics,
+            commands::sla::add_service_health,
+            commands::sla::get_sla_dashboard_data,
+            commands::sla::get_health_summary,
+            commands::sla::generate_sla_report,
+            commands::sla::get_sla_reports,
+            commands::sla::export_sla_report,
+            commands::sla::get_reporter_summary,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");
