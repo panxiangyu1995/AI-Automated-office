@@ -146,9 +146,13 @@ export function registerBuiltinSidebarEntries() {
     pluginId: 'warehouse',
     pluginName: '仓储管理',
     entries: [
-      { id: 'inventory', label: '库存查询', path: '/warehouse/inventory', icon: undefined },
+      { id: 'inventory', label: '库存查询', path: '/warehouse/stock', icon: undefined },
       { id: 'inbound', label: '入库管理', path: '/warehouse/inbound', icon: undefined },
       { id: 'outbound', label: '出库管理', path: '/warehouse/outbound', icon: undefined },
+      { id: 'warning', label: '库存预警', path: '/warehouse/warning', icon: undefined },
+      { id: 'logistics', label: '物流追踪', path: '/warehouse/logistics', icon: undefined },
+      { id: 'location', label: '库位管理', path: '/warehouse/location', icon: undefined },
+      { id: 'movement', label: '库存流水', path: '/warehouse/movement', icon: undefined },
     ],
   })
 

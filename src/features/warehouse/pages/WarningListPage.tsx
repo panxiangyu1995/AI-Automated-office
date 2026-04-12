@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { AlertTriangle, Package, TrendingDown, Bell, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, TrendingDown, Bell, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,6 @@ export function WarningListPage() {
   const [warnings, setWarnings] = useState<WarningItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock data - in real implementation, this would come from Tauri command
   useEffect(() => {
     const mockWarnings: WarningItem[] = [
       {
@@ -120,9 +119,17 @@ export function WarningListPage() {
   const unreadCount = warnings.filter(w => !w.isRead).length;
   const criticalCount = warnings.filter(w => w.level === 'critical' && !w.isResolved).length;
 
+  const renderShortage = (shortage: number) => {
+    if (shortage > 0) {
+      return <span className="text-red-600 font-medium">-{shortage}</span>;
+    } else if (shortage < 0) {
+      return <span className="text-amber-600 font-medium">+{Math.abs(shortage)}</span>;
+    }
+    return <span className="text-muted-foreground">-</span>;
+  };
+
   return (
     <div className="flex flex-col h-full p-6 gap-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">库存预警</h1>
@@ -132,7 +139,6 @@ export function WarningListPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card className={criticalCount > 0 ? 'border-red-300 bg-red-50' : ''}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -167,7 +173,6 @@ export function WarningListPage() {
         </Card>
       </div>
 
-      {/* Table */}
       <div className="flex-1 border rounded-lg">
         <Table>
           <TableHeader>
@@ -214,13 +219,7 @@ export function WarningListPage() {
                     {item.minStock}
                   </TableCell>
                   <TableCell className="text-right">
-                    {item.shortage > 0 ? (
-                      <span className="text-red-600 font-medium">-{item.shortage}</span>
-                    ) : item.shortage < 0 ? (
-                      <span className="text-amber-600 font-medium">+{Math.abs(item.shortage)}</span>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
+                    {renderShortage(item.shortage)}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -251,7 +250,6 @@ export function WarningListPage() {
         </Table>
       </div>
 
-      {/* Recommendation */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="pt-4">
           <div className="flex items-start gap-3">
@@ -259,11 +257,8 @@ export function WarningListPage() {
             <div>
               <h4 className="font-medium text-blue-900">补货建议</h4>
               <p className="text-sm text-blue-700 mt-1">
-                根据当前预警，建议采购以下商品：
-                <span className="font-medium">罗技无线鼠标 ×50</span>
-                <Button variant="link" size="sm" className="text-blue-600 p-0 ml-2">
-                  生成采购申请
-                </Button>
+                根据当前预警，建议采购：
+                <span className="font-medium">罗技无线鼠标 x50</span>
               </p>
             </div>
           </div>

@@ -6,7 +6,7 @@
  */
 
 import { CommandRegistry } from './commandRegistry'
-import { Plus, FolderOpen, Save, Copy, Clipboard, Search, PanelLeftClose, Eye, PanelRightClose, Terminal, RefreshCw, Download, Upload, Settings, User, Bell, Users, Shield, Info, HelpCircle, Bug, Package, ClipboardList, ArrowDownToLine, ArrowUpFromLine, MapPin } from 'lucide-react'
+import { Plus, FolderOpen, Save, Copy, Clipboard, Search, PanelLeftClose, Eye, PanelRightClose, Terminal, RefreshCw, Download, Upload, Settings, User, Bell, Users, Shield, Info, HelpCircle, Bug, Package, ClipboardList, ArrowDownToLine, ArrowUpFromLine, MapPin, AlertTriangle, Truck, ArrowDownRight } from 'lucide-react'
 
 export interface SystemCommands {
   /** Initialize all system commands */
@@ -290,6 +290,46 @@ function initSystemCommands() {
       keywords: ['盘点', '清点', '核对'],
       pluginId: 'warehouse',
       action: () => console.log('[Command] warehouse.stocktaking'),
+    },
+    {
+      id: 'warehouse.warning',
+      label: '库存预警',
+      description: '查看库存预警信息',
+      icon: AlertTriangle,
+      category: 'plugin' as const,
+      keywords: ['预警', '提醒', '库存不足'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.warning'),
+    },
+    {
+      id: 'warehouse.logistics',
+      label: '物流追踪',
+      description: '追踪物流信息',
+      icon: Truck,
+      category: 'plugin' as const,
+      keywords: ['物流', '快递', '运输', '追踪'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.logistics'),
+    },
+    {
+      id: 'warehouse.location',
+      label: '库位管理',
+      description: '管理仓库库位',
+      icon: MapPin,
+      category: 'plugin' as const,
+      keywords: ['库位', '货架', '区域'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.location'),
+    },
+    {
+      id: 'warehouse.movement',
+      label: '库存流水',
+      description: '查看库存变动记录',
+      icon: ArrowDownRight,
+      category: 'plugin' as const,
+      keywords: ['流水', '变动', '记录', '出入库'],
+      pluginId: 'warehouse',
+      action: () => console.log('[Command] warehouse.movement'),
     },
     {
       id: 'nav.sales',

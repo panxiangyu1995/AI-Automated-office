@@ -33,6 +33,10 @@ export const ROUTE_KEYS = {
   WAREHOUSE_STOCK_DETAIL: 'warehouse.stock.detail',
   WAREHOUSE_INBOUND: 'warehouse.inbound.list',
   WAREHOUSE_OUTBOUND: 'warehouse.outbound.list',
+  WAREHOUSE_WARNING: 'warehouse.warning.list',
+  WAREHOUSE_LOGISTICS: 'warehouse.logistics.list',
+  WAREHOUSE_LOCATION: 'warehouse.location.list',
+  WAREHOUSE_MOVEMENT: 'warehouse.movement.list',
 
   // Service (售后)
   SERVICE_TICKETS: 'service.ticket.list',
@@ -90,6 +94,10 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
   { key: ROUTE_KEYS.WAREHOUSE_STOCK_DETAIL, path: '/warehouse/stock/:id', tabType: 'detail', title: '库存详情' },
   { key: ROUTE_KEYS.WAREHOUSE_INBOUND, path: '/warehouse/inbound', tabType: 'list', title: '入库单列表' },
   { key: ROUTE_KEYS.WAREHOUSE_OUTBOUND, path: '/warehouse/outbound', tabType: 'list', title: '出库单列表' },
+  { key: ROUTE_KEYS.WAREHOUSE_WARNING, path: '/warehouse/warning', tabType: 'list', title: '库存预警' },
+  { key: ROUTE_KEYS.WAREHOUSE_LOGISTICS, path: '/warehouse/logistics', tabType: 'list', title: '物流追踪' },
+  { key: ROUTE_KEYS.WAREHOUSE_LOCATION, path: '/warehouse/location', tabType: 'list', title: '库位管理' },
+  { key: ROUTE_KEYS.WAREHOUSE_MOVEMENT, path: '/warehouse/movement', tabType: 'list', title: '库存流水' },
 
   // Service
   { key: ROUTE_KEYS.SERVICE_TICKETS, path: '/service/tickets', tabType: 'list', title: '工单列表' },

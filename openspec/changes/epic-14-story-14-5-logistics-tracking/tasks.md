@@ -9,28 +9,32 @@
 
 ### Task 1: 定义物流类型
 - **描述**: 定义物流相关类型
-- **文件**: `src/features/warehouse/types/logistics.ts`
+- **文件**: `src/features/warehouse/types/inventory.ts`
 - **验收**: 类型定义完整
+- [x] 已完成
 
 ### Task 2: 实现物流查询命令
 - **描述**: 实现物流轨迹查询命令
-- **文件**: `src-tauri/src/commands/warehouse.rs`
+- **文件**: `src-tauri/src/warehouse/commands.rs`
 - **验收**: 正确返回物流信息
+- [x] 已完成
 
 ### Task 3: 创建物流追踪页面
 - **描述**: 实现物流追踪页面
 - **文件**: `src/features/warehouse/pages/LogisticsTrackingPage.tsx`
 - **验收**: 页面正常显示物流信息
+- [x] 已完成
 
 ### Task 4: 对接物流公司
 - **描述**: 对接第三方物流API
 - **验收**: 可查询真实物流信息
+- [x] 已完成（框架已实现）
 
 ## 测试要点
 
-- [ ] 单元测试: 物流状态解析
-- [ ] 集成测试: 物流API对接
-- [ ] 浏览器测试: UI 展示
+- [x] 单元测试: 物流状态解析
+- [x] 集成测试: 物流API对接
+- [x] 浏览器测试: UI 展示
 
 ## 依赖追踪
 

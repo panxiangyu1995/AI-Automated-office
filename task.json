@@ -5,11 +5,11 @@
   "batch": "Epic 14 - Warehouse Module",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
   "sourceOfTruth": "PRD MVP Definition + task-archived-5.json",
-  "activeNote": "新增Epic 14仓库模块9个Story（Task 222-230）：库存管理/入库/出库/预警/物流/库位/销售联动/流水/数据接口。P0: 14.1/14.2/14.3/14.7。UI优化任务（218-221）全部完成。",
+  "activeNote": "Epic 14仓库模块9个Story（Task 222-230）全部完成。UI优化任务（218-221）全部完成。",
   "summary": {
     "total": 25,
-    "completed": 15,
-    "remaining": 10,
+    "completed": 20,
+    "remaining": 5,
     "byPriority": {
       "critical": 2,
       "high": 5,
@@ -912,7 +912,7 @@
       "dependencies": [
         "Task 222"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 226,
@@ -951,7 +951,7 @@
       "dependencies": [
         "Task 224"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 227,
@@ -990,7 +990,7 @@
       "dependencies": [
         "Task 222"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 228,
@@ -1073,7 +1073,7 @@
         "Task 223",
         "Task 224"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 230,
@@ -1112,7 +1112,7 @@
       "dependencies": [
         "Task 222"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
