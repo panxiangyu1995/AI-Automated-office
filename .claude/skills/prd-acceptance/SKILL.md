@@ -7,13 +7,27 @@ description: PRD 驱动的验收测试执行器。根据 PRD 需求生成验收�
 
 根据 PRD 需求执行严格的两层验收测试。所有测试必须完全通过，lint/build 无报错，AS 全部 pass 才能结束。
 
+> **核心目的**：通过 AS 验收测试**发现并修复代码问题**，而非修改测试来迁就代码。
+> - 代码有问题 → 修复代码，使 AS 通过
+> - 测试本身有问题 → 修复测试，使其正确反映 PRD 需求
+> - **禁止**：为了通过测试而修改 AS 的预期结果、降低验收标准、或删除失败用例
+> - **原则**：测试正确则代码必须正确，代码错误则必须修复代码
+
 ## 核心原则
 
-1. **测试分层**：模拟测试（快）→ 实际运行测试（慢）→ 两层都 pass 才算完成
-2. **AS 优先**：先制定验收标准，再执行测试
-3. **重试策略**：单点失败重试最多 2 次，总失败次数不超过 3 次，超限立即停下深度反思
-4. **不 Mock 自有 API**：E2E 阶段不得 Mock 自身后端 API
-5. **零容忍 lint/build**：lint 错误和 build 失败必须全部修复
+1. **测试驱动修复**：AS 验收的目的是发现代码问题，修复代码使其通过测试；严禁通过修改 AS 来迁就代码
+2. **测试分层**：模拟测试（快）→ 实际运行测试（慢）→ 两层都 pass 才算完成
+3. **AS 优先**：先制定验收标准，再执行测试；AS 一旦生成，预期结果不可随意修改
+4. **重试策略**：单点失败重试最多 2 次，总失败次数不超过 3 次，超限立即停下深度反思
+5. **不 Mock 自有 API**：E2E 阶段不得 Mock 自身后端 API
+6. **零容忍 lint/build**：lint 错误和 build 失败必须全部修复
+
+**失败时的处理原则**：
+- AS 执行失败 → 先分析是代码问题还是测试问题
+  - 代码问题 → 修复代码，重新执行该 AS
+  - 测试问题 → 修复测试（调整测试逻辑或补充缺失的前置条件），但不改变预期结果本身
+- 禁止行为：删除失败的 AS、降低 AS 验收标准、修改预期结果迁就代码
+- AS 判定规则：预期结果明确写什么，代码就必须做到什么
 
 ---
 
@@ -346,47 +360,141 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 
 ##### 3c-7. E2E 测试输出格式
 
-```markdown
-## E2E 测试报告
+```html
+<!-- E2E 详细记录写入 HTML，每个 AS 一段 -->
+<div class="as-detail" id="as-fr9-ui-01">
+  <h4>AS-FR9-UI-01: AI助手面板渲染</h4>
+  <div class="as-meta">
+    <span class="badge P0">P0</span>
+    <span class="badge FUNC">功能正确性</span>
+    <span class="badge PASS">✅ PASS</span>
+  </div>
 
-### AS-FR9-UI-01: AI助手面板渲染
+  <!-- 操作序列表格 -->
+  <table class="op-table">
+    <thead><tr><th>#</th><th>操作</th><th>预期</th><th>实际</th><th>状态</th><th>截图</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>打开应用首页</td><td>页面加载</td><td>加载成功</td><td class="pass">✅</td><td><a href="screenshots/fr9-ui-01-01.png">截图</a></td></tr>
+      <tr><td>2</td><td>定位AI助手面板</td><td>面板可见</td><td>面板可见</td><td class="pass">✅</td><td><a href="screenshots/fr9-ui-01-02.png">截图</a></td></tr>
+      <tr><td>3</td><td>截图元素可见性</td><td>各字段可见</td><td>各字段可见</td><td class="pass">✅</td><td><a href="screenshots/fr9-ui-01-03.png">截图</a></td></tr>
+      <tr><td>4</td><td>检查输入框可交互</td><td>可编辑</td><td>可编辑</td><td class="pass">✅</td><td><a href="screenshots/fr9-ui-01-04.png">截图</a></td></tr>
+      <tr><td>5</td><td>触发网络异常</td><td>显示错误提示</td><td>显示错误提示</td><td class="pass">✅</td><td><a href="screenshots/fr9-ui-01-05.png">截图</a></td></tr>
+      <tr><td>6</td><td>恢复网络</td><td>恢复正常</td><td>恢复正常</td><td class="pass">✅</td><td><a href="screenshots/fr9-ui-01-06.png">截图</a></td></tr>
+      <tr><td>7</td><td>控制台Error日志</td><td>0个Error</td><td>0个Error</td><td class="pass">✅</td><td>-</td></tr>
+      <tr><td>8</td><td>控制台Warning日志</td><td>无严重警告</td><td>1个(React key警告，不计入)</td><td class="pass">✅</td><td>-</td></tr>
+    </tbody>
+  </table>
 
-**操作序列**:
-1. [agent-browser] 打开应用首页
-2. [agent-browser] 定位到AI助手面板
-3. [agent-browser] 截图并分析各元素可见性
-4. [agent-browser] 检查输入框可交互状态
-5. [agent-browser] 检查发送按钮可见性
-6. [agent-browser] 检查历史消息区
-7. [agent-browser] 触发网络异常，检查降级态
-8. [agent-browser] 恢复网络，检查恢复态
-9. [agent-browser] 控制台检查Error/Warning日志
+  <div class="console-log">
+    <details>
+      <summary>控制台日志</summary>
+      <pre>[INFO] 页面加载完成
+[INFO] AI助手面板已挂载
+[ERROR] 无
+[WARN] React key警告 (不计入失败)
+      </pre>
+    </details>
+  </div>
+</div>
 
-**结果**:
-- 面板头部显示 ✅
-- 输入框可见且可编辑 ✅
-- 发送按钮可见 ✅
-- 历史消息区可见 ✅
-- 加载态显示 ✅
-- 错误态显示 ✅
-- console.error: 0 ✅
-- console.warning: 1 ⚠️ (React key警告，不计入)
-
-**结论**: ✅ PASS
+<!-- 失败 AS 示例 -->
+<div class="as-detail failure" id="as-fr9-bound-02">
+  <h4>AS-FR9-BOUND-02: 超长输入边界</h4>
+  <div class="as-meta">
+    <span class="badge P1">P1</span>
+    <span class="badge BOUND">边界与异常</span>
+    <span class="badge FAIL">❌ FAIL</span>
+  </div>
+  <div class="failure-box">
+    <strong>失败现象：</strong>超时后重试按钮点击无响应<br/>
+    <strong>根因分析：</strong>onClick事件未绑定API调用<br/>
+    <strong>修复建议：</strong>在重试按钮的onClick中调用retryMessage()
+  </div>
+  <table class="op-table">
+    <thead><tr><th>#</th><th>操作</th><th>预期</th><th>实际</th><th>状态</th><th>截图</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>触发AI响应超时</td><td>显示超时提示+重试按钮</td><td>显示超时提示+重试按钮</td><td class="pass">✅</td><td><a href="screenshots/fr9-bound-02-01.png">截图</a></td></tr>
+      <tr><td>2</td><td>点击重试按钮</td><td>重新发起请求</td><td>无响应</td><td class="fail">❌</td><td><a href="screenshots/fr9-bound-02-02.png">截图</a></td></tr>
+    </tbody>
+  </table>
+</div>
+```
 
 ---
 
-## E2E 总览
+## 报告输出规范
 
-| AS编号 | 操作数 | 通过 | 失败 | 截图数 | 结论 |
-|--------|--------|------|------|--------|------|
-| FR9-UI-01 | 9 | 9 | 0 | 9 | ✅ |
-| FR9-BOUND-02 | 6 | 5 | 1 | 6 | ❌ |
+### 输出目录
 
-**失败详情**:
-- AS-FR9-BOUND-02: 超时后重试按钮点击无响应，控制台无Error
+```
+.report/{YYYY-MM-DD}/           # 每日报告目录，自动创建
+  ├── index.html                # 当日总报告入口
+  ├── [epic-{n}].html           # Epic 级别报告
+  ├── [fr-{n}].html             # FR 级别详细报告
+  └── [as-{fr}-{dim}-{n}].html  # 单个 AS 详细报告（可选）
+```
 
-**E2E通过率**: 14/15 (93.3%)
+- 目录不存在时自动创建
+- 每次执行追加到当日目录，不覆盖历史报告
+- 报告文件名格式：`{时间戳}-{范围}.html`
+
+### HTML 报告格式要求
+
+**必须元素**：
+- 顶部状态栏：验收范围 / 执行时间 / 通过率 / 状态（✅/❌）
+- AS 统计看板：总AS数 / 通过 / 失败 / 重试次数 / lint错误数 / build状态
+- 失败项高亮区块：红色背景，标明 AS 编号 + 失败原因 + 修复建议
+- 通过项绿色标记：每个通过的 AS 带 ✅ 图标
+- 可折叠详情：点击展开查看 E2E 截图、操作序列、控制台日志
+- 进度条：通过率用进度条可视化
+
+**禁止**：
+- 纯文本报告
+- 无格式的列表堆砌
+- 截图不标注操作说明
+
+**报告结构**：
+
+```html
+<!-- 示例结构 -->
+<div class="report-header">
+  <span class="status-badge FAIL">❌ 验收失败</span>
+  <div class="stats-grid">
+    <div class="stat">AS总数: <strong>24</strong></div>
+    <div class="stat">通过: <strong class="green">22</strong></div>
+    <div class="stat">失败: <strong class="red">2</strong></div>
+    <div class="stat">lint错误: <strong class="green">0</strong></div>
+    <div class="stat">build: <strong class="green">✅</strong></div>
+    <div class="stat">通过率: <strong>91.7%</strong></div>
+  </div>
+  <div class="progress-bar"><div class="fill" style="width:91.7%"></div></div>
+</div>
+
+<div class="failure-block">
+  <h2>🔴 失败项（2项）</h2>
+  <div class="as-card failure">
+    <div class="as-title">AS-FR13-FUNC-01: MCP工具调用</div>
+    <div class="as-meta">来源: FR13, PRD行2227 | 类型: 功能正确性 | 优先级: P0</div>
+    <div class="failure-reason">
+      <strong>失败现象：</strong>点击MCP按钮无响应<br/>
+      <strong>根因分析：</strong>onClick未绑定invoke('mcp_call')<br/>
+      <strong>修复建议：</strong>在Button的onClick中调用window.__TAURI__.core.invoke('mcp_call', {...})
+    </div>
+    <div class="screenshots">
+      <img src="failure-01.png" alt="MCP按钮点击无响应"/>
+    </div>
+  </div>
+</div>
+
+<div class="pass-block">
+  <h2>🟢 通过项（22项）</h2>
+  <!-- 表格形式，简洁列出 -->
+</div>
+
+<div class="detail-block collapsible">
+  <h3>📋 E2E 详细操作记录</h3>
+  <!-- 折叠内容：每个AS的操作序列、截图、控制台日志 -->
+</div>
 ```
 
 ---
@@ -448,108 +556,65 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 ```
 🚫 验收阻塞 - 需要人工介入
 
+**核心原则**: 发现代码问题 → 修复代码使AS通过；严禁修改AS预期结果迁就代码
+
 **当前验收范围**: [Epic X / Story X.X / FR13]
 **阻塞阶段**: [构建/模拟测试/API测试/E2E测试]
-**失败 AS**: [AS-FR13-01]
+**失败 AS**: [AS-FR13-FUNC-01]
 
 **已通过的测试**:
-- AS-FR9-01: ✅
-- AS-FR9-02: ✅
+- AS-FR9-FUNC-01: ✅
+- AS-FR9-BOUND-01: ✅
 
-**阻塞原因**:
-- [具体说明]
+**失败 AS 根因分析**:
+- AS-FR13-FUNC-01:
+  - 失败现象: [描述]
+  - 根因分析: [代码哪里有问题]
+  - 代码修复方案: [具体的修复步骤]
+  - 是否测试本身有问题: 否
 
 **需要人工帮助**:
-1. [具体步骤 1]
-2. [具体步骤 2]
+1. [具体的代码修复步骤 1]
+2. [具体的代码修复步骤 2]
+
+**禁止的行为**:
+- ❌ 删除失败的 AS
+- ❌ 修改 AS 预期结果迁就代码
+- ❌ 降低验收标准
 
 **解除阻塞后**:
-- 运行 `npm run test:acceptance -- --scope FR13` 继续
+- 修复代码后重新执行 `prd-acceptance --scope FR13`
 ```
 
 ---
 
 ## 输出格式
 
-### 验收报告（严格版）
+### 验收报告（HTML格式）
 
-```markdown
-# PRD 验收报告 - [验收范围]
+执行完成后，生成 HTML 报告到 `.report/{YYYY-MM-DD}/` 目录，参考上方"报告输出规范"章节的 HTML 模板生成。
 
-**执行时间**: YYYY-MM-DD HH:mm
-**执行人**: PRD Acceptance Tester
-**范围**: [Epic 2 / Story 2.1 / FR13 / Agent 模块]
-**PRD版本**: [读取prd.md的lastEdited日期]
+**报告文件**：
+- `.report/{YYYY-MM-DD}/index.html` — 当日总报告入口
+- 每个 AS 的 E2E 截图保存在同目录 `screenshots/` 子目录
 
----
+**报告内容**：
+- 顶部状态栏（范围/时间/通过率/状态）
+- AS 统计看板（总/通过/失败/lint/build）
+- 失败项高亮区块（红色背景，附截图 + 修复建议）
+- 通过项表格（绿色标记，简洁列出）
+- E2E 详细记录（HTML格式，每个 AS 的操作序列表格 + 截图 + 控制台日志）
+- 进度条（通过率可视化）
 
-## AS 覆盖率统计
-
-| FR编号 | FR描述 | AS数量 | FUNC | BOUND | UI | SEC | 状态 |
-|--------|--------|--------|------|-------|-----|-----|------|
-| FR9    | 多轮对话交互 | 5 | 1 | 2 | 1 | 1 | ✅ PASS |
-| FR10   | 会话管理 | 4 | 1 | 1 | 1 | 1 | ✅ PASS |
-| FR14-1 | 长期偏好存储 | 4 | 1 | 1 | 1 | 1 | ✅ PASS |
-| FR14-2 | 会话上下文记忆 | 4 | 1 | 1 | 1 | 1 | ✅ PASS |
-| ... | ... | ... | ... | ... | ... | ... | ... |
-
-**覆盖率**: FR9-FR14共20条FR → 生成88个AS → 全部PASS
-
----
-
-## 测试详情
-
-### AS-FR9-FUNC-01: 多轮对话基础交互
-**来源**: FR9, PRD行2223
-**类型**: 功能正确性 | **优先级**: P0
-
-**前置条件**: 用户已登录，AI助手面板已加载
-**操作步骤**:
-  1. 在AI输入框输入 "你好"
-  2. 点击发送按钮（或按Enter）
-  3. 等待AI响应
-
-**预期结果**:
-  - 输入框内容清空
-  - 用户消息立即显示（role=user）
-  - AI响应在5秒内显示（role=assistant）
-  - 响应内容非空
-  - 会话ID已创建/更新
-
-**验证链路**:
-| 层级 | 验证方式 | 命令/操作 | 预期结果 | 实际结果 | 状态 |
-|------|----------|-----------|----------|----------|------|
-| P0 | lint/build | `npm run lint --quiet && npm run build` | 无错误 | ✅ 无错误 | ✅ PASS |
-| P0 | 模拟数据 | INSERT会话+消息 → SELECT | 2条记录 | ✅ 2条 | ✅ PASS |
-| P0 | curl API | `POST /api/v1/agent/messages` | 201 + message_id | 201 ok | ✅ PASS |
-| P0 | E2E浏览器 | agent-browser → "你好" → 截图 | 消息显示 | ✅ 截图确认 | ✅ PASS |
-
-**结论**: ✅ PASS | 重试次数: 0
+**HTML 样式规范**：使用内联 CSS，确保单文件可独立打开：
+- 状态色：#22c55e(绿-通过) / #ef4444(红-失败) / #f59e0b(橙-重试) / #3b82f6(蓝-信息)
+- 字体：system-ui, sans-serif
+- 表格：边框线清晰，hover 高亮行
+- 截图：thumbnail 显示，点击放大
+- 失败项：红色背景 #fef2f2，红色边框 #ef4444
+- 可折叠区块：`<details><summary>` 实现
 
 ---
-
-## 失败 AS 详情（无）
-
-本次验收无失败项。
-
----
-
-## 执行摘要
-
-| 指标 | 数值 |
-|------|------|
-| 验收FR数 | 20 |
-| 生成AS总数 | 88 |
-| 通过AS | 88 |
-| 失败AS | 0 |
-| 阻塞数 | 0 |
-| 重试次数 | 0 |
-| lint/build错误 | 0 |
-| 通过率 | 100% |
-| **最终结论** | **✅ 验收通过** |
-
----
-```
 
 ---
 

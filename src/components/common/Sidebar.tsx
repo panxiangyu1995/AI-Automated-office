@@ -17,6 +17,7 @@ import {
   Users,
   Wrench,
   HeadphonesIcon,
+  Megaphone,
   type LucideIcon,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -83,6 +84,12 @@ const defaultMenuItems: FixedSidebarEntry[] = [
     label: '招投标',
     icon: FileText,
     target: { path: '/tender', mode: 'static' },
+  },
+  {
+    id: 'marketing',
+    label: '市场宣传',
+    icon: Megaphone,
+    target: { path: '/marketing', mode: 'static' },
   },
 ]
 

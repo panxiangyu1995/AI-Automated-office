@@ -38,6 +38,7 @@ pub mod export;
 pub mod sla;
 pub mod service;
 pub mod tender;
+pub mod marketing;
 
 pub mod commands;
 
@@ -278,6 +279,10 @@ pub fn run() {
                 // Initialize Tender module (Task 234 - Epic 16 Story 16.1)
                 let tender_state = tender::TenderState::new();
                 app.manage(tender_state.db.clone());
+
+                // Initialize Marketing module (Task 237 - Epic 17 Story 17.1)
+                let marketing_state = marketing::MarketingState::new();
+                app.manage(marketing_state.db.clone());
 
                 // Initialize Management module
                 let management_state = management::ManagementState::new();
@@ -589,6 +594,22 @@ pub fn run() {
             tender::tender_update_document,
             tender::tender_delete_document,
             tender::tender_generate_document,
+            // Marketing commands (Task 237 - Epic 17 Story 17.1)
+            marketing::marketing_create_campaign,
+            marketing::marketing_get_campaign,
+            marketing::marketing_list_campaigns,
+            marketing::marketing_update_campaign,
+            marketing::marketing_delete_campaign,
+            marketing::marketing_create_content,
+            marketing::marketing_get_content,
+            marketing::marketing_list_contents,
+            marketing::marketing_update_content,
+            marketing::marketing_delete_content,
+            marketing::marketing_create_channel,
+            marketing::marketing_get_channel,
+            marketing::marketing_list_channels,
+            marketing::marketing_update_channel,
+            marketing::marketing_delete_channel,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,

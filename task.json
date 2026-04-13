@@ -1383,7 +1383,7 @@
         "Task 234",
         "Task 235"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 237,
@@ -1425,8 +1425,8 @@
         "UX-01",
         "UX-04"
       ],
-      "dependencies": [],
-      "passes": false
+      "dependencies": [      ],
+      "passes": true
     },
     {
       "id": 238,

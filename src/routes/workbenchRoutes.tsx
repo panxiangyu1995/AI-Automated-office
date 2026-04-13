@@ -15,6 +15,7 @@ import { EditorRegistry, type EditorDescriptor } from '@/features/editor/registr
 import type { WorkbenchPageContext } from '@/components/common'
 import { ServicePage } from '@/features/service/pages/ServicePage'
 import { TenderPage } from '@/features/tender/pages/TenderPage'
+import { MarketingPage } from '@/features/marketing/pages/MarketingPage'
 
 const fallbackEditorDescriptor: EditorDescriptor = {
   id: 'builtin-text-editor',
@@ -164,6 +165,14 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     resource: 'tender',
     mode: 'static',
     component: TenderPage,
+  },
+  {
+    id: 'marketing',
+    path: 'marketing',
+    title: '市场宣传',
+    resource: 'marketing',
+    mode: 'static',
+    component: MarketingPage,
   },
   {
     id: 'builtin-text-editor',
