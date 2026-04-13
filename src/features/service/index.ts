@@ -6,6 +6,8 @@ export * from './components/TicketCard';
 export * from './components/TicketList';
 export * from './components/TicketForm';
 export * from './components/TicketDetail';
+export * from './components/TicketTimeline';
+export * from './components/FollowUpForm';
 export * from './components/PersonnelList';
 export * from './components/ServiceDashboard';
 export * from './types/service';

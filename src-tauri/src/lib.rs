@@ -36,6 +36,7 @@ pub mod cache;
 pub mod load_balancing;
 pub mod export;
 pub mod sla;
+pub mod service;
 
 pub mod commands;
 
@@ -268,6 +269,10 @@ pub fn run() {
                 // Initialize Warehouse module
                 let warehouse_state = warehouse::WarehouseState::new();
                 app.manage(warehouse_state.db.clone());
+
+                // Initialize Service module (Task 231 - Epic 15 Story 15.1)
+                let service_state = service::ServiceState::new();
+                app.manage(service_state.db.clone());
 
                 // Initialize Management module
                 let management_state = management::ManagementState::new();
@@ -535,6 +540,21 @@ pub fn run() {
             management::management_create_warning_rule,
             management::management_list_rules,
             management::management_get_stats,
+            // Service commands (Task 231 - Epic 15 Story 15.1)
+            service::service_create_ticket,
+            service::service_get_ticket,
+            service::service_list_tickets,
+            service::service_update_ticket,
+            service::service_delete_ticket,
+            service::service_update_ticket_status,
+            service::service_assign_ticket,
+            service::service_create_personnel,
+            service::service_get_personnel,
+            service::service_list_personnel,
+            service::service_update_personnel,
+            service::service_update_personnel_status,
+            service::service_delete_personnel,
+            service::service_get_available_personnel,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,

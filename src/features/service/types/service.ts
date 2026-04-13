@@ -1,4 +1,4 @@
-//! Service 模块类型定义
+//! Service 模块类型定义 - 扩展处理记录和回访
 
 // ==================== 工单相关类型 ====================
 
@@ -180,4 +180,111 @@ export interface TicketStatistics {
   pendingConfirm: number;
   completed: number;
   cancelled: number;
+}
+
+// ==================== 处理记录 ====================
+
+/** 处理记录 */
+export interface ProcessingRecord {
+  id: string;
+  ticketId: string;
+  operatorId: string;
+  operatorName: string;
+  action: string;
+  content: string;
+  attachments?: string[];
+  createdAt: number;
+}
+
+/** 创建处理记录请求 */
+export interface CreateProcessingRecordRequest {
+  ticketId: string;
+  operatorId: string;
+  operatorName: string;
+  action: string;
+  content: string;
+  attachments?: string[];
+}
+
+/** 查询处理记录参数 */
+export interface QueryProcessingRecordsParams {
+  ticketId?: string;
+  operatorId?: string;
+  startDate?: number;
+  endDate?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+// ==================== 回访记录 ====================
+
+/** 回访状态 */
+export type FollowUpStatus = 'pending' | 'completed' | 'cancelled';
+
+/** 回访记录 */
+export interface FollowUpRecord {
+  id: string;
+  ticketId: string;
+  customerName: string;
+  customerContact: string;
+  visitTime: number;
+  visitType: 'phone' | 'visit' | 'online';
+  satisfactionLevel: 1 | 2 | 3 | 4 | 5;
+  feedback: string;
+  issues: string[];
+  followUpRequired: boolean;
+  nextVisitDate?: number;
+  status: FollowUpStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** 创建回访记录请求 */
+export interface CreateFollowUpRequest {
+  ticketId: string;
+  customerName: string;
+  customerContact: string;
+  visitType: 'phone' | 'visit' | 'online';
+  satisfactionLevel: 1 | 2 | 3 | 4 | 5;
+  feedback: string;
+  issues: string[];
+  followUpRequired: boolean;
+  nextVisitDate?: number;
+}
+
+/** 更新回访记录请求 */
+export interface UpdateFollowUpRequest {
+  satisfactionLevel?: 1 | 2 | 3 | 4 | 5;
+  feedback?: string;
+  issues?: string[];
+  followUpRequired?: boolean;
+  nextVisitDate?: number;
+  status?: FollowUpStatus;
+}
+
+// ==================== 自动分配 ====================
+
+/** 分配策略 */
+export type AssignmentStrategy = 'least_load' | 'specialization' | 'round_robin';
+
+/** 自动分配请求 */
+export interface AutoAssignRequest {
+  ticketId: string;
+  strategy?: AssignmentStrategy;
+}
+
+/** 分配结果 */
+export interface AssignmentResult {
+  ticketId: string;
+  assignedTo: string;
+  assignedName: string;
+  reason: string;
+}
+
+// ==================== 扩展类型 ====================
+
+/** 工单详情 (包含处理记录和回访) */
+export interface ServiceTicketDetail extends ServiceTicket {
+  processingRecords: ProcessingRecord[];
+  followUp?: FollowUpRecord;
 }

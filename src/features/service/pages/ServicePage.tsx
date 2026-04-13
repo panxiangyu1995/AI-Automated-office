@@ -89,7 +89,7 @@ export function ServicePage() {
         mode="create"
       />
       
-      {/* 工单详情 */}
+      {/* 工单详情 (包含时间线和回访) */}
       <TicketDetail
         ticketId={selectedTicketId}
         open={detailOpen}
