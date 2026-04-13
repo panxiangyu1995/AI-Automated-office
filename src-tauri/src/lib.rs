@@ -37,6 +37,7 @@ pub mod load_balancing;
 pub mod export;
 pub mod sla;
 pub mod service;
+pub mod tender;
 
 pub mod commands;
 
@@ -273,6 +274,10 @@ pub fn run() {
                 // Initialize Service module (Task 231 - Epic 15 Story 15.1)
                 let service_state = service::ServiceState::new();
                 app.manage(service_state.db.clone());
+
+                // Initialize Tender module (Task 234 - Epic 16 Story 16.1)
+                let tender_state = tender::TenderState::new();
+                app.manage(tender_state.db.clone());
 
                 // Initialize Management module
                 let management_state = management::ManagementState::new();
@@ -555,6 +560,17 @@ pub fn run() {
             service::service_update_personnel_status,
             service::service_delete_personnel,
             service::service_get_available_personnel,
+            // Tender commands (Task 234 - Epic 16 Story 16.1)
+            tender::tender_create_qualification,
+            tender::tender_get_qualification,
+            tender::tender_list_qualifications,
+            tender::tender_update_qualification,
+            tender::tender_delete_qualification,
+            tender::tender_create_case,
+            tender::tender_get_case,
+            tender::tender_list_cases,
+            tender::tender_update_case,
+            tender::tender_delete_case,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,

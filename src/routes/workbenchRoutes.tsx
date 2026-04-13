@@ -14,6 +14,7 @@ import { BuiltinJsonEditorPage, BuiltinMarkdownEditorPage, BuiltinTextEditorPage
 import { EditorRegistry, type EditorDescriptor } from '@/features/editor/registry/editorRegistry'
 import type { WorkbenchPageContext } from '@/components/common'
 import { ServicePage } from '@/features/service/pages/ServicePage'
+import { TenderPage } from '@/features/tender/pages/TenderPage'
 
 const fallbackEditorDescriptor: EditorDescriptor = {
   id: 'builtin-text-editor',
@@ -155,6 +156,14 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     resource: 'service',
     mode: 'static',
     component: ServicePage,
+  },
+  {
+    id: 'tender',
+    path: 'tender',
+    title: '招投标',
+    resource: 'tender',
+    mode: 'static',
+    component: TenderPage,
   },
   {
     id: 'builtin-text-editor',

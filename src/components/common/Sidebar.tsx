@@ -78,6 +78,12 @@ const defaultMenuItems: FixedSidebarEntry[] = [
     icon: HeadphonesIcon,
     target: { path: '/service', mode: 'static' },
   },
+  {
+    id: 'tender',
+    label: '招投标',
+    icon: FileText,
+    target: { path: '/tender', mode: 'static' },
+  },
 ]
 
 export function Sidebar({ children }: SidebarProps) {
