@@ -39,6 +39,7 @@ pub mod sla;
 pub mod service;
 pub mod tender;
 pub mod marketing;
+pub mod workspace;
 
 pub mod commands;
 
@@ -283,6 +284,10 @@ pub fn run() {
                 // Initialize Marketing module (Task 237 - Epic 17 Story 17.1)
                 let marketing_state = marketing::MarketingState::new();
                 app.manage(marketing_state.db.clone());
+
+                // Initialize Workspace module (Task 240 - Epic 18 Story 18.1)
+                let workspace_state = workspace::WorkspaceState::new();
+                app.manage(workspace_state.db.clone());
 
                 // Initialize Management module
                 let management_state = management::ManagementState::new();
@@ -614,6 +619,18 @@ pub fn run() {
             marketing::marketing_get_platform_adaptation,
             marketing::marketing_get_stats,
             marketing::marketing_get_channel_distribution,
+            // Workspace commands (Task 240 - Epic 18 Story 18.1)
+            workspace::workspace_create_layout,
+            workspace::workspace_get_layout,
+            workspace::workspace_list_layouts,
+            workspace::workspace_update_layout,
+            workspace::workspace_delete_layout,
+            workspace::workspace_create_todo,
+            workspace::workspace_get_todo,
+            workspace::workspace_list_todos,
+            workspace::workspace_update_todo,
+            workspace::workspace_delete_todo,
+            workspace::workspace_get_task_aggregations,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,

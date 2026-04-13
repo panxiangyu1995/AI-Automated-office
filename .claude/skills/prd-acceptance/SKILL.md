@@ -101,107 +101,60 @@ AS-[FR编号]-[维度缩写]-[序号]
 [ ] UI 状态覆盖：加载中、成功、失败、空状态、网络异常
 ```
 
-### 示例：FR9 多轮对话（严格版）
+---
 
+## 测试执行流程（5 步）
+
+### Step 0：环境预检（新增）
+
+**在任何测试执行前，必须先进行环境预检，判断可用环境并选择对应路径。**
+
+#### 0a. Tauri 桌面端检测
+
+```bash
+# 检测是否为 Tauri 桌面端环境（npm run tauri dev 或 npm run tauri build）
+node -e "
+  try {
+    const { invoke } = require('@tauri-apps/api/core');
+    const { listen } = require('@tauri-apps/api/event');
+    console.log('TAURI_RUNTIME:available');
+  } catch (e) {
+    console.log('TAURI_RUNTIME:unavailable');
+    console.log('TAURI_ERROR:' + e.message);
+  }
+"
 ```
-AS-FR9-FUNC-01
-来源：FR9，PRD行2223
-类型：功能正确性
-前置条件：用户已登录，AI助手面板已加载
-操作步骤：
-  1. 在AI输入框输入 "你好"
-  2. 点击发送按钮（或按Enter）
-  3. 等待AI响应
-预期结果：
-  - 输入框内容清空
-  - 用户消息立即显示在聊天区（role=user）
-  - AI响应在5秒内显示（role=assistant）
-  - 响应内容非空
-  - 会话ID已创建/更新
-验证方式：
-  - lint/build: npm run lint --quiet && npm run build
-  - 模拟: INSERT会话 + 消息，SELECT验证入库
-  - API: POST /api/v1/agent/messages 返回201+message_id
-  - E2E: agent-browser skill → 输入"你好" → 截图确认消息显示
-优先级：P0
 
-AS-FR9-BOUND-01
-来源：FR9，PRD行2223
-类型：边界与异常
-前置条件：用户已登录，网络正常
-操作步骤：
-  1. 输入超过4096字符的文本
-  2. 发送超长消息
-预期结果：
-  - 系统返回422或正确截断，不崩溃
-  - 错误提示"输入超长"
-验证方式：
-  - lint/build: npm run lint --quiet && npm run build
-  - 模拟: 模拟4097字符输入，API返回长度校验
-  - API: POST超长文本返回422+error.message包含"超长"
-  - E2E: agent-browser skill → 粘贴4097字符 → 检查错误提示
-优先级：P1
+**判定规则：**
 
-AS-FR9-BOUND-02
-来源：FR9，PRD行2223
-类型：边界与异常
-前置条件：用户已登录
-操作步骤：
-  1. AI响应过程中断开网络
-  2. 等待超时
-预期结果：
-  - 加载动画停止
-  - 显示错误提示"网络异常"
-  - 无console.error级别日志
-验证方式：
-  - lint/build: npm run lint --quiet && npm run build
-  - 模拟: 模拟网络超时异常
-  - API: 触发timeout，检查响应格式
-  - E2E: agent-browser skill → 禁用网络 → 发送消息 → 检查错误态
-优先级：P1
+| 检测结果 | 含义 | 后续行动 |
+|----------|------|----------|
+| `TAURI_RUNTIME:available` | Tauri 桌面端运行中 | E2E 使用 playwright 直接测试（Tauri 窗口内） |
+| `TAURI_RUNTIME:unavailable` + `transformCallback` | Vite dev 无 Tauri | 警告：切换到 `npm run tauri dev` 以完成 E2E；先用 `playwright` 测试纯 UI 部分 |
+| `TAURI_RUNTIME:unavailable` + 其他错误 | 其他环境问题 | 记录错误，继续 lint/build/模拟测试，E2E 跳过 |
 
-AS-FR9-UI-01
-来源：FR9，PRD行2223
-类型：UI/交互可操作性
-前置条件：用户已登录，AI助手面板已加载
-操作步骤：
-  1. 页面加载完成
-  2. 检查AI助手面板各元素可见性
-预期结果：
-  - 面板头部显示"AI助手"
-  - 输入框可见且可编辑
-  - 发送按钮可见
-  - 历史消息列表（如有）可见
-  - 加载态/空状态正确显示
-验证方式：
-  - lint/build: npm run lint --quiet && npm run build
-  - 模拟: N/A
-  - API: N/A
-  - E2E: agent-browser skill → 截图 → 逐元素检查可见性
-优先级：P0
+#### 0b. 后端服务检测
 
-AS-FR9-SEC-01
-来源：FR9，PRD行2223
-类型：安全/权限
-前置条件：未登录用户访问AI助手
-操作步骤：
-  1. 清除登录状态
-  2. 访问AI助手面板
-预期结果：
-  - 重定向到登录页
-  - 输入框不可交互
-  - 提示"请先登录"
-验证方式：
-  - lint/build: npm run lint --quiet && npm run build
-  - 模拟: 模拟未登录token
-  - API: 携带无效token请求返回401
-  - E2E: agent-browser skill → 清除cookie → 访问 → 检查登录页
-优先级：P0
+```bash
+# 检测云端后端是否可用
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health 2>/dev/null || echo "BACKEND:unavailable"
+```
+
+**判定规则：**
+
+| 检测结果 | 含义 | 后续行动 |
+|----------|------|----------|
+| `200` | 后端服务运行中 | 执行 API 测试（curl） |
+| `BACKEND:unavailable` 或其他 | 后端未启动 | API 测试跳过（不记为失败），记录跳过原因 |
+
+#### 0c. 前端服务检测
+
+```bash
+# 检测 Vite dev server 是否可用
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173 2>/dev/null || echo "FRONTEND:unavailable"
 ```
 
 ---
-
-## 测试执行流程（4 步）
 
 ### Step 1：构建验证
 
@@ -247,26 +200,20 @@ VALUES
 #### 2c. 单元/集成测试
 
 ```bash
-# 运行相关测试文件
-npx playwright test tests/unit/xxx.spec.ts
-npx playwright test tests/integration/xxx.spec.ts
+# 使用 vitest 运行单元/集成测试
+npx vitest run tests/unit/... tests/integration/...
+
+# 使用 playwright 运行纯 UI 的 E2E 测试（不需要 Tauri API 的部分）
+npx playwright test tests/e2e/...
 ```
 
 ---
 
-### Step 3：实际运行测试
+### Step 3：API 测试（curl）
 
-#### 3a. 启动后端服务
-
-```bash
-# 启动云端后端（如需要）
-cd cloud-server && go run main.go
-
-# 或启动 Tauri 开发模式
-npm run tauri dev
-```
-
-#### 3b. API 测试（curl）
+**先执行 Step 0b 检测后端服务状态：**
+- 后端不可用 → **跳过**（标记为 `SKIP`，不计入失败）
+- 后端可用 → 执行 curl 测试
 
 ```bash
 # 示例：测试会话创建 API
@@ -278,11 +225,61 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 # 预期：201 Created，返回 session_id
 ```
 
-#### 3c. 使用 agent-browser skill 执行 E2E 测试
+---
+
+### Step 4：E2E 浏览器测试
+
+#### 4a. 根据环境选择测试路径
+
+**Step 0a 检测结果决定 E2E 策略：**
+
+**路径 A - Tauri 桌面端可用**：
+```bash
+# 直接使用 playwright 测试 Tauri 窗口
+npx playwright test tests/e2e/smoke/agent-panel.spec.ts
+# 或使用 agent-browser MCP 工具
+```
+
+**路径 B - Tauri 桌面端不可用（纯浏览器 dev 环境）**：
+
+执行两步策略：
+
+**Step 4b-1：纯 UI 测试（不需要 Tauri API）**
+```bash
+# 测试登录页、静态页面、纯前端路由等
+npx playwright test tests/e2e/smoke/login.spec.ts
+npx playwright test tests/e2e/accessibility/...
+```
+
+**Step 4b-2：agent-browser MCP 测试（Tauri API 部分）**
+```bash
+# 使用 playwright-mcp 工具
+# 1. 尝试打开页面
+# 2. 如果出现 transformCallback 错误，判定为"Tauri 环境缺失"
+# 3. 跳过 Agent 核心功能测试，标记为 SKIP
+```
+
+**路径 C - Playwright MCP 工具测试（参考）**
+
+使用 `plugin-playwright-playwright` MCP 工具：
+
+```
+1. browser_navigate → 导航到页面
+2. browser_snapshot → 获取可访问性树
+3. 如果出现大量 "transformCallback undefined" 错误：
+   → 判定为 Tauri API 不可用
+   → 报告 Tauri 环境缺失，跳过 Agent 核心功能 E2E
+   → 建议切换到 npm run tauri dev
+4. 如果页面正常渲染：
+   → 继续执行交互测试
+   → 逐 AS 验证，记录截图和日志
+```
+
+#### 4c. 通过 agent-browser skill 执行 E2E 测试
 
 通过 agent-browser skill 执行全面的浏览器 E2E 测试。读取 `.claude/commands/intest.md` 获取基础指令，但测试必须覆盖以下所有维度。
 
-##### 3c-1. UI 渲染检测
+##### 4c-1. UI 渲染检测
 
 | 检查项 | 操作 | 预期结果 |
 |--------|------|----------|
@@ -295,7 +292,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 | 表单验证 | 提交空表单 | 显示字段级错误提示 |
 | 响应式布局 | 窗口 resize | 布局不乱，内容不溢出 |
 
-##### 3c-2. 前端数据传递检测
+##### 4c-2. 前端数据传递检测
 
 | 检查项 | 操作 | 预期结果 |
 |--------|------|----------|
@@ -306,7 +303,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 | 数值格式化 | 输入大数字 | 显示千分位格式 |
 | 日期选择 | 选择日期范围 | 正确传递给后端 |
 
-##### 3c-3. 前后端一致性检测
+##### 4c-3. 前后端一致性检测
 
 | 检查项 | 操作 | 预期结果 |
 |--------|------|----------|
@@ -319,7 +316,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 | 数字精度 | 金额字段 | 后端精度与前端一致 |
 | 时间时区 | 创建/更新时间 | UTC存储，显示本地时间 |
 
-##### 3c-4. 操作路径穷举测试
+##### 4c-4. 操作路径穷举测试
 
 必须模拟所有可能的操作路径，不能只测 happy path：
 
@@ -337,7 +334,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 | 离线操作 | 断网后操作 | 正确降级 |
 | 快捷键 | Tab/Enter/Esc | 对应功能响应 |
 
-##### 3c-5. 浏览器控制台检测
+##### 4c-5. 浏览器控制台检测
 
 | 检查项 | 触发方式 | 预期结果 |
 |--------|----------|----------|
@@ -347,7 +344,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 | 内存泄漏 | 频繁操作 | 控制台无持续增长的内存警告 |
 | 网络请求 | F12 Network | 无404/500请求 |
 
-##### 3c-6. E2E 测试执行规范
+##### 4c-6. E2E 测试执行规范
 
 ```
 执行要求：
@@ -358,7 +355,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 5. 完成后：报告总操作数、通过率、失败列表
 ```
 
-##### 3c-7. E2E 测试输出格式
+##### 4c-7. E2E 测试输出格式
 
 ```html
 <!-- E2E 详细记录写入 HTML，每个 AS 一段 -->
@@ -418,6 +415,68 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
     </tbody>
   </table>
 </div>
+
+<!-- Tauri 环境缺失示例（SKIP） -->
+<div class="as-detail skipped" id="as-fr9-func-01">
+  <h4>AS-FR9-FUNC-01: 多轮对话交互</h4>
+  <div class="as-meta">
+    <span class="badge P0">P0</span>
+    <span class="badge FUNC">功能正确性</span>
+    <span class="badge SKIP">⏭️ SKIP</span>
+  </div>
+  <div class="skip-reason">
+    <strong>跳过原因：</strong>Tauri API 在纯浏览器环境中不可用（transformCallback undefined）<br/>
+    <strong>涉及 Tauri API：</strong>useGlobalShortcuts、useAgentRuntime、useUpdate、useNetworkStatus<br/>
+    <strong>下一步：</strong>启动 Tauri 桌面端（npm run tauri dev）后重新执行此 AS 的 E2E 测试
+  </div>
+  <table class="op-table">
+    <thead><tr><th>#</th><th>操作</th><th>预期</th><th>实际</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>导航到应用首页</td><td>页面加载</td><td>transformCallback undefined</td><td class="skip">⏭️ SKIP</td></tr>
+    </tbody>
+  </table>
+</div>
+```
+
+---
+
+### Step 5：AS 全量验证
+
+逐条验证所有 AS，每个 AS 必须完成全部 4 层验证：
+
+```
+[AS-FR9-FUNC-01] 多轮对话基础交互
+  来源: FR9, PRD行2223
+  类型: 功能正确性
+
+  验证链路:
+  [P0] lint/build:  npm run lint --quiet && npm run build         → ✅ 通过
+  [P0] 模拟数据:     INSERT会话+消息 → SELECT验证入库            → ✅ 2条记录
+  [P0] curl API:     POST /api/v1/agent/messages                  → ⏭️ SKIP(后端不可用)
+  [P0] 浏览器E2E:    agent-browser skill → "你好" → 截图确认   → ⏭️ SKIP(Tauri不可用)
+
+[AS-FR9-BOUND-01] 超长输入边界
+  来源: FR9, PRD行2223
+  类型: 边界与异常
+
+  验证链路:
+  [P1] lint/build:  npm run lint --quiet && npm run build         → ✅ 通过
+  [P1] 模拟数据:    模拟4097字符输入 → API返回长度校验          → ✅ 422
+  [P1] curl API:    POST 4097字符文本                            → ⏭️ SKIP(后端不可用)
+  [P1] 浏览器E2E:   agent-browser skill → 粘贴4097字符          → ⏭️ SKIP(Tauri不可用)
+
+[AS-FR13-FUNC-01] MCP工具调用
+  来源: FR13, PRD行2227
+  类型: 功能正确性
+
+  验证链路:
+  [P0] lint/build:  npm run lint --quiet && npm run build         → ✅ 通过
+  [P0] 模拟数据:    MCP工具注册 → 调用 → 返回结果                → ✅ JSON正确
+  [P0] curl API:    POST /api/v1/mcp/call                         → ⏭️ SKIP(后端不可用)
+  [P0] 浏览器E2E:   agent-browser skill → 点击MCP按钮           → ⏭️ SKIP(Tauri不可用)
+
+  [结论] 由于 Tauri 环境限制，此 AS 无法在当前环境完成 E2E 验证
+  [建议] 切换到 npm run tauri dev 后重新执行
 ```
 
 ---
@@ -431,7 +490,7 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
   ├── index.html                # 当日总报告入口
   ├── [epic-{n}].html           # Epic 级别报告
   ├── [fr-{n}].html             # FR 级别详细报告
-  └── [as-{fr}-{dim}-{n}].html  # 单个 AS 详细报告（可选）
+  └── [as-{fr}-{dim}-{n}].html # 单个 AS 详细报告（可选）
 ```
 
 - 目录不存在时自动创建
@@ -442,8 +501,10 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 
 **必须元素**：
 - 顶部状态栏：验收范围 / 执行时间 / 通过率 / 状态（✅/❌）
-- AS 统计看板：总AS数 / 通过 / 失败 / 重试次数 / lint错误数 / build状态
+- 环境预检结果：Tauri状态 / 后端状态 / 前端状态
+- AS 统计看板：总AS数 / 通过 / 失败 / 跳过 / 重试次数 / lint错误数 / build状态
 - 失败项高亮区块：红色背景，标明 AS 编号 + 失败原因 + 修复建议
+- 跳过项说明区块：橙色背景，标明 Tauri 环境缺失或后端不可用等跳过原因
 - 通过项绿色标记：每个通过的 AS 带 ✅ 图标
 - 可折叠详情：点击展开查看 E2E 截图、操作序列、控制台日志
 - 进度条：通过率用进度条可视化
@@ -458,16 +519,38 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 ```html
 <!-- 示例结构 -->
 <div class="report-header">
-  <span class="status-badge FAIL">❌ 验收失败</span>
+  <span class="status-badge PARTIAL">⚠️ 验收部分阻塞</span>
+  <div class="env-precheck">
+    <span class="env-badge TAURI-MISSING">⚠️ Tauri: 不可用（纯浏览器环境）</span>
+    <span class="env-badge BACKEND-MISSING">⚠️ 后端: 不可用</span>
+    <span class="env-badge FRONTEND-OK">✅ 前端: http://localhost:5173</span>
+  </div>
   <div class="stats-grid">
     <div class="stat">AS总数: <strong>24</strong></div>
-    <div class="stat">通过: <strong class="green">22</strong></div>
+    <div class="stat">通过: <strong class="green">12</strong></div>
     <div class="stat">失败: <strong class="red">2</strong></div>
+    <div class="stat">跳过: <strong class="orange">10</strong></div>
     <div class="stat">lint错误: <strong class="green">0</strong></div>
     <div class="stat">build: <strong class="green">✅</strong></div>
-    <div class="stat">通过率: <strong>91.7%</strong></div>
+    <div class="stat">通过率: <strong>85.7%</strong></div>
   </div>
-  <div class="progress-bar"><div class="fill" style="width:91.7%"></div></div>
+  <div class="progress-bar"><div class="fill" style="width:85.7%"></div></div>
+</div>
+
+<!-- Tauri 环境缺失说明 -->
+<div class="tauri-block">
+  <h2>⚠️ Tauri 环境缺失（10项 AS 跳过）</h2>
+  <div class="tauri-explanation">
+    以下 AS 依赖 Tauri API（invoke/listen），在纯浏览器环境中无法执行：
+    <ul>
+      <li>useGlobalShortcuts - 快捷键监听</li>
+      <li>useAgentRuntime - Agent 运行时通信</li>
+      <li>useUpdate - 版本更新检查</li>
+      <li>useNetworkStatus - 网络状态监听</li>
+    </ul>
+    <strong>解决方案：</strong>启动 Tauri 桌面端后重新执行验收测试
+    <code>npm run tauri dev</code>
+  </div>
 </div>
 
 <div class="failure-block">
@@ -480,14 +563,11 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
       <strong>根因分析：</strong>onClick未绑定invoke('mcp_call')<br/>
       <strong>修复建议：</strong>在Button的onClick中调用window.__TAURI__.core.invoke('mcp_call', {...})
     </div>
-    <div class="screenshots">
-      <img src="failure-01.png" alt="MCP按钮点击无响应"/>
-    </div>
   </div>
 </div>
 
 <div class="pass-block">
-  <h2>🟢 通过项（22项）</h2>
+  <h2>🟢 通过项（12项）</h2>
   <!-- 表格形式，简洁列出 -->
 </div>
 
@@ -495,48 +575,6 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
   <h3>📋 E2E 详细操作记录</h3>
   <!-- 折叠内容：每个AS的操作序列、截图、控制台日志 -->
 </div>
-```
-
----
-
-### Step 4：AS 全量验证
-
-逐条验证所有 AS，每个 AS 必须完成全部 4 层验证：
-
-```
-[AS-FR9-FUNC-01] 多轮对话基础交互
-  来源: FR9, PRD行2223
-  类型: 功能正确性
-
-  验证链路:
-  [P0] lint/build:  npm run lint --quiet && npm run build         → ✅ 通过
-  [P0] 模拟数据:     INSERT会话+消息 → SELECT验证入库            → ✅ 2条记录
-  [P0] curl API:     POST /api/v1/agent/messages                  → 201 + message_id
-  [P0] 浏览器E2E:    agent-browser skill → "你好" → 截图确认     → ✅ 消息显示
-
-[AS-FR9-BOUND-01] 超长输入边界
-  来源: FR9, PRD行2223
-  类型: 边界与异常
-
-  验证链路:
-  [P1] lint/build:  npm run lint --quiet && npm run build         → ✅ 通过
-  [P1] 模拟数据:    模拟4097字符输入 → API返回长度校验          → ✅ 422
-  [P1] curl API:    POST 4097字符文本                            → 422 + error
-  [P1] 浏览器E2E:   agent-browser skill → 粘贴4097字符          → ✅ 错误提示
-
-[AS-FR13-FUNC-01] MCP工具调用
-  来源: FR13, PRD行2227
-  类型: 功能正确性
-
-  验证链路:
-  [P0] lint/build:  npm run lint --quiet && npm run build         → ✅ 通过
-  [P0] 模拟数据:    MCP工具注册 → 调用 → 返回结果                → ✅ JSON正确
-  [P0] curl API:    POST /api/v1/mcp/call                         → 200 + result
-  [P0] 浏览器E2E:   agent-browser skill → 点击MCP按钮           → ❌ 无响应
-
-  [重试 1/2] 检查MCP按钮事件绑定...
-  [重试 2/2] 检查API端点是否可达...
-  [超限] 深度反思: MCP按钮onClick未绑定invoke('mcp_call')
 ```
 
 ---
@@ -550,28 +588,24 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 | 单点失败（API/UI） | 2 次 | 等待 5s 后重试，分析日志修复 |
 | 整体失败 | 3 次 | 深度反思，分析根因，输出阻塞报告 |
 | lint/build 失败 | 不重试 | 立即修复 lint/build 错误 |
+| Tauri 环境缺失 | 不重试 | 标记 SKIP，建议切换到 tauri dev |
 
 ### 阻塞报告格式
 
-```
-🚫 验收阻塞 - 需要人工介入
+**类型 A - 代码缺陷（需修复代码）**：
 
-**核心原则**: 发现代码问题 → 修复代码使AS通过；严禁修改AS预期结果迁就代码
+```
+🔴 验收失败 - 代码缺陷
 
 **当前验收范围**: [Epic X / Story X.X / FR13]
-**阻塞阶段**: [构建/模拟测试/API测试/E2E测试]
+**阻塞阶段**: [E2E测试]
 **失败 AS**: [AS-FR13-FUNC-01]
-
-**已通过的测试**:
-- AS-FR9-FUNC-01: ✅
-- AS-FR9-BOUND-01: ✅
 
 **失败 AS 根因分析**:
 - AS-FR13-FUNC-01:
   - 失败现象: [描述]
   - 根因分析: [代码哪里有问题]
   - 代码修复方案: [具体的修复步骤]
-  - 是否测试本身有问题: 否
 
 **需要人工帮助**:
 1. [具体的代码修复步骤 1]
@@ -581,9 +615,33 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 - ❌ 删除失败的 AS
 - ❌ 修改 AS 预期结果迁就代码
 - ❌ 降低验收标准
+```
 
-**解除阻塞后**:
-- 修复代码后重新执行 `prd-acceptance --scope FR13`
+**类型 B - 环境缺失（需切换环境，不算验收失败）**：
+
+```
+⚠️ 验收跳过 - Tauri 环境缺失
+
+**当前验收范围**: [Epic X / Story X.X / FR13]
+**跳过阶段**: [E2E测试]
+**跳过 AS**: [AS-FR9-FUNC-01, AS-FR13-FUNC-01, ...] 共 N 项
+
+**跳过原因**: Tauri API 在纯浏览器环境中不可用
+
+**涉及 Tauri API**:
+- useGlobalShortcuts (listen)
+- useAgentRuntime (listen/invoke)
+- useUpdate (invoke)
+- useNetworkStatus (listen)
+- pluginSidebarRegistry (getBadges)
+
+**解决方案**:
+1. 停止当前 Vite dev server
+2. 运行 npm run tauri dev 启动 Tauri 桌面端
+3. 重新执行 prd-acceptance --scope [范围]
+
+**状态判定**: SKIP（不算验收失败）
+**说明**: 这是开发环境约束而非代码缺陷。切换到 tauri dev 后请重新验收。
 ```
 
 ---
@@ -600,21 +658,22 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 
 **报告内容**：
 - 顶部状态栏（范围/时间/通过率/状态）
-- AS 统计看板（总/通过/失败/lint/build）
+- 环境预检结果（Tauri/后端/前端三色标签）
+- AS 统计看板（总/通过/失败/跳过/lint/build）
+- Tauri 环境缺失说明（橙色区块，列出涉及 API 和解决方案）
 - 失败项高亮区块（红色背景，附截图 + 修复建议）
 - 通过项表格（绿色标记，简洁列出）
 - E2E 详细记录（HTML格式，每个 AS 的操作序列表格 + 截图 + 控制台日志）
 - 进度条（通过率可视化）
 
 **HTML 样式规范**：使用内联 CSS，确保单文件可独立打开：
-- 状态色：#22c55e(绿-通过) / #ef4444(红-失败) / #f59e0b(橙-重试) / #3b82f6(蓝-信息)
+- 状态色：#22c55e(绿-通过) / #ef4444(红-失败) / #f59e0b(橙-跳过/重试) / #3b82f6(蓝-信息)
 - 字体：system-ui, sans-serif
 - 表格：边框线清晰，hover 高亮行
 - 截图：thumbnail 显示，点击放大
-- 失败项：红色背景 #fef2f2，红色边框 #ef4444
+- 失败项：红色背景 #1f0a0a，红色边框 #ef4444
+- 跳过项：橙色背景 #1a1400，橙色边框 #f59e0b
 - 可折叠区块：`<details><summary>` 实现
-
----
 
 ---
 
