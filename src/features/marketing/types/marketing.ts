@@ -233,3 +233,54 @@ export const channelTypeMeta: Record<ChannelType, { label: string; color: string
   app: { label: 'APP', color: 'bg-purple-500 text-white' },
   other: { label: '其他', color: 'bg-gray-400 text-white' },
 };
+
+// ==================== AI 内容生成类型 ====================
+
+export interface TemplateVariable {
+  key: string;
+  label: string;
+  variableType: string;
+  required: boolean;
+  defaultValue?: string;
+  options: string[];
+  placeholder?: string;
+}
+
+export interface ContentTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  contentType: ContentType;
+  templateContent: string;
+  variables: TemplateVariable[];
+  isDefault: boolean;
+  usageCount: number;
+  tenantId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface GenerateContentRequest {
+  templateId?: string;
+  contentType: ContentType;
+  title: string;
+  targetPlatform?: ChannelType;
+  keywords: string[];
+  tone?: string;
+  length?: string;
+}
+
+export interface GenerateContentResult {
+  content: string;
+  title: string;
+  suggestions: string[];
+  hashtags: string[];
+}
+
+export interface PlatformAdaptation {
+  platform: ChannelType;
+  maxLength: number;
+  recommendedLength: number;
+  hashtagCount: number;
+  emojiAllowed: boolean;
+}

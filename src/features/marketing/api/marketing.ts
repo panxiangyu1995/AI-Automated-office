@@ -8,6 +8,9 @@ import type {
   CampaignListItem,
   ContentListItem,
   ChannelListItem,
+  GenerateContentRequest,
+  GenerateContentResult,
+  PlatformAdaptation,
   CreateCampaignRequest,
   UpdateCampaignRequest,
   QueryCampaignsParams,
@@ -84,4 +87,14 @@ export async function updateChannel(id: string, request: UpdateChannelRequest): 
 
 export async function deleteChannel(id: string): Promise<void> {
   return invoke('marketing_delete_channel', { id });
+}
+
+// ==================== AI 内容生成 API ====================
+
+export async function generateContent(request: GenerateContentRequest, tenantId?: string): Promise<GenerateContentResult> {
+  return invoke('marketing_generate_content', { request, tenantId });
+}
+
+export async function getPlatformAdaptation(platform: string): Promise<PlatformAdaptation> {
+  return invoke('marketing_get_platform_adaptation', { platform });
 }

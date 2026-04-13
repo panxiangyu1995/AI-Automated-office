@@ -410,3 +410,88 @@ pub struct ChannelListItem {
     pub followers: Option<i32>,
     pub is_active: bool,
 }
+
+// ==================== AI 内容生成类型 ====================
+
+/// 内容模板
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentTemplate {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub content_type: ContentType,
+    pub template_content: String,
+    pub variables: Vec<TemplateVariable>,
+    pub is_default: bool,
+    pub usage_count: i32,
+    pub tenant_id: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+/// 模板变量
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateVariable {
+    pub key: String,
+    pub label: String,
+    pub variable_type: String,
+    pub required: bool,
+    pub default_value: Option<String>,
+    pub options: Vec<String>,
+    pub placeholder: Option<String>,
+}
+
+/// AI 生成请求
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerateContentRequest {
+    pub template_id: Option<String>,
+    pub content_type: ContentType,
+    pub title: String,
+    pub target_platform: Option<ChannelType>,
+    pub keywords: Vec<String>,
+    pub tone: Option<String>,
+    pub length: Option<String>,
+}
+
+/// AI 生成结果
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerateContentResult {
+    pub content: String,
+    pub title: String,
+    pub suggestions: Vec<String>,
+    pub hashtags: Vec<String>,
+}
+
+/// 平台适配规则
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlatformAdaptation {
+    pub platform: ChannelType,
+    pub max_length: i32,
+    pub recommended_length: i32,
+    pub hashtag_count: i32,
+    pub emoji_allowed: bool,
+}
+
+impl Default for ContentTemplate {
+    fn default() -> Self {
+        let now = chrono::Utc::now().timestamp();
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            name: String::new(),
+            description: None,
+            content_type: ContentType::Article,
+            template_content: String::new(),
+            variables: Vec::new(),
+            is_default: false,
+            usage_count: 0,
+            tenant_id: String::new(),
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}

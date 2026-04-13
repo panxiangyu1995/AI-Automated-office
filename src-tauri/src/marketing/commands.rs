@@ -237,3 +237,86 @@ pub async fn marketing_delete_channel(
     info!("删除营销渠道: {}", id);
     state.db.delete_channel(&id)
 }
+
+// ==================== AI 内容生成命令 ====================
+
+#[tauri::command]
+pub async fn marketing_generate_content(
+    state: State<'_, MarketingState>,
+    request: GenerateContentRequest,
+    tenant_id: Option<String>,
+) -> Result<GenerateContentResult, String> {
+    info!("AI生成营销内容: {}", request.title);
+    
+    // 模拟 AI 生成
+    let platform = request.target_platform.unwrap_or(ChannelType::Wechat);
+    let hashtags = request.keywords.iter().map(|k| format!("#{}", k)).collect();
+    
+    let content = format!(
+        "【{}】\n\n亲爱的用户：\n\n{} 是我们为您精心准备的内容。\n\n主要内容：\n{}\n\n了解更多，请访问我们的官方网站。\n\n{}",
+        request.title,
+        request.title,
+        request.keywords.iter().map(|k| format!("- {}", k)).collect::<Vec<_>>().join("\n"),
+        hashtags.iter().map(|h| h.as_str()).collect::<Vec<_>>().join(" ")
+    );
+    
+    let suggestions = vec![
+        "建议在黄金时段发布以获得更多曝光".to_string(),
+        "配合相关话题可提升互动率".to_string(),
+        "添加配图可提升阅读体验".to_string(),
+    ];
+    
+    Ok(GenerateContentResult {
+        content,
+        title: request.title,
+        suggestions,
+        hashtags,
+    })
+}
+
+#[tauri::command]
+pub async fn marketing_get_platform_adaptation(
+    platform: ChannelType,
+) -> Result<PlatformAdaptation, String> {
+    info!("获取平台适配规则: {:?}", platform);
+    
+    let adaptation = match platform {
+        ChannelType::Wechat => PlatformAdaptation {
+            platform,
+            max_length: 20000,
+            recommended_length: 2000,
+            hashtag_count: 10,
+            emoji_allowed: true,
+        },
+        ChannelType::Weibo => PlatformAdaptation {
+            platform,
+            max_length: 2000,
+            recommended_length: 140,
+            hashtag_count: 5,
+            emoji_allowed: true,
+        },
+        ChannelType::Douyin => PlatformAdaptation {
+            platform,
+            max_length: 2000,
+            recommended_length: 100,
+            hashtag_count: 3,
+            emoji_allowed: true,
+        },
+        ChannelType::Xiaohongshu => PlatformAdaptation {
+            platform,
+            max_length: 1000,
+            recommended_length: 500,
+            hashtag_count: 10,
+            emoji_allowed: true,
+        },
+        _ => PlatformAdaptation {
+            platform,
+            max_length: 5000,
+            recommended_length: 500,
+            hashtag_count: 5,
+            emoji_allowed: true,
+        },
+    };
+    
+    Ok(adaptation)
+}
