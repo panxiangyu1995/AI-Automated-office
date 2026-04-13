@@ -1,25 +1,35 @@
 {
-  "version": "6.0.0",
-  "lastUpdated": "2026-04-12",
-  "scope": "Remaining tasks from Phase 2/3 backlog + Epic 14 warehouse module",
-  "batch": "Epic 14 - Warehouse Module",
+  "version": "7.0.0",
+  "lastUpdated": "2026-04-13",
+  "scope": "扩展部门模块 + Post-MVP功能 + 编辑器系统完善",
+  "batch": "Epic 15-24 - 扩展模块与Post-MVP功能",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
   "sourceOfTruth": "PRD MVP Definition + task-archived-5.json",
-  "activeNote": "Epic 14仓库模块9个Story（Task 222-230）全部完成。UI优化任务（218-221）全部完成。Task 209-210 MVP集成测试和发布准备已完成。",
+  "activeNote": "新增扩展部门模块(After-sales/Bidding/Marketing 9个)、Post-MVP功能(Workspace/Security/Editor等 17个)、Marketplace/Connectors/GraphMemory/Experience等 11个，共37个新任务",
   "summary": {
-    "total": 25,
-    "completed": 22,
-    "remaining": 3,
+    "total": 62,
+    "completed": 25,
+    "remaining": 37,
     "byPriority": {
       "critical": 2,
-      "high": 5,
-      "medium": 7,
-      "low": 6
+      "high": 15,
+      "medium": 18,
+      "low": 10
     },
     "byEpic": {
       "Epic 1": 8,
       "Epic 2": 3,
       "Epic 14": 9,
+      "Epic 15": 3,
+      "Epic 16": 3,
+      "Epic 17": 3,
+      "Epic 18": 5,
+      "Epic 19": 5,
+      "Epic 20": 4,
+      "Epic 21": 4,
+      "Epic 22": 4,
+      "Epic 23": 3,
+      "Epic 24": 3,
       "Epic 49": 1,
       "Epic 50": 1,
       "Epic 51": 1,
@@ -1114,6 +1124,1617 @@
         "Task 222"
       ],
       "passes": true
+    },
+    {
+      "id": 231,
+      "epic": "Epic 15",
+      "story": "Story 15.1",
+      "title": "After-sales售后服务模块-基础架构",
+      "description": "实现售后服务模块的基础架构，包括工单类型定义、状态管理、服务人员管理。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "售后服务模块尚未实现。需创建src/features/service/和src-tauri/src/service/目录。"
+      },
+      "openspec_change": "epic-15-story-15-1-after-sales-base",
+      "steps": [
+        "创建售后服务模块目录结构",
+        "定义工单类型、工单状态、服务人员类型",
+        "实现工单基础CRUD命令",
+        "创建工单列表页面",
+        "创建工单详情面板",
+        "集成到Sidebar动态入口"
+      ],
+      "frs_covered": [
+        "FR220",
+        "FR221",
+        "FR222",
+        "FR226"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR15"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": true
+    },
+    {
+      "id": 232,
+      "epic": "Epic 15",
+      "story": "Story 15.2",
+      "title": "After-sales售后工单流程管理",
+      "description": "实现售后工单完整流程管理，包括工单创建、分配、处理、关闭、回访全流程。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "售后工单流程尚未实现。"
+      },
+      "openspec_change": "epic-15-story-15-2-after-sales-workflow",
+      "steps": [
+        "实现工单创建表单",
+        "实现工单分配逻辑",
+        "实现工单处理记录",
+        "实现工单状态流转",
+        "实现工单回访功能",
+        "创建工单统计面板"
+      ],
+      "frs_covered": [
+        "FR220",
+        "FR221",
+        "FR222",
+        "FR224",
+        "FR225"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 231"
+      ],
+      "passes": false
+    },
+    {
+      "id": 233,
+      "epic": "Epic 15",
+      "story": "Story 15.3",
+      "title": "After-sales知识库集成",
+      "description": "实现售后维修经验自动保存到知识库功能。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "售后知识库集成尚未实现。"
+      },
+      "openspec_change": "epic-15-story-15-3-after-sales-knowledge",
+      "steps": [
+        "实现维修经验提取",
+        "实现知识库自动提交",
+        "实现经验模板生成",
+        "实现知识审核流程",
+        "创建知识贡献面板"
+      ],
+      "frs_covered": [
+        "FR223"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 232"
+      ],
+      "passes": false
+    },
+    {
+      "id": 234,
+      "epic": "Epic 16",
+      "story": "Story 16.1",
+      "title": "Bidding招投标模块-基础架构",
+      "description": "实现招投标模块的基础架构，包括资质管理、业绩库、投标项目管理。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "招投标模块尚未实现。需创建src/features/tender/和src-tauri/src/tender/目录。"
+      },
+      "openspec_change": "epic-16-story-16-1-bidding-base",
+      "steps": [
+        "创建招投标模块目录结构",
+        "定义资质类型、业绩类型、投标状态",
+        "实现资质库CRUD",
+        "实现业绩库CRUD",
+        "创建资质管理页面",
+        "创建业绩库页面"
+      ],
+      "frs_covered": [
+        "FR230",
+        "FR231"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR15"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 235,
+      "epic": "Epic 16",
+      "story": "Story 16.2",
+      "title": "Bidding投标项目管理",
+      "description": "实现投标项目全流程管理，包括项目创建、投标文件、进度跟踪。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "投标项目管理尚未实现。"
+      },
+      "openspec_change": "epic-16-story-16-2-bidding-project",
+      "steps": [
+        "实现投标项目类型定义",
+        "实现项目创建和编辑",
+        "实现投标文件管理",
+        "实现进度跟踪",
+        "实现到期提醒",
+        "创建投标项目列表"
+      ],
+      "frs_covered": [
+        "FR234"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 234"
+      ],
+      "passes": false
+    },
+    {
+      "id": 236,
+      "epic": "Epic 16",
+      "story": "Story 16.3",
+      "title": "Bidding标书生成",
+      "description": "实现AI辅助标书生成功能，结合资质库和业绩库自动生成标书。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "标书AI生成尚未实现。"
+      },
+      "openspec_change": "epic-16-story-16-3-bidding-tender-generation",
+      "steps": [
+        "定义标书模板结构",
+        "实现资质自动填充",
+        "实现业绩自动关联",
+        "实现AI生成接口",
+        "创建标书编辑器",
+        "集成知识库RAG"
+      ],
+      "frs_covered": [
+        "FR232",
+        "FR233"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 234",
+        "Task 235"
+      ],
+      "passes": false
+    },
+    {
+      "id": 237,
+      "epic": "Epic 17",
+      "story": "Story 17.1",
+      "title": "Marketing市场宣传模块-基础架构",
+      "description": "实现市场宣传模块的基础架构，包括营销活动、内容管理、渠道管理。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "市场宣传模块尚未实现。需创建src/features/marketing/和src-tauri/src/marketing/目录。"
+      },
+      "openspec_change": "epic-17-story-17-1-marketing-base",
+      "steps": [
+        "创建市场宣传模块目录结构",
+        "定义营销活动类型、内容类型、渠道类型",
+        "实现营销活动CRUD",
+        "实现内容管理CRUD",
+        "实现渠道管理",
+        "创建活动列表页面"
+      ],
+      "frs_covered": [
+        "FR240",
+        "FR241"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR15"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 238,
+      "epic": "Epic 17",
+      "story": "Story 17.2",
+      "title": "Marketing AI内容生成",
+      "description": "实现AI辅助营销文案生成功能。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "AI营销内容生成尚未实现。"
+      },
+      "openspec_change": "epic-17-story-17-2-marketing-ai-content",
+      "steps": [
+        "定义内容模板结构",
+        "实现AI生成接口",
+        "实现多平台适配",
+        "实现内容审核",
+        "创建内容编辑器",
+        "创建内容库"
+      ],
+      "frs_covered": [
+        "FR242"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 237"
+      ],
+      "passes": false
+    },
+    {
+      "id": 239,
+      "epic": "Epic 17",
+      "story": "Story 17.3",
+      "title": "Marketing效果分析",
+      "description": "实现营销效果数据分析功能。",
+      "implementationType": "new",
+      "phase": "Phase 6 - 扩展部门模块",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "营销效果分析尚未实现。"
+      },
+      "openspec_change": "epic-17-story-17-3-marketing-analytics",
+      "steps": [
+        "定义效果指标类型",
+        "实现数据收集接口",
+        "实现统计分析",
+        "创建数据看板",
+        "创建效果报告"
+      ],
+      "frs_covered": [
+        "FR243"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 237"
+      ],
+      "passes": false
+    },
+    {
+      "id": 240,
+      "epic": "Epic 18",
+      "story": "Story 18.1",
+      "title": "Workspace工作区隔离基础",
+      "description": "实现多工作区隔离的基础能力，支持工作区创建、切换和管理。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/workspace/"
+        ],
+        "backend": [],
+        "note": "工作区目录存在但功能不完整。"
+      },
+      "openspec_change": "epic-18-story-18-1-workspace-base",
+      "steps": [
+        "定义工作区类型和状态",
+        "实现工作区CRUD命令",
+        "实现工作区切换",
+        "实现工作区隔离的数据存储",
+        "创建工作区管理页面",
+        "集成到TopBar布局控制"
+      ],
+      "frs_covered": [
+        "FR1000",
+        "FR1001",
+        "FR1005"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR15"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 241,
+      "epic": "Epic 18",
+      "story": "Story 18.2",
+      "title": "Workspace快速访问",
+      "description": "实现Quick Open/Quick Pick快速访问功能，支持搜索最近项目、单据、模板等。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "快速访问功能尚未实现。"
+      },
+      "openspec_change": "epic-18-story-18-2-workspace-quick-open",
+      "steps": [
+        "实现统一的搜索索引",
+        "实现Quick Open面板",
+        "实现最近使用历史",
+        "实现分类搜索过滤",
+        "实现权限过滤",
+        "集成到Command Palette"
+      ],
+      "frs_covered": [
+        "FR1000-1",
+        "FR1000-2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 240"
+      ],
+      "passes": false
+    },
+    {
+      "id": 242,
+      "epic": "Epic 18",
+      "story": "Story 18.3",
+      "title": "Workspace布局预设",
+      "description": "实现工作区布局预设功能，支持保存和切换个人布局预设。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "布局预设功能尚未实现。"
+      },
+      "openspec_change": "epic-18-story-18-3-workspace-presets",
+      "steps": [
+        "定义布局预设数据结构",
+        "实现预设保存和加载",
+        "实现预设切换",
+        "创建预设管理面板",
+        "实现预设分享功能"
+      ],
+      "frs_covered": [
+        "FR1005-1",
+        "FR1005-2",
+        "FR1006-1"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 240"
+      ],
+      "passes": false
+    },
+    {
+      "id": 243,
+      "epic": "Epic 18",
+      "story": "Story 18.4",
+      "title": "Workspace项目配置",
+      "description": "实现工作区项目独立的工具与插件配置、权限范围与成员角色。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "项目配置功能尚未实现。"
+      },
+      "openspec_change": "epic-18-story-18-4-workspace-project-config",
+      "steps": [
+        "实现项目工具配置",
+        "实现项目插件配置",
+        "实现项目成员管理",
+        "实现项目权限配置",
+        "创建项目配置页面"
+      ],
+      "frs_covered": [
+        "FR1002",
+        "FR1003",
+        "FR1004",
+        "FR1006"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR15"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 240"
+      ],
+      "passes": false
+    },
+    {
+      "id": 244,
+      "epic": "Epic 18",
+      "story": "Story 18.5",
+      "title": "Workspace项目模板",
+      "description": "实现项目模板与快速初始化功能。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "项目模板功能尚未实现。"
+      },
+      "openspec_change": "epic-18-story-18-5-workspace-templates",
+      "steps": [
+        "定义项目模板结构",
+        "实现模板创建和编辑",
+        "实现模板市场",
+        "实现快速初始化",
+        "创建模板管理页面"
+      ],
+      "frs_covered": [
+        "FR1004"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 243"
+      ],
+      "passes": false
+    },
+    {
+      "id": 245,
+      "epic": "Epic 19",
+      "story": "Story 19.1",
+      "title": "Security密钥保管库基础",
+      "description": "实现企业级密钥保管库基础功能，支持密钥存储、检索、加密。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/crypto/"
+        ],
+        "note": "crypto模块存在但密钥保管库功能不完整。"
+      },
+      "openspec_change": "epic-19-story-19-1-security-vault-base",
+      "steps": [
+        "定义密钥类型和存储结构",
+        "实现密钥加密存储",
+        "实现密钥检索",
+        "实现密钥访问控制",
+        "创建密钥管理页面"
+      ],
+      "frs_covered": [
+        "FR1010",
+        "FR1011",
+        "FR1014"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 246,
+      "epic": "Epic 19",
+      "story": "Story 19.2",
+      "title": "Security密钥生命周期管理",
+      "description": "实现密钥生命周期管理，包括轮换、到期提醒、吊销。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "密钥生命周期管理尚未实现。"
+      },
+      "openspec_change": "epic-19-story-19-2-security-key-lifecycle",
+      "steps": [
+        "实现密钥轮换机制",
+        "实现到期提醒",
+        "实现密钥吊销",
+        "实现密钥审计日志",
+        "创建密钥监控面板"
+      ],
+      "frs_covered": [
+        "FR1012",
+        "FR1013",
+        "FR1015",
+        "FR1016",
+        "FR1017"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 245"
+      ],
+      "passes": false
+    },
+    {
+      "id": 247,
+      "epic": "Epic 19",
+      "story": "Story 19.3",
+      "title": "Security工具权限增强",
+      "description": "增强工具权限管理，实现工具权限声明、风险等级、白名单。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/permission/"
+        ],
+        "note": "permission模块存在但功能不完整。"
+      },
+      "openspec_change": "epic-19-story-19-3-security-tool-permissions",
+      "steps": [
+        "实现工具权限声明",
+        "实现风险等级分类",
+        "实现网络访问白名单",
+        "实现文件系统白名单",
+        "创建权限配置页面"
+      ],
+      "frs_covered": [
+        "FR1020",
+        "FR1021",
+        "FR1023",
+        "FR1024",
+        "FR1026",
+        "FR1027"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 248,
+      "epic": "Epic 19",
+      "story": "Story 19.4",
+      "title": "Security SSO身份集成",
+      "description": "实现SSO单点登录支持，包括SAML/OIDC、SCIM自动入职离职。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "SSO功能尚未实现。"
+      },
+      "openspec_change": "epic-19-story-19-4-security-sso",
+      "steps": [
+        "实现SAML/OIDC协议支持",
+        "实现SCIM自动入职",
+        "实现SCIM自动离职",
+        "实现组织架构同步",
+        "实现MFA/2FA支持"
+      ],
+      "frs_covered": [
+        "FR1030",
+        "FR1031",
+        "FR1032",
+        "FR1033",
+        "FR1034",
+        "FR1035",
+        "FR1036"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 249,
+      "epic": "Epic 19",
+      "story": "Story 19.5",
+      "title": "Security数据治理",
+      "description": "实现数据治理与合规功能，包括数据分级、脱敏、审计导出。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "数据治理功能尚未实现。"
+      },
+      "openspec_change": "epic-19-story-19-5-security-data-governance",
+      "steps": [
+        "实现数据分级标识",
+        "实现字段级脱敏",
+        "实现数据保留策略",
+        "实现审计导出",
+        "实现敏感数据访问控制"
+      ],
+      "frs_covered": [
+        "FR1040",
+        "FR1041",
+        "FR1042",
+        "FR1043",
+        "FR1044",
+        "FR1045",
+        "FR1046",
+        "FR1047"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 250,
+      "epic": "Epic 20",
+      "story": "Story 20.1",
+      "title": "Editor编辑器注册服务",
+      "description": "实现统一的编辑器注册服务，支持扩展注册自定义编辑器。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/components/editor/",
+          "src/features/workcard/"
+        ],
+        "backend": [],
+        "note": "editor和workcard目录存在但编辑器注册服务不完整。"
+      },
+      "openspec_change": "epic-20-story-20-1-editor-registry",
+      "steps": [
+        "定义编辑器注册接口",
+        "实现编辑器生命周期管理",
+        "实现文件类型匹配",
+        "实现优先级选择",
+        "创建编辑器选择器"
+      ],
+      "frs_covered": [
+        "FR1213",
+        "FR1214",
+        "FR1215",
+        "FR1216",
+        "FR1217",
+        "FR1218",
+        "FR1219"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 251,
+      "epic": "Epic 20",
+      "story": "Story 20.2",
+      "title": "Editor内置编辑器完善",
+      "description": "完善内置编辑器类型，实现RichTextEditor等缺失编辑器。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [
+          "src/components/editor/"
+        ],
+        "backend": [],
+        "note": "有BuiltinJson/Markdown/TextEditorPage，缺少RichTextEditor。"
+      },
+      "openspec_change": "epic-20-story-20-2-editor-builtin",
+      "steps": [
+        "实现RichTextEditor组件",
+        "实现表格编辑器",
+        "实现表单编辑器",
+        "实现预览组件",
+        "完善快捷键支持"
+      ],
+      "frs_covered": [
+        "FR1201",
+        "FR1203",
+        "FR1206",
+        "FR1207",
+        "FR1209",
+        "FR1210"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 250"
+      ],
+      "passes": false
+    },
+    {
+      "id": 252,
+      "epic": "Epic 20",
+      "story": "Story 20.3",
+      "title": "Editor动态模板系统",
+      "description": "实现动态模板系统，支持模板创建、编辑、管理。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "动态模板系统尚未实现。"
+      },
+      "openspec_change": "epic-20-story-20-3-editor-templates",
+      "steps": [
+        "定义模板数据结构",
+        "实现模板引擎",
+        "实现模板变量解析",
+        "实现模板预览",
+        "创建模板管理页面"
+      ],
+      "frs_covered": [
+        "FR2105",
+        "FR2106",
+        "FR2107",
+        "FR2108",
+        "FR2109"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 250"
+      ],
+      "passes": false
+    },
+    {
+      "id": 253,
+      "epic": "Epic 20",
+      "story": "Story 20.4",
+      "title": "Editor模板设计器",
+      "description": "实现可视化模板设计器，支持拖拽式模板创建。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "low",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "模板设计器尚未实现。"
+      },
+      "openspec_change": "epic-20-story-20-4-editor-template-designer",
+      "steps": [
+        "实现拖拽式设计器",
+        "实现组件库",
+        "实现属性面板",
+        "实现模板发布",
+        "创建模板设计页面"
+      ],
+      "frs_covered": [
+        "FR2146",
+        "FR2147",
+        "FR2148",
+        "FR2149",
+        "FR2150"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 252"
+      ],
+      "passes": false
+    },
+    {
+      "id": 254,
+      "epic": "Epic 21",
+      "story": "Story 21.1",
+      "title": "Marketplace插件详情页",
+      "description": "完善Marketplace插件详情页，包括评分、评论、依赖展示。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/marketplace/"
+        ],
+        "backend": [
+          "src-tauri/src/marketplace/"
+        ],
+        "note": "Marketplace基础存在但详情页不完整。"
+      },
+      "openspec_change": "epic-21-story-21-1-marketplace-details",
+      "steps": [
+        "实现插件详情页组件",
+        "实现评分和评论功能",
+        "实现依赖展示",
+        "实现版本比较",
+        "创建插件详情路由"
+      ],
+      "frs_covered": [
+        "FR732",
+        "FR742"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 255,
+      "epic": "Epic 21",
+      "story": "Story 21.2",
+      "title": "Marketplace私有市场",
+      "description": "实现私有市场功能，支持企业自建市场和资源上传审核。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "私有市场功能尚未实现。"
+      },
+      "openspec_change": "epic-21-story-21-2-marketplace-private",
+      "steps": [
+        "实现私有市场配置",
+        "实现资源上传功能",
+        "实现资源审核流程",
+        "实现私有市场浏览",
+        "创建私有市场管理页面"
+      ],
+      "frs_covered": [
+        "FR733",
+        "FR734",
+        "FR735",
+        "FR736",
+        "FR737",
+        "FR740"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-03"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 256,
+      "epic": "Epic 21",
+      "story": "Story 21.3",
+      "title": "Marketplace依赖管理",
+      "description": "实现插件依赖自动解析、安装和冲突检测。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "依赖管理功能尚未实现。"
+      },
+      "openspec_change": "epic-21-story-21-3-marketplace-deps",
+      "steps": [
+        "实现依赖解析",
+        "实现自动安装",
+        "实现冲突检测",
+        "实现版本兼容性检查",
+        "创建依赖管理面板"
+      ],
+      "frs_covered": [
+        "FR720",
+        "FR743"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 254"
+      ],
+      "passes": false
+    },
+    {
+      "id": 257,
+      "epic": "Epic 21",
+      "story": "Story 21.4",
+      "title": "Marketplace资源安全",
+      "description": "实现资源安全扫描、签名验证和版本回滚。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "资源安全功能尚未实现。"
+      },
+      "openspec_change": "epic-21-story-21-4-marketplace-security",
+      "steps": [
+        "实现静态代码分析",
+        "实现签名验证",
+        "实现安全扫描",
+        "实现版本回滚",
+        "创建安全配置页面"
+      ],
+      "frs_covered": [
+        "FR746",
+        "FR747",
+        "FR748",
+        "FR753",
+        "FR754",
+        "FR755"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 258,
+      "epic": "Epic 22",
+      "story": "Story 22.1",
+      "title": "Connectors连接器框架",
+      "description": "实现标准化连接器框架，支持外部平台接入。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "连接器框架尚未实现。"
+      },
+      "openspec_change": "epic-22-story-22-1-connectors-base",
+      "steps": [
+        "定义连接器接口",
+        "实现OAuth认证支持",
+        "实现API Key认证",
+        "实现连接器生命周期管理",
+        "创建连接器管理页面"
+      ],
+      "frs_covered": [
+        "FR1080",
+        "FR1081",
+        "FR1084"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 259,
+      "epic": "Epic 22",
+      "story": "Story 22.2",
+      "title": "Connectors事件集成",
+      "description": "实现Webhook和事件总线集成，支持定时同步和监控告警。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/webhook/"
+        ],
+        "note": "webhook模块存在但功能不完整。"
+      },
+      "openspec_change": "epic-22-story-22-2-connectors-events",
+      "steps": [
+        "实现Webhook接收器",
+        "实现事件总线",
+        "实现定时同步",
+        "实现健康监控",
+        "实现告警配置"
+      ],
+      "frs_covered": [
+        "FR1082",
+        "FR1083",
+        "FR1085",
+        "FR1086"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 258"
+      ],
+      "passes": false
+    },
+    {
+      "id": 260,
+      "epic": "Epic 22",
+      "story": "Story 22.3",
+      "title": "Connectors企业IM集成",
+      "description": "实现企业IM通知渠道集成（企业微信/钉钉/飞书）。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "企业IM集成尚未实现。"
+      },
+      "openspec_change": "epic-22-story-22-3-connectors-im",
+      "steps": [
+        "实现企业微信接入",
+        "实现钉钉接入",
+        "实现飞书接入",
+        "实现通知模板",
+        "创建IM配置页面"
+      ],
+      "frs_covered": [
+        "FR1112"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 258"
+      ],
+      "passes": false
+    },
+    {
+      "id": 261,
+      "epic": "Epic 22",
+      "story": "Story 22.4",
+      "title": "Connectors邮件短信",
+      "description": "实现邮件和短信通知渠道。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "low",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "邮件短信渠道尚未实现。"
+      },
+      "openspec_change": "epic-22-story-22-4-connectors-notifications",
+      "steps": [
+        "实现SMTP邮件发送",
+        "实现短信网关接入",
+        "实现通知模板管理",
+        "实现免打扰策略",
+        "创建通知配置页面"
+      ],
+      "frs_covered": [
+        "FR1110",
+        "FR1111",
+        "FR1113",
+        "FR1114"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 260"
+      ],
+      "passes": false
+    },
+    {
+      "id": 262,
+      "epic": "Epic 23",
+      "story": "Story 23.1",
+      "title": "GraphMemory图记忆层基础",
+      "description": "实现L3图记忆层基础能力，支持实体和关系存储。",
+      "implementationType": "new",
+      "phase": "Phase 8 - 高级功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "图记忆层尚未实现。"
+      },
+      "openspec_change": "epic-23-story-23-1-graph-memory-base",
+      "steps": [
+        "定义实体和关系类型",
+        "实现图数据库存储",
+        "实现实体CRUD",
+        "实现关系CRUD",
+        "创建图谱管理页面"
+      ],
+      "frs_covered": [
+        "FR300",
+        "FR301",
+        "FR302",
+        "FR303",
+        "FR304"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 263,
+      "epic": "Epic 23",
+      "story": "Story 23.2",
+      "title": "GraphMemory知识推理",
+      "description": "实现基于图的知识推理能力，支持路径查询和关系推断。",
+      "implementationType": "new",
+      "phase": "Phase 8 - 高级功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "知识推理尚未实现。"
+      },
+      "openspec_change": "epic-23-story-23-2-graph-memory-reasoning",
+      "steps": [
+        "实现路径查询",
+        "实现关系推断",
+        "实现图遍历算法",
+        "实现推理结果展示",
+        "集成到Agent推理流程"
+      ],
+      "frs_covered": [
+        "FR302",
+        "FR305",
+        "FR306"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 262"
+      ],
+      "passes": false
+    },
+    {
+      "id": 264,
+      "epic": "Epic 23",
+      "story": "Story 23.3",
+      "title": "GraphMemory可视化",
+      "description": "实现知识图谱可视化展示，支持交互式探索。",
+      "implementationType": "new",
+      "phase": "Phase 8 - 高级功能",
+      "priority": "low",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "图谱可视化尚未实现。"
+      },
+      "openspec_change": "epic-23-story-23-3-graph-memory-viz",
+      "steps": [
+        "实现图谱渲染组件",
+        "实现节点交互",
+        "实现关系高亮",
+        "实现搜索定位",
+        "创建图谱探索页面"
+      ],
+      "frs_covered": [
+        "FR303"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [
+        "Task 262"
+      ],
+      "passes": false
+    },
+    {
+      "id": 265,
+      "epic": "Epic 24",
+      "story": "Story 24.1",
+      "title": "Experience体验可视化",
+      "description": "实现Agent执行历史可视化、任务轨迹展示。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "medium",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "体验可视化尚未实现。"
+      },
+      "openspec_change": "epic-24-story-24-1-experience-visualization",
+      "steps": [
+        "实现执行历史记录",
+        "实现任务轨迹可视化",
+        "实现差异对比",
+        "实现效率统计",
+        "创建体验面板"
+      ],
+      "frs_covered": [
+        "FR1187",
+        "FR1188",
+        "FR1189",
+        "FR1190",
+        "FR1191"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 266,
+      "epic": "Epic 24",
+      "story": "Story 24.2",
+      "title": "Experience个性化引导",
+      "description": "实现新手引导、成就系统和个性化推荐。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "low",
+      "backendRequired": false,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "个性化引导尚未实现。"
+      },
+      "openspec_change": "epic-24-story-24-2-experience-onboarding",
+      "steps": [
+        "实现新手引导流程",
+        "实现成就系统",
+        "实现任务推荐",
+        "实现渐进式解锁",
+        "创建引导页面"
+      ],
+      "frs_covered": [
+        "FR1192",
+        "FR1198",
+        "FR1199",
+        "FR1195-1",
+        "FR1195-2"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 267,
+      "epic": "Epic 24",
+      "story": "Story 24.3",
+      "title": "Experience可观测性增强",
+      "description": "实现统一日志中心、问题中心和性能仪表盘。",
+      "implementationType": "new",
+      "phase": "Phase 7 - Post-MVP功能",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "可观测性功能尚未完整实现。"
+      },
+      "openspec_change": "epic-24-story-24-3-experience-observability",
+      "steps": [
+        "实现统一日志中心",
+        "实现问题中心",
+        "实现性能仪表盘",
+        "实现链路追踪",
+        "创建监控页面"
+      ],
+      "frs_covered": [
+        "FR1100",
+        "FR1100-1",
+        "FR1100-2",
+        "FR1101",
+        "FR1102",
+        "FR1103",
+        "FR1103-1",
+        "FR1103-2",
+        "FR1104",
+        "FR1105",
+        "FR1106"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
     }
   ]
 }

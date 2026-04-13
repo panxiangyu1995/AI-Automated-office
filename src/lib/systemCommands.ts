@@ -6,7 +6,7 @@
  */
 
 import { CommandRegistry } from './commandRegistry'
-import { Plus, FolderOpen, Save, Copy, Clipboard, Search, PanelLeftClose, Eye, PanelRightClose, Terminal, RefreshCw, Download, Upload, Settings, User, Bell, Users, Shield, Info, HelpCircle, Bug, Package, ClipboardList, ArrowDownToLine, ArrowUpFromLine, MapPin, AlertTriangle, Truck, ArrowDownRight } from 'lucide-react'
+import { Plus, FolderOpen, Save, Copy, Clipboard, Search, PanelLeftClose, Eye, PanelRightClose, Terminal, RefreshCw, Download, Upload, Settings, User, Bell, Users, Shield, Info, HelpCircle, Bug, Package, ClipboardList, ArrowDownToLine, ArrowUpFromLine, MapPin, AlertTriangle, Truck, ArrowDownRight, HeadphonesIcon } from 'lucide-react'
 
 export interface SystemCommands {
   /** Initialize all system commands */
@@ -355,6 +355,37 @@ function initSystemCommands() {
       category: 'navigation' as const,
       shortcut: 'Ctrl+Shift+A',
       action: () => console.log('[Command] nav.aiChat'),
+    },
+
+    // Service commands
+    {
+      id: 'nav.service',
+      label: '售后服务',
+      description: '跳转到售后服务模块',
+      icon: HeadphonesIcon,
+      category: 'navigation' as const,
+      keywords: ['售后', '工单', '客服', '服务'],
+      action: () => console.log('[Command] nav.service'),
+    },
+    {
+      id: 'service.createTicket',
+      label: '创建工单',
+      description: '创建新的售后工单',
+      icon: Plus,
+      category: 'plugin' as const,
+      keywords: ['工单', '创建', '售后', '新建'],
+      pluginId: 'service',
+      action: () => console.log('[Command] service.createTicket'),
+    },
+    {
+      id: 'service.listTickets',
+      label: '查看工单列表',
+      description: '查看所有售后工单',
+      icon: ClipboardList,
+      category: 'plugin' as const,
+      keywords: ['工单', '列表', '售后', '查看'],
+      pluginId: 'service',
+      action: () => console.log('[Command] service.listTickets'),
     },
 
     // Help commands

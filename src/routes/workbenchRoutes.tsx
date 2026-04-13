@@ -13,6 +13,7 @@ import { AuditPage } from '@/features/audit'
 import { BuiltinJsonEditorPage, BuiltinMarkdownEditorPage, BuiltinTextEditorPage } from '@/features/editor/pages'
 import { EditorRegistry, type EditorDescriptor } from '@/features/editor/registry/editorRegistry'
 import type { WorkbenchPageContext } from '@/components/common'
+import { ServicePage } from '@/features/service/pages/ServicePage'
 
 const fallbackEditorDescriptor: EditorDescriptor = {
   id: 'builtin-text-editor',
@@ -146,6 +147,14 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     mode: 'static',
     requiredPermission: 'admin_audit_read',
     component: AuditPage,
+  },
+  {
+    id: 'service',
+    path: 'service',
+    title: '售后服务',
+    resource: 'service',
+    mode: 'static',
+    component: ServicePage,
   },
   {
     id: 'builtin-text-editor',

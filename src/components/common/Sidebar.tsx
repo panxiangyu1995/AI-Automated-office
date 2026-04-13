@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   Users,
   Wrench,
+  HeadphonesIcon,
   type LucideIcon,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -45,6 +46,12 @@ type FixedSidebarEntry = {
 
 const adminMenuItems: FixedSidebarEntry[] = [
   {
+    id: 'service',
+    label: '售后服务',
+    icon: HeadphonesIcon,
+    target: { path: '/service', mode: 'static' },
+  },
+  {
     id: 'knowledge',
     label: '知识库管理',
     icon: Database,
@@ -61,6 +68,15 @@ const adminMenuItems: FixedSidebarEntry[] = [
     label: '组织架构',
     icon: Building2,
     target: { path: '/admin/organization', mode: 'static' },
+  },
+]
+
+const defaultMenuItems: FixedSidebarEntry[] = [
+  {
+    id: 'service',
+    label: '售后服务',
+    icon: HeadphonesIcon,
+    target: { path: '/service', mode: 'static' },
   },
 ]
 
@@ -99,7 +115,7 @@ export function Sidebar({ children }: SidebarProps) {
 
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isSettingsRoute = activeActivityItem === 'settings'
-  const fixedEntries = isAdminRoute ? adminMenuItems : []
+  const fixedEntries = isAdminRoute ? adminMenuItems : defaultMenuItems;
 
   const openEntry = (entry: { target: { path: string; activityItem?: ActivityBarItem } }) => {
     if (entry.target.activityItem) {
