@@ -460,3 +460,225 @@ pub struct TenderStatistics {
     pub total_bidding_amount: f64,
     pub win_rate: f64,
 }
+
+// ==================== 标书模板类型 ====================
+
+/// 模板变量类型
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum VariableType {
+    Text,
+    Number,
+    Date,
+    Select,
+    RichText,
+}
+
+impl Default for VariableType {
+    fn default() -> Self {
+        Self::Text
+    }
+}
+
+impl std::fmt::Display for VariableType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Text => write!(f, "text"),
+            Self::Number => write!(f, "number"),
+            Self::Date => write!(f, "date"),
+            Self::Select => write!(f, "select"),
+            Self::RichText => write!(f, "richtext"),
+        }
+    }
+}
+
+/// 模板变量
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateVariable {
+    pub key: String,
+    pub label: String,
+    pub variable_type: VariableType,
+    pub required: bool,
+    pub default_value: Option<String>,
+    pub options: Vec<String>,
+    pub placeholder: Option<String>,
+}
+
+/// 标书模板
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BidTemplate {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub category: String,
+    pub content: String,
+    pub variables: Vec<TemplateVariable>,
+    pub is_default: bool,
+    pub usage_count: i32,
+    pub tenant_id: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+impl Default for BidTemplate {
+    fn default() -> Self {
+        let now = chrono::Utc::now().timestamp();
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            name: String::new(),
+            description: None,
+            category: String::new(),
+            content: String::new(),
+            variables: Vec::new(),
+            is_default: false,
+            usage_count: 0,
+            tenant_id: String::new(),
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
+/// 文档状态
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DocumentStatus {
+    Draft,
+    Generated,
+    Approved,
+    Submitted,
+}
+
+impl Default for DocumentStatus {
+    fn default() -> Self {
+        Self::Draft
+    }
+}
+
+/// 标书文档
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TenderDocument {
+    pub id: String,
+    pub project_id: String,
+    pub template_id: Option<String>,
+    pub title: String,
+    pub content: String,
+    pub variables: std::collections::HashMap<String, String>,
+    pub version: i32,
+    pub status: DocumentStatus,
+    pub tenant_id: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+impl Default for TenderDocument {
+    fn default() -> Self {
+        let now = chrono::Utc::now().timestamp();
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            project_id: String::new(),
+            template_id: None,
+            title: String::new(),
+            content: String::new(),
+            variables: std::collections::HashMap::new(),
+            version: 1,
+            status: DocumentStatus::default(),
+            tenant_id: String::new(),
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
+// ==================== 模板和文档请求类型 ====================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateTemplateRequest {
+    pub name: String,
+    pub description: Option<String>,
+    pub category: String,
+    pub content: String,
+    pub variables: Vec<TemplateVariable>,
+    pub is_default: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateTemplateRequest {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub category: Option<String>,
+    pub content: Option<String>,
+    pub variables: Option<Vec<TemplateVariable>>,
+    pub is_default: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryTemplatesParams {
+    pub category: Option<String>,
+    pub search: Option<String>,
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateDocumentRequest {
+    pub project_id: String,
+    pub template_id: Option<String>,
+    pub title: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateDocumentRequest {
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub variables: Option<std::collections::HashMap<String, String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerateDocumentRequest {
+    pub template_id: String,
+    pub variables: std::collections::HashMap<String, String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryDocumentsParams {
+    pub project_id: Option<String>,
+    pub status: Option<DocumentStatus>,
+    pub search: Option<String>,
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateListItem {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub category: String,
+    pub is_default: bool,
+    pub usage_count: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocumentListItem {
+    pub id: String,
+    pub project_id: String,
+    pub template_id: Option<String>,
+    pub title: String,
+    pub version: i32,
+    pub status: DocumentStatus,
+    pub created_at: i64,
+    pub updated_at: i64,
+}

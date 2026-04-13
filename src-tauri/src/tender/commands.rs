@@ -236,3 +236,160 @@ pub async fn tender_get_statistics(
     info!("获取投标统计");
     Ok(state.db.get_statistics())
 }
+
+// ==================== 模板命令 ====================
+
+#[tauri::command]
+pub async fn tender_create_template(
+    state: State<'_, TenderState>,
+    request: CreateTemplateRequest,
+    tenant_id: Option<String>,
+) -> Result<BidTemplate, String> {
+    info!("创建模板: {}", request.name);
+    
+    let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
+    let now = chrono::Utc::now().timestamp();
+    
+    let template = BidTemplate {
+        id: uuid::Uuid::new_v4().to_string(),
+        name: request.name,
+        description: request.description,
+        category: request.category,
+        content: request.content,
+        variables: request.variables,
+        is_default: request.is_default.unwrap_or(false),
+        usage_count: 0,
+        tenant_id,
+        created_at: now,
+        updated_at: now,
+    };
+    
+    state.db.create_template(template)
+}
+
+#[tauri::command]
+pub async fn tender_get_template(
+    state: State<'_, TenderState>,
+    id: String,
+) -> Result<BidTemplate, String> {
+    info!("获取模板: {}", id);
+    state.db.get_template(&id).ok_or_else(|| "模板不存在".to_string())
+}
+
+#[tauri::command]
+pub async fn tender_list_templates(
+    state: State<'_, TenderState>,
+    params: Option<QueryTemplatesParams>,
+) -> Result<PagedResult<TemplateListItem>, String> {
+    let params = params.unwrap_or_default();
+    Ok(state.db.list_templates(&params))
+}
+
+#[tauri::command]
+pub async fn tender_update_template(
+    state: State<'_, TenderState>,
+    id: String,
+    request: UpdateTemplateRequest,
+) -> Result<BidTemplate, String> {
+    info!("更新模板: {}", id);
+    state.db.update_template(&id, request)
+}
+
+#[tauri::command]
+pub async fn tender_delete_template(
+    state: State<'_, TenderState>,
+    id: String,
+) -> Result<(), String> {
+    info!("删除模板: {}", id);
+    state.db.delete_template(&id)
+}
+
+// ==================== 文档命令 ====================
+
+#[tauri::command]
+pub async fn tender_create_document(
+    state: State<'_, TenderState>,
+    request: CreateDocumentRequest,
+    tenant_id: Option<String>,
+) -> Result<TenderDocument, String> {
+    info!("创建文档: {}", request.title);
+    
+    let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
+    let now = chrono::Utc::now().timestamp();
+    
+    let document = TenderDocument {
+        id: uuid::Uuid::new_v4().to_string(),
+        project_id: request.project_id,
+        template_id: request.template_id,
+        title: request.title,
+        content: String::new(),
+        variables: std::collections::HashMap::new(),
+        version: 1,
+        status: DocumentStatus::Draft,
+        tenant_id,
+        created_at: now,
+        updated_at: now,
+    };
+    
+    state.db.create_document(document)
+}
+
+#[tauri::command]
+pub async fn tender_get_document(
+    state: State<'_, TenderState>,
+    id: String,
+) -> Result<TenderDocument, String> {
+    info!("获取文档: {}", id);
+    state.db.get_document(&id).ok_or_else(|| "文档不存在".to_string())
+}
+
+#[tauri::command]
+pub async fn tender_list_documents(
+    state: State<'_, TenderState>,
+    params: Option<QueryDocumentsParams>,
+) -> Result<PagedResult<DocumentListItem>, String> {
+    let params = params.unwrap_or_default();
+    Ok(state.db.list_documents(&params))
+}
+
+#[tauri::command]
+pub async fn tender_update_document(
+    state: State<'_, TenderState>,
+    id: String,
+    request: UpdateDocumentRequest,
+) -> Result<TenderDocument, String> {
+    info!("更新文档: {}", id);
+    state.db.update_document(&id, request)
+}
+
+#[tauri::command]
+pub async fn tender_delete_document(
+    state: State<'_, TenderState>,
+    id: String,
+) -> Result<(), String> {
+    info!("删除文档: {}", id);
+    state.db.delete_document(&id)
+}
+
+#[tauri::command]
+pub async fn tender_generate_document(
+    state: State<'_, TenderState>,
+    document_id: String,
+    request: GenerateDocumentRequest,
+) -> Result<TenderDocument, String> {
+    info!("生成文档内容: {}", document_id);
+    
+    let content = state.db.generate_document_content(&request.template_id, &request.variables)?;
+    
+    let mut document = state.db.get_document(&document_id).ok_or("文档不存在")?;
+    document.content = content;
+    document.template_id = Some(request.template_id);
+    document.variables = request.variables;
+    document.status = DocumentStatus::Generated;
+    document.updated_at = chrono::Utc::now().timestamp();
+    
+    let mut documents = state.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
+    documents.insert(document_id.clone(), document.clone());
+    
+    Ok(document)
+}

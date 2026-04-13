@@ -253,3 +253,124 @@ export const tenderStatusMeta: Record<TenderStatus, { label: string; color: stri
   lost: { label: '已失标', color: 'bg-red-100 text-red-800' },
   cancelled: { label: '已取消', color: 'bg-gray-100 text-gray-600' },
 };
+
+// ==================== 模板和文档类型 ====================
+
+export type VariableType = 'text' | 'number' | 'date' | 'select' | 'richtext';
+
+export interface TemplateVariable {
+  key: string;
+  label: string;
+  variableType: VariableType;
+  required: boolean;
+  defaultValue?: string;
+  options: string[];
+  placeholder?: string;
+}
+
+export interface BidTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  content: string;
+  variables: TemplateVariable[];
+  isDefault: boolean;
+  usageCount: number;
+  tenantId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type DocumentStatus = 'draft' | 'generated' | 'approved' | 'submitted';
+
+export interface TenderDocument {
+  id: string;
+  projectId: string;
+  templateId?: string;
+  title: string;
+  content: string;
+  variables: Record<string, string>;
+  version: number;
+  status: DocumentStatus;
+  tenantId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CreateTemplateRequest {
+  name: string;
+  description?: string;
+  category: string;
+  content: string;
+  variables: TemplateVariable[];
+  isDefault?: boolean;
+}
+
+export interface UpdateTemplateRequest {
+  name?: string;
+  description?: string;
+  category?: string;
+  content?: string;
+  variables?: TemplateVariable[];
+  isDefault?: boolean;
+}
+
+export interface QueryTemplatesParams {
+  category?: string;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface CreateDocumentRequest {
+  projectId: string;
+  templateId?: string;
+  title: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  content?: string;
+  variables?: Record<string, string>;
+}
+
+export interface GenerateDocumentRequest {
+  templateId: string;
+  variables: Record<string, string>;
+}
+
+export interface QueryDocumentsParams {
+  projectId?: string;
+  status?: DocumentStatus;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TemplateListItem {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  isDefault: boolean;
+  usageCount: number;
+}
+
+export interface DocumentListItem {
+  id: string;
+  projectId: string;
+  templateId?: string;
+  title: string;
+  version: number;
+  status: DocumentStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export const documentStatusMeta: Record<DocumentStatus, { label: string; color: string }> = {
+  draft: { label: '草稿', color: 'bg-gray-100 text-gray-800' },
+  generated: { label: '已生成', color: 'bg-blue-100 text-blue-800' },
+  approved: { label: '已审核', color: 'bg-green-100 text-green-800' },
+  submitted: { label: '已提交', color: 'bg-purple-100 text-purple-800' },
+};

@@ -1,76 +1,126 @@
 {
   "skill_name": "prd-acceptance",
-  "description": "PRD驱动的验收测试skill，覆盖Epic/Story/FR/模块四种输入格式",
+  "description": "PRD驱动的验收测试skill，严格生成AS（功能+边界+一致性+UI四维度），执行4层验证",
   "evals": [
     {
       "id": 1,
       "prompt": "帮我验收 Epic 2（AI Agent核心能力）",
-      "expected_output": "解析PRD中Epic2的所有Story和FR → 生成AS列表 → 执行构建+模拟测试+API测试+E2E浏览器测试 → 输出完整验收报告",
+      "expected_output": "解析PRD中Epic2所有Story和FR → 每FR生成FUNC/BOUND/UI/SEC四维AS → 每AS执行lint+模拟+API+E2E四层验证 → 输出严格验收报告",
       "files": [],
       "assertions": [
         {
-          "name": "as_generated",
-          "description": "为Epic2所有FR生成验收标准",
-          "criteria": "生成的AS数量 ≥ Epic2关联的FR数量"
+          "name": "as_coverage_4dim",
+          "description": "每个FR必须生成功能+边界+UI+安全四个维度的AS",
+          "criteria": "每个FR的AS中同时包含FUNC/BOUND/UI/SEC四种类型"
         },
         {
-          "name": "report_complete",
-          "description": "输出完整验收报告",
-          "criteria": "报告包含AS总览、测试详情、执行摘要三个部分"
+          "name": "as_per_fr",
+          "description": "每条FR至少生成4个AS",
+          "criteria": "每个FR的AS数量 ≥ 4"
+        },
+        {
+          "name": "fr_sub_split",
+          "description": "FR14-X系列每个子需求独立AS",
+          "criteria": "FR14-1、FR14-2、... 每个都有独立AS"
+        },
+        {
+          "name": "all_as_4layer",
+          "description": "每个AS都有四层验证链路",
+          "criteria": "报告中每个AS都有lint/build+模拟+API+E2E四行验证结果"
+        },
+        {
+          "name": "prd_line_ref",
+          "description": "每个AS标注PRD行号",
+          "criteria": "每个AS的来源字段包含PRD行号"
+        },
+        {
+          "name": "negative_test",
+          "description": "包含负向测试",
+          "criteria": "每3个正向AS至少1个BOUND/负向测试"
+        },
+        {
+          "name": "strict_report",
+          "description": "报告包含覆盖率统计表",
+          "criteria": "报告包含AS覆盖率统计表（FR/AS数量/FUNC/BOUND/UI/SEC/状态）"
+        },
+        {
+          "name": "pass_criteria",
+          "description": "通过标准：lint+build+全部AS通过",
+          "criteria": "报告通过率100%且lint/build错误为0"
         }
       ]
     },
     {
       "id": 2,
       "prompt": "帮我验收 Story 2.1（多轮对话交互）",
-      "expected_output": "解析PRD中Story2.1的FR定义 → 生成AS → 执行4步测试 → 输出报告",
+      "expected_output": "聚焦Story2.1的FR9 → 生成严格AS → 执行4层验证 → 逐条报告结果",
       "files": [],
       "assertions": [
         {
           "name": "story_scope",
-          "description": "验收范围正确聚焦Story2.1",
-          "criteria": "AS列表中包含FR9相关标准"
+          "description": "验收范围聚焦Story2.1对应FR",
+          "criteria": "AS列表全部来自FR9，不包含其他FR"
         },
         {
-          "name": "four_step_test",
-          "description": "执行4步测试流程",
-          "criteria": "报告中体现构建→模拟→API→E2E四阶段"
+          "name": "fr9_full_coverage",
+          "description": "FR9四维度全覆盖",
+          "criteria": "FR9的AS包含FUNC+BOUND+UI+SEC四种类型"
+        },
+        {
+          "name": "boundary_cases",
+          "description": "包含边界测试用例",
+          "criteria": "存在超长输入、超时、网络异常等边界AS"
+        },
+        {
+          "name": "strict_table",
+          "description": "报告使用严格表格格式",
+          "criteria": "每个AS验证链路用表格展示lint/模拟/API/E2E四列"
         }
       ]
     },
     {
       "id": 3,
       "prompt": "帮我验收 FR13（AI助手可以接入MCP服务扩展能力）",
-      "expected_output": "聚焦FR13一条需求 → 生成AS-FR13系列 → 执行MCP相关测试 → 验证MCP工具调用链路",
+      "expected_output": "聚焦FR13 → 生成MCP专项AS → 执行MCP工具调用链路测试 → 验证注册/调用/结果/异常全流程",
       "files": [],
       "assertions": [
         {
-          "name": "mcp_as_generated",
-          "description": "生成FR13专项AS",
-          "criteria": "存在AS-FR13-01且包含MCP工具调用验证"
+          "name": "mcp_full_chain",
+          "description": "覆盖MCP全链路：注册→调用→结果→异常→降级",
+          "criteria": "AS覆盖MCP工具注册成功、MCP调用返回正确、超时降级、权限隔离、网络异常"
+        },
+        {
+          "name": "mcp_api_contract",
+          "description": "MCP API契约验证",
+          "criteria": "存在验证MCP API请求/响应格式的AS"
         },
         {
           "name": "retries_on_failure",
-          "description": "失败时自动重试",
-          "criteria": "单点失败时重试最多2次"
+          "description": "失败重试验证",
+          "criteria": "失败AS记录重试过程（1/2、2/2）"
         }
       ]
     },
     {
       "id": 4,
       "prompt": "帮我验收 AGENT 模块",
-      "expected_output": "解析Agent模块（FR9-FR19）→ 生成全部AS → 执行全量测试 → 输出报告",
+      "expected_output": "解析Agent模块（FR9-FR19）→ 生成全部AS → 执行全量测试 → 输出严格报告",
       "files": [],
       "assertions": [
         {
-          "name": "module_scope",
+          "name": "module_full_coverage",
           "description": "覆盖Agent模块全部FR",
-          "criteria": "AS数量 ≥ 11（FR9-FR19共11条）"
+          "criteria": "AS数量 ≥ FR数量 × 4（即每FR至少4个AS）"
         },
         {
-          "name": "lint_pass",
-          "description": "lint/build必须通过",
-          "criteria": "报告中体现npm run lint无错误"
+          "name": "fr14_series",
+          "description": "FR14子系列全部覆盖",
+          "criteria": "FR14-1到FR14-12每个都有独立AS"
+        },
+        {
+          "name": "lint_build_strict",
+          "description": "lint/build零容忍",
+          "criteria": "报告lint错误数和build失败数为0"
         }
       ]
     }

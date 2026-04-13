@@ -9,6 +9,10 @@ import type {
   TenderProject,
   TenderProjectListItem,
   TenderStatistics,
+  BidTemplate,
+  TenderDocument,
+  TemplateListItem,
+  DocumentListItem,
   CreateQualificationRequest,
   UpdateQualificationRequest,
   QueryQualificationsParams,
@@ -19,6 +23,13 @@ import type {
   UpdateTenderProjectRequest,
   UpdateTenderStatusRequest,
   QueryTenderProjectsParams,
+  CreateTemplateRequest,
+  UpdateTemplateRequest,
+  QueryTemplatesParams,
+  CreateDocumentRequest,
+  UpdateDocumentRequest,
+  GenerateDocumentRequest,
+  QueryDocumentsParams,
   PagedResult,
 } from '../types/tender';
 
@@ -94,4 +105,52 @@ export async function deleteTenderProject(id: string): Promise<void> {
 
 export async function getTenderStatistics(): Promise<TenderStatistics> {
   return invoke('tender_get_statistics');
+}
+
+// ==================== 模板 API ====================
+
+export async function createTemplate(request: CreateTemplateRequest, tenantId?: string): Promise<BidTemplate> {
+  return invoke('tender_create_template', { request, tenantId });
+}
+
+export async function getTemplate(id: string): Promise<BidTemplate> {
+  return invoke('tender_get_template', { id });
+}
+
+export async function listTemplates(params?: QueryTemplatesParams): Promise<PagedResult<TemplateListItem>> {
+  return invoke('tender_list_templates', { params });
+}
+
+export async function updateTemplate(id: string, request: UpdateTemplateRequest): Promise<BidTemplate> {
+  return invoke('tender_update_template', { id, request });
+}
+
+export async function deleteTemplate(id: string): Promise<void> {
+  return invoke('tender_delete_template', { id });
+}
+
+// ==================== 文档 API ====================
+
+export async function createDocument(request: CreateDocumentRequest, tenantId?: string): Promise<TenderDocument> {
+  return invoke('tender_create_document', { request, tenantId });
+}
+
+export async function getDocument(id: string): Promise<TenderDocument> {
+  return invoke('tender_get_document', { id });
+}
+
+export async function listDocuments(params?: QueryDocumentsParams): Promise<PagedResult<DocumentListItem>> {
+  return invoke('tender_list_documents', { params });
+}
+
+export async function updateDocument(id: string, request: UpdateDocumentRequest): Promise<TenderDocument> {
+  return invoke('tender_update_document', { id, request });
+}
+
+export async function deleteDocument(id: string): Promise<void> {
+  return invoke('tender_delete_document', { id });
+}
+
+export async function generateDocument(documentId: string, request: GenerateDocumentRequest): Promise<TenderDocument> {
+  return invoke('tender_generate_document', { documentId, request });
 }
