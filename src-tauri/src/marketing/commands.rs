@@ -329,9 +329,9 @@ pub async fn marketing_get_stats(
 ) -> Result<MarketingStats, String> {
     info!("获取营销统计数据");
     
-    let campaigns = state.db.campaigns.read().map_err(|_| "获取数据失败")?;
-    let contents = state.db.contents.read().map_err(|_| "获取数据失败")?;
-    let channels = state.db.channels.read().map_err(|_| "获取数据失败")?;
+    let campaigns = state.db.get_campaigns();
+    let contents = state.db.get_contents();
+    let channels = state.db.get_channels();
     
     let total_campaigns = campaigns.len() as u32;
     let active_campaigns = campaigns.values().filter(|c| c.status == CampaignStatus::InProgress || c.status == CampaignStatus::Published).count() as u32;
@@ -381,7 +381,7 @@ pub async fn marketing_get_channel_distribution(
 ) -> Result<Vec<ChannelDistribution>, String> {
     info!("获取渠道分布");
     
-    let channels = state.db.channels.read().map_err(|_| "获取数据失败")?;
+    let channels = state.db.get_channels();
     let total = channels.len() as f64;
     
     let mut distribution: std::collections::HashMap<ChannelType, u32> = std::collections::HashMap::new();

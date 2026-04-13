@@ -419,35 +419,7 @@ pub async fn get_sla_summary(
 // 导出所有命令
 // ============================================================================
 
-pub fn register_commands() -> Vec<tauri::command::CommandDefinition> {
-    vec![
-        // 健康检查
-        get_health_status::definition(),
-        list_health_nodes::definition(),
-        check_health::definition(),
-        register_health_node::definition(),
-        unregister_health_node::definition(),
-        // 负载均衡
-        select_balanced_node::definition(),
-        add_load_balancer_node::definition(),
-        remove_load_balancer_node::definition(),
-        update_node_weight::definition(),
-        set_node_availability::definition(),
-        list_load_balancer_nodes::definition(),
-        set_balance_strategy::definition(),
-        // 故障转移
-        register_failover_pair::definition(),
-        trigger_failover::definition(),
-        trigger_recovery::definition(),
-        get_failover_state::definition(),
-        get_failover_history::definition(),
-        get_failed_nodes::definition(),
-        // SLA 监控
-        record_sla_request::definition(),
-        get_sla_report::definition(),
-        get_all_sla_reports::definition(),
-        configure_sla_alert::definition(),
-        get_sla_alerts::definition(),
-        get_sla_summary::definition(),
-    ]
-}
+// TODO: Tauri 2.0 uses generate_handler! macro, this function is for Tauri 1.x compatibility
+// pub fn register_commands() -> Vec<tauri::command::CommandDefinition> {
+//     vec![]
+// }

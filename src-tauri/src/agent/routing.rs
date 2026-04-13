@@ -13,7 +13,7 @@
 //! - Subagents cannot be default and cannot be directly selected by user
 //! - Routing to subagents requires explicit delegation from primary agent
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

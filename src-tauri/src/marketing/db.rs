@@ -292,6 +292,24 @@ impl MarketingDatabase {
         info!("删除营销渠道成功: {}", id);
         Ok(())
     }
+
+    // ==================== 统计方法 ====================
+
+    pub fn get_campaigns(&self) -> std::sync::RwLockReadGuard<'_, HashMap<String, Campaign>> {
+        self.campaigns.read().unwrap_or_else(|e| e.into_inner())
+    }
+
+    pub fn get_contents(&self) -> std::sync::RwLockReadGuard<'_, HashMap<String, MarketingContent>> {
+        self.contents.read().unwrap_or_else(|e| e.into_inner())
+    }
+
+    pub fn get_channels(&self) -> std::sync::RwLockReadGuard<'_, HashMap<String, Channel>> {
+        self.channels.read().unwrap_or_else(|e| e.into_inner())
+    }
+
+    pub fn get_channels_mut(&self) -> std::sync::RwLockWriteGuard<'_, HashMap<String, Channel>> {
+        self.channels.write().unwrap_or_else(|e| e.into_inner())
+    }
 }
 
 impl Default for MarketingDatabase {

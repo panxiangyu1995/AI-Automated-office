@@ -384,12 +384,15 @@ pub async fn tender_generate_document(
     let mut document = state.db.get_document(&document_id).ok_or("文档不存在")?;
     document.content = content;
     document.template_id = Some(request.template_id);
-    document.variables = request.variables;
+    document.variables = request.variables.clone();
     document.status = DocumentStatus::Generated;
     document.updated_at = chrono::Utc::now().timestamp();
     
-    let mut documents = state.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
-    documents.insert(document_id.clone(), document.clone());
+    state.db.update_document(&document_id, &UpdateDocumentRequest {
+        title: None,
+        content: Some(document.content.clone()),
+        variables: Some(document.variables.clone()),
+    })?;
     
     Ok(document)
 }

@@ -195,7 +195,7 @@ impl Default for MarketingContent {
 // ==================== 渠道类型 ====================
 
 /// 渠道类型
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum ChannelType {
     Wechat,

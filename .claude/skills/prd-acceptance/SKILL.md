@@ -51,6 +51,89 @@ description: PRD 驱动的验收测试执行器。根据 PRD 需求生成验收�
 
 ---
 
+## 测试环境架构说明
+
+### 双后端架构
+
+本项目有**两个后端**，前端通过不同方式调用：
+
+| 后端 | 调用方式 | 启动命令 | 覆盖范围 |
+|------|---------|---------|---------|
+| **Rust/Tauri IPC** | `invoke()` / `listen()` | `npm run tauri dev` | Agent 核心功能（多轮对话、工具调用、WebSocket） |
+| **Go 云端 API** | `fetch('/api/...')` | `go run main.go`（在 `cloud-server/` 目录） | auth、workspace、settings 等模块 |
+
+**Agent 模块（FR9-FR19）走 Tauri IPC，非 Agent 模块走 Go API。**
+
+### E2E 测试必须的环境组合
+
+**完整 E2E 测试必须同时启动两个后端：**
+
+```bash
+# 终端 1：Tauri 桌面端（含前端 + Rust 后端）
+npm run tauri dev
+# 等 Tauri 窗口打开后，记下 WebView 地址（通常是 http://localhost:1420）
+
+# 终端 2：Go 云端服务（处理 fetch API 请求）
+cd cloud-server && go run main.go
+# 默认监听 http://localhost:3000
+
+# 终端 3：Playwright E2E
+npx playwright test tests/e2e/
+```
+
+**注意**：如果只启动 `npm run dev`（纯 Vite），Agent 模块会因缺少 Tauri runtime 而报错 `transformCallback undefined`。
+
+### Step 0 环境预检（更新）
+
+预检时必须检测**两个后端**的状态：
+
+#### 0a. Tauri 桌面端检测
+
+```bash
+# 检测 Tauri runtime 是否可用
+node -e "
+  try {
+    const { invoke } = require('@tauri-apps/api/core');
+    void invoke;
+    console.log('TAURI_RUNTIME:available');
+  } catch (e) {
+    console.log('TAURI_RUNTIME:unavailable');
+    console.log('TAURI_ERROR:' + e.message);
+  }
+"
+```
+
+#### 0b. Go 云端后端检测
+
+```bash
+# 检测 Go 后端服务是否可用
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health 2>/dev/null || echo "BACKEND:unavailable"
+```
+
+#### 0c. 环境判定规则
+
+| Tauri | Go 后端 | 可执行测试 | 报告标记 |
+|-------|---------|-----------|---------|
+| ✅ 可用 | ✅ 可用 | 完整 E2E（所有模块） | 全部 AS 正常验证 |
+| ✅ 可用 | ❌ 不可用 | Agent 模块 E2E（fetch 部分 SKIP） | fetch 相关 AS 标记 SKIP |
+| ❌ 不可用 | ✅ 可用 | 非 Agent 模块 E2E（Agent 部分 SKIP） | Agent 相关 AS 标记 SKIP |
+| ❌ 不可用 | ❌ 不可用 | 仅 lint/build/单元测试 | E2E 全部 SKIP |
+
+**涉及 Tauri IPC 的关键 API（不可用时 Agent 模块 E2E 跳过）：**
+- `useAgentRuntime` — Agent 运行时通信（`invoke` + `listen`）
+- `useAgentIntercom` — Agent 间通信
+- `useGlobalShortcuts` — 全局快捷键（`listen`）
+- `useNetworkStatus` — 网络状态（`invoke` + `listen`）
+- `useUpdate` — 版本更新（`invoke`）
+- `TopBar` — 窗口管理（`getCurrentWindow`）
+
+**涉及 Go API 的关键端点（不可用时 fetch 相关 E2E 跳过）：**
+- `/api/auth/*` — 认证
+- `/api/workspaces/*` — 工作区
+- `/api/provider-config/*` — 模型配置
+
+---
+
 ## 验收标准（AS）制定
 
 ### AS 生成规则（严格版本）
@@ -136,8 +219,8 @@ node -e "
 #### 0b. 后端服务检测
 
 ```bash
-# 检测云端后端是否可用
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health 2>/dev/null || echo "BACKEND:unavailable"
+# 检测 Go 云端后端是否可用（cloud-server/main.go）
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health 2>/dev/null || echo "BACKEND:unavailable"
 ```
 
 **判定规则：**
@@ -153,6 +236,28 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health 2>/dev/null 
 # 检测 Vite dev server 是否可用
 curl -s -o /dev/null -w "%{http_code}" http://localhost:5173 2>/dev/null || echo "FRONTEND:unavailable"
 ```
+
+#### 0d. 环境组合判定
+
+| Tauri | Go 后端 | 前端 | 可执行测试 | 报告标记 |
+|-------|---------|------|-----------|---------|
+| ✅ | ✅ | ✅ | 完整 E2E（所有模块） | 全部 AS 正常验证 |
+| ✅ | ❌ | ✅ | Agent 模块 E2E（fetch 部分 SKIP） | Go API 相关 AS 标记 SKIP |
+| ❌ | ✅ | ✅ | 非 Agent 模块 E2E（Agent 部分 SKIP） | Tauri IPC 相关 AS 标记 SKIP |
+| ❌ | ❌ | ✅ | 仅 lint/build/单元测试 | E2E 全部 SKIP |
+
+**涉及 Tauri IPC 的关键 API（不可用时 Agent 模块 E2E 跳过）：**
+- `useAgentRuntime` — Agent 运行时通信（`invoke` + `listen`）
+- `useAgentIntercom` — Agent 间通信
+- `useGlobalShortcuts` — 全局快捷键（`listen`）
+- `useNetworkStatus` — 网络状态（`invoke` + `listen`）
+- `useUpdate` — 版本更新（`invoke`）
+- `TopBar` — 窗口管理（`getCurrentWindow`）
+
+**涉及 Go API 的关键端点（不可用时 fetch 相关 E2E 跳过）：**
+- `/api/auth/*` — 认证
+- `/api/workspaces/*` — 工作区
+- `/api/provider-config/*` — 模型配置
 
 ---
 
@@ -231,7 +336,39 @@ curl -X POST http://localhost:8080/api/v1/agent/sessions \
 
 #### 4a. 根据环境选择测试路径
 
-**Step 0a 检测结果决定 E2E 策略：**
+**Step 0a/0b 检测结果决定 E2E 策略：**
+
+**路径 A - 双后端都可用（完整 E2E）**：
+
+```bash
+# 两个后端都运行，完整覆盖
+# 1. Tauri 窗口打开，Playwright 连接
+npx playwright test tests/e2e/
+```
+
+**路径 B - 仅 Tauri 可用（Agent 模块 E2E）**：
+
+Agent 模块走 Tauri IPC，可以测试；Go API 部分标记 SKIP。
+
+**路径 C - 仅 Go 后端可用（非 Agent 模块 E2E）**：
+
+用 `npm run dev` 启动纯前端 + Go 后端，Agent 模块标记 SKIP。
+
+```bash
+# 终端 1：纯前端（不走 Tauri）
+npm run dev
+
+# 终端 2：Go 后端
+cd cloud-server && go run main.go
+
+# 终端 3：非 Agent 模块 E2E
+npx playwright test tests/e2e/smoke/login.spec.ts
+npx playwright test tests/e2e/features/workspace/
+```
+
+**路径 D - 两个后端都不可用**：
+
+仅执行 lint/build 和单元测试，E2E 全部 SKIP。
 
 **路径 A - Tauri 桌面端可用**：
 ```bash
@@ -537,19 +674,37 @@ npx playwright test tests/e2e/accessibility/...
   <div class="progress-bar"><div class="fill" style="width:85.7%"></div></div>
 </div>
 
-<!-- Tauri 环境缺失说明 -->
-<div class="tauri-block">
-  <h2>⚠️ Tauri 环境缺失（10项 AS 跳过）</h2>
-  <div class="tauri-explanation">
-    以下 AS 依赖 Tauri API（invoke/listen），在纯浏览器环境中无法执行：
-    <ul>
-      <li>useGlobalShortcuts - 快捷键监听</li>
-      <li>useAgentRuntime - Agent 运行时通信</li>
-      <li>useUpdate - 版本更新检查</li>
-      <li>useNetworkStatus - 网络状态监听</li>
-    </ul>
-    <strong>解决方案：</strong>启动 Tauri 桌面端后重新执行验收测试
-    <code>npm run tauri dev</code>
+<!-- 双后端环境缺失说明 -->
+<div class="env-block">
+  <h2>⚠️ 环境缺失说明</h2>
+
+  <div class="env-section">
+    <h3>Tauri 桌面端缺失（影响 Agent 模块）</h3>
+    <div class="env-explanation">
+      以下 AS 依赖 Tauri IPC（invoke/listen），在纯浏览器环境中无法执行：
+      <ul>
+        <li>useAgentRuntime — Agent 运行时通信</li>
+        <li>useAgentIntercom — Agent 间通信</li>
+        <li>useGlobalShortcuts — 全局快捷键</li>
+        <li>useNetworkStatus — 网络状态监听</li>
+        <li>useUpdate — 版本更新检查</li>
+        <li>TopBar — 窗口管理</li>
+      </ul>
+      <strong>启动命令：</strong><code>npm run tauri dev</code>
+    </div>
+  </div>
+
+  <div class="env-section">
+    <h3>Go 云端后端缺失（影响 fetch API 模块）</h3>
+    <div class="env-explanation">
+      以下 AS 依赖 Go 云端 API（fetch），后端不可用时无法执行：
+      <ul>
+        <li>/api/auth/* — 认证</li>
+        <li>/api/workspaces/* — 工作区</li>
+        <li>/api/provider-config/* — 模型配置</li>
+      </ul>
+      <strong>启动命令：</strong><code>cd cloud-server && go run main.go</code>
+    </div>
   </div>
 </div>
 
@@ -673,6 +828,7 @@ npx playwright test tests/e2e/accessibility/...
 - 截图：thumbnail 显示，点击放大
 - 失败项：红色背景 #1f0a0a，红色边框 #ef4444
 - 跳过项：橙色背景 #1a1400，橙色边框 #f59e0b
+- 环境缺失区块：双栏布局，Tauri缺失和Go后端缺失分开说明
 - 可折叠区块：`<details><summary>` 实现
 
 ---

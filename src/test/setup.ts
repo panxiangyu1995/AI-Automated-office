@@ -17,27 +17,75 @@ import { vi } from 'vitest'
   cleanup()
 })
 
-// Mock Tauri API
+// ==================== Tauri Mock（浏览器环境） ====================
+
+// 在任何 @tauri-apps/api 模块导入之前，注入 __TAURI_INTERNALS__
+// transformCallback 是 Tauri JS API 的核心，它返回一个用于 IPC 通信的回调 ID
+// 在浏览器中返回模拟 ID，阻止 "transformCallback undefined" 错误
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(globalThis as any).__TAURI__ = {
-  tauri: {
-    invoke: vi.fn(),
+;(globalThis as any).window = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...(globalThis as any).window,
+  __TAURI_INTERNALS__: {
+    transformCallback: (cb: unknown, _once?: boolean) => {
+      // 返回一个模拟的回调 ID（任意正整数）
+      // Tauri API 内部用此 ID 找到回调函数
+      void cb
+      return Math.floor(Math.random() * 999999) + 1
+    },
   },
-  event: {
-    listen: vi.fn(() => Promise.resolve(() => {})),
-    emit: vi.fn(),
-  },
-  core: {
-    invoke: vi.fn(),
+  // __TAURI__ 是 Tauri API 模块内部检测的对象
+  __TAURI__: {
+    invoke: (command: string, args?: Record<string, unknown>) => {
+      console.warn(`[TauriMock] invoke('${command}', ${JSON.stringify(args ?? {})})`)
+      return Promise.resolve()
+    },
   },
 }
 
-// Mock Tauri 内部 API
+// 拦截 @tauri-apps/api/core 的 require/import
+// 当 Tauri API 检测到 __TAURI_INTERNALS__ 存在后，会调用 invoke
+// 这里用 vi.fn() 让每个调用返回 Promise.resolve()
+const mockTauriInvoke = vi.fn((_command: string, _args?: Record<string, unknown>) => Promise.resolve())
+const mockTauriListen = vi.fn((_event: string, _handler: unknown) => Promise.resolve(() => {}))
+const mockTauriEmit = vi.fn((_event: string, _payload?: unknown) => Promise.resolve())
+const mockTauriGetCurrentWindow = vi.fn(() => ({
+  close: () => {},
+  minimize: () => {},
+  toggleMaximize: () => {},
+  setTitle: () => {},
+  isMaximized: () => false,
+  isMinimized: () => false,
+  isVisible: () => true,
+  label: 'main',
+}))
+const mockChannelOnmessage = vi.fn()
+
+// 在模块加载前注入 mock
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: mockTauriInvoke,
+  Channel: vi.fn().mockImplementation(() => ({
+    onmessage: mockChannelOnmessage,
+  })),
+}))
+
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: mockTauriListen,
+  emit: mockTauriEmit,
+}))
+
+vi.mock('@tauri-apps/api/window', () => ({
+  getCurrentWindow: mockTauriGetCurrentWindow,
+}))
+
+vi.mock('@tauri-apps/plugin-shell', () => ({
+  open: vi.fn(),
+}))
+
+// 全局 __TAURI__ 引用 mock
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(globalThis as any).window.__TAURI_INTERNALS__ = {
-  transformCallback: vi.fn((_cb: unknown, _once: unknown) => {
-    return (_once ? 1 : 0) as number
-  }),
+;(globalThis as any).__TAURI__ = {
+  invoke: mockTauriInvoke,
 }
 
 // Mock localStorage

@@ -9,6 +9,10 @@ use tracing::info;
 pub struct SecurityDatabase {
     keys: RwLock<HashMap<String, SecretKey>>,
     audit_logs: RwLock<Vec<AuditLog>>,
+    classifications: RwLock<HashMap<String, DataClassification>>,
+    masking_rules: RwLock<HashMap<String, DataMaskingRule>>,
+    retention_policies: RwLock<HashMap<String, DataRetentionPolicy>>,
+    sensitive_access: RwLock<Vec<SensitiveDataAccess>>,
 }
 
 impl SecurityDatabase {
@@ -17,6 +21,10 @@ impl SecurityDatabase {
         Self {
             keys: RwLock::new(HashMap::new()),
             audit_logs: RwLock::new(Vec::new()),
+            classifications: RwLock::new(HashMap::new()),
+            masking_rules: RwLock::new(HashMap::new()),
+            retention_policies: RwLock::new(HashMap::new()),
+            sensitive_access: RwLock::new(Vec::new()),
         }
     }
 
@@ -190,6 +198,171 @@ impl SecurityDatabase {
             .take(limit)
             .cloned()
             .collect()
+    }
+
+    // ==================== 数据治理 ====================
+
+    pub fn create_classification(&self, classification: DataClassification) -> Result<DataClassification, String> {
+        let mut classifications = self.classifications.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let id = classification.id.clone();
+        classifications.insert(id, classification.clone());
+        info!("创建数据分类成功: {}", classification.name);
+        Ok(classification)
+    }
+
+    pub fn get_classification(&self, id: &str) -> Option<DataClassification> {
+        self.classifications.read().ok()?.get(id).cloned()
+    }
+
+    pub fn list_classifications(&self) -> Vec<DataClassification> {
+        self.classifications.read().unwrap_or_else(|e| e.into_inner()).values().cloned().collect()
+    }
+
+    pub fn update_classification(&self, id: &str, request: UpdateClassificationRequest) -> Result<DataClassification, String> {
+        let mut classifications = self.classifications.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let classification = classifications.get_mut(id).ok_or("数据分类不存在")?;
+        
+        if let Some(name) = request.name { classification.name = name; }
+        if let Some(sensitivity) = request.sensitivity { classification.sensitivity = sensitivity; }
+        if let Some(description) = request.description { classification.description = description; }
+        if let Some(retention_days) = request.retention_days { classification.retention_days = retention_days; }
+        if let Some(encryption_required) = request.encryption_required { classification.encryption_required = encryption_required; }
+        if let Some(metadata) = request.metadata { classification.metadata = metadata; }
+        classification.updated_at = chrono::Utc::now().timestamp();
+        
+        Ok(classification.clone())
+    }
+
+    pub fn delete_classification(&self, id: &str) -> Result<(), String> {
+        let mut classifications = self.classifications.write().map_err(|_| "获取写入锁失败".to_string())?;
+        if classifications.remove(id).is_none() {
+            return Err("数据分类不存在".to_string());
+        }
+        Ok(())
+    }
+
+    pub fn create_masking_rule(&self, rule: DataMaskingRule) -> Result<DataMaskingRule, String> {
+        let mut rules = self.masking_rules.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let id = rule.id.clone();
+        rules.insert(id, rule.clone());
+        info!("创建脱敏规则成功: {}", rule.field_name);
+        Ok(rule)
+    }
+
+    pub fn get_masking_rule(&self, id: &str) -> Option<DataMaskingRule> {
+        self.masking_rules.read().ok()?.get(id).cloned()
+    }
+
+    pub fn list_masking_rules(&self) -> Vec<DataMaskingRule> {
+        self.masking_rules.read().unwrap_or_else(|e| e.into_inner()).values().cloned().collect()
+    }
+
+    pub fn update_masking_rule(&self, id: &str, request: UpdateMaskingRuleRequest) -> Result<DataMaskingRule, String> {
+        let mut rules = self.masking_rules.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let rule = rules.get_mut(id).ok_or("脱敏规则不存在")?;
+        
+        if let Some(masking_type) = request.masking_type { rule.masking_type = masking_type; }
+        if let Some(pattern) = request.pattern { rule.pattern = Some(pattern); }
+        if let Some(enabled) = request.enabled { rule.enabled = enabled; }
+        rule.updated_at = chrono::Utc::now().timestamp();
+        
+        Ok(rule.clone())
+    }
+
+    pub fn delete_masking_rule(&self, id: &str) -> Result<(), String> {
+        let mut rules = self.masking_rules.write().map_err(|_| "获取写入锁失败".to_string())?;
+        if rules.remove(id).is_none() {
+            return Err("脱敏规则不存在".to_string());
+        }
+        Ok(())
+    }
+
+    pub fn apply_masking(&self, value: &str, rule: &DataMaskingRule) -> String {
+        match rule.masking_type {
+            MaskingType::Full => "*".repeat(value.len()),
+            MaskingType::Partial => {
+                if value.len() <= 4 {
+                    "*".repeat(value.len())
+                } else {
+                    format!("{}****", &value[0..value.len()-4])
+                }
+            },
+            MaskingType::Email => {
+                if let Some(idx) = value.find('@') {
+                    let (name, domain) = value.split_at(idx);
+                    let masked_name = if name.len() <= 2 {
+                        "*".repeat(name.len())
+                    } else {
+                        format!("{}**", &name[0..2])
+                    };
+                    format!("{}@", masked_name)
+                } else {
+                    value.to_string()
+                }
+            },
+            MaskingType::Phone => {
+                if value.len() >= 7 {
+                    format!("{}****{}", &value[0..3], &value[value.len()-4..])
+                } else {
+                    "*".repeat(value.len())
+                }
+            },
+            MaskingType::IdCard => {
+                if value.len() >= 10 {
+                    format!("{}**********{}", &value[0..6], &value[value.len()-4..])
+                } else {
+                    "*".repeat(value.len())
+                }
+            },
+            MaskingType::Custom => {
+                rule.pattern.as_ref().map(|p| p.clone()).unwrap_or_else(|| "*".repeat(value.len()))
+            },
+        }
+    }
+
+    pub fn create_retention_policy(&self, policy: DataRetentionPolicy) -> Result<DataRetentionPolicy, String> {
+        let mut policies = self.retention_policies.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let id = policy.id.clone();
+        policies.insert(id, policy.clone());
+        info!("创建保留策略成功: {}", policy.name);
+        Ok(policy)
+    }
+
+    pub fn list_retention_policies(&self) -> Vec<DataRetentionPolicy> {
+        self.retention_policies.read().unwrap_or_else(|e| e.into_inner()).values().cloned().collect()
+    }
+
+    pub fn record_sensitive_access(&self, access: SensitiveDataAccess) {
+        let mut accesses = self.sensitive_access.write().unwrap_or_else(|e| e.into_inner());
+        accesses.push(access);
+        
+        if accesses.len() > 10000 {
+            accesses.drain(0..1000);
+        }
+    }
+
+    pub fn get_sensitive_access(&self, user_id: Option<&str>, limit: usize) -> Vec<SensitiveDataAccess> {
+        let accesses = self.sensitive_access.read().unwrap_or_else(|e| e.into_inner());
+        accesses.iter()
+            .filter(|a| user_id.map(|u| a.user_id == u).unwrap_or(true))
+            .rev()
+            .take(limit)
+            .cloned()
+            .collect()
+    }
+
+    pub fn get_governance_stats(&self) -> GovernanceStats {
+        let classifications = self.classifications.read().unwrap_or_else(|e| e.into_inner());
+        let rules = self.masking_rules.read().unwrap_or_else(|e| e.into_inner());
+        let policies = self.retention_policies.read().unwrap_or_else(|e| e.into_inner());
+        let accesses = self.sensitive_access.read().unwrap_or_else(|e| e.into_inner());
+        
+        GovernanceStats {
+            total_classifications: classifications.len() as u32,
+            total_masking_rules: rules.len() as u32,
+            total_retention_policies: policies.len() as u32,
+            sensitive_access_count: accesses.len() as u32,
+        }
     }
 }
 

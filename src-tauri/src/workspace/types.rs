@@ -179,7 +179,7 @@ pub struct UpdateTodoRequest {
     pub status: Option<TodoStatus>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryTodosParams {
     pub status: Option<TodoStatus>,

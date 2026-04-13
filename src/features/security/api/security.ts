@@ -14,6 +14,18 @@ import type {
   KeyStats,
   KeyListItem,
   PagedResult,
+  DataClassification,
+  DataMaskingRule,
+  DataRetentionPolicy,
+  SensitiveDataAccess,
+  GovernanceStats,
+  CreateClassificationRequest,
+  UpdateClassificationRequest,
+  CreateMaskingRuleRequest,
+  UpdateMaskingRuleRequest,
+  CreateRetentionPolicyRequest,
+  MaskingRequest,
+  MaskingResponse,
 } from '../types/security';
 
 // ==================== 密钥 API ====================
@@ -64,4 +76,66 @@ export async function decrypt(request: DecryptRequest): Promise<DecryptResult> {
 
 export async function getAuditLogs(keyId?: string, limit?: number): Promise<AuditLog[]> {
   return invoke('security_get_audit_logs', { keyId, limit });
+}
+
+// ==================== 数据治理 API ====================
+
+export async function createClassification(request: CreateClassificationRequest, tenantId?: string): Promise<DataClassification> {
+  return invoke('security_create_classification', { request, tenantId });
+}
+
+export async function getClassification(id: string): Promise<DataClassification> {
+  return invoke('security_get_classification', { id });
+}
+
+export async function listClassifications(): Promise<DataClassification[]> {
+  return invoke('security_list_classifications');
+}
+
+export async function updateClassification(id: string, request: UpdateClassificationRequest): Promise<DataClassification> {
+  return invoke('security_update_classification', { id, request });
+}
+
+export async function deleteClassification(id: string): Promise<void> {
+  return invoke('security_delete_classification', { id });
+}
+
+export async function createMaskingRule(request: CreateMaskingRuleRequest, tenantId?: string): Promise<DataMaskingRule> {
+  return invoke('security_create_masking_rule', { request, tenantId });
+}
+
+export async function listMaskingRules(): Promise<DataMaskingRule[]> {
+  return invoke('security_list_masking_rules');
+}
+
+export async function updateMaskingRule(id: string, request: UpdateMaskingRuleRequest): Promise<DataMaskingRule> {
+  return invoke('security_update_masking_rule', { id, request });
+}
+
+export async function deleteMaskingRule(id: string): Promise<void> {
+  return invoke('security_delete_masking_rule', { id });
+}
+
+export async function applyMasking(request: MaskingRequest): Promise<MaskingResponse> {
+  return invoke('security_apply_masking', { request });
+}
+
+export async function createRetentionPolicy(request: CreateRetentionPolicyRequest, tenantId?: string): Promise<DataRetentionPolicy> {
+  return invoke('security_create_retention_policy', { request, tenantId });
+}
+
+export async function listRetentionPolicies(): Promise<DataRetentionPolicy[]> {
+  return invoke('security_list_retention_policies');
+}
+
+export async function recordSensitiveAccess(access: SensitiveDataAccess): Promise<void> {
+  return invoke('security_record_sensitive_access', { access });
+}
+
+export async function getSensitiveAccess(userId?: string, limit?: number): Promise<SensitiveDataAccess[]> {
+  return invoke('security_get_sensitive_access', { userId, limit });
+}
+
+export async function getGovernanceStats(): Promise<GovernanceStats> {
+  return invoke('security_get_governance_stats');
 }

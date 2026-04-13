@@ -504,227 +504,229 @@ impl Default for TenderDatabase {
 
 // ==================== 模板操作 ====================
 
-/// 创建模板
-pub fn create_template(&self, template: BidTemplate) -> Result<BidTemplate, String> {
-    let mut templates = self.templates.write().map_err(|_| "获取写入锁失败".to_string())?;
-    let id = template.id.clone();
-    templates.insert(id.clone(), template.clone());
-    info!("创建模板成功: {}", template.name);
-    Ok(template)
-}
+impl TenderDatabase {
+    /// 创建模板
+    pub fn create_template(&self, template: BidTemplate) -> Result<BidTemplate, String> {
+        let mut templates = self.templates.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let id = template.id.clone();
+        templates.insert(id.clone(), template.clone());
+        info!("创建模板成功: {}", template.name);
+        Ok(template)
+    }
 
-/// 获取模板
-pub fn get_template(&self, id: &str) -> Option<BidTemplate> {
-    self.templates.read().ok()?.get(id).cloned()
-}
+    /// 获取模板
+    pub fn get_template(&self, id: &str) -> Option<BidTemplate> {
+        self.templates.read().ok()?.get(id).cloned()
+    }
 
-/// 查询模板列表
-pub fn list_templates(&self, params: &QueryTemplatesParams) -> PagedResult<TemplateListItem> {
-    let templates = self.templates.read().unwrap_or_else(|e| e.into_inner());
+    /// 查询模板列表
+    pub fn list_templates(&self, params: &QueryTemplatesParams) -> PagedResult<TemplateListItem> {
+        let templates = self.templates.read().unwrap_or_else(|e| e.into_inner());
 
-    let mut items: Vec<TemplateListItem> = templates
-        .values()
-        .filter(|t| {
-            if let Some(ref category) = params.category {
-                if &t.category != category {
-                    return false;
+        let mut items: Vec<TemplateListItem> = templates
+            .values()
+            .filter(|t| {
+                if let Some(ref category) = params.category {
+                    if &t.category != category {
+                        return false;
+                    }
                 }
-            }
-            if let Some(ref search) = params.search {
-                let search_lower = search.to_lowercase();
-                if !t.name.to_lowercase().contains(&search_lower)
-                    && !t.description.as_ref().map(|s| s.to_lowercase().contains(&search_lower)).unwrap_or(false)
-                {
-                    return false;
+                if let Some(ref search) = params.search {
+                    let search_lower = search.to_lowercase();
+                    if !t.name.to_lowercase().contains(&search_lower)
+                        && !t.description.as_ref().map(|s| s.to_lowercase().contains(&search_lower)).unwrap_or(false)
+                    {
+                        return false;
+                    }
                 }
-            }
-            true
-        })
-        .map(|t| TemplateListItem {
-            id: t.id.clone(),
-            name: t.name.clone(),
-            description: t.description.clone(),
-            category: t.category.clone(),
-            is_default: t.is_default,
-            usage_count: t.usage_count,
-        })
-        .collect();
+                true
+            })
+            .map(|t| TemplateListItem {
+                id: t.id.clone(),
+                name: t.name.clone(),
+                description: t.description.clone(),
+                category: t.category.clone(),
+                is_default: t.is_default,
+                usage_count: t.usage_count,
+            })
+            .collect();
 
-    items.sort_by(|a, b| b.usage_count.cmp(&a.usage_count));
+        items.sort_by(|a, b| b.usage_count.cmp(&a.usage_count));
 
-    let page = params.page.unwrap_or(1).max(1);
-    let page_size = params.page_size.unwrap_or(20).min(100);
-    let total = items.len() as u32;
-    let start = ((page - 1) * page_size) as usize;
-    let end = (start + page_size as usize).min(items.len());
+        let page = params.page.unwrap_or(1).max(1);
+        let page_size = params.page_size.unwrap_or(20).min(100);
+        let total = items.len() as u32;
+        let start = ((page - 1) * page_size) as usize;
+        let end = (start + page_size as usize).min(items.len());
 
-    let page_items = if start < items.len() {
-        items[start..end].to_vec()
-    } else {
-        Vec::new()
-    };
+        let page_items = if start < items.len() {
+            items[start..end].to_vec()
+        } else {
+            Vec::new()
+        };
 
-    PagedResult {
-        items: page_items,
-        total,
-        page,
-        page_size,
+        PagedResult {
+            items: page_items,
+            total,
+            page,
+            page_size,
+        }
     }
-}
 
-/// 更新模板
-pub fn update_template(&self, id: &str, request: UpdateTemplateRequest) -> Result<BidTemplate, String> {
-    let mut templates = self.templates.write().map_err(|_| "获取写入锁失败".to_string())?;
-    let template = templates.get_mut(id).ok_or("模板不存在")?;
-    
-    if let Some(name) = request.name {
-        template.name = name;
+    /// 更新模板
+    pub fn update_template(&self, id: &str, request: UpdateTemplateRequest) -> Result<BidTemplate, String> {
+        let mut templates = self.templates.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let template = templates.get_mut(id).ok_or("模板不存在")?;
+        
+        if let Some(name) = request.name {
+            template.name = name;
+        }
+        if let Some(description) = request.description {
+            template.description = Some(description);
+        }
+        if let Some(category) = request.category {
+            template.category = category;
+        }
+        if let Some(content) = request.content {
+            template.content = content;
+        }
+        if let Some(variables) = request.variables {
+            template.variables = variables;
+        }
+        if let Some(is_default) = request.is_default {
+            template.is_default = is_default;
+        }
+        template.updated_at = chrono::Utc::now().timestamp();
+        
+        info!("更新模板成功: {}", id);
+        Ok(template.clone())
     }
-    if let Some(description) = request.description {
-        template.description = Some(description);
-    }
-    if let Some(category) = request.category {
-        template.category = category;
-    }
-    if let Some(content) = request.content {
-        template.content = content;
-    }
-    if let Some(variables) = request.variables {
-        template.variables = variables;
-    }
-    if let Some(is_default) = request.is_default {
-        template.is_default = is_default;
-    }
-    template.updated_at = chrono::Utc::now().timestamp();
-    
-    info!("更新模板成功: {}", id);
-    Ok(template.clone())
-}
 
-/// 删除模板
-pub fn delete_template(&self, id: &str) -> Result<(), String> {
-    let mut templates = self.templates.write().map_err(|_| "获取写入锁失败".to_string())?;
-    if templates.remove(id).is_none() {
-        return Err("模板不存在".to_string());
+    /// 删除模板
+    pub fn delete_template(&self, id: &str) -> Result<(), String> {
+        let mut templates = self.templates.write().map_err(|_| "获取写入锁失败".to_string())?;
+        if templates.remove(id).is_none() {
+            return Err("模板不存在".to_string());
+        }
+        info!("删除模板成功: {}", id);
+        Ok(())
     }
-    info!("删除模板成功: {}", id);
-    Ok(())
-}
 
-// ==================== 文档操作 ====================
+    // ==================== 文档操作 ====================
 
-/// 创建文档
-pub fn create_document(&self, document: TenderDocument) -> Result<TenderDocument, String> {
-    let mut documents = self.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
-    let id = document.id.clone();
-    documents.insert(id.clone(), document.clone());
-    info!("创建文档成功: {}", document.title);
-    Ok(document)
-}
+    /// 创建文档
+    pub fn create_document(&self, document: TenderDocument) -> Result<TenderDocument, String> {
+        let mut documents = self.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let id = document.id.clone();
+        documents.insert(id.clone(), document.clone());
+        info!("创建文档成功: {}", document.title);
+        Ok(document)
+    }
 
-/// 获取文档
-pub fn get_document(&self, id: &str) -> Option<TenderDocument> {
-    self.documents.read().ok()?.get(id).cloned()
-}
+    /// 获取文档
+    pub fn get_document(&self, id: &str) -> Option<TenderDocument> {
+        self.documents.read().ok()?.get(id).cloned()
+    }
 
-/// 查询文档列表
-pub fn list_documents(&self, params: &QueryDocumentsParams) -> PagedResult<DocumentListItem> {
-    let documents = self.documents.read().unwrap_or_else(|e| e.into_inner());
+    /// 查询文档列表
+    pub fn list_documents(&self, params: &QueryDocumentsParams) -> PagedResult<DocumentListItem> {
+        let documents = self.documents.read().unwrap_or_else(|e| e.into_inner());
 
-    let mut items: Vec<DocumentListItem> = documents
-        .values()
-        .filter(|d| {
-            if let Some(ref project_id) = params.project_id {
-                if &d.project_id != project_id {
-                    return false;
+        let mut items: Vec<DocumentListItem> = documents
+            .values()
+            .filter(|d| {
+                if let Some(ref project_id) = params.project_id {
+                    if &d.project_id != project_id {
+                        return false;
+                    }
                 }
-            }
-            if let Some(ref status) = params.status {
-                if &d.status != status {
-                    return false;
+                if let Some(ref status) = params.status {
+                    if &d.status != status {
+                        return false;
+                    }
                 }
-            }
-            if let Some(ref search) = params.search {
-                let search_lower = search.to_lowercase();
-                if !d.title.to_lowercase().contains(&search_lower) {
-                    return false;
+                if let Some(ref search) = params.search {
+                    let search_lower = search.to_lowercase();
+                    if !d.title.to_lowercase().contains(&search_lower) {
+                        return false;
+                    }
                 }
-            }
-            true
-        })
-        .map(|d| DocumentListItem {
-            id: d.id.clone(),
-            project_id: d.project_id.clone(),
-            template_id: d.template_id.clone(),
-            title: d.title.clone(),
-            version: d.version,
-            status: d.status,
-            created_at: d.created_at,
-            updated_at: d.updated_at,
-        })
-        .collect();
+                true
+            })
+            .map(|d| DocumentListItem {
+                id: d.id.clone(),
+                project_id: d.project_id.clone(),
+                template_id: d.template_id.clone(),
+                title: d.title.clone(),
+                version: d.version,
+                status: d.status,
+                created_at: d.created_at,
+                updated_at: d.updated_at,
+            })
+            .collect();
 
-    items.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+        items.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
 
-    let page = params.page.unwrap_or(1).max(1);
-    let page_size = params.page_size.unwrap_or(20).min(100);
-    let total = items.len() as u32;
-    let start = ((page - 1) * page_size) as usize;
-    let end = (start + page_size as usize).min(items.len());
+        let page = params.page.unwrap_or(1).max(1);
+        let page_size = params.page_size.unwrap_or(20).min(100);
+        let total = items.len() as u32;
+        let start = ((page - 1) * page_size) as usize;
+        let end = (start + page_size as usize).min(items.len());
 
-    let page_items = if start < items.len() {
-        items[start..end].to_vec()
-    } else {
-        Vec::new()
-    };
+        let page_items = if start < items.len() {
+            items[start..end].to_vec()
+        } else {
+            Vec::new()
+        };
 
-    PagedResult {
-        items: page_items,
-        total,
-        page,
-        page_size,
+        PagedResult {
+            items: page_items,
+            total,
+            page,
+            page_size,
+        }
     }
-}
 
-/// 更新文档
-pub fn update_document(&self, id: &str, request: UpdateDocumentRequest) -> Result<TenderDocument, String> {
-    let mut documents = self.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
-    let document = documents.get_mut(id).ok_or("文档不存在")?;
-    
-    if let Some(title) = request.title {
-        document.title = title;
+    /// 更新文档
+    pub fn update_document(&self, id: &str, request: UpdateDocumentRequest) -> Result<TenderDocument, String> {
+        let mut documents = self.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let document = documents.get_mut(id).ok_or("文档不存在")?;
+        
+        if let Some(title) = request.title {
+            document.title = title;
+        }
+        if let Some(content) = request.content {
+            document.content = content;
+        }
+        if let Some(variables) = request.variables {
+            document.variables = variables;
+        }
+        document.updated_at = chrono::Utc::now().timestamp();
+        
+        info!("更新文档成功: {}", id);
+        Ok(document.clone())
     }
-    if let Some(content) = request.content {
-        document.content = content;
-    }
-    if let Some(variables) = request.variables {
-        document.variables = variables;
-    }
-    document.updated_at = chrono::Utc::now().timestamp();
-    
-    info!("更新文档成功: {}", id);
-    Ok(document.clone())
-}
 
-/// 删除文档
-pub fn delete_document(&self, id: &str) -> Result<(), String> {
-    let mut documents = self.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
-    if documents.remove(id).is_none() {
-        return Err("文档不存在".to_string());
+    /// 删除文档
+    pub fn delete_document(&self, id: &str) -> Result<(), String> {
+        let mut documents = self.documents.write().map_err(|_| "获取写入锁失败".to_string())?;
+        if documents.remove(id).is_none() {
+            return Err("文档不存在".to_string());
+        }
+        info!("删除文档成功: {}", id);
+        Ok(())
     }
-    info!("删除文档成功: {}", id);
-    Ok(())
-}
 
-/// AI生成文档内容
-pub fn generate_document_content(&self, template_id: &str, variables: &std::collections::HashMap<String, String>) -> Result<String, String> {
-    let template = self.get_template(template_id).ok_or("模板不存在")?;
-    
-    let mut content = template.content.clone();
-    for (key, value) in variables.iter() {
-        let placeholder = format!("{{{{{}}}}}", key);
-        content = content.replace(&placeholder, value);
+    /// AI生成文档内容
+    pub fn generate_document_content(&self, template_id: &str, variables: &std::collections::HashMap<String, String>) -> Result<String, String> {
+        let template = self.get_template(template_id).ok_or("模板不存在")?;
+        
+        let mut content = template.content.clone();
+        for (key, value) in variables.iter() {
+            let placeholder = format!("{{{{{}}}}}", key);
+            content = content.replace(&placeholder, value);
+        }
+        
+        Ok(content)
     }
-    
-    Ok(content)
 }

@@ -170,8 +170,8 @@
     },
     {
       "id": 5,
-      "prompt": "Skill改进验证：Step0环境预检（区分Tauri缺失 vs 代码缺陷）",
-      "expected_output": "改进后的skill应包含Step0预检，正确区分Tauri环境缺失(SKIP)和代码缺陷(FAIL)",
+      "prompt": "Skill改进验证：Step0环境预检（双后端架构：Tauri IPC + Go API）",
+      "expected_output": "改进后的skill应包含Step0预检，正确区分Tauri IPC环境缺失 vs Go API环境缺失 vs 代码缺陷，三者分别对应SKIP/报告不同区块",
       "files": [
         ".claude/skills/prd-acceptance/SKILL.md"
       ],
@@ -210,6 +210,27 @@
           "criteria": "异常处理章节包含两种阻塞报告格式：类型A(代码缺陷)红色，类型B(环境缺失)橙色",
           "result": "PASS",
           "note": "改进后异常处理章节明确区分：类型A-代码缺陷(需修复)，类型B-环境缺失(需切换环境)"
+        },
+        {
+          "name": "dual_backend_architecture",
+          "description": "文档说明双后端架构（Tauri IPC + Go API）",
+          "criteria": "SKILL.md包含测试环境架构说明，区分Rust/Tauri IPC（Agent模块）和Go云端API（其他模块）",
+          "result": "PASS",
+          "note": "改进后文档明确说明Agent模块走invoke/listen（必须Tauri），其他模块走fetch（必须Go后端：localhost:3000）"
+        },
+        {
+          "name": "four_env_paths",
+          "description": "区分四种环境组合路径",
+          "criteria": "SKILL.md包含0d环境组合判定表，4种路径（双可用/仅Tauri/仅Go/双不可）各有对应行动",
+          "result": "PASS",
+          "note": "四种路径分别对应：完整E2E/Agent优先E2E/非Agent优先E2E/仅lint-build"
+        },
+        {
+          "name": "report_dual_backend_missing",
+          "description": "报告中区分Tauri缺失和Go后端缺失两个区块",
+          "criteria": "HTML报告模板包含两个独立的环境缺失说明区块，分别列出Tauri IPC和Go API涉及的API",
+          "result": "PASS",
+          "note": "改进后报告模板包含Tauri环境缺失区块（含invoke/listen API列表）和Go后端缺失区块（含/api/*端点列表）"
         }
       ]
     }
