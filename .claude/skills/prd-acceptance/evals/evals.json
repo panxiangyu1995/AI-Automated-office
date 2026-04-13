@@ -7,46 +7,90 @@
       "prompt": "帮我验收 Epic 2（AI Agent核心能力）",
       "expected_output": "解析PRD中Epic2所有Story和FR → 每FR生成FUNC/BOUND/UI/SEC四维AS → 每AS执行lint+模拟+API+E2E四层验证 → 输出严格验收报告",
       "files": [],
+      "test_date": "2026-04-13",
+      "exec_summary": {
+        "lint": "PASS - 0 errors, 0 warnings",
+        "build": "PASS - 1933 modules, exit 0",
+        "unit_tests": "151/151 PASS (sessionLifecycle 38/38 + tool system 60/60 + streaming 53/53)",
+        "e2e_tests": "BLOCKED - Tauri API unavailable in browser dev mode (transformCallback undefined)",
+        "unit_test_files": [
+          "tests/unit/features/session/sessionLifecycle.test.ts",
+          "tests/unit/features/session/tools/toolRegistry.test.ts",
+          "tests/unit/features/session/tools/toolExecutor.test.ts",
+          "tests/unit/features/streaming/streaming.test.ts"
+        ]
+      },
+      "as_generated": {
+        "fr9": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr10": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr11": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr12": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr13": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr14_series": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 12, "note": "FR14-1~FR14-12 each has independent AS"},
+        "fr15": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr16": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr17": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 8, "note": "FR17-1~FR17-25 mapped into 8 AS"},
+        "fr18": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr19": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "fr_ctx": {"dims": ["FUNC","BOUND","UI","SEC"], "count": 4},
+        "total": 49
+      },
       "assertions": [
         {
           "name": "as_coverage_4dim",
           "description": "每个FR必须生成功能+边界+UI+安全四个维度的AS",
-          "criteria": "每个FR的AS中同时包含FUNC/BOUND/UI/SEC四种类型"
+          "criteria": "每个FR的AS中同时包含FUNC/BOUND/UI/SEC四种类型",
+          "result": "PASS",
+          "note": "FR9-FR19全部12条FR均生成了FUNC/BOUND/UI/SEC四个维度"
         },
         {
           "name": "as_per_fr",
           "description": "每条FR至少生成4个AS",
-          "criteria": "每个FR的AS数量 ≥ 4"
+          "criteria": "每个FR的AS数量 ≥ 4",
+          "result": "PASS",
+          "note": "共49个AS，FR14/FR17额外拆分子需求"
         },
         {
           "name": "fr_sub_split",
           "description": "FR14-X系列每个子需求独立AS",
-          "criteria": "FR14-1、FR14-2、... 每个都有独立AS"
+          "criteria": "FR14-1、FR14-2、... 每个都有独立AS",
+          "result": "PASS",
+          "note": "FR14-1~FR14-12共12个子需求全部生成独立AS"
         },
         {
           "name": "all_as_4layer",
           "description": "每个AS都有四层验证链路",
-          "criteria": "报告中每个AS都有lint/build+模拟+API+E2E四行验证结果"
+          "criteria": "报告中每个AS都有lint/build+模拟+API+E2E四行验证结果",
+          "result": "PARTIAL",
+          "note": "lint/build通过，模拟(151个单元测试)通过，API未测试(无后端服务运行)，E2E阻塞(Tauri runtime在纯浏览器环境不可用)"
         },
         {
           "name": "prd_line_ref",
           "description": "每个AS标注PRD行号",
-          "criteria": "每个AS的来源字段包含PRD行号"
+          "criteria": "每个AS的来源字段包含PRD行号",
+          "result": "PASS",
+          "note": "FR9=2223, FR10=2224, ..., FR19=2299, FR-CTX=2289, FR17=2244"
         },
         {
           "name": "negative_test",
           "description": "包含负向测试",
-          "criteria": "每3个正向AS至少1个BOUND/负向测试"
+          "criteria": "每3个正向AS至少1个BOUND/负向测试",
+          "result": "PASS",
+          "note": "每FR包含1个BOUND维度AS(超长输入/超时/权限越界/并发等)"
         },
         {
           "name": "strict_report",
           "description": "报告包含覆盖率统计表",
-          "criteria": "报告包含AS覆盖率统计表（FR/AS数量/FUNC/BOUND/UI/SEC/状态）"
+          "criteria": "报告包含AS覆盖率统计表（FR/AS数量/FUNC/BOUND/UI/SEC/状态）",
+          "result": "PASS",
+          "note": "报告包含完整覆盖率统计表和进度条"
         },
         {
           "name": "pass_criteria",
           "description": "通过标准：lint+build+全部AS通过",
-          "criteria": "报告通过率100%且lint/build错误为0"
+          "criteria": "报告通过率100%且lint/build错误为0",
+          "result": "PARTIAL",
+          "note": "lint=0错误, build=成功, 但E2E测试阻塞(Tauri runtime环境限制，非代码缺陷)"
         }
       ]
     },

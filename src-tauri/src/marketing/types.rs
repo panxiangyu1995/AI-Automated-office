@@ -495,3 +495,111 @@ impl Default for ContentTemplate {
         }
     }
 }
+
+// ==================== 数据分析类型 ====================
+
+/// 营销统计数据
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MarketingStats {
+    pub total_campaigns: u32,
+    pub active_campaigns: u32,
+    pub completed_campaigns: u32,
+    pub total_content: u32,
+    pub published_content: u32,
+    pub total_views: u64,
+    pub total_likes: u64,
+    pub total_shares: u64,
+    pub total_channels: u32,
+    pub active_channels: u32,
+    pub total_budget: f64,
+    pub total_spend: f64,
+    pub roi: f64,
+    pub ctr: f64,
+    pub cvr: f64,
+}
+
+/// 活动效果数据
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignEffectiveness {
+    pub campaign_id: String,
+    pub campaign_name: String,
+    pub status: CampaignStatus,
+    pub budget: f64,
+    pub actual_spend: f64,
+    pub expected_reach: i32,
+    pub actual_reach: i32,
+    pub impressions: u64,
+    pub clicks: u64,
+    pub conversions: i32,
+    pub roi: f64,
+}
+
+/// 内容效果数据
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentEffectiveness {
+    pub content_id: String,
+    pub content_title: String,
+    pub content_type: ContentType,
+    pub views: u64,
+    pub likes: u64,
+    pub shares: u64,
+    pub engagement_rate: f64,
+    pub published_at: Option<i64>,
+}
+
+/// 渠道效果数据
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChannelEffectiveness {
+    pub channel_id: String,
+    pub channel_name: String,
+    pub channel_type: ChannelType,
+    pub followers: i32,
+    pub impressions: u64,
+    pub clicks: u64,
+    pub ctr: f64,
+    pub engagement_rate: f64,
+}
+
+/// 时间范围
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TimeRange {
+    Today,
+    Yesterday,
+    Last7Days,
+    Last30Days,
+    ThisMonth,
+    LastMonth,
+    ThisYear,
+    Custom,
+}
+
+impl Default for TimeRange {
+    fn default() -> Self {
+        Self::Last30Days
+    }
+}
+
+/// 数据趋势点
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DataTrendPoint {
+    pub date: String,
+    pub views: u64,
+    pub likes: u64,
+    pub shares: u64,
+    pub conversions: i32,
+}
+
+/// 渠道分布
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChannelDistribution {
+    pub channel_type: ChannelType,
+    pub count: u32,
+    pub percentage: f64,
+}

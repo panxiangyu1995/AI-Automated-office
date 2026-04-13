@@ -284,3 +284,75 @@ export interface PlatformAdaptation {
   hashtagCount: number;
   emojiAllowed: boolean;
 }
+
+// ==================== 数据分析类型 ====================
+
+export type TimeRange = 'today' | 'yesterday' | 'last_7_days' | 'last_30_days' | 'this_month' | 'last_month' | 'this_year' | 'custom';
+
+export interface MarketingStats {
+  totalCampaigns: number;
+  activeCampaigns: number;
+  completedCampaigns: number;
+  totalContent: number;
+  publishedContent: number;
+  totalViews: number;
+  totalLikes: number;
+  totalShares: number;
+  totalChannels: number;
+  activeChannels: number;
+  totalBudget: number;
+  totalSpend: number;
+  roi: number;
+  ctr: number;
+  cvr: number;
+}
+
+export interface CampaignEffectiveness {
+  campaignId: string;
+  campaignName: string;
+  status: CampaignStatus;
+  budget: number;
+  actualSpend: number;
+  expectedReach: number;
+  actualReach: number;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  roi: number;
+}
+
+export interface ContentEffectiveness {
+  contentId: string;
+  contentTitle: string;
+  contentType: ContentType;
+  views: number;
+  likes: number;
+  shares: number;
+  engagementRate: number;
+  publishedAt?: number;
+}
+
+export interface ChannelEffectiveness {
+  channelId: string;
+  channelName: string;
+  channelType: ChannelType;
+  followers: number;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  engagementRate: number;
+}
+
+export interface DataTrendPoint {
+  date: string;
+  views: number;
+  likes: number;
+  shares: number;
+  conversions: number;
+}
+
+export interface ChannelDistribution {
+  channelType: ChannelType;
+  count: number;
+  percentage: number;
+}

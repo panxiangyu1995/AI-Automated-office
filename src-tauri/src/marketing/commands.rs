@@ -320,3 +320,82 @@ pub async fn marketing_get_platform_adaptation(
     
     Ok(adaptation)
 }
+
+// ==================== 数据分析命令 ====================
+
+#[tauri::command]
+pub async fn marketing_get_stats(
+    state: State<'_, MarketingState>,
+) -> Result<MarketingStats, String> {
+    info!("获取营销统计数据");
+    
+    let campaigns = state.db.campaigns.read().map_err(|_| "获取数据失败")?;
+    let contents = state.db.contents.read().map_err(|_| "获取数据失败")?;
+    let channels = state.db.channels.read().map_err(|_| "获取数据失败")?;
+    
+    let total_campaigns = campaigns.len() as u32;
+    let active_campaigns = campaigns.values().filter(|c| c.status == CampaignStatus::InProgress || c.status == CampaignStatus::Published).count() as u32;
+    let completed_campaigns = campaigns.values().filter(|c| c.status == CampaignStatus::Completed).count() as u32;
+    
+    let total_content = contents.len() as u32;
+    let published_content = contents.values().filter(|c| c.status == ContentStatus::Published).count() as u32;
+    
+    let total_views: u64 = contents.values().map(|c| c.views as u64).sum();
+    let total_likes: u64 = contents.values().map(|c| c.likes as u64).sum();
+    let total_shares: u64 = contents.values().map(|c| c.shares as u64).sum();
+    
+    let total_channels = channels.len() as u32;
+    let active_channels = channels.values().filter(|c| c.is_active).count() as u32;
+    
+    let total_budget: f64 = campaigns.values().filter_map(|c| c.budget).sum();
+    let total_spend: f64 = campaigns.values().filter_map(|c| c.actual_cost).sum();
+    
+    let total_conversions: u64 = campaigns.values().filter_map(|c| c.conversion_count).map(|v| v as u64).sum();
+    
+    let roi = if total_spend > 0.0 { (total_conversions as f64 / total_spend) * 100.0 } else { 0.0 };
+    let ctr = if total_views > 0 { (total_shares as f64 / total_views as f64) * 100.0 } else { 0.0 };
+    let cvr = if total_shares > 0 { (total_conversions as f64 / total_shares as f64) * 100.0 } else { 0.0 };
+    
+    Ok(MarketingStats {
+        total_campaigns,
+        active_campaigns,
+        completed_campaigns,
+        total_content,
+        published_content,
+        total_views,
+        total_likes,
+        total_shares,
+        total_channels,
+        active_channels,
+        total_budget,
+        total_spend,
+        roi,
+        ctr,
+        cvr,
+    })
+}
+
+#[tauri::command]
+pub async fn marketing_get_channel_distribution(
+    state: State<'_, MarketingState>,
+) -> Result<Vec<ChannelDistribution>, String> {
+    info!("获取渠道分布");
+    
+    let channels = state.db.channels.read().map_err(|_| "获取数据失败")?;
+    let total = channels.len() as f64;
+    
+    let mut distribution: std::collections::HashMap<ChannelType, u32> = std::collections::HashMap::new();
+    for channel in channels.values() {
+        *distribution.entry(channel.channel_type).or_insert(0) += 1;
+    }
+    
+    let result: Vec<ChannelDistribution> = distribution.into_iter()
+        .map(|(ct, count)| ChannelDistribution {
+            channel_type: ct,
+            count,
+            percentage: if total > 0.0 { (count as f64 / total) * 100.0 } else { 0.0 },
+        })
+        .collect();
+    
+    Ok(result)
+}

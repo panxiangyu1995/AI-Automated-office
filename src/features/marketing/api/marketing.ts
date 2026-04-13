@@ -11,6 +11,8 @@ import type {
   GenerateContentRequest,
   GenerateContentResult,
   PlatformAdaptation,
+  MarketingStats,
+  ChannelDistribution,
   CreateCampaignRequest,
   UpdateCampaignRequest,
   QueryCampaignsParams,
@@ -97,4 +99,14 @@ export async function generateContent(request: GenerateContentRequest, tenantId?
 
 export async function getPlatformAdaptation(platform: string): Promise<PlatformAdaptation> {
   return invoke('marketing_get_platform_adaptation', { platform });
+}
+
+// ==================== 数据分析 API ====================
+
+export async function getMarketingStats(): Promise<MarketingStats> {
+  return invoke('marketing_get_stats');
+}
+
+export async function getChannelDistribution(): Promise<ChannelDistribution[]> {
+  return invoke('marketing_get_channel_distribution');
 }

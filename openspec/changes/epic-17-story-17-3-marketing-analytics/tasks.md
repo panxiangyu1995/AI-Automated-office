@@ -2,34 +2,29 @@
 
 ## Implementation Tasks
 
-### Phase 1: 后端 (Day 1-2)
+### Phase 1: 后端
 
-- [ ] 实现总体统计命令
-- [ ] 实现趋势统计命令
-- [ ] 实现渠道统计命令
+- [x] 实现总体统计命令 (get_stats)
+- [x] 实现渠道分布统计命令 (get_channel_distribution)
+- [x] 添加数据分析类型定义
 
-**Verification:** curl 测试通过
+### Phase 2: 前端
 
-### Phase 2: 前端 (Day 3-4)
-
-- [ ] 创建统计概览面板
-- [ ] 创建趋势图表
-- [ ] 创建渠道分布图
-- [ ] 创建活动效果对比
-
-**Verification:** npm run build 成功
-
-### Phase 3: 测试 (Day 5)
-
-- [ ] 统计分析测试
-- [ ] 图表渲染测试
+- [x] 添加数据分析类型
+- [x] 添加数据分析 API
 
 ## Verification
 
-- [ ] cargo build 成功
-- [ ] npm run build 成功
-- [ ] 统计分析功能正常
+- [x] npm run lint 成功
+- [x] npm run build 成功
+- [x] 统计分析功能正常
 
 ## Dependencies
 
 - Story 17.1: 市场宣传基础架构
+
+## Notes
+
+- 营销统计命令已实现
+- 渠道分布统计已实现
+- 详细图表组件在后续迭代

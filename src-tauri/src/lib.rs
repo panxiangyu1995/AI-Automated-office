@@ -612,6 +612,8 @@ pub fn run() {
             marketing::marketing_delete_channel,
             marketing::marketing_generate_content,
             marketing::marketing_get_platform_adaptation,
+            marketing::marketing_get_stats,
+            marketing::marketing_get_channel_distribution,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,
