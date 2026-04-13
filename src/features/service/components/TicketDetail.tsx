@@ -22,9 +22,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Clock, User, Phone, Mail, X, Plus, Star } from 'lucide-react';
+import { Clock, User, Phone, Mail, X, Plus, Star, BookOpen } from 'lucide-react';
 import { TicketTimeline } from './TicketTimeline';
 import { FollowUpForm } from './FollowUpForm';
+import { KnowledgeContribution, type KnowledgeContributionData } from './KnowledgeContribution';
 import type { TicketStatus, ProcessingRecord, CreateFollowUpRequest } from '../types/service';
 
 interface TicketDetailProps {
@@ -61,6 +62,7 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
   const [newRecordContent, setNewRecordContent] = useState('');
   const [processingRecords] = useState<ProcessingRecord[]>([]);
   const [followUpOpen, setFollowUpOpen] = useState(false);
+  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
   
   useEffect(() => {
     if (ticketId) {
@@ -90,6 +92,11 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
   const handleFollowUpSubmit = async (data: CreateFollowUpRequest) => {
     // TODO: 实现创建回访记录
     console.log('Follow-up submitted:', data);
+  };
+
+  const handleKnowledgeSubmit = async (data: KnowledgeContributionData) => {
+    // TODO: 实现提交知识贡献到知识库
+    console.log('Knowledge contribution submitted:', data);
   };
   
   const handleClose = () => {
@@ -262,6 +269,18 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                 </Button>
               )}
               
+              {/* 知识贡献按钮 - 工单完成后显示 */}
+              {currentTicket.status === 'completed' && (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => setKnowledgeOpen(true)}
+                >
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  保存到知识库
+                </Button>
+              )}
+              
               {/* 时间信息 */}
               <Card>
                 <CardHeader className="pb-2">
@@ -302,6 +321,19 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
           ticketId={currentTicket.id}
           customerName={currentTicket.customerName}
           customerContact={currentTicket.customerContact || ''}
+        />
+      )}
+
+      {/* 知识贡献对话框 */}
+      {currentTicket && (
+        <KnowledgeContribution
+          open={knowledgeOpen}
+          onOpenChange={setKnowledgeOpen}
+          ticketId={currentTicket.id}
+          ticketTitle={currentTicket.title}
+          processingSummary={currentTicket.description || ''}
+          customerName={currentTicket.customerName}
+          onSubmit={handleKnowledgeSubmit}
         />
       )}
     </>
