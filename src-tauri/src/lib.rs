@@ -40,6 +40,7 @@ pub mod service;
 pub mod tender;
 pub mod marketing;
 pub mod workspace;
+pub mod security;
 
 pub mod commands;
 
@@ -289,6 +290,9 @@ pub fn run() {
                 let workspace_state = workspace::WorkspaceState::new();
                 app.manage(workspace_state.db.clone());
 
+                // Initialize Security module (Epic 19 Story 19.1)
+                let security_state = security::SecurityState::new();
+                app.manage(security_state.db.clone());
                 // Initialize Management module
                 let management_state = management::ManagementState::new();
                 app.manage(management_state);
@@ -631,6 +635,18 @@ pub fn run() {
             workspace::workspace_update_todo,
             workspace::workspace_delete_todo,
             workspace::workspace_get_task_aggregations,
+            // Security commands (Epic 19 Story 19.1)
+            security::security_create_key,
+            security::security_get_key,
+            security::security_list_keys,
+            security::security_update_key,
+            security::security_rotate_key,
+            security::security_revoke_key,
+            security::security_delete_key,
+            security::security_get_stats,
+            security::security_encrypt,
+            security::security_decrypt,
+            security::security_get_audit_logs,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,
