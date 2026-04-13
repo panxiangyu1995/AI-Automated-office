@@ -571,6 +571,13 @@ pub fn run() {
             tender::tender_list_cases,
             tender::tender_update_case,
             tender::tender_delete_case,
+            tender::tender_create_project,
+            tender::tender_get_project,
+            tender::tender_list_projects,
+            tender::tender_update_project,
+            tender::tender_update_project_status,
+            tender::tender_delete_project,
+            tender::tender_get_statistics,
             // Message commands (Task 153)
             message::message_send,
             message::message_list,

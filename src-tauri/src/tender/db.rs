@@ -11,10 +11,14 @@ pub struct TenderDatabase {
     qualifications: RwLock<HashMap<String, Qualification>>,
     /// 业绩存储
     cases: RwLock<HashMap<String, Case>>,
+    /// 投标项目存储
+    projects: RwLock<HashMap<String, TenderProject>>,
     /// 资质 ID 索引
     qualification_id_index: RwLock<HashMap<String, String>>,
     /// 业绩 ID 索引
     case_id_index: RwLock<HashMap<String, String>>,
+    /// 项目 ID 索引
+    project_id_index: RwLock<HashMap<String, String>>,
 }
 
 impl TenderDatabase {
@@ -24,8 +28,10 @@ impl TenderDatabase {
         Self {
             qualifications: RwLock::new(HashMap::new()),
             cases: RwLock::new(HashMap::new()),
+            projects: RwLock::new(HashMap::new()),
             qualification_id_index: RwLock::new(HashMap::new()),
             case_id_index: RwLock::new(HashMap::new()),
+            project_id_index: RwLock::new(HashMap::new()),
         }
     }
 
@@ -286,6 +292,201 @@ impl TenderDatabase {
         
         info!("删除业绩成功: {}", id);
         Ok(())
+    }
+
+    // ==================== 投标项目管理 ====================
+
+    /// 创建投标项目
+    pub fn create_project(&self, project: TenderProject) -> Result<TenderProject, String> {
+        let mut projects = self.projects.write().map_err(|_| "获取写入锁失败".to_string())?;
+        let id = project.id.clone();
+        projects.insert(id.clone(), project.clone());
+        
+        if let Ok(mut index) = self.project_id_index.write() {
+            let _ = index.insert(id.clone(), id);
+        }
+        
+        info!("创建投标项目成功: {}", project.project_name);
+        Ok(project)
+    }
+
+    /// 获取投标项目
+    pub fn get_project(&self, id: &str) -> Option<TenderProject> {
+        self.projects.read().ok()?.get(id).cloned()
+    }
+
+    /// 查询投标项目列表
+    pub fn list_projects(&self, params: &QueryTenderProjectsParams) -> PagedResult<TenderProjectListItem> {
+        let projects = self.projects.read().unwrap_or_else(|e| e.into_inner());
+
+        let mut items: Vec<TenderProjectListItem> = projects
+            .values()
+            .filter(|p| {
+                if let Some(ref status) = params.status {
+                    if &p.status != status {
+                        return false;
+                    }
+                }
+                if let Some(ref search) = params.search {
+                    let search_lower = search.to_lowercase();
+                    if !p.project_name.to_lowercase().contains(&search_lower)
+                        && !p.customer_name.to_lowercase().contains(&search_lower)
+                    {
+                        return false;
+                    }
+                }
+                true
+            })
+            .map(|p| TenderProjectListItem {
+                id: p.id.clone(),
+                project_name: p.project_name.clone(),
+                customer_name: p.customer_name.clone(),
+                bidding_amount: p.bidding_amount,
+                status: p.status,
+                deadline: p.deadline.clone(),
+                progress: p.progress,
+            })
+            .collect();
+
+        items.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+
+        let page = params.page.unwrap_or(1).max(1);
+        let page_size = params.page_size.unwrap_or(20).min(100);
+        let total = items.len() as u32;
+        let start = ((page - 1) * page_size) as usize;
+        let end = (start + page_size as usize).min(items.len());
+
+        let page_items = if start < items.len() {
+            items[start..end].to_vec()
+        } else {
+            Vec::new()
+        };
+
+        PagedResult {
+            items: page_items,
+            total,
+            page,
+            page_size,
+        }
+    }
+
+    /// 更新投标项目
+    pub fn update_project(&self, id: &str, request: UpdateTenderProjectRequest) -> Result<TenderProject, String> {
+        let mut projects = self.projects.write().map_err(|_| "获取写入锁失败".to_string())?;
+        
+        let project = projects.get_mut(id).ok_or("投标项目不存在")?;
+        
+        if let Some(project_name) = request.project_name {
+            project.project_name = project_name;
+        }
+        if let Some(customer_name) = request.customer_name {
+            project.customer_name = customer_name;
+        }
+        if let Some(customer_contact) = request.customer_contact {
+            project.customer_contact = Some(customer_contact);
+        }
+        if let Some(bidding_amount) = request.bidding_amount {
+            project.bidding_amount = Some(bidding_amount);
+        }
+        if let Some(deadline) = request.deadline {
+            project.deadline = Some(deadline);
+        }
+        if let Some(bidding_date) = request.bidding_date {
+            project.bidding_date = Some(bidding_date);
+        }
+        if let Some(result_date) = request.result_date {
+            project.result_date = Some(result_date);
+        }
+        if let Some(qualification_ids) = request.qualification_ids {
+            project.qualification_ids = qualification_ids;
+        }
+        if let Some(case_ids) = request.case_ids {
+            project.case_ids = case_ids;
+        }
+        if let Some(progress) = request.progress {
+            project.progress = progress;
+        }
+        if let Some(notes) = request.notes {
+            project.notes = Some(notes);
+        }
+        project.updated_at = chrono::Utc::now().timestamp();
+        
+        info!("更新投标项目成功: {}", id);
+        Ok(project.clone())
+    }
+
+    /// 更新投标项目状态
+    pub fn update_project_status(&self, id: &str, status: TenderStatus) -> Result<TenderProject, String> {
+        let mut projects = self.projects.write().map_err(|_| "获取写入锁失败".to_string())?;
+        
+        let project = projects.get_mut(id).ok_or("投标项目不存在")?;
+        project.status = status;
+        project.updated_at = chrono::Utc::now().timestamp();
+        
+        info!("更新投标项目状态成功: {} -> {:?}", id, project.status);
+        Ok(project.clone())
+    }
+
+    /// 删除投标项目
+    pub fn delete_project(&self, id: &str) -> Result<(), String> {
+        let mut projects = self.projects.write().map_err(|_| "获取写入锁失败".to_string())?;
+        
+        if projects.remove(id).is_none() {
+            return Err("投标项目不存在".to_string());
+        }
+        
+        if let Ok(mut index) = self.project_id_index.write() {
+            let _ = index.remove(id);
+        }
+        
+        info!("删除投标项目成功: {}", id);
+        Ok(())
+    }
+
+    /// 获取投标统计
+    pub fn get_statistics(&self) -> TenderStatistics {
+        let projects = self.projects.read().unwrap_or_else(|e| e.into_inner());
+        
+        let total = projects.len() as u32;
+        let mut preparing = 0u32;
+        let mut bidding = 0u32;
+        let mut waiting_result = 0u32;
+        let mut won = 0u32;
+        let mut lost = 0u32;
+        let mut cancelled = 0u32;
+        let mut total_bidding_amount = 0.0;
+        
+        for p in projects.values() {
+            match p.status {
+                TenderStatus::Preparing => preparing += 1,
+                TenderStatus::Bidding => bidding += 1,
+                TenderStatus::WaitingResult => waiting_result += 1,
+                TenderStatus::Won => won += 1,
+                TenderStatus::Lost => lost += 1,
+                TenderStatus::Cancelled => cancelled += 1,
+            }
+            if let Some(amount) = p.bidding_amount {
+                total_bidding_amount += amount;
+            }
+        }
+        
+        let win_rate = if (won + lost) > 0 {
+            won as f64 / (won + lost) as f64 * 100.0
+        } else {
+            0.0
+        };
+        
+        TenderStatistics {
+            total,
+            preparing,
+            bidding,
+            waiting_result,
+            won,
+            lost,
+            cancelled,
+            total_bidding_amount,
+            win_rate,
+        }
     }
 }
 

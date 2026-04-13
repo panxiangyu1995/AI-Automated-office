@@ -280,3 +280,183 @@ pub struct CaseListItem {
     pub end_date: Option<String>,
     pub status: CaseStatus,
 }
+
+// ==================== 投标项目类型 ====================
+
+/// 投标项目状态
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TenderStatus {
+    Preparing,
+    Bidding,
+    WaitingResult,
+    Won,
+    Lost,
+    Cancelled,
+}
+
+impl Default for TenderStatus {
+    fn default() -> Self {
+        Self::Preparing
+    }
+}
+
+impl std::fmt::Display for TenderStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Preparing => write!(f, "preparing"),
+            Self::Bidding => write!(f, "bidding"),
+            Self::WaitingResult => write!(f, "waiting_result"),
+            Self::Won => write!(f, "won"),
+            Self::Lost => write!(f, "lost"),
+            Self::Cancelled => write!(f, "cancelled"),
+        }
+    }
+}
+
+/// 投标项目
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TenderProject {
+    pub id: String,
+    pub project_name: String,
+    pub customer_name: String,
+    pub customer_contact: Option<String>,
+    pub bidding_amount: Option<f64>,
+    pub status: TenderStatus,
+    pub qualification_ids: Vec<String>,
+    pub case_ids: Vec<String>,
+    pub deadline: Option<String>,
+    pub bidding_date: Option<String>,
+    pub result_date: Option<String>,
+    pub progress: i32,
+    pub attachments: Vec<String>,
+    pub notes: Option<String>,
+    pub tenant_id: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+impl Default for TenderProject {
+    fn default() -> Self {
+        let now = chrono::Utc::now().timestamp();
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            project_name: String::new(),
+            customer_name: String::new(),
+            customer_contact: None,
+            bidding_amount: None,
+            status: TenderStatus::default(),
+            qualification_ids: Vec::new(),
+            case_ids: Vec::new(),
+            deadline: None,
+            bidding_date: None,
+            result_date: None,
+            progress: 0,
+            attachments: Vec::new(),
+            notes: None,
+            tenant_id: String::new(),
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
+impl TenderProject {
+    pub fn new(
+        project_name: String,
+        customer_name: String,
+        tenant_id: String,
+    ) -> Self {
+        let now = chrono::Utc::now().timestamp();
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            project_name,
+            customer_name,
+            customer_contact: None,
+            bidding_amount: None,
+            status: TenderStatus::Preparing,
+            qualification_ids: Vec::new(),
+            case_ids: Vec::new(),
+            deadline: None,
+            bidding_date: None,
+            result_date: None,
+            progress: 0,
+            attachments: Vec::new(),
+            notes: None,
+            tenant_id,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
+// ==================== 投标项目请求/响应类型 ====================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateTenderProjectRequest {
+    pub project_name: String,
+    pub customer_name: String,
+    pub customer_contact: Option<String>,
+    pub bidding_amount: Option<f64>,
+    pub deadline: Option<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateTenderProjectRequest {
+    pub project_name: Option<String>,
+    pub customer_name: Option<String>,
+    pub customer_contact: Option<String>,
+    pub bidding_amount: Option<f64>,
+    pub deadline: Option<String>,
+    pub bidding_date: Option<String>,
+    pub result_date: Option<String>,
+    pub qualification_ids: Option<Vec<String>>,
+    pub case_ids: Option<Vec<String>>,
+    pub progress: Option<i32>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryTenderProjectsParams {
+    pub status: Option<TenderStatus>,
+    pub search: Option<String>,
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateTenderStatusRequest {
+    pub status: TenderStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TenderProjectListItem {
+    pub id: String,
+    pub project_name: String,
+    pub customer_name: String,
+    pub bidding_amount: Option<f64>,
+    pub status: TenderStatus,
+    pub deadline: Option<String>,
+    pub progress: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TenderStatistics {
+    pub total: u32,
+    pub preparing: u32,
+    pub bidding: u32,
+    pub waiting_result: u32,
+    pub won: u32,
+    pub lost: u32,
+    pub cancelled: u32,
+    pub total_bidding_amount: f64,
+    pub win_rate: f64,
+}

@@ -6,12 +6,19 @@ import type {
   QualificationListItem,
   Case,
   CaseListItem,
+  TenderProject,
+  TenderProjectListItem,
+  TenderStatistics,
   CreateQualificationRequest,
   UpdateQualificationRequest,
   QueryQualificationsParams,
   CreateCaseRequest,
   UpdateCaseRequest,
   QueryCasesParams,
+  CreateTenderProjectRequest,
+  UpdateTenderProjectRequest,
+  UpdateTenderStatusRequest,
+  QueryTenderProjectsParams,
   PagedResult,
 } from '../types/tender';
 
@@ -57,4 +64,34 @@ export async function updateCase(id: string, request: UpdateCaseRequest): Promis
 
 export async function deleteCase(id: string): Promise<void> {
   return invoke('tender_delete_case', { id });
+}
+
+// ==================== 投标项目 API ====================
+
+export async function createTenderProject(request: CreateTenderProjectRequest, tenantId?: string): Promise<TenderProject> {
+  return invoke('tender_create_project', { request, tenantId });
+}
+
+export async function getTenderProject(id: string): Promise<TenderProject> {
+  return invoke('tender_get_project', { id });
+}
+
+export async function listTenderProjects(params?: QueryTenderProjectsParams): Promise<PagedResult<TenderProjectListItem>> {
+  return invoke('tender_list_projects', { params });
+}
+
+export async function updateTenderProject(id: string, request: UpdateTenderProjectRequest): Promise<TenderProject> {
+  return invoke('tender_update_project', { id, request });
+}
+
+export async function updateTenderProjectStatus(id: string, request: UpdateTenderStatusRequest): Promise<TenderProject> {
+  return invoke('tender_update_project_status', { id, request });
+}
+
+export async function deleteTenderProject(id: string): Promise<void> {
+  return invoke('tender_delete_project', { id });
+}
+
+export async function getTenderStatistics(): Promise<TenderStatistics> {
+  return invoke('tender_get_statistics');
 }

@@ -158,3 +158,98 @@ export const caseStatusMeta: Record<CaseStatus, { label: string; color: string }
   completed: { label: '已完成', color: 'bg-green-100 text-green-800' },
   archived: { label: '已归档', color: 'bg-gray-100 text-gray-800' },
 };
+
+// ==================== 投标项目类型 ====================
+
+export type TenderStatus = 
+  | 'preparing' 
+  | 'bidding' 
+  | 'waiting_result' 
+  | 'won' 
+  | 'lost' 
+  | 'cancelled';
+
+export interface TenderProject {
+  id: string;
+  projectName: string;
+  customerName: string;
+  customerContact?: string;
+  biddingAmount?: number;
+  status: TenderStatus;
+  qualificationIds: string[];
+  caseIds: string[];
+  deadline?: string;
+  biddingDate?: string;
+  resultDate?: string;
+  progress: number;
+  attachments: string[];
+  notes?: string;
+  tenantId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface TenderProjectListItem {
+  id: string;
+  projectName: string;
+  customerName: string;
+  biddingAmount?: number;
+  status: TenderStatus;
+  deadline?: string;
+  progress: number;
+}
+
+export interface CreateTenderProjectRequest {
+  projectName: string;
+  customerName: string;
+  customerContact?: string;
+  biddingAmount?: number;
+  deadline?: string;
+  notes?: string;
+}
+
+export interface UpdateTenderProjectRequest {
+  projectName?: string;
+  customerName?: string;
+  customerContact?: string;
+  biddingAmount?: number;
+  deadline?: string;
+  biddingDate?: string;
+  resultDate?: string;
+  qualificationIds?: string[];
+  caseIds?: string[];
+  progress?: number;
+  notes?: string;
+}
+
+export interface UpdateTenderStatusRequest {
+  status: TenderStatus;
+}
+
+export interface QueryTenderProjectsParams {
+  status?: TenderStatus;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TenderStatistics {
+  total: number;
+  preparing: number;
+  bidding: number;
+  waitingResult: number;
+  won: number;
+  lost: number;
+  cancelled: number;
+  totalBiddingAmount: number;
+  winRate: number;
+}
+
+export const tenderStatusMeta: Record<TenderStatus, { label: string; color: string }> = {
+  preparing: { label: '筹备中', color: 'bg-gray-100 text-gray-800' },
+  bidding: { label: '投标中', color: 'bg-blue-100 text-blue-800' },
+  waiting_result: { label: '待开标', color: 'bg-yellow-100 text-yellow-800' },
+  won: { label: '已中标', color: 'bg-green-100 text-green-800' },
+  lost: { label: '已失标', color: 'bg-red-100 text-red-800' },
+  cancelled: { label: '已取消', color: 'bg-gray-100 text-gray-600' },
+};

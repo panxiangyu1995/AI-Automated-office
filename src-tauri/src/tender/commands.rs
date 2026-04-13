@@ -155,3 +155,84 @@ pub async fn tender_delete_case(
     info!("删除业绩: {}", id);
     state.db.delete_case(&id)
 }
+
+// ==================== 投标项目命令 ====================
+
+#[tauri::command]
+pub async fn tender_create_project(
+    state: State<'_, TenderState>,
+    request: CreateTenderProjectRequest,
+    tenant_id: Option<String>,
+) -> Result<TenderProject, String> {
+    info!("创建投标项目: {}", request.project_name);
+    
+    let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
+    
+    let project = TenderProject::new(
+        request.project_name,
+        request.customer_name,
+        tenant_id,
+    );
+    let mut project = project;
+    project.customer_contact = request.customer_contact;
+    project.bidding_amount = request.bidding_amount;
+    project.deadline = request.deadline;
+    project.notes = request.notes;
+    
+    state.db.create_project(project)
+}
+
+#[tauri::command]
+pub async fn tender_get_project(
+    state: State<'_, TenderState>,
+    id: String,
+) -> Result<TenderProject, String> {
+    info!("获取投标项目: {}", id);
+    state.db.get_project(&id).ok_or_else(|| "投标项目不存在".to_string())
+}
+
+#[tauri::command]
+pub async fn tender_list_projects(
+    state: State<'_, TenderState>,
+    params: Option<QueryTenderProjectsParams>,
+) -> Result<PagedResult<TenderProjectListItem>, String> {
+    let params = params.unwrap_or_default();
+    Ok(state.db.list_projects(&params))
+}
+
+#[tauri::command]
+pub async fn tender_update_project(
+    state: State<'_, TenderState>,
+    id: String,
+    request: UpdateTenderProjectRequest,
+) -> Result<TenderProject, String> {
+    info!("更新投标项目: {}", id);
+    state.db.update_project(&id, request)
+}
+
+#[tauri::command]
+pub async fn tender_update_project_status(
+    state: State<'_, TenderState>,
+    id: String,
+    request: UpdateTenderStatusRequest,
+) -> Result<TenderProject, String> {
+    info!("更新投标项目状态: {}", id);
+    state.db.update_project_status(&id, request.status)
+}
+
+#[tauri::command]
+pub async fn tender_delete_project(
+    state: State<'_, TenderState>,
+    id: String,
+) -> Result<(), String> {
+    info!("删除投标项目: {}", id);
+    state.db.delete_project(&id)
+}
+
+#[tauri::command]
+pub async fn tender_get_statistics(
+    state: State<'_, TenderState>,
+) -> Result<TenderStatistics, String> {
+    info!("获取投标统计");
+    Ok(state.db.get_statistics())
+}

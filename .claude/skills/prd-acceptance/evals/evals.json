@@ -1,0 +1,78 @@
+{
+  "skill_name": "prd-acceptance",
+  "description": "PRD驱动的验收测试skill，覆盖Epic/Story/FR/模块四种输入格式",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我验收 Epic 2（AI Agent核心能力）",
+      "expected_output": "解析PRD中Epic2的所有Story和FR → 生成AS列表 → 执行构建+模拟测试+API测试+E2E浏览器测试 → 输出完整验收报告",
+      "files": [],
+      "assertions": [
+        {
+          "name": "as_generated",
+          "description": "为Epic2所有FR生成验收标准",
+          "criteria": "生成的AS数量 ≥ Epic2关联的FR数量"
+        },
+        {
+          "name": "report_complete",
+          "description": "输出完整验收报告",
+          "criteria": "报告包含AS总览、测试详情、执行摘要三个部分"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我验收 Story 2.1（多轮对话交互）",
+      "expected_output": "解析PRD中Story2.1的FR定义 → 生成AS → 执行4步测试 → 输出报告",
+      "files": [],
+      "assertions": [
+        {
+          "name": "story_scope",
+          "description": "验收范围正确聚焦Story2.1",
+          "criteria": "AS列表中包含FR9相关标准"
+        },
+        {
+          "name": "four_step_test",
+          "description": "执行4步测试流程",
+          "criteria": "报告中体现构建→模拟→API→E2E四阶段"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "帮我验收 FR13（AI助手可以接入MCP服务扩展能力）",
+      "expected_output": "聚焦FR13一条需求 → 生成AS-FR13系列 → 执行MCP相关测试 → 验证MCP工具调用链路",
+      "files": [],
+      "assertions": [
+        {
+          "name": "mcp_as_generated",
+          "description": "生成FR13专项AS",
+          "criteria": "存在AS-FR13-01且包含MCP工具调用验证"
+        },
+        {
+          "name": "retries_on_failure",
+          "description": "失败时自动重试",
+          "criteria": "单点失败时重试最多2次"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "帮我验收 AGENT 模块",
+      "expected_output": "解析Agent模块（FR9-FR19）→ 生成全部AS → 执行全量测试 → 输出报告",
+      "files": [],
+      "assertions": [
+        {
+          "name": "module_scope",
+          "description": "覆盖Agent模块全部FR",
+          "criteria": "AS数量 ≥ 11（FR9-FR19共11条）"
+        },
+        {
+          "name": "lint_pass",
+          "description": "lint/build必须通过",
+          "criteria": "报告中体现npm run lint无错误"
+        }
+      ]
+    }
+  ]
+}
