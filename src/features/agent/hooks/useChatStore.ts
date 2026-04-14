@@ -4,19 +4,21 @@
  * Story 4.7 - 检查点自动创建
  * 
  * 管理聊天会话、消息、流式传输状态
- * 在消息提交时自动创建检查点
+ * 使用 EventBus 解耦，事件驱动通知其他模块
  * 
  * 铁律合规：
  * - ARCH: 分层架构，复用消息模型
  * - ARCH-037: 使用 Zustand 进行状态管理
  * - NFR-23: 检查点可靠性
+ * - 架构优化：解耦 CheckpointStore，使用事件驱动
  */
 
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import type { Message, TextPart, Part, MessageStatus, MessageRole } from '../../message/runtime/messageModel'
-import { useCheckpointStore } from './useCheckpointStore'
+import { eventBus } from '@/hooks/eventBus'
+import { ChatEvents } from '@/hooks/types/eventBus'
 
 // ==================== Helper Functions ====================
 
@@ -200,29 +202,14 @@ export const useChatStore = create<ChatStoreState>()(
       const session = state.sessions[sessionId]
       if (!session) return null
       
-      // 在添加消息前创建检查点（Story 4.7）
-      const checkpointStore = useCheckpointStore.getState()
-      if (checkpointStore.autoCheckpointEnabled) {
-        const messageIndex = session.messages.length
-        const lastMessage = session.messages[session.messages.length - 1]
-        
-        checkpointStore.createCheckpoint({
-          sessionId,
-          type: 'auto',
-          messageIndex,
-          messageSnapshot: {
-            messageIds: session.messages.map(m => m.id),
-            lastMessageContent: lastMessage?.parts
-              .filter((p): p is TextPart => p.type === 'text')
-              .map(p => p.content)
-              .join('\n') || undefined,
-          },
-          metadata: {
-            triggerMessageId: 'pending', // 将在消息创建后更新
-          },
-          label: `消息提交前`,
-        })
-      }
+      // 发布事件通知其他模块（解耦 CheckpointStore）
+      // 订阅者可以决定是否创建检查点
+      eventBus.publish<ChatEvents.MessageAddPayload>(ChatEvents.MESSAGE_ADD, {
+        sessionId,
+        messageId: 'pending', // 将由下方创建后填充
+        role: 'user',
+        content,
+      })
       
       const textPart = createTextPart(content)
       const message = createMessage(sessionId, 'user', [textPart], 'complete')
@@ -237,6 +224,14 @@ export const useChatStore = create<ChatStoreState>()(
           },
         },
       }))
+      
+      // 消息创建后，发布更新事件
+      eventBus.publish<ChatEvents.MessageAddPayload>(ChatEvents.MESSAGE_ADD, {
+        sessionId,
+        messageId: message.id,
+        role: 'user',
+        content,
+      })
       
       return message
     },

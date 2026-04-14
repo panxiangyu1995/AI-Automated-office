@@ -1,0 +1,27 @@
+/ralph-loop:ralph-loop "任务：提高 src/utils 的测试覆盖率到 90%
+
+### 1. 初始准备
+- 检查当前分支，确保在 feature/coverage-improvement 分支上工作
+- 生成时间戳（如 20250404_143052）
+- 创建 .plan/fix_plan_{timestamp}.md 记录执行步骤
+
+### 2. 开发与验证循环
+1. **分析**：运行覆盖率报告，识别 src/utils 中未覆盖的代码盲点
+2. **实现**：为未覆盖的函数编写测试用例
+3. **验证**：运行 npm run test -- --coverage 确保测试通过
+4. **纠错**：
+   - 若验证失败，分析最新错误日志
+   - 严禁忽略任何类型错误或lint警告
+   - 修复后立即重新验证，直到成功
+5. **提交**：验证通过后，git commit 并注明当前进度
+
+### 3. 完成标准（必须全部满足）
+- [ ] src/utils 目录下所有核心函数都有对应测试
+- [ ] 没有任何 TODO 或调试代码遗留
+- [ ] 运行 npm run test -- --coverage 覆盖率报告结果 >= 90%
+- [ ] 运行 npm run lint 无错误
+
+### 4. 退出信号
+满足上述所有条件后，务必输出：<promise>COVERAGE_90_ACHIEVED</promise>" \
+--completion-promise "COVERAGE_90_ACHIEVED" \
+--max-iterations 30

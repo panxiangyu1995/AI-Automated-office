@@ -20,10 +20,13 @@ use std::sync::RwLock;
 use serde_json::Value;
 use async_trait::async_trait;
 
+use crate::agent::tools::common::{
+    base_metadata, base_readonly_capabilities, base_writable_capabilities,
+    bool_param, number_param, string_param,
+};
 use crate::agent::tools::descriptor::{
-    ToolCapabilities, ToolCategory, ToolContextRequirements, ToolDescriptor,
-    ToolExecutionMode, ToolMetadata, ToolParameter, ToolParameterType,
-    ToolParameterTypeSpec, ToolPermissionRequirement,
+    ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
+    ToolPermissionRequirement,
 };
 use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, ToolErrorCode, ToolExecutor};
 use crate::agent::tools::registry::ToolRegistry;
@@ -31,30 +34,25 @@ use crate::agent::tools::registry::ToolRegistry;
 /// Configuration for filesystem tools
 #[derive(Clone)]
 pub struct FilesystemConfig {
-    /// Allowed directories for file operations (whitelist)
     allowed_dirs: Vec<PathBuf>,
-    /// Maximum file size in bytes (default 10MB)
     max_file_size: u64,
-    /// Default to read-only mode
     read_only_by_default: bool,
 }
 
 impl Default for FilesystemConfig {
     fn default() -> Self {
         Self {
-            // Default allowed dirs: user's home directory and current working directory
             allowed_dirs: vec![
                 dirs::home_dir().unwrap_or_else(|| PathBuf::from(".")),
                 std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
             ],
-            max_file_size: 10 * 1024 * 1024, // 10MB
+            max_file_size: 10 * 1024 * 1024,
             read_only_by_default: false,
         }
     }
 }
 
 impl FilesystemConfig {
-    /// Create a new config with custom allowed directories
     pub fn new(allowed_dirs: Vec<PathBuf>) -> Self {
         Self {
             allowed_dirs,
@@ -62,42 +60,32 @@ impl FilesystemConfig {
         }
     }
 
-    /// Check if a path is within allowed directories
     pub fn is_allowed(&self, path: &Path) -> bool {
-        // First try canonicalize
         let canonical_path = match path.canonicalize() {
             Ok(p) => p,
             Err(_) => {
-                // If path doesn't exist, check if parent is allowed
                 if let Some(parent) = path.parent() {
                     return self.is_allowed(parent);
                 }
                 return false;
             }
         };
-
-        self.allowed_dirs.iter().any(|allowed| {
-            canonical_path.starts_with(allowed)
-        })
+        self.allowed_dirs.iter().any(|allowed| canonical_path.starts_with(allowed))
     }
 
-    /// Get the maximum file size
     pub fn max_file_size(&self) -> u64 {
         self.max_file_size
     }
 }
 
-/// Global filesystem config (can be configured via settings)
 static FS_CONFIG: RwLock<Option<FilesystemConfig>> = RwLock::new(None);
 
-/// Initialize the default filesystem config
 fn get_or_init_config() -> FilesystemConfig {
     let config = FS_CONFIG.read().unwrap();
     if let Some(ref cfg) = *config {
         return cfg.clone();
     }
-    drop(config); // Release read lock
-
+    drop(config);
     let mut write = FS_CONFIG.write().unwrap();
     if write.is_none() {
         *write = Some(FilesystemConfig::default());
@@ -105,13 +93,11 @@ fn get_or_init_config() -> FilesystemConfig {
     write.clone().unwrap()
 }
 
-/// Set the filesystem configuration
 pub fn set_config(config: FilesystemConfig) {
     let mut cfg = FS_CONFIG.write().unwrap();
     *cfg = Some(config);
 }
 
-/// Get the current filesystem configuration
 pub fn get_config() -> FilesystemConfig {
     get_or_init_config()
 }
@@ -121,108 +107,27 @@ pub fn register_filesystem_tools(
     registry: &mut ToolRegistry,
     executors: &mut HashMap<String, Arc<dyn ToolExecutor>>,
 ) {
-    // file_read tool
     let descriptor = create_file_read_descriptor();
     registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(FileReadExecutor::default()));
 
-    // file_write tool
     let descriptor = create_file_write_descriptor();
     registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(FileWriteExecutor::default()));
 
-    // file_edit tool
     let descriptor = create_file_edit_descriptor();
     registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(FileEditExecutor::default()));
 
-    // dir_list tool
     let descriptor = create_dir_list_descriptor();
     registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(DirListExecutor::default()));
 }
 
-// ==================== Helper Functions ====================
-
-fn base_metadata(category: &str, tags: Vec<&str>) -> ToolMetadata {
-    ToolMetadata {
-        author: Some("core".to_string()),
-        version: "1.0.0".to_string(),
-        license: None,
-        homepage: None,
-        repository: None,
-        tags: tags.into_iter().map(|tag| tag.to_string()).collect(),
-        category: category.to_string(),
-        subcategory: None,
-    }
-}
-
-fn base_capabilities() -> ToolCapabilities {
-    ToolCapabilities {
-        supports_streaming: false,
-        supports_cancellation: true,
-        requires_permission: false,
-        requires_confirmation: false,
-        is_read_only: true,
-        has_side_effects: false,
-        supports_retry: true,
-        estimated_duration: None,
-    }
-}
-
-fn string_param(name: &str, description: &str, required: bool) -> ToolParameter {
-    ToolParameter {
-        name: name.to_string(),
-        param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-        description: description.to_string(),
-        required,
-        default: None,
-        r#enum: None,
-        minimum: None,
-        maximum: None,
-        pattern: None,
-        items: None,
-        properties: None,
-    }
-}
-
-fn number_param(name: &str, description: &str, required: bool) -> ToolParameter {
-    ToolParameter {
-        name: name.to_string(),
-        param_type: ToolParameterTypeSpec::Single(ToolParameterType::Number),
-        description: description.to_string(),
-        required,
-        default: None,
-        r#enum: None,
-        minimum: None,
-        maximum: None,
-        pattern: None,
-        items: None,
-        properties: None,
-    }
-}
-
-fn bool_param(name: &str, description: &str, required: bool) -> ToolParameter {
-    ToolParameter {
-        name: name.to_string(),
-        param_type: ToolParameterTypeSpec::Single(ToolParameterType::Boolean),
-        description: description.to_string(),
-        required,
-        default: None,
-        r#enum: None,
-        minimum: None,
-        maximum: None,
-        pattern: None,
-        items: None,
-        properties: None,
-    }
-}
-
-// ==================== Tool Descriptors ====================
+// Tool descriptors
 
 fn create_file_read_descriptor() -> ToolDescriptor {
-    let mut capabilities = base_capabilities();
-    capabilities.is_read_only = true;
+    let mut capabilities = base_readonly_capabilities();
 
     ToolDescriptor {
         id: "file_read".to_string(),
@@ -263,11 +168,7 @@ fn create_file_read_descriptor() -> ToolDescriptor {
 }
 
 fn create_file_write_descriptor() -> ToolDescriptor {
-    let mut capabilities = base_capabilities();
-    capabilities.is_read_only = false;
-    capabilities.has_side_effects = true;
-    capabilities.requires_permission = true;
-    capabilities.requires_confirmation = true;
+    let capabilities = base_writable_capabilities();
 
     ToolDescriptor {
         id: "file_write".to_string(),
@@ -307,11 +208,7 @@ fn create_file_write_descriptor() -> ToolDescriptor {
 }
 
 fn create_file_edit_descriptor() -> ToolDescriptor {
-    let mut capabilities = base_capabilities();
-    capabilities.is_read_only = false;
-    capabilities.has_side_effects = true;
-    capabilities.requires_permission = true;
-    capabilities.requires_confirmation = true;
+    let capabilities = base_writable_capabilities();
 
     ToolDescriptor {
         id: "file_edit".to_string(),
@@ -352,8 +249,7 @@ fn create_file_edit_descriptor() -> ToolDescriptor {
 }
 
 fn create_dir_list_descriptor() -> ToolDescriptor {
-    let mut capabilities = base_capabilities();
-    capabilities.is_read_only = true;
+    let mut capabilities = base_readonly_capabilities();
 
     ToolDescriptor {
         id: "dir_list".to_string(),
@@ -392,35 +288,27 @@ fn create_dir_list_descriptor() -> ToolDescriptor {
     }
 }
 
-// ==================== Tool Executors ====================
+// Tool Executors
 
 #[derive(Default)]
 struct FileReadExecutor;
 
 #[async_trait::async_trait]
 impl ToolExecutor for FileReadExecutor {
-    async fn execute(
-        &self,
-        params: Value,
-        _context: &ToolExecutionContext,
-    ) -> Result<Value, ToolExecutionError> {
+    async fn execute(&self, params: Value, _context: &ToolExecutionContext) -> Result<Value, ToolExecutionError> {
         let map = params.as_object().cloned().unwrap_or_default();
 
-        let path_str = map
-            .get("path")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: path".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })?;
+        let path_str = map.get("path").and_then(|v| v.as_str()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: path".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })?;
 
         let path = PathBuf::from(path_str);
         let config = get_config();
 
-        // Security check: path must be in allowed directories
         if !config.is_allowed(&path) {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::PermissionDenied,
@@ -434,7 +322,6 @@ impl ToolExecutor for FileReadExecutor {
             });
         }
 
-        // Check file exists
         if !path.exists() {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::NotFound,
@@ -445,7 +332,6 @@ impl ToolExecutor for FileReadExecutor {
             });
         }
 
-        // Check is file (not directory)
         if !path.is_file() {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::ValidationError,
@@ -456,7 +342,6 @@ impl ToolExecutor for FileReadExecutor {
             });
         }
 
-        // Get file size
         let metadata = fs::metadata(&path).map_err(|e| ToolExecutionError {
             code: ToolErrorCode::ExecutionError,
             message: format!("Failed to read file metadata: {}", e),
@@ -478,14 +363,12 @@ impl ToolExecutor for FileReadExecutor {
             });
         }
 
-        // Read file
         let offset = map.get("offset").and_then(|v| v.as_u64()).unwrap_or(0);
         let limit = map.get("limit").and_then(|v| v.as_u64());
         let as_text = map.get("as_text").and_then(|v| v.as_bool()).unwrap_or(true);
 
         if as_text {
             let content = if offset > 0 || limit.is_some() {
-                // Partial read
                 let file = fs::File::open(&path).map_err(|e| ToolExecutionError {
                     code: ToolErrorCode::ExecutionError,
                     message: format!("Failed to open file: {}", e),
@@ -506,9 +389,7 @@ impl ToolExecutor for FileReadExecutor {
                     let mut current_line = 0usize;
 
                     for line in reader.lines() {
-                        if current_line >= end {
-                            break;
-                        }
+                        if current_line >= end { break; }
                         if current_line >= start {
                             lines.push(line.map_err(|e| ToolExecutionError {
                                 code: ToolErrorCode::ExecutionError,
@@ -540,7 +421,6 @@ impl ToolExecutor for FileReadExecutor {
                 "encoding": "utf-8"
             }))
         } else {
-            // Binary read, returns base64
             let bytes = fs::read(&path).map_err(|e| ToolExecutionError {
                 code: ToolErrorCode::ExecutionError,
                 message: format!("Failed to read file: {}", e),
@@ -567,41 +447,30 @@ struct FileWriteExecutor;
 
 #[async_trait::async_trait]
 impl ToolExecutor for FileWriteExecutor {
-    async fn execute(
-        &self,
-        params: Value,
-        _context: &ToolExecutionContext,
-    ) -> Result<Value, ToolExecutionError> {
+    async fn execute(&self, params: Value, _context: &ToolExecutionContext) -> Result<Value, ToolExecutionError> {
         let map = params.as_object().cloned().unwrap_or_default();
 
-        let path_str = map
-            .get("path")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: path".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })?;
+        let path_str = map.get("path").and_then(|v| v.as_str()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: path".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })?;
 
-        let content = map
-            .get("content")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: content".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })?;
+        let content = map.get("content").and_then(|v| v.as_str()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: content".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })?;
 
         let append = map.get("append").and_then(|v| v.as_bool()).unwrap_or(false);
 
         let path = PathBuf::from(path_str);
         let config = get_config();
 
-        // Security check
         if !config.is_allowed(&path) {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::PermissionDenied,
@@ -612,7 +481,6 @@ impl ToolExecutor for FileWriteExecutor {
             });
         }
 
-        // Create parent directory if needed
         if let Some(parent) = path.parent() {
             if !parent.exists() {
                 fs::create_dir_all(parent).map_err(|e| ToolExecutionError {
@@ -625,7 +493,6 @@ impl ToolExecutor for FileWriteExecutor {
             }
         }
 
-        // Write file
         let result = if append {
             let mut file = fs::OpenOptions::new()
                 .create(true)
@@ -682,56 +549,40 @@ struct FileEditExecutor;
 
 #[async_trait::async_trait]
 impl ToolExecutor for FileEditExecutor {
-    async fn execute(
-        &self,
-        params: Value,
-        _context: &ToolExecutionContext,
-    ) -> Result<Value, ToolExecutionError> {
+    async fn execute(&self, params: Value, _context: &ToolExecutionContext) -> Result<Value, ToolExecutionError> {
         let map = params.as_object().cloned().unwrap_or_default();
 
-        let path_str = map
-            .get("path")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: path".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })?;
+        let path_str = map.get("path").and_then(|v| v.as_str()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: path".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })?;
 
-        let start_line = map
-            .get("start_line")
-            .and_then(|v| v.as_u64())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: start_line".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })? as usize;
+        let start_line = map.get("start_line").and_then(|v| v.as_u64()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: start_line".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })? as usize;
 
-        let end_line = map
-            .get("end_line")
-            .and_then(|v| v.as_u64())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: end_line".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })? as usize;
+        let end_line = map.get("end_line").and_then(|v| v.as_u64()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: end_line".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })? as usize;
 
-        let new_content = map
-            .get("new_content")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: new_content".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })?;
+        let new_content = map.get("new_content").and_then(|v| v.as_str()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: new_content".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })?;
 
         if start_line == 0 {
             return Err(ToolExecutionError {
@@ -756,7 +607,6 @@ impl ToolExecutor for FileEditExecutor {
         let path = PathBuf::from(path_str);
         let config = get_config();
 
-        // Security check
         if !config.is_allowed(&path) {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::PermissionDenied,
@@ -767,7 +617,6 @@ impl ToolExecutor for FileEditExecutor {
             });
         }
 
-        // Read all lines
         let file = fs::File::open(&path).map_err(|e| ToolExecutionError {
             code: ToolErrorCode::ExecutionError,
             message: format!("Failed to open file: {}", e),
@@ -777,18 +626,14 @@ impl ToolExecutor for FileEditExecutor {
         })?;
 
         let reader = BufReader::new(file);
-        let mut lines: Vec<String> = reader
-            .lines()
-            .map(|l| l.map_err(|e| ToolExecutionError {
-                code: ToolErrorCode::ExecutionError,
-                message: format!("Failed to read line: {}", e),
-                details: None,
-                recoverable: false,
-                retryable: false,
-            }))
-            .collect::<Result<Vec<_>, _>>()?;
+        let mut lines: Vec<String> = reader.lines().map(|l| l.map_err(|e| ToolExecutionError {
+            code: ToolErrorCode::ExecutionError,
+            message: format!("Failed to read line: {}", e),
+            details: None,
+            recoverable: false,
+            retryable: false,
+        })).collect::<Result<Vec<_>, _>>()?;
 
-        // Convert to 0-indexed
         let start_idx = start_line - 1;
         let end_idx = end_line;
 
@@ -802,11 +647,9 @@ impl ToolExecutor for FileEditExecutor {
             });
         }
 
-        // Replace lines
         let removed_lines = lines[start_idx..end_idx.min(lines.len())].join("\n");
         lines.splice(start_idx..end_idx.min(lines.len()), vec![new_content.to_string()]);
 
-        // Write back
         let new_content_str = lines.join("\n");
         fs::write(&path, new_content_str).map_err(|e| ToolExecutionError {
             code: ToolErrorCode::ExecutionError,
@@ -832,23 +675,16 @@ struct DirListExecutor;
 
 #[async_trait::async_trait]
 impl ToolExecutor for DirListExecutor {
-    async fn execute(
-        &self,
-        params: Value,
-        _context: &ToolExecutionContext,
-    ) -> Result<Value, ToolExecutionError> {
+    async fn execute(&self, params: Value, _context: &ToolExecutionContext) -> Result<Value, ToolExecutionError> {
         let map = params.as_object().cloned().unwrap_or_default();
 
-        let path_str = map
-            .get("path")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| ToolExecutionError {
-                code: ToolErrorCode::ValidationError,
-                message: "Missing required parameter: path".to_string(),
-                details: None,
-                recoverable: true,
-                retryable: false,
-            })?;
+        let path_str = map.get("path").and_then(|v| v.as_str()).ok_or_else(|| ToolExecutionError {
+            code: ToolErrorCode::ValidationError,
+            message: "Missing required parameter: path".to_string(),
+            details: None,
+            recoverable: true,
+            retryable: false,
+        })?;
 
         let recursive = map.get("recursive").and_then(|v| v.as_bool()).unwrap_or(false);
         let include_hidden = map.get("include_hidden").and_then(|v| v.as_bool()).unwrap_or(false);
@@ -856,7 +692,6 @@ impl ToolExecutor for DirListExecutor {
         let path = PathBuf::from(path_str);
         let config = get_config();
 
-        // Security check
         if !config.is_allowed(&path) {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::PermissionDenied,
@@ -887,12 +722,7 @@ impl ToolExecutor for DirListExecutor {
             });
         }
 
-        fn list_dir(
-            dir: &Path,
-            recursive: bool,
-            include_hidden: bool,
-            config: &FilesystemConfig,
-        ) -> Result<Vec<serde_json::Value>, ToolExecutionError> {
+        fn list_dir(dir: &Path, recursive: bool, include_hidden: bool, config: &FilesystemConfig) -> Result<Vec<serde_json::Value>, ToolExecutionError> {
             let mut entries = Vec::new();
 
             let read_dir = fs::read_dir(dir).map_err(|e| ToolExecutionError {
@@ -915,12 +745,11 @@ impl ToolExecutor for DirListExecutor {
                 let file_name = entry.file_name();
                 let file_name_str = file_name.to_string_lossy().to_string();
 
-                // Skip hidden files if not including them
                 if !include_hidden && file_name_str.starts_with('.') {
                     continue;
                 }
 
-                let path = entry.path();
+                let entry_path = entry.path();
                 let metadata = entry.metadata().map_err(|e| ToolExecutionError {
                     code: ToolErrorCode::ExecutionError,
                     message: format!("Failed to read metadata: {}", e),
@@ -931,7 +760,7 @@ impl ToolExecutor for DirListExecutor {
 
                 let entry_json = serde_json::json!({
                     "name": file_name_str,
-                    "path": path.to_string_lossy().to_string(),
+                    "path": entry_path.to_string_lossy().to_string(),
                     "is_directory": metadata.is_dir(),
                     "is_file": metadata.is_file(),
                     "size": metadata.len(),
@@ -944,9 +773,8 @@ impl ToolExecutor for DirListExecutor {
 
                 entries.push(entry_json);
 
-                // Recursive for directories
-                if recursive && path.is_dir() && config.is_allowed(&path) {
-                    let sub_entries = list_dir(&path, recursive, include_hidden, config)?;
+                if recursive && entry_path.is_dir() && config.is_allowed(&entry_path) {
+                    let sub_entries = list_dir(&entry_path, recursive, include_hidden, config)?;
                     entries.extend(sub_entries);
                 }
             }

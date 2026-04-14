@@ -45,6 +45,29 @@ impl CloudMarketClient {
         }
     }
 
+    /// Search marketplace for packages
+    pub async fn search_marketplace(
+        &self,
+        query: &str,
+        marketplace: super::types::MarketplaceType,
+        page: usize,
+    ) -> Result<super::types::MarketplaceSearchResult> {
+        let options = super::types::SearchOptions {
+            page,
+            ..Default::default()
+        };
+        self.search(query, options).await
+    }
+
+    /// Download a package from marketplace
+    pub async fn download_package(
+        &self,
+        package_id: &str,
+        version: &str,
+    ) -> Result<Vec<u8>> {
+        self.download(package_id, version).await
+    }
+
     /// Check if ClawHub compatibility is enabled
     pub fn is_clawhub_compatible(&self) -> bool {
         self.clawhub_compatible

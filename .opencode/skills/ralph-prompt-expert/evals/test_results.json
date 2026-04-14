@@ -1,0 +1,80 @@
+{
+  "summary": {
+    "total": 8,
+    "passed": 3,
+    "failed": 5
+  },
+  "results": [
+    {
+      "test": 1,
+      "description": "Valid command - coverage提升",
+      "passed": true,
+      "expected": true,
+      "errors": []
+    },
+    {
+      "test": 2,
+      "description": "Missing --completion-promise",
+      "passed": false,
+      "expected": false,
+      "errors": [
+        "Missing --completion-promise parameter",
+        "--completion-promise format error or empty value",
+        "Missing <promise> tag in task description"
+      ]
+    },
+    {
+      "test": 3,
+      "description": "Unmatched brackets",
+      "passed": false,
+      "expected": false,
+      "errors": [
+        "Unmatched (): 1 opening, 0 closing",
+        "Unmatched []: 1 opening, 0 closing"
+      ]
+    },
+    {
+      "test": 4,
+      "description": "Unmatched double quotes",
+      "passed": true,
+      "expected": false,
+      "errors": []
+    },
+    {
+      "test": 5,
+      "description": "Missing --max-iterations",
+      "passed": false,
+      "expected": false,
+      "errors": [
+        "Missing --max-iterations parameter",
+        "--max-iterations format error or non-numeric value"
+      ]
+    },
+    {
+      "test": 6,
+      "description": "Empty task description",
+      "passed": false,
+      "expected": false,
+      "errors": [
+        "Task description is empty or malformed",
+        "Missing <promise> tag in task description"
+      ]
+    },
+    {
+      "test": 7,
+      "description": "Missing <promise> tag",
+      "passed": false,
+      "expected": false,
+      "errors": [
+        "Missing <promise> tag in task description"
+      ]
+    },
+    {
+      "test": 8,
+      "description": "Valid with --allowed-tools",
+      "passed": true,
+      "expected": true,
+      "errors": []
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 
 pub mod automation;
 pub mod browser;
+pub mod common;
 pub mod core;
 pub mod descriptor;
 pub mod document;
@@ -20,6 +21,7 @@ pub mod shell;
 pub mod visibility;
 pub mod web;
 
+pub use common::*;
 pub use descriptor::*;
 pub use pipeline::*;
 pub use profile::*;

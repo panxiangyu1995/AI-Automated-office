@@ -34,6 +34,7 @@ pub mod installer;
 pub mod sandbox;
 pub mod security;
 pub mod approval;
+pub mod lifecycle;
 
 pub use types::*;
 pub use registry::{CapabilityPackageRegistry, FilePackageStorage, RegistryConfig};
@@ -48,6 +49,8 @@ pub use installer::{CapabilityInstaller, InstallRequest, InstallSource, InstallO
 pub use sandbox::{SandboxConfig, SandboxType, SandboxResult, Sandbox};
 pub use security::{SecurityScanner, SecurityScanResult, SecurityConfig, SecurityWarning, SecurityError};
 pub use approval::{ApprovalRequest, ApprovalDecision, ApprovalStatus, ApprovalUrgency, ApprovalRequester, ApprovalProcessor};
+pub use lifecycle::{LifecycleManager, LifecycleEvent, LifecycleHook, PluginContext};
+pub use lifecycle::hook::{LifecycleError, LifecycleResult};
 
 use std::sync::Arc;
 use tauri::State;

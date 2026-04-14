@@ -1,11 +1,10 @@
-//! L2 Enterprise knowledge base storage.
-
-use std::sync::Arc;
-use tokio::sync::RwLock;
+//! L2 Enterprise knowledge base storage with SQLite persistence.
 
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
+use rusqlite::ToSql;
+use std::sync::Arc;
 
+use super::backend::{SqliteStorage, StorageBackend, map_memory_item};
 use super::layer::MemoryStore;
 use super::super::types::{MemoryItem, MemoryLayer, MemoryQuery};
 use super::super::config::MemoryError;
@@ -21,7 +20,7 @@ impl DepartmentId {
 }
 
 /// Knowledge approval status
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ApprovalStatus {
     Pending,
@@ -30,7 +29,7 @@ pub enum ApprovalStatus {
 }
 
 /// Knowledge metadata for enterprise items
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EnterpriseMetadata {
     pub department_id: Option<String>,
     pub approval_status: ApprovalStatus,
@@ -51,291 +50,352 @@ impl Default for EnterpriseMetadata {
     }
 }
 
-/// In-memory enterprise knowledge store
-/// In production, this would be backed by SQLite with department-level access control
+/// Enterprise knowledge store backed by SQLite
 pub struct EnterpriseKnowledgeStore {
-    items: Arc<RwLock<Vec<MemoryItem>>>,
+    storage: Arc<SqliteStorage>,
 }
 
 impl EnterpriseKnowledgeStore {
-    pub fn new() -> Self {
+    /// Create a new enterprise knowledge store with the given SQLite storage
+    pub fn new(storage: SqliteStorage) -> Self {
         Self {
-            items: Arc::new(RwLock::new(Vec::new())),
+            storage: Arc::new(storage),
         }
     }
 
-    /// Create with initial capacity
-    pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            items: Arc::new(RwLock::new(Vec::with_capacity(capacity))),
-        }
+    /// Create with default database path
+    pub async fn with_default_db() -> Result<Self, MemoryError> {
+        let db_path = dirs::data_local_dir()
+            .unwrap_or_else(|| std::path::PathBuf::from("."))
+            .join("ai-automated-office")
+            .join("memory_enterprise.db");
+
+        let storage = SqliteStorage::new(&db_path)
+            .map_err(|e| MemoryError::Storage(format!("failed to create storage: {}", e)))?;
+
+        storage.init_schema().await
+            .map_err(|e| MemoryError::Storage(format!("failed to init schema: {}", e)))?;
+
+        Ok(Self::new(storage))
+    }
+
+    /// Create an in-memory store for testing
+    pub fn in_memory() -> Result<Self, MemoryError> {
+        let storage = SqliteStorage::in_memory()
+            .map_err(|e| MemoryError::Storage(format!("failed to create in-memory storage: {}", e)))?;
+
+        Ok(Self::new(storage))
+    }
+
+    /// Get storage reference
+    pub fn storage(&self) -> &Arc<SqliteStorage> {
+        &self.storage
     }
 
     /// Get all items for a tenant
-    pub async fn get_by_tenant(&self, tenant_id: &str) -> Vec<MemoryItem> {
-        let items = self.items.read().await;
-        items
-            .iter()
-            .filter(|item| item.tenant_id == tenant_id && !item.is_deleted)
-            .cloned()
-            .collect()
+    pub async fn get_by_tenant(&self, tenant_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
+        let sql = r#"
+            SELECT * FROM memory_items
+            WHERE is_deleted = 0
+              AND layer = 'Enterprise'
+              AND tenant_id = ?
+            ORDER BY updated_at DESC
+        "#;
+
+        let items: Vec<MemoryItem> = self.storage
+            .query(sql, map_memory_item)
+            .await
+            .map_err(|e| MemoryError::Storage(format!("get_by_tenant failed: {}", e)))?;
+
+        Ok(items)
     }
 
     /// Get approved items only
-    pub async fn get_approved(&self, tenant_id: &str) -> Vec<MemoryItem> {
-        let items = self.items.read().await;
-        items
-            .iter()
-            .filter(|item| {
-                if item.tenant_id != tenant_id || item.is_deleted {
-                    return false;
-                }
-                // Check approval status in metadata
-                if let Some(status) = item.metadata.get("approval_status") {
-                    return status != "pending";
-                }
-                true // No status means approved (backwards compatible)
-            })
-            .cloned()
-            .collect()
+    pub async fn get_approved(&self, tenant_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
+        let sql = r#"
+            SELECT * FROM memory_items
+            WHERE is_deleted = 0
+              AND layer = 'Enterprise'
+              AND tenant_id = ?
+              AND (metadata NOT LIKE '%"approval_status":"pending"%' OR metadata NOT LIKE '%approval_status%')
+            ORDER BY updated_at DESC
+        "#;
+
+        let items: Vec<MemoryItem> = self.storage
+            .query(sql, map_memory_item)
+            .await
+            .map_err(|e| MemoryError::Storage(format!("get_approved failed: {}", e)))?;
+
+        Ok(items)
     }
 
     /// Get items by department
-    pub async fn get_by_department(&self, tenant_id: &str, department_id: &str) -> Vec<MemoryItem> {
-        let items = self.items.read().await;
-        items
-            .iter()
-            .filter(|item| {
-                if item.tenant_id != tenant_id || item.is_deleted {
-                    return false;
-                }
-                if let Some(dept) = item.metadata.get("department_id") {
-                    return dept == department_id;
-                }
-                false
-            })
-            .cloned()
-            .collect()
+    pub async fn get_by_department(
+        &self,
+        tenant_id: &str,
+        department_id: &str,
+    ) -> Result<Vec<MemoryItem>, MemoryError> {
+        let sql = r#"
+            SELECT * FROM memory_items
+            WHERE is_deleted = 0
+              AND layer = 'Enterprise'
+              AND tenant_id = ?
+              AND json_extract(metadata, '$.department_id') = ?
+            ORDER BY updated_at DESC
+        "#;
+
+        let items: Vec<MemoryItem> = self.storage
+            .query(sql, map_memory_item)
+            .await
+            .map_err(|e| MemoryError::Storage(format!("get_by_department failed: {}", e)))?;
+
+        Ok(items)
     }
 
     /// Submit for approval
     pub async fn submit_for_approval(&self, id: &str) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET metadata = json_set(metadata, '$.approval_status', 'pending'),
+                updated_at = ?
+            WHERE id = ? AND is_deleted = 0 AND layer = 'Enterprise'
+        "#;
 
-        if let Some(item) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            if item.layer != MemoryLayer::Enterprise {
-                return Err(MemoryError::OperationFailed(
-                    "Only enterprise memories can be submitted for approval".to_string(),
-                ));
-            }
-            item.metadata["approval_status"] = serde_json::json!("pending");
-            item.updated_at = chrono::Utc::now().timestamp();
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
+        self.storage.execute_with_params(sql, &[
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("submit_for_approval failed: {}", e)))?;
+
+        Ok(())
     }
 
     /// Approve knowledge item
     pub async fn approve(&self, id: &str, approved_by: &str) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET metadata = json_set(json_set(metadata, '$.approval_status', 'approved'),
+                                     '$.approved_by', ?),
+                updated_at = ?
+            WHERE id = ? AND is_deleted = 0 AND layer = 'Enterprise'
+        "#;
 
-        if let Some(item) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            item.metadata["approval_status"] = serde_json::json!("approved");
-            item.metadata["approved_by"] = serde_json::json!(approved_by);
-            item.metadata["approved_at"] = serde_json::json!(chrono::Utc::now().timestamp());
-            item.updated_at = chrono::Utc::now().timestamp();
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
+        self.storage.execute_with_params(sql, &[
+            &approved_by as &dyn ToSql,
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("approve failed: {}", e)))?;
+
+        Ok(())
     }
 
     /// Reject knowledge item
     pub async fn reject(&self, id: &str, rejected_by: &str) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET metadata = json_set(json_set(metadata, '$.approval_status', 'rejected'),
+                                     '$.rejected_by', ?),
+                updated_at = ?
+            WHERE id = ? AND is_deleted = 0 AND layer = 'Enterprise'
+        "#;
 
-        if let Some(item) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            item.metadata["approval_status"] = serde_json::json!("rejected");
-            item.metadata["rejected_by"] = serde_json::json!(rejected_by);
-            item.updated_at = chrono::Utc::now().timestamp();
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
-    }
-}
+        self.storage.execute_with_params(sql, &[
+            &rejected_by as &dyn ToSql,
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("reject failed: {}", e)))?;
 
-impl Default for EnterpriseKnowledgeStore {
-    fn default() -> Self {
-        Self::new()
+        Ok(())
     }
 }
 
 #[async_trait]
 impl MemoryStore for EnterpriseKnowledgeStore {
     async fn add(&self, item: &MemoryItem) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
-
-        // Validate layer
         if item.layer != MemoryLayer::Enterprise {
             return Err(MemoryError::OperationFailed(
                 "EnterpriseKnowledgeStore can only store enterprise memories".to_string(),
             ));
         }
 
-        // Check for duplicate key for same tenant
-        let has_duplicate = items.iter().any(|i| {
-            i.tenant_id == item.tenant_id
-                && i.key == item.key
-                && !i.is_deleted
-        });
+        let sql = r#"
+            INSERT OR REPLACE INTO memory_items
+            (id, layer, tenant_id, user_id, session_key, key, value, category,
+             confidence, source, embedding, metadata, created_at, updated_at,
+             last_accessed_at, access_count, version, is_deleted)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        "#;
 
-        if has_duplicate {
-            return Err(MemoryError::OperationFailed(
-                "Knowledge with this key already exists for tenant".to_string(),
-            ));
-        }
+        self.storage.execute_with_params(sql, &[
+            &item.id as &dyn ToSql,
+            &format!("{:?}", item.layer) as &dyn ToSql,
+            &item.tenant_id as &dyn ToSql,
+            &item.user_id as &dyn ToSql,
+            &item.session_key as &dyn ToSql,
+            &item.key as &dyn ToSql,
+            &item.value as &dyn ToSql,
+            &format!("{:?}", item.category) as &dyn ToSql,
+            &item.confidence as &dyn ToSql,
+            &format!("{:?}", item.source) as &dyn ToSql,
+            &Option::<String>::None as &dyn ToSql,
+            &item.metadata.to_string() as &dyn ToSql,
+            &item.created_at as &dyn ToSql,
+            &item.updated_at as &dyn ToSql,
+            &item.last_accessed_at as &dyn ToSql,
+            &item.access_count as &dyn ToSql,
+            &item.version as &dyn ToSql,
+            &(item.is_deleted as i32) as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("add failed: {}", e)))?;
 
-        items.push(item.clone());
         Ok(())
     }
 
     async fn update(&self, id: &str, item: &MemoryItem) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET layer = ?, tenant_id = ?, user_id = ?, session_key = ?, key = ?,
+                value = ?, category = ?, confidence = ?, source = ?,
+                metadata = ?, updated_at = ?, version = version + 1
+            WHERE id = ? AND is_deleted = 0
+        "#;
 
-        if let Some(existing) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            // Enterprise items don't have user_id restriction
-            *existing = item.clone();
-            existing.updated_at = chrono::Utc::now().timestamp();
-            existing.version += 1;
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
+        self.storage.execute_with_params(sql, &[
+            &format!("{:?}", item.layer) as &dyn ToSql,
+            &item.tenant_id as &dyn ToSql,
+            &item.user_id as &dyn ToSql,
+            &item.session_key as &dyn ToSql,
+            &item.key as &dyn ToSql,
+            &item.value as &dyn ToSql,
+            &format!("{:?}", item.category) as &dyn ToSql,
+            &item.confidence as &dyn ToSql,
+            &format!("{:?}", item.source) as &dyn ToSql,
+            &item.metadata.to_string() as &dyn ToSql,
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("update failed: {}", e)))?;
+
+        Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET is_deleted = 1, updated_at = ?
+            WHERE id = ? AND is_deleted = 0
+        "#;
 
-        if let Some(item) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            item.is_deleted = true;
-            item.updated_at = chrono::Utc::now().timestamp();
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
+        self.storage.execute_with_params(sql, &[
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("delete failed: {}", e)))?;
+
+        Ok(())
     }
 
     async fn get(&self, id: &str) -> Result<Option<MemoryItem>, MemoryError> {
-        let items = self.items.read().await;
-        Ok(items
-            .iter()
-            .find(|i| i.id == id && !i.is_deleted)
-            .cloned())
+        let sql = "SELECT * FROM memory_items WHERE id = ? AND is_deleted = 0";
+
+        let items: Vec<MemoryItem> = self.storage
+            .query(sql, map_memory_item)
+            .await
+            .map_err(|e| MemoryError::Storage(format!("get failed: {}", e)))?;
+
+        Ok(items.into_iter().next())
     }
 
     async fn search(&self, query: &MemoryQuery) -> Result<Vec<MemoryItem>, MemoryError> {
-        let items = self.items.read().await;
+        let sql = r#"
+            SELECT * FROM memory_items
+            WHERE is_deleted = 0
+              AND layer = 'Enterprise'
+              AND tenant_id = ?
+              AND (key LIKE ? OR value LIKE ?)
+              AND (metadata NOT LIKE '%"approval_status":"pending"%' OR metadata NOT LIKE '%approval_status%')
+            ORDER BY updated_at DESC
+            LIMIT ?
+        "#;
 
-        let results: Vec<MemoryItem> = items
-            .iter()
-            .filter(|item| {
-                if item.is_deleted {
-                    return false;
-                }
-                // Filter by tenant (required for enterprise)
-                if item.tenant_id != query.tenant_id {
-                    return false;
-                }
-                // Filter by layer
-                if let Some(ref layer) = query.layer {
-                    if item.layer != *layer {
-                        return false;
-                    }
-                } else {
-                    // Default to enterprise layer
-                    if item.layer != MemoryLayer::Enterprise {
-                        return false;
-                    }
-                }
-                // Filter by category
-                if let Some(ref cat) = query.category {
-                    if item.category != *cat {
-                        return false;
-                    }
-                }
-                // Text search on key and value
-                if !query.query.is_empty() {
-                    let query_lower = query.query.to_lowercase();
-                    if !item.key.to_lowercase().contains(&query_lower)
-                        && !item.value.to_lowercase().contains(&query_lower)
-                    {
-                        return false;
-                    }
-                }
-                // Filter out pending items by default
-                if let Some(status) = item.metadata.get("approval_status") {
-                    if status == "pending" {
-                        return false;
-                    }
-                }
-                true
-            })
-            .take(query.k)
-            .cloned()
-            .collect();
+        let like_pattern = format!("%{}%", query.query);
+
+        let items: Vec<MemoryItem> = self.storage
+            .query(sql, map_memory_item)
+            .await
+            .map_err(|e| MemoryError::Storage(format!("search failed: {}", e)))?;
+
+        // Filter by category if specified
+        let mut results: Vec<MemoryItem> = items;
+        if let Some(ref cat) = query.category {
+            results.retain(|item| item.category == *cat);
+        }
+
+        // Apply limit
+        results.truncate(query.k);
 
         Ok(results)
     }
 
     async fn find_similar(&self, _item: &MemoryItem, _threshold: f64) -> Result<Vec<MemoryItem>, MemoryError> {
-        // In a full implementation, this would use vector similarity
+        // TODO: Implement vector similarity search using sqlite-vec
         Ok(Vec::new())
     }
 
     async fn update_access_stats(&self, id: &str) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET access_count = access_count + 1,
+                last_accessed_at = ?
+            WHERE id = ? AND is_deleted = 0
+        "#;
 
-        if let Some(item) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            item.access_count += 1;
-            item.last_accessed_at = Some(chrono::Utc::now().timestamp());
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
+        self.storage.execute_with_params(sql, &[
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("update_access_stats failed: {}", e)))?;
+
+        Ok(())
     }
 
     async fn merge(&self, id: &str, item: &MemoryItem) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
+        let sql = r#"
+            UPDATE memory_items
+            SET value = value || char(10) || '---' || char(10) || ?,
+                confidence = (confidence + ?) / 2,
+                updated_at = ?,
+                version = version + 1
+            WHERE id = ? AND is_deleted = 0
+        "#;
 
-        if let Some(existing) = items.iter_mut().find(|i| i.id == id && !i.is_deleted) {
-            if !existing.value.contains(&item.value) {
-                existing.value = format!("{}\n---\n{}", existing.value, item.value);
-            }
-            existing.confidence = (existing.confidence + item.confidence) / 2.0;
-            existing.updated_at = chrono::Utc::now().timestamp();
-            existing.version += 1;
-            Ok(())
-        } else {
-            Err(MemoryError::NotFound(id.to_string()))
-        }
+        self.storage.execute_with_params(sql, &[
+            &item.value as &dyn ToSql,
+            &item.confidence as &dyn ToSql,
+            &chrono::Utc::now().timestamp() as &dyn ToSql,
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("merge failed: {}", e)))?;
+
+        Ok(())
     }
 
     async fn hard_delete(&self, id: &str) -> Result<(), MemoryError> {
-        let mut items = self.items.write().await;
-        let original_len = items.len();
-        items.retain(|i| i.id != id);
-        if items.len() == original_len {
-            Err(MemoryError::NotFound(id.to_string()))
-        } else {
-            Ok(())
-        }
+        let sql = "DELETE FROM memory_items WHERE id = ?";
+
+        self.storage.execute_with_params(sql, &[
+            &id as &dyn ToSql,
+        ]).await.map_err(|e| MemoryError::Storage(format!("hard_delete failed: {}", e)))?;
+
+        Ok(())
     }
 
     async fn count(&self) -> Result<usize, MemoryError> {
-        let items = self.items.read().await;
-        Ok(items.iter().filter(|i| !i.is_deleted).count())
+        let sql = "SELECT COUNT(*) as count FROM memory_items WHERE is_deleted = 0 AND layer = 'Enterprise'";
+
+        let count: i64 = self.storage
+            .query(sql, |row| row.get("count"))
+            .await
+            .map_err(|e| MemoryError::Storage(format!("count failed: {}", e)))?
+            .into_iter()
+            .next()
+            .unwrap_or(0);
+
+        Ok(count as usize)
     }
 }
 
@@ -345,7 +405,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_enterprise_store_add_and_get() {
-        let store = EnterpriseKnowledgeStore::new();
+        let store = EnterpriseKnowledgeStore::in_memory().unwrap();
 
         let item = MemoryItem {
             id: "test-1".to_string(),
@@ -365,7 +425,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_enterprise_store_approval() {
-        let store = EnterpriseKnowledgeStore::new();
+        let store = EnterpriseKnowledgeStore::in_memory().unwrap();
 
         let item = MemoryItem {
             id: "test-1".to_string(),
@@ -381,5 +441,30 @@ mod tests {
 
         let retrieved = store.get("test-1").await.unwrap().unwrap();
         assert_eq!(retrieved.metadata["approval_status"], "approved");
+    }
+
+    #[tokio::test]
+    async fn test_enterprise_store_search() {
+        let store = EnterpriseKnowledgeStore::in_memory().unwrap();
+
+        let item = MemoryItem {
+            id: "test-search".to_string(),
+            layer: MemoryLayer::Enterprise,
+            tenant_id: "tenant-1".to_string(),
+            key: "hr-policy".to_string(),
+            value: "Vacation policy details".to_string(),
+            ..Default::default()
+        };
+
+        store.add(&item).await.unwrap();
+
+        let query = MemoryQuery {
+            query: "policy".to_string(),
+            tenant_id: "tenant-1".to_string(),
+            ..Default::default()
+        };
+
+        let results = store.search(&query).await.unwrap();
+        assert_eq!(results.len(), 1);
     }
 }

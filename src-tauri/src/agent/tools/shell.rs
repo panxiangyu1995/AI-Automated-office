@@ -2,15 +2,18 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
+use std::sync::RwLock;
 
 use async_trait::async_trait;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::sync::RwLock;
 
+use crate::agent::tools::common::{
+    base_metadata, base_writable_capabilities, bool_param, number_param, string_param,
+};
 use super::descriptor::{
-    ToolCapabilities, ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
-    ToolMetadata, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolPermissionRequirement,
+    ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
+    ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolPermissionRequirement,
 };
 use super::pipeline::{ToolExecutionContext, ToolExecutionError, ToolErrorCode, ToolExecutor};
 
@@ -20,14 +23,13 @@ static SHELL_CONFIG: RwLock<Option<ShellConfig>> = RwLock::new(None);
 
 #[derive(Debug, Clone)]
 pub struct ShellConfig {
-    allowed_commands: Vec<String>,
-    max_output_size: usize,
+    pub allowed_commands: Vec<String>,
+    pub max_output_size: usize,
 }
 
 impl Default for ShellConfig {
     fn default() -> Self {
         Self {
-            // Predefined allowed commands - security baseline
             allowed_commands: vec![
                 "echo".to_string(),
                 "pwd".to_string(),
@@ -80,18 +82,14 @@ fn get_or_init_config() -> ShellConfig {
     write.clone().unwrap()
 }
 
-/// Set shell configuration (for testing or custom configurations)
-pub fn set_config(config: ShellConfig) {
+pub fn set_shell_config(config: ShellConfig) {
     let mut write = SHELL_CONFIG.write().unwrap();
     *write = Some(config);
 }
 
 fn is_command_allowed(command: &str) -> bool {
     let config = get_or_init_config();
-    config
-        .allowed_commands
-        .iter()
-        .any(|cmd| cmd == command)
+    config.allowed_commands.iter().any(|cmd| cmd == command)
 }
 
 // ============ Tool Registration ============
@@ -109,40 +107,9 @@ pub fn register_shell_tools(
     executors.insert(descriptor.id.clone(), executor);
 }
 
-fn base_metadata(category: &str, tags: Vec<&str>) -> ToolMetadata {
-    ToolMetadata {
-        author: Some("core".to_string()),
-        version: "1.0.0".to_string(),
-        license: None,
-        homepage: None,
-        repository: None,
-        tags: tags.into_iter().map(|tag| tag.to_string()).collect(),
-        category: category.to_string(),
-        subcategory: None,
-    }
-}
-
-fn base_capabilities() -> ToolCapabilities {
-    ToolCapabilities {
-        supports_streaming: false,
-        supports_cancellation: true,
-        requires_permission: false,
-        requires_confirmation: false,
-        is_read_only: false,
-        has_side_effects: true,
-        supports_retry: true,
-        estimated_duration: None,
-    }
-}
-
 // ============ sandbox_execute Tool ============
 
 fn sandbox_execute() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
-    let mut capabilities = base_capabilities();
-    capabilities.requires_permission = true;
-    capabilities.has_side_effects = true;
-    capabilities.is_read_only = false;
-
     let permissions = vec![ToolPermissionRequirement {
         permission_type: "shell".to_string(),
         resource: "execute".to_string(),
@@ -151,19 +118,7 @@ fn sandbox_execute() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
     }];
 
     let parameters = vec![
-        ToolParameter {
-            name: "command".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "Command to execute (must be in whitelist)".to_string(),
-            required: true,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
+        string_param("command", "Command to execute (must be in whitelist)", true),
         ToolParameter {
             name: "args".to_string(),
             param_type: ToolParameterTypeSpec::Single(ToolParameterType::Array),
@@ -177,19 +132,7 @@ fn sandbox_execute() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
             items: None,
             properties: None,
         },
-        ToolParameter {
-            name: "cwd".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "Working directory for command execution".to_string(),
-            required: false,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
+        string_param("cwd", "Working directory for command execution", false),
     ];
 
     let descriptor = ToolDescriptor {
@@ -200,7 +143,7 @@ fn sandbox_execute() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
         parameters,
         return_type: None,
         execution_mode: ToolExecutionMode::Async,
-        capabilities,
+        capabilities: base_writable_capabilities(),
         permissions: Some(permissions),
         dependencies: None,
         context_requirements: Some(ToolContextRequirements {
@@ -261,7 +204,6 @@ impl ToolExecutor for SandboxExecuteExecutor {
             });
         }
 
-        // Security: Check command whitelist
         if !is_command_allowed(&command) {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::PermissionDenied,
@@ -293,7 +235,6 @@ impl ToolExecutor for SandboxExecuteExecutor {
             .and_then(|v| v.as_str())
             .map(PathBuf::from);
 
-        // Validate args to prevent command injection
         for arg in &args {
             if contains_shell_injection(arg) {
                 return Err(ToolExecutionError {
@@ -310,19 +251,14 @@ impl ToolExecutor for SandboxExecuteExecutor {
         }
 
         let config = get_or_init_config();
-
-        // Clone for result since command/args are moved into closure
         let command_for_result = command.clone();
         let args_for_result = args.clone();
 
-        // Execute command
         let output = match tokio::task::spawn_blocking(move || {
             execute_command(&command, &args, cwd.clone())
         }).await {
             Ok(Ok(output)) => output,
-            Ok(Err(e)) => {
-                return Err(e);
-            }
+            Ok(Err(e)) => return Err(e),
             Err(e) => {
                 return Err(ToolExecutionError {
                     code: ToolErrorCode::ExecutionError,
@@ -334,7 +270,6 @@ impl ToolExecutor for SandboxExecuteExecutor {
             }
         };
 
-        // Truncate output if too large
         let stdout = truncate_output(output.stdout, config.max_output_size);
         let stderr = truncate_output(output.stderr, config.max_output_size);
 
@@ -377,15 +312,13 @@ fn execute_command(
         cmd.current_dir(dir);
     }
 
-    let output = cmd
-        .output()
-        .map_err(|e| ToolExecutionError {
-            code: ToolErrorCode::ExecutionError,
-            message: format!("Failed to execute command: {}", e),
-            details: None,
-            recoverable: true,
-            retryable: true,
-        })?;
+    let output = cmd.output().map_err(|e| ToolExecutionError {
+        code: ToolErrorCode::ExecutionError,
+        message: format!("Failed to execute command: {}", e),
+        details: None,
+        recoverable: true,
+        retryable: true,
+    })?;
 
     Ok(CommandOutput {
         exit_code: output.status.code().unwrap_or(-1),
@@ -420,76 +353,12 @@ struct CommandOutput {
 // ============ pattern_search Tool ============
 
 fn pattern_search() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
-    let mut capabilities = base_capabilities();
-    capabilities.is_read_only = true;
-    capabilities.has_side_effects = false;
-
     let parameters = vec![
-        ToolParameter {
-            name: "pattern".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "Regex pattern to search for".to_string(),
-            required: true,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
-        ToolParameter {
-            name: "path".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "File or directory path to search in".to_string(),
-            required: true,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
-        ToolParameter {
-            name: "file_pattern".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "File glob pattern to filter files (e.g., *.rs, *.ts)".to_string(),
-            required: false,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
-        ToolParameter {
-            name: "case_sensitive".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::Boolean),
-            description: "Whether search is case sensitive".to_string(),
-            required: false,
-            default: Some(serde_json::Value::Bool(true)),
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
-        ToolParameter {
-            name: "max_results".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::Number),
-            description: "Maximum number of results to return".to_string(),
-            required: false,
-            default: Some(serde_json::Value::Number(1000.into())),
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
+        string_param("pattern", "Regex pattern to search for", true),
+        string_param("path", "File or directory path to search in", true),
+        string_param("file_pattern", "File glob pattern to filter files (e.g., *.rs, *.ts)", false),
+        bool_param("case_sensitive", "Whether search is case sensitive", false),
+        number_param("max_results", "Maximum number of results to return", false),
     ];
 
     let descriptor = ToolDescriptor {
@@ -500,7 +369,7 @@ fn pattern_search() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
         parameters,
         return_type: None,
         execution_mode: ToolExecutionMode::Async,
-        capabilities,
+        capabilities: base_writable_capabilities(),
         permissions: None,
         dependencies: None,
         context_requirements: Some(ToolContextRequirements {
@@ -569,7 +438,6 @@ impl ToolExecutor for PatternSearchExecutor {
             });
         }
 
-        // Validate regex pattern
         let regex_pattern = if map
             .get("case_sensitive")
             .and_then(|v| v.as_bool())

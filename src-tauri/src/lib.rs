@@ -397,6 +397,18 @@ pub fn run() {
             capability::enable_capability_package,
             capability::disable_capability_package,
             capability::import_clawhub_package,
+            // Capability installer commands
+            commands::capability::capability_install_local,
+            commands::capability::capability_install_from_market,
+            commands::capability::capability_install_from_url,
+            commands::capability::capability_security_scan,
+            commands::capability::capability_submit_approval,
+            commands::capability::capability_pending_approvals,
+            commands::capability::capability_process_approval,
+            commands::capability::capability_check_updates,
+            commands::capability::capability_execute_update,
+            commands::capability::capability_get_sandbox_config,
+            commands::capability::capability_update_sandbox_config,
             commands::tools::list_tools,
             commands::tools::execute_tool,
             // Session cache commands

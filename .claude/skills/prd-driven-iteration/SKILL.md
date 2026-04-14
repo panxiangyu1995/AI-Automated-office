@@ -609,7 +609,312 @@ openspec/changes/[openspec_change]/
     └── spec.md    # 详细规格
 ```
 
-#### 3.3 OpenSpec内容模板
+#### 3.3 OpenSpec文档内容强制规范
+
+**重要：OpenSpec文档必须完整详细，否则禁止进入实施阶段！**
+
+OpenSpec包含4个核心文档，每个都有必须包含的内容：
+
+##### 3.3.1 proposal.md 必须包含
+
+```markdown
+# [Epic X] [Story X.X]: [功能名称]
+
+## Why（必须说明）
+
+为什么要实现这个功能？解决什么业务问题或技术痛点？
+- 至少3个具体理由
+- 包含量化收益（如：减少50%开发时间）
+
+## What Changes（必须列举）
+
+本次变更的具体内容：
+1. 新增什么
+2. 修改什么
+3. 删除什么
+
+## Capabilities（必须完整）
+
+### New Capabilities
+列出所有新增的Tools/Capabilities，格式：
+- `{name}`: {描述}
+
+### Modified Capabilities
+列出所有修改的现有Capabilities，格式：
+- `{name}`: {修改内容}
+
+## Impact（必须分析）
+
+### 前端影响
+- 涉及的文件
+- 组件变更
+- API变更
+
+### 后端影响
+- 涉及的模块
+- 命令变更
+- 数据库变更
+
+### 依赖
+- 前置依赖
+- 被依赖模块
+
+## PRD对齐
+
+- FR编号列表
+- 对应的NFR
+- ARCH约束
+
+## Risks（必须评估）
+
+| 风险 | 影响 | 缓解措施 |
+|------|------|----------|
+| ... | ... | ... |
+```
+
+##### 3.3.2 design.md 必须包含
+
+```markdown
+# Design: [功能名称]
+
+## Context（必须说明）
+
+设计背景和上下文：
+- 当前系统状态
+- 为什么需要这个设计
+- 涉及的其他系统/模块
+
+## Goals / Non-Goals（必须明确）
+
+### Goals（必须完成）
+- [ ] 目标1
+- [ ] 目标2
+
+### Non-Goals（明确不做什么）
+- [ ] 不做什么1
+- [ ] 不做什么2
+
+## Decisions（必须完整）
+
+### 1. 核心数据模型
+
+**必须包含完整的Rust/TypeScript类型定义！**
+
+```rust
+// 注释说明每个字段的用途
+pub struct XxxModel {
+    pub id: String,
+    pub name: String,
+    // ...
+}
+```
+
+### 2. 核心流程
+
+**必须包含流程图（Mermaid格式）和详细说明！**
+
+```mermaid
+flowchart LR
+    A[开始] --> B[步骤1]
+    B --> C{判断}
+    C -->|是| D[结果1]
+    C -->|否| E[结果2]
+```
+
+### 3. API设计（Tauri命令）
+
+**必须包含完整的命令签名！**
+
+```rust
+#[tauri::command]
+pub async fn xxx_command(
+    ctx: State<'_, AppContext>,
+    param1: String,
+    param2: Option<String>,
+) -> Result<XxxResponse, XxxError> {
+    // ...
+}
+```
+
+### 4. 数据库Schema
+
+**必须包含完整的SQL！**
+
+```sql
+CREATE TABLE xxx (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    -- 完整字段
+);
+```
+
+### 5. 目录结构
+
+**必须包含预期的代码目录结构！**
+
+```
+src-tauri/src/
+├── module/
+│   ├── mod.rs
+│   ├── model.rs
+│   └── commands.rs
+```
+
+### 6. 前端组件结构
+
+**必须包含组件树！**
+
+```
+src/features/xxx/
+├── components/
+│   ├── XxxList.tsx
+│   ├── XxxDetail.tsx
+│   └── XxxForm.tsx
+├── hooks/
+│   └── useXxx.ts
+└── types/
+    └── xxx.types.ts
+```
+
+## Risks / Trade-offs（必须评估）
+
+| 风险 | 影响 | 缓解措施 |
+|------|------|----------|
+| ... | ... | ... |
+```
+
+##### 3.3.3 tasks.md 必须包含
+
+```markdown
+# Tasks: [功能名称]
+
+## Implementation Tasks
+
+### Phase 1: 后端核心
+- [ ] 子任务1.1（具体实现内容）
+- [ ] 子任务1.2
+  - 具体代码位置
+  - 预期结果
+
+### Phase 2: 前端
+- [ ] 子任务2.1
+- [ ] 子任务2.2
+
+### Phase 3: 集成测试
+- [ ] 集成测试1
+- [ ] 集成测试2
+
+## Verification
+
+### 编译验证
+- [ ] cargo build 成功
+- [ ] cargo clippy 无警告
+
+### 测试验证
+- [ ] npm run lint 成功
+- [ ] npm run build 成功
+- [ ] 功能测试通过
+
+## Dependencies
+
+- 依赖1
+- 依赖2
+
+## Notes
+
+- 实现注意事项
+- 需要人工确认的点
+```
+
+##### 3.3.4 specs/spec.md 必须包含（详细规格）
+
+```markdown
+# Specs: [功能名称]
+
+## 功能规格
+
+### 1. 功能点1
+
+**描述：** 详细描述
+
+**输入：**
+```
+{
+  "field1": "类型 | 必填 | 描述",
+  "field2": "类型 | 选填 | 描述"
+}
+```
+
+**输出：**
+```
+{
+  "result": "类型 | 描述",
+  "error": "类型 | 描述"
+}
+```
+
+**处理逻辑：**
+1. 步骤1
+2. 步骤2
+3. 步骤3
+
+**错误处理：**
+- Error1: 描述
+- Error2: 描述
+
+### 2. 功能点2
+...
+
+## 接口规格
+
+### Tauri命令
+
+#### command_name
+
+**参数：**
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| ... | ... | ... | ... |
+
+**返回值：**
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| ... | ... | ... |
+
+**错误码：**
+| 错误码 | 说明 |
+|--------|------|
+| ... | ... |
+
+## 数据规格
+
+### 数据模型X
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| ... | ... | ... | ... |
+```
+
+#### 3.4 OpenSpec质量检查清单
+
+**在进入实施阶段前，必须确认以下所有条目：**
+
+- [ ] proposal.md 包含 Why/What/Impact/Risks 完整
+- [ ] proposal.md 包含所有 FR/NFR/ARCH 编号
+- [ ] design.md 包含所有 Goals/Non-Goals
+- [ ] design.md 包含完整的 Rust 类型定义
+- [ ] design.md 包含完整的数据库 Schema
+- [ ] design.md 包含完整的 API 命令签名
+- [ ] design.md 包含目录结构规划
+- [ ] design.md 包含前端组件结构
+- [ ] tasks.md 包含所有实现步骤
+- [ ] tasks.md 包含 Verification 清单
+- [ ] specs/spec.md 包含所有功能点
+- [ ] specs/spec.md 包含完整的接口规格
+- [ ] 所有文档引用了正确的 PRD FR 编号
+- [ ] 所有文档符合架构约定
+
+**如果任何条目未完成，禁止进入实施阶段！**
 
 **proposal.md:**
 ```markdown

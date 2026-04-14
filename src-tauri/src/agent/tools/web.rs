@@ -3,14 +3,20 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::sync::RwLock;
 
-// Use reqwest for HTTP requests
 use crate::http::client::HttpRequest;
 
+use crate::agent::tools::common::{
+    base_metadata, base_readonly_capabilities, base_writable_capabilities,
+    bool_param, number_param, string_enum_param, string_param,
+};
+use crate::agent::tools::common::config::WebSearchConfig;
+use crate::agent::tools::common::config::ToolConfigManager;
 use super::descriptor::{
-    ToolCapabilities, ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
-    ToolMetadata, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolPermissionRequirement,
+    ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
+    ToolMetadata, ToolParameter, ToolPermissionRequirement,
 };
 use super::pipeline::{ToolExecutionContext, ToolExecutionError, ToolErrorCode, ToolExecutor};
 
@@ -19,34 +25,10 @@ use super::pipeline::{ToolExecutionContext, ToolExecutionError, ToolErrorCode, T
 static WEB_SEARCH_CONFIG: RwLock<Option<WebSearchConfig>> = RwLock::new(None);
 
 #[derive(Debug, Clone)]
-pub struct WebSearchConfig {
-    pub default_provider: String,
-    pub providers: HashMap<String, SearchProviderConfig>,
-    pub allowed_domains: Vec<String>,
-}
-
-#[derive(Debug, Clone)]
 pub struct SearchProviderConfig {
     pub provider_id: String,
     pub api_key: Option<String>,
     pub api_url: Option<String>,
-}
-
-impl Default for WebSearchConfig {
-    fn default() -> Self {
-        Self {
-            default_provider: "brave".to_string(),
-            providers: HashMap::new(),
-            allowed_domains: vec![
-                "google.com".to_string(),
-                "bing.com".to_string(),
-                "brave.com".to_string(),
-                "github.com".to_string(),
-                "stackoverflow.com".to_string(),
-                "reddit.com".to_string(),
-            ],
-        }
-    }
 }
 
 fn get_or_init_config() -> WebSearchConfig {
@@ -82,38 +64,9 @@ pub fn register_web_tools(
     executors.insert(descriptor.id.clone(), executor);
 }
 
-fn base_metadata(category: &str, tags: Vec<&str>) -> ToolMetadata {
-    ToolMetadata {
-        author: Some("core".to_string()),
-        version: "1.0.0".to_string(),
-        license: None,
-        homepage: None,
-        repository: None,
-        tags: tags.into_iter().map(|tag| tag.to_string()).collect(),
-        category: category.to_string(),
-        subcategory: None,
-    }
-}
-
-fn base_capabilities() -> ToolCapabilities {
-    ToolCapabilities {
-        supports_streaming: false,
-        supports_cancellation: true,
-        requires_permission: false,
-        requires_confirmation: false,
-        is_read_only: true,
-        has_side_effects: false,
-        supports_retry: true,
-        estimated_duration: None,
-    }
-}
-
 // ============ web_search Tool ============
 
 fn web_search() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
-    let mut capabilities = base_capabilities();
-    capabilities.requires_permission = true;
-
     let permissions = vec![ToolPermissionRequirement {
         permission_type: "network".to_string(),
         resource: "web_search".to_string(),
@@ -122,45 +75,9 @@ fn web_search() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
     }];
 
     let parameters = vec![
-        ToolParameter {
-            name: "query".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "Search query string".to_string(),
-            required: true,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
-        ToolParameter {
-            name: "provider".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "Search provider (brave, tavily, perplexity)".to_string(),
-            required: false,
-            default: None,
-            r#enum: Some(vec!["brave".to_string(), "tavily".to_string(), "perplexity".to_string()]),
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
-        ToolParameter {
-            name: "max_results".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::Number),
-            description: "Maximum number of results".to_string(),
-            required: false,
-            default: Some(serde_json::Value::Number(10.into())),
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
+        string_param("query", "Search query string", true),
+        string_enum_param("provider", "Search provider (brave, tavily, perplexity)", false, vec!["brave", "tavily", "perplexity"]),
+        number_param("max_results", "Maximum number of results", false),
     ];
 
     let descriptor = ToolDescriptor {
@@ -171,7 +88,7 @@ fn web_search() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
         parameters,
         return_type: None,
         execution_mode: ToolExecutionMode::Async,
-        capabilities,
+        capabilities: base_readonly_capabilities(),
         permissions: Some(permissions),
         dependencies: None,
         context_requirements: Some(ToolContextRequirements {
@@ -251,7 +168,6 @@ impl ToolExecutor for WebSearchExecutor {
 
         let config = get_or_init_config();
 
-        // Get provider config
         let provider_config = config
             .providers
             .get(&provider)
@@ -262,7 +178,6 @@ impl ToolExecutor for WebSearchExecutor {
                 api_url: None,
             });
 
-        // Perform search using the provider
         let results = match provider.as_str() {
             "brave" => search_brave(&query, max_results, &provider_config).await,
             "tavily" => search_tavily(&query, max_results, &provider_config).await,
@@ -295,12 +210,9 @@ impl ToolExecutor for WebSearchExecutor {
 
 async fn search_brave(
     query: &str,
-    max_results: usize,
+    _max_results: usize,
     _config: &SearchProviderConfig,
 ) -> Result<Vec<SearchResult>, ToolExecutionError> {
-    // Brave Search API
-    // Note: In production, you'd use the Brave Search API with an API key
-    // For now, we return a placeholder indicating API key is needed
     Err(ToolExecutionError {
         code: ToolErrorCode::ExecutionError,
         message: "Brave Search API requires configuration. Please set API key.".to_string(),
@@ -351,7 +263,6 @@ async fn search_tavily(
             retryable: true,
         })?;
 
-    // Parse Tavily response
     let body = response.body.ok_or_else(|| ToolExecutionError {
         code: ToolErrorCode::ExecutionError,
         message: "Empty response body from Tavily".to_string(),
@@ -427,7 +338,6 @@ async fn search_perplexity(
             retryable: true,
         })?;
 
-    // Parse Perplexity response
     let body = response.body.ok_or_else(|| ToolExecutionError {
         code: ToolErrorCode::ExecutionError,
         message: "Empty response body from Perplexity".to_string(),
@@ -468,10 +378,6 @@ async fn search_perplexity(
 // ============ web_fetch Tool ============
 
 fn web_fetch() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
-    let mut capabilities = base_capabilities();
-    capabilities.requires_permission = true;
-    capabilities.has_side_effects = false;
-
     let permissions = vec![ToolPermissionRequirement {
         permission_type: "network".to_string(),
         resource: "web_fetch".to_string(),
@@ -480,22 +386,10 @@ fn web_fetch() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
     }];
 
     let parameters = vec![
-        ToolParameter {
-            name: "url".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::String),
-            description: "URL to fetch".to_string(),
-            required: true,
-            default: None,
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
+        string_param("url", "URL to fetch", true),
         ToolParameter {
             name: "extract_rules".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::Object),
+            param_type: super::descriptor::ToolParameterTypeSpec::Single(super::descriptor::ToolParameterType::Object),
             description: "Extraction rules for filtering content".to_string(),
             required: false,
             default: None,
@@ -506,19 +400,7 @@ fn web_fetch() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
             items: None,
             properties: None,
         },
-        ToolParameter {
-            name: "timeout".to_string(),
-            param_type: ToolParameterTypeSpec::Single(ToolParameterType::Number),
-            description: "Timeout in milliseconds".to_string(),
-            required: false,
-            default: Some(serde_json::Value::Number(30000.into())),
-            r#enum: None,
-            minimum: None,
-            maximum: None,
-            pattern: None,
-            items: None,
-            properties: None,
-        },
+        number_param("timeout", "Timeout in milliseconds", false),
     ];
 
     let descriptor = ToolDescriptor {
@@ -529,7 +411,7 @@ fn web_fetch() -> (ToolDescriptor, Arc<dyn ToolExecutor>) {
         parameters,
         return_type: None,
         execution_mode: ToolExecutionMode::Async,
-        capabilities,
+        capabilities: base_writable_capabilities(),
         permissions: Some(permissions),
         dependencies: None,
         context_requirements: Some(ToolContextRequirements {
@@ -589,7 +471,6 @@ impl ToolExecutor for WebFetchExecutor {
             });
         }
 
-        // Basic URL validation
         if !url.starts_with("http://") && !url.starts_with("https://") {
             return Err(ToolExecutionError {
                 code: ToolErrorCode::ValidationError,
@@ -607,7 +488,6 @@ impl ToolExecutor for WebFetchExecutor {
 
         let config = get_or_init_config();
 
-        // Check if domain is allowed
         let domain = extract_domain(&url);
         let domain_allowed = config.allowed_domains.iter().any(|d| domain.ends_with(d));
         if !domain_allowed && !config.allowed_domains.is_empty() {

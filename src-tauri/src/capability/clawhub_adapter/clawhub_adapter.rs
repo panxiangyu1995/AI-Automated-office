@@ -59,6 +59,16 @@ impl ClawHubFormatAdapter {
         Self { inner: client }
     }
 
+    /// Convert JSON manifest value to CapabilityPackageManifest
+    pub async fn convert_json_manifest(
+        &self,
+        manifest: serde_json::Value,
+    ) -> Result<CapabilityPackageManifest> {
+        let clawhub_manifest: ClawHubManifest = serde_json::from_value(manifest)
+            .context("Failed to parse ClawHub manifest")?;
+        self.convert_to_capability_manifest(clawhub_manifest).await
+    }
+
     /// Import a ClawHub package
     pub async fn import_clawhub_package(&self, archive: &[u8]) -> Result<CapabilityPackageManifest> {
         let clawhub_manifest = self.parse_clawhub_manifest(archive).await?;

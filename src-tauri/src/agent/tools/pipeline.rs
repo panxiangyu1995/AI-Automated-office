@@ -225,8 +225,8 @@ impl ToolExecutionPipeline {
             .unwrap_or_default();
 
         let descriptor = match self.registry.get(&request.tool_id) {
-            Some(desc) => desc.clone(),
-            None => {
+            Ok(Some(desc)) => desc.clone(),
+            Ok(None) => {
                 return Ok(ToolExecutionResponse {
                     result: self.error_result(
                         &execution_id,
@@ -245,9 +245,52 @@ impl ToolExecutionPipeline {
                     sensitivity: None,
                 });
             }
+            Err(e) => {
+                return Ok(ToolExecutionResponse {
+                    result: self.error_result(
+                        &execution_id,
+                        &request.tool_id,
+                        started_at,
+                        ToolExecutionError {
+                            code: ToolErrorCode::InternalError,
+                            message: format!("Registry error: {}", e),
+                            details: None,
+                            recoverable: true,
+                            retryable: false,
+                        },
+                    ),
+                    confirmation: None,
+                    permission: None,
+                    sensitivity: None,
+                });
+            }
         };
 
-        if let Err(errors) = self.registry.validate(&request.tool_id, &params) {
+        // validate returns Result<Result<(), Vec<String>>, RegistryError>
+        let validation_result = match self.registry.validate(&request.tool_id, &params) {
+            Ok(r) => r,
+            Err(e) => {
+                return Ok(ToolExecutionResponse {
+                    result: self.error_result(
+                        &execution_id,
+                        &request.tool_id,
+                        started_at,
+                        ToolExecutionError {
+                            code: ToolErrorCode::InternalError,
+                            message: format!("Registry error: {}", e),
+                            details: None,
+                            recoverable: true,
+                            retryable: false,
+                        },
+                    ),
+                    confirmation: None,
+                    permission: None,
+                    sensitivity: None,
+                });
+            }
+        };
+
+        if let Err(errors) = validation_result {
             return Ok(ToolExecutionResponse {
                 result: self.error_result(
                     &execution_id,
