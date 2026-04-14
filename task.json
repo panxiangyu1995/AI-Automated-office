@@ -1,24 +1,25 @@
 {
-  "version": "7.0.0",
-  "lastUpdated": "2026-04-13",
-  "scope": "扩展部门模块 + Post-MVP功能 + 编辑器系统完善",
-  "batch": "Epic 15-24 - 扩展模块与Post-MVP功能",
+  "version": "8.0.0",
+  "lastUpdated": "2026-04-14",
+  "scope": "PRD覆盖补全 - ClawHub生态/Epic21增强/Epic58平台治理/Epic57自定义字段",
+  "batch": "Phase X - PRD覆盖度补全",
   "roadmap": "_bmad-output/planning-artifacts/prd.md",
-  "sourceOfTruth": "PRD MVP Definition + task-archived-5.json",
-  "activeNote": "新增扩展部门模块(After-sales/Bidding/Marketing 9个)、Post-MVP功能(Workspace/Security/Editor等 17个)、Marketplace/Connectors/GraphMemory/Experience等 11个，共37个新任务",
+  "sourceOfTruth": "PRD文档 + 代码实际扫描结果",
+  "activeNote": "基于代码实际扫描发现的PRD覆盖缺口（已修正）：Epic21(MCP Approve策略/提示词Rules管理)部分实现需完善、Epic58(平台治理)未实现、Epic57(自定义字段)未实现。修正后新增8个任务(ID 268-275)，删除4个已实现任务(原268/270/271/276)。",
   "summary": {
-    "total": 62,
+    "total": 69,
     "completed": 25,
-    "remaining": 37,
+    "remaining": 44,
     "byPriority": {
-      "critical": 2,
+      "critical": 4,
       "high": 15,
       "medium": 18,
-      "low": 10
+      "low": 14
     },
     "byEpic": {
       "Epic 1": 8,
       "Epic 2": 3,
+      "Epic 10": 2,
       "Epic 14": 9,
       "Epic 15": 3,
       "Epic 16": 3,
@@ -26,7 +27,7 @@
       "Epic 18": 5,
       "Epic 19": 5,
       "Epic 20": 4,
-      "Epic 21": 4,
+      "Epic 21": 3,
       "Epic 22": 4,
       "Epic 23": 3,
       "Epic 24": 3,
@@ -34,7 +35,9 @@
       "Epic 50": 1,
       "Epic 51": 1,
       "Epic 52": 1,
-      "Epic 53": 1
+      "Epic 53": 1,
+      "Epic 57": 2,
+      "Epic 58": 3
     }
   },
   "tasks": [
@@ -2688,43 +2691,62 @@
       "passes": true
     },
     {
-      "id": 267,
-      "epic": "Epic 24",
-      "story": "Story 24.3",
-      "title": "Experience可观测性增强",
-      "description": "实现统一日志中心、问题中心和性能仪表盘。",
+      "id": 269,
+      "epic": "Epic 10",
+      "story": "Story 10.2",
+      "title": "ClawHub生态- Skill/Plugin安装与安全管理",
+      "description": "实现Skill和Plugin的安装、卸载、版本管理、安全扫描。覆盖FR704-FR710, FR713-FR720, FR746-FR755共28条需求。",
       "implementationType": "new",
-      "phase": "Phase 7 - Post-MVP功能",
-      "priority": "high",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "critical",
       "backendRequired": true,
       "existingCode": {
         "frontend": [],
         "backend": [],
-        "note": "可观测性功能尚未完整实现。"
+        "note": "Skill/Plugin安装、版本管理、安全扫描功能完全未实现。"
       },
-      "openspec_change": "epic-24-story-24-3-experience-observability",
+      "openspec_change": "epic-10-story-10-2-clawhub-install",
       "steps": [
-        "实现统一日志中心",
-        "实现问题中心",
-        "实现性能仪表盘",
-        "实现链路追踪",
-        "创建监控页面"
+        "实现本地Skill文件导入功能",
+        "实现私有市场和ClawHub官方市场安装",
+        "实现Plugin沙箱执行环境",
+        "实现安全扫描和来源验证",
+        "实现签名验证机制",
+        "实现版本更新检查和升级",
+        "实现资源黑白名单配置",
+        "实现安装审批流程",
+        "运行验证测试"
       ],
       "frs_covered": [
-        "FR1100",
-        "FR1100-1",
-        "FR1100-2",
-        "FR1101",
-        "FR1102",
-        "FR1103",
-        "FR1103-1",
-        "FR1103-2",
-        "FR1104",
-        "FR1105",
-        "FR1106"
+        "FR704",
+        "FR705",
+        "FR706",
+        "FR707",
+        "FR708",
+        "FR709",
+        "FR710",
+        "FR713",
+        "FR714",
+        "FR715",
+        "FR716",
+        "FR717",
+        "FR718",
+        "FR719",
+        "FR720",
+        "FR746",
+        "FR747",
+        "FR748",
+        "FR749",
+        "FR750",
+        "FR751",
+        "FR752",
+        "FR753",
+        "FR754",
+        "FR755"
       ],
       "nfrs_covered": [
         "NFR1",
+        "NFR16",
         "NFR22"
       ],
       "arch_covered": [
@@ -2734,7 +2756,603 @@
         "UX-01"
       ],
       "dependencies": [],
-      "passes": true
+      "passes": false
+    },
+    {
+      "id": 270,
+      "epic": "Epic 10",
+      "story": "Story 10.3",
+      "title": "ClawHub生态-市场集成与资源管理",
+      "description": "实现ClawHub市场浏览、搜索、资源详情、资源上传审核。覆盖FR730-FR745共16条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [
+          "src/features/marketplace/"
+        ],
+        "backend": [],
+        "note": "Marketplace前端存在但后端和完整功能未实现。"
+      },
+      "openspec_change": "epic-10-story-10-3-clawhub-marketplace",
+      "steps": [
+        "实现官方市场浏览功能",
+        "实现资源搜索（名称/标签/类型）",
+        "实现资源详情页（评分、评论、依赖）",
+        "实现私有市场配置和管理",
+        "实现资源上传和审核流程",
+        "实现自动更新检查和策略配置",
+        "实现访问权限控制",
+        "实现资源安装/更新/卸载日志",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR730",
+        "FR731",
+        "FR732",
+        "FR733",
+        "FR734",
+        "FR735",
+        "FR736",
+        "FR737",
+        "FR738",
+        "FR739",
+        "FR740",
+        "FR741",
+        "FR742",
+        "FR743",
+        "FR744",
+        "FR745"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 271,
+      "epic": "Epic 21",
+      "story": "Story 21.5",
+      "title": "Epic21补全- MCP工具Approve策略系统",
+      "description": "实现MCP工具的三级Approve策略（自动/需确认/禁止）、批量配置、AI智能推荐。覆盖FR825-FR832共8条需求。（注：Ruleset后端已实现Allow/Ask/Deny，需完善MCP特定Approve策略和前端UI）",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/permission/ruleset.rs"
+        ],
+        "note": "Ruleset后端已实现Allow/Ask/Deny基础动作，但MCP工具特定的Approve策略系统（批量配置/AI推荐/企业默认策略）未实现，前端UI完全缺失。"
+      },
+      "openspec_change": "epic-21-story-21-5-mcp-approve-policy",
+      "steps": [
+        "定义三种Approve策略类型：自动批准/需确认/禁止",
+        "实现工具级Approve策略配置",
+        "实现批量设置同类型工具策略",
+        "实现AI智能推荐Approve策略",
+        "实现企业级默认Approve策略配置",
+        "实现临时批准一次调用功能",
+        "实现Approve决策日志记录",
+        "创建Approve策略管理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR825",
+        "FR826",
+        "FR827",
+        "FR828",
+        "FR829",
+        "FR830",
+        "FR831",
+        "FR832"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 272,
+      "epic": "Epic 21",
+      "story": "Story 21.6",
+      "title": "Epic21补全-系统提示词与Rules规则管理",
+      "description": "实现系统提示词编辑/模板/版本管理、Rules规则列表/条件触发/企业强制规则。覆盖FR850-FR888共33条需求。（注：PromptBuilder后端已实现，需完善提示词版本管理/前端UI/调试功能；Rules规则引擎已实现，需完善前端UI和条件触发）",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/prompt_builder.rs",
+          "src-tauri/src/agent/permission/ruleset.rs"
+        ],
+        "note": "PromptBuilder后端和Ruleset后端已实现，但提示词版本管理、前端UI管理界面、提示词调试模式（Token统计/AB测试）完全缺失。"
+      },
+      "openspec_change": "epic-21-story-21-6-prompt-rules-management",
+      "steps": [
+        "实现提示词编辑器（查看/编辑/自定义）",
+        "实现提示词模板管理（创建/导入/导出）",
+        "实现提示词变量占位符（动态注入）",
+        "实现提示词预览（变量替换后）",
+        "实现提示词版本管理和回滚",
+        "实现分层加载策略（L1基础/L2按需/L3运行时）",
+        "实现Rules规则列表和启用/禁用",
+        "实现自定义规则添加和条件触发",
+        "实现企业级强制规则配置",
+        "实现提示词调试模式（Token统计/AB测试）",
+        "创建提示词和Rules管理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR850",
+        "FR851",
+        "FR852",
+        "FR853",
+        "FR854",
+        "FR855",
+        "FR856",
+        "FR857",
+        "FR858",
+        "FR859",
+        "FR860",
+        "FR861",
+        "FR862",
+        "FR863",
+        "FR865",
+        "FR866",
+        "FR867",
+        "FR868",
+        "FR869",
+        "FR870",
+        "FR871",
+        "FR872",
+        "FR873",
+        "FR874",
+        "FR875",
+        "FR880",
+        "FR881",
+        "FR882",
+        "FR883",
+        "FR884",
+        "FR885",
+        "FR886",
+        "FR887",
+        "FR888"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01",
+        "UX-04"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 273,
+      "epic": "Epic 21",
+      "story": "Story 21.7",
+      "title": "Epic21补全- Sub-Agent AI辅助提示词生成",
+      "description": "实现Sub-Agent的AI辅助角色提示词生成、调用机制完善。覆盖FR905-FR914, FR930-FR938共15条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/subagent/"
+        ],
+        "note": "Sub-Agent基础框架存在但AI辅助提示词生成、嵌套调用机制未实现。FR905-FR914, FR930-FR938共15条需求缺失。"
+      },
+      "openspec_change": "epic-21-story-21-7-subagent-prompt-ai",
+      "steps": [
+        "实现AI辅助Sub-Agent角色提示词生成",
+        "实现提示词生成后的编辑和调整",
+        "实现触发关键词和条件表达式配置",
+        "实现不同模型选择和参数配置",
+        "实现自动路由选择Sub-Agent",
+        "实现手动指定Sub-Agent调用",
+        "实现Sub-Agent嵌套调用（最多3层）",
+        "实现执行失败回退和替代方案",
+        "创建Sub-Agent配置管理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR905",
+        "FR906",
+        "FR907",
+        "FR908",
+        "FR909",
+        "FR910",
+        "FR911",
+        "FR912",
+        "FR913",
+        "FR914",
+        "FR930",
+        "FR931",
+        "FR932",
+        "FR933",
+        "FR934",
+        "FR935",
+        "FR936",
+        "FR937",
+        "FR938"
+      ],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 274,
+      "epic": "Epic 58",
+      "story": "Story 58.1",
+      "title": "Epic58-平台级审批对象模型",
+      "description": "实现平台级审批对象模型：审批状态机、Approval Resume Gate、审批对象关联。覆盖FR1525-FR1532共8条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "审批基础存在但平台级审批对象模型完全未实现。FR1525-FR1532共8条需求缺失。"
+      },
+      "openspec_change": "epic-58-story-58-1-approval-object",
+      "steps": [
+        "定义平台级审批对象模型（独立于单一业务模块）",
+        "实现审批状态机（pending/revision_requested/resubmitted/approved/rejected）",
+        "实现审批审计字段（requestedBy/requestedAt/decidedBy/decidedAt/decisionNote）",
+        "实现审批对象关联（业务对象/文档资产/知识草稿/消息会话）",
+        "实现Approval Resume Gate（审批完成后恢复挂起任务）",
+        "实现人类审阅边界（审批决定必须由人类执行）",
+        "实现租户/部门/业务对象权限隔离",
+        "创建审批对象管理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR1525",
+        "FR1526",
+        "FR1527",
+        "FR1528",
+        "FR1529",
+        "FR1530",
+        "FR1531",
+        "FR1532"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16",
+        "NFR22"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 275,
+      "epic": "Epic 58",
+      "story": "Story 58.2",
+      "title": "Epic58-文档资产与修订链",
+      "description": "实现文档资产一等公民地位、修订链、版本历史、Staged Review。覆盖FR1533-FR1540共8条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "critical",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "文档资产治理完全未实现。FR1533-FR1540共8条需求缺失。"
+      },
+      "openspec_change": "epic-58-story-58-2-document-asset",
+      "steps": [
+        "实现文档资产一等对象模型",
+        "实现修订链和版本历史（draft/staged_review/approved/published/archived）",
+        "实现来源追溯（createdBy/updatedBy/来源类型）",
+        "实现文档关联（业务对象/审批对象/知识条目/模板）",
+        "实现Agent新建/修改文档进入Staged Review",
+        "实现文档到知识草稿的闭环",
+        "实现租户和对象权限隔离",
+        "创建文档资产管理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR1533",
+        "FR1534",
+        "FR1535",
+        "FR1536",
+        "FR1537",
+        "FR1538",
+        "FR1539",
+        "FR1540"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 277,
+      "epic": "Epic 58",
+      "story": "Story 58.4",
+      "title": "Epic58-能力治理与Principal Membership",
+      "description": "实现能力契约统一声明、治理看板、改进建议引擎、Principal Membership模型。覆盖FR1551-FR1558, FR1556-FR1558共8条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "能力治理看板和改进建议引擎完全未实现。FR1551-FR1558共8条需求缺失。"
+      },
+      "openspec_change": "epic-58-story-58-4-capability-governance",
+      "steps": [
+        "建立统一能力契约（Tool/Skill/MCP/部门能力包）",
+        "实现能力健康指标采集（成功率/延迟/失败率/审批摩擦率）",
+        "实现Capability Fitness Board（按租户/部门/能力维度）",
+        "实现改进建议引擎（基于失败链路/审批摩擦/Trace模式）",
+        "实现建议包审核边界（不得自动修改Prompt/Skill/Policy）",
+        "实现Principal Membership模型（人员/主Agent/Sub-Agent/群组/系统身份）",
+        "实现统一主体关系（消息/权限/审批/审计/协作）",
+        "实现Document-Approval-Knowledge Graph",
+        "创建能力治理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR1551",
+        "FR1552",
+        "FR1553",
+        "FR1554",
+        "FR1555",
+        "FR1556",
+        "FR1557",
+        "FR1558"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 274",
+        "Task 275"
+      ],
+      "passes": false
+    },
+    {
+      "id": 278,
+      "epic": "Epic 57",
+      "story": "Story 57.1",
+      "title": "Epic57-自定义字段基础系统",
+      "description": "实现自定义字段类型、字段定义、场景显示规则。覆盖FR1303-FR1311共9条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "自定义字段系统完全未实现。FR1303-FR1311共9条需求缺失。"
+      },
+      "openspec_change": "epic-57-story-57-1-custom-field-base",
+      "steps": [
+        "定义字段数据模型（field_key/名称/类型/默认值/必填/帮助说明/状态）",
+        "实现基础字段类型（文本/长文本/数字/金额/日期/日期时间/单选）",
+        "实现字段唯一标识管理",
+        "实现字段启用和停用",
+        "实现场景显示规则配置（列表/详情/创建/编辑/审批）",
+        "实现字段显示顺序配置",
+        "实现场景必填控制",
+        "实现动态表单/详情运行时按配置渲染",
+        "创建字段管理界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR1303",
+        "FR1304",
+        "FR1305",
+        "FR1306",
+        "FR1307",
+        "FR1308",
+        "FR1309",
+        "FR1310",
+        "FR1311"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [],
+      "passes": false
+    },
+    {
+      "id": 279,
+      "epic": "Epic 57",
+      "story": "Story 57.2",
+      "title": "Epic57-自定义字段AI感知能力",
+      "description": "实现AI字段感知、语义说明、使用范围控制、空值处理、脱敏。覆盖FR1312-FR1329共18条需求。",
+      "implementationType": "new",
+      "phase": "Phase X - PRD覆盖补全",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [],
+        "note": "AI字段感知能力完全未实现。FR1312-FR1329共18条需求缺失。"
+      },
+      "openspec_change": "epic-57-story-57-2-field-ai-awareness",
+      "steps": [
+        "实现AI可用/不可用标记",
+        "实现AI语义说明填写",
+        "实现AI使用范围配置（生成/摘要/建议/问答）",
+        "实现AI优先参考字段标记",
+        "实现AI任务触发时加载字段schema",
+        "实现最小暴露原则（只注入命中范围且AI可用的字段）",
+        "实现结构化上下文注入（含字段摘要和当前值）",
+        "实现空值显式传递（不得伪造业务值）",
+        "实现AI不得使用未授权字段约束",
+        "实现AI不得对空字段编造内容",
+        "实现补充提示兜底策略",
+        "实现AI使用关键字段时的透明展示",
+        "实现字段停用后的生命周期处理",
+        "实现租户隔离和审计日志",
+        "创建AI字段配置界面",
+        "运行验证测试"
+      ],
+      "frs_covered": [
+        "FR1312",
+        "FR1313",
+        "FR1314",
+        "FR1315",
+        "FR1316",
+        "FR1317",
+        "FR1318",
+        "FR1319",
+        "FR1320",
+        "FR1321",
+        "FR1322",
+        "FR1323",
+        "FR1324",
+        "FR1325",
+        "FR1326",
+        "FR1327",
+        "FR1328",
+        "FR1329"
+      ],
+      "nfrs_covered": [
+        "NFR1",
+        "NFR16"
+      ],
+      "arch_covered": [
+        "ARCH-01"
+      ],
+      "ux_covered": [
+        "UX-01"
+      ],
+      "dependencies": [
+        "Task 278"
+      ],
+      "passes": false
+    },
+    {
+      "id": 280,
+      "epic": "架构优化",
+      "story": "优化-记忆架构",
+      "title": "Agent记忆模块架构优化-阶段1",
+      "description": "优化Agent记忆模块架构：1)存储持久化(SQLite)；2)集成HybridRetrievalEngine；3)修复BM25搜索；4)完善Hook持久化链路。遵循KISS/DRY/SOLID原则，功能保持不变。",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": [],
+        "backend": [
+          "src-tauri/src/agent/memory/"
+        ],
+        "note": "发现6个架构问题：存储未持久化、向量搜索未实现、混合检索未启用、BM25搜索为空、Hook未连接存储、Sync为空实现"
+      },
+      "openspec_change": "memory-architecture-optimize-1",
+      "steps": [
+        "1. 创建storage/backend.rs定义StorageBackend trait和SQLite实现",
+        "2. 修改PersonalMemoryStore使用SQLite存储替代内存Vec",
+        "3. 修改EnterpriseKnowledgeStore使用SQLite存储",
+        "4. 实现SQLite表创建和迁移逻辑",
+        "5. 修改MemoryService集成HybridRetrievalEngine.search()",
+        "6. 修复keyword_search实现（使用SQLite FTS5）",
+        "7. 连接Hook事件到持久化存储",
+        "8. 实现sync()方法的增量同步逻辑",
+        "9. 运行cargo clippy验证",
+        "10. 运行cargo test验证"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": [
+        "NFR1"
+      ],
+      "arch_covered": [
+        "ARCH-01",
+        "ARCH-044"
+      ],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": false,
+      "optimization": {
+        "preserveFunctions": [
+          "MemoryService.search/add/update/delete",
+          "Hook事件处理（SessionStart/UserPromptSubmit/PostToolUse/Stop/SessionEnd）",
+          "三层记忆层架构（L1 Personal/L2 Enterprise/L3 Graph）",
+          "智能更新决策（Add/Update/Merge/Delete/None）",
+          "认知状态管理（Domain/Context/Trajectory）"
+        ],
+        "verificationMethod": [
+          "cargo clippy -- -D warnings",
+          "cargo test --lib",
+          "功能回归测试（Hook事件→持久化→检索）"
+        ],
+        "rollbackPlan": [
+          "回退storage/personal.rs和storage/enterprise.rs到内存实现",
+          "回退service.rs使用原search()逻辑",
+          "保留SQLite表结构供后续优化"
+        ]
+      }
     }
   ]
 }

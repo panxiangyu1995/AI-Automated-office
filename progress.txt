@@ -5132,3 +5132,140 @@ This might cause false positive tests. Resolve unhandled errors to make sure you
 - 5个测试失败是Tauri API在jsdom环境不可用导致的预期失败
 - 实际业务逻辑测试全部通过
 - MVP核心功能已验证可用
+
+## 2026-04-14 - PRD覆盖度深度分析 - Phase X任务补全
+
+### 分析方法：
+- 深度扫描PRD文档，解析全部FR需求（FR1-FR1558，共924条）
+- 扫描前端代码库(src/features/)：27个子目录，约420个文件
+- 扫描后端Rust代码库(src-tauri/src/)：37个子目录，约350+条#[tauri::command]
+- 交叉对比PRD需求与代码实现，识别覆盖缺口
+
+### 铁律合规检查：
+- PRD 合规：FR700-FR755(ClawHub)、FR825-FR888(提示词/Rules)、FR1525-FR1558(平台治理)、FR1303-FR1329(自定义字段)
+- 架构合规：ARCH-01(分层微内核架构)
+- UX 合规：UX-01/UX-04(VSCode风格布局)
+
+### 代码分析结果：
+
+#### 核心缺失功能（完全未实现）：
+
+| Epic | 功能 | FR范围 | 需求数量 | 状态 |
+|------|------|--------|----------|------|
+| Epic 10 | ClawHub生态兼容 | FR700-FR755 | 56 | ❌ 完全未实现 |
+| Epic 21 | MCP Approve策略 | FR825-FR832 | 8 | ❌ 完全未实现 |
+| Epic 21 | 系统提示词管理 | FR850-FR863 | 14 | ❌ 完全未实现 |
+| Epic 21 | Rules规则管理 | FR865-FR875 | 11 | ❌ 完全未实现 |
+| Epic 21 | 提示词调试 | FR880-FR888 | 9 | ❌ 完全未实现 |
+| Epic 58 | 平台级审批对象 | FR1525-FR1532 | 8 | ❌ 完全未实现 |
+| Epic 58 | 文档资产与修订链 | FR1533-FR1540 | 8 | ❌ 完全未实现 |
+| Epic 58 | Trace委派契约 | FR1541-FR1550 | 10 | ❌ 完全未实现 |
+| Epic 58 | 能力治理看板 | FR1551-FR1558 | 8 | ❌ 完全未实现 |
+| Epic 57 | 自定义字段系统 | FR1303-FR1329 | 27 | ❌ 完全未实现 |
+
+#### 部分实现功能：
+
+| Epic | 功能 | FR范围 | 需求数量 | 状态 |
+|------|------|--------|----------|------|
+| Epic 21 | LLM提供商管理 | FR800-FR809 | 10 | ⚠️ 部分实现 |
+| Epic 21 | MCP服务管理 | FR810-FR820 | 11 | ⚠️ 部分实现 |
+| Epic 21 | Sub-Agent管理 | FR890-FR938 | 41 | ⚠️ 部分实现 |
+| Epic 21 | Skill配置 | FR835-FR840 | 6 | ❌ 未实现 |
+
+### 生成的任务：
+
+#### Task 268: Epic 10 - ClawHub生态 Skill/SOUL/Plugin解析基础
+- 覆盖FR: FR700-FR702, FR711-FR712, FR721-FR722
+- 优先级: critical
+- 状态: pending
+
+#### Task 269: Epic 10 - Skill/Plugin安装与安全管理
+- 覆盖FR: FR704-FR710, FR713-FR720, FR746-FR755
+- 优先级: critical
+- 状态: pending
+- 依赖: Task 268
+
+#### Task 270: Epic 10 - 市场集成与资源管理
+- 覆盖FR: FR730-FR745
+- 优先级: high
+- 状态: pending
+- 依赖: Task 269
+
+#### Task 271: Epic 21 - MCP工具Approve策略系统
+- 覆盖FR: FR825-FR832
+- 优先级: critical
+- 状态: pending
+
+#### Task 272: Epic 21 - 系统提示词与Rules规则管理
+- 覆盖FR: FR850-FR888(共33条)
+- 优先级: critical
+- 状态: pending
+
+#### Task 273: Epic 21 - Sub-Agent AI辅助提示词生成
+- 覆盖FR: FR905-FR938(共19条)
+- 优先级: high
+- 状态: pending
+
+#### Task 274: Epic 58 - 平台级审批对象模型
+- 覆盖FR: FR1525-FR1532
+- 优先级: critical
+- 状态: pending
+
+#### Task 275: Epic 58 - 文档资产与修订链
+- 覆盖FR: FR1533-FR1540
+- 优先级: critical
+- 状态: pending
+
+#### Task 276: Epic 58 - 能力治理与Principal Membership
+- 覆盖FR: FR1551-FR1558
+- 优先级: high
+- 状态: pending
+- 依赖: Task 274, Task 275
+
+#### Task 276: Epic 57 - 自定义字段基础系统
+- 覆盖FR: FR1303-FR1311
+- 优先级: high
+- 状态: pending
+
+#### Task 277: Epic 57 - 自定义字段AI感知能力
+- 覆盖FR: FR1312-FR1329
+- 优先级: high
+- 状态: pending
+- 依赖: Task 276
+
+### 总结：
+- 新增10个任务(ID 269-279)
+- 删除3个已实现任务(原268-SkillParser, 原270-Marketplace, 原276-Trace)
+- 修正2个任务描述(Task 271/272 标注部分实现)
+- 覆盖约150+条FR需求
+- critical优先级: 4个
+- high优先级: 5个
+- 总任务数从62个修正为69个
+
+### 后续工作：
+1. 为剩余任务生成OpenSpec changes（已删除3个已实现任务）
+2. 按Epic顺序执行实现
+3. 优先完成critical优先级任务
+4. 完成后更新task.json passes状态
+
+---
+
+## 2026-04-14 - PRD覆盖缺口验证修正
+
+### 验证方法：
+通过代码扫描验证之前识别的核心缺口是否真实存在
+
+### 验证结果：
+
+| 原判断 | 修正后 | 验证依据 |
+|--------|--------|----------|
+| Task 268 (Skill Parser) 未实现 | **已实现** | `agent/skill/parser/parser.rs` 完整实现 |
+| Task 270 (Prompt Builder) 未实现 | **已实现** | `agent/prompt_builder.rs` 完整实现 |
+| Task 271 (Ruleset) 未实现 | **已实现** | `agent/permission/ruleset.rs` 完整实现 |
+| Task 276 (Audit Log) 未实现 | **已实现** | `agent/audit.rs` 完整实现 Trace/Span 模型 |
+
+### 修正操作：
+- 删除 Task 268, 270, 276
+- 修正 Task 271, 272 描述（标注部分实现）
+- Task 269 (Marketplace) 保留（后端确实缺失）
+- 任务总数从 74 修正为 69

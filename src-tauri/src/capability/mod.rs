@@ -30,6 +30,10 @@ pub mod version_manager;
 pub mod dependency;
 pub mod permission;
 pub mod loader;
+pub mod installer;
+pub mod sandbox;
+pub mod security;
+pub mod approval;
 
 pub use types::*;
 pub use registry::{CapabilityPackageRegistry, FilePackageStorage, RegistryConfig};
@@ -40,6 +44,10 @@ pub use version_manager::VersionManagerService;
 pub use dependency::{DependencyResolver, PackageRegistryProvider};
 pub use permission::{PackagePermissionController, PermissionService, AuditLogger, SimplePermissionService, SimpleAuditLogger};
 pub use loader::PackageLoader;
+pub use installer::{CapabilityInstaller, InstallRequest, InstallSource, InstallOptions, InstallResult};
+pub use sandbox::{SandboxConfig, SandboxType, SandboxResult, Sandbox};
+pub use security::{SecurityScanner, SecurityScanResult, SecurityConfig, SecurityWarning, SecurityError};
+pub use approval::{ApprovalRequest, ApprovalDecision, ApprovalStatus, ApprovalUrgency, ApprovalRequester, ApprovalProcessor};
 
 use std::sync::Arc;
 use tauri::State;
