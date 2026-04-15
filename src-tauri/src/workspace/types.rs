@@ -38,7 +38,7 @@ impl Default for WorkspaceLayout {
 // ==================== 日清类型 ====================
 
 /// 日清任务来源模块
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum TodoSourceModule {
     Hr,

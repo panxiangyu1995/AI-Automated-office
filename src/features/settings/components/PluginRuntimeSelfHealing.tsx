@@ -59,6 +59,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 
@@ -280,7 +281,8 @@ const mockDiagnostics: DiagnosticEntry[] = [
     pluginName: 'Knowledge Base',
     level: 'error',
     code: 'DKB-001',
-    message: 'Chunk embedding generation failed 3 consecutive times. Consider increasing timeout or checking vector DB health.',
+    message:
+      'Chunk embedding generation failed 3 consecutive times. Consider increasing timeout or checking vector DB health.',
     timestamp: new Date(Date.now() - 120000),
     actionable: true,
     actionTaken: 'retry',
@@ -302,7 +304,8 @@ const mockDiagnostics: DiagnosticEntry[] = [
     pluginName: 'Finance OCR',
     level: 'warning',
     code: 'DFN-001',
-    message: 'Memory usage approaching threshold (78%). Consider scaling down concurrent OCR operations.',
+    message:
+      'Memory usage approaching threshold (78%). Consider scaling down concurrent OCR operations.',
     timestamp: new Date(Date.now() - 300000),
     actionable: true,
     actionTaken: null,
@@ -474,22 +477,35 @@ interface PluginHealthCardProps {
   onViewDetails?: () => void
 }
 
-function PluginHealthCard({ plugin, onEnable, onDisable, onRestart, onViewDetails }: PluginHealthCardProps) {
+function PluginHealthCard({
+  plugin,
+  onEnable,
+  onDisable,
+  onRestart,
+  onViewDetails,
+}: PluginHealthCardProps) {
   const circuitStatus = getCircuitBreakerStatus(plugin.consecutiveFailures)
 
   return (
-    <div className={cn(
-      'relative rounded-lg border p-4 transition-colors',
-      plugin.status === 'healthy' && 'border-green-500/20 bg-green-500/5',
-      plugin.status === 'degraded' && 'border-yellow-500/20 bg-yellow-500/5',
-      plugin.status === 'unhealthy' && 'border-orange-500/20 bg-orange-500/5',
-      plugin.status === 'isolated' && 'border-purple-500/20 bg-purple-500/5',
-      plugin.status === 'disabled' && 'border-red-500/20 bg-red-500/5'
-    )}>
+    <div
+      className={cn(
+        'relative rounded-lg border p-4 transition-colors',
+        plugin.status === 'healthy' && 'border-green-500/20 bg-green-500/5',
+        plugin.status === 'degraded' && 'border-yellow-500/20 bg-yellow-500/5',
+        plugin.status === 'unhealthy' && 'border-orange-500/20 bg-orange-500/5',
+        plugin.status === 'isolated' && 'border-purple-500/20 bg-purple-500/5',
+        plugin.status === 'disabled' && 'border-red-500/20 bg-red-500/5'
+      )}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', getHealthStatusColor(plugin.status))}>
+          <div
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-full',
+              getHealthStatusColor(plugin.status)
+            )}
+          >
             {getHealthStatusIcon(plugin.status)}
           </div>
           <div>
@@ -514,7 +530,15 @@ function PluginHealthCard({ plugin, onEnable, onDisable, onRestart, onViewDetail
         <div className="flex items-center gap-2 text-sm">
           <Activity className="h-3 w-3 text-muted-foreground" />
           <span className="text-muted-foreground">故障率:</span>
-          <span className={plugin.faultRate > 10 ? 'text-red-500 font-medium' : plugin.faultRate > 5 ? 'text-yellow-500' : ''}>
+          <span
+            className={
+              plugin.faultRate > 10
+                ? 'text-red-500 font-medium'
+                : plugin.faultRate > 5
+                  ? 'text-yellow-500'
+                  : ''
+            }
+          >
             {plugin.faultRate.toFixed(1)}%
           </span>
         </div>
@@ -558,7 +582,16 @@ function PluginHealthCard({ plugin, onEnable, onDisable, onRestart, onViewDetail
       )}
 
       {/* Circuit Breaker Status */}
-      <div className={cn('flex items-center justify-between text-xs mb-3 p-2 rounded', circuitStatus.color === 'text-red-500' ? 'bg-red-500/10' : circuitStatus.color === 'text-orange-500' ? 'bg-orange-500/10' : 'bg-green-500/10')}>
+      <div
+        className={cn(
+          'flex items-center justify-between text-xs mb-3 p-2 rounded',
+          circuitStatus.color === 'text-red-500'
+            ? 'bg-red-500/10'
+            : circuitStatus.color === 'text-orange-500'
+              ? 'bg-orange-500/10'
+              : 'bg-green-500/10'
+        )}
+      >
         <span className="flex items-center gap-1">
           <Zap className="h-3 w-3" />
           熔断状态: {circuitStatus.label}
@@ -604,8 +637,18 @@ interface PluginDetailDialogProps {
   onExportDiag?: () => void
 }
 
-function PluginDetailDialog({ plugin, open, onClose, onRestart, onEnable, onDisable, onExportDiag }: PluginDetailDialogProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'faults' | 'diagnostics' | 'recovery'>('overview')
+function PluginDetailDialog({
+  plugin,
+  open,
+  onClose,
+  onRestart,
+  onEnable,
+  onDisable,
+  onExportDiag,
+}: PluginDetailDialogProps) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'faults' | 'diagnostics' | 'recovery'>(
+    'overview'
+  )
 
   if (!plugin) return null
 
@@ -614,7 +657,12 @@ function PluginDetailDialog({ plugin, open, onClose, onRestart, onEnable, onDisa
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className={cn('flex h-12 w-12 items-center justify-center rounded-full', getHealthStatusColor(plugin.status))}>
+            <div
+              className={cn(
+                'flex h-12 w-12 items-center justify-center rounded-full',
+                getHealthStatusColor(plugin.status)
+              )}
+            >
               {getHealthStatusIcon(plugin.status)}
             </div>
             <div>
@@ -706,26 +754,49 @@ function PluginDetailDialog({ plugin, open, onClose, onRestart, onEnable, onDisa
           <TabsContent value="faults">
             <ScrollArea className="h-[300px]">
               <div className="space-y-2">
-                {mockFaultRecords.filter(f => f.pluginId === plugin.pluginId).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">暂无故障记录</p>
+                {mockFaultRecords.filter((f) => f.pluginId === plugin.pluginId).length === 0 ? (
+                  <EmptyState
+                    title="暂无故障记录"
+                    description="运行正常，无故障记录"
+                    icon={Shield}
+                    size="sm"
+                  />
                 ) : (
                   mockFaultRecords
-                    .filter(f => f.pluginId === plugin.pluginId)
-                    .map(fault => (
+                    .filter((f) => f.pluginId === plugin.pluginId)
+                    .map((fault) => (
                       <div key={fault.id} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <div className={cn('mt-0.5', fault.severity === 'critical' ? 'text-red-500' : fault.severity === 'high' ? 'text-orange-500' : fault.severity === 'medium' ? 'text-yellow-500' : 'text-blue-500')}>
-                          {fault.severity === 'critical' || fault.severity === 'high' ? <XCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                        <div
+                          className={cn(
+                            'mt-0.5',
+                            fault.severity === 'critical'
+                              ? 'text-red-500'
+                              : fault.severity === 'high'
+                                ? 'text-orange-500'
+                                : fault.severity === 'medium'
+                                  ? 'text-yellow-500'
+                                  : 'text-blue-500'
+                          )}
+                        >
+                          {fault.severity === 'critical' || fault.severity === 'high' ? (
+                            <XCircle className="h-4 w-4" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4" />
+                          )}
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <Badge className={cn('text-xs', getFaultSeverityColor(fault.severity))}>
                               {fault.severity}
                             </Badge>
-                            <span className="text-xs font-mono text-muted-foreground">{fault.errorCode}</span>
+                            <span className="text-xs font-mono text-muted-foreground">
+                              {fault.errorCode}
+                            </span>
                           </div>
                           <p className="text-sm">{fault.errorMessage}</p>
                           <p className="text-xs text-muted-foreground">
-                            {fault.timestamp.toLocaleString()} • {fault.recoverable ? '可恢复' : '不可恢复'}
+                            {fault.timestamp.toLocaleString()} •{' '}
+                            {fault.recoverable ? '可恢复' : '不可恢复'}
                           </p>
                         </div>
                       </div>
@@ -738,28 +809,48 @@ function PluginDetailDialog({ plugin, open, onClose, onRestart, onEnable, onDisa
           <TabsContent value="diagnostics">
             <ScrollArea className="h-[300px]">
               <div className="space-y-2">
-                {mockDiagnostics.filter(d => d.pluginId === plugin.pluginId).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">暂无诊断信息</p>
+                {mockDiagnostics.filter((d) => d.pluginId === plugin.pluginId).length === 0 ? (
+                  <EmptyState
+                    title="暂无诊断信息"
+                    description="暂无诊断数据"
+                    icon={Activity}
+                    size="sm"
+                  />
                 ) : (
                   mockDiagnostics
-                    .filter(d => d.pluginId === plugin.pluginId)
-                    .map(diag => (
+                    .filter((d) => d.pluginId === plugin.pluginId)
+                    .map((diag) => (
                       <div key={diag.id} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <div className={cn('mt-0.5',
-                          diag.level === 'critical' ? 'text-red-500' :
-                          diag.level === 'error' ? 'text-orange-500' :
-                          diag.level === 'warning' ? 'text-yellow-500' : 'text-blue-500'
-                        )}>
-                          {diag.level === 'critical' || diag.level === 'error' ? <XCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                        <div
+                          className={cn(
+                            'mt-0.5',
+                            diag.level === 'critical'
+                              ? 'text-red-500'
+                              : diag.level === 'error'
+                                ? 'text-orange-500'
+                                : diag.level === 'warning'
+                                  ? 'text-yellow-500'
+                                  : 'text-blue-500'
+                          )}
+                        >
+                          {diag.level === 'critical' || diag.level === 'error' ? (
+                            <XCircle className="h-4 w-4" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4" />
+                          )}
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <Badge className={cn('text-xs', getDiagnosticLevelColor(diag.level))}>
                               {diag.level}
                             </Badge>
-                            <span className="text-xs font-mono text-muted-foreground">{diag.code}</span>
+                            <span className="text-xs font-mono text-muted-foreground">
+                              {diag.code}
+                            </span>
                             {diag.actionable && (
-                              <Badge variant="outline" className="text-xs">可操作</Badge>
+                              <Badge variant="outline" className="text-xs">
+                                可操作
+                              </Badge>
                             )}
                           </div>
                           <p className="text-sm">{diag.message}</p>
@@ -783,22 +874,39 @@ function PluginDetailDialog({ plugin, open, onClose, onRestart, onEnable, onDisa
           <TabsContent value="recovery">
             <ScrollArea className="h-[300px]">
               <div className="space-y-2">
-                {mockRecoveryEvents.filter(r => r.pluginId === plugin.pluginId).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">暂无恢复事件</p>
+                {mockRecoveryEvents.filter((r) => r.pluginId === plugin.pluginId).length === 0 ? (
+                  <EmptyState
+                    title="暂无恢复事件"
+                    description="恢复记录将在此显示"
+                    icon={RefreshCcw}
+                    size="sm"
+                  />
                 ) : (
                   mockRecoveryEvents
-                    .filter(r => r.pluginId === plugin.pluginId)
-                    .map(event => (
+                    .filter((r) => r.pluginId === plugin.pluginId)
+                    .map((event) => (
                       <div key={event.id} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <div className={cn('mt-0.5',
-                          event.status === 'success' ? 'text-green-500' :
-                          event.status === 'failed' ? 'text-red-500' :
-                          event.status === 'executing' ? 'text-yellow-500' : 'text-gray-500'
-                        )}>
-                          {event.status === 'success' ? <CheckCircle2 className="h-4 w-4" /> :
-                           event.status === 'failed' ? <XCircle className="h-4 w-4" /> :
-                           event.status === 'executing' ? <RefreshCw className="h-4 w-4" /> :
-                           <Clock className="h-4 w-4" />}
+                        <div
+                          className={cn(
+                            'mt-0.5',
+                            event.status === 'success'
+                              ? 'text-green-500'
+                              : event.status === 'failed'
+                                ? 'text-red-500'
+                                : event.status === 'executing'
+                                  ? 'text-yellow-500'
+                                  : 'text-gray-500'
+                          )}
+                        >
+                          {event.status === 'success' ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : event.status === 'failed' ? (
+                            <XCircle className="h-4 w-4" />
+                          ) : event.status === 'executing' ? (
+                            <RefreshCw className="h-4 w-4" />
+                          ) : (
+                            <Clock className="h-4 w-4" />
+                          )}
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
@@ -807,14 +915,25 @@ function PluginDetailDialog({ plugin, open, onClose, onRestart, onEnable, onDisa
                             <Badge variant="outline" className="text-xs">
                               {event.triggeredBy === 'auto' ? '自动' : '手动'}
                             </Badge>
-                            <Badge className={cn('text-xs',
-                              event.status === 'success' ? 'bg-green-500/10 text-green-500' :
-                              event.status === 'failed' ? 'bg-red-500/10 text-red-500' :
-                              event.status === 'executing' ? 'bg-yellow-500/10 text-yellow-500' : ''
-                            )}>
-                              {event.status === 'success' ? '成功' :
-                               event.status === 'failed' ? '失败' :
-                               event.status === 'executing' ? '执行中' : '等待'}
+                            <Badge
+                              className={cn(
+                                'text-xs',
+                                event.status === 'success'
+                                  ? 'bg-green-500/10 text-green-500'
+                                  : event.status === 'failed'
+                                    ? 'bg-red-500/10 text-red-500'
+                                    : event.status === 'executing'
+                                      ? 'bg-yellow-500/10 text-yellow-500'
+                                      : ''
+                              )}
+                            >
+                              {event.status === 'success'
+                                ? '成功'
+                                : event.status === 'failed'
+                                  ? '失败'
+                                  : event.status === 'executing'
+                                    ? '执行中'
+                                    : '等待'}
                             </Badge>
                           </div>
                           {event.errorMessage && (
@@ -891,7 +1010,8 @@ export function PluginRuntimeSelfHealing({
   // Filter plugins
   const filteredPlugins = useMemo(() => {
     return plugins.filter((plugin) => {
-      const matchesSearch = plugin.pluginName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch =
+        plugin.pluginName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         plugin.pluginId.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesStatus = statusFilter === 'all' || plugin.status === statusFilter
       return matchesSearch && matchesStatus
@@ -917,9 +1037,7 @@ export function PluginRuntimeSelfHealing({
 
   const handleDisable = (pluginId: string) => {
     setPlugins((prev) =>
-      prev.map((p) =>
-        p.id === pluginId ? { ...p, status: 'disabled', isAutoDisabled: true } : p
-      )
+      prev.map((p) => (p.id === pluginId ? { ...p, status: 'disabled', isAutoDisabled: true } : p))
     )
     onPluginDisable?.(pluginId)
   }
@@ -927,9 +1045,7 @@ export function PluginRuntimeSelfHealing({
   const handleRestart = (pluginId: string) => {
     setPlugins((prev) =>
       prev.map((p) =>
-        p.id === pluginId
-          ? { ...p, consecutiveFailures: 0, recoveryCount: p.recoveryCount + 1 }
-          : p
+        p.id === pluginId ? { ...p, consecutiveFailures: 0, recoveryCount: p.recoveryCount + 1 } : p
       )
     )
     onPluginRestart?.(pluginId)
@@ -990,10 +1106,18 @@ export function PluginRuntimeSelfHealing({
 
       {/* Summary Stats */}
       <div className="flex items-center gap-6 p-3 rounded-lg bg-muted/50 text-sm">
-        <span>总插件: <strong>{stats.totalPlugins}</strong></span>
-        <span>自动禁用: <strong>{stats.autoDisabledCount}</strong></span>
-        <span>总恢复次数: <strong>{stats.totalRecoveries}</strong></span>
-        <span>失败恢复: <strong>{stats.failedRecoveries}</strong></span>
+        <span>
+          总插件: <strong>{stats.totalPlugins}</strong>
+        </span>
+        <span>
+          自动禁用: <strong>{stats.autoDisabledCount}</strong>
+        </span>
+        <span>
+          总恢复次数: <strong>{stats.totalRecoveries}</strong>
+        </span>
+        <span>
+          失败恢复: <strong>{stats.failedRecoveries}</strong>
+        </span>
       </div>
 
       {/* Filters */}
@@ -1015,9 +1139,7 @@ export function PluginRuntimeSelfHealing({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setStatusFilter('all')}>
-              全部状态
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('all')}>全部状态</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setStatusFilter('healthy')}>
               <ShieldCheck className="h-3 w-3 mr-2 text-green-500" />
@@ -1058,9 +1180,7 @@ export function PluginRuntimeSelfHealing({
       </div>
 
       {filteredPlugins.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          没有找到匹配的插件
-        </div>
+        <EmptyState variant="search" title="没有找到匹配的插件" description="请尝试其他搜索条件" />
       )}
 
       {/* Detail Dialog */}

@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Search, Plus, Loader2, RefreshCw, Mail, Calendar } from 'lucide-react'
+import { Search, Plus, RefreshCw, Mail, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -16,6 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Select,
   SelectContent,
@@ -71,7 +73,11 @@ export function EmployeeList({ onSelectEmployee, onAddEmployee }: EmployeeListPr
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">员工列表</h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => fetchEmployees({ keyword: keyword || undefined, status })}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchEmployees({ keyword: keyword || undefined, status })}
+          >
             <RefreshCw className={`h-4 w-4 mr-1 ${isLoadingEmployees ? 'animate-spin' : ''}`} />
             刷新
           </Button>
@@ -114,12 +120,18 @@ export function EmployeeList({ onSelectEmployee, onAddEmployee }: EmployeeListPr
 
       {/* 员工表格 */}
       {isLoadingEmployees ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <TableSkeleton rows={6} cols={7} />
+      ) : employees.length === 0 ? (
+        <EmptyState
+          title="暂无员工数据"
+          description={keyword || status ? '尝试调整筛选条件' : '添加员工后将在此处显示'}
+          icon={Users}
+          actionLabel={onAddEmployee ? '添加员工' : undefined}
+          onAction={onAddEmployee}
+        />
       ) : (
         <>
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -133,46 +145,38 @@ export function EmployeeList({ onSelectEmployee, onAddEmployee }: EmployeeListPr
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {employees.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      暂无员工数据
+                {employees.map((emp) => (
+                  <TableRow
+                    key={emp.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => onSelectEmployee?.(emp.id)}
+                  >
+                    <TableCell className="font-mono text-sm">{emp.employeeCode}</TableCell>
+                    <TableCell className="font-medium">{emp.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Mail className="h-3 w-3 text-muted-foreground" />
+                        {emp.email}
+                      </div>
+                    </TableCell>
+                    <TableCell>{emp.departmentName || '-'}</TableCell>
+                    <TableCell>{emp.positionName || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        {new Date(emp.hireDate * 1000).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={`${STATUS_COLORS[emp.status]} text-white border-0 text-xs`}
+                      >
+                        {STATUS_LABELS[emp.status]}
+                      </Badge>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  employees.map((emp) => (
-                    <TableRow
-                      key={emp.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => onSelectEmployee?.(emp.id)}
-                    >
-                      <TableCell className="font-mono text-sm">{emp.employeeCode}</TableCell>
-                      <TableCell className="font-medium">{emp.name}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Mail className="h-3 w-3 text-muted-foreground" />
-                          {emp.email}
-                        </div>
-                      </TableCell>
-                      <TableCell>{emp.departmentName || '-'}</TableCell>
-                      <TableCell>{emp.positionName || '-'}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {new Date(emp.hireDate * 1000).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={`${STATUS_COLORS[emp.status]} text-white border-0 text-xs`}
-                        >
-                          {STATUS_LABELS[emp.status]}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -188,7 +192,13 @@ export function EmployeeList({ onSelectEmployee, onAddEmployee }: EmployeeListPr
                   variant="outline"
                   size="sm"
                   disabled={employeePage <= 1}
-                  onClick={() => fetchEmployees({ keyword: keyword || undefined, status, page: employeePage - 1 })}
+                  onClick={() =>
+                    fetchEmployees({
+                      keyword: keyword || undefined,
+                      status,
+                      page: employeePage - 1,
+                    })
+                  }
                 >
                   上一页
                 </Button>
@@ -196,7 +206,13 @@ export function EmployeeList({ onSelectEmployee, onAddEmployee }: EmployeeListPr
                   variant="outline"
                   size="sm"
                   disabled={employeePage >= totalPages}
-                  onClick={() => fetchEmployees({ keyword: keyword || undefined, status, page: employeePage + 1 })}
+                  onClick={() =>
+                    fetchEmployees({
+                      keyword: keyword || undefined,
+                      status,
+                      page: employeePage + 1,
+                    })
+                  }
                 >
                   下一页
                 </Button>

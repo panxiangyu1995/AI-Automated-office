@@ -40,12 +40,12 @@ impl ToolRegistry {
     }
 
     /// 安全地获取锁，使用map_err将PoisonError转换为RegistryError
-    fn lock_tools<'a>(&self) -> Result<std::sync::MutexGuard<'a, HashMap<String, ToolDescriptor>>, RegistryError> {
-        self.tools.lock()
-            .map_err(|e: PoisonError<std::sync::MutexGuard<'_, HashMap<String, ToolDescriptor>>>| {
-                RegistryError::LockError(format!("Failed to acquire tools lock: {}", e))
-            })
-    }
+        fn lock_tools(&self) -> Result<std::sync::MutexGuard<'_, HashMap<String, ToolDescriptor>>, RegistryError> {
+            self.tools.lock()
+                .map_err(|e: PoisonError<std::sync::MutexGuard<'_, HashMap<String, ToolDescriptor>>>| {
+                    RegistryError::LockError(format!("Failed to acquire tools lock: {}", e))
+                })
+        }
 
     pub fn register(&self, descriptor: ToolDescriptor) -> Result<(), RegistryError> {
         let mut tools = self.lock_tools()?;
@@ -73,10 +73,11 @@ impl ToolRegistry {
         tool_id: &str,
         params: &serde_json::Map<String, serde_json::Value>,
     ) -> Result<Result<(), Vec<String>>, RegistryError> {
-        let descriptor = self
-            .get(tool_id)
-            .map_err(|_| RegistryError::LockError("Failed to get tool".to_string()))?
-            .ok_or_else(|| vec![format!("Tool not found: {}", tool_id)])?;
+        let descriptor = match self.get(tool_id) {
+            Ok(Some(d)) => d,
+            Ok(None) => return Ok(Err(vec![format!("Tool not found: {}", tool_id)])),
+            Err(e) => return Err(e),
+        };
         Ok(validate_parameters(&descriptor, params))
     }
 

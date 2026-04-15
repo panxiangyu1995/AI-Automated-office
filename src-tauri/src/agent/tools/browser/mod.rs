@@ -19,6 +19,7 @@
 //! | State | set_offline, set_extra_headers, set_geolocation |
 //! | Storage | get_cookies, set_cookies, get_local_storage, get_session_storage |
 
+pub mod console;
 pub mod control;
 pub mod download;
 pub mod interaction;
@@ -29,6 +30,7 @@ pub mod state;
 pub mod storage;
 
 // Re-export action handlers from submodules for use in the main executor
+pub use console::execute_get_console_messages;
 pub use control::{execute_status, execute_start, execute_stop, execute_profiles, execute_tabs};
 pub use download::{execute_arm_download, execute_wait_for_download};
 pub use interaction::{execute_act, execute_arm_file_chooser, execute_disarm_file_chooser, execute_arm_dialog, execute_accept_dialog, execute_dismiss_dialog};

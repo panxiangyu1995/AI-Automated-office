@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use rusqlite::ToSql;
 use std::sync::Arc;
 
-use super::backend::{SqliteStorage, StorageBackend, StorageError, map_memory_item};
+use super::backend::{map_memory_item, SqliteStorage, StorageBackend, StorageError};
 use super::layer::{MemoryStore, PermissionBoundary};
 use super::super::types::{MemoryItem, MemoryLayer, MemoryQuery};
 use super::super::config::MemoryError;
@@ -77,26 +77,27 @@ impl MemoryStore for PersonalMemoryStore {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &item.id as &dyn ToSql,
-            &format!("{:?}", item.layer) as &dyn ToSql,
-            &item.tenant_id as &dyn ToSql,
-            &item.user_id as &dyn ToSql,
-            &item.session_key as &dyn ToSql,
-            &item.key as &dyn ToSql,
-            &item.value as &dyn ToSql,
-            &format!("{:?}", item.category) as &dyn ToSql,
-            &item.confidence as &dyn ToSql,
-            &format!("{:?}", item.source) as &dyn ToSql,
-            &Option::<String>::None as &dyn ToSql, // embedding stored separately
-            &item.metadata.to_string() as &dyn ToSql,
-            &item.created_at as &dyn ToSql,
-            &item.updated_at as &dyn ToSql,
-            &item.last_accessed_at as &dyn ToSql,
-            &item.access_count as &dyn ToSql,
-            &item.version as &dyn ToSql,
-            &(item.is_deleted as i32) as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("add failed: {}", e)))?;
+        let params: Vec<String> = vec![
+            item.id.clone(),
+            format!("{:?}", item.layer),
+            item.tenant_id.clone(),
+            item.user_id.clone().unwrap_or_default(),
+            item.session_key.clone().unwrap_or_default(),
+            item.key.clone(),
+            item.value.clone(),
+            format!("{:?}", item.category),
+            item.confidence.to_string(),
+            format!("{:?}", item.source),
+            String::new(),
+            item.metadata.to_string(),
+            item.created_at.to_string(),
+            item.updated_at.to_string(),
+            item.last_accessed_at.unwrap_or(0).to_string(),
+            item.access_count.to_string(),
+            item.version.to_string(),
+            (item.is_deleted as i32).to_string(),
+        ];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("add failed: {}", e)))?;
 
         Ok(())
     }
@@ -110,20 +111,22 @@ impl MemoryStore for PersonalMemoryStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        let rows = self.storage.execute_with_params(sql, &[
-            &format!("{:?}", item.layer) as &dyn ToSql,
-            &item.tenant_id as &dyn ToSql,
-            &item.user_id as &dyn ToSql,
-            &item.session_key as &dyn ToSql,
-            &item.key as &dyn ToSql,
-            &item.value as &dyn ToSql,
-            &format!("{:?}", item.category) as &dyn ToSql,
-            &item.confidence as &dyn ToSql,
-            &format!("{:?}", item.source) as &dyn ToSql,
-            &item.metadata.to_string() as &dyn ToSql,
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("update failed: {}", e)))?;
+        let now = chrono::Utc::now().timestamp();
+        let params: Vec<String> = vec![
+            format!("{:?}", item.layer),
+            item.tenant_id.clone(),
+            item.user_id.clone().unwrap_or_default(),
+            item.session_key.clone().unwrap_or_default(),
+            item.key.clone(),
+            item.value.clone(),
+            format!("{:?}", item.category),
+            item.confidence.to_string(),
+            format!("{:?}", item.source),
+            item.metadata.to_string(),
+            now.to_string(),
+            id.to_string(),
+        ];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("update failed: {}", e)))?;
 
         // Check if any row was updated
         // Note: rusqlite doesn't return affected rows directly with execute
@@ -143,10 +146,9 @@ impl MemoryStore for PersonalMemoryStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("delete failed: {}", e)))?;
+        let now = chrono::Utc::now().timestamp();
+        let params: Vec<String> = vec![now.to_string(), id.to_string()];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("delete failed: {}", e)))?;
 
         Ok(())
     }
@@ -169,7 +171,7 @@ impl MemoryStore for PersonalMemoryStore {
         );
 
         // Execute base query
-        let conn = self.storage.conn.lock().await;
+        let conn = self.storage.conn().lock().await;
         let mut stmt = conn.prepare(sql.as_str())
             .map_err(|e| StorageError::Query(e.to_string()))?;
 
@@ -215,9 +217,9 @@ impl MemoryStore for PersonalMemoryStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("update_access_stats failed: {}", e)))?;
 
         Ok(())
@@ -233,12 +235,14 @@ impl MemoryStore for PersonalMemoryStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &item.value as &dyn ToSql,
-            &item.confidence as &dyn ToSql,
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("merge failed: {}", e)))?;
+        let now = chrono::Utc::now().timestamp();
+        let params: Vec<String> = vec![
+            item.value.clone(),
+            item.confidence.to_string(),
+            now.to_string(),
+            id.to_string(),
+        ];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("merge failed: {}", e)))?;
 
         Ok(())
     }
@@ -246,8 +250,8 @@ impl MemoryStore for PersonalMemoryStore {
     async fn hard_delete(&self, id: &str) -> Result<(), MemoryError> {
         let sql = "DELETE FROM memory_items WHERE id = ?";
 
-        self.storage.execute_with_params(sql, &[
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("hard_delete failed: {}", e)))?;
 
         Ok(())

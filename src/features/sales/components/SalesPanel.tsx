@@ -3,24 +3,50 @@
  */
 
 import { useEffect } from 'react'
-import { Users, FileText, TrendingUp, Loader2, RefreshCw, Building2, User } from 'lucide-react'
+import { Users, FileText, TrendingUp, RefreshCw, Building2, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSalesStore } from '../stores/salesStore'
 import type { CustomerLevel, QuoteStatus, ContractStatus } from '../types/sales.types'
 
-const LEVEL_COLORS: Record<CustomerLevel, string> = { A: 'bg-red-500', B: 'bg-yellow-500', C: 'bg-gray-400' }
-const QUOTE_STATUS_COLORS: Record<QuoteStatus, string> = { draft: 'bg-gray-400', sent: 'bg-blue-500', accepted: 'bg-green-500', rejected: 'bg-red-500' }
-const CONTRACT_STATUS_COLORS: Record<ContractStatus, string> = { draft: 'bg-gray-400', signed: 'bg-blue-500', executing: 'bg-yellow-500', completed: 'bg-green-500' }
+const LEVEL_COLORS: Record<CustomerLevel, string> = {
+  A: 'bg-red-500',
+  B: 'bg-yellow-500',
+  C: 'bg-gray-400',
+}
+const QUOTE_STATUS_COLORS: Record<QuoteStatus, string> = {
+  draft: 'bg-gray-400',
+  sent: 'bg-blue-500',
+  accepted: 'bg-green-500',
+  rejected: 'bg-red-500',
+}
+const CONTRACT_STATUS_COLORS: Record<ContractStatus, string> = {
+  draft: 'bg-gray-400',
+  signed: 'bg-blue-500',
+  executing: 'bg-yellow-500',
+  completed: 'bg-green-500',
+}
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(amount)
 }
 
 export function SalesPanel() {
-  const { customers, quotes, contracts, stats, isLoading, fetchCustomers, fetchQuotes, fetchContracts, fetchStats } = useSalesStore()
+  const {
+    customers,
+    quotes,
+    contracts,
+    stats,
+    isLoading,
+    fetchCustomers,
+    fetchQuotes,
+    fetchContracts,
+    fetchStats,
+  } = useSalesStore()
 
   useEffect(() => {
     fetchCustomers()
@@ -33,7 +59,16 @@ export function SalesPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">销售中心</h2>
-        <Button variant="outline" size="sm" onClick={() => { fetchCustomers(); fetchQuotes(); fetchContracts(); fetchStats() }}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            fetchCustomers()
+            fetchQuotes()
+            fetchContracts()
+            fetchStats()
+          }}
+        >
           <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
           刷新
         </Button>
@@ -89,20 +124,34 @@ export function SalesPanel() {
 
         <TabsContent value="customers">
           {isLoading ? (
-            <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
+            </div>
+          ) : customers.length === 0 ? (
+            <EmptyState title="暂无客户" description="添加客户后将在此处显示" icon={Users} />
           ) : (
             <div className="space-y-2">
               {customers.map((c) => (
                 <Card key={c.id}>
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {c.customerType === 'corporate' ? <Building2 className="h-5 w-5" /> : <User className="h-5 w-5" />}
+                      {c.customerType === 'corporate' ? (
+                        <Building2 className="h-5 w-5" />
+                      ) : (
+                        <User className="h-5 w-5" />
+                      )}
                       <div>
                         <div className="font-medium">{c.name}</div>
-                        <div className="text-sm text-muted-foreground">{c.phone} | {c.email}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {c.phone} | {c.email}
+                        </div>
                       </div>
                     </div>
-                    <Badge className={`${LEVEL_COLORS[c.level]} text-white border-0`}>{c.level}级</Badge>
+                    <Badge className={`${LEVEL_COLORS[c.level]} text-white border-0`}>
+                      {c.level}级
+                    </Badge>
                   </CardContent>
                 </Card>
               ))}
@@ -112,7 +161,13 @@ export function SalesPanel() {
 
         <TabsContent value="quotes">
           {isLoading ? (
-            <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
+            </div>
+          ) : quotes.length === 0 ? (
+            <EmptyState title="暂无报价单" description="创建报价单后将在此处显示" icon={FileText} />
           ) : (
             <div className="space-y-2">
               {quotes.map((q) => (
@@ -124,7 +179,11 @@ export function SalesPanel() {
                     </div>
                     <div className="text-right">
                       <div className="font-medium">{formatCurrency(q.totalAmount)}</div>
-                      <Badge className={`${QUOTE_STATUS_COLORS[q.status]} text-white border-0 mt-1`}>{q.status}</Badge>
+                      <Badge
+                        className={`${QUOTE_STATUS_COLORS[q.status]} text-white border-0 mt-1`}
+                      >
+                        {q.status}
+                      </Badge>
                     </div>
                   </CardContent>
                 </Card>
@@ -135,7 +194,13 @@ export function SalesPanel() {
 
         <TabsContent value="contracts">
           {isLoading ? (
-            <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
+            </div>
+          ) : contracts.length === 0 ? (
+            <EmptyState title="暂无合同" description="签订合同后将在此处显示" icon={FileText} />
           ) : (
             <div className="space-y-2">
               {contracts.map((c) => (
@@ -147,7 +212,11 @@ export function SalesPanel() {
                     </div>
                     <div className="text-right">
                       <div className="font-medium">{formatCurrency(c.totalAmount)}</div>
-                      <Badge className={`${CONTRACT_STATUS_COLORS[c.status]} text-white border-0 mt-1`}>{c.status}</Badge>
+                      <Badge
+                        className={`${CONTRACT_STATUS_COLORS[c.status]} text-white border-0 mt-1`}
+                      >
+                        {c.status}
+                      </Badge>
                     </div>
                   </CardContent>
                 </Card>

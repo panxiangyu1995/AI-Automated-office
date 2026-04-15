@@ -57,13 +57,15 @@ impl LocalInstaller {
 
         // Parse manifest
         let manifest = if manifest_exists {
-            let mut manifest_file = archive.by_name("manifest.json")?;
-            let mut content = Vec::new();
-            manifest_file.read_to_end(&mut content)?;
+            let content = {
+                let mut manifest_file = archive.by_name("manifest.json")?;
+                let mut content = Vec::new();
+                manifest_file.read_to_end(&mut content)?;
+                content
+            };
+            
             let clawhub_manifest: serde_json::Value =
                 serde_json::from_slice(&content).context("Failed to parse manifest.json")?;
-
-            // Convert ClawHub format to internal format
             self.clawhub_adapter
                 .convert_json_manifest(clawhub_manifest)
                 .await?
@@ -104,11 +106,15 @@ impl LocalInstaller {
         &self,
         archive: &mut ZipArchive<Cursor<&Vec<u8>>>,
     ) -> Result<CapabilityPackageManifest> {
-        let mut skill_content = String::new();
-        if let Ok(mut skill_file) = archive.by_name("SKILL.md") {
+        let skill_content = if let Ok(skill_file) = archive.by_name("SKILL.md") {
             use std::io::Read;
-            skill_file.read_to_string(&mut skill_content)?;
-        }
+            let mut content = String::new();
+            let mut file = skill_file;
+            file.read_to_string(&mut content)?;
+            content
+        } else {
+            String::new()
+        };
 
         // Basic manifest from SKILL.md
         let package_id = extract_package_id_from_skill(&skill_content)

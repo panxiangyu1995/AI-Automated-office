@@ -75,6 +75,8 @@ impl MarketingDatabase {
                 start_date: c.start_date.clone(),
                 end_date: c.end_date.clone(),
                 budget: c.budget,
+                created_at: c.created_at,
+                updated_at: c.updated_at,
             })
             .collect();
 
@@ -153,7 +155,7 @@ impl MarketingDatabase {
                     if &c.status != status { return false; }
                 }
                 if let Some(ref cid) = params.campaign_id {
-                    if &c.campaign_id.as_ref() != Some(cid) { return false; }
+                    if c.campaign_id.as_ref() != Some(cid) { return false; }
                 }
                 if let Some(ref search) = params.search {
                     let search_lower = search.to_lowercase();
@@ -168,6 +170,8 @@ impl MarketingDatabase {
                 status: c.status,
                 campaign_id: c.campaign_id.clone(),
                 views: c.views,
+                created_at: c.created_at,
+                updated_at: c.updated_at,
                 published_at: c.published_at,
             })
             .collect();

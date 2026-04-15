@@ -1,22 +1,33 @@
 //! TicketList 组件 - 工单列表
 
-import { useServiceStore } from '../stores/serviceStore';
-import { TicketCard } from './TicketCard';
-import { StatusBadge } from './StatusBadge';
-import { PriorityTag } from './PriorityTag';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Search, Plus, ChevronLeft, ChevronRight, LayoutGrid, List, Columns } from 'lucide-react';
-import type { TicketListItem } from '../types/service';
-import { useState } from 'react';
+import { useServiceStore } from '../stores/serviceStore'
+import { TicketCard } from './TicketCard'
+import { StatusBadge } from './StatusBadge'
+import { PriorityTag } from './PriorityTag'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import {
+  Search,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  Columns,
+  ClipboardList,
+} from 'lucide-react'
+import type { TicketListItem } from '../types/service'
+import { useState } from 'react'
 
 interface TicketListProps {
-  onTicketClick?: (ticket: TicketListItem) => void;
-  onCreateClick?: () => void;
+  onTicketClick?: (ticket: TicketListItem) => void
+  onCreateClick?: () => void
 }
 
-type ViewMode = 'card' | 'table' | 'kanban';
+type ViewMode = 'card' | 'table' | 'kanban'
 
 export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
   const {
@@ -27,21 +38,21 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
     ticketsLoading,
     filters,
     setFilters,
-  } = useServiceStore();
-  
-  const [viewMode, setViewMode] = useState<ViewMode>('card');
-  const [searchValue, setSearchValue] = useState(filters.search || '');
-  
-  const totalPages = Math.ceil(ticketsTotal / ticketsPageSize);
-  
+  } = useServiceStore()
+
+  const [viewMode, setViewMode] = useState<ViewMode>('card')
+  const [searchValue, setSearchValue] = useState(filters.search || '')
+
+  const totalPages = Math.ceil(ticketsTotal / ticketsPageSize)
+
   const handleSearch = () => {
-    setFilters({ search: searchValue || undefined });
-  };
-  
+    setFilters({ search: searchValue || undefined })
+  }
+
   const handlePageChange = (newPage: number) => {
-    setFilters({ page: newPage });
-  };
-  
+    setFilters({ page: newPage })
+  }
+
   return (
     <div className="space-y-4">
       {/* 工具栏 */}
@@ -61,7 +72,7 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
             <Search className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* 视图切换 */}
           <div className="flex items-center border rounded-md">
@@ -90,14 +101,14 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
               <Columns className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <Button size="sm" onClick={onCreateClick}>
             <Plus className="h-4 w-4 mr-1" />
             新建工单
           </Button>
         </div>
       </div>
-      
+
       {/* 筛选标签 */}
       {(filters.status || filters.ticketType || filters.priority) && (
         <div className="flex items-center gap-2 flex-wrap">
@@ -119,20 +130,22 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
           ))}
         </div>
       )}
-      
+
       {/* 列表内容 */}
       {ticketsLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
       ) : tickets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-muted-foreground mb-4">暂无工单</p>
-          <Button onClick={onCreateClick}>
-            <Plus className="h-4 w-4 mr-1" />
-            创建第一个工单
-          </Button>
-        </div>
+        <EmptyState
+          title="暂无工单"
+          description="点击下方按钮创建第一个工单"
+          icon={ClipboardList}
+          actionLabel="新建工单"
+          onAction={onCreateClick}
+        />
       ) : (
         <>
           {/* 卡片视图 */}
@@ -147,7 +160,7 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
               ))}
             </div>
           )}
-          
+
           {/* 表格视图 */}
           {viewMode === 'table' && (
             <div className="border rounded-lg overflow-hidden">
@@ -172,7 +185,11 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
                     >
                       <td className="px-4 py-3 text-sm">{ticket.title}</td>
                       <td className="px-4 py-3 text-sm">
-                        {ticket.ticketType === 'repair' ? '维修' : ticket.ticketType === 'consultation' ? '咨询' : '投诉'}
+                        {ticket.ticketType === 'repair'
+                          ? '维修'
+                          : ticket.ticketType === 'consultation'
+                            ? '咨询'
+                            : '投诉'}
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={ticket.status} size="sm" />
@@ -191,7 +208,7 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
               </table>
             </div>
           )}
-          
+
           {/* 分页 */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
@@ -224,5 +241,5 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
         </>
       )}
     </div>
-  );
+  )
 }

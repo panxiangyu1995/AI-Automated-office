@@ -6,8 +6,8 @@ use zip::ZipArchive;
 
 use anyhow::{Context, Result};
 
-use super::super::marketplace::CloudMarketClient;
-use super::super::types::*;
+use crate::capability::types::*;
+use crate::capability::marketplace::CloudMarketClient;
 
 /// ClawHub manifest format
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

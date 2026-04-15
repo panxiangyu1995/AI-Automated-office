@@ -35,6 +35,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Dialog,
   DialogContent,
@@ -261,7 +262,9 @@ function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
         {message.type === 'text' && <p className="text-sm">{message.content}</p>}
 
         {message.type === 'file' && message.attachments && (
-          <div className={`flex items-center gap-2 p-2 rounded ${isOwn ? 'bg-blue-600' : 'bg-slate-200'}`}>
+          <div
+            className={`flex items-center gap-2 p-2 rounded ${isOwn ? 'bg-blue-600' : 'bg-slate-200'}`}
+          >
             <File className="h-4 w-4" />
             <span className="text-xs truncate">{message.attachments[0].name}</span>
           </div>
@@ -311,7 +314,9 @@ export function PrivateChat({
   onStartCall,
   onSearchMessages,
 }: PrivateChatProps) {
-  const [conversations, setConversations] = useState<Conversation[]>(initialConversations || MOCK_CONVERSATIONS)
+  const [conversations, setConversations] = useState<Conversation[]>(
+    initialConversations || MOCK_CONVERSATIONS
+  )
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(
     MOCK_CONVERSATIONS[0]?.id || null
   )
@@ -342,9 +347,7 @@ export function PrivateChat({
     if (selectedConversationId && (selectedConversation?.unreadCount ?? 0) > 0) {
       onMarkAsRead?.(selectedConversationId)
       setConversations((prev) =>
-        prev.map((c) =>
-          c.id === selectedConversationId ? { ...c, unreadCount: 0 } : c
-        )
+        prev.map((c) => (c.id === selectedConversationId ? { ...c, unreadCount: 0 } : c))
       )
     }
     // Intentionally omit onMarkAsRead and selectedConversation from deps to avoid unnecessary re-renders
@@ -449,7 +452,9 @@ export function PrivateChat({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-800 truncate">{conv.participantName}</span>
+                    <span className="font-medium text-slate-800 truncate">
+                      {conv.participantName}
+                    </span>
                     <span className="text-xs text-slate-400">{conv.lastMessageTime}</span>
                   </div>
                   <p className="text-sm text-slate-500 truncate">{conv.lastMessage}</p>
@@ -463,10 +468,11 @@ export function PrivateChat({
             ))}
 
             {sortedConversations.length === 0 && (
-              <div className="text-center py-8 text-slate-500">
-                <MessageSquare className="h-12 w-12 mx-auto mb-2 text-slate-300" />
-                <p>暂无会话</p>
-              </div>
+              <EmptyState
+                title="暂无会话"
+                description="开始新的对话后将在此处显示"
+                icon={MessageSquare}
+              />
             )}
           </div>
         </ScrollArea>

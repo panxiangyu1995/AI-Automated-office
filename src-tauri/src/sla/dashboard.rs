@@ -221,7 +221,8 @@ impl SlaDashboard {
     /// 更新服务健康数据
     pub fn update_service_health(&mut self, health: ServiceHealth) -> Option<()> {
         if self.service_healths.contains_key(&health.service_id) {
-            self.service_healths.insert(health.service_id, health);
+            let service_id = health.service_id.clone();
+            self.service_healths.insert(service_id, health);
             Some(())
         } else {
             None

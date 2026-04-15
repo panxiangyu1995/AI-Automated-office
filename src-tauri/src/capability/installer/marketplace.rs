@@ -1,7 +1,7 @@
 //! Marketplace installer implementation.
 
 use super::{DependencyChecker, InstallOptions, InstallResult};
-use crate::capability::{CloudMarketClient, MarketplaceConfig};
+use crate::capability::{CloudMarketClient, MarketplaceConfig, MarketplaceType};
 use anyhow::{Context, Result};
 
 /// Marketplace installer
@@ -29,7 +29,7 @@ impl MarketplaceInstaller {
         // Search for the resource in marketplace
         let result = self
             .client
-            .search_marketplace(&resource_id, 1)
+            .search_marketplace(&resource_id, MarketplaceType::CloudMarket, 1)
             .await
             .context("Failed to search marketplace")?;
 

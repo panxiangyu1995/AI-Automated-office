@@ -125,6 +125,7 @@ impl FilesystemConfig {
 }
 
 /// Browser tool configuration
+#[derive(Clone)]
 pub struct BrowserConfig {
     pub default_profile: String,
     pub cdp_endpoint: Option<String>,
@@ -246,16 +247,11 @@ impl ToolConfigManager {
 
     /// Get or initialize browser configuration
     pub fn browser(&self) -> BrowserConfig {
-        let read = self.browser.read().expect("browser config poison");
-        if let Some(ref config) = *read {
-            return config.clone();
-        }
-        drop(read);
         let mut write = self.browser.write().expect("browser config poison");
         if write.is_none() {
             *write = Some(BrowserConfig::default());
         }
-        write.clone().expect("browser config should be initialized")
+        write.clone().unwrap_or_default()
     }
 
     /// Set browser configuration

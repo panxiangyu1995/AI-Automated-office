@@ -25,6 +25,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 import {
   SETTINGS_MCP_TOOLS,
@@ -232,8 +233,8 @@ export function SubAgentToolBinding({ className = '' }: SubAgentToolBindingProps
         <div className="col-span-12 lg:col-span-8">
           {!selectedSubAgent ? (
             <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                先从左侧选择一个 Sub-Agent，再配置它的原子工具、MCP 和 Skills。
+              <CardContent className="py-0">
+                <EmptyState title="请选择 Sub-Agent" description="先从左侧选择一个 Sub-Agent，再配置它的原子工具、MCP 和 Skills。" />
               </CardContent>
             </Card>
           ) : (

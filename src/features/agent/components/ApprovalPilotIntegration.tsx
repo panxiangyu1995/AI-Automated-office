@@ -51,215 +51,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
+import { useApprovalPilot } from '../hooks/useApprovalPilot'
+import type {
+  ApprovalPhase,
+  BindingStatus,
+  ExecutionStatus,
+  PermissionLevel,
+  ApprovalBinding as ToolBinding,
+  ApprovalRuntimeStep as RuntimeStep,
+  ApprovalAuditEntry as AuditEntry,
+  ApprovalPilotStats,
+  ApprovalContext,
+} from '../hooks/useApprovalPilot'
 
-// ==================== Types ====================
-
-export type ApprovalPhase = 'read' | 'generate' | 'confirm' | 'execute' | 'complete' | 'failed'
-export type BindingStatus = 'pending' | 'bound' | 'failed' | 'released'
-export type ExecutionStatus = 'idle' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled'
-export type PermissionLevel = 'none' | 'read' | 'write' | 'admin'
-
-export interface ApprovalContext {
-  id: string
-  title: string
-  requester: string
-  department: string
-  amount?: number
-  reason: string
-  createdAt: Date
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
-}
-
-export interface ToolBinding {
-  toolId: string
-  toolName: string
-  status: BindingStatus
-  permission: PermissionLevel
-  lastUsed?: Date
-  usageCount: number
-}
-
-export interface RuntimeStep {
-  id: string
-  phase: ApprovalPhase
-  label: string
-  status: ExecutionStatus
-  startedAt?: Date
-  completedAt?: Date
-  duration?: number
-  error?: string
-  result?: string
-}
-
-export interface AuditEntry {
-  id: string
-  timestamp: Date
-  actor: string
-  action: string
-  target: string
-  result: 'success' | 'failure' | 'denied'
-  details: string
-  correlationId: string
-}
-
-export interface ApprovalPilotStats {
-  totalExecutions: number
-  successfulExecutions: number
-  failedExecutions: number
-  pendingConfirmations: number
-  avgExecutionTime: number
-  activeBindings: number
-}
-
-// ==================== Mock Data ====================
-
-const mockApprovalContext: ApprovalContext = {
-  id: 'approval-001',
-  title: '采购申请 - 办公设备更新',
-  requester: '张明',
-  department: '技术部',
-  amount: 50000,
-  reason: '更换老化办公电脑，提升开发效率',
-  createdAt: new Date(Date.now() - 86400000),
-  status: 'pending',
-}
-
-const mockToolBindings: ToolBinding[] = [
-  {
-    toolId: 'hr_employee_query',
-    toolName: 'HR员工查询',
-    status: 'bound',
-    permission: 'read',
-    lastUsed: new Date(Date.now() - 3600000),
-    usageCount: 12,
-  },
-  {
-    toolId: 'finance_budget_check',
-    toolName: '预算检查',
-    status: 'bound',
-    permission: 'read',
-    lastUsed: new Date(Date.now() - 1800000),
-    usageCount: 8,
-  },
-  {
-    toolId: 'approval_submit',
-    toolName: '审批提交',
-    status: 'bound',
-    permission: 'write',
-    usageCount: 0,
-  },
-  {
-    toolId: 'notification_send',
-    toolName: '通知发送',
-    status: 'bound',
-    permission: 'write',
-    lastUsed: new Date(Date.now() - 7200000),
-    usageCount: 25,
-  },
-  {
-    toolId: 'admin_override',
-    toolName: '管理员覆盖',
-    status: 'pending',
-    permission: 'admin',
-    usageCount: 0,
-  },
-]
-
-const mockRuntimeSteps: RuntimeStep[] = [
-  {
-    id: 'step-1',
-    phase: 'read',
-    label: '读取上下文',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 300000),
-    completedAt: new Date(Date.now() - 280000),
-    duration: 20000,
-    result: '上下文绑定成功',
-  },
-  {
-    id: 'step-2',
-    phase: 'generate',
-    label: '生成分析',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 280000),
-    completedAt: new Date(Date.now() - 240000),
-    duration: 40000,
-    result: '分析完成，建议批准',
-  },
-  {
-    id: 'step-3',
-    phase: 'confirm',
-    label: '确认审批',
-    status: 'running',
-    startedAt: new Date(Date.now() - 60000),
-  },
-  {
-    id: 'step-4',
-    phase: 'execute',
-    label: '执行写入',
-    status: 'idle',
-  },
-  {
-    id: 'step-5',
-    phase: 'complete',
-    label: '完成',
-    status: 'idle',
-  },
-]
-
-const mockAuditEntries: AuditEntry[] = [
-  {
-    id: 'audit-001',
-    timestamp: new Date(Date.now() - 300000),
-    actor: '系统',
-    action: '上下文绑定',
-    target: 'approval-001',
-    result: 'success',
-    details: '审批上下文成功绑定到运行时',
-    correlationId: 'corr-001',
-  },
-  {
-    id: 'audit-002',
-    timestamp: new Date(Date.now() - 280000),
-    actor: 'Agent',
-    action: '工具调用',
-    target: 'hr_employee_query',
-    result: 'success',
-    details: '查询员工张明的部门信息',
-    correlationId: 'corr-002',
-  },
-  {
-    id: 'audit-003',
-    timestamp: new Date(Date.now() - 260000),
-    actor: 'Agent',
-    action: '工具调用',
-    target: 'finance_budget_check',
-    result: 'success',
-    details: '预算检查：可用预算充足',
-    correlationId: 'corr-003',
-  },
-  {
-    id: 'audit-004',
-    timestamp: new Date(Date.now() - 240000),
-    actor: 'Agent',
-    action: '生成建议',
-    target: 'approval-001',
-    result: 'success',
-    details: '生成批准建议：预算充足，理由合理',
-    correlationId: 'corr-004',
-  },
-  {
-    id: 'audit-005',
-    timestamp: new Date(Date.now() - 120000),
-    actor: '张明',
-    action: '确认审批',
-    target: 'approval-001',
-    result: 'denied',
-    details: '等待最终审批人确认',
-    correlationId: 'corr-005',
-  },
-]
+export type { ApprovalPhase, BindingStatus, ExecutionStatus, PermissionLevel, ApprovalContext, ToolBinding, RuntimeStep, AuditEntry, ApprovalPilotStats }
 
 // ==================== Helper Functions ====================
 
@@ -463,66 +271,27 @@ function ToolBindingCard({ binding, onConfigure }: ToolBindingCardProps) {
 
 export interface ApprovalPilotIntegrationProps {
   className?: string
-  approvalContext?: ApprovalContext
-  toolBindings?: ToolBinding[]
-  runtimeSteps?: RuntimeStep[]
-  auditEntries?: AuditEntry[]
 }
 
 export function ApprovalPilotIntegration({
   className,
-  approvalContext: initialContext,
-  toolBindings: initialBindings,
-  runtimeSteps: initialSteps,
-  auditEntries: initialAudit,
 }: ApprovalPilotIntegrationProps) {
-  const approvalContext = initialContext || mockApprovalContext
-  const toolBindings = initialBindings || mockToolBindings
-  const runtimeSteps = initialSteps || mockRuntimeSteps
-  const auditEntries = initialAudit || mockAuditEntries
+  const {
+    bindings: toolBindings,
+    steps: runtimeSteps,
+    auditEntries,
+    context: approvalContext,
+    stats,
+    currentPhase,
+    isLoading,
+    error,
+    refresh,
+  } = useApprovalPilot()
 
   const [activeTab, setActiveTab] = useState<'flow' | 'bindings' | 'audit'>('flow')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedBinding, setSelectedBinding] = useState<ToolBinding | null>(null)
   const [configOpen, setConfigOpen] = useState(false)
-
-  const currentPhase = useMemo(() => {
-    const running = runtimeSteps.find((s) => s.status === 'running')
-    if (running) return running.phase
-    const pending = runtimeSteps.find((s) => s.status === 'idle')
-    if (pending) {
-      const idx = runtimeSteps.indexOf(pending)
-      if (idx > 0) return runtimeSteps[idx - 1].phase
-    }
-    return 'complete'
-  }, [runtimeSteps])
-
-  const stats = useMemo((): ApprovalPilotStats => {
-    const totalExecutions = runtimeSteps.length
-    const successfulExecutions = runtimeSteps.filter(
-      (s) => s.status === 'completed'
-    ).length
-    const failedExecutions = runtimeSteps.filter((s) => s.status === 'failed').length
-    const pendingConfirmations = runtimeSteps.filter(
-      (s) => s.phase === 'confirm' && s.status === 'running'
-    ).length
-    const completedSteps = runtimeSteps.filter((s) => s.completedAt && s.startedAt)
-    const avgExecutionTime =
-      completedSteps.length > 0
-        ? completedSteps.reduce((sum, s) => sum + (s.duration || 0), 0) /
-          completedSteps.length
-        : 0
-    const activeBindings = toolBindings.filter((b) => b.status === 'bound').length
-
-    return {
-      totalExecutions,
-      successfulExecutions,
-      failedExecutions,
-      pendingConfirmations,
-      avgExecutionTime,
-      activeBindings,
-    }
-  }, [runtimeSteps, toolBindings])
 
   const filteredAudit = useMemo(() => {
     if (!searchQuery) return auditEntries
@@ -548,15 +317,23 @@ export function ApprovalPilotIntegration({
           <h2 className="text-lg font-medium">审批场景接入</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{approvalContext.id}</Badge>
-          <Button size="sm" variant="outline">
-            <RefreshCw className="h-3 w-3 mr-1" />
+          {approvalContext && <Badge variant="outline">{approvalContext.id}</Badge>}
+          <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={isLoading}>
+            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             刷新
           </Button>
         </div>
       </div>
 
-      {/* Approval Context Card */}
+      {error && (
+        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-500">
+          {error}
+        </div>
+      )}
+
+      {isLoading && !approvalContext ? (
+        <CardSkeleton />
+      ) : approvalContext ? (
       <div className="p-4 border rounded-lg bg-card">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -587,6 +364,13 @@ export function ApprovalPilotIntegration({
           创建时间: {formatDate(approvalContext.createdAt)}
         </div>
       </div>
+      ) : (
+        <EmptyState
+          icon={<FileCheck className="h-12 w-12" />}
+          title="暂无审批上下文"
+          description="当前没有活跃的审批任务"
+        />
+      )}
 
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-3">
@@ -772,10 +556,11 @@ export function ApprovalPilotIntegration({
           <ScrollArea className="h-[300px]">
             <div className="space-y-2">
               {filteredAudit.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <History className="h-12 w-12 mx-auto mb-3" />
-                  <p>没有审计日志</p>
-                </div>
+                <EmptyState
+                  icon={<History className="h-12 w-12" />}
+                  title="没有审计日志"
+                  description="暂无审批场景的审计记录"
+                />
               ) : (
                 filteredAudit.map((entry) => (
                   <div

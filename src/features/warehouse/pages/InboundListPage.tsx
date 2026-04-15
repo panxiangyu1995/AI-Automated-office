@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { Plus, Package, FileText, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect, useCallback } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { Plus, Package, FileText, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -10,70 +12,70 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { InboundFormDialog } from '../components/InboundFormDialog';
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { InboundFormDialog } from '../components/InboundFormDialog'
 
 interface InboundListItem {
-  id: string;
-  number: string;
-  inboundType: string;
-  status: string;
-  createdAt: number;
+  id: string
+  number: string
+  inboundType: string
+  status: string
+  createdAt: number
 }
 
 export function InboundListPage() {
-  const [inbounds, setInbounds] = useState<InboundListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [inbounds, setInbounds] = useState<InboundListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await invoke<InboundListItem[]>('warehouse_list_inbounds');
-      setInbounds(data);
+      const data = await invoke<InboundListItem[]>('warehouse_list_inbounds')
+      setInbounds(data)
     } catch (error) {
-      console.error('Failed to fetch inbounds:', error);
+      console.error('Failed to fetch inbounds:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData()
+  }, [fetchData])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="outline">草稿</Badge>;
+        return <Badge variant="outline">草稿</Badge>
       case 'submitted':
-        return <Badge variant="secondary">已提交</Badge>;
+        return <Badge variant="secondary">已提交</Badge>
       case 'approved':
-        return <Badge variant="default">已审批</Badge>;
+        return <Badge variant="default">已审批</Badge>
       case 'completed':
-        return <Badge variant="success">已完成</Badge>;
+        return <Badge variant="success">已完成</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>
     }
-  };
+  }
 
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'purchase':
-        return '采购入库';
+        return '采购入库'
       case 'return':
-        return '退货入库';
+        return '退货入库'
       case 'transfer':
-        return '调拨入库';
+        return '调拨入库'
       default:
-        return type;
+        return type
     }
-  };
+  }
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('zh-CN');
-  };
+    return new Date(timestamp * 1000).toLocaleDateString('zh-CN')
+  }
 
   return (
     <div className="flex flex-col h-full p-6 gap-4">
@@ -110,7 +112,7 @@ export function InboundListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {inbounds.filter(i => i.status === 'draft').length}
+              {inbounds.filter((i) => i.status === 'draft').length}
             </div>
           </CardContent>
         </Card>
@@ -121,38 +123,32 @@ export function InboundListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {inbounds.filter(i => i.status === 'completed').length}
+              {inbounds.filter((i) => i.status === 'completed').length}
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Table */}
-      <div className="flex-1 border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>入库单号</TableHead>
-              <TableHead>入库类型</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>创建时间</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      <div className="flex-1 border rounded-lg overflow-auto">
+        {loading ? (
+          <TableSkeleton rows={5} cols={4} />
+        ) : inbounds.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <EmptyState title="暂无入库单" description="点击新增按钮创建入库单" icon={Package} />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">
-                  加载中...
-                </TableCell>
+                <TableHead>入库单号</TableHead>
+                <TableHead>入库类型</TableHead>
+                <TableHead>状态</TableHead>
+                <TableHead>创建时间</TableHead>
               </TableRow>
-            ) : inbounds.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">
-                  暂无入库单
-                </TableCell>
-              </TableRow>
-            ) : (
-              inbounds.map((item) => (
+            </TableHeader>
+            <TableBody>
+              {inbounds.map((item) => (
                 <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell className="font-mono text-sm">{item.number}</TableCell>
                   <TableCell>{getTypeLabel(item.inboundType)}</TableCell>
@@ -161,18 +157,14 @@ export function InboundListPage() {
                     {formatDate(item.createdAt)}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       {/* Create Dialog */}
-      <InboundFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSuccess={fetchData}
-      />
+      <InboundFormDialog open={dialogOpen} onOpenChange={setDialogOpen} onSuccess={fetchData} />
     </div>
-  );
+  )
 }

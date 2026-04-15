@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import { MapPin, Package, Plus, Edit, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState, useEffect, useCallback } from 'react'
+import { MapPin, Package, Plus, Edit, Trash2, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +14,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -20,117 +22,127 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-
-interface LocationItem {
-  id: string;
-  code: string;
-  name: string;
-  zone: string;
-  capacity: number;
-  currentCount: number;
-  status: 'available' | 'full' | 'disabled';
-}
+} from '@/components/ui/select'
+import { listLocations, createLocation, updateLocation } from '../api/warehouseApi'
+import type { Location } from '../types/inventory'
 
 export function LocationListPage() {
-  const [locations, setLocations] = useState<LocationItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<LocationItem | null>(null);
+  const [locations, setLocations] = useState<Location[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null)
+  const [formCode, setFormCode] = useState('')
+  const [formName, setFormName] = useState('')
+  const [formZone, setFormZone] = useState('')
 
-  // Form state
-  const [formCode, setFormCode] = useState('');
-  const [formName, setFormName] = useState('');
-  const [formZone, setFormZone] = useState('');
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await listLocations()
+      setLocations(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取库位数据失败')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const mockData: LocationItem[] = [
-      { id: 'loc-001', code: 'A-01-01', name: 'A区01货架01位', zone: 'A区', capacity: 50, currentCount: 15, status: 'available' },
-      { id: 'loc-002', code: 'A-01-02', name: 'A区01货架02位', zone: 'A区', capacity: 100, currentCount: 5, status: 'available' },
-      { id: 'loc-003', code: 'B-02-01', name: 'B区02货架01位', zone: 'B区', capacity: 30, currentCount: 45, status: 'available' },
-      { id: 'loc-004', code: 'C-01-01', name: 'C区01货架01位', zone: 'C区', capacity: 20, currentCount: 20, status: 'full' },
-    ];
-    setLocations(mockData);
-    setLoading(false);
-  }, []);
+    fetchData()
+  }, [fetchData])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'available':
-        return <Badge variant="default">可用</Badge>;
+        return <Badge variant="default">可用</Badge>
       case 'full':
-        return <Badge variant="secondary">已满</Badge>;
+        return <Badge variant="secondary">已满</Badge>
       case 'disabled':
-        return <Badge variant="outline">已禁用</Badge>;
+        return <Badge variant="outline">已禁用</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>
     }
-  };
+  }
 
   const getOccupancyRate = (current: number, capacity: number) => {
-    return Math.round((current / capacity) * 100);
-  };
+    return capacity > 0 ? Math.round((current / capacity) * 100) : 0
+  }
 
-  const zones = [...new Set(locations.map(l => l.zone))];
-  const availableCount = locations.filter(l => l.status === 'available').length;
-  const fullCount = locations.filter(l => l.status === 'full').length;
+  const zones = [...new Set(locations.map((l) => l.zone))]
+  const availableCount = locations.filter((l) => l.status === 'available').length
+  const fullCount = locations.filter((l) => l.status === 'full').length
 
-  const handleOpenDialog = (location?: LocationItem) => {
+  const handleOpenDialog = (location?: Location) => {
     if (location) {
-      setEditingLocation(location);
-      setFormCode(location.code);
-      setFormName(location.name);
-      setFormZone(location.zone);
+      setEditingLocation(location)
+      setFormCode(location.code)
+      setFormName(location.name)
+      setFormZone(location.zone)
     } else {
-      setEditingLocation(null);
-      setFormCode('');
-      setFormName('');
-      setFormZone('A区');
+      setEditingLocation(null)
+      setFormCode('')
+      setFormName('')
+      setFormZone('A区')
     }
-    setDialogOpen(true);
-  };
+    setDialogOpen(true)
+  }
 
-  const handleSave = () => {
-    if (editingLocation) {
-      setLocations(locations.map(l => 
-        l.id === editingLocation.id 
-          ? { ...l, code: formCode, name: formName, zone: formZone }
-          : l
-      ));
-    } else {
-      const newLocation: LocationItem = {
-        id: `loc-${Date.now()}`,
-        code: formCode,
-        name: formName,
-        zone: formZone,
-        capacity: 50,
-        currentCount: 0,
-        status: 'available',
-      };
-      setLocations([...locations, newLocation]);
-    }
-    setDialogOpen(false);
-  };
+  const handleSave = async () => {
+    try {
+      if (editingLocation) {
+        await updateLocation(editingLocation.id, { code: formCode, name: formName, zone: formZone })
+      } else {
+        await createLocation({ code: formCode, name: formName, zone: formZone })
+      }
+      setDialogOpen(false)
+      fetchData()
+    } catch {}
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-full p-6 gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">库位管理</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <EmptyState
+            title="加载失败"
+            description={error}
+            icon={AlertTriangle}
+            actionLabel="重试"
+            onAction={fetchData}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full p-6 gap-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">库位管理</h1>
-        <Button size="sm" onClick={() => handleOpenDialog()}>
-          <Plus className="h-4 w-4 mr-2" />
-          新增库位
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            刷新
+          </Button>
+          <Button size="sm" onClick={() => handleOpenDialog()}>
+            <Plus className="h-4 w-4 mr-2" />
+            新增库位
+          </Button>
+        </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -170,12 +182,13 @@ export function LocationListPage() {
         </Card>
       </div>
 
-      {/* Zone Filter */}
       <div className="flex items-center gap-4">
         <Label>区域筛选：</Label>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="rounded-full">全部</Button>
-          {zones.map(zone => (
+          <Button variant="outline" size="sm" className="rounded-full">
+            全部
+          </Button>
+          {zones.map((zone) => (
             <Button key={zone} variant="ghost" size="sm" className="rounded-full">
               {zone}
             </Button>
@@ -183,37 +196,30 @@ export function LocationListPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="flex-1 border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>库位编码</TableHead>
-              <TableHead>库位名称</TableHead>
-              <TableHead>区域</TableHead>
-              <TableHead>容量</TableHead>
-              <TableHead>当前数量</TableHead>
-              <TableHead>占用率</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead className="w-[120px]">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      <div className="flex-1 border rounded-lg overflow-auto">
+        {loading ? (
+          <TableSkeleton rows={5} cols={8} />
+        ) : locations.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <EmptyState title="暂无库位" description="点击新增按钮添加库位" icon={MapPin} />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  加载中...
-                </TableCell>
+                <TableHead>库位编码</TableHead>
+                <TableHead>库位名称</TableHead>
+                <TableHead>区域</TableHead>
+                <TableHead>容量</TableHead>
+                <TableHead>当前数量</TableHead>
+                <TableHead>占用率</TableHead>
+                <TableHead>状态</TableHead>
+                <TableHead className="w-[120px]">操作</TableHead>
               </TableRow>
-            ) : locations.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  暂无库位
-                </TableCell>
-              </TableRow>
-            ) : (
-              locations.map((item) => {
-                const occupancy = getOccupancyRate(item.currentCount, item.capacity);
+            </TableHeader>
+            <TableBody>
+              {locations.map((item) => {
+                const occupancy = getOccupancyRate(item.current_count, item.capacity)
                 return (
                   <TableRow key={item.id}>
                     <TableCell className="font-mono">{item.code}</TableCell>
@@ -222,7 +228,7 @@ export function LocationListPage() {
                       <Badge variant="outline">{item.zone}</Badge>
                     </TableCell>
                     <TableCell>{item.capacity}</TableCell>
-                    <TableCell>{item.currentCount}</TableCell>
+                    <TableCell>{item.current_count}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -237,11 +243,7 @@ export function LocationListPage() {
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenDialog(item)}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(item)}>
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon">
@@ -250,14 +252,13 @@ export function LocationListPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                )
+              })}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -290,8 +291,10 @@ export function LocationListPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {zones.map(z => (
-                    <SelectItem key={z} value={z}>{z}</SelectItem>
+                  {zones.map((z) => (
+                    <SelectItem key={z} value={z}>
+                      {z}
+                    </SelectItem>
                   ))}
                   <SelectItem value="新增区域">+ 新增区域</SelectItem>
                 </SelectContent>
@@ -299,11 +302,15 @@ export function LocationListPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>
-            <Button onClick={handleSave}>保存</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleSave} className="bg-[#1E3A5F] hover:bg-[#1E3A5F]/90">
+              保存
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

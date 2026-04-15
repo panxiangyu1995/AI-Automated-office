@@ -49,6 +49,7 @@ pub async fn service_create_ticket(
         request.customer_contact,
         request.customer_email,
         tenant_id,
+        request.customer_id,
     );
     
     state.db.create_ticket(ticket).map_err(|e| e.message)

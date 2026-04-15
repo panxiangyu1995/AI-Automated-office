@@ -137,8 +137,9 @@ impl FailoverManager {
 
     /// 注册节点配对
     pub fn register_pair(&mut self, pair: NodePair) {
-        self.pairs.insert(pair.primary_id.clone(), pair);
-        self.states.insert(pair.primary_id.clone(), FailoverState::Normal);
+        let primary_id = pair.primary_id.clone();
+        self.pairs.insert(primary_id.clone(), pair);
+        self.states.insert(primary_id, FailoverState::Normal);
     }
 
     /// 注销节点配对

@@ -445,6 +445,8 @@ pub struct TenderProjectListItem {
     pub status: TenderStatus,
     pub deadline: Option<String>,
     pub progress: i32,
+    pub created_at: i64,
+    pub updated_at: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

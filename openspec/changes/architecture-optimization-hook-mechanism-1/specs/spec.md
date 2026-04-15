@@ -40,52 +40,52 @@
 ### 功能验收
 
 1. **EventBus**
-   - [ ] 单例模式正常工作
-   - [ ] `subscribe()` 返回取消订阅函数
-   - [ ] `publish()` 正确分发到所有订阅者
-   - [ ] 类型安全（泛型支持）
-   - [ ] 自动清理已卸载组件的订阅
+   - [x] 单例模式正常工作
+   - [x] `subscribe()` 返回取消订阅函数
+   - [x] `publish()` 正确分发到所有订阅者
+   - [x] 类型安全（泛型支持）
+   - [x] 自动清理已卸载组件的订阅
 
 2. **ServiceContainer**
-   - [ ] `register()` 注册服务
-   - [ ] `resolve()` 解析服务（单例模式）
-   - [ ] 循环依赖检测和报错
-   - [ ] 延迟初始化
+   - [x] `register()` 注册服务
+   - [x] `resolve()` 解析服务（单例模式）
+   - [x] 循环依赖检测和报错
+   - [x] 延迟初始化
 
 3. **PluginLifecycleManager**
-   - [ ] `register()` 注册生命周期钩子
-   - [ ] `unregister()` 注销钩子
-   - [ ] 生命周期钩子按序执行
-   - [ ] 错误不影响其他钩子
+   - [x] `register()` 注册生命周期钩子
+   - [x] `unregister()` 注销钩子
+   - [x] 生命周期钩子按序执行
+   - [x] 错误不影响其他钩子
 
 4. **useChatStore 重构**
-   - [ ] 发送 `chat:message:add` 事件
-   - [ ] 不再直接依赖 CheckpointStore
-   - [ ] 现有功能保持不变
-   - [ ] 性能无明显变化
+   - [x] 发送 `chat:message:add` 事件
+   - [x] 不再直接依赖 CheckpointStore
+   - [x] 现有功能保持不变
+   - [x] 性能无明显变化
 
 5. **useAgentRuntime 重构**
-   - [ ] 使用 EventBus 订阅后端事件
-   - [ ] 共享订阅机制工作正常
-   - [ ] 组件卸载时正确清理
-   - [ ] 内存无泄漏
+   - [x] 使用 EventBus 订阅后端事件
+   - [x] 共享订阅机制工作正常
+   - [x] 组件卸载时正确清理
+   - [x] 内存无泄漏
 
 6. **Rust LifecycleManager**
-   - [ ] `PluginLifecycleHook` trait 可被实现
-   - [ ] 生命周期事件正确触发
-   - [ ] 与前端事件总线集成
+   - [x] `PluginLifecycleHook` trait 可被实现
+   - [x] 生命周期事件正确触发
+   - [x] 与前端事件总线集成
 
 ### 回归验收
 
-- [ ] Chat 功能测试通过
-- [ ] Agent 执行测试通过
-- [ ] Checkpoint 功能测试通过
-- [ ] 插件注册测试通过
-- [ ] Agent 间通信测试通过
+- [x] Chat 功能测试通过
+- [x] Agent 执行测试通过
+- [x] Checkpoint 功能测试通过
+- [x] 插件注册测试通过
+- [x] Agent 间通信测试通过
 
 ### 构建验收
 
-- [ ] `npm run build` 成功
-- [ ] `npm run lint` 无错误
+- [x] `npm run build` 成功
+- [x] `npm run lint` 无错误
 - [ ] `cargo build` 成功
 - [ ] `cargo clippy` 无警告

@@ -32,6 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -313,38 +314,55 @@ const MOCK_DOWNGRADES: DowngradeEvent[] = [
 // Helper functions
 function getHealthColor(level: ConnectorHealthLevel): string {
   switch (level) {
-    case 'healthy': return 'bg-green-100 text-green-800'
-    case 'degraded': return 'bg-yellow-100 text-yellow-800'
-    case 'unhealthy': return 'bg-orange-100 text-orange-800'
-    case 'critical': return 'bg-red-100 text-red-800'
+    case 'healthy':
+      return 'bg-green-100 text-green-800'
+    case 'degraded':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'unhealthy':
+      return 'bg-orange-100 text-orange-800'
+    case 'critical':
+      return 'bg-red-100 text-red-800'
   }
 }
 
 function getHealthIcon(level: ConnectorHealthLevel) {
   switch (level) {
-    case 'healthy': return <CheckCircle2 className="h-4 w-4 text-green-500" />
-    case 'degraded': return <TrendingDown className="h-4 w-4 text-yellow-500" />
-    case 'unhealthy': return <AlertTriangle className="h-4 w-4 text-orange-500" />
-    case 'critical': return <XCircle className="h-4 w-4 text-red-500" />
+    case 'healthy':
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />
+    case 'degraded':
+      return <TrendingDown className="h-4 w-4 text-yellow-500" />
+    case 'unhealthy':
+      return <AlertTriangle className="h-4 w-4 text-orange-500" />
+    case 'critical':
+      return <XCircle className="h-4 w-4 text-red-500" />
   }
 }
 
 function getSeverityColor(severity: 'low' | 'medium' | 'high' | 'critical'): string {
   switch (severity) {
-    case 'low': return 'bg-blue-100 text-blue-800'
-    case 'medium': return 'bg-yellow-100 text-yellow-800'
-    case 'high': return 'bg-orange-100 text-orange-800'
-    case 'critical': return 'bg-red-100 text-red-800'
+    case 'low':
+      return 'bg-blue-100 text-blue-800'
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'high':
+      return 'bg-orange-100 text-orange-800'
+    case 'critical':
+      return 'bg-red-100 text-red-800'
   }
 }
 
 function getRetryStatusColor(status: RetryStatus): string {
   switch (status) {
-    case 'pending': return 'bg-gray-100 text-gray-800'
-    case 'retrying': return 'bg-blue-100 text-blue-800'
-    case 'success': return 'bg-green-100 text-green-800'
-    case 'failed': return 'bg-red-100 text-red-800'
-    case 'skipped': return 'bg-yellow-100 text-yellow-800'
+    case 'pending':
+      return 'bg-gray-100 text-gray-800'
+    case 'retrying':
+      return 'bg-blue-100 text-blue-800'
+    case 'success':
+      return 'bg-green-100 text-green-800'
+    case 'failed':
+      return 'bg-red-100 text-red-800'
+    case 'skipped':
+      return 'bg-yellow-100 text-yellow-800'
   }
 }
 
@@ -375,14 +393,16 @@ function calculateStats(
 ): HealthStats {
   return {
     totalConnectors: health.length,
-    healthyConnectors: health.filter(h => h.healthLevel === 'healthy').length,
-    degradedConnectors: health.filter(h => h.healthLevel === 'degraded').length,
-    unhealthyConnectors: health.filter(h => h.healthLevel === 'unhealthy' || h.healthLevel === 'critical').length,
-    activeIncidents: incidents.filter(i => i.status === 'active').length,
-    activeDowngrades: downgrades.filter(d => d.status === 'active').length,
+    healthyConnectors: health.filter((h) => h.healthLevel === 'healthy').length,
+    degradedConnectors: health.filter((h) => h.healthLevel === 'degraded').length,
+    unhealthyConnectors: health.filter(
+      (h) => h.healthLevel === 'unhealthy' || h.healthLevel === 'critical'
+    ).length,
+    activeIncidents: incidents.filter((i) => i.status === 'active').length,
+    activeDowngrades: downgrades.filter((d) => d.status === 'active').length,
     totalRetries: retries.length,
-    successfulRetries: retries.filter(r => r.status === 'success').length,
-    failedRetries: retries.filter(r => r.status === 'failed').length,
+    successfulRetries: retries.filter((r) => r.status === 'success').length,
+    failedRetries: retries.filter((r) => r.status === 'failed').length,
   }
 }
 
@@ -402,29 +422,33 @@ export function ConnectorHealthMonitor() {
   )
 
   const handleResolveIncident = (incident: Incident) => {
-    setIncidents(prev => prev.map(i => {
-      if (i.id === incident.id) {
-        return {
-          ...i,
-          status: 'resolved' as const,
-          resolvedAt: new Date().toISOString(),
+    setIncidents((prev) =>
+      prev.map((i) => {
+        if (i.id === incident.id) {
+          return {
+            ...i,
+            status: 'resolved' as const,
+            resolvedAt: new Date().toISOString(),
+          }
         }
-      }
-      return i
-    }))
+        return i
+      })
+    )
     setShowIncidentDialog(false)
   }
 
   const handleIgnoreIncident = (incident: Incident) => {
-    setIncidents(prev => prev.map(i => {
-      if (i.id === incident.id) {
-        return {
-          ...i,
-          status: 'ignored' as const,
+    setIncidents((prev) =>
+      prev.map((i) => {
+        if (i.id === incident.id) {
+          return {
+            ...i,
+            status: 'ignored' as const,
+          }
         }
-      }
-      return i
-    }))
+        return i
+      })
+    )
     setShowIncidentDialog(false)
   }
 
@@ -458,9 +482,7 @@ export function ConnectorHealthMonitor() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{stats.activeIncidents}</div>
-            <p className="text-xs text-slate-500 mt-1">
-              当前需要处理的事件
-            </p>
+            <p className="text-xs text-slate-500 mt-1">当前需要处理的事件</p>
           </CardContent>
         </Card>
         <Card>
@@ -469,9 +491,7 @@ export function ConnectorHealthMonitor() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.activeDowngrades}</div>
-            <p className="text-xs text-slate-500 mt-1">
-              当前降级中的连接器
-            </p>
+            <p className="text-xs text-slate-500 mt-1">当前降级中的连接器</p>
           </CardContent>
         </Card>
         <Card>
@@ -493,9 +513,7 @@ export function ConnectorHealthMonitor() {
             <div className="text-2xl font-bold text-slate-800">
               {Math.round(health.reduce((sum, h) => sum + h.averageLatency, 0) / health.length)}ms
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              所有连接器平均值
-            </p>
+            <p className="text-xs text-slate-500 mt-1">所有连接器平均值</p>
           </CardContent>
         </Card>
       </div>
@@ -556,9 +574,11 @@ export function ConnectorHealthMonitor() {
                           <div className={`h-2 w-24 rounded-full bg-slate-200 overflow-hidden`}>
                             <div
                               className={`h-full rounded-full ${
-                                h.uptime >= 99 ? 'bg-green-500' :
-                                h.uptime >= 95 ? 'bg-yellow-500' :
-                                'bg-red-500'
+                                h.uptime >= 99
+                                  ? 'bg-green-500'
+                                  : h.uptime >= 95
+                                    ? 'bg-yellow-500'
+                                    : 'bg-red-500'
                               }`}
                               style={{ width: `${h.uptime}%` }}
                             />
@@ -567,7 +587,9 @@ export function ConnectorHealthMonitor() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={h.averageLatency > 500 ? 'text-red-600' : 'text-slate-600'}>
+                        <span
+                          className={h.averageLatency > 500 ? 'text-red-600' : 'text-slate-600'}
+                        >
                           {h.averageLatency > 0 ? `${h.averageLatency}ms` : '-'}
                         </span>
                       </TableCell>
@@ -602,53 +624,80 @@ export function ConnectorHealthMonitor() {
               <CardTitle className="text-base">活跃事件</CardTitle>
             </CardHeader>
             <CardContent>
-              {incidents.filter(i => i.status === 'active').length === 0 ? (
+              {incidents.filter((i) => i.status === 'active').length === 0 ? (
                 <div className="text-center py-8 text-slate-500">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-green-500" />
-                  <p>暂无活跃事件</p>
+                  <EmptyState
+                    title="暂无活跃事件"
+                    description="连接器运行正常"
+                    icon={CheckCircle2}
+                    size="sm"
+                  />
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {incidents.filter(i => i.status === 'active').map((incident) => (
-                    <div
-                      key={incident.id}
-                      className={`flex items-start gap-4 p-4 border rounded-lg border-l-4 ${
-                        incident.severity === 'critical' ? 'border-l-red-500' :
-                        incident.severity === 'high' ? 'border-l-orange-500' :
-                        incident.severity === 'medium' ? 'border-l-yellow-500' :
-                        'border-l-blue-500'
-                      }`}
-                    >
-                      <div className={`mt-0.5 ${
-                        incident.severity === 'critical' ? 'text-red-500' :
-                        incident.severity === 'high' ? 'text-orange-500' :
-                        incident.severity === 'medium' ? 'text-yellow-500' :
-                        'text-blue-500'
-                      }`}>
-                        <AlertTriangle className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{incident.connectorName}</span>
-                          <Badge className={getSeverityColor(incident.severity)} variant="outline">
-                            {incident.severity}
-                          </Badge>
-                          <Badge variant="outline" className="uppercase">{incident.type}</Badge>
+                  {incidents
+                    .filter((i) => i.status === 'active')
+                    .map((incident) => (
+                      <div
+                        key={incident.id}
+                        className={`flex items-start gap-4 p-4 border rounded-lg border-l-4 ${
+                          incident.severity === 'critical'
+                            ? 'border-l-red-500'
+                            : incident.severity === 'high'
+                              ? 'border-l-orange-500'
+                              : incident.severity === 'medium'
+                                ? 'border-l-yellow-500'
+                                : 'border-l-blue-500'
+                        }`}
+                      >
+                        <div
+                          className={`mt-0.5 ${
+                            incident.severity === 'critical'
+                              ? 'text-red-500'
+                              : incident.severity === 'high'
+                                ? 'text-orange-500'
+                                : incident.severity === 'medium'
+                                  ? 'text-yellow-500'
+                                  : 'text-blue-500'
+                          }`}
+                        >
+                          <AlertTriangle className="h-5 w-5" />
                         </div>
-                        <p className="text-sm text-slate-600">{incident.message}</p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                          <span>开始时间: {formatRelativeTime(incident.startedAt)}</span>
-                          <span>重试次数: {incident.retryCount}</span>
-                          <span>影响请求: {incident.affectedRequests}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium">{incident.connectorName}</span>
+                            <Badge
+                              className={getSeverityColor(incident.severity)}
+                              variant="outline"
+                            >
+                              {incident.severity}
+                            </Badge>
+                            <Badge variant="outline" className="uppercase">
+                              {incident.type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600">{incident.message}</p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                            <span>开始时间: {formatRelativeTime(incident.startedAt)}</span>
+                            <span>重试次数: {incident.retryCount}</span>
+                            <span>影响请求: {incident.affectedRequests}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedIncident(incident)
+                              setShowIncidentDialog(true)
+                            }}
+                          >
+                            处理
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => { setSelectedIncident(incident); setShowIncidentDialog(true); }}>
-                          处理
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </CardContent>
@@ -659,24 +708,38 @@ export function ConnectorHealthMonitor() {
               <CardTitle className="text-base">已解决事件</CardTitle>
             </CardHeader>
             <CardContent>
-              {incidents.filter(i => i.status !== 'active').length === 0 ? (
-                <div className="text-center py-4 text-slate-400">暂无已解决事件</div>
+              {incidents.filter((i) => i.status !== 'active').length === 0 ? (
+                <EmptyState
+                  title="暂无已解决事件"
+                  description="所有事件已处理"
+                  icon={CheckCircle2}
+                  size="sm"
+                />
               ) : (
                 <div className="space-y-3">
-                  {incidents.filter(i => i.status !== 'active').map((incident) => (
-                    <div key={incident.id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{incident.connectorName}</span>
-                          <Badge variant="outline" className="uppercase text-xs">{incident.type}</Badge>
+                  {incidents
+                    .filter((i) => i.status !== 'active')
+                    .map((incident) => (
+                      <div
+                        key={incident.id}
+                        className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg"
+                      >
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{incident.connectorName}</span>
+                            <Badge variant="outline" className="uppercase text-xs">
+                              {incident.type}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {incident.resolvedAt
+                              ? `解决时间: ${formatRelativeTime(incident.resolvedAt)}`
+                              : `状态: ${incident.status}`}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-500">
-                          {incident.resolvedAt ? `解决时间: ${formatRelativeTime(incident.resolvedAt)}` : `状态: ${incident.status}`}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </CardContent>
@@ -717,7 +780,9 @@ export function ConnectorHealthMonitor() {
                       <TableCell className="text-red-600 text-sm max-w-xs truncate">
                         {retry.error || '-'}
                       </TableCell>
-                      <TableCell className="text-slate-500">{formatDuration(retry.duration)}</TableCell>
+                      <TableCell className="text-slate-500">
+                        {formatDuration(retry.duration)}
+                      </TableCell>
                       <TableCell className="text-slate-500 text-sm">
                         {formatRelativeTime(retry.timestamp)}
                       </TableCell>
@@ -762,23 +827,40 @@ export function ConnectorHealthMonitor() {
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Badge variant="outline">
-                            {downgrade.fromLevel === 'none' ? '正常' : `L${downgrade.fromLevel.replace('l', '')}`}
+                            {downgrade.fromLevel === 'none'
+                              ? '正常'
+                              : `L${downgrade.fromLevel.replace('l', '')}`}
                           </Badge>
                           <ArrowDown className="h-4 w-4 text-red-500" />
-                          <Badge variant="outline" className={downgrade.toLevel === 'none' ? 'bg-green-100' : 'bg-red-100'}>
-                            {downgrade.toLevel === 'none' ? '正常' : `L${downgrade.toLevel.replace('l', '')}`}
+                          <Badge
+                            variant="outline"
+                            className={downgrade.toLevel === 'none' ? 'bg-green-100' : 'bg-red-100'}
+                          >
+                            {downgrade.toLevel === 'none'
+                              ? '正常'
+                              : `L${downgrade.toLevel.replace('l', '')}`}
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-600 max-w-xs">{downgrade.reason}</TableCell>
+                      <TableCell className="text-sm text-slate-600 max-w-xs">
+                        {downgrade.reason}
+                      </TableCell>
                       <TableCell>
-                        <Badge className={
-                          downgrade.status === 'active' ? 'bg-red-100 text-red-800' :
-                          downgrade.status === 'recovered' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        } variant="outline">
-                          {downgrade.status === 'active' ? '进行中' :
-                           downgrade.status === 'recovered' ? '已恢复' : '永久'}
+                        <Badge
+                          className={
+                            downgrade.status === 'active'
+                              ? 'bg-red-100 text-red-800'
+                              : downgrade.status === 'recovered'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }
+                          variant="outline"
+                        >
+                          {downgrade.status === 'active'
+                            ? '进行中'
+                            : downgrade.status === 'recovered'
+                              ? '已恢复'
+                              : '永久'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">
@@ -865,9 +947,7 @@ export function ConnectorHealthMonitor() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>处理事件</DialogTitle>
-            <DialogDescription>
-              选择如何处理此事件
-            </DialogDescription>
+            <DialogDescription>选择如何处理此事件</DialogDescription>
           </DialogHeader>
           {selectedIncident && (
             <div className="space-y-4 py-4">
@@ -884,7 +964,9 @@ export function ConnectorHealthMonitor() {
                 </div>
                 <div>
                   <span className="text-slate-500">类型：</span>
-                  <Badge variant="outline" className="uppercase">{selectedIncident.type}</Badge>
+                  <Badge variant="outline" className="uppercase">
+                    {selectedIncident.type}
+                  </Badge>
                 </div>
                 <div>
                   <span className="text-slate-500">开始时间：</span>

@@ -61,11 +61,9 @@ impl YoloTtl {
             YoloTtl::Once => None,
             YoloTtl::OneHour => Some(3600),
             YoloTtl::Today => {
-                // Calculate seconds until midnight
+                // 计算到午夜剩余秒数
                 let now = chrono::Utc::now();
-                // 安全：使用ok_or处理无效时间（23:59:59总是有效）
-                let midnight = now.date_naive().and_hms_opt(23, 59, 59)
-                    .ok_or_else(|| anyhow!("Invalid midnight time calculation"))?;
+                let midnight = now.date_naive().and_hms_opt(23, 59, 59)?;
                 let duration = midnight.signed_duration_since(now.naive_local());
                 Some(duration.num_seconds() as u64)
             }
@@ -769,9 +767,9 @@ impl SubAgentRoutingService {
         }
 
         // If subagent is selected, verify routing is allowed
-        // 安全：使用ok_or处理None情况
+        // 安全：使用ok处理None情况
         let subagent_id = decision.selected_sub_agent_id.as_ref()
-            .ok_or_else(|| anyhow!("No subagent selected"))?;
+            .expect("subagent_id should be Some when checked above");
         self.can_route_to_subagent(subagent_id, context)
     }
 

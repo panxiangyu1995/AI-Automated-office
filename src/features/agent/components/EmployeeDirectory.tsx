@@ -15,6 +15,7 @@
  */
 
 import { useState, useMemo } from 'react'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Search,
   Users,
@@ -401,11 +402,13 @@ export function EmployeeDirectory({
   const filteredDepartments = useMemo(() => {
     if (allDepartments.length > 0) {
       // Filter departments based on filtered employees
-      return allDepartments.map((dept) => ({
-        ...dept,
-        employees: filteredEmployees.filter((e) => e.department === dept.name),
-        employeeCount: filteredEmployees.filter((e) => e.department === dept.name).length,
-      })).filter((dept) => dept.employeeCount > 0)
+      return allDepartments
+        .map((dept) => ({
+          ...dept,
+          employees: filteredEmployees.filter((e) => e.department === dept.name),
+          employeeCount: filteredEmployees.filter((e) => e.department === dept.name).length,
+        }))
+        .filter((dept) => dept.employeeCount > 0)
     }
     return []
   }, [allDepartments, filteredEmployees])
@@ -583,9 +586,7 @@ export function EmployeeDirectory({
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-xs text-slate-500 truncate">
-                                {emp.position}
-                              </div>
+                              <div className="text-xs text-slate-500 truncate">{emp.position}</div>
                             </div>
                           </div>
                           {mode === 'select' && (
@@ -623,10 +624,12 @@ export function EmployeeDirectory({
               ))}
 
               {filteredDepartments.length === 0 && (
-                <div className="text-center py-8 text-slate-500">
-                  <Users className="h-12 w-12 mx-auto mb-2 text-slate-300" />
-                  <p>未找到匹配的员工</p>
-                </div>
+                <EmptyState
+                  variant={searchQuery ? 'search' : 'data'}
+                  title={searchQuery ? '未找到匹配的员工' : '暂无员工数据'}
+                  description={searchQuery ? '尝试其他搜索条件' : '尚未添加员工信息'}
+                  className="py-8"
+                />
               )}
             </div>
           </ScrollArea>
@@ -709,8 +712,7 @@ export function EmployeeDirectory({
           <DialogHeader>
             <DialogTitle>选择参与者</DialogTitle>
             <DialogDescription>
-              已选择 {selected.length} 人
-              {maxSelection && ` (最多 ${maxSelection} 人)`}
+              已选择 {selected.length} 人{maxSelection && ` (最多 ${maxSelection} 人)`}
             </DialogDescription>
           </DialogHeader>
 

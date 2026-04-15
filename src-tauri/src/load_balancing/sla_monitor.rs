@@ -324,7 +324,7 @@ impl SlaMonitor {
 
     /// 检查是否需要告警
     fn check_alerts(&mut self, service_id: &str) {
-        let config = match self.alert_configs.get(service_id) {
+        let config = match self.alert_configs.get(service_id).cloned() {
             Some(c) => c,
             None => return,
         };
@@ -333,7 +333,7 @@ impl SlaMonitor {
             return;
         }
 
-        let metrics = match self.metrics.get(service_id) {
+        let metrics = match self.metrics.get(service_id).cloned() {
             Some(m) => m,
             None => return,
         };

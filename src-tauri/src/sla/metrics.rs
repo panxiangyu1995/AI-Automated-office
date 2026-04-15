@@ -123,7 +123,7 @@ impl MetricsCollector {
 
         // 添加到原始数据队列
         let raw_queue = self.raw_data.entry(name.to_string()).or_insert_with(VecDeque::new);
-        raw_queue.push_back(data_point);
+        raw_queue.push_back(data_point.clone());
 
         // 限制队列大小
         while raw_queue.len() > self.config.max_data_points {

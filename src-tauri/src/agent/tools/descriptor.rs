@@ -15,6 +15,12 @@ pub enum ToolCategory {
     Automation,
 }
 
+impl Default for ToolCategory {
+    fn default() -> Self {
+        ToolCategory::Core
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ToolExecutionMode {
@@ -22,6 +28,12 @@ pub enum ToolExecutionMode {
     Async,
     Streaming,
     Batch,
+}
+
+impl Default for ToolExecutionMode {
+    fn default() -> Self {
+        ToolExecutionMode::Sync
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -80,6 +92,21 @@ pub struct ToolCapabilities {
     pub has_side_effects: bool,
     pub supports_retry: bool,
     pub estimated_duration: Option<u64>,
+}
+
+impl Default for ToolCapabilities {
+    fn default() -> Self {
+        Self {
+            supports_streaming: false,
+            supports_cancellation: false,
+            requires_permission: false,
+            requires_confirmation: false,
+            is_read_only: true,
+            has_side_effects: false,
+            supports_retry: false,
+            estimated_duration: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -110,17 +110,19 @@ impl HealthChecker {
         self.nodes.insert(node_id.clone(), config);
         
         // 初始化状态
+        let endpoint = self.nodes.get(&node_id).map(|c| c.endpoint.clone()).unwrap_or_default();
+        let check_type = self.nodes.get(&node_id).map(|c| c.check_type.clone()).unwrap_or(HealthCheckType::Http);
         let status = HealthStatus {
             node_id,
-            endpoint: self.nodes.get(&node_id).map(|c| c.endpoint.clone()).unwrap_or_default(),
+            endpoint,
             is_healthy: true,
             consecutive_failures: 0,
             last_check: Utc::now(),
             response_time_ms: 0,
-            check_type: self.nodes.get(&node_id).map(|c| c.check_type.clone()).unwrap_or(HealthCheckType::Http),
+            check_type,
             error_message: None,
         };
-        self.statuses.insert(node_id, status);
+        self.statuses.insert(status.node_id.clone(), status);
     }
 
     /// 注销节点

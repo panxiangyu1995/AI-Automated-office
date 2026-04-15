@@ -40,7 +40,7 @@ pub async fn list_health_nodes(
     let state = state.read().await;
     let checker = state.health_checker.read().await;
     
-    Ok(checker.get_all_statuses().iter().cloned().collect())
+    Ok(checker.get_all_statuses().iter().map(|s| (*s).clone()).collect())
 }
 
 /// 执行健康检查
@@ -50,7 +50,7 @@ pub async fn check_health(
     node_id: String,
 ) -> Result<HealthStatus, String> {
     let mut state = state.write().await;
-    let checker = state.health_checker.write().await;
+    let mut checker = state.health_checker.write().await;
     checker.check_node(&node_id).await
 }
 
@@ -65,7 +65,7 @@ pub async fn register_health_node(
     timeout_secs: u64,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let checker = state.health_checker.write().await;
+    let mut checker = state.health_checker.write().await;
     
     let check_type = match check_type.as_str() {
         "http" => HealthCheckType::Http,
@@ -96,7 +96,7 @@ pub async fn unregister_health_node(
     node_id: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let checker = state.health_checker.write().await;
+    let mut checker = state.health_checker.write().await;
     checker.unregister_node(&node_id);
     Ok(())
 }
@@ -112,7 +112,7 @@ pub async fn select_balanced_node(
     session_id: Option<String>,
 ) -> Result<Option<crate::load_balancing::balancer::BalanceResult>, String> {
     let mut state = state.write().await;
-    let balancer = state.balancer.write().await;
+    let mut balancer = state.balancer.write().await;
     Ok(balancer.select(session_id.as_deref()))
 }
 
@@ -125,7 +125,7 @@ pub async fn add_load_balancer_node(
     weight: u32,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let balancer = state.balancer.write().await;
+    let mut balancer = state.balancer.write().await;
     
     let mut node = NodeInfo::new(node_id, endpoint);
     node.weight = weight;
@@ -140,7 +140,7 @@ pub async fn remove_load_balancer_node(
     node_id: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let balancer = state.balancer.write().await;
+    let mut balancer = state.balancer.write().await;
     balancer.remove_node(&node_id);
     Ok(())
 }
@@ -153,7 +153,7 @@ pub async fn update_node_weight(
     weight: u32,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let balancer = state.balancer.write().await;
+    let mut balancer = state.balancer.write().await;
     
     balancer.update_weight(&node_id, weight)
         .ok_or_else(|| format!("Node not found: {}", node_id))
@@ -167,7 +167,7 @@ pub async fn set_node_availability(
     available: bool,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let balancer = state.balancer.write().await;
+    let mut balancer = state.balancer.write().await;
     
     balancer.set_available(&node_id, available)
         .ok_or_else(|| format!("Node not found: {}", node_id))
@@ -191,7 +191,7 @@ pub async fn set_balance_strategy(
     strategy: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let balancer = state.balancer.write().await;
+    let mut balancer = state.balancer.write().await;
     
     let strategy = match strategy.as_str() {
         "round_robin" => BalanceStrategy::RoundRobin,
@@ -220,7 +220,7 @@ pub async fn register_failover_pair(
     standby_endpoint: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let manager = state.failover_manager.write().await;
+    let mut manager = state.failover_manager.write().await;
     
     let pair = NodePair::new(primary_id, standby_id, primary_endpoint, standby_endpoint);
     manager.register_pair(pair);
@@ -236,7 +236,7 @@ pub async fn trigger_failover(
     is_manual: bool,
 ) -> Result<FailoverRecord, String> {
     let mut state = state.write().await;
-    let manager = state.failover_manager.write().await;
+    let mut manager = state.failover_manager.write().await;
     
     let reason = match reason.as_str() {
         "health_check_failed" => FailoverReason::HealthCheckFailed,
@@ -257,7 +257,7 @@ pub async fn trigger_recovery(
     primary_id: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let manager = state.failover_manager.write().await;
+    let mut manager = state.failover_manager.write().await;
     
     manager.trigger_recovery(&primary_id)
         .ok_or_else(|| "Recovery failed or node not in failover state".to_string())
@@ -295,7 +295,7 @@ pub async fn get_failover_history(
     let state = state.read().await;
     let manager = state.failover_manager.read().await;
     
-    Ok(manager.get_history(primary_id.as_deref()).iter().cloned().collect())
+    Ok(manager.get_history(primary_id.as_deref()).iter().map(|r| (*r).clone()).collect())
 }
 
 /// 获取当前故障节点列表
@@ -322,7 +322,7 @@ pub async fn record_sla_request(
     response_time_ms: u64,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let monitor = state.sla_monitor.write().await;
+    let mut monitor = state.sla_monitor.write().await;
     monitor.record_request(&service_id, success, response_time_ms);
     Ok(())
 }
@@ -379,7 +379,7 @@ pub async fn configure_sla_alert(
     enabled: bool,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let monitor = state.sla_monitor.write().await;
+    let mut monitor = state.sla_monitor.write().await;
     
     let config = SlaAlertConfig {
         service_id,

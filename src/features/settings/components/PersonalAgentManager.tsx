@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -407,17 +408,12 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
         <ScrollArea className="h-[400px]">
           <div className="space-y-2">
             {filteredSubagents.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                <Bot className="mb-2 h-8 w-8" />
-                <p>No personal subagents yet</p>
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => setCreateDialogOpen(true)}
-                >
-                  Create your first subagent
-                </Button>
-              </div>
+              <EmptyState
+                icon={Bot}
+                title="No personal subagents yet"
+                description="Create your first subagent to get started"
+                action={{ label: 'Create your first subagent', onClick: () => setCreateDialogOpen(true) }}
+              />
             ) : (
               filteredSubagents.map((subagent) => (
                 <Card key={subagent.name} className="transition-colors hover:bg-muted/50">

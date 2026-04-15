@@ -6,7 +6,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use reqwest::Client;
 
-use super::super::types::*;
+use crate::capability::types::*;
 
 /// Marketplace client trait
 #[async_trait]
@@ -49,10 +49,10 @@ impl CloudMarketClient {
     pub async fn search_marketplace(
         &self,
         query: &str,
-        marketplace: super::types::MarketplaceType,
+        marketplace: MarketplaceType,
         page: usize,
-    ) -> Result<super::types::MarketplaceSearchResult> {
-        let options = super::types::SearchOptions {
+    ) -> Result<MarketplaceSearchResult> {
+        let options = SearchOptions {
             page,
             ..Default::default()
         };

@@ -5,6 +5,8 @@
 
 import { FinancePilotIntegration } from './FinancePilotIntegration'
 import { useFinancePilot } from '../hooks/useFinancePilot'
+import { ChatSkeleton } from '@/components/ui/loading-skeleton'
+import { ErrorFallback } from '@/components/ui/error-boundary'
 
 interface FinanceAuditEntry {
   id: string
@@ -18,11 +20,7 @@ interface FinanceAuditEntry {
 }
 
 export function FinancePilotDashboard() {
-  const {
-    bindings,
-    isLoading,
-    error,
-  } = useFinancePilot()
+  const { bindings, isLoading, error } = useFinancePilot()
 
   // Convert API bindings to component format
   const financeToolBindings = bindings.map((b) => ({
@@ -108,12 +106,15 @@ export function FinancePilotDashboard() {
     <div className="relative">
       {isLoading && (
         <div className="absolute inset-0 bg-background/50 z-10 flex items-center justify-center">
-          <div className="text-sm text-muted-foreground">加载中...</div>
+          <ChatSkeleton />
         </div>
       )}
       {error && (
-        <div className="absolute top-0 left-0 right-0 p-2 bg-destructive/10 text-destructive text-sm z-10">
-          {error}
+        <div className="absolute top-0 left-0 right-0 p-2 z-10">
+          <ErrorFallback
+            error={new Error(error)}
+            resetErrorBoundary={() => window.location.reload()}
+          />
         </div>
       )}
       <FinancePilotIntegration

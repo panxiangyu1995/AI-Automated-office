@@ -1,44 +1,45 @@
 //! TicketDetail 组件 - 工单详情面板 (包含时间线和回访)
 
-import { useEffect, useState } from 'react';
-import { useServiceStore } from '../stores/serviceStore';
-import { StatusBadge } from './StatusBadge';
-import { PriorityTag } from './PriorityTag';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react'
+import { useServiceStore } from '../stores/serviceStore'
+import { StatusBadge } from './StatusBadge'
+import { PriorityTag } from './PriorityTag'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/ui/sheet'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Clock, User, Phone, Mail, X, Plus, Star, BookOpen } from 'lucide-react';
-import { TicketTimeline } from './TicketTimeline';
-import { FollowUpForm } from './FollowUpForm';
-import { KnowledgeContribution, type KnowledgeContributionData } from './KnowledgeContribution';
-import type { TicketStatus, ProcessingRecord, CreateFollowUpRequest } from '../types/service';
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Clock, User, Phone, Mail, X, Plus, Star, BookOpen } from 'lucide-react'
+import { TicketTimeline } from './TicketTimeline'
+import { FollowUpForm } from './FollowUpForm'
+import { KnowledgeContribution, type KnowledgeContributionData } from './KnowledgeContribution'
+import { ChatSkeleton } from '@/components/ui/loading-skeleton'
+import type { TicketStatus, ProcessingRecord, CreateFollowUpRequest } from '../types/service'
 
 interface TicketDetailProps {
-  ticketId: string | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  ticketId: string | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 const typeLabels: Record<string, string> = {
   repair: '维修',
   consultation: '咨询',
   complaint: '投诉',
-};
+}
 
 const statusTransitions: Record<TicketStatus, TicketStatus[]> = {
   new: ['processing', 'cancelled'],
@@ -46,7 +47,7 @@ const statusTransitions: Record<TicketStatus, TicketStatus[]> = {
   pending_confirm: ['processing', 'completed'],
   completed: [],
   cancelled: [],
-};
+}
 
 const statusLabels: Record<string, string> = {
   new: '新建',
@@ -54,59 +55,57 @@ const statusLabels: Record<string, string> = {
   pending_confirm: '待确认',
   completed: '已完成',
   cancelled: '已取消',
-};
+}
 
 export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps) {
-  const { currentTicket, fetchTicket, updateTicketStatus } = useServiceStore();
-  const [newStatus, setNewStatus] = useState<TicketStatus | ''>('');
-  const [newRecordContent, setNewRecordContent] = useState('');
-  const [processingRecords] = useState<ProcessingRecord[]>([]);
-  const [followUpOpen, setFollowUpOpen] = useState(false);
-  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
-  
+  const { currentTicket, fetchTicket, updateTicketStatus } = useServiceStore()
+  const [newStatus, setNewStatus] = useState<TicketStatus | ''>('')
+  const [newRecordContent, setNewRecordContent] = useState('')
+  const [processingRecords] = useState<ProcessingRecord[]>([])
+  const [followUpOpen, setFollowUpOpen] = useState(false)
+  const [knowledgeOpen, setKnowledgeOpen] = useState(false)
+
   useEffect(() => {
     if (ticketId) {
-      fetchTicket(ticketId);
+      fetchTicket(ticketId)
     }
-  }, [ticketId, fetchTicket]);
-  
+  }, [ticketId, fetchTicket])
+
   useEffect(() => {
     if (currentTicket) {
-      setNewStatus(currentTicket.status);
+      setNewStatus(currentTicket.status)
     }
-  }, [currentTicket]);
-  
+  }, [currentTicket])
+
   const handleStatusChange = async () => {
     if (ticketId && newStatus && newStatus !== currentTicket?.status) {
-      await updateTicketStatus(ticketId, newStatus as TicketStatus);
+      await updateTicketStatus(ticketId, newStatus as TicketStatus)
     }
-  };
-  
+  }
+
   const handleAddRecord = async () => {
     // TODO: 实现添加处理记录
     if (newRecordContent.trim()) {
-      setNewRecordContent('');
+      setNewRecordContent('')
     }
-  };
-  
+  }
+
   const handleFollowUpSubmit = async (data: CreateFollowUpRequest) => {
     // TODO: 实现创建回访记录
-    console.log('Follow-up submitted:', data);
-  };
+    console.log('Follow-up submitted:', data)
+  }
 
   const handleKnowledgeSubmit = async (data: KnowledgeContributionData) => {
     // TODO: 实现提交知识贡献到知识库
-    console.log('Knowledge contribution submitted:', data);
-  };
-  
+    console.log('Knowledge contribution submitted:', data)
+  }
+
   const handleClose = () => {
-    onOpenChange(false);
-  };
-  
-  const availableStatuses = currentTicket
-    ? statusTransitions[currentTicket.status]
-    : [];
-  
+    onOpenChange(false)
+  }
+
+  const availableStatuses = currentTicket ? statusTransitions[currentTicket.status] : []
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -132,7 +131,7 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
               </SheetDescription>
             )}
           </SheetHeader>
-          
+
           {currentTicket ? (
             <div className="space-y-6 mt-6">
               {/* 标题和状态 */}
@@ -143,9 +142,9 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                   <PriorityTag priority={currentTicket.priority} size="lg" />
                 </div>
               </div>
-              
+
               <Separator />
-              
+
               {/* 状态操作 */}
               {availableStatuses.length > 0 && (
                 <Card>
@@ -178,7 +177,7 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                   </CardContent>
                 </Card>
               )}
-              
+
               {/* 客户信息 */}
               <Card>
                 <CardHeader className="pb-2">
@@ -203,7 +202,7 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* 处理人信息 */}
               {currentTicket.assignedName && (
                 <Card>
@@ -218,7 +217,7 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                   </CardContent>
                 </Card>
               )}
-              
+
               {/* 描述 */}
               {currentTicket.description && (
                 <Card>
@@ -230,10 +229,10 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                   </CardContent>
                 </Card>
               )}
-              
+
               {/* 处理时间线 */}
               <TicketTimeline records={processingRecords} />
-              
+
               {/* 添加处理记录 */}
               <Card>
                 <CardHeader className="pb-2">
@@ -256,31 +255,23 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {/* 回访按钮 */}
               {currentTicket.status === 'completed' && (
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => setFollowUpOpen(true)}
-                >
+                <Button className="w-full" variant="outline" onClick={() => setFollowUpOpen(true)}>
                   <Star className="h-4 w-4 mr-1" />
                   创建回访记录
                 </Button>
               )}
-              
+
               {/* 知识贡献按钮 - 工单完成后显示 */}
               {currentTicket.status === 'completed' && (
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => setKnowledgeOpen(true)}
-                >
+                <Button className="w-full" variant="outline" onClick={() => setKnowledgeOpen(true)}>
                   <BookOpen className="h-4 w-4 mr-1" />
                   保存到知识库
                 </Button>
               )}
-              
+
               {/* 时间信息 */}
               <Card>
                 <CardHeader className="pb-2">
@@ -305,13 +296,13 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
               </Card>
             </div>
           ) : (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+            <div className="py-8">
+              <ChatSkeleton />
             </div>
           )}
         </SheetContent>
       </Sheet>
-      
+
       {/* 回访表单 */}
       {currentTicket && (
         <FollowUpForm
@@ -337,5 +328,5 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
         />
       )}
     </>
-  );
+  )
 }

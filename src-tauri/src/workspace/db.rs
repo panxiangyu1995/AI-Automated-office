@@ -103,10 +103,10 @@ impl WorkspaceDatabase {
                     if &t.priority != priority { return false; }
                 }
                 if let Some(ref module) = params.source_module {
-                    if &t.source_module != module { return false; }
+                    if t.source_module != *module { return false; }
                 }
                 if let Some(ref due) = params.due_date {
-                    if &t.due_date.as_ref() != Some(due) { return false; }
+                    if t.due_date.as_ref() != Some(due) { return false; }
                 }
                 if let Some(ref search) = params.search {
                     let search_lower = search.to_lowercase();

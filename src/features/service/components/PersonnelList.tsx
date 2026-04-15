@@ -1,14 +1,16 @@
 //! PersonnelList 组件 - 服务人员列表
 
-import { useEffect } from 'react';
-import { useServiceStore } from '../stores/serviceStore';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { User } from 'lucide-react';
-import type { PersonnelListItem } from '../types/service';
+import { useEffect } from 'react'
+import { useServiceStore } from '../stores/serviceStore'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { User, Users } from 'lucide-react'
+import type { PersonnelListItem } from '../types/service'
 
 interface PersonnelListProps {
-  onPersonnelClick?: (personnel: PersonnelListItem) => void;
+  onPersonnelClick?: (personnel: PersonnelListItem) => void
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -24,38 +26,44 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     label: '离线',
     className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
   },
-};
+}
 
 export function PersonnelList({ onPersonnelClick }: PersonnelListProps) {
-  const { personnel, personnelLoading, fetchPersonnel } = useServiceStore();
-  
+  const { personnel, personnelLoading, fetchPersonnel } = useServiceStore()
+
   useEffect(() => {
-    fetchPersonnel();
-  }, [fetchPersonnel]);
-  
+    fetchPersonnel()
+  }, [fetchPersonnel])
+
   if (personnelLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
       </div>
-    );
+    )
   }
-  
+
+  if (personnel.length === 0) {
+    return <EmptyState title="暂无服务人员" description="服务人员将在分配工单后显示" icon={Users} />
+  }
+
   if (personnel.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
         <p>暂无服务人员</p>
       </div>
-    );
+    )
   }
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {personnel.map((person) => {
-        const config = statusConfig[person.status] || statusConfig.offline;
-        const loadPercent = Math.round((person.currentTicketCount / person.maxTicketCount) * 100);
-        
+        const config = statusConfig[person.status] || statusConfig.offline
+        const loadPercent = Math.round((person.currentTicketCount / person.maxTicketCount) * 100)
+
         return (
           <Card
             key={person.id}
@@ -70,9 +78,7 @@ export function PersonnelList({ onPersonnelClick }: PersonnelListProps) {
                   </div>
                   <div>
                     <CardTitle className="text-base">{person.userName}</CardTitle>
-                    {person.department && (
-                      <CardDescription>{person.department}</CardDescription>
-                    )}
+                    {person.department && <CardDescription>{person.department}</CardDescription>}
                   </div>
                 </div>
                 <Badge className={config.className}>{config.label}</Badge>
@@ -92,8 +98,8 @@ export function PersonnelList({ onPersonnelClick }: PersonnelListProps) {
                       loadPercent >= 90
                         ? 'bg-red-500'
                         : loadPercent >= 70
-                        ? 'bg-orange-500'
-                        : 'bg-green-500'
+                          ? 'bg-orange-500'
+                          : 'bg-green-500'
                     }`}
                     style={{ width: `${Math.min(loadPercent, 100)}%` }}
                   />
@@ -101,8 +107,8 @@ export function PersonnelList({ onPersonnelClick }: PersonnelListProps) {
               </div>
             </CardContent>
           </Card>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

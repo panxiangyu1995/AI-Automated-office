@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Dialog,
   DialogContent,
@@ -510,10 +511,7 @@ export function SubAgentConfig({ className = '' }: SubAgentConfigProps) {
                 </Card>
               ))}
               {delegationHistory.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                  <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>暂无委派历史</p>
-                </div>
+                <EmptyState icon={History} title="暂无委派历史" description="当前没有委派历史记录" />
               )}
             </div>
           </ScrollArea>

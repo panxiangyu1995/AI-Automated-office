@@ -161,9 +161,9 @@ impl EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0 AND layer = 'Enterprise'
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("submit_for_approval failed: {}", e)))?;
 
         Ok(())
@@ -179,10 +179,10 @@ impl EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0 AND layer = 'Enterprise'
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &approved_by as &dyn ToSql,
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            approved_by.to_string(),
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("approve failed: {}", e)))?;
 
         Ok(())
@@ -198,10 +198,10 @@ impl EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0 AND layer = 'Enterprise'
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &rejected_by as &dyn ToSql,
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            rejected_by.to_string(),
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("reject failed: {}", e)))?;
 
         Ok(())
@@ -225,26 +225,27 @@ impl MemoryStore for EnterpriseKnowledgeStore {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &item.id as &dyn ToSql,
-            &format!("{:?}", item.layer) as &dyn ToSql,
-            &item.tenant_id as &dyn ToSql,
-            &item.user_id as &dyn ToSql,
-            &item.session_key as &dyn ToSql,
-            &item.key as &dyn ToSql,
-            &item.value as &dyn ToSql,
-            &format!("{:?}", item.category) as &dyn ToSql,
-            &item.confidence as &dyn ToSql,
-            &format!("{:?}", item.source) as &dyn ToSql,
-            &Option::<String>::None as &dyn ToSql,
-            &item.metadata.to_string() as &dyn ToSql,
-            &item.created_at as &dyn ToSql,
-            &item.updated_at as &dyn ToSql,
-            &item.last_accessed_at as &dyn ToSql,
-            &item.access_count as &dyn ToSql,
-            &item.version as &dyn ToSql,
-            &(item.is_deleted as i32) as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("add failed: {}", e)))?;
+        let params: Vec<String> = vec![
+            item.id.clone(),
+            format!("{:?}", item.layer),
+            item.tenant_id.clone(),
+            item.user_id.clone().unwrap_or_default(),
+            item.session_key.clone().unwrap_or_default(),
+            item.key.clone(),
+            item.value.clone(),
+            format!("{:?}", item.category),
+            item.confidence.to_string(),
+            format!("{:?}", item.source),
+            String::new(),
+            item.metadata.to_string(),
+            item.created_at.to_string(),
+            item.updated_at.to_string(),
+            item.last_accessed_at.unwrap_or(0).to_string(),
+            item.access_count.to_string(),
+            item.version.to_string(),
+            (item.is_deleted as i32).to_string(),
+        ];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("add failed: {}", e)))?;
 
         Ok(())
     }
@@ -258,20 +259,22 @@ impl MemoryStore for EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &format!("{:?}", item.layer) as &dyn ToSql,
-            &item.tenant_id as &dyn ToSql,
-            &item.user_id as &dyn ToSql,
-            &item.session_key as &dyn ToSql,
-            &item.key as &dyn ToSql,
-            &item.value as &dyn ToSql,
-            &format!("{:?}", item.category) as &dyn ToSql,
-            &item.confidence as &dyn ToSql,
-            &format!("{:?}", item.source) as &dyn ToSql,
-            &item.metadata.to_string() as &dyn ToSql,
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("update failed: {}", e)))?;
+        let now = chrono::Utc::now().timestamp();
+        let params: Vec<String> = vec![
+            format!("{:?}", item.layer),
+            item.tenant_id.clone(),
+            item.user_id.clone().unwrap_or_default(),
+            item.session_key.clone().unwrap_or_default(),
+            item.key.clone(),
+            item.value.clone(),
+            format!("{:?}", item.category),
+            item.confidence.to_string(),
+            format!("{:?}", item.source),
+            item.metadata.to_string(),
+            now.to_string(),
+            id.to_string(),
+        ];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("update failed: {}", e)))?;
 
         Ok(())
     }
@@ -283,9 +286,9 @@ impl MemoryStore for EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("delete failed: {}", e)))?;
 
         Ok(())
@@ -346,9 +349,9 @@ impl MemoryStore for EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("update_access_stats failed: {}", e)))?;
 
         Ok(())
@@ -364,11 +367,11 @@ impl MemoryStore for EnterpriseKnowledgeStore {
             WHERE id = ? AND is_deleted = 0
         "#;
 
-        self.storage.execute_with_params(sql, &[
-            &item.value as &dyn ToSql,
-            &item.confidence as &dyn ToSql,
-            &chrono::Utc::now().timestamp() as &dyn ToSql,
-            &id as &dyn ToSql,
+        self.storage.execute_with_params(sql, vec![
+            item.value.clone(),
+            item.confidence.to_string(),
+            chrono::Utc::now().timestamp().to_string(),
+            id.to_string(),
         ]).await.map_err(|e| MemoryError::Storage(format!("merge failed: {}", e)))?;
 
         Ok(())
@@ -377,9 +380,8 @@ impl MemoryStore for EnterpriseKnowledgeStore {
     async fn hard_delete(&self, id: &str) -> Result<(), MemoryError> {
         let sql = "DELETE FROM memory_items WHERE id = ?";
 
-        self.storage.execute_with_params(sql, &[
-            &id as &dyn ToSql,
-        ]).await.map_err(|e| MemoryError::Storage(format!("hard_delete failed: {}", e)))?;
+        let params: Vec<String> = vec![id.to_string()];
+        self.storage.execute_with_params(sql, params).await.map_err(|e| MemoryError::Storage(format!("hard_delete failed: {}", e)))?;
 
         Ok(())
     }

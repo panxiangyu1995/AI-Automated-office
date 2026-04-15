@@ -384,7 +384,7 @@ impl ToolExecutor for FileReadExecutor {
                 if start >= file_size as usize {
                     String::new()
                 } else {
-                    let mut reader = BufReader::new(file);
+                    let reader = BufReader::new(file);
                     let mut lines = Vec::new();
                     let mut current_line = 0usize;
 

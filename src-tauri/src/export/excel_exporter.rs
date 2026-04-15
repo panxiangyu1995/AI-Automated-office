@@ -32,7 +32,8 @@ impl Default for ExcelExportConfig {
 }
 
 /// Excel 单元格类型
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum CellValue {
     String(String),
     Number(f64),
@@ -205,13 +206,14 @@ impl ExcelExporter {
             }
         }).collect();
 
+        let sheet_count = sheets.len();
         let total_rows: usize = sheets.iter().map(|s| s.rows.len()).sum();
 
         ExcelExportResult {
             data: ExcelWorkbook { sheets },
             metadata: ExcelMetadata::new(
                 "multi".to_string(),
-                sheets.len(),
+                sheet_count,
                 total_rows,
             ),
         }

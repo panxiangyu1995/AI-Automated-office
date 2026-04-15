@@ -42,6 +42,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Dialog,
   DialogContent,
@@ -392,7 +393,10 @@ function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
         {!isOwn && (
           <div className="flex items-center gap-1 mb-1">
             <span className="text-xs font-medium">{message.senderName}</span>
-            <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor(message.senderRole)}`}>
+            <Badge
+              variant="secondary"
+              className={`text-xs ${getRoleBadgeColor(message.senderRole)}`}
+            >
               {getRoleIcon(message.senderRole)}
               <span className="ml-1">{getRoleText(message.senderRole)}</span>
             </Badge>
@@ -401,7 +405,9 @@ function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
         {message.type === 'text' && <p className="text-sm">{message.content}</p>}
 
         {message.type === 'file' && message.attachments && (
-          <div className={`flex items-center gap-2 p-2 rounded ${isOwn ? 'bg-blue-600' : 'bg-slate-200'}`}>
+          <div
+            className={`flex items-center gap-2 p-2 rounded ${isOwn ? 'bg-blue-600' : 'bg-slate-200'}`}
+          >
             <File className="h-4 w-4" />
             <span className="text-xs truncate">{message.attachments[0].name}</span>
           </div>
@@ -453,7 +459,8 @@ interface MemberItemProps {
 }
 
 function MemberItem({ member, currentUserRole, onRemove, onChangeRole, onMute }: MemberItemProps) {
-  const canManage = currentUserRole === 'owner' || (currentUserRole === 'admin' && member.role !== 'owner')
+  const canManage =
+    currentUserRole === 'owner' || (currentUserRole === 'admin' && member.role !== 'owner')
 
   return (
     <div className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg">
@@ -530,9 +537,7 @@ export function GroupChat({
   onSearchMessages,
 }: GroupChatProps) {
   const [groups, setGroups] = useState<Group[]>(initialGroups || MOCK_GROUPS)
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(
-    MOCK_GROUPS[0]?.id || null
-  )
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(MOCK_GROUPS[0]?.id || null)
   const [messageInput, setMessageInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -707,10 +712,11 @@ export function GroupChat({
               ))}
 
             {sortedGroups.filter((g) => g.isJoined).length === 0 && (
-              <div className="text-center py-8 text-slate-500">
-                <Users className="h-12 w-12 mx-auto mb-2 text-slate-300" />
-                <p>暂无已加入的群组</p>
-              </div>
+              <EmptyState
+                title="暂无已加入的群组"
+                description="创建或加入一个群组开始聊天"
+                icon={Users}
+              />
             )}
           </div>
         </ScrollArea>
@@ -869,9 +875,7 @@ export function GroupChat({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>群成员</DialogTitle>
-            <DialogDescription>
-              共 {selectedGroup?.members.length || 0} 位成员
-            </DialogDescription>
+            <DialogDescription>共 {selectedGroup?.members.length || 0} 位成员</DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-80">
             <div className="space-y-1 py-4">
@@ -881,7 +885,9 @@ export function GroupChat({
                   member={member}
                   currentUserRole={currentUserRole}
                   onRemove={(userId) => onRemoveMember?.(selectedGroup.id, userId)}
-                  onChangeRole={(userId, role) => onChangeMemberRole?.(selectedGroup.id, userId, role)}
+                  onChangeRole={(userId, role) =>
+                    onChangeMemberRole?.(selectedGroup.id, userId, role)
+                  }
                   onMute={(userId) => onMuteMember?.(selectedGroup.id, userId)}
                 />
               ))}

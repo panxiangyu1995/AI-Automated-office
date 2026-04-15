@@ -250,7 +250,7 @@ pub async fn marketing_generate_content(
     
     // 模拟 AI 生成
     let platform = request.target_platform.unwrap_or(ChannelType::Wechat);
-    let hashtags = request.keywords.iter().map(|k| format!("#{}", k)).collect();
+    let hashtags: Vec<String> = request.keywords.iter().map(|k| format!("#{}", k)).collect();
     
     let content = format!(
         "【{}】\n\n亲爱的用户：\n\n{} 是我们为您精心准备的内容。\n\n主要内容：\n{}\n\n了解更多，请访问我们的官方网站。\n\n{}",

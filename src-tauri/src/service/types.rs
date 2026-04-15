@@ -254,6 +254,7 @@ impl ServiceTicket {
         customer_contact: Option<String>,
         customer_email: Option<String>,
         tenant_id: String,
+        customer_id: Option<String>,
     ) -> Self {
         let now = chrono::Utc::now().timestamp();
         Self {
@@ -263,6 +264,7 @@ impl ServiceTicket {
             ticket_type,
             status: TicketStatus::New,
             priority,
+            customer_id,
             customer_name,
             customer_contact,
             customer_email: None,
@@ -419,6 +421,7 @@ pub struct CreateTicketRequest {
     pub description: Option<String>,
     pub ticket_type: TicketType,
     pub priority: TicketPriority,
+    pub customer_id: Option<String>,
     pub customer_name: String,
     pub customer_contact: Option<String>,
     pub customer_email: Option<String>,

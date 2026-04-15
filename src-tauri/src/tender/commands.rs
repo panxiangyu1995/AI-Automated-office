@@ -37,7 +37,7 @@ pub async fn tender_create_qualification(
     
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     
-    let qualification = Qualification::new(
+    let mut qualification = Qualification::new(
         request.name,
         request.qualification_type,
         request.issue_date,
@@ -388,7 +388,7 @@ pub async fn tender_generate_document(
     document.status = DocumentStatus::Generated;
     document.updated_at = chrono::Utc::now().timestamp();
     
-    state.db.update_document(&document_id, &UpdateDocumentRequest {
+    state.db.update_document(&document_id, UpdateDocumentRequest {
         title: None,
         content: Some(document.content.clone()),
         variables: Some(document.variables.clone()),

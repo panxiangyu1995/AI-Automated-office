@@ -168,11 +168,15 @@ impl ToolExecutor for WebSearchExecutor {
 
         let config = get_or_init_config();
 
-        let provider_config = config
+        let provider_config: super::web::SearchProviderConfig = config
             .providers
             .get(&provider)
-            .cloned()
-            .unwrap_or_else(|| SearchProviderConfig {
+            .map(|c| super::web::SearchProviderConfig {
+                provider_id: c.provider_id.clone(),
+                api_key: c.api_key.clone(),
+                api_url: c.api_url.clone(),
+            })
+            .unwrap_or_else(|| super::web::SearchProviderConfig {
                 provider_id: provider.clone(),
                 api_key: None,
                 api_url: None,

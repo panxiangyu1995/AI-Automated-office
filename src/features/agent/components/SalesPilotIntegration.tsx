@@ -54,219 +54,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
+import { useSalesPilot } from '../hooks/useSalesPilot'
+import type {
+  SalesPhase,
+  SalesBinding as SalesToolBinding,
+  SalesRuntimeStep,
+  SalesAuditEntry,
+  SalesPilotStats,
+  SalesContext,
+  OpportunityStage,
+  BindingStatus,
+  ExecutionStatus,
+} from '../hooks/useSalesPilot'
 
-// ==================== Types ====================
-
-export type SalesPhase = 'read' | 'generate' | 'confirm' | 'execute' | 'complete' | 'failed'
-export type BindingStatus = 'pending' | 'bound' | 'failed' | 'released'
-export type ExecutionStatus = 'idle' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled'
-export type OpportunityStage = 'lead' | 'qualified' | 'proposal' | 'negotiation' | 'closed_won' | 'closed_lost'
-
-export interface SalesContext {
-  id: string
-  customerName: string
-  customerSegment: string
-  contactPerson: string
-  estimatedValue: number
-  probability: number
-  product: string
-  createdAt: Date
-  stage: OpportunityStage
-}
-
-export interface SalesToolBinding {
-  toolId: string
-  toolName: string
-  status: BindingStatus
-  permission: 'none' | 'read' | 'write' | 'admin'
-  lastUsed?: Date
-  usageCount: number
-}
-
-export interface SalesRuntimeStep {
-  id: string
-  phase: SalesPhase
-  label: string
-  status: ExecutionStatus
-  startedAt?: Date
-  completedAt?: Date
-  duration?: number
-  error?: string
-  result?: string
-}
-
-export interface SalesAuditEntry {
-  id: string
-  timestamp: Date
-  actor: string
-  action: string
-  target: string
-  result: 'success' | 'failure' | 'denied'
-  details: string
-  correlationId: string
-}
-
-export interface SalesPilotStats {
-  totalExecutions: number
-  successfulExecutions: number
-  failedExecutions: number
-  pendingConfirmations: number
-  avgExecutionTime: number
-  activeBindings: number
-  totalPipelineValue: number
-}
-
-// ==================== Mock Data ====================
-
-const mockSalesContext: SalesContext = {
-  id: 'sales-001',
-  customerName: '北京科技有限公司',
-  customerSegment: '科技企业',
-  contactPerson: '李华',
-  estimatedValue: 280000,
-  probability: 65,
-  product: '企业版套餐',
-  createdAt: new Date(Date.now() - 86400000 * 3),
-  stage: 'proposal',
-}
-
-const mockSalesToolBindings: SalesToolBinding[] = [
-  {
-    toolId: 'crm_customer_query',
-    toolName: 'CRM客户查询',
-    status: 'bound',
-    permission: 'read',
-    lastUsed: new Date(Date.now() - 3600000),
-    usageCount: 15,
-  },
-  {
-    toolId: 'crm_opportunity_update',
-    toolName: '商机更新',
-    status: 'bound',
-    permission: 'write',
-    lastUsed: new Date(Date.now() - 1800000),
-    usageCount: 8,
-  },
-  {
-    toolId: 'finance_quote_generate',
-    toolName: '报价生成',
-    status: 'bound',
-    permission: 'write',
-    usageCount: 0,
-  },
-  {
-    toolId: 'inventory_stock_check',
-    toolName: '库存检查',
-    status: 'bound',
-    permission: 'read',
-    lastUsed: new Date(Date.now() - 7200000),
-    usageCount: 22,
-  },
-  {
-    toolId: 'notification_send',
-    toolName: '通知发送',
-    status: 'bound',
-    permission: 'write',
-    lastUsed: new Date(Date.now() - 900000),
-    usageCount: 30,
-  },
-]
-
-const mockSalesRuntimeSteps: SalesRuntimeStep[] = [
-  {
-    id: 'step-1',
-    phase: 'read',
-    label: '读取客户数据',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 600000),
-    completedAt: new Date(Date.now() - 560000),
-    duration: 40000,
-    result: '客户数据加载成功',
-  },
-  {
-    id: 'step-2',
-    phase: 'generate',
-    label: '生成报价方案',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 560000),
-    completedAt: new Date(Date.now() - 480000),
-    duration: 80000,
-    result: '生成3个报价方案，推荐方案B',
-  },
-  {
-    id: 'step-3',
-    phase: 'confirm',
-    label: '确认报价',
-    status: 'running',
-    startedAt: new Date(Date.now() - 120000),
-  },
-  {
-    id: 'step-4',
-    phase: 'execute',
-    label: '执行写入',
-    status: 'idle',
-  },
-  {
-    id: 'step-5',
-    phase: 'complete',
-    label: '完成',
-    status: 'idle',
-  },
-]
-
-const mockSalesAuditEntries: SalesAuditEntry[] = [
-  {
-    id: 'audit-001',
-    timestamp: new Date(Date.now() - 600000),
-    actor: '系统',
-    action: '上下文绑定',
-    target: 'sales-001',
-    result: 'success',
-    details: '销售上下文成功绑定到运行时',
-    correlationId: 'corr-sales-001',
-  },
-  {
-    id: 'audit-002',
-    timestamp: new Date(Date.now() - 560000),
-    actor: 'Agent',
-    action: '客户查询',
-    target: 'crm_customer_query',
-    result: 'success',
-    details: '查询客户北京科技有限公司的完整信息',
-    correlationId: 'corr-sales-002',
-  },
-  {
-    id: 'audit-003',
-    timestamp: new Date(Date.now() - 520000),
-    actor: 'Agent',
-    action: '库存检查',
-    target: 'inventory_stock_check',
-    result: 'success',
-    details: '检查产品库存：可用数量充足',
-    correlationId: 'corr-sales-003',
-  },
-  {
-    id: 'audit-004',
-    timestamp: new Date(Date.now() - 480000),
-    actor: 'Agent',
-    action: '生成报价',
-    target: 'finance_quote_generate',
-    result: 'success',
-    details: '生成报价方案：方案A ¥260,000 / 方案B ¥280,000 / 方案C ¥320,000',
-    correlationId: 'corr-sales-004',
-  },
-  {
-    id: 'audit-005',
-    timestamp: new Date(Date.now() - 120000),
-    actor: '李华',
-    action: '确认报价',
-    target: 'sales-001',
-    result: 'success',
-    details: '选择方案B，等待最终审批',
-    correlationId: 'corr-sales-005',
-  },
-]
+export type { SalesPhase, SalesToolBinding, SalesRuntimeStep, SalesAuditEntry, SalesPilotStats, SalesContext, OpportunityStage, BindingStatus, ExecutionStatus }
 
 // ==================== Helper Functions ====================
 
@@ -490,68 +294,27 @@ function SalesToolBindingCard({ binding, onConfigure }: SalesToolBindingCardProp
 
 export interface SalesPilotIntegrationProps {
   className?: string
-  salesContext?: SalesContext
-  salesToolBindings?: SalesToolBinding[]
-  salesRuntimeSteps?: SalesRuntimeStep[]
-  salesAuditEntries?: SalesAuditEntry[]
 }
 
 export function SalesPilotIntegration({
   className,
-  salesContext: initialContext,
-  salesToolBindings: initialBindings,
-  salesRuntimeSteps: initialSteps,
-  salesAuditEntries: initialAudit,
 }: SalesPilotIntegrationProps) {
-  const salesContext = initialContext || mockSalesContext
-  const salesToolBindings = initialBindings || mockSalesToolBindings
-  const salesRuntimeSteps = initialSteps || mockSalesRuntimeSteps
-  const salesAuditEntries = initialAudit || mockSalesAuditEntries
+  const {
+    bindings: salesToolBindings,
+    steps: salesRuntimeSteps,
+    auditEntries: salesAuditEntries,
+    context: salesContext,
+    stats,
+    currentPhase,
+    isLoading,
+    error,
+    refresh,
+  } = useSalesPilot()
 
   const [activeTab, setActiveTab] = useState<'flow' | 'bindings' | 'audit'>('flow')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedBinding, setSelectedBinding] = useState<SalesToolBinding | null>(null)
   const [configOpen, setConfigOpen] = useState(false)
-
-  const currentPhase = useMemo(() => {
-    const running = salesRuntimeSteps.find((s) => s.status === 'running')
-    if (running) return running.phase
-    const pending = salesRuntimeSteps.find((s) => s.status === 'idle')
-    if (pending) {
-      const idx = salesRuntimeSteps.indexOf(pending)
-      if (idx > 0) return salesRuntimeSteps[idx - 1].phase
-    }
-    return 'complete'
-  }, [salesRuntimeSteps])
-
-  const stats = useMemo((): SalesPilotStats => {
-    const totalExecutions = salesRuntimeSteps.length
-    const successfulExecutions = salesRuntimeSteps.filter(
-      (s) => s.status === 'completed'
-    ).length
-    const failedExecutions = salesRuntimeSteps.filter((s) => s.status === 'failed').length
-    const pendingConfirmations = salesRuntimeSteps.filter(
-      (s) => s.phase === 'confirm' && s.status === 'running'
-    ).length
-    const completedSteps = salesRuntimeSteps.filter((s) => s.completedAt && s.startedAt)
-    const avgExecutionTime =
-      completedSteps.length > 0
-        ? completedSteps.reduce((sum, s) => sum + (s.duration || 0), 0) /
-          completedSteps.length
-        : 0
-    const activeBindings = salesToolBindings.filter((b) => b.status === 'bound').length
-    const totalPipelineValue = mockSalesContext.estimatedValue
-
-    return {
-      totalExecutions,
-      successfulExecutions,
-      failedExecutions,
-      pendingConfirmations,
-      avgExecutionTime,
-      activeBindings,
-      totalPipelineValue,
-    }
-  }, [salesRuntimeSteps, salesToolBindings])
 
   const filteredAudit = useMemo(() => {
     if (!searchQuery) return salesAuditEntries
@@ -577,15 +340,23 @@ export function SalesPilotIntegration({
           <h2 className="text-lg font-medium">销售场景接入</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{salesContext.id}</Badge>
-          <Button size="sm" variant="outline">
-            <RefreshCw className="h-3 w-3 mr-1" />
+          {salesContext && <Badge variant="outline">{salesContext.id}</Badge>}
+          <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={isLoading}>
+            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             刷新
           </Button>
         </div>
       </div>
 
-      {/* Sales Context Card */}
+      {error && (
+        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-500">
+          {error}
+        </div>
+      )}
+
+      {isLoading && !salesContext ? (
+        <CardSkeleton />
+      ) : salesContext ? (
       <div className="p-4 border rounded-lg bg-card">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -628,6 +399,13 @@ export function SalesPilotIntegration({
           创建时间: {formatDate(salesContext.createdAt)}
         </div>
       </div>
+      ) : (
+        <EmptyState
+          icon={<BarChart3 className="h-12 w-12" />}
+          title="暂无销售上下文"
+          description="当前没有活跃的销售任务"
+        />
+      )}
 
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-3">
@@ -815,10 +593,11 @@ export function SalesPilotIntegration({
           <ScrollArea className="h-[300px]">
             <div className="space-y-2">
               {filteredAudit.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <History className="h-12 w-12 mx-auto mb-3" />
-                  <p>没有审计日志</p>
-                </div>
+                <EmptyState
+                  icon={<History className="h-12 w-12" />}
+                  title="没有审计日志"
+                  description="暂无销售场景的审计记录"
+                />
               ) : (
                 filteredAudit.map((entry) => (
                   <div key={entry.id} className="p-3 border rounded-lg bg-card">

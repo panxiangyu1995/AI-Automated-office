@@ -386,6 +386,8 @@ pub struct CampaignListItem {
     pub start_date: Option<String>,
     pub end_date: Option<String>,
     pub budget: Option<f64>,
+    pub created_at: i64,
+    pub updated_at: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -397,6 +399,8 @@ pub struct ContentListItem {
     pub status: ContentStatus,
     pub campaign_id: Option<String>,
     pub views: i32,
+    pub created_at: i64,
+    pub updated_at: i64,
     pub published_at: Option<i64>,
 }
 

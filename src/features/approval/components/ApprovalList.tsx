@@ -4,10 +4,12 @@
  */
 
 import { useEffect } from 'react'
-import { Clock, CheckCircle2, XCircle, Loader2, RefreshCw } from 'lucide-react'
+import { Clock, CheckCircle2, XCircle, RefreshCw, ClipboardList } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Select,
   SelectContent,
@@ -117,13 +119,13 @@ export function ApprovalList({ onSelectRecord }: ApprovalListProps) {
 
       {/* 记录列表 */}
       {isLoadingRecords ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
       ) : records.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          暂无审批记录
-        </div>
+        <EmptyState title="暂无审批记录" description="审批流程将在此处显示" icon={ClipboardList} />
       ) : (
         <div className="space-y-2">
           {records.map((record) => {
@@ -137,8 +139,12 @@ export function ApprovalList({ onSelectRecord }: ApprovalListProps) {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${STATUS_COLORS[record.status]} bg-opacity-10`}>
-                        <Icon className={`h-5 w-5 ${STATUS_COLORS[record.status].replace('bg-', 'text-')}`} />
+                      <div
+                        className={`p-2 rounded-lg ${STATUS_COLORS[record.status]} bg-opacity-10`}
+                      >
+                        <Icon
+                          className={`h-5 w-5 ${STATUS_COLORS[record.status].replace('bg-', 'text-')}`}
+                        />
                       </div>
                       <div>
                         <div className="font-medium">{record.flowName}</div>

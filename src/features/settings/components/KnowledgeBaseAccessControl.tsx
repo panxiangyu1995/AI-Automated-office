@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // Types
@@ -105,10 +106,42 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
 
 // Default role permissions
 const DEFAULT_ROLE_PERMISSIONS: RolePermission[] = [
-  { role: 'admin', canView: true, canCreate: true, canEdit: true, canDelete: true, canAdmin: true, canExport: true },
-  { role: 'manager', canView: true, canCreate: true, canEdit: true, canDelete: false, canAdmin: false, canExport: true },
-  { role: 'member', canView: true, canCreate: true, canEdit: false, canDelete: false, canAdmin: false, canExport: false },
-  { role: 'guest', canView: true, canCreate: false, canEdit: false, canDelete: false, canAdmin: false, canExport: false },
+  {
+    role: 'admin',
+    canView: true,
+    canCreate: true,
+    canEdit: true,
+    canDelete: true,
+    canAdmin: true,
+    canExport: true,
+  },
+  {
+    role: 'manager',
+    canView: true,
+    canCreate: true,
+    canEdit: true,
+    canDelete: false,
+    canAdmin: false,
+    canExport: true,
+  },
+  {
+    role: 'member',
+    canView: true,
+    canCreate: true,
+    canEdit: false,
+    canDelete: false,
+    canAdmin: false,
+    canExport: false,
+  },
+  {
+    role: 'guest',
+    canView: true,
+    canCreate: false,
+    canEdit: false,
+    canDelete: false,
+    canAdmin: false,
+    canExport: false,
+  },
 ]
 
 // Mock knowledge bases with ACL
@@ -139,8 +172,20 @@ const MOCK_KB_ACL: KnowledgeBaseACL[] = [
     defaultAccess: 'none',
     rolePermissions: DEFAULT_ROLE_PERMISSIONS,
     departmentAccess: [
-      { departmentId: 'dept-001', departmentName: '财务部', accessLevel: 'write', grantedAt: '2026-03-01T10:00:00Z', grantedBy: '李四' },
-      { departmentId: 'dept-002', departmentName: '管理层', accessLevel: 'read', grantedAt: '2026-03-01T10:00:00Z', grantedBy: '李四' },
+      {
+        departmentId: 'dept-001',
+        departmentName: '财务部',
+        accessLevel: 'write',
+        grantedAt: '2026-03-01T10:00:00Z',
+        grantedBy: '李四',
+      },
+      {
+        departmentId: 'dept-002',
+        departmentName: '管理层',
+        accessLevel: 'read',
+        grantedAt: '2026-03-01T10:00:00Z',
+        grantedBy: '李四',
+      },
     ],
     userAccess: [],
     createdAt: '2026-03-01T10:00:00Z',
@@ -157,10 +202,23 @@ const MOCK_KB_ACL: KnowledgeBaseACL[] = [
     defaultAccess: 'none',
     rolePermissions: DEFAULT_ROLE_PERMISSIONS,
     departmentAccess: [
-      { departmentId: 'dept-003', departmentName: '研发部', accessLevel: 'write', grantedAt: '2026-03-05T10:00:00Z', grantedBy: '王五' },
+      {
+        departmentId: 'dept-003',
+        departmentName: '研发部',
+        accessLevel: 'write',
+        grantedAt: '2026-03-05T10:00:00Z',
+        grantedBy: '王五',
+      },
     ],
     userAccess: [
-      { userId: 'user-010', userName: '赵六', email: 'zhaoliu@company.com', role: 'manager', accessLevel: 'write', grantedAt: '2026-03-05T10:00:00Z' },
+      {
+        userId: 'user-010',
+        userName: '赵六',
+        email: 'zhaoliu@company.com',
+        role: 'manager',
+        accessLevel: 'write',
+        grantedAt: '2026-03-05T10:00:00Z',
+      },
     ],
     createdAt: '2026-03-05T10:00:00Z',
     updatedAt: '2026-03-18T09:00:00Z',
@@ -177,7 +235,14 @@ const MOCK_KB_ACL: KnowledgeBaseACL[] = [
     rolePermissions: DEFAULT_ROLE_PERMISSIONS,
     departmentAccess: [],
     userAccess: [
-      { userId: 'user-005', userName: '周八', email: 'zhouba@company.com', role: 'admin', accessLevel: 'admin', grantedAt: '2026-03-10T10:00:00Z' },
+      {
+        userId: 'user-005',
+        userName: '周八',
+        email: 'zhouba@company.com',
+        role: 'admin',
+        accessLevel: 'admin',
+        grantedAt: '2026-03-10T10:00:00Z',
+      },
     ],
     createdAt: '2026-03-10T10:00:00Z',
     updatedAt: '2026-03-20T16:00:00Z',
@@ -232,10 +297,11 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
   // Stats
   const stats = useMemo((): AccessControlStats => {
     const total = acls.length
-    const publicCount = acls.filter(a => a.isPublic).length
+    const publicCount = acls.filter((a) => a.isPublic).length
     const restricted = total - publicCount
-    const totalUsers = new Set(acls.flatMap(a => a.userAccess.map(u => u.userId))).size
-    const totalDepts = new Set(acls.flatMap(a => a.departmentAccess.map(d => d.departmentId))).size
+    const totalUsers = new Set(acls.flatMap((a) => a.userAccess.map((u) => u.userId))).size
+    const totalDepts = new Set(acls.flatMap((a) => a.departmentAccess.map((d) => d.departmentId)))
+      .size
     return {
       totalBases: total,
       publicBases: publicCount,
@@ -248,8 +314,9 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
 
   // Filtered ACLs
   const filteredACLs = useMemo(() => {
-    return acls.filter(acl => {
-      if (searchQuery && !acl.knowledgeBaseName.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    return acls.filter((acl) => {
+      if (searchQuery && !acl.knowledgeBaseName.toLowerCase().includes(searchQuery.toLowerCase()))
+        return false
       if (scopeFilter !== 'all' && acl.scopeType !== scopeFilter) return false
       return true
     })
@@ -264,9 +331,7 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
             <Shield className="h-6 w-6" />
             知识库权限控制
           </h2>
-          <p className="text-muted-foreground">
-            配置知识库的访问范围、角色权限和部门/用户访问控制
-          </p>
+          <p className="text-muted-foreground">配置知识库的访问范围、角色权限和部门/用户访问控制</p>
         </div>
         <Button>
           <Settings className="h-4 w-4 mr-1" />
@@ -387,13 +452,12 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
           {filteredACLs.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">暂无知识库</p>
+                <EmptyState title="暂无知识库" description="点击上方按钮添加知识库" icon={Shield} />
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {filteredACLs.map(acl => (
+              {filteredACLs.map((acl) => (
                 <Card
                   key={acl.id}
                   className={`cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -471,7 +535,7 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
                     </tr>
                   </thead>
                   <tbody>
-                    {DEFAULT_ROLE_PERMISSIONS.map(perm => (
+                    {DEFAULT_ROLE_PERMISSIONS.map((perm) => (
                       <tr key={perm.role} className="border-b hover:bg-muted/50">
                         <td className="py-2 px-3">
                           <Badge variant="secondary">{ROLE_LABELS[perm.role]}</Badge>
@@ -537,11 +601,32 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
               </h3>
               <div className="space-y-3">
                 {[
-                  { user: '陈九', email: 'chenjiu@company.com', kb: '财务制度', dept: '销售部', time: '10分钟前' },
-                  { user: '刘十', email: 'liushi@company.com', kb: '产品文档', dept: '市场部', time: '30分钟前' },
-                  { user: '吴十一', email: 'wushiyi@company.com', kb: '销售机密', dept: '研发部', time: '1小时前' },
+                  {
+                    user: '陈九',
+                    email: 'chenjiu@company.com',
+                    kb: '财务制度',
+                    dept: '销售部',
+                    time: '10分钟前',
+                  },
+                  {
+                    user: '刘十',
+                    email: 'liushi@company.com',
+                    kb: '产品文档',
+                    dept: '市场部',
+                    time: '30分钟前',
+                  },
+                  {
+                    user: '吴十一',
+                    email: 'wushiyi@company.com',
+                    kb: '销售机密',
+                    dept: '研发部',
+                    time: '1小时前',
+                  },
                 ].map((req, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <User className="h-5 w-5 text-blue-500" />
@@ -622,8 +707,11 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {selectedACL.departmentAccess.map(dept => (
-                        <div key={dept.departmentId} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                      {selectedACL.departmentAccess.map((dept) => (
+                        <div
+                          key={dept.departmentId}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        >
                           <div className="flex items-center gap-2">
                             <Building className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">{dept.departmentName}</span>
@@ -656,8 +744,11 @@ export function KnowledgeBaseAccessControl({ className = '' }: KnowledgeBaseAcce
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {selectedACL.userAccess.map(user => (
-                        <div key={user.userId} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                      {selectedACL.userAccess.map((user) => (
+                        <div
+                          key={user.userId}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        >
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
                               <User className="h-4 w-4 text-blue-500" />

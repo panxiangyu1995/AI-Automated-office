@@ -204,7 +204,7 @@ impl ToolExecutionPipeline {
     }
 
     pub fn list_tools(&self) -> Vec<ToolDescriptor> {
-        self.registry.list()
+        self.registry.list().unwrap_or_else(|_| Vec::new())
     }
 
     pub async fn execute(

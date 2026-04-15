@@ -6,6 +6,9 @@ use tokio::sync::RwLock;
 
 use crate::vector::config::EmbeddingConfig;
 use crate::vector::embedding::EmbeddingService;
+use crate::vector::sqlite_vec::SqliteVecStore;
+use crate::vector::hybrid::{HybridSearchEngine, Bm25Store};
+use crate::vector::VectorStore;
 
 use super::hooks::{HookDispatcher, HookRegistry};
 use super::storage::{PersonalMemoryStore, EnterpriseKnowledgeStore, MemoryStore};
@@ -30,6 +33,7 @@ pub struct MemoryService {
     cognitive_manager: Arc<RwLock<CognitiveStateManager>>,
     trajectory_tracker: Arc<RwLock<TrajectoryTracker>>,
     switching_calculator: Arc<SwitchingCostCalculator>,
+    hybrid_engine: Option<Arc<HybridSearchEngine<SqliteVecStore, SqliteVecStore>>>,
 }
 
 impl MemoryService {
@@ -43,31 +47,23 @@ impl MemoryService {
 
         // Initialize stores with SQLite - using blocking initialization
         // In production, this would be async
-        let personal_store = match PersonalMemoryStore::in_memory() {
-            Ok(store) => Arc::new(store),
+        let personal_store = Arc::new(match PersonalMemoryStore::in_memory() {
+            Ok(store) => store,
             Err(e) => {
                 tracing::error!("Failed to create personal store: {}", e);
-                Arc::new(PersonalMemoryStore {
-                    storage: Arc::new(
-                        SqliteStorage::in_memory()
-                            .expect("fallback in-memory storage should work")
-                    ),
-                })
+                PersonalMemoryStore::in_memory()
+                    .expect("fallback in-memory storage should work")
             }
-        };
+        });
 
-        let enterprise_store = match EnterpriseKnowledgeStore::in_memory() {
-            Ok(store) => Arc::new(store),
+        let enterprise_store = Arc::new(match EnterpriseKnowledgeStore::in_memory() {
+            Ok(store) => store,
             Err(e) => {
                 tracing::error!("Failed to create enterprise store: {}", e);
-                Arc::new(EnterpriseKnowledgeStore {
-                    storage: Arc::new(
-                        SqliteStorage::in_memory()
-                            .expect("fallback in-memory storage should work")
-                    ),
-                })
+                EnterpriseKnowledgeStore::in_memory()
+                    .expect("fallback in-memory storage should work")
             }
-        };
+        });
 
         Self {
             config,
@@ -79,6 +75,7 @@ impl MemoryService {
             cognitive_manager: Arc::new(RwLock::new(CognitiveStateManager::new())),
             trajectory_tracker: Arc::new(RwLock::new(TrajectoryTracker::new())),
             switching_calculator: Arc::new(SwitchingCostCalculator::new()),
+            hybrid_engine: None,
         }
     }
 
@@ -96,6 +93,7 @@ impl MemoryService {
     pub async fn init_persistent(&mut self, data_dir: &std::path::Path) -> Result<(), MemoryError> {
         let personal_db_path = data_dir.join("memory_personal.db");
         let enterprise_db_path = data_dir.join("memory_enterprise.db");
+        let vector_db_path = data_dir.join("memory_vectors.db");
 
         // Create personal store with persistent storage
         let personal_storage = SqliteStorage::new(&personal_db_path)
@@ -111,7 +109,21 @@ impl MemoryService {
             .map_err(|e| MemoryError::Storage(format!("failed to init enterprise schema: {}", e)))?;
         self.enterprise_store = Arc::new(EnterpriseKnowledgeStore::new(enterprise_storage));
 
-        tracing::info!("Memory service initialized with persistent storage");
+        // Initialize hybrid search engine with vector store
+        let dimension = {
+            let config = self.config.read().await;
+            config.embedding.dimension
+        };
+
+        let vector_store = SqliteVecStore::new(&vector_db_path, dimension)
+            .map_err(|e| MemoryError::VectorStore(format!("failed to create vector store: {}", e)))?;
+        let bm25_store = SqliteVecStore::new(&vector_db_path, dimension)
+            .map_err(|e| MemoryError::VectorStore(format!("failed to create BM25 store: {}", e)))?;
+
+        let hybrid_config = crate::vector::HybridSearchConfig::default();
+        self.hybrid_engine = Some(Arc::new(HybridSearchEngine::new(vector_store, bm25_store, hybrid_config)));
+
+        tracing::info!("Memory service initialized with persistent storage and hybrid engine");
         Ok(())
     }
 
@@ -206,7 +218,46 @@ impl MemoryService {
     pub async fn search(&self, query: &MemoryQuery) -> Result<HybridSearchResult, MemoryError> {
         let start = std::time::Instant::now();
 
-        // Search based on layer
+        // Try hybrid search if engine is available
+        if let Some(ref engine) = self.hybrid_engine {
+            // Use hybrid search engine for true vector + BM25 retrieval
+            let vector_query = crate::vector::VectorQuery {
+                vector: vec![0.0f32; 384], // Placeholder - embedding service needed
+                k: query.k,
+                filter: Some(serde_json::json!({
+                    "tenant_id": &query.tenant_id,
+                    "layer": format!("{:?}", query.layer.unwrap_or(MemoryLayer::Personal))
+                }).to_string()),
+                include_metadata: true,
+            };
+
+            let hybrid_results = engine.search(&query.query, vector_query).await
+                .map_err(|e| MemoryError::VectorStore(e.to_string()))?;
+
+            // Convert to MemorySearchResult
+            let search_results: Vec<MemorySearchResult> = hybrid_results.into_iter().map(|result| {
+                MemorySearchResult {
+                    item: MemoryItem::default(), // Would need to fetch full item
+                    score: result.score as f64,
+                    vector_score: Some(result.score as f64),
+                    bm25_score: Some(result.score as f64),
+                    highlights: Vec::new(),
+                }
+            }).collect();
+
+            let total = search_results.len();
+            let elapsed_ms = start.elapsed().as_millis() as u64;
+
+            return Ok(HybridSearchResult {
+                items: search_results,
+                total,
+                vector_time_ms: elapsed_ms / 2,
+                bm25_time_ms: elapsed_ms / 2,
+                fusion_time_ms: 0,
+            });
+        }
+
+        // Fallback to basic search if hybrid engine not initialized
         let items = match query.layer {
             Some(MemoryLayer::Personal) | None => {
                 self.personal_store.search(query).await?

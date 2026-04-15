@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // Types
@@ -93,11 +94,32 @@ const createCorrectiveExecutions = (): SubAgentExecution[] => [
     startTime: '2026-03-24T10:35:00Z',
     input: '根据新的投标要求生成一个可审阅的章节草案',
     steps: [
-      { id: 'step-c1', name: '解析需求', status: 'completed', startTime: '2026-03-24T10:35:00Z', endTime: '2026-03-24T10:35:01Z', duration: 1, details: '识别为文档起草任务' },
-      { id: 'step-c2', name: '读取模板与资料', status: 'completed', startTime: '2026-03-24T10:35:01Z', endTime: '2026-03-24T10:35:02Z', duration: 1, details: '读取云端模板与历史标书摘要' },
+      {
+        id: 'step-c1',
+        name: '解析需求',
+        status: 'completed',
+        startTime: '2026-03-24T10:35:00Z',
+        endTime: '2026-03-24T10:35:01Z',
+        duration: 1,
+        details: '识别为文档起草任务',
+      },
+      {
+        id: 'step-c2',
+        name: '读取模板与资料',
+        status: 'completed',
+        startTime: '2026-03-24T10:35:01Z',
+        endTime: '2026-03-24T10:35:02Z',
+        duration: 1,
+        details: '读取云端模板与历史标书摘要',
+      },
       { id: 'step-c3', name: '暂存候选改动', status: 'running', startTime: '2026-03-24T10:35:02Z' },
     ],
-    trace: { id: 'trace-c1', parentSessionId: 'session-123', parentMessageId: 'msg-456', linkedAt: '2026-03-24T10:35:00Z' },
+    trace: {
+      id: 'trace-c1',
+      parentSessionId: 'session-123',
+      parentMessageId: 'msg-456',
+      linkedAt: '2026-03-24T10:35:00Z',
+    },
   },
   {
     id: 'exec-c2',
@@ -110,13 +132,45 @@ const createCorrectiveExecutions = (): SubAgentExecution[] => [
     endTime: '2026-03-24T10:31:15Z',
     input: '整理本地旧标书和云端模板，生成本次项目的资料包',
     output: '已生成资料包：历史标书摘要 3 份、可复用模板 2 份、投标要求提取结果 1 份。',
-    metrics: { duration: 75, inputTokens: 256, outputTokens: 512, totalTokens: 768, latencyMs: 1200 },
+    metrics: {
+      duration: 75,
+      inputTokens: 256,
+      outputTokens: 512,
+      totalTokens: 768,
+      latencyMs: 1200,
+    },
     steps: [
-      { id: 'step-c4', name: '收集资料', status: 'completed', startTime: '2026-03-24T10:30:00Z', endTime: '2026-03-24T10:30:20Z', duration: 20 },
-      { id: 'step-c5', name: '抽取结构', status: 'completed', startTime: '2026-03-24T10:30:20Z', endTime: '2026-03-24T10:30:50Z', duration: 30 },
-      { id: 'step-c6', name: '生成资料摘要', status: 'completed', startTime: '2026-03-24T10:30:50Z', endTime: '2026-03-24T10:31:15Z', duration: 25 },
+      {
+        id: 'step-c4',
+        name: '收集资料',
+        status: 'completed',
+        startTime: '2026-03-24T10:30:00Z',
+        endTime: '2026-03-24T10:30:20Z',
+        duration: 20,
+      },
+      {
+        id: 'step-c5',
+        name: '抽取结构',
+        status: 'completed',
+        startTime: '2026-03-24T10:30:20Z',
+        endTime: '2026-03-24T10:30:50Z',
+        duration: 30,
+      },
+      {
+        id: 'step-c6',
+        name: '生成资料摘要',
+        status: 'completed',
+        startTime: '2026-03-24T10:30:50Z',
+        endTime: '2026-03-24T10:31:15Z',
+        duration: 25,
+      },
     ],
-    trace: { id: 'trace-c2', parentSessionId: 'session-122', parentMessageId: 'msg-455', linkedAt: '2026-03-24T10:30:00Z' },
+    trace: {
+      id: 'trace-c2',
+      parentSessionId: 'session-122',
+      parentMessageId: 'msg-455',
+      linkedAt: '2026-03-24T10:30:00Z',
+    },
   },
   {
     id: 'exec-c3',
@@ -130,10 +184,30 @@ const createCorrectiveExecutions = (): SubAgentExecution[] => [
     input: '检查草案中的敏感条款与制度规则',
     error: '制度规则知识库不可用，无法完成本次校验',
     steps: [
-      { id: 'step-c7', name: '加载校验规则', status: 'completed', startTime: '2026-03-24T10:25:00Z', endTime: '2026-03-24T10:25:05Z', duration: 5 },
-      { id: 'step-c8', name: '检索制度知识', status: 'failed', startTime: '2026-03-24T10:25:05Z', endTime: '2026-03-24T10:25:30Z', duration: 25, details: '连接超时' },
+      {
+        id: 'step-c7',
+        name: '加载校验规则',
+        status: 'completed',
+        startTime: '2026-03-24T10:25:00Z',
+        endTime: '2026-03-24T10:25:05Z',
+        duration: 5,
+      },
+      {
+        id: 'step-c8',
+        name: '检索制度知识',
+        status: 'failed',
+        startTime: '2026-03-24T10:25:05Z',
+        endTime: '2026-03-24T10:25:30Z',
+        duration: 25,
+        details: '连接超时',
+      },
     ],
-    trace: { id: 'trace-c3', parentSessionId: 'session-121', parentMessageId: 'msg-454', linkedAt: '2026-03-24T10:25:00Z' },
+    trace: {
+      id: 'trace-c3',
+      parentSessionId: 'session-121',
+      parentMessageId: 'msg-454',
+      linkedAt: '2026-03-24T10:25:00Z',
+    },
   },
   {
     id: 'exec-c4',
@@ -146,13 +220,45 @@ const createCorrectiveExecutions = (): SubAgentExecution[] => [
     endTime: '2026-03-24T10:20:45Z',
     input: '向财务和法务发送项目协作摘要，并回收确认结果',
     output: '已发送协作摘要并收到 2 条回执：财务已确认报价口径，法务标记 1 个风险条款。',
-    metrics: { duration: 45, inputTokens: 128, outputTokens: 256, totalTokens: 384, latencyMs: 800 },
+    metrics: {
+      duration: 45,
+      inputTokens: 128,
+      outputTokens: 256,
+      totalTokens: 384,
+      latencyMs: 800,
+    },
     steps: [
-      { id: 'step-c9', name: '生成摘要', status: 'completed', startTime: '2026-03-24T10:20:00Z', endTime: '2026-03-24T10:20:25Z', duration: 25 },
-      { id: 'step-c10', name: '发送消息', status: 'completed', startTime: '2026-03-24T10:20:25Z', endTime: '2026-03-24T10:20:40Z', duration: 15 },
-      { id: 'step-c11', name: '整理回执', status: 'completed', startTime: '2026-03-24T10:20:40Z', endTime: '2026-03-24T10:20:45Z', duration: 5 },
+      {
+        id: 'step-c9',
+        name: '生成摘要',
+        status: 'completed',
+        startTime: '2026-03-24T10:20:00Z',
+        endTime: '2026-03-24T10:20:25Z',
+        duration: 25,
+      },
+      {
+        id: 'step-c10',
+        name: '发送消息',
+        status: 'completed',
+        startTime: '2026-03-24T10:20:25Z',
+        endTime: '2026-03-24T10:20:40Z',
+        duration: 15,
+      },
+      {
+        id: 'step-c11',
+        name: '整理回执',
+        status: 'completed',
+        startTime: '2026-03-24T10:20:40Z',
+        endTime: '2026-03-24T10:20:45Z',
+        duration: 5,
+      },
     ],
-    trace: { id: 'trace-c4', parentSessionId: 'session-120', parentMessageId: 'msg-453', linkedAt: '2026-03-24T10:20:00Z' },
+    trace: {
+      id: 'trace-c4',
+      parentSessionId: 'session-120',
+      parentMessageId: 'msg-453',
+      linkedAt: '2026-03-24T10:20:00Z',
+    },
   },
 ]
 
@@ -194,7 +300,11 @@ const getRiskBadge = (level: SubAgentExecutionRiskLevel) => {
     case 'low':
       return { variant: 'secondary' as const, label: '低风险' }
     case 'medium':
-      return { variant: 'secondary' as const, label: '中风险', className: 'bg-yellow-100 text-yellow-800' }
+      return {
+        variant: 'secondary' as const,
+        label: '中风险',
+        className: 'bg-yellow-100 text-yellow-800',
+      }
     case 'high':
       return { variant: 'default' as const, label: '高风险', className: 'bg-orange-500' }
     case 'critical':
@@ -210,16 +320,20 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
   const stats = useMemo((): MonitorStats => {
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const todayExecutions = executions.filter(e => new Date(e.startTime) >= todayStart)
-    const completedToday = todayExecutions.filter(e => e.status === 'completed')
-    const failedToday = todayExecutions.filter(e => e.status === 'failed')
-    const durations = completedToday.filter(e => e.metrics?.duration).map(e => e.metrics!.duration)
-    const avgDuration = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0
-    const successRate = todayExecutions.length > 0 ? (completedToday.length / todayExecutions.length) * 100 : 0
+    const todayExecutions = executions.filter((e) => new Date(e.startTime) >= todayStart)
+    const completedToday = todayExecutions.filter((e) => e.status === 'completed')
+    const failedToday = todayExecutions.filter((e) => e.status === 'failed')
+    const durations = completedToday
+      .filter((e) => e.metrics?.duration)
+      .map((e) => e.metrics!.duration)
+    const avgDuration =
+      durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0
+    const successRate =
+      todayExecutions.length > 0 ? (completedToday.length / todayExecutions.length) * 100 : 0
 
     return {
       totalExecutions: executions.length,
-      runningNow: executions.filter(e => e.status === 'running').length,
+      runningNow: executions.filter((e) => e.status === 'running').length,
       completedToday: completedToday.length,
       failedToday: failedToday.length,
       averageDuration: avgDuration,
@@ -228,10 +342,14 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
   }, [executions])
 
   // Active executions (running or pending)
-  const activeExecutions = executions.filter(e => e.status === 'running' || e.status === 'pending')
+  const activeExecutions = executions.filter(
+    (e) => e.status === 'running' || e.status === 'pending'
+  )
 
   // Historical executions
-  const historicalExecutions = executions.filter(e => e.status !== 'running' && e.status !== 'pending')
+  const historicalExecutions = executions.filter(
+    (e) => e.status !== 'running' && e.status !== 'pending'
+  )
 
   // Format duration
   const formatDuration = (seconds: number) => {
@@ -318,7 +436,9 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
             <div className="flex items-center gap-2">
               <Timer className="h-5 w-5 text-purple-500" />
               <div>
-                <div className="text-2xl font-bold">{formatDuration(Math.round(stats.averageDuration))}</div>
+                <div className="text-2xl font-bold">
+                  {formatDuration(Math.round(stats.averageDuration))}
+                </div>
                 <div className="text-xs text-muted-foreground">平均耗时</div>
               </div>
             </div>
@@ -351,14 +471,10 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                 <Play className="h-4 w-4" />
                 当前活跃执行
               </h3>
-              <p className="text-xs text-muted-foreground">
-                正在运行或等待处理的 Sub-Agent 任务
-              </p>
+              <p className="text-xs text-muted-foreground">正在运行或等待处理的 Sub-Agent 任务</p>
             </div>
             {activeExecutions.length > 0 && (
-              <Badge variant="outline">
-                {activeExecutions.length} 个任务
-              </Badge>
+              <Badge variant="outline">{activeExecutions.length} 个任务</Badge>
             )}
           </div>
 
@@ -366,12 +482,17 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
             <Card>
               <CardContent className="py-12 text-center">
                 <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">暂无活跃执行任务</p>
+                <EmptyState
+                  title="暂无活跃执行任务"
+                  description="子代理执行任务将在此处显示"
+                  icon={Activity}
+                  size="sm"
+                />
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
-              {activeExecutions.map(execution => (
+              {activeExecutions.map((execution) => (
                 <Card
                   key={execution.id}
                   className={`cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -382,9 +503,7 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
-                        <div className="mt-1">
-                          {getStatusIcon(execution.status)}
-                        </div>
+                        <div className="mt-1">{getStatusIcon(execution.status)}</div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium">{execution.subAgentName}</span>
@@ -407,14 +526,22 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                               {execution.steps.map((step, idx) => (
                                 <div key={step.id} className="flex items-center gap-2 text-xs">
                                   {idx > 0 && (
-                                    <div className={`w-4 h-px ${step.status === 'completed' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                    <div
+                                      className={`w-4 h-px ${step.status === 'completed' ? 'bg-green-500' : 'bg-gray-300'}`}
+                                    />
                                   )}
                                   {getStatusIcon(step.status)}
-                                  <span className={step.status === 'running' ? 'text-blue-600 font-medium' : ''}>
+                                  <span
+                                    className={
+                                      step.status === 'running' ? 'text-blue-600 font-medium' : ''
+                                    }
+                                  >
                                     {step.name}
                                   </span>
                                   {step.duration && (
-                                    <span className="text-muted-foreground">({step.duration}秒)</span>
+                                    <span className="text-muted-foreground">
+                                      ({step.duration}秒)
+                                    </span>
                                   )}
                                 </div>
                               ))}
@@ -450,7 +577,7 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
 
           <ScrollArea className="h-[500px]">
             <div className="space-y-3">
-              {historicalExecutions.map(execution => (
+              {historicalExecutions.map((execution) => (
                 <Card
                   key={execution.id}
                   className={`cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -461,9 +588,7 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="mt-1">
-                          {getStatusIcon(execution.status)}
-                        </div>
+                        <div className="mt-1">{getStatusIcon(execution.status)}</div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium">{execution.subAgentName}</span>
@@ -636,7 +761,9 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>关联时间: {new Date(selectedExecution.trace.linkedAt).toLocaleString()}</span>
+                        <span>
+                          关联时间: {new Date(selectedExecution.trace.linkedAt).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -658,12 +785,22 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all ${
-                            step.status === 'completed' ? 'bg-green-500' :
-                            step.status === 'running' ? 'bg-blue-500 animate-pulse' :
-                            step.status === 'failed' ? 'bg-red-500' :
-                            'bg-gray-300'
+                            step.status === 'completed'
+                              ? 'bg-green-500'
+                              : step.status === 'running'
+                                ? 'bg-blue-500 animate-pulse'
+                                : step.status === 'failed'
+                                  ? 'bg-red-500'
+                                  : 'bg-gray-300'
                           }`}
-                          style={{ width: step.status === 'completed' ? '100%' : step.status === 'running' ? '60%' : '0%' }}
+                          style={{
+                            width:
+                              step.status === 'completed'
+                                ? '100%'
+                                : step.status === 'running'
+                                  ? '60%'
+                                  : '0%',
+                          }}
                         />
                       </div>
                     </div>

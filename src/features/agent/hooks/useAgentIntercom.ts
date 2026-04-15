@@ -2,11 +2,13 @@
  * Agent间通信 Hook
  * 
  * 提供 Agent-to-Agent 通信功能的后端集成
+ * 使用 EventBus 实现事件驱动的消息传递
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { eventBus } from '@/hooks/eventBus';
 
 // Types
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
@@ -100,6 +102,13 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
         ...m,
         timestamp: new Date(m.timestamp),
       })));
+      
+      // 发布初始化完成事件
+      eventBus.publish('agent:intercom:initialized', { 
+        agentId: currentAgentId,
+        contactsCount: contactsResult.length,
+        messagesCount: messagesResult.length,
+      });
     } catch (err) {
       setError(err as string);
       // 如果后端未初始化，使用空数据
@@ -139,6 +148,14 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
       };
 
       setMessages(prev => [...prev, newMessage]);
+      
+      // 通过 EventBus 发布消息发送事件
+      eventBus.publish('agent:message:sent', {
+        message: newMessage,
+        senderId: currentAgentId,
+        receiverId,
+      });
+      
       return newMessage;
     } catch (err) {
       setError(err as string);
@@ -162,6 +179,13 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
       };
       
       setMessages(prev => [...prev, failedMessage]);
+      
+      // 通过 EventBus 发布消息发送失败事件
+      eventBus.publish('agent:message:failed', {
+        message: failedMessage,
+        error: err,
+      });
+      
       return null;
     }
   }, [currentAgentId, contacts]);
@@ -298,23 +322,50 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   // 监听新消息事件
   useEffect(() => {
     let unlisten: UnlistenFn | null = null;
+    const subscriptions: Array<() => void> = [];
 
-    const setupListener = async () => {
+    const setupListeners = async () => {
+      // Tauri 事件监听
       unlisten = await listen<AgentMessage>('agent-message-received', (event) => {
         const message = event.payload;
-        setMessages(prev => [...prev, {
+        const direction = message.senderId === currentAgentId ? 'sent' : 'received';
+        const newMsg: AgentMessage = {
           ...message,
           timestamp: new Date(message.timestamp),
-          direction: message.senderId === currentAgentId ? 'sent' : 'received',
-        }]);
+          direction: direction as 'sent' | 'received',
+        };
+        
+        setMessages(prev => [...prev, newMsg]);
+        
+        // 通过 EventBus 转发消息接收事件
+        eventBus.publish('agent:message:received', {
+          message: newMsg,
+          agentId: currentAgentId,
+        });
       });
+      
+      // EventBus 事件监听 - 允许其他组件订阅消息事件
+      const unsubSent = eventBus.subscribe<{ message: AgentMessage }>('agent:message:sent', () => {
+        // 可以在这里处理其他组件需要的消息发送通知
+      });
+      subscriptions.push(unsubSent);
+      
+      const unsubReceived = eventBus.subscribe<{ message: AgentMessage }>('agent:message:received', () => {
+        // 可以在这里处理其他组件需要的消息接收通知
+      });
+      subscriptions.push(unsubReceived);
     };
 
-    setupListener();
+    setupListeners();
 
+    // 清理
     return () => {
       if (unlisten) {
         unlisten();
+      }
+      // 清理 EventBus 订阅
+      for (const unsub of subscriptions) {
+        unsub();
       }
     };
   }, [currentAgentId]);

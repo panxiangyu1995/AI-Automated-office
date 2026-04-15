@@ -155,7 +155,7 @@ pub fn number_param_with_default(name: &str, description: &str, default: f64) ->
         param_type: ToolParameterTypeSpec::Single(ToolParameterType::Number),
         description: description.to_string(),
         required: false,
-        default: Some(serde_json::Value::Number(serde_json::Number::from_f64(default).unwrap_or_default())),
+        default: serde_json::Number::from_f64(default).map(serde_json::Value::Number),
         r#enum: None,
         minimum: None,
         maximum: None,

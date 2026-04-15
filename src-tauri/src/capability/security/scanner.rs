@@ -1,5 +1,6 @@
 //! Security scanner implementation.
 
+use sha2::{Sha256, Digest};
 use super::{MaliciousPatternMatcher, ScanResultCache, SecurityConfig};
 use anyhow::Result;
 
@@ -68,13 +69,15 @@ impl SecurityScanner {
     }
 
     /// Scan a package
-    pub async fn scan(&self, data: &[u8], package_id: &str) -> Result<SecurityScanResult> {
+    pub async fn scan(&mut self, data: &[u8], package_id: &str) -> Result<SecurityScanResult> {
         let start = std::time::Instant::now();
         let mut warnings = Vec::new();
         let mut errors = Vec::new();
 
         // Check cache first
-        let content_hash = sha2::Sha256::digest(data);
+        let mut hasher = Sha256::new();
+        hasher.update(data);
+        let content_hash = hasher.finalize();
         let hash_hex = format!("{:x}", content_hash);
 
         if let Some(cached) = self.cache.get(&hash_hex) {
@@ -119,7 +122,7 @@ impl SecurityScanner {
         let mut suspicious = Vec::new();
 
         // Look for common suspicious patterns
-        let suspicious_patterns = [
+        let suspicious_patterns: &[&[u8]] = &[
             b"eval(",
             b"exec(",
             b"system(",

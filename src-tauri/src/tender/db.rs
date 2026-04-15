@@ -351,6 +351,8 @@ impl TenderDatabase {
                 status: p.status,
                 deadline: p.deadline.clone(),
                 progress: p.progress,
+                created_at: p.created_at,
+                updated_at: p.updated_at,
             })
             .collect();
 

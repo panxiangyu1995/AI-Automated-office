@@ -10,6 +10,7 @@ use rusqlite::{params, Connection, ToSql};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use tokio::task;
 
 use super::super::config::MemoryError;
 
@@ -36,7 +37,7 @@ pub trait StorageBackend: Send + Sync {
     async fn execute(&self, sql: &str) -> StorageResult<()>;
 
     /// Execute a SQL statement with parameters
-    async fn execute_with_params(&self, sql: &str, params: &[&dyn ToSql]) -> StorageResult<()>;
+    async fn execute_with_params(&self, sql: &str, params: Vec<String>) -> StorageResult<()>;
 
     /// Query rows and map them using the provided mapper
     async fn query<T, F>(&self, sql: &str, mapper: F) -> StorageResult<Vec<T>>
@@ -55,6 +56,13 @@ pub trait StorageBackend: Send + Sync {
 pub struct SqliteStorage {
     path: String,
     conn: Arc<Mutex<Connection>>,
+}
+
+impl SqliteStorage {
+    /// Get a reference to the connection for direct access
+    pub fn conn(&self) -> &Arc<Mutex<Connection>> {
+        &self.conn
+    }
 }
 
 impl SqliteStorage {
@@ -94,6 +102,30 @@ impl SqliteStorage {
             conn: Arc::new(Mutex::new(conn)),
         })
     }
+
+    /// Initialize the database schema (delegates to trait impl)
+    pub async fn init_schema(&self) -> StorageResult<()> {
+        StorageBackend::init_schema(self).await
+    }
+
+    /// Execute a SQL statement (delegates to trait impl)
+    pub async fn execute(&self, sql: &str) -> StorageResult<()> {
+        StorageBackend::execute(self, sql).await
+    }
+
+    /// Execute a SQL statement with parameters
+    pub async fn execute_with_params(&self, sql: &str, params: Vec<String>) -> StorageResult<()> {
+        StorageBackend::execute_with_params(self, sql, params).await
+    }
+
+    /// Query rows and map them (delegates to trait impl)
+    pub async fn query<T, F>(&self, sql: &str, mapper: F) -> StorageResult<Vec<T>>
+    where
+        F: FnMut(&rusqlite::Row<'_>) -> rusqlite::Result<T> + Send + 'static,
+        T: Send + 'static,
+    {
+        StorageBackend::query(self, sql, mapper).await
+    }
 }
 
 impl Drop for SqliteStorage {
@@ -106,15 +138,21 @@ impl Drop for SqliteStorage {
 #[async_trait]
 impl StorageBackend for SqliteStorage {
     async fn execute(&self, sql: &str) -> StorageResult<()> {
-        let conn = self.conn.lock().await;
-        conn.execute_batch(sql)
-            .map_err(|e| StorageError::Execution(e.to_string()))?;
-        Ok(())
+        let sql = sql.to_string();
+        let conn = self.conn.clone();
+
+        task::spawn_blocking(move || {
+            let conn = conn.blocking_lock();
+            conn.execute_batch(&sql)
+                .map_err(|e| StorageError::Execution(e.to_string()))?;
+            Ok(())
+        }).await.map_err(|e| StorageError::Execution(e.to_string()))?
     }
 
-    async fn execute_with_params(&self, sql: &str, params: &[&dyn ToSql]) -> StorageResult<()> {
+    async fn execute_with_params(&self, sql: &str, params: Vec<String>) -> StorageResult<()> {
         let conn = self.conn.lock().await;
-        conn.execute(sql, params)
+        let params_refs: Vec<&dyn ToSql> = params.iter().map(|s| s as &dyn ToSql).collect();
+        conn.execute(sql, params_refs.as_slice())
             .map_err(|e| StorageError::Execution(e.to_string()))?;
         Ok(())
     }
@@ -181,8 +219,8 @@ impl StorageBackend for SqliteStorage {
 }
 
 /// Row mapper for MemoryItem
-pub fn map_memory_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<super::super::types::MemoryItem> {
-    use super::super::types::{MemoryCategory, MemoryLayer, MemorySource};
+pub fn map_memory_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<crate::agent::memory::types::MemoryItem> {
+    use crate::agent::memory::types::{MemoryCategory, MemoryLayer, MemorySource};
 
     let layer_str: String = row.get("layer")?;
     let layer = match layer_str.as_str() {
@@ -218,7 +256,7 @@ pub fn map_memory_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<super::super
     let metadata: serde_json::Value = serde_json::from_str(&metadata_str)
         .unwrap_or(serde_json::json!({}));
 
-    Ok(super::super::types::MemoryItem {
+    Ok(crate::agent::memory::types::MemoryItem {
         id: row.get("id")?,
         layer,
         tenant_id: row.get("tenant_id")?,
@@ -256,32 +294,28 @@ mod tests {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#;
 
-        storage
-            .execute_with_params(
-                sql,
-                &[
-                    &"test-id-1" as &dyn ToSql,
-                    &"Personal" as &dyn ToSql,
-                    &"tenant-1" as &dyn ToSql,
-                    &"user-1" as &dyn ToSql,
-                    &"test-key" as &dyn ToSql,
-                    &"test-value" as &dyn ToSql,
-                    &"Context" as &dyn ToSql,
-                    &1.0 as &dyn ToSql,
-                    &"UserInput" as &dyn ToSql,
-                    &"{}" as &dyn ToSql,
-                    &1000i64 as &dyn ToSql,
-                    &1000i64 as &dyn ToSql,
-                    &0i64 as &dyn ToSql,
-                    &1u32 as &dyn ToSql,
-                    &0i32 as &dyn ToSql,
-                ],
-            )
-            .await
-            .unwrap();
+        let params: Vec<&dyn ToSql> = vec![
+            &"test-id-1" as &dyn ToSql,
+            &"Personal" as &dyn ToSql,
+            &"tenant-1" as &dyn ToSql,
+            &"user-1" as &dyn ToSql,
+            &"test-key" as &dyn ToSql,
+            &"test-value" as &dyn ToSql,
+            &"Context" as &dyn ToSql,
+            &1.0 as &dyn ToSql,
+            &"UserInput" as &dyn ToSql,
+            &"{}" as &dyn ToSql,
+            &1000i64 as &dyn ToSql,
+            &1000i64 as &dyn ToSql,
+            &0i64 as &dyn ToSql,
+            &1i64 as &dyn ToSql,
+            &0i32 as &dyn ToSql,
+        ];
+
+        storage.execute_with_params(sql, params).await.unwrap();
 
         // Query back
-        let items: Vec<super::super::types::MemoryItem> = storage
+        let items: Vec<crate::agent::memory::types::MemoryItem> = storage
             .query("SELECT * FROM memory_items WHERE id = ?", |row| {
                 map_memory_item(row)
             })

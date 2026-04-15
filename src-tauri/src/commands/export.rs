@@ -95,7 +95,7 @@ pub async fn create_migration(
     source_data: String,
 ) -> Result<crate::export::migrator::MigrationRecord, String> {
     let mut state = state.write().await;
-    let migrator = state.migrator.write().await;
+    let mut migrator = state.migrator.write().await;
     let record = migrator.create_migration(&direction, &source_data);
     tracing::info!("Created migration {} with direction {}", record.id, direction);
     Ok(record)
@@ -109,7 +109,7 @@ pub async fn complete_migration(
     target_data: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let migrator = state.migrator.write().await;
+    let mut migrator = state.migrator.write().await;
     migrator.complete_migration(&migration_id, &target_data, None)
         .ok_or_else(|| format!("Migration not found: {}", migration_id))?;
     tracing::info!("Completed migration {}", migration_id);
@@ -123,7 +123,7 @@ pub async fn rollback_migration(
     migration_id: String,
 ) -> Result<String, String> {
     let mut state = state.write().await;
-    let migrator = state.migrator.write().await;
+    let mut migrator = state.migrator.write().await;
     let rollback_data = migrator.rollback_migration(&migration_id)?;
     tracing::info!("Rolled back migration {}", migration_id);
     Ok(rollback_data)
@@ -186,7 +186,7 @@ pub async fn execute_import(
     data: String,
 ) -> Result<ImportResult, String> {
     let mut state = state.write().await;
-    let migrator = state.migrator.write().await;
+    let mut migrator = state.migrator.write().await;
     
     // 创建迁移记录
     let record = migrator.create_migration("import", &data);
@@ -208,7 +208,8 @@ pub async fn execute_import(
             imported_count += 1;
         }
         
-        migrator.complete_migration(&record.id, &data, Some(data.clone()))?;
+        migrator.complete_migration(&record.id, &data, Some(data.clone()))
+            .ok_or_else(|| "Failed to complete migration".to_string())?;
     } else {
         for error in &validation.errors {
             errors.push(crate::export::migrator::ImportError {
@@ -217,7 +218,8 @@ pub async fn execute_import(
                 original_data: None,
             });
         }
-        migrator.fail_migration(&record.id, "Validation failed")?;
+        migrator.fail_migration(&record.id, "Validation failed")
+            .ok_or_else(|| "Failed to fail migration".to_string())?;
     }
     
     Ok(ImportResult {

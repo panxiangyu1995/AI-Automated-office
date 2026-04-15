@@ -28,7 +28,7 @@ pub async fn record_sla_metric(
     unit: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let collector = state.metrics_collector.write().await;
+    let mut collector = state.metrics_collector.write().await;
     
     let mtype = match metric_type.as_str() {
         "request_count" => MetricType::RequestCount,
@@ -110,7 +110,7 @@ pub async fn reset_sla_metric(
     name: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let collector = state.metrics_collector.write().await;
+    let mut collector = state.metrics_collector.write().await;
     collector.reset(&name);
     Ok(())
 }
@@ -130,7 +130,7 @@ pub async fn create_alert_rule(
     severity: String,
 ) -> Result<AlertRule, String> {
     let mut state = state.write().await;
-    let engine = state.alert_engine.write().await;
+    let mut engine = state.alert_engine.write().await;
     
     let condition = match condition_type.as_str() {
         "greater_than" => AlertCondition::GreaterThan { threshold },
@@ -170,7 +170,7 @@ pub async fn delete_alert_rule(
     rule_id: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let engine = state.alert_engine.write().await;
+    let mut engine = state.alert_engine.write().await;
     engine.remove_rule(&rule_id)
         .ok_or_else(|| format!("Rule not found: {}", rule_id))?;
     Ok(())
@@ -193,7 +193,7 @@ pub async fn acknowledge_alert(
     alert_id: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let engine = state.alert_engine.write().await;
+    let mut engine = state.alert_engine.write().await;
     engine.acknowledge_alert(&alert_id)
         .ok_or_else(|| format!("Alert not found: {}", alert_id))?;
     Ok(())
@@ -206,7 +206,7 @@ pub async fn resolve_alert(
     alert_id: String,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let engine = state.alert_engine.write().await;
+    let mut engine = state.alert_engine.write().await;
     engine.resolve_alert(&alert_id)
         .ok_or_else(|| format!("Alert not found: {}", alert_id))?;
     Ok(())
@@ -238,7 +238,7 @@ pub async fn add_service_health(
     sla_target: f64,
 ) -> Result<(), String> {
     let mut state = state.write().await;
-    let dashboard = state.dashboard.write().await;
+    let mut dashboard = state.dashboard.write().await;
     
     let status = ServiceHealth::calculate_status(availability, sla_target);
     
@@ -302,8 +302,8 @@ pub async fn generate_sla_report(
     period: String,
     sla_target: f64,
 ) -> Result<SlaReport, String> {
-    let mut state = state.write().await;
-    let reporter = state.reporter.write().await;
+    let state = state.write().await;
+    let mut reporter = state.reporter.write().await;
     
     let report_period = match period.as_str() {
         "hourly" => ReportPeriod::Hourly,

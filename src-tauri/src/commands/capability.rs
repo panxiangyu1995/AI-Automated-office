@@ -196,7 +196,7 @@ pub async fn capability_install_from_url(
 #[tauri::command]
 pub async fn capability_security_scan(data: Vec<u8>) -> Result<SecurityScanResponse, String> {
     let config = SecurityConfig::default();
-    let scanner = crate::capability::SecurityScanner::new(config);
+    let mut scanner = crate::capability::SecurityScanner::new(config);
 
     let result = scanner
         .scan(&data, "unknown")

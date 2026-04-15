@@ -12,6 +12,7 @@ import { useUpdate } from './hooks/useUpdate'
 import { useSessionCheck } from './hooks/useSessionCheck'
 import { Alert, AlertDescription, AlertTitle } from './components/ui/alert'
 import { Button } from './components/ui/button'
+import { ErrorBoundary } from './components/ui/error-boundary'
 import { LoginPage } from './features/auth/pages/LoginPage'
 import { AuthGuard } from './components/common/AuthGuard'
 import { UpdateDialog } from './components/common/UpdateDialog'
@@ -32,7 +33,8 @@ function App() {
   const forbiddenModal = usePermissionStore((state) => state.forbiddenModal)
   const [loading, setLoading] = useState(true)
   const [showTopBarHint, setShowTopBarHint] = useState(false)
-  const { updateInfo, downloading, progress, checkUpdate, downloadAndInstall, dismiss } = useUpdate()
+  const { updateInfo, downloading, progress, checkUpdate, downloadAndInstall, dismiss } =
+    useUpdate()
   const [sessionExpiredModal, setSessionExpiredModal] = useState<{
     open: boolean
     reason: SessionExpiredReason
@@ -53,7 +55,7 @@ function App() {
       session_invalid: 'token_invalid',
       session_check_failed: 'session_expired',
     }
-    
+
     setSessionExpiredModal({
       open: true,
       reason: reasonMap[reason] || 'unknown',
@@ -160,59 +162,61 @@ function App() {
 
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <OfflineIndicator />
-        {showTopBarHint && !isLoginRoute && (
-          <div className="fixed left-1/2 top-4 z-50 w-[520px] -translate-x-1/2">
-            <Alert className="border-slate-200 bg-white shadow-lg">
-              <AlertTitle className="text-slate-900">欢迎使用顶部菜单栏</AlertTitle>
-              <AlertDescription className="mt-2 text-slate-600">
-                <div>{`快捷键提示: Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，${aiPanelShortcutLabel} 切换 AI Chat Panel。`}</div>
-                <div className="mt-3 flex justify-end">
-                  <Button size="sm" onClick={handleDismissTopBarHint}>
-                    知道了
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forbidden" element={<ForbiddenPage />} />
-          <Route
-            path="/*"
-            element={
-              <AuthGuard>
-                <AppLayout />
-              </AuthGuard>
-            }
-          >
-            {workbenchRouteObjects.map((route) => (
-              <Route key={route.path} path={route.path} element={route.element} />
-            ))}
-          </Route>
-        </Routes>
-        <UpdateDialog
-          updateInfo={updateInfo}
-          downloading={downloading}
-          progress={progress}
-          onDownload={downloadAndInstall}
-          onDismiss={dismiss}
-        />
-        <ForbiddenModal
-          open={forbiddenModal.open}
-          onClose={hideForbidden}
-          data={forbiddenModal.data}
-        />
-        <SessionExpiredModal
-          open={sessionExpiredModal.open}
-          reason={sessionExpiredModal.reason}
-          message={sessionExpiredModal.message}
-          onConfirm={handleSessionExpiredConfirm}
-        />
-        <Toaster />
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <OfflineIndicator />
+          {showTopBarHint && !isLoginRoute && (
+            <div className="fixed left-1/2 top-4 z-50 w-[520px] -translate-x-1/2">
+              <Alert className="border-slate-200 bg-white shadow-lg">
+                <AlertTitle className="text-slate-900">欢迎使用顶部菜单栏</AlertTitle>
+                <AlertDescription className="mt-2 text-slate-600">
+                  <div>{`快捷键提示: Ctrl+Shift+M 切换菜单栏，Ctrl+B 切换左侧栏，${aiPanelShortcutLabel} 切换 AI Chat Panel。`}</div>
+                  <div className="mt-3 flex justify-end">
+                    <Button size="sm" onClick={handleDismissTopBarHint}>
+                      知道了
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forbidden" element={<ForbiddenPage />} />
+            <Route
+              path="/*"
+              element={
+                <AuthGuard>
+                  <AppLayout />
+                </AuthGuard>
+              }
+            >
+              {workbenchRouteObjects.map((route) => (
+                <Route key={route.path} path={route.path} element={route.element} />
+              ))}
+            </Route>
+          </Routes>
+          <UpdateDialog
+            updateInfo={updateInfo}
+            downloading={downloading}
+            progress={progress}
+            onDownload={downloadAndInstall}
+            onDismiss={dismiss}
+          />
+          <ForbiddenModal
+            open={forbiddenModal.open}
+            onClose={hideForbidden}
+            data={forbiddenModal.data}
+          />
+          <SessionExpiredModal
+            open={sessionExpiredModal.open}
+            reason={sessionExpiredModal.reason}
+            message={sessionExpiredModal.message}
+            onConfirm={handleSessionExpiredConfirm}
+          />
+          <Toaster />
+        </BrowserRouter>
+      </ErrorBoundary>
     </ThemeProvider>
   )
 }

@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { Plus, Package, FileText, RefreshCw, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect, useCallback } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { Plus, Package, FileText, RefreshCw, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -10,73 +12,73 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { OutboundFormDialog } from '../components/OutboundFormDialog';
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { OutboundFormDialog } from '../components/OutboundFormDialog'
 
 interface OutboundListItem {
-  id: string;
-  number: string;
-  outboundType: string;
-  salesOrderId?: string;
-  status: string;
-  createdAt: number;
+  id: string
+  number: string
+  outboundType: string
+  salesOrderId?: string
+  status: string
+  createdAt: number
 }
 
 export function OutboundListPage() {
-  const [outbounds, setOutbounds] = useState<OutboundListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [outbounds, setOutbounds] = useState<OutboundListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await invoke<OutboundListItem[]>('warehouse_list_outbounds');
-      setOutbounds(data);
+      const data = await invoke<OutboundListItem[]>('warehouse_list_outbounds')
+      setOutbounds(data)
     } catch (error) {
-      console.error('Failed to fetch outbounds:', error);
+      console.error('Failed to fetch outbounds:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData()
+  }, [fetchData])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="outline">草稿</Badge>;
+        return <Badge variant="outline">草稿</Badge>
       case 'submitted':
-        return <Badge variant="secondary">已提交</Badge>;
+        return <Badge variant="secondary">已提交</Badge>
       case 'approved':
-        return <Badge variant="default">已审批</Badge>;
+        return <Badge variant="default">已审批</Badge>
       case 'shipped':
-        return <Badge variant="success">已发货</Badge>;
+        return <Badge variant="success">已发货</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>
     }
-  };
+  }
 
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'sale':
-        return '销售出库';
+        return '销售出库'
       case 'return':
-        return '退货出库';
+        return '退货出库'
       case 'transfer':
-        return '调拨出库';
+        return '调拨出库'
       case 'damage':
-        return '损耗';
+        return '损耗'
       default:
-        return type;
+        return type
     }
-  };
+  }
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('zh-CN');
-  };
+    return new Date(timestamp * 1000).toLocaleDateString('zh-CN')
+  }
 
   return (
     <div className="flex flex-col h-full p-6 gap-4">
@@ -113,7 +115,7 @@ export function OutboundListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {outbounds.filter(o => o.status === 'draft').length}
+              {outbounds.filter((o) => o.status === 'draft').length}
             </div>
           </CardContent>
         </Card>
@@ -124,62 +126,52 @@ export function OutboundListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {outbounds.filter(o => o.status === 'shipped').length}
+              {outbounds.filter((o) => o.status === 'shipped').length}
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Table */}
-      <div className="flex-1 border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>出库单号</TableHead>
-              <TableHead>出库类型</TableHead>
-              <TableHead>销售订单</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>创建时间</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      <div className="flex-1 border rounded-lg overflow-auto">
+        {loading ? (
+          <TableSkeleton rows={5} cols={5} />
+        ) : outbounds.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <EmptyState title="暂无出库单" description="点击新增按钮创建出库单" icon={Package} />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  加载中...
-                </TableCell>
+                <TableHead>出库单号</TableHead>
+                <TableHead>出库类型</TableHead>
+                <TableHead>销售订单</TableHead>
+                <TableHead>状态</TableHead>
+                <TableHead>创建时间</TableHead>
               </TableRow>
-            ) : outbounds.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  暂无出库单
-                </TableCell>
-              </TableRow>
-            ) : (
-              outbounds.map((item) => (
+            </TableHeader>
+            <TableBody>
+              {outbounds.map((item) => (
                 <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell className="font-mono text-sm">{item.number}</TableCell>
                   <TableCell>{getTypeLabel(item.outboundType)}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    {item.salesOrderId ? item.salesOrderId : '-'}
+                    {item.salesOrderId || '-'}
                   </TableCell>
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(item.createdAt)}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       {/* Create Dialog */}
-      <OutboundFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSuccess={fetchData}
-      />
+      <OutboundFormDialog open={dialogOpen} onOpenChange={setDialogOpen} onSuccess={fetchData} />
     </div>
-  );
+  )
 }

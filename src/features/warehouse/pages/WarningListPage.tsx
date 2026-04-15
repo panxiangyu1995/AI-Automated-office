@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
-import { AlertTriangle, TrendingDown, Bell, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback } from 'react'
+import { AlertTriangle, TrendingDown, Bell, CheckCircle2, RefreshCw } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -10,133 +12,110 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-
-interface WarningItem {
-  id: string;
-  productId: string;
-  productName: string;
-  locationId: string;
-  locationName: string;
-  currentQuantity: number;
-  minStock: number;
-  maxStock: number;
-  shortage: number;
-  level: 'info' | 'warning' | 'critical';
-  type: 'low' | 'high' | 'expiring';
-  isRead: boolean;
-  isResolved: boolean;
-}
+} from '@/components/ui/table'
+import { listWarnings, markWarningRead, resolveWarning } from '../api/warehouseApi'
+import type { InventoryWarning } from '../types/inventory'
 
 export function WarningListPage() {
-  const [warnings, setWarnings] = useState<WarningItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [warnings, setWarnings] = useState<InventoryWarning[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await listWarnings()
+      setWarnings(response.items)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取预警数据失败')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const mockWarnings: WarningItem[] = [
-      {
-        id: 'warn-001',
-        productId: 'prod-002',
-        productName: '罗技无线鼠标',
-        locationId: 'loc-002',
-        locationName: 'A区01货架02位',
-        currentQuantity: 5,
-        minStock: 50,
-        maxStock: 500,
-        shortage: 45,
-        level: 'critical',
-        type: 'low',
-        isRead: false,
-        isResolved: false,
-      },
-      {
-        id: 'warn-002',
-        productId: 'prod-001',
-        productName: '联想ThinkPad笔记本',
-        locationId: 'loc-001',
-        locationName: 'A区01货架01位',
-        currentQuantity: 15,
-        minStock: 10,
-        maxStock: 100,
-        shortage: 0,
-        level: 'info',
-        type: 'low',
-        isRead: true,
-        isResolved: false,
-      },
-      {
-        id: 'warn-003',
-        productId: 'prod-003',
-        productName: 'Dell显示器27寸',
-        locationId: 'loc-003',
-        locationName: 'B区02货架01位',
-        currentQuantity: 45,
-        minStock: 20,
-        maxStock: 80,
-        shortage: -35,
-        level: 'warning',
-        type: 'high',
-        isRead: false,
-        isResolved: false,
-      },
-    ];
-    setWarnings(mockWarnings);
-    setLoading(false);
-  }, []);
+    fetchData()
+  }, [fetchData])
+
+  const handleMarkRead = async (id: string) => {
+    try {
+      await markWarningRead(id)
+      setWarnings(warnings.map((w) => (w.id === id ? { ...w, is_read: true } : w)))
+    } catch {}
+  }
+
+  const handleResolve = async (id: string) => {
+    try {
+      await resolveWarning(id)
+      setWarnings(warnings.map((w) => (w.id === id ? { ...w, is_resolved: true } : w)))
+    } catch {}
+  }
 
   const getLevelBadge = (level: string) => {
     switch (level) {
       case 'critical':
-        return <Badge variant="destructive">严重</Badge>;
+        return <Badge variant="destructive">严重</Badge>
       case 'warning':
-        return <Badge variant="secondary">警告</Badge>;
+        return <Badge variant="secondary">警告</Badge>
       default:
-        return <Badge variant="outline">提示</Badge>;
+        return <Badge variant="outline">提示</Badge>
     }
-  };
+  }
 
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'low':
-        return '库存不足';
+        return '库存不足'
       case 'high':
-        return '库存过剩';
+        return '库存过剩'
       case 'expiring':
-        return '临期预警';
+        return '临期预警'
       default:
-        return type;
+        return type
     }
-  };
-
-  const handleMarkRead = (id: string) => {
-    setWarnings(warnings.map(w => w.id === id ? { ...w, isRead: true } : w));
-  };
-
-  const handleResolve = (id: string) => {
-    setWarnings(warnings.map(w => w.id === id ? { ...w, isResolved: true } : w));
-  };
-
-  const unreadCount = warnings.filter(w => !w.isRead).length;
-  const criticalCount = warnings.filter(w => w.level === 'critical' && !w.isResolved).length;
+  }
 
   const renderShortage = (shortage: number) => {
-    if (shortage > 0) {
-      return <span className="text-red-600 font-medium">-{shortage}</span>;
-    } else if (shortage < 0) {
-      return <span className="text-amber-600 font-medium">+{Math.abs(shortage)}</span>;
-    }
-    return <span className="text-muted-foreground">-</span>;
-  };
+    if (shortage > 0) return <span className="text-red-600 font-medium">-{shortage}</span>
+    if (shortage < 0)
+      return <span className="text-amber-600 font-medium">+{Math.abs(shortage)}</span>
+    return <span className="text-muted-foreground">-</span>
+  }
+
+  const unreadCount = warnings.filter((w) => !w.is_read).length
+  const criticalCount = warnings.filter((w) => w.level === 'critical' && !w.is_resolved).length
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-full p-6 gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">库存预警</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <EmptyState
+            title="加载失败"
+            description={error}
+            icon={AlertTriangle}
+            actionLabel="重试"
+            onAction={fetchData}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full p-6 gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">库存预警</h1>
-          {unreadCount > 0 && (
-            <Badge variant="destructive">{unreadCount} 条未读</Badge>
-          )}
+          {unreadCount > 0 && <Badge variant="destructive">{unreadCount} 条未读</Badge>}
         </div>
+        <Button variant="outline" size="sm" onClick={fetchData}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          刷新
+        </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -156,7 +135,7 @@ export function WarningListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {warnings.filter(w => !w.isResolved).length}
+              {warnings.filter((w) => !w.is_resolved).length}
             </div>
           </CardContent>
         </Card>
@@ -167,103 +146,67 @@ export function WarningListPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {warnings.filter(w => w.isResolved).length}
+              {warnings.filter((w) => w.is_resolved).length}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex-1 border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[80px]">级别</TableHead>
-              <TableHead>类型</TableHead>
-              <TableHead>商品名称</TableHead>
-              <TableHead>库位</TableHead>
-              <TableHead className="text-right">当前库存</TableHead>
-              <TableHead className="text-right">安全库存</TableHead>
-              <TableHead className="text-right">缺口</TableHead>
-              <TableHead className="w-[150px]">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      <div className="flex-1 border rounded-lg overflow-auto">
+        {loading ? (
+          <TableSkeleton rows={5} cols={8} />
+        ) : warnings.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <EmptyState title="暂无预警" description="当前没有库存预警信息" icon={CheckCircle2} />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  加载中...
-                </TableCell>
+                <TableHead className="w-[80px]">级别</TableHead>
+                <TableHead>类型</TableHead>
+                <TableHead>商品名称</TableHead>
+                <TableHead>库位</TableHead>
+                <TableHead className="text-right">当前库存</TableHead>
+                <TableHead className="text-right">安全库存</TableHead>
+                <TableHead className="text-right">缺口</TableHead>
+                <TableHead className="w-[150px]">操作</TableHead>
               </TableRow>
-            ) : warnings.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
-                  暂无预警
-                </TableCell>
-              </TableRow>
-            ) : (
-              warnings.map((item) => (
-                <TableRow
-                  key={item.id}
-                  className={!item.isRead ? 'bg-muted/30' : ''}
-                >
+            </TableHeader>
+            <TableBody>
+              {warnings.map((item) => (
+                <TableRow key={item.id} className={!item.is_read ? 'bg-muted/30' : ''}>
                   <TableCell>{getLevelBadge(item.level)}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{getTypeLabel(item.type)}</Badge>
                   </TableCell>
-                  <TableCell className="font-medium">{item.productName}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {item.locationName}
-                  </TableCell>
-                  <TableCell className="text-right">{item.currentQuantity}</TableCell>
+                  <TableCell className="font-medium">{item.product_name}</TableCell>
+                  <TableCell className="text-muted-foreground">{item.location_name}</TableCell>
+                  <TableCell className="text-right">{item.current_quantity}</TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {item.minStock}
+                    {item.min_stock}
                   </TableCell>
-                  <TableCell className="text-right">
-                    {renderShortage(item.shortage)}
-                  </TableCell>
+                  <TableCell className="text-right">{renderShortage(item.shortage)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {!item.isRead && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleMarkRead(item.id)}
-                        >
+                      {!item.is_read && (
+                        <Button variant="ghost" size="sm" onClick={() => handleMarkRead(item.id)}>
                           标记已读
                         </Button>
                       )}
-                      {!item.isResolved && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleResolve(item.id)}
-                        >
+                      {!item.is_resolved && (
+                        <Button variant="ghost" size="sm" onClick={() => handleResolve(item.id)}>
                           解决
                         </Button>
                       )}
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
-
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="pt-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <h4 className="font-medium text-blue-900">补货建议</h4>
-              <p className="text-sm text-blue-700 mt-1">
-                根据当前预警，建议采购：
-                <span className="font-medium">罗技无线鼠标 x50</span>
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
-  );
+  )
 }

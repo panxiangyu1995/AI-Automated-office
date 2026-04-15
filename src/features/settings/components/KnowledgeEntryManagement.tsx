@@ -29,11 +29,24 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // Types
-export type EntryStatus = 'draft' | 'pending_review' | 'approved' | 'published' | 'archived' | 'deleted'
-export type EntryCategory = 'troubleshooting' | 'procedure' | 'policy' | 'guideline' | 'faq' | 'other'
+export type EntryStatus =
+  | 'draft'
+  | 'pending_review'
+  | 'approved'
+  | 'published'
+  | 'archived'
+  | 'deleted'
+export type EntryCategory =
+  | 'troubleshooting'
+  | 'procedure'
+  | 'policy'
+  | 'guideline'
+  | 'faq'
+  | 'other'
 export type AccessScope = 'public' | 'department' | 'team' | 'private'
 
 export interface KnowledgeEntryItem {
@@ -93,15 +106,40 @@ const getStatusConfig = (status: EntryStatus) => {
     case 'draft':
       return { icon: Edit, color: 'text-purple-500', label: '草稿', variant: 'secondary' as const }
     case 'pending_review':
-      return { icon: Clock, color: 'text-yellow-500', label: '待审核', variant: 'secondary' as const }
+      return {
+        icon: Clock,
+        color: 'text-yellow-500',
+        label: '待审核',
+        variant: 'secondary' as const,
+      }
     case 'approved':
-      return { icon: CheckCircle2, color: 'text-green-500', label: '已批准', variant: 'default' as const }
+      return {
+        icon: CheckCircle2,
+        color: 'text-green-500',
+        label: '已批准',
+        variant: 'default' as const,
+      }
     case 'published':
-      return { icon: BookOpen, color: 'text-blue-500', label: '已发布', variant: 'default' as const }
+      return {
+        icon: BookOpen,
+        color: 'text-blue-500',
+        label: '已发布',
+        variant: 'default' as const,
+      }
     case 'archived':
-      return { icon: FileText, color: 'text-gray-500', label: '已归档', variant: 'outline' as const }
+      return {
+        icon: FileText,
+        color: 'text-gray-500',
+        label: '已归档',
+        variant: 'outline' as const,
+      }
     case 'deleted':
-      return { icon: Trash2, color: 'text-red-500', label: '已删除', variant: 'destructive' as const }
+      return {
+        icon: Trash2,
+        color: 'text-red-500',
+        label: '已删除',
+        variant: 'destructive' as const,
+      }
   }
 }
 
@@ -148,9 +186,7 @@ const createMockEntries = (): KnowledgeEntryItem[] => [
     helpfulCount: 42,
     version: 2,
     source: '工单#1234',
-    relatedEntries: [
-      { id: 'entry-002', title: '系统登录异常排查' },
-    ],
+    relatedEntries: [{ id: 'entry-002', title: '系统登录异常排查' }],
   },
   {
     id: 'entry-002',
@@ -286,15 +322,45 @@ const createMockEntries = (): KnowledgeEntryItem[] => [
 
 // Mock audit records
 const MOCK_AUDIT_RECORDS: EntryAuditRecord[] = [
-  { id: 'audit-001', entryId: 'entry-001', action: 'published', performedBy: '张三', performedAt: '2026-03-24T10:00:00Z' },
-  { id: 'audit-002', entryId: 'entry-001', action: 'updated', performedBy: '张三', performedAt: '2026-03-23T16:00:00Z', changes: [{ field: 'content', oldValue: '...', newValue: '...' }] },
-  { id: 'audit-003', entryId: 'entry-001', action: 'approved', performedBy: '李四', performedAt: '2026-03-23T15:00:00Z' },
-  { id: 'audit-004', entryId: 'entry-001', action: 'created', performedBy: '张三', performedAt: '2026-03-23T12:00:00Z' },
+  {
+    id: 'audit-001',
+    entryId: 'entry-001',
+    action: 'published',
+    performedBy: '张三',
+    performedAt: '2026-03-24T10:00:00Z',
+  },
+  {
+    id: 'audit-002',
+    entryId: 'entry-001',
+    action: 'updated',
+    performedBy: '张三',
+    performedAt: '2026-03-23T16:00:00Z',
+    changes: [{ field: 'content', oldValue: '...', newValue: '...' }],
+  },
+  {
+    id: 'audit-003',
+    entryId: 'entry-001',
+    action: 'approved',
+    performedBy: '李四',
+    performedAt: '2026-03-23T15:00:00Z',
+  },
+  {
+    id: 'audit-004',
+    entryId: 'entry-001',
+    action: 'created',
+    performedBy: '张三',
+    performedAt: '2026-03-23T12:00:00Z',
+  },
 ]
 
 // Mock merge candidates
 const MOCK_MERGE_CANDIDATES: EntryMergeCandidate[] = [
-  { id: 'entry-001', title: '验证码失效问题处理流程', similarity: 0.85, overlap: ['验证码问题', '短信网关'] },
+  {
+    id: 'entry-001',
+    title: '验证码失效问题处理流程',
+    similarity: 0.85,
+    overlap: ['验证码问题', '短信网关'],
+  },
   { id: 'entry-002', title: '系统登录异常排查', similarity: 0.72, overlap: ['登录问题', '验证码'] },
 ]
 
@@ -318,19 +384,23 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
 
   // Stats
-  const stats = useMemo(() => ({
-    total: entries.filter(e => e.status !== 'deleted').length,
-    published: entries.filter(e => e.status === 'published').length,
-    pending: entries.filter(e => e.status === 'pending_review').length,
-    draft: entries.filter(e => e.status === 'draft').length,
-    archived: entries.filter(e => e.status === 'archived').length,
-  }), [entries])
+  const stats = useMemo(
+    () => ({
+      total: entries.filter((e) => e.status !== 'deleted').length,
+      published: entries.filter((e) => e.status === 'published').length,
+      pending: entries.filter((e) => e.status === 'pending_review').length,
+      draft: entries.filter((e) => e.status === 'draft').length,
+      archived: entries.filter((e) => e.status === 'archived').length,
+    }),
+    [entries]
+  )
 
   // Filtered entries
   const filteredEntries = useMemo(() => {
-    return entries.filter(entry => {
+    return entries.filter((entry) => {
       if (entry.status === 'deleted') return false
-      if (searchQuery && !entry.title.toLowerCase().includes(searchQuery.toLowerCase())) return false
+      if (searchQuery && !entry.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        return false
       if (categoryFilter !== 'all' && entry.category !== categoryFilter) return false
       if (statusFilter !== 'all' && entry.status !== statusFilter) return false
       return true
@@ -499,13 +569,16 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
           {filteredEntries.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">暂无知识条目</p>
+                <EmptyState
+                  title="暂无知识条目"
+                  description="文档解析后将生成知识条目"
+                  icon={BookOpen}
+                />
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
-              {filteredEntries.map(entry => {
+              {filteredEntries.map((entry) => {
                 const statusConfig = getStatusConfig(entry.status)
                 const StatusIcon = statusConfig.icon
                 return (
@@ -531,7 +604,7 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
                               </Badge>
                             </div>
                             <div className="flex flex-wrap gap-1 mb-2">
-                              {entry.tags.slice(0, 3).map(tag => (
+                              {entry.tags.slice(0, 3).map((tag) => (
                                 <Badge key={tag} variant="outline" className="text-xs">
                                   <Tag className="h-3 w-3 mr-1" />
                                   {tag}
@@ -582,86 +655,104 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
         {/* Published */}
         <TabsContent value="published">
           <div className="space-y-3">
-            {filteredEntries.filter(e => e.status === 'published').map(entry => (
-              <Card key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedEntry(entry)}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="h-5 w-5 text-blue-500" />
-                      <div>
-                        <div className="font-medium">{entry.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {entry.viewCount} 次浏览 | {entry.helpfulCount} 次有帮助
+            {filteredEntries
+              .filter((e) => e.status === 'published')
+              .map((entry) => (
+                <Card
+                  key={entry.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedEntry(entry)}
+                >
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <BookOpen className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <div className="font-medium">{entry.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {entry.viewCount} 次浏览 | {entry.helpfulCount} 次有帮助
+                          </div>
                         </div>
                       </div>
+                      <Badge {...getAccessBadge(entry.accessScope)} className="text-xs">
+                        {getAccessBadge(entry.accessScope).label}
+                      </Badge>
                     </div>
-                    <Badge {...getAccessBadge(entry.accessScope)} className="text-xs">
-                      {getAccessBadge(entry.accessScope).label}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
           </div>
         </TabsContent>
 
         {/* Pending */}
         <TabsContent value="pending">
           <div className="space-y-3">
-            {filteredEntries.filter(e => e.status === 'pending_review' || e.status === 'approved').map(entry => (
-              <Card key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedEntry(entry)}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-yellow-500" />
-                      <div>
-                        <div className="font-medium">{entry.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          等待 {entry.author} 的审核
+            {filteredEntries
+              .filter((e) => e.status === 'pending_review' || e.status === 'approved')
+              .map((entry) => (
+                <Card
+                  key={entry.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedEntry(entry)}
+                >
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-5 w-5 text-yellow-500" />
+                        <div>
+                          <div className="font-medium">{entry.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            等待 {entry.author} 的审核
+                          </div>
                         </div>
                       </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline">
+                          <XCircle className="h-4 w-4 mr-1" />
+                          拒绝
+                        </Button>
+                        <Button size="sm">
+                          <CheckCircle2 className="h-4 w-4 mr-1" />
+                          批准
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="outline">
-                        <XCircle className="h-4 w-4 mr-1" />
-                        拒绝
-                      </Button>
-                      <Button size="sm">
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
-                        批准
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
           </div>
         </TabsContent>
 
         {/* Draft */}
         <TabsContent value="draft">
           <div className="space-y-3">
-            {filteredEntries.filter(e => e.status === 'draft').map(entry => (
-              <Card key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedEntry(entry)}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Edit className="h-5 w-5 text-purple-500" />
-                      <div>
-                        <div className="font-medium">{entry.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          上次编辑 {formatTimeAgo(entry.updatedAt)}
+            {filteredEntries
+              .filter((e) => e.status === 'draft')
+              .map((entry) => (
+                <Card
+                  key={entry.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedEntry(entry)}
+                >
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Edit className="h-5 w-5 text-purple-500" />
+                        <div>
+                          <div className="font-medium">{entry.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            上次编辑 {formatTimeAgo(entry.updatedAt)}
+                          </div>
                         </div>
                       </div>
+                      <Button size="sm">
+                        <Send className="h-4 w-4 mr-1" />
+                        提交审核
+                      </Button>
                     </div>
-                    <Button size="sm">
-                      <Send className="h-4 w-4 mr-1" />
-                      提交审核
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
           </div>
         </TabsContent>
 
@@ -677,12 +768,16 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
                 系统检测到以下条目可能存在重复，建议合并以提高知识库质量
               </p>
               <div className="space-y-3">
-                {MOCK_MERGE_CANDIDATES.map(candidate => (
-                  <div key={candidate.id} className="flex items-center justify-between p-3 bg-muted/50 rounded">
+                {MOCK_MERGE_CANDIDATES.map((candidate) => (
+                  <div
+                    key={candidate.id}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded"
+                  >
                     <div>
                       <div className="font-medium">{candidate.title}</div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        相似度: {(candidate.similarity * 100).toFixed(0)}% | 重叠标签: {candidate.overlap.join(', ')}
+                        相似度: {(candidate.similarity * 100).toFixed(0)}% | 重叠标签:{' '}
+                        {candidate.overlap.join(', ')}
                       </div>
                     </div>
                     <Button variant="outline" size="sm">
@@ -706,14 +801,19 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
               </h3>
               <ScrollArea className="h-[400px]">
                 <div className="space-y-3">
-                  {MOCK_AUDIT_RECORDS.map(record => (
+                  {MOCK_AUDIT_RECORDS.map((record) => (
                     <div key={record.id} className="flex items-start gap-3 pb-3 border-b">
-                      <div className={`mt-1 ${
-                        record.action === 'approved' ? 'text-green-500' :
-                        record.action === 'rejected' ? 'text-red-500' :
-                        record.action === 'published' ? 'text-blue-500' :
-                        'text-muted-foreground'
-                      }`}>
+                      <div
+                        className={`mt-1 ${
+                          record.action === 'approved'
+                            ? 'text-green-500'
+                            : record.action === 'rejected'
+                              ? 'text-red-500'
+                              : record.action === 'published'
+                                ? 'text-blue-500'
+                                : 'text-muted-foreground'
+                        }`}
+                      >
                         {record.action === 'created' && <FileText className="h-4 w-4" />}
                         {record.action === 'updated' && <Edit className="h-4 w-4" />}
                         {record.action === 'approved' && <CheckCircle2 className="h-4 w-4" />}
@@ -724,11 +824,17 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm">{record.performedBy}</span>
                           <Badge variant="secondary" className="text-xs">
-                            {record.action === 'created' ? '创建' :
-                             record.action === 'updated' ? '更新' :
-                             record.action === 'approved' ? '批准' :
-                             record.action === 'rejected' ? '拒绝' :
-                             record.action === 'published' ? '发布' : record.action}
+                            {record.action === 'created'
+                              ? '创建'
+                              : record.action === 'updated'
+                                ? '更新'
+                                : record.action === 'approved'
+                                  ? '批准'
+                                  : record.action === 'rejected'
+                                    ? '拒绝'
+                                    : record.action === 'published'
+                                      ? '发布'
+                                      : record.action}
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
@@ -807,7 +913,7 @@ export function KnowledgeEntryManagement({ className = '' }: KnowledgeEntryManag
                 <div>
                   <div className="text-sm font-medium mb-2">标签</div>
                   <div className="flex flex-wrap gap-1">
-                    {selectedEntry.tags.map(tag => (
+                    {selectedEntry.tags.map((tag) => (
                       <Badge key={tag} variant="outline" className="text-xs">
                         <Tag className="h-3 w-3 mr-1" />
                         {tag}

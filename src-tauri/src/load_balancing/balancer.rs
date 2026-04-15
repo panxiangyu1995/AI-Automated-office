@@ -155,8 +155,8 @@ impl LoadBalancer {
     pub fn select(&mut self, session_id: Option<&str>) -> Option<BalanceResult> {
         // 检查会话亲和性
         if let Some(sid) = session_id {
-            if let Some(node_id) = self.sticky_sessions.get(sid) {
-                if let Some(node) = self.nodes.get(node_id) {
+            if let Some(node_id) = self.sticky_sessions.get(sid).cloned() {
+                if let Some(node) = self.nodes.get(&node_id) {
                     if node.available {
                         return Some(BalanceResult {
                             selected_node_id: node.node_id.clone(),
@@ -168,84 +168,77 @@ impl LoadBalancer {
             }
         }
 
-        // 获取可用节点
-        let available_nodes: Vec<&NodeInfo> = self.nodes.values()
+        // 获取可用节点ID
+        let node_ids: Vec<String> = self.nodes.values()
             .filter(|n| n.available)
+            .map(|n| n.node_id.clone())
             .collect();
 
-        if available_nodes.is_empty() {
+        if node_ids.is_empty() {
             return None;
         }
 
-        let selected = match self.config.strategy {
-            BalanceStrategy::RoundRobin => self.select_round_robin(&available_nodes),
-            BalanceStrategy::Weighted => self.select_weighted(&available_nodes),
-            BalanceStrategy::LeastConnections => self.select_least_connections(&available_nodes),
+        // 根据策略选择
+        let selected_node_id = match self.config.strategy {
+            BalanceStrategy::RoundRobin => {
+                let len = node_ids.len();
+                let index = self.round_robin_index % len;
+                self.round_robin_index += 1;
+                Some(node_ids[index].clone())
+            }
+            BalanceStrategy::Weighted => {
+                let total_weight: u32 = self.nodes.values()
+                    .filter(|n| n.available)
+                    .map(|n| n.weight)
+                    .sum();
+                if total_weight == 0 {
+                    node_ids.first().cloned()
+                } else {
+                    let mut rand = (Utc::now().timestamp() % total_weight as i64) as u32;
+                    for nid in &node_ids {
+                        if let Some(node) = self.nodes.get(nid) {
+                            if rand < node.weight {
+                                return Some(BalanceResult {
+                                    selected_node_id: node.node_id.clone(),
+                                    endpoint: node.endpoint.clone(),
+                                    strategy: self.config.strategy,
+                                });
+                            }
+                            rand -= node.weight;
+                        }
+                    }
+                    node_ids.first().cloned()
+                }
+            }
+            BalanceStrategy::LeastConnections => {
+                self.nodes.values()
+                    .filter(|n| n.available)
+                    .min_by_key(|n| n.current_connections)
+                    .map(|n| n.node_id.clone())
+            }
         };
 
         // 更新节点状态
-        if let Some(node) = selected {
-            if let Some(node_info) = self.nodes.get_mut(&node.node_id) {
+        if let Some(ref node_id) = selected_node_id {
+            if let Some(node_info) = self.nodes.get_mut(node_id) {
                 node_info.current_connections += 1;
                 node_info.last_selected = Some(Utc::now());
             }
             
             // 记录会话亲和性
             if let Some(sid) = session_id {
-                self.sticky_sessions.insert(sid.to_string(), node.node_id.clone());
+                self.sticky_sessions.insert(sid.to_string(), node_id.clone());
             }
+        }
 
-            return Some(BalanceResult {
+        // 返回结果
+        selected_node_id.and_then(|node_id| {
+            self.nodes.get(&node_id).map(|node| BalanceResult {
                 selected_node_id: node.node_id.clone(),
                 endpoint: node.endpoint.clone(),
                 strategy: self.config.strategy,
-            });
-        }
-
-        None
-    }
-
-    /// 轮询选择
-    fn select_round_robin(&mut self, nodes: &[&NodeInfo]) -> Option<&NodeInfo> {
-        if nodes.is_empty() {
-            return None;
-        }
-        
-        let len = nodes.len();
-        let index = self.round_robin_index % len;
-        self.round_robin_index += 1;
-        
-        Some(nodes[index])
-    }
-
-    /// 加权选择
-    fn select_weighted(&self, nodes: &[&NodeInfo]) -> Option<&NodeInfo> {
-        if nodes.is_empty() {
-            return None;
-        }
-
-        let total_weight: u32 = nodes.iter().map(|n| n.weight).sum();
-        if total_weight == 0 {
-            return nodes.first().copied();
-        }
-
-        let mut rand = (Utc::now().timestamp() % total_weight as i64) as u32;
-        
-        for node in nodes {
-            if rand < node.weight {
-                return Some(*node);
-            }
-            rand -= node.weight;
-        }
-
-        nodes.first().copied()
-    }
-
-    /// 最少连接选择
-    fn select_least_connections(&self, nodes: &[&NodeInfo]) -> Option<&NodeInfo> {
-        nodes.iter()
-            .min_by_key(|n| n.current_connections)
-            .copied()
+            })
+        })
     }
 
     /// 释放连接（会话结束时调用）

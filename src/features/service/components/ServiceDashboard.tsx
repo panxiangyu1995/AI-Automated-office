@@ -1,21 +1,33 @@
 //! ServiceDashboard 组件 - 售后仪表板
 
-import { useEffect } from 'react';
-import { useServiceStore } from '../stores/serviceStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardList, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { useEffect } from 'react'
+import { useServiceStore } from '../stores/serviceStore'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { ClipboardList, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 
 interface ServiceDashboardProps {
-  className?: string;
+  className?: string
 }
 
 export function ServiceDashboard({ className }: ServiceDashboardProps) {
-  const { statistics, fetchStatistics } = useServiceStore();
-  
+  const { statistics, fetchStatistics } = useServiceStore()
+  const loading = useServiceStore((s) => s.ticketsLoading)
+
   useEffect(() => {
-    fetchStatistics();
-  }, [fetchStatistics]);
-  
+    fetchStatistics()
+  }, [fetchStatistics])
+
+  if (loading && !statistics) {
+    return (
+      <div className={`grid grid-cols-2 md:grid-cols-5 gap-4 ${className || ''}`}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
+      </div>
+    )
+  }
+
   const stats = [
     {
       label: '新建',
@@ -52,12 +64,12 @@ export function ServiceDashboard({ className }: ServiceDashboardProps) {
       color: 'text-gray-600',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
-  ];
-  
+  ]
+
   return (
     <div className={`grid grid-cols-2 md:grid-cols-5 gap-4 ${className || ''}`}>
       {stats.map((stat) => {
-        const Icon = stat.icon;
+        const Icon = stat.icon
         return (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -70,8 +82,8 @@ export function ServiceDashboard({ className }: ServiceDashboardProps) {
               <div className="text-2xl font-bold">{stat.value}</div>
             </CardContent>
           </Card>
-        );
+        )
       })}
     </div>
-  );
+  )
 }
