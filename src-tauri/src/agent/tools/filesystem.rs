@@ -18,7 +18,6 @@ use std::io::{BufRead, BufReader, Write as IoWrite};
 use std::sync::RwLock;
 
 use serde_json::Value;
-use async_trait::async_trait;
 
 use crate::agent::tools::common::{
     base_metadata, base_readonly_capabilities, base_writable_capabilities,
@@ -108,26 +107,26 @@ pub fn register_filesystem_tools(
     executors: &mut HashMap<String, Arc<dyn ToolExecutor>>,
 ) {
     let descriptor = create_file_read_descriptor();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(FileReadExecutor::default()));
 
     let descriptor = create_file_write_descriptor();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(FileWriteExecutor::default()));
 
     let descriptor = create_file_edit_descriptor();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(FileEditExecutor::default()));
 
     let descriptor = create_dir_list_descriptor();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), Arc::new(DirListExecutor::default()));
 }
 
 // Tool descriptors
 
 fn create_file_read_descriptor() -> ToolDescriptor {
-    let mut capabilities = base_readonly_capabilities();
+    let capabilities = base_readonly_capabilities();
 
     ToolDescriptor {
         id: "file_read".to_string(),
@@ -249,7 +248,7 @@ fn create_file_edit_descriptor() -> ToolDescriptor {
 }
 
 fn create_dir_list_descriptor() -> ToolDescriptor {
-    let mut capabilities = base_readonly_capabilities();
+    let capabilities = base_readonly_capabilities();
 
     ToolDescriptor {
         id: "dir_list".to_string(),

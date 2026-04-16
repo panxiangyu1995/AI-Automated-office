@@ -3,7 +3,7 @@
 //! 定义 Subagent 加载器的通用接口
 
 use std::any::Any;
-use super::types::{AgentConfig, AgentType, SubagentError, SubagentResult};
+use super::types::{AgentConfig, AgentType, SubagentResult};
 
 /// Subagent 加载器 trait
 ///

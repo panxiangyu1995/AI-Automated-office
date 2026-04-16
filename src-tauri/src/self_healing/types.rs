@@ -1,7 +1,6 @@
 //! Self-healing module types for plugin runtime health and recovery.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Plugin health status
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

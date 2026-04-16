@@ -409,7 +409,7 @@ mod tests {
 
 impl IntentClassifier {
     /// Synchronous classify (for testing)
-    fn classify_sync(&self, message: &str, context: &UserContext) -> Result<IntentResult, super::ClassificationError> {
+    fn classify_sync(&self, message: &str, _context: &UserContext) -> Result<IntentResult, super::ClassificationError> {
         // Try keyword matching first
         if let Some(result) = self.keyword_match(message) {
             return Ok(result);

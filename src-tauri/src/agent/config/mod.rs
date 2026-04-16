@@ -23,8 +23,7 @@
 pub mod loader;
 pub mod merge;
 
-pub use loader::{AgentConfig, AgentConfigLoader, ConfigLoadError};
-pub use merge::{ConfigMerger, MergePriority, MergeResult};
+pub use loader::AgentConfig;
 
 #[cfg(test)]
 mod tests {

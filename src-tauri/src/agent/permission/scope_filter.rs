@@ -112,7 +112,7 @@ impl DataScopeFilter {
     pub fn build_where_clause(
         &self,
         scope: DataScopeType,
-        table_alias: &str,
+        _table_alias: &str,
         user_field: &str,
         department_field: &str,
     ) -> String {

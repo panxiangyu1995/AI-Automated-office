@@ -263,7 +263,6 @@ impl ToolConfigManager {
 
 // Legacy compatibility wrappers for each tool module
 
-pub use crate::agent::tools::common::config::ToolConfigManager as ConfigManager;
 
 /// Legacy wrapper for web config - returns existing or default
 pub fn get_web_config() -> WebSearchConfig {

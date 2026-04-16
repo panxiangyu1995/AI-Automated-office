@@ -7,7 +7,6 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use super::Role;
 
 /// Field permission error types
 #[derive(Debug, Error)]
@@ -397,7 +396,7 @@ impl FieldPermissionChecker {
         entity: &str,
     ) -> serde_json::Value {
         match value {
-            serde_json::Value::Object(obj) => {
+            serde_json::Value::Object(_obj) => {
                 let allowed_fields = self.get_allowed_fields(role, entity);
                 let allowed_set: HashSet<&str> = allowed_fields.iter().map(|s| s.as_str()).collect();
                 self.filter_json_object(value, &allowed_set, role, entity)

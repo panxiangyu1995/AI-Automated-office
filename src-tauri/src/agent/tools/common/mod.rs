@@ -15,6 +15,4 @@ pub mod errors;
 pub mod helpers;
 
 pub use builder::ToolDescriptorBuilder;
-pub use config::ToolConfigManager;
-pub use errors::{ToolBuildError, ToolConfigError};
 pub use helpers::*;

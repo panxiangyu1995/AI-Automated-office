@@ -2,7 +2,7 @@
 
 use crate::marketing::types::*;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use tracing::info;
 
 /// Marketing 数据库状态

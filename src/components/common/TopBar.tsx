@@ -107,7 +107,6 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   const handleMenuAction = (label: string, handler?: () => void | Promise<void>) => {
     return (event?: Event) => {
       event?.preventDefault()
-      console.log(`[TopBar] ${label}`)
       if (handler) {
         Promise.resolve(handler()).catch((error) => {
           console.error(`[TopBar] ${label} failed:`, error)
@@ -126,7 +125,6 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   }
 
   const handleOpenLayoutDialog = () => {
-    console.log('[TopBar] Layout dialog requested')
     onOpenLayoutDialog?.()
   }
 

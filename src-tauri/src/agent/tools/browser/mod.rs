@@ -138,13 +138,13 @@ impl CdpClient {
         false
     }
 
-    pub async fn launch(&mut self, profile: &str) -> Result<String, String> {
+    pub async fn launch(&mut self, _profile: &str) -> Result<String, String> {
         let id = format!("browser_{}", uuid::Uuid::new_v4());
         self.browser_id = Some(id.clone());
         Ok(id)
     }
 
-    pub async fn send_cmd(&self, method: &str, _params: serde_json::Value) -> Result<serde_json::Value, String> {
+    pub async fn send_cmd(&self, _method: &str, _params: serde_json::Value) -> Result<serde_json::Value, String> {
         Err("CDP not available - Playwright integration required".to_string())
     }
 }
@@ -198,7 +198,7 @@ pub fn register_browser_tools(
     executors: &mut HashMapType<String, Arc<dyn ToolExecutor>>,
 ) {
     let (descriptor, executor) = browser_interact();
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert("browser_interact".to_string(), executor);
 }
 

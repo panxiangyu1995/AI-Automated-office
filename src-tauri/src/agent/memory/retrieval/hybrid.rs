@@ -64,7 +64,7 @@ impl<V: VectorStore> HybridRetrievalEngine<V> {
         let fused = self.fuse_results(vector_results, bm25_results);
         let fusion_time_ms = fusion_start.elapsed().as_millis() as u64;
 
-        let total_time_ms = start.elapsed().as_millis() as u64;
+        let _total_time_ms = start.elapsed().as_millis() as u64;
 
         Ok(HybridSearchResult {
             items: fused,
@@ -107,7 +107,7 @@ impl<V: VectorStore> HybridRetrievalEngine<V> {
     ) -> Result<Vec<SearchResult>, MemoryError> {
         // In production, this would use actual BM25 index
         // For now, we use a simple term matching approach
-        let keywords: Vec<&str> = query.query.split_whitespace().collect();
+        let _keywords: Vec<&str> = query.query.split_whitespace().collect();
 
         // Return empty results as this would need access to the storage
         // In a full implementation, this would query the BM25 index

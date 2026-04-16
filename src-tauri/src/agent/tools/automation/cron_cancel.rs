@@ -2,13 +2,12 @@
 //!
 //! Cancels scheduled tasks.
 
-use std::sync::RwLock;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::cron_schedule::{TaskStore, ScheduledTask, TaskStatus};
+use super::cron_schedule::{TaskStore, TaskStatus};
 use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, ToolExecutor};
 use crate::agent::tools::pipeline::ToolErrorCode;
 

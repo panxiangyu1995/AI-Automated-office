@@ -6,7 +6,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use chrono::Utc;
-use uuid::Uuid;
 
 use super::types::{
     AgentMessage, AgentPermission, AgentIntercomConfig, 
@@ -274,7 +273,7 @@ impl AgentIntercomService {
     /// 投递消息
     async fn deliver_message(&self, message: &AgentMessage) -> Result<(), AgentIntercomError> {
         // 创建通知
-        let notification_id = self.delivery_tracker
+        let _notification_id = self.delivery_tracker
             .create_notification(message.id.clone(), message.receiver_id.clone())
             .await;
         

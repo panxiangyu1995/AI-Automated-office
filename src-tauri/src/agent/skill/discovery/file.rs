@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use super::{SkillDiscoverer, super::SkillError};
-use super::super::{Skill, SkillLoadResult};
+use super::super::Skill;
 
 /// File-based skill discoverer
 pub struct FileDiscoverer {

@@ -4,39 +4,49 @@
 
 ---
 
-## 2026-04-16 — C1 前端差距修复
+## 2026-04-16 R4: G9 Updater配置 + G21 Knowledge侧边栏id修复
 
-### 已完成
-- [x] G6 [P0]: 6个核心布局组件颜色系统接入 (ActivityBar, StatusBar, AiChatPanel, Workbench, TabBar, BottomPanel) + Sidebar #FFFFFF替换
-- [x] G4 [P1]: SyncConflictDialog 同步冲突解决UI组件
-- [x] 6个新颜色注册文件 (activityBar, statusBar, workbench, tabBar, bottomPanel, aiChatPanel)
-- [x] 3个主题文件更新 (darkModern, lightModern, highContrast)
-- [x] baseColors.ts 移除重复定义 (activityBar, sideBar, statusBar)
-- [x] TypeScript + ESLint + Build 全通过
+**G9 Updater配置移除：**
+- 移除 `src-tauri/tauri.conf.json` 中 plugins.updater 配置段（空pubkey + example.com endpoint）
+- 等真正需要自动更新时再配置
 
-## 2026-04-16 — G5 前端单元测试补充
+**G21 Knowledge侧边栏重复id修复：**
+- `src/components/common/Sidebar.tsx` 中 adminMenuItems 的 knowledge id 从 `'knowledge'` 改为 `'admin-knowledge'`
+- 区分 admin 路由下的知识库管理（/admin/knowledge）和普通路由下的知识库（/knowledge）
 
-### 已完成
-- [x] G5 [P1]: 8个测试文件/96个测试，覆盖6个核心部门模块+sync+layout
-  - hr: 类型常量+状态映射 (13 tests)
-  - sales: 客户等级+报价合同生命周期 (10 tests)
-  - warehouse: 入出库状态+库存计算 (9 tests)
-  - approval: 审批流程步骤+条件 (8 tests)
-  - service: 工单类型+状态+优先级 (11 tests)
-  - finance: 发票类型+OCR+账本状态 (12 tests)
-  - sync: 冲突解决策略+类型 (7 tests)
-  - layout: 核心布局CSS变量验证 (26 tests)
-- [x] 全部96个测试通过
+**验证：** npm run build 成功
 
-## 2026-04-16 — G6 Quick Ask + G7 面板尺寸
+## 2026-04-16 G9 深度颜色硬编码修复
 
-### 已完成
-- [x] G6 [HIGH]: QuickAsk 统一入口组件
-  - 新增 QuickAsk.tsx: 浮动快速输入框，Enter发送/Esc关闭
-  - 集成 AppLayout: Ctrl+L/Cmd+L 快捷键触发
-  - 注册快捷键: shortcutConfig.ts 新增 quickAsk: 'CmdOrCtrl+L'
-  - 全部使用 var(--ao-*) CSS变量，无硬编码hex
-  - 补充测试: quickAsk.test.ts (16 tests)
-- [x] G7 [MEDIUM]: AI 面板尺寸调整
-  - AiChatPanel minWidth: 400→300, maxWidth: 600→500
-  - AppLayout 硬编码 #0F1419 替换为 var(--ao-workbench-background)
+**发现：** src/remotion/scenes/ProductStory.tsx 中有3处内联hex颜色（不在palette对象中）
+- 第124行: `linear-gradient(135deg, #F8FBFF 0%, #EEF4FB 48%, #E8F0F8 100%)`
+- 第425行: `linear-gradient(180deg, #17314F 0%, #1E3A5F 100%)`
+- 第971行: `linear-gradient(90deg, #1E3A5F 0%, #2DD4BF 100%)`
+
+**修复：** 将3处内联hex移入palette对象，添加 navyDark/bgA/bgB/bgC 键，引用改为palette属性
+
+**其他目录：** src/features/、src/components/、src/stores/、src/hooks/、src/lib/ 中无残留硬编码hex颜色
+
+## 2026-04-16 G5 前端测试框架搭建
+
+**现状：** vitest + @testing-library/react + @testing-library/jest-dom 已配置（vitest.config.ts + src/test/setup.ts）
+
+**新增测试文件：**
+1. `src/stores/__tests__/uiStore.test.ts` — 23个测试（初始状态、sidebar/chatPanel/activityItem/quickSearch/sidebarEntries/badges/resetLayout）
+2. `src/stores/__tests__/appStore.test.ts` — 12个测试（初始状态、初始化、主题、sidebar、sub-agent UI）
+3. `src/stores/__tests__/authStore.test.ts` — 11个测试（初始状态、setAuth、clearAuthSession、updateToken、setUser、setToken）
+4. `src/features/hr/__tests__/hrTypes.test.ts` — 8个测试（EmployeeStatus标签/颜色、Employee/HrDepartment/Position接口验证）
+5. `src/features/auth/__tests__/authTypes.test.ts` — 13个测试（User/PermissionSummary/LoginRequest/LoginResponse/TokenPair/AuthError/ApiEnvelope接口验证）
+
+**合计：** 5个测试文件，67个测试用例，全部通过
+
+**验证：** vitest run 67/67 passed, npm run build 成功
+
+## 2026-04-16 R2-R3: G8 路由补充
+
+**实施内容：**
+1. 创建 `src/features/knowledge/pages/KnowledgePage.tsx`
+2. 在 `workbenchRoutes.tsx` 添加 knowledge 路由
+3. 在 `Sidebar.tsx` defaultMenuItems 核心部门分组中添加 knowledge 入口
+
+**验证：** tsc --noEmit 通过，npm run build 成功

@@ -67,7 +67,7 @@ impl SignatureVerifier {
     /// Verify a signature
     pub async fn verify(
         &self,
-        data: &[u8],
+        _data: &[u8],
         signature: &str,
         public_key: &str,
     ) -> Result<SignatureResult> {

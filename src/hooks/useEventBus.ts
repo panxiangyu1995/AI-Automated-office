@@ -67,7 +67,7 @@ export interface UseEventBusReturn {
  *
  *   useEffect(() => {
  *     const unsubscribe = subscribe('chat:message:add', (payload) => {
- *       console.log('Message received:', payload)
+ *       // Handle message
  *     })
  *     return unsubscribe
  *   }, [])
@@ -160,7 +160,7 @@ export function useEventBus(): UseEventBusReturn {
  * @example
  * function MyComponent() {
  *   useEventSubscription('chat:message:add', (payload) => {
- *     console.log('Message:', payload)
+ *     // Handle message
  *   })
  *
  *   // 或者只获取 payload

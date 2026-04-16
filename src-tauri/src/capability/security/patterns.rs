@@ -1,6 +1,5 @@
 //! Malicious pattern matching module.
 
-use once_cell::sync::Lazy;
 use regex::Regex;
 
 /// Malicious pattern matcher

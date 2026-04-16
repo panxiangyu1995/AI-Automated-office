@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use super::config::AgentConfig;
 use super::mode::AgentMode;
-use super::permission::{PermissionAction, PermissionRule, Ruleset};
+use super::permission::{PermissionAction, PermissionRule};
 
 /// Agent template type
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use crate::capability::version_manager::{
     VersionManagerService, VersionInfo, VersionUpdate, RollbackPoint,
-    CompatibilityResult, UpdateStatus,
+    CompatibilityResult,
 };
 
 /// Check version for a package

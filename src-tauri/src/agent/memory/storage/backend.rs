@@ -6,13 +6,12 @@
 //! - Async wrappers for synchronous SQLite operations
 
 use async_trait::async_trait;
-use rusqlite::{params, Connection, ToSql};
+use rusqlite::{Connection, ToSql};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::task;
 
-use super::super::config::MemoryError;
 
 /// Storage backend error type
 #[derive(Debug, thiserror::Error)]

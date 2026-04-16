@@ -14,7 +14,7 @@ use super::filesystem;
 use super::media;
 use super::automation;
 use super::memory;
-use super::profile::{resolve_allowed_tools, check_tool_access, ToolProfile, ToolProfileConfig, ToolsConfig, ProfileManager, filter_tools_by_profile};
+use super::profile::{resolve_allowed_tools, check_tool_access, ToolProfile, ToolProfileConfig, ProfileManager, filter_tools_by_profile};
 use super::sessions;
 use super::shell;
 use super::web;

@@ -5,7 +5,7 @@
 use super::{
     PluginHealthSignal, PluginHealthStatus, FaultRecord, DiagnosticEntry,
     RecoveryEvent, SelfHealingStats, IsolationReason,
-    chrono_now, uuid_simple,
+    chrono_now,
 };
 use std::collections::HashMap;
 

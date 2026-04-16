@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use super::types::{AgentConfig, AgentMode, AgentType, ModelConfig, SubagentError, SubagentResult};
+use super::types::{AgentConfig, AgentType, SubagentError, SubagentResult};
 use super::loader::SubagentLoader;
 
 /// Department Subagent 加载器

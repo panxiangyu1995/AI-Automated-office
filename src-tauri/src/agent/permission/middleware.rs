@@ -3,15 +3,13 @@
 //! Integrates permission checking into the tool execution pipeline.
 //! Provides middleware-style permission validation before tool execution.
 
-use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
-use super::engine::{PermissionEngine, ExecutionContext, UserPermissions};
+use super::engine::{PermissionEngine, ExecutionContext};
 use super::field_checker::{FieldPermissionChecker, FieldAction};
 use super::scope_filter::{DataScopeFilter, ScopeFilterResult};
-use super::DataScopeType;
 
 /// Permission middleware error types
 #[derive(Debug, Clone, Serialize, Deserialize)]

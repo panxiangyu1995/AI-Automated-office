@@ -4,7 +4,6 @@
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// 报告周期
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

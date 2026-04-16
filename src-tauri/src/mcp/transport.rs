@@ -2,22 +2,20 @@
 //! 
 //! 提供STDIO、HTTP、WebSocket三种传输方式的抽象实现
 
-use std::collections::HashMap;
 use std::process::Stdio;
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, Command};
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::RwLock;
 use tokio::time::{timeout, Duration};
 use futures_util::{SinkExt, StreamExt};
 use tokio_tungstenite::{connect_async, WebSocketStream, MaybeTlsStream};
 use tungstenite::Message;
 
 use super::types::{
-    MCPTransportType, MCPServiceConfig,
-    MCPTool, MCPToolCall, MCPToolResult, MCPMessage,
+    MCPTransportType, MCPServiceConfig, MCPMessage,
 };
 
 /// WebSocket流类型别名

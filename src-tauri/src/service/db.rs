@@ -2,7 +2,7 @@
 
 use crate::service::types::*;
 use std::collections::{HashMap, VecDeque};
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use tracing::info;
 
 /// Service 数据库状态

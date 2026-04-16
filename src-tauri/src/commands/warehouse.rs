@@ -1,7 +1,6 @@
 //! Warehouse 模块命令存根
 //! TODO: 待后续实现
 
-use tauri::State;
 use tracing::info;
 
 /// Warehouse 状态

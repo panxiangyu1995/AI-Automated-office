@@ -2,14 +2,13 @@
 //!
 //! Contains: get_cookies, set_cookies, get_local_storage, get_session_storage
 
-use std::collections::HashMap;
 use crate::agent::tools::browser::{
-    BrowserInteractResult, Cookie, get_or_init_state, StorageData,
+    BrowserInteractResult, Cookie, get_or_init_state,
 };
 use crate::agent::tools::pipeline::ToolExecutionError;
 
 pub async fn execute_get_cookies(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let state = get_or_init_state();
 
@@ -62,7 +61,7 @@ pub async fn execute_set_cookies(
 }
 
 pub async fn execute_get_local_storage(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let state = get_or_init_state();
 
@@ -82,7 +81,7 @@ pub async fn execute_get_local_storage(
 }
 
 pub async fn execute_get_session_storage(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let state = get_or_init_state();
 

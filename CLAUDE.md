@@ -880,16 +880,15 @@ UI原型图设计使用：pencil mcp
 - team-lead 决定某个流程改进是项目本地的还是需要写回 `CCteam-creator` 的
 - **禁用独立子智能体**：团队存在后，所有工作通过 SendMessage 交给队友。不要启动独立的 Agent/子智能体（Explore、general-purpose 等）——它们绕过团队的规划文件和协作体系。唯一例外：用 `team_name` 生成新队友加入团队
 
-## 团队花名册
+## 团队花名册（第3轮迭代）
 
 | 名称 | 角色 | 模型 | 核心能力 |
 |------|------|------|---------|
 | backend-dev | 后端开发 | sonnet | Rust/Tauri 服务端代码 + TDD |
 | frontend-dev | 前端开发 | sonnet | React+TS 客户端代码 + TDD |
 | researcher | 探索/研究 | sonnet | 代码搜索 + 铁律文档对比（只读） |
-| e2e-tester | 联调测试 | sonnet | Playwright 测试 + 浏览器自动化 |
-| reviewer | 代码审查 | sonnet | 安全/质量/铁律合规审查（只读） |
-| custodian | 管家 | sonnet | 约束合规 + 文档治理 + 模式→自动化 + 代码清理 |
+
+> reviewer/custodian 按需在审查轮启动，e2e-tester 在测试轮启动
 
 ## 任务下发协议
 
@@ -984,6 +983,20 @@ TaskCreate 描述：一句话范围 + 验收标准 + `.plans/` 路径。
 - 修复：恢复 ok_or_else 错误处理模式
 - 预防：reviewer 审查 Rust 代码时标记所有 expect/unwrap 使用
 
+### KP-3: Rust编译错误（enterprise_types/enterprise_helpers模块缺失）
+- 症状：cargo check 报 E0583 file not found for module
+- 根因：enterprise.rs拆分后子模块文件未创建或路径不对
+- 修复：确认enterprise_types.rs和enterprise_helpers.rs存在于src-tauri/src/agent/tools/目录
+- 预防：大文件拆分后立即cargo check验证
+
+### KP-4: AlertCondition字段名不匹配
+- 症状：cargo check 报 E0026 variant does not have a field named _percentage
+- 根因：定义用percentage但模式匹配用_percentage
+- 修复：统一字段名（定义和匹配都用percentage，匹配时用percentage并_前缀忽略）
+- 预防：Rust大文件拆分/重构后全量cargo check
+
 ## 迭代节奏
 
 6 循环 × 5 轮 = 30 轮。每循环：差距分析(R1) → 开发(R2-R3) → 测试(R4) → 审查(R4) → 清理(R5)
+
+当前：第3轮迭代，循环1进行中。差距G1-G24，详见 .plans/ai-office/task_plan.md

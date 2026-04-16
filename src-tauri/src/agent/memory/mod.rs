@@ -44,12 +44,10 @@ use tauri::State;
 
 // Re-exports
 pub use types::{
-    HookEvent, HybridSearchResult, MemoryCategory, MemoryItem, MemoryLayer,
-    MemoryQuery, MemorySearchResult, MemorySource, MemoryStats, SyncResult,
-    UpdateAction, UpdateDecision,
+    HookEvent, HybridSearchResult, MemoryItem, MemoryLayer,
+    MemoryQuery, MemoryStats, SyncResult,
 };
-pub use config::{MemoryConfig, MemoryError, RetentionPolicy, SyncConfig};
-pub use crate::vector::config::VectorMode;
+pub use config::MemoryConfig;
 pub use service::MemoryService;
 
 // ============================================================================

@@ -13,7 +13,6 @@ pub use process::{ProcessSandbox, ProcessSandboxConfig};
 pub use wasm::{WasmSandbox, WasmSandboxConfig};
 pub use config::{SandboxConfig, SandboxType};
 
-use std::collections::HashMap;
 
 /// Sandbox execution result
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

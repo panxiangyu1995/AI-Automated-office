@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 
 use super::{InvoiceType, OcrResult, FinanceRole};
@@ -47,7 +47,7 @@ impl FinanceOcrTool {
         // 实际实现应该调用 OCR 服务 API
         
         // 判断是 base64 还是 URL
-        let is_base64 = image_data.len() > 100 && !image_data.starts_with("http");
+        let _is_base64 = image_data.len() > 100 && !image_data.starts_with("http");
         
         // 根据发票类型生成不同的模拟结果
         let (invoice_number, amount, tax_amount, date, seller, buyer) = match invoice_type {
@@ -99,7 +99,7 @@ impl FinanceOcrTool {
     }
 
     /// 发票验真（模拟实现）
-    async fn verify(&self, invoice_number: &str, amount: f64) -> bool {
+    async fn verify(&self, invoice_number: &str, _amount: f64) -> bool {
         // 模拟验真
         // 实际实现应该调用税务局 API
         if invoice_number.is_empty() {
@@ -119,7 +119,7 @@ impl FinanceOcrTool {
         };
 
         let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
-        let key = format!("{}:{}", user_id, today);
+        let _key = format!("{}:{}", user_id, today);
 
         let mut counter = self.usage_counter.write().await;
         let dates = counter.entry(user_id.to_string()).or_insert_with(Vec::new);

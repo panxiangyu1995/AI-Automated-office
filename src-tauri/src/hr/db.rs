@@ -3,8 +3,8 @@
 //! 提供员工、部门、岗位的内存存储（后续可替换为 SQLite）
 
 use crate::hr::types::*;
-use std::collections::{HashMap, VecDeque};
-use std::sync::{Arc, RwLock};
+use std::collections::HashMap;
+use std::sync::RwLock;
 use tracing::info;
 
 /// HR 数据库状态

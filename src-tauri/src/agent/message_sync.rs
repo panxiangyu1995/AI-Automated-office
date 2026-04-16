@@ -14,8 +14,8 @@ use tokio::sync::RwLock;
 
 // Re-export types from sync::message_sync
 pub use crate::sync::message_sync::{
-    MessageSyncStatus, SyncableMessage, SyncDirection, ConflictResolution,
-    SyncStats, MessageSyncStatusResponse,
+    MessageSyncStatus, SyncableMessage,
+    SyncStats,
 };
 
 /// Sync result
@@ -149,7 +149,7 @@ impl MessageSyncEngine {
         let token = self.get_api_token().await;
         let mut synced_count = 0u32;
         let mut failed_count = 0u32;
-        let mut conflict_count = 0u32;
+        let conflict_count = 0u32;
 
         for msg in &pending {
             let url = format!("{}/api/messages/sync", self.api_base_url.trim_end_matches('/'));
@@ -258,7 +258,7 @@ impl MessageSyncEngine {
 
     /// 标记消息同步失败
     async fn mark_message_sync_failed(&self, message_id: &str, error: &str) -> Result<(), String> {
-        let now = chrono::Utc::now().timestamp();
+        let _now = chrono::Utc::now().timestamp();
         sqlx::query("UPDATE messages SET sync_status = 'failed', sync_error = ? WHERE id = ?")
             .bind(error)
             .bind(message_id)

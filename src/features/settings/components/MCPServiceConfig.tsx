@@ -1,19 +1,14 @@
 /**
  * MCP Service Config - Story 21.3
  * MCP服务添加与配置
- * 
- * 功能：
- * - 添加 MCP 服务定义和命令配置
- * - 支持 args、env 和运行时策略设置
- * - 持久化 MCP 服务记录
  */
 
 import { useState, useMemo, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import {
-  Server, Plus, Trash2, Edit, Play, Pause,
+  Server, Plus, Trash2, Edit,
   Settings, Terminal, Shield,
-  AlertCircle, CheckCircle2, Clock,
+  AlertCircle, CheckCircle2,
   CheckCircle, XCircle, Eye, Regex
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -53,371 +48,61 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-// Types
-export type MCPServiceStatus = 'running' | 'stopped' | 'error' | 'pending'
-export type MCPServiceType = 'stdio' | 'http' | 'websocket'
-export type RuntimePolicy = 'always' | 'on_demand' | 'manual'
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+// Re-export types and data from sub-modules
+export type {
+  MCPServiceStatus,
+  MCPServiceType,
+  RuntimePolicy,
+  LogLevel,
+  MCPServiceArg,
+  MCPServiceEnv,
+  MCPServiceCapability,
+  MCPServiceConfig as MCPServiceConfigType,
+  ApprovalPolicyType,
+  MCPServiceRecord,
+  MCPServiceStats,
+  PerToolApprovalConfig,
+  AutoApproveResult,
+} from './MCPServiceConfigTypes'
+export {
+  generateMockServices,
+  generateMockRecords,
+  generateMockStats,
+} from './MCPServiceConfigTypes'
+export {
+  StatusBadge,
+  PolicyBadge,
+  ServiceCard,
+} from './MCPServiceConfigHelpers'
 
-export interface MCPServiceArg {
-  name: string
-  value: string
-  description?: string
-}
+// Import for internal use
+import type {
+  MCPServiceConfig as MCPServiceConfigType,
+  MCPServiceArg,
+  MCPServiceEnv,
+  MCPServiceType,
+  RuntimePolicy,
+  LogLevel,
+  MCPServiceRecord,
+  PerToolApprovalConfig,
+  ApprovalPolicyType,
+} from './MCPServiceConfigTypes'
+import {
+  generateMockServices,
+  generateMockRecords,
+  generateMockStats,
+} from './MCPServiceConfigTypes'
+import {
+  PolicyBadge,
+  ServiceCard,
+} from './MCPServiceConfigHelpers'
 
-export interface MCPServiceEnv {
-  key: string
-  value: string
-  encrypted: boolean
-  description?: string
-}
-
-export interface MCPServiceCapability {
-  name: string
-  version: string
-  description: string
-}
-
-export interface MCPServiceConfig {
-  id: string
-  name: string
-  description: string
-  type: MCPServiceType
-  command: string
-  args: MCPServiceArg[]
-  env: MCPServiceEnv[]
-  capabilities: MCPServiceCapability[]
-  runtimePolicy: RuntimePolicy
-  autoRestart: boolean
-  maxRestarts: number
-  restartDelay: number
-  timeout: number
-  logLevel: LogLevel
-  status: MCPServiceStatus
-  pid?: number
-  startedAt?: string
-  lastError?: string
-  createdAt: string
-  updatedAt: string
-  createdBy: string
-  version: number
-}
-
-export interface MCPServiceRecord {
-  id: string
-  serviceId: string
-  serviceName: string
-  action: 'create' | 'update' | 'delete' | 'start' | 'stop' | 'restart'
-  timestamp: string
-  actor: string
-  changes?: {
-    field: string
-    oldValue: string
-    newValue: string
-  }[]
-  success: boolean
-  errorMessage?: string
-}
-
-export interface MCPServiceStats {
-  totalServices: number
-  runningServices: number
-  stoppedServices: number
-  errorServices: number
-  totalCapabilities: number
-}
-
-export interface MCPServiceConfigState {
-  services: MCPServiceConfig[]
-  records: MCPServiceRecord[]
-  stats: MCPServiceStats
-  isLoading: boolean
-  isSaving: boolean
-  error: string | null
-}
-
-// Per-Tool Approval Policy Types
-export type ApprovalPolicyType = 'auto_approve' | 'manual' | 'denied'
-
-export interface PerToolApprovalConfig {
-  id: string
-  serviceId: string
-  toolPattern: string
-  isRegex: boolean
-  policy: ApprovalPolicyType
-  description?: string
-  enabled: boolean
-  createdAt: string
-  updatedAt: string
-  createdBy: string
-}
-
-export interface AutoApproveResult {
-  approved: boolean
-  policy: ApprovalPolicyType
-  matchedConfigId?: string
-  reason: string
-}
-
-// Mock data generators
-const generateMockServices = (): MCPServiceConfig[] => [
-  {
-    id: 'mcp-1',
-    name: 'filesystem',
-    description: '文件系统访问 MCP 服务',
-    type: 'stdio',
-    command: 'mcp-server-filesystem',
-    args: [
-      { name: 'root', value: '/home/user/documents', description: '根目录路径' },
-      { name: 'readonly', value: 'false', description: '只读模式' },
-    ],
-    env: [
-      { key: 'LOG_LEVEL', value: 'info', encrypted: false },
-    ],
-    capabilities: [
-      { name: 'fs.read', version: '1.0.0', description: '读取文件' },
-      { name: 'fs.write', version: '1.0.0', description: '写入文件' },
-      { name: 'fs.list', version: '1.0.0', description: '列出目录' },
-    ],
-    runtimePolicy: 'on_demand',
-    autoRestart: true,
-    maxRestarts: 3,
-    restartDelay: 5,
-    timeout: 30,
-    logLevel: 'info',
-    status: 'running',
-    pid: 12345,
-    startedAt: '2026-03-24T08:00:00Z',
-    createdAt: '2026-03-20T10:00:00Z',
-    updatedAt: '2026-03-24T08:00:00Z',
-    createdBy: 'admin',
-    version: 2,
-  },
-  {
-    id: 'mcp-2',
-    name: 'brave-search',
-    description: 'Brave 搜索 MCP 服务',
-    type: 'http',
-    command: 'https://api.brave.com/mcp',
-    args: [],
-    env: [
-      { key: 'BRAVE_API_KEY', value: '••••••••••••', encrypted: true },
-    ],
-    capabilities: [
-      { name: 'search.web', version: '1.0.0', description: '网页搜索' },
-    ],
-    runtimePolicy: 'always',
-    autoRestart: true,
-    maxRestarts: 5,
-    restartDelay: 10,
-    timeout: 60,
-    logLevel: 'warn',
-    status: 'running',
-    pid: 12346,
-    startedAt: '2026-03-24T09:00:00Z',
-    createdAt: '2026-03-21T14:00:00Z',
-    updatedAt: '2026-03-24T09:00:00Z',
-    createdBy: 'admin',
-    version: 1,
-  },
-  {
-    id: 'mcp-3',
-    name: 'postgres',
-    description: 'PostgreSQL 数据库 MCP 服务',
-    type: 'stdio',
-    command: 'mcp-server-postgres',
-    args: [
-      { name: 'connection-string', value: 'postgresql://localhost:5432/mydb', description: '数据库连接字符串' },
-    ],
-    env: [
-      { key: 'PG_PASSWORD', value: '••••••••••••', encrypted: true },
-    ],
-    capabilities: [
-      { name: 'db.query', version: '1.0.0', description: '执行 SQL 查询' },
-      { name: 'db.schema', version: '1.0.0', description: '获取数据库模式' },
-    ],
-    runtimePolicy: 'manual',
-    autoRestart: false,
-    maxRestarts: 0,
-    restartDelay: 5,
-    timeout: 30,
-    logLevel: 'info',
-    status: 'stopped',
-    createdAt: '2026-03-22T16:00:00Z',
-    updatedAt: '2026-03-24T10:00:00Z',
-    createdBy: 'user1',
-    version: 3,
-  },
-]
-
-const generateMockRecords = (): MCPServiceRecord[] => [
-  {
-    id: 'rec-1',
-    serviceId: 'mcp-1',
-    serviceName: 'filesystem',
-    action: 'start',
-    timestamp: '2026-03-24T08:00:00Z',
-    actor: 'system',
-    success: true,
-  },
-  {
-    id: 'rec-2',
-    serviceId: 'mcp-3',
-    serviceName: 'postgres',
-    action: 'update',
-    timestamp: '2026-03-24T10:00:00Z',
-    actor: 'user1',
-    changes: [
-      { field: 'runtimePolicy', oldValue: 'on_demand', newValue: 'manual' },
-    ],
-    success: true,
-  },
-]
-
-const generateMockStats = (services: MCPServiceConfig[]): MCPServiceStats => ({
-  totalServices: services.length,
-  runningServices: services.filter(s => s.status === 'running').length,
-  stoppedServices: services.filter(s => s.status === 'stopped').length,
-  errorServices: services.filter(s => s.status === 'error').length,
-  totalCapabilities: services.reduce((acc, s) => acc + s.capabilities.length, 0),
-})
-
-// Status Badge Component
-function StatusBadge({ status }: { status: MCPServiceStatus }) {
-  const config: Record<MCPServiceStatus, { color: string; icon: typeof CheckCircle2; label: string }> = {
-    running: { color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300', icon: CheckCircle2, label: '运行中' },
-    stopped: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300', icon: Pause, label: '已停止' },
-    error: { color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300', icon: AlertCircle, label: '错误' },
-    pending: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300', icon: Clock, label: '启动中' },
-  }
-  const { color, icon: Icon, label } = config[status]
-  return (
-    <Badge className={`${color} flex items-center gap-1`}>
-      <Icon className="h-3 w-3" />
-      {label}
-    </Badge>
-  )
-}
-
-// Policy Badge Component for Approval Policy
-function PolicyBadge({ policy }: { policy: ApprovalPolicyType }) {
-  const config: Record<ApprovalPolicyType, { color: string; icon: typeof CheckCircle; label: string }> = {
-    auto_approve: { color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300', icon: CheckCircle, label: '自动审批' },
-    manual: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300', icon: Eye, label: '手动审批' },
-    denied: { color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300', icon: XCircle, label: '拒绝' },
-  }
-  const { color, icon: Icon, label } = config[policy]
-  return (
-    <Badge className={`${color} flex items-center gap-1`}>
-      <Icon className="h-3 w-3" />
-      {label}
-    </Badge>
-  )
-}
-
-// Service Card Component
-function ServiceCard({ 
-  service, 
-  onEdit, 
-  onStart, 
-  onStop, 
-  onDelete 
-}: { 
-  service: MCPServiceConfig
-  onEdit: () => void
-  onStart: () => void
-  onStop: () => void
-  onDelete: () => void
-}) {
-  const typeIcons: Record<MCPServiceType, string> = {
-    stdio: '💻',
-    http: '🌐',
-    websocket: '🔌',
-  }
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <span>{typeIcons[service.type]}</span>
-              {service.name}
-            </CardTitle>
-            <StatusBadge status={service.status} />
-          </div>
-          <div className="flex gap-1">
-            {service.status === 'running' ? (
-              <Button variant="outline" size="sm" onClick={onStop}>
-                <Pause className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" onClick={onStart}>
-                <Play className="h-4 w-4" />
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={onEdit}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
-          </div>
-        </div>
-        <CardDescription>{service.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {/* Service Info */}
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">类型:</span> {service.type.toUpperCase()}
-            </div>
-            <div>
-              <span className="text-muted-foreground">策略:</span> {service.runtimePolicy}
-            </div>
-            <div>
-              <span className="text-muted-foreground">版本:</span> v{service.version}
-            </div>
-            {service.pid && (
-              <div>
-                <span className="text-muted-foreground">PID:</span> {service.pid}
-              </div>
-            )}
-          </div>
-
-          {/* Capabilities */}
-          <div className="pt-2 border-t">
-            <div className="text-sm text-muted-foreground mb-2">能力:</div>
-            <div className="flex flex-wrap gap-1">
-              {service.capabilities.map((cap) => (
-                <Badge key={cap.name} variant="outline" className="text-xs">
-                  {cap.name}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          {/* Error Info */}
-          {service.lastError && (
-            <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded text-sm text-red-600 dark:text-red-400">
-              <div className="font-medium">错误:</div>
-              <div>{service.lastError}</div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// Main Component
 export function MCPServiceConfig() {
-  const [services, setServices] = useState<MCPServiceConfig[]>(generateMockServices())
+  const [services, setServices] = useState<MCPServiceConfigType[]>(generateMockServices())
   const [records] = useState<MCPServiceRecord[]>(generateMockRecords())
   const [activeTab, setActiveTab] = useState<string>('services')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [selectedService, setSelectedService] = useState<MCPServiceConfig | null>(null)
+  const [selectedService, setSelectedService] = useState<MCPServiceConfigType | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [, setIsLoading] = useState(false)
 
@@ -425,7 +110,7 @@ export function MCPServiceConfig() {
   const [approvalConfigs, setApprovalConfigs] = useState<PerToolApprovalConfig[]>([])
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false)
   const [selectedApproval, setSelectedApproval] = useState<PerToolApprovalConfig | null>(null)
-  const [selectedServiceForApproval, setSelectedServiceForApproval] = useState<MCPServiceConfig | null>(null)
+  const [selectedServiceForApproval, setSelectedServiceForApproval] = useState<MCPServiceConfigType | null>(null)
 
   // Mock approval configs generator
   const generateMockApprovalConfigs = (svcId: string): PerToolApprovalConfig[] => [
@@ -504,7 +189,7 @@ export function MCPServiceConfig() {
   }, [services])
 
   // Handle open approval dialog for a service
-  const handleOpenApproval = (service: MCPServiceConfig) => {
+  const handleOpenApproval = (service: MCPServiceConfigType) => {
     setSelectedServiceForApproval(service)
     setSelectedApproval(null)
     setApprovalDialogOpen(true)
@@ -627,7 +312,7 @@ export function MCPServiceConfig() {
   }, [])
 
   // Form state
-  const [formData, setFormData] = useState<Partial<MCPServiceConfig>>({
+  const [formData, setFormData] = useState<Partial<MCPServiceConfigType>>({
     name: '',
     description: '',
     type: 'stdio',
@@ -643,7 +328,7 @@ export function MCPServiceConfig() {
 
   const stats = useMemo(() => generateMockStats(services), [services])
 
-  const handleOpenEdit = (service?: MCPServiceConfig) => {
+  const handleOpenEdit = (service?: MCPServiceConfigType) => {
     if (service) {
       setSelectedService(service)
       setFormData({
@@ -1260,14 +945,14 @@ export function MCPServiceConfig() {
               <div className="flex gap-2">
                 <Input
                   value={selectedApproval?.toolPattern || ''}
-                  onChange={(e) => setSelectedApproval(prev => prev ? { ...prev, toolPattern: e.target.value } : null)}
+                  onChange={(e) => setSelectedApproval((prev: PerToolApprovalConfig | null) => prev ? { ...prev, toolPattern: e.target.value } : null)}
                   placeholder="例如: fs.read 或 fs\\..*"
                 />
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   checked={selectedApproval?.isRegex || false}
-                  onCheckedChange={(checked) => setSelectedApproval(prev => prev ? { ...prev, isRegex: checked } : null)}
+                  onCheckedChange={(checked) => setSelectedApproval((prev: PerToolApprovalConfig | null) => prev ? { ...prev, isRegex: checked } : null)}
                 />
                 <Label className="text-sm">使用正则表达式</Label>
               </div>
@@ -1281,7 +966,7 @@ export function MCPServiceConfig() {
               <Label>审批策略</Label>
               <Select
                 value={selectedApproval?.policy || 'manual'}
-                onValueChange={(v) => setSelectedApproval(prev => prev ? { ...prev, policy: v as ApprovalPolicyType } : null)}
+                onValueChange={(v) => setSelectedApproval((prev: PerToolApprovalConfig | null) => prev ? { ...prev, policy: v as ApprovalPolicyType } : null)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -1314,7 +999,7 @@ export function MCPServiceConfig() {
               <Label>描述 (可选)</Label>
               <Input
                 value={selectedApproval?.description || ''}
-                onChange={(e) => setSelectedApproval(prev => prev ? { ...prev, description: e.target.value } : null)}
+                onChange={(e) => setSelectedApproval((prev: PerToolApprovalConfig | null) => prev ? { ...prev, description: e.target.value } : null)}
                 placeholder="规则描述，用于说明配置原因"
               />
             </div>
@@ -1323,7 +1008,7 @@ export function MCPServiceConfig() {
             <div className="flex items-center space-x-2">
               <Switch
                 checked={selectedApproval?.enabled ?? true}
-                onCheckedChange={(checked) => setSelectedApproval(prev => prev ? { ...prev, enabled: checked } : null)}
+                onCheckedChange={(checked) => setSelectedApproval((prev: PerToolApprovalConfig | null) => prev ? { ...prev, enabled: checked } : null)}
               />
               <Label>启用此规则</Label>
             </div>
@@ -1342,5 +1027,6 @@ export function MCPServiceConfig() {
     </div>
   )
 }
+
 
 export default MCPServiceConfig

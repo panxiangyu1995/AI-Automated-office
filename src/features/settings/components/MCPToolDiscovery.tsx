@@ -448,8 +448,8 @@ export function MCPToolDiscovery() {
     })
   }, [tools, searchQuery, categoryFilter, statusFilter])
 
-  const handleToggle = (tool: MCPTool) => {
-    console.log('Toggle tool:', tool.name, !tool.enabled)
+  const handleToggle = (_tool: MCPTool) => {
+    // Toggle tool
   }
 
   const handleBindView = (tool: MCPTool) => {

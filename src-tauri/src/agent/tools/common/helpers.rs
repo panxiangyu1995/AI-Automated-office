@@ -4,7 +4,7 @@
 //! across tool modules like core.rs, web.rs, shell.rs, filesystem.rs, browser.rs, etc.
 
 use crate::agent::tools::descriptor::{
-    ToolCapabilities, ToolCategory, ToolContextRequirements, ToolMetadata,
+    ToolCapabilities, ToolContextRequirements, ToolMetadata,
     ToolParameter, ToolParameterType, ToolParameterTypeSpec,
 };
 

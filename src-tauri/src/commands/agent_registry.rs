@@ -12,12 +12,12 @@ use std::collections::HashMap;
 use tauri::State;
 use tokio::sync::RwLock;
 
-use crate::agent::config::{AgentConfig, ConfigMerger, MergePriority};
+use crate::agent::config::AgentConfig;
 use crate::agent::mode::{AgentInfo, AgentMode};
 use crate::agent::permission::{
     default_office_ruleset, PermissionAction, PermissionChecker, PermissionRule, Ruleset,
 };
-use crate::agent::template::{self, get_template_by_name, AgentTemplate};
+use crate::agent::template::{self};
 
 // ==================== Agent Registry State ====================
 

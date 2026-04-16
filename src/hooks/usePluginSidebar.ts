@@ -19,17 +19,14 @@ const pluginSidebarHooks = {
   onInit: async () => {
     // Register built-in sidebar entries on initialization
     registerBuiltinSidebarEntries()
-    console.log('[usePluginSidebar] Initialized with built-in entries')
   },
-  
+
   onMount: async () => {
-    console.log('[usePluginSidebar] Mounted')
   },
-  
+
   onUnmount: async () => {
     // Clean up subscriptions when unmounting
     PluginSidebarRegistry.unregister('builtin')
-    console.log('[usePluginSidebar] Unmounted and cleaned up')
   },
   
   onEvent: (event: string, payload: unknown) => {

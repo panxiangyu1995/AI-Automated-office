@@ -115,7 +115,7 @@ pub struct Group {
 impl Group {
     pub fn new(name: String, owner_id: String, group_type: GroupType) -> Self {
         let id = Uuid::new_v4().to_string();
-        let mut members = vec![GroupMember::new(owner_id.clone(), MemberRole::Owner)];
+        let members = vec![GroupMember::new(owner_id.clone(), MemberRole::Owner)];
         
         Self {
             id,

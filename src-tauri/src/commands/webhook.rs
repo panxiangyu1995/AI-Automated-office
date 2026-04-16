@@ -2,7 +2,6 @@
 //!
 //! Tauri commands for webhook management and event triggering
 
-use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::State;
 use tracing::info;

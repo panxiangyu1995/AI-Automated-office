@@ -1,6 +1,5 @@
 //! Marketplace client implementation.
 
-use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -49,7 +48,7 @@ impl CloudMarketClient {
     pub async fn search_marketplace(
         &self,
         query: &str,
-        marketplace: MarketplaceType,
+        _marketplace: MarketplaceType,
         page: usize,
     ) -> Result<MarketplaceSearchResult> {
         let options = SearchOptions {

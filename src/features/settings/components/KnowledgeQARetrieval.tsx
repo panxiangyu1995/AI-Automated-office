@@ -259,8 +259,8 @@ export function KnowledgeQARetrieval({ className = '' }: KnowledgeQARetrievalPro
   }
 
   // Handle feedback
-  const handleFeedback = (qaId: string, helpful: boolean) => {
-    console.log('Feedback:', qaId, helpful)
+  const handleFeedback = (_qaId: string, _helpful: boolean) => {
+    // Submit feedback
   }
 
   return (

@@ -7,10 +7,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::load_balancing::{
-    health_check::{HealthChecker, HealthCheckConfig, HealthStatus, HealthCheckType},
-    balancer::{LoadBalancer, BalanceStrategy, NodeInfo},
-    failover::{FailoverManager, NodePair, FailoverRecord, FailoverReason, FailoverState},
-    sla_monitor::{SlaMonitor, SlaReport, SlaAlertConfig, SlaPeriod},
+    health_check::{HealthCheckConfig, HealthStatus, HealthCheckType},
+    balancer::{BalanceStrategy, NodeInfo},
+    failover::{NodePair, FailoverRecord, FailoverReason, FailoverState},
+    sla_monitor::{SlaReport, SlaAlertConfig, SlaPeriod},
     LoadBalancingState,
 };
 
@@ -49,7 +49,7 @@ pub async fn check_health(
     state: State<'_, Arc<RwLock<LoadBalancingState>>>,
     node_id: String,
 ) -> Result<HealthStatus, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut checker = state.health_checker.write().await;
     checker.check_node(&node_id).await
 }
@@ -64,7 +64,7 @@ pub async fn register_health_node(
     interval_secs: u64,
     timeout_secs: u64,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut checker = state.health_checker.write().await;
     
     let check_type = match check_type.as_str() {
@@ -95,7 +95,7 @@ pub async fn unregister_health_node(
     state: State<'_, Arc<RwLock<LoadBalancingState>>>,
     node_id: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut checker = state.health_checker.write().await;
     checker.unregister_node(&node_id);
     Ok(())
@@ -111,7 +111,7 @@ pub async fn select_balanced_node(
     state: State<'_, Arc<RwLock<LoadBalancingState>>>,
     session_id: Option<String>,
 ) -> Result<Option<crate::load_balancing::balancer::BalanceResult>, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut balancer = state.balancer.write().await;
     Ok(balancer.select(session_id.as_deref()))
 }
@@ -124,7 +124,7 @@ pub async fn add_load_balancer_node(
     endpoint: String,
     weight: u32,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut balancer = state.balancer.write().await;
     
     let mut node = NodeInfo::new(node_id, endpoint);
@@ -139,7 +139,7 @@ pub async fn remove_load_balancer_node(
     state: State<'_, Arc<RwLock<LoadBalancingState>>>,
     node_id: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut balancer = state.balancer.write().await;
     balancer.remove_node(&node_id);
     Ok(())
@@ -152,7 +152,7 @@ pub async fn update_node_weight(
     node_id: String,
     weight: u32,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut balancer = state.balancer.write().await;
     
     balancer.update_weight(&node_id, weight)
@@ -166,7 +166,7 @@ pub async fn set_node_availability(
     node_id: String,
     available: bool,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut balancer = state.balancer.write().await;
     
     balancer.set_available(&node_id, available)
@@ -190,7 +190,7 @@ pub async fn set_balance_strategy(
     state: State<'_, Arc<RwLock<LoadBalancingState>>>,
     strategy: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut balancer = state.balancer.write().await;
     
     let strategy = match strategy.as_str() {
@@ -219,7 +219,7 @@ pub async fn register_failover_pair(
     primary_endpoint: String,
     standby_endpoint: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut manager = state.failover_manager.write().await;
     
     let pair = NodePair::new(primary_id, standby_id, primary_endpoint, standby_endpoint);
@@ -235,7 +235,7 @@ pub async fn trigger_failover(
     reason: String,
     is_manual: bool,
 ) -> Result<FailoverRecord, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut manager = state.failover_manager.write().await;
     
     let reason = match reason.as_str() {
@@ -256,7 +256,7 @@ pub async fn trigger_recovery(
     state: State<'_, Arc<RwLock<LoadBalancingState>>>,
     primary_id: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut manager = state.failover_manager.write().await;
     
     manager.trigger_recovery(&primary_id)
@@ -321,7 +321,7 @@ pub async fn record_sla_request(
     success: bool,
     response_time_ms: u64,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut monitor = state.sla_monitor.write().await;
     monitor.record_request(&service_id, success, response_time_ms);
     Ok(())
@@ -378,7 +378,7 @@ pub async fn configure_sla_alert(
     response_time_threshold_ms: u64,
     enabled: bool,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut monitor = state.sla_monitor.write().await;
     
     let config = SlaAlertConfig {

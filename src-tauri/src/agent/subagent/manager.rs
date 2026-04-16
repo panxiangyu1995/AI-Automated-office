@@ -7,7 +7,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use serde::{Deserialize, Serialize};
 
-use super::types::{AgentConfig, AgentType, ModelProvider, SubagentError, SubagentResult};
+use super::types::{AgentConfig, AgentType, ModelProvider, SubagentResult};
 use super::loader::{SubagentLoader, get_builtin_hidden_agents};
 use super::department_loader::DepartmentLoader;
 use super::personal_loader::PersonalLoader;

@@ -4,7 +4,7 @@
 //! with platform-specific key derivation.
 
 use aes_gcm::{
-    aead::{Aead, KeyInit, OsRng},
+    aead::{Aead, KeyInit},
     Aes256Gcm, Nonce,
 };
 use pbkdf2::pbkdf2_hmac;

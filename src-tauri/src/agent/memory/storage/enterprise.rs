@@ -1,10 +1,9 @@
 //! L2 Enterprise knowledge base storage with SQLite persistence.
 
 use async_trait::async_trait;
-use rusqlite::ToSql;
 use std::sync::Arc;
 
-use super::backend::{SqliteStorage, StorageBackend, map_memory_item};
+use super::backend::{SqliteStorage, map_memory_item};
 use super::layer::MemoryStore;
 use super::super::types::{MemoryItem, MemoryLayer, MemoryQuery};
 use super::super::config::MemoryError;
@@ -93,7 +92,7 @@ impl EnterpriseKnowledgeStore {
     }
 
     /// Get all items for a tenant
-    pub async fn get_by_tenant(&self, tenant_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
+    pub async fn get_by_tenant(&self, _tenant_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
         let sql = r#"
             SELECT * FROM memory_items
             WHERE is_deleted = 0
@@ -111,7 +110,7 @@ impl EnterpriseKnowledgeStore {
     }
 
     /// Get approved items only
-    pub async fn get_approved(&self, tenant_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
+    pub async fn get_approved(&self, _tenant_id: &str) -> Result<Vec<MemoryItem>, MemoryError> {
         let sql = r#"
             SELECT * FROM memory_items
             WHERE is_deleted = 0
@@ -132,8 +131,8 @@ impl EnterpriseKnowledgeStore {
     /// Get items by department
     pub async fn get_by_department(
         &self,
-        tenant_id: &str,
-        department_id: &str,
+        _tenant_id: &str,
+        _department_id: &str,
     ) -> Result<Vec<MemoryItem>, MemoryError> {
         let sql = r#"
             SELECT * FROM memory_items
@@ -294,7 +293,7 @@ impl MemoryStore for EnterpriseKnowledgeStore {
         Ok(())
     }
 
-    async fn get(&self, id: &str) -> Result<Option<MemoryItem>, MemoryError> {
+    async fn get(&self, _id: &str) -> Result<Option<MemoryItem>, MemoryError> {
         let sql = "SELECT * FROM memory_items WHERE id = ? AND is_deleted = 0";
 
         let items: Vec<MemoryItem> = self.storage
@@ -317,7 +316,7 @@ impl MemoryStore for EnterpriseKnowledgeStore {
             LIMIT ?
         "#;
 
-        let like_pattern = format!("%{}%", query.query);
+        let _like_pattern = format!("%{}%", query.query);
 
         let items: Vec<MemoryItem> = self.storage
             .query(sql, map_memory_item)

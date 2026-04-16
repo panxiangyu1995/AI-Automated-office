@@ -5,7 +5,7 @@
 use crate::department::types::*;
 use crate::department::registry::DepartmentRegistry;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use tracing::{error, info, warn};
 
 /// 消息处理器类型

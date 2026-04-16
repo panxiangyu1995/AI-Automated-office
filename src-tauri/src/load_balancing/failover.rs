@@ -158,7 +158,7 @@ impl FailoverManager {
         &mut self,
         primary_id: &str,
         reason: FailoverReason,
-        is_manual: bool,
+        _is_manual: bool,
     ) -> Option<FailoverRecord> {
         let pair = self.pairs.get(primary_id)?;
 
@@ -172,7 +172,7 @@ impl FailoverManager {
         self.states.insert(primary_id.to_string(), FailoverState::FailingOver);
 
         // 创建记录
-        let mut record = FailoverRecord::new(
+        let record = FailoverRecord::new(
             primary_id.to_string(),
             pair.standby_id.clone(),
             reason,
@@ -190,7 +190,7 @@ impl FailoverManager {
 
     /// 触发恢复
     pub fn trigger_recovery(&mut self, primary_id: &str) -> Option<()> {
-        let pair = self.pairs.get(primary_id)?;
+        let _pair = self.pairs.get(primary_id)?;
 
         // 检查当前状态
         let current_state = self.states.get(primary_id)?;

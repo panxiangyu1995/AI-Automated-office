@@ -5,9 +5,8 @@ mod registry;
 pub use registry::SkillRegistry;
 
 use async_trait::async_trait;
-use std::sync::Arc;
 
-use super::{Skill, SkillError, SkillExecutionContext, SkillExecutionResult};
+use super::{SkillError, SkillExecutionContext, SkillExecutionResult};
 
 /// Skill executor trait
 #[async_trait]

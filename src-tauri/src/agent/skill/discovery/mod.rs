@@ -4,7 +4,7 @@ mod discovery;
 
 pub use discovery::SkillDiscoveryService;
 
-use super::{Skill, SkillDiscoveryResult, SkillError};
+use super::{Skill, SkillError};
 
 /// Skill discoverer trait
 #[async_trait::async_trait]

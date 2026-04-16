@@ -6,8 +6,7 @@
 use tauri::State;
 use std::sync::Arc;
 use crate::agent::delivery::{
-    DeliveryStrategyService, DeliveryItem, DeliveryPreference, DeliveryChannel,
-    Urgency, TaskType, TaskContext, BatchEntry,
+    DeliveryStrategyService, DeliveryItem, DeliveryPreference, DeliveryChannel, TaskType, TaskContext, BatchEntry,
 };
 use chrono::Utc;
 use std::collections::HashMap;

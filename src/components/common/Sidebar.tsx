@@ -23,6 +23,7 @@ import {
   TrendingUp,
   ClipboardCheck,
   Warehouse,
+  BookOpen,
   type LucideIcon,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -58,7 +59,7 @@ const adminMenuItems: FixedSidebarEntry[] = [
     target: { path: '/service', mode: 'static' },
   },
   {
-    id: 'knowledge',
+    id: 'admin-knowledge',
     label: '知识库管理',
     icon: Database,
     target: { path: '/admin/knowledge', mode: 'static' },
@@ -108,6 +109,12 @@ const defaultMenuItems: FixedSidebarEntry[] = [
     label: '仓库管理',
     icon: Warehouse,
     target: { path: '/warehouse', mode: 'static' },
+  },
+  {
+    id: 'knowledge',
+    label: '知识库',
+    icon: BookOpen,
+    target: { path: '/knowledge', mode: 'static' },
   },
   // ===== 扩展部门 =====
   {

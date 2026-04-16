@@ -1,8 +1,6 @@
 //! Package loader implementation.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
-use std::sync::Arc;
 
 use anyhow::Result;
 use tokio::sync::RwLock;

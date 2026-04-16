@@ -151,7 +151,7 @@ impl ToolExecutor for CronScheduleExecutor {
     async fn execute(
         &self,
         params: Value,
-        context: &ToolExecutionContext,
+        _context: &ToolExecutionContext,
     ) -> Result<Value, ToolExecutionError> {
         let _start = Instant::now();
 

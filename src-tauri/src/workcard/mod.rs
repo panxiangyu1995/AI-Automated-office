@@ -568,7 +568,7 @@ impl WorkCardService {
         &self,
         card_id: &str,
         action_id: &str,
-        actor_id: &str,
+        _actor_id: &str,
         actor_name: &str,
     ) -> Result<ActionResult, String> {
         let mut store = self.store.write().await;

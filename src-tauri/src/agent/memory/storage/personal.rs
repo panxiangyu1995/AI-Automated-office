@@ -1,11 +1,10 @@
 //! L1 Personal memory storage with SQLite persistence.
 
 use async_trait::async_trait;
-use rusqlite::ToSql;
 use std::sync::Arc;
 
-use super::backend::{map_memory_item, SqliteStorage, StorageBackend, StorageError};
-use super::layer::{MemoryStore, PermissionBoundary};
+use super::backend::{map_memory_item, SqliteStorage, StorageError};
+use super::layer::MemoryStore;
 use super::super::types::{MemoryItem, MemoryLayer, MemoryQuery};
 use super::super::config::MemoryError;
 
@@ -153,7 +152,7 @@ impl MemoryStore for PersonalMemoryStore {
         Ok(())
     }
 
-    async fn get(&self, id: &str) -> Result<Option<MemoryItem>, MemoryError> {
+    async fn get(&self, _id: &str) -> Result<Option<MemoryItem>, MemoryError> {
         let sql = "SELECT * FROM memory_items WHERE id = ? AND is_deleted = 0";
 
         let items: Vec<MemoryItem> = self.storage
@@ -166,7 +165,7 @@ impl MemoryStore for PersonalMemoryStore {
 
     async fn search(&self, query: &MemoryQuery) -> Result<Vec<MemoryItem>, MemoryError> {
         // Build SQL with optional filters
-        let mut sql = String::from(
+        let sql = String::from(
             "SELECT * FROM memory_items WHERE is_deleted = 0 AND layer = 'Personal' AND tenant_id = ?"
         );
 

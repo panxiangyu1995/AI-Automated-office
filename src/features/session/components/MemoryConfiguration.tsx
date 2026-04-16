@@ -272,7 +272,7 @@ export function MemoryConfiguration(): React.ReactNode {
 
   // Save configuration
   const handleSave = () => {
-    console.log('Saving configuration:', config)
+    // Save configuration
     setHasChanges(false)
   }
 

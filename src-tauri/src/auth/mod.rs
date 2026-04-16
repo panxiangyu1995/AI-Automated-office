@@ -4,6 +4,72 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation};
 use chrono::{Utc, Duration};
 
+/// Role hierarchy for RBAC
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Role {
+    Employee,
+    Manager,
+    Admin,
+}
+
+impl Role {
+    /// Parse role from string stored in database
+    pub fn from_str(role: &str) -> Self {
+        match role.to_lowercase().as_str() {
+            "admin" => Role::Admin,
+            "manager" => Role::Manager,
+            _ => Role::Employee,
+        }
+    }
+
+    /// Check if this role has at least the required permission level
+    pub fn has_permission(&self, required: &Role) -> bool {
+        self >= required
+    }
+}
+
+/// Permission levels for different operations
+#[derive(Debug, Clone, Copy)]
+pub enum Permission {
+    /// Read access - any authenticated user
+    Read,
+    /// Write access - manager or above
+    Write,
+    /// Admin access - admin only
+    Admin,
+}
+
+/// Check if a user has the required permission
+pub fn check_permission(user: &User, permission: Permission) -> Result<(), String> {
+    let role = Role::from_str(&user.role);
+    let has_access = match permission {
+        Permission::Read => true, // Any authenticated user can read
+        Permission::Write => role.has_permission(&Role::Manager),
+        Permission::Admin => role.has_permission(&Role::Admin),
+    };
+    if has_access {
+        Ok(())
+    } else {
+        Err(format!("权限不足：当前角色 '{}' 无法执行此操作", user.role))
+    }
+}
+
+/// Verify JWT token and check permission in one step.
+/// Returns the authenticated User on success.
+///
+/// This is the standard RBAC guard for Tauri commands.
+pub async fn verify_and_check(
+    token: &str,
+    auth_service: &AuthService,
+    permission: Permission,
+) -> Result<User, String> {
+    let user = auth_service.verify_token(token).await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "未认证：请先登录".to_string())?;
+    check_permission(&user, permission)?;
+    Ok(user)
+}
+
 /// User with tenant association
 #[derive(Debug, Serialize, Deserialize, FromRow, Clone)]
 pub struct User {
@@ -27,6 +93,9 @@ pub struct Claims {
     pub exp: usize,
 }
 
+#[cfg(any(test, debug_assertions))]
+const DEFAULT_JWT_SECRET: &str = "secret_key_change_me";
+
 pub struct AuthService {
     pool: SqlitePool,
     jwt_secret: String,
@@ -34,10 +103,31 @@ pub struct AuthService {
 
 impl AuthService {
     pub fn new(pool: SqlitePool) -> Self {
-        Self {
-            pool,
-            jwt_secret: "secret_key_change_me".to_string(),
-        }
+        let jwt_secret = match std::env::var("JWT_SECRET") {
+            Ok(secret) => {
+                tracing::info!("JWT_SECRET loaded from environment variable");
+                secret
+            }
+            Err(_) => {
+                #[cfg(any(test, debug_assertions))]
+                {
+                    tracing::warn!(
+                        "WARNING: Using default JWT secret. Set JWT_SECRET environment variable for production!"
+                    );
+                    DEFAULT_JWT_SECRET.to_string()
+                }
+                #[cfg(not(any(test, debug_assertions)))]
+                {
+                    panic!("JWT_SECRET environment variable must be set in production. Refusing to start with a hardcoded secret.");
+                }
+            }
+        };
+        Self { pool, jwt_secret }
+    }
+
+    /// Create AuthService with explicit JWT secret (for testing)
+    pub fn with_secret(pool: SqlitePool, jwt_secret: String) -> Self {
+        Self { pool, jwt_secret }
     }
 
     pub async fn ensure_default_user(&self, tenant_id: &str) -> Result<(), String> {
@@ -227,7 +317,7 @@ mod tests {
         .await
         .expect("users table should be created");
 
-        AuthService::new(pool)
+        AuthService::with_secret(pool, "test_secret_key".to_string())
     }
 
     #[tokio::test]

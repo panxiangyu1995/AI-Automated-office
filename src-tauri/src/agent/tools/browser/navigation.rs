@@ -259,9 +259,9 @@ pub async fn execute_navigate(
 }
 
 pub async fn execute_back(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
-    let mut state = get_or_init_state();
+    let state = get_or_init_state();
     if !state.running {
         return Err(ToolExecutionError {
             code: crate::agent::tools::pipeline::ToolErrorCode::ExecutionError,
@@ -287,9 +287,9 @@ pub async fn execute_back(
 }
 
 pub async fn execute_forward(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
-    let mut state = get_or_init_state();
+    let state = get_or_init_state();
     if !state.running {
         return Err(ToolExecutionError {
             code: crate::agent::tools::pipeline::ToolErrorCode::ExecutionError,
@@ -315,7 +315,7 @@ pub async fn execute_forward(
 }
 
 pub async fn execute_refresh(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let mut state = get_or_init_state();
     if !state.running {

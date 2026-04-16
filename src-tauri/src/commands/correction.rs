@@ -2,13 +2,11 @@
 //!
 //! 暴露纠偏反馈学习的核心功能给前端
 
-use tauri::State;
 use std::sync::Arc;
 use chrono::Utc;
 
 use crate::agent::correction::{
-    CorrectionService, Feedback, FeedbackType, ErrorItem, CorrectionRule,
-    CorrectionLevel, ApplicationResult, CorrectionStats,
+    CorrectionService, Feedback, FeedbackType, ErrorItem, ApplicationResult,
 };
 
 /// 创建纠偏服务

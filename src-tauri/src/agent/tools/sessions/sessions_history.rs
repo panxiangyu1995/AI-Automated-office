@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::sessions_list::{MockSessionStore, SessionStatus};
+use super::sessions_list::MockSessionStore;
 use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, ToolExecutor};
 use crate::agent::tools::pipeline::ToolErrorCode;
 
@@ -87,7 +87,7 @@ impl ToolExecutor for SessionsHistoryExecutor {
     async fn execute(
         &self,
         params: Value,
-        context: &ToolExecutionContext,
+        _context: &ToolExecutionContext,
     ) -> Result<Value, ToolExecutionError> {
         let start = Instant::now();
 

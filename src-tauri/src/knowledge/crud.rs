@@ -3,7 +3,6 @@
 //! Implements Tauri commands for knowledge base operations.
 
 use crate::knowledge::permission::{AccessLevel, KnowledgeBase, KnowledgeBaseSummary, KnowledgePermission, KnowledgePermissionRecord, PermissionCheckResult, PermissionService, UserContext};
-use crate::vector::embedding::EmbeddingService;
 use crate::vector::store::VectorStore;
 use anyhow::Result;
 use chrono::Utc;
@@ -77,9 +76,9 @@ pub struct KnowledgeBaseFilter {
 
 /// Knowledge base CRUD service state
 pub struct KnowledgeBaseService {
-    knowledge_bases: Arc<RwLock<std::collections::HashMap<String, KnowledgeBase>>>,
+    pub(crate) knowledge_bases: Arc<RwLock<std::collections::HashMap<String, KnowledgeBase>>>,
     permissions: Arc<RwLock<std::collections::HashMap<String, Vec<KnowledgePermissionRecord>>>>,
-    permission_service: PermissionService,
+    pub(crate) permission_service: PermissionService,
 }
 
 impl KnowledgeBaseService {
@@ -131,6 +130,7 @@ impl KnowledgeBaseService {
         filter: KnowledgeBaseFilter,
     ) -> Result<PaginatedResult<KnowledgeBaseSummary>> {
         let bases = self.knowledge_bases.read().await;
+        let permissions = self.permissions.read().await;
 
         // Filter and collect accessible knowledge bases
         let mut accessible: Vec<KnowledgeBaseSummary> = bases
@@ -152,7 +152,6 @@ impl KnowledgeBaseService {
                     KnowledgePermission::AllTeam => true,
                     KnowledgePermission::PartialTeam => {
                         // Check explicit permission
-                        let permissions = self.permissions.read().await;
                         permissions
                             .get(&kb.id)
                             .map(|p| p.iter().any(|r| r.user_id == user.user_id))

@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Utc, Timelike, Weekday, Datelike};
+use chrono::{DateTime, Utc, Timelike, Datelike};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -111,7 +111,7 @@ impl ReminderService {
         &self,
         approval_id: String,
         approver_id: String,
-        approver_name: String,
+        _approver_name: String,
         reminder_id: String,
         reminder_name: String,
         level: ReminderLevel,

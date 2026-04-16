@@ -14,7 +14,7 @@ use std::sync::Arc;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use tracing::{info, warn, error};
+use tracing::info;
 
 /// Webhook registration
 #[derive(Debug, Clone, Serialize, Deserialize)]

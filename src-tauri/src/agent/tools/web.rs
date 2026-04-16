@@ -1,22 +1,17 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::sync::RwLock;
 
 use crate::http::client::HttpRequest;
 
 use crate::agent::tools::common::{
-    base_metadata, base_readonly_capabilities, base_writable_capabilities,
-    bool_param, number_param, string_enum_param, string_param,
+    base_metadata, base_readonly_capabilities, base_writable_capabilities, number_param, string_enum_param, string_param,
 };
 use crate::agent::tools::common::config::WebSearchConfig;
-use crate::agent::tools::common::config::ToolConfigManager;
 use super::descriptor::{
-    ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
-    ToolMetadata, ToolParameter, ToolPermissionRequirement,
+    ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode, ToolParameter, ToolPermissionRequirement,
 };
 use super::pipeline::{ToolExecutionContext, ToolExecutionError, ToolErrorCode, ToolExecutor};
 
@@ -56,11 +51,11 @@ pub fn register_web_tools(
     executors: &mut HashMap<String, Arc<dyn ToolExecutor>>,
 ) {
     let (descriptor, executor) = web_search();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = web_fetch();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 }
 
@@ -213,7 +208,7 @@ impl ToolExecutor for WebSearchExecutor {
 }
 
 async fn search_brave(
-    query: &str,
+    _query: &str,
     _max_results: usize,
     _config: &SearchProviderConfig,
 ) -> Result<Vec<SearchResult>, ToolExecutionError> {

@@ -73,7 +73,7 @@ pub fn register_automation_tools(
         handler_module: Some("agent::tools::automation".to_string()),
         handler_function: Some("cron_schedule".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "cron_schedule".to_string(),
         Arc::new(cron_schedule::CronScheduleExecutor::new()),
@@ -121,7 +121,7 @@ pub fn register_automation_tools(
         handler_module: Some("agent::tools::automation".to_string()),
         handler_function: Some("cron_list".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "cron_list".to_string(),
         Arc::new(cron_list::CronListExecutor::new()),
@@ -169,7 +169,7 @@ pub fn register_automation_tools(
         handler_module: Some("agent::tools::automation".to_string()),
         handler_function: Some("cron_cancel".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "cron_cancel".to_string(),
         Arc::new(cron_cancel::CronCancelExecutor::new()),

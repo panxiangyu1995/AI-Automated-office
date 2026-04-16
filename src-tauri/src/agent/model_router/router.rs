@@ -2,9 +2,7 @@
 //!
 //! Routes tasks to appropriate models based on complexity and requirements.
 
-use std::sync::Arc;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 use crate::agent::subagent::types::ModelProvider;
 

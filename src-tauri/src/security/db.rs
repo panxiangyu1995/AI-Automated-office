@@ -2,7 +2,7 @@
 
 use crate::security::types::*;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use tracing::info;
 
 /// Security 数据库状态
@@ -289,7 +289,7 @@ impl SecurityDatabase {
             },
             MaskingType::Email => {
                 if let Some(idx) = value.find('@') {
-                    let (name, domain) = value.split_at(idx);
+                    let (name, _domain) = value.split_at(idx);
                     let masked_name = if name.len() <= 2 {
                         "*".repeat(name.len())
                     } else {

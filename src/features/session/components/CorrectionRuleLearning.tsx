@@ -297,16 +297,16 @@ export function CorrectionRuleLearning(): React.ReactNode {
     setShowCaseDetail(true)
   }
 
-  const handleToggleRuleStatus = (ruleId: string) => {
-    console.log('Toggle rule status:', ruleId)
+  const handleToggleRuleStatus = (_ruleId: string) => {
+    // Toggle rule status
   }
 
-  const handleDeleteRule = (ruleId: string) => {
-    console.log('Delete rule:', ruleId)
+  const handleDeleteRule = (_ruleId: string) => {
+    // Delete rule
   }
 
-  const handleExtractRule = (caseId: string) => {
-    console.log('Extract rule from case:', caseId)
+  const handleExtractRule = (_caseId: string) => {
+    // Extract rule from case
   }
 
   return (

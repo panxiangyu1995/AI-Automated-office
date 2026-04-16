@@ -2,7 +2,6 @@
 //!
 //! 将财务工具注册到 SubagentManager
 
-use std::sync::Arc;
 
 use crate::agent::subagent::{
     types::{AgentConfig, AgentMode, AgentType, LimitsConfig, ModelConfig, ModelProvider, ToolPermissions, TriggerConfig, TriggerMode},

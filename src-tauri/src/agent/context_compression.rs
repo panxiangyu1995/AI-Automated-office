@@ -8,13 +8,12 @@
 //!
 //! Story 53.2 - Context compression and session summary persistence
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 use std::sync::Arc;
-use tokio::sync::RwLock;
 
 use crate::storage::StorageManager;
 
@@ -660,7 +659,7 @@ impl SessionSummaryManager for SessionSummaryService {
 
     async fn refresh_summary(&self, session_id: &str, messages: &[MessageTokens]) -> Result<SessionSummary> {
         let store = SummaryStore::new(self.storage.pool().clone());
-        let now = Utc::now().timestamp();
+        let _now = Utc::now().timestamp();
 
         // Deactivate old summaries
         if let Some(old_summary) = store.get_active(session_id).await? {
@@ -673,7 +672,7 @@ impl SessionSummaryManager for SessionSummaryService {
         self.create_summary(session_id, messages).await
     }
 
-    async fn get_compressed_context(&self, session_id: &str, preserve_recent: usize) -> Result<Option<CompressedContext>> {
+    async fn get_compressed_context(&self, session_id: &str, _preserve_recent: usize) -> Result<Option<CompressedContext>> {
         let summary = self.get_active_summary(session_id).await?;
 
         match summary {

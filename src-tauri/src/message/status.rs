@@ -230,7 +230,7 @@ impl MessageStatusService {
     }
 
     /// Get unread count by message type
-    pub async fn get_unread_count_by_type(&self, recipient_id: &str, msg_type: &str) -> i64 {
+    pub async fn get_unread_count_by_type(&self, recipient_id: &str, _msg_type: &str) -> i64 {
         // Note: msg_type would need to be part of the entry for this to work
         // For now, return total unread
         self.get_unread_count(recipient_id).await

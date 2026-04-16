@@ -35,17 +35,14 @@ pub use types::{
     SkillExecutionContext, SkillExecutionResult, SkillDiscoveryResult,
     SkillLoadResult, LoadingStage, LoadingProgress,
     Permission, PermissionType, AccessLevel,
-    ParametersSchema, Parameter, VersionConstraint, VersionConstraintType,
+    ParametersSchema,
 };
-pub use config::{SkillConfig, SkillError, SkillErrorCode, ValidationResult, PermissionMode};
+pub use config::{SkillError, SkillErrorCode, ValidationResult};
 pub use discovery::SkillDiscoveryService;
-pub use parser::SkillParser;
 pub use loader::SkillLoader;
 pub use loader::SkillLoaderTrait;
 pub use registry::{SkillRegistry, SkillExecutor};
-pub use executor::{SkillExecutorService, ExecutionHook, ExecutionStage};
 pub use converter::SkillConverter;
-pub use version::VersionManager;
 
 use std::sync::Arc;
 use tauri::State;
@@ -113,7 +110,7 @@ pub async fn skill_validate(
 ) -> Result<ValidationResult, String> {
     // Basic validation
     let mut errors = Vec::new();
-    let mut warnings = Vec::new();
+    let warnings = Vec::new();
 
     if skill.id.is_empty() {
         errors.push("Skill ID cannot be empty".to_string());

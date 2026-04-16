@@ -5,7 +5,7 @@ use std::time::Instant;
 
 use tokio::sync::RwLock;
 
-use super::{ExecutionHook, ExecutionStage};
+use super::ExecutionHook;
 use super::super::{SkillExecutionContext, SkillExecutionResult, SkillError};
 
 /// Skill execution service

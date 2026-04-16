@@ -4,7 +4,7 @@ use std::sync::Arc;
 use serde_json::Value;
 
 use crate::agent::tools::common::{
-    base_metadata, base_permission_capabilities, base_readonly_capabilities, base_writable_capabilities,
+    base_metadata, base_readonly_capabilities, base_writable_capabilities,
     string_param, ToolDescriptorBuilder,
 };
 use super::descriptor::{
@@ -18,23 +18,23 @@ pub fn register_core_tools(
     executors: &mut HashMap<String, Arc<dyn ToolExecutor>>,
 ) {
     let (descriptor, executor) = system_get_app_version();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = system_get_platform();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = network_check_status();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = network_get_status();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = http_request();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 }
 

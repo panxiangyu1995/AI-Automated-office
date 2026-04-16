@@ -115,7 +115,7 @@ impl MessageStatusTracker {
     /// 获取Agent的所有消息状态
     pub async fn get_agent_statuses(
         &self,
-        agent_id: &str,
+        _agent_id: &str,
         message_ids: &[String],
     ) -> Vec<MessageStatusInfo> {
         let statuses = self.statuses.read().await;

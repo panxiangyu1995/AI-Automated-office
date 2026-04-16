@@ -19,7 +19,7 @@ pub use url::UrlInstaller;
 pub use dependency::{DependencyChecker, DependencyInfo};
 
 use crate::capability::types::*;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 /// Installation result
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

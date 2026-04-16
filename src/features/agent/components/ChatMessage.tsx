@@ -14,7 +14,7 @@
  */
 
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { User, Bot, ChevronDown, ChevronUp } from 'lucide-react'
+import { User, Bot, ChevronDown, ChevronUp, CheckCircle2, XCircle, Loader2, RefreshCw, Circle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { sanitizeMarkdownHtml } from '@/lib/sanitize'
 import type { Message, Part, TextPart, ToolCallPart, ToolResultPart, ErrorPart } from '../../message/runtime/messageModel'
@@ -99,35 +99,35 @@ const STATUS_CONFIG = {
     bg: 'bg-yellow-50',
     border: 'border-yellow-200',
     label: '等待中',
-    icon: '⏳',
+    icon: Loader2,
   },
   running: {
     color: 'text-blue-500',
     bg: 'bg-blue-50',
     border: 'border-blue-200',
     label: '运行中',
-    icon: '🔄',
+    icon: RefreshCw,
   },
   completed: {
     color: 'text-green-500',
     bg: 'bg-green-50',
     border: 'border-green-200',
     label: '已完成',
-    icon: '✅',
+    icon: CheckCircle2,
   },
   failed: {
     color: 'text-red-500',
     bg: 'bg-red-50',
     border: 'border-red-200',
     label: '失败',
-    icon: '❌',
+    icon: XCircle,
   },
   cancelled: {
     color: 'text-gray-500',
     bg: 'bg-gray-50',
     border: 'border-gray-200',
     label: '已取消',
-    icon: '⚪',
+    icon: Circle,
   },
 } as const
 
@@ -153,7 +153,7 @@ function ToolCallCard({ part }: ToolCallCardProps) {
         )}
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm">{statusConfig.icon}</span>
+          <span className="text-sm">{typeof statusConfig.icon === 'string' ? statusConfig.icon : <statusConfig.icon size={16} />}</span>
           <span className={cn('text-xs font-medium', statusConfig.color)}>
             {statusConfig.label}
           </span>

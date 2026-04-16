@@ -61,8 +61,8 @@ export function useApplyPermission(): UseApplyPermissionReturn {
           status: 'pending',
           createdAt: new Date().toISOString(),
         }
+        void response
 
-        console.log('Permission apply submitted:', response)
         options?.onSuccess?.()
       } catch (err) {
         const error = err instanceof Error ? err : new Error('申请失败')

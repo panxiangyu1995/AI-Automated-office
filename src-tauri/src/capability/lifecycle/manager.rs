@@ -5,7 +5,6 @@
 use crate::capability::lifecycle::hook::{
     LifecycleEvent, LifecycleHook, LifecycleResult, PluginContext,
 };
-use crate::capability::lifecycle::hook::LifecycleError;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;

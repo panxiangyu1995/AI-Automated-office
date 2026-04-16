@@ -5,10 +5,9 @@
 //! - 记忆检索注入
 //! - 记忆更新决策
 
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 /// 记忆项
@@ -179,7 +178,7 @@ impl MemoryRuntimeIntegration {
     }
 
     /// Hook: SessionStart - 加载L1个人记忆
-    pub async fn on_session_start(&self, session: &SessionInfo) -> Vec<MemoryItem> {
+    pub async fn on_session_start(&self, _session: &SessionInfo) -> Vec<MemoryItem> {
         // 更新统计
         {
             let mut stats = self.stats.write().await;
@@ -327,7 +326,7 @@ impl MemoryRuntimeIntegration {
     }
 
     /// 提取记忆项
-    fn extract_memory_item(&self, content: &str, session: &SessionInfo) -> MemoryItem {
+    fn extract_memory_item(&self, content: &str, _session: &SessionInfo) -> MemoryItem {
         let now = Utc::now().timestamp();
         
         // 分析记忆类型
@@ -465,7 +464,7 @@ impl MemoryRuntimeIntegration {
     }
 
     /// 从工具结果创建记忆项
-    fn memory_item_from_tool_result(&self, result: &ToolResult, session: &SessionInfo) -> MemoryItem {
+    fn memory_item_from_tool_result(&self, result: &ToolResult, _session: &SessionInfo) -> MemoryItem {
         let now = Utc::now().timestamp();
         
         MemoryItem {
@@ -483,7 +482,7 @@ impl MemoryRuntimeIntegration {
     }
 
     /// 提取关键事实
-    fn extract_key_facts(&self, session: &SessionInfo) -> Vec<MemoryItem> {
+    fn extract_key_facts(&self, _session: &SessionInfo) -> Vec<MemoryItem> {
         // 简化实现：返回空列表
         // 实际实现需要分析会话历史
         Vec::new()

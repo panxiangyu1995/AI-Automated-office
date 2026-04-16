@@ -4,16 +4,15 @@ use std::sync::Arc;
 
 use tokio::sync::RwLock;
 
+use crate::agent::memory::update::SmartUpdater;
 use crate::vector::config::EmbeddingConfig;
 use crate::vector::embedding::EmbeddingService;
 use crate::vector::sqlite_vec::SqliteVecStore;
-use crate::vector::hybrid::{HybridSearchEngine, Bm25Store};
-use crate::vector::VectorStore;
+use crate::vector::hybrid::HybridSearchEngine;
 
 use super::hooks::{HookDispatcher, HookRegistry};
 use super::storage::{PersonalMemoryStore, EnterpriseKnowledgeStore, MemoryStore};
-use super::storage::backend::{SqliteStorage, StorageBackend};
-use super::update::SmartUpdater;
+use super::storage::backend::SqliteStorage;
 use super::cognitive::{CognitiveStateManager, TrajectoryTracker, SwitchingCostCalculator};
 
 use super::types::{
@@ -324,7 +323,7 @@ impl MemoryService {
     }
 
     /// Get memory statistics
-    pub async fn get_stats(&self, user_id: &str, tenant_id: &str) -> Result<MemoryStats, MemoryError> {
+    pub async fn get_stats(&self, _user_id: &str, _tenant_id: &str) -> Result<MemoryStats, MemoryError> {
         let personal_count = self.personal_store.count().await?;
         let enterprise_count = self.enterprise_store.count().await?;
 

@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use tauri::State;
 
 use crate::mcp::{
     MCPServiceRegistry, MCPServiceConfig, MCPServiceInfo,

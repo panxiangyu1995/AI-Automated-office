@@ -494,8 +494,8 @@ export class ConfirmationFlowManager {
     const riskMessages: Record<RiskLevel, string> = {
       low: 'This action requires your confirmation.',
       medium: 'This action may have significant effects. Please review before proceeding.',
-      high: '⚠️ This is a high-risk action. Please review carefully before proceeding.',
-      critical: '🚨 This is a critical action that may have irreversible effects.',
+      high: '[HIGH RISK] This is a high-risk action. Please review carefully before proceeding.',
+      critical: '[CRITICAL] This is a critical action that may have irreversible effects.',
     }
 
     return riskMessages[assessment.overallRisk] ?? riskMessages.medium

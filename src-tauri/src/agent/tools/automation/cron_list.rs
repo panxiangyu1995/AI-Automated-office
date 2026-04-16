@@ -2,8 +2,6 @@
 //!
 //! Lists scheduled tasks with optional filtering.
 
-use std::sync::RwLock;
-use std::collections::HashMap;
 use std::time::Instant;
 
 use async_trait::async_trait;

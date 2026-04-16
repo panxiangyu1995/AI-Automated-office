@@ -25,7 +25,7 @@ function initSystemCommands() {
       icon: Plus,
       category: 'file' as const,
       shortcut: 'Ctrl+N',
-      action: () => console.log('[Command] file.new'),
+      action: () => {},
     },
     {
       id: 'file.open',
@@ -34,7 +34,7 @@ function initSystemCommands() {
       icon: FolderOpen,
       category: 'file' as const,
       shortcut: 'Ctrl+O',
-      action: () => console.log('[Command] file.open'),
+      action: () => {},
     },
     {
       id: 'file.save',
@@ -43,7 +43,7 @@ function initSystemCommands() {
       icon: Save,
       category: 'file' as const,
       shortcut: 'Ctrl+S',
-      action: () => console.log('[Command] file.save'),
+      action: () => {},
     },
     {
       id: 'file.saveAs',
@@ -52,7 +52,7 @@ function initSystemCommands() {
       icon: Save,
       category: 'file' as const,
       shortcut: 'Ctrl+Shift+S',
-      action: () => console.log('[Command] file.saveAs'),
+      action: () => {},
     },
 
     // Edit commands
@@ -63,7 +63,7 @@ function initSystemCommands() {
       icon: Copy,
       category: 'edit' as const,
       shortcut: 'Ctrl+C',
-      action: () => console.log('[Command] edit.copy'),
+      action: () => {},
     },
     {
       id: 'edit.paste',
@@ -72,7 +72,7 @@ function initSystemCommands() {
       icon: Clipboard,
       category: 'edit' as const,
       shortcut: 'Ctrl+V',
-      action: () => console.log('[Command] edit.paste'),
+      action: () => {},
     },
     {
       id: 'edit.find',
@@ -81,7 +81,7 @@ function initSystemCommands() {
       icon: Search,
       category: 'edit' as const,
       shortcut: 'Ctrl+F',
-      action: () => console.log('[Command] edit.find'),
+      action: () => {},
     },
     {
       id: 'edit.replace',
@@ -90,7 +90,7 @@ function initSystemCommands() {
       icon: Search,
       category: 'edit' as const,
       shortcut: 'Ctrl+H',
-      action: () => console.log('[Command] edit.replace'),
+      action: () => {},
     },
 
     // View commands
@@ -101,7 +101,7 @@ function initSystemCommands() {
       icon: PanelLeftClose,
       category: 'view' as const,
       shortcut: 'Ctrl+B',
-      action: () => console.log('[Command] view.toggleSidebar'),
+      action: () => {},
     },
     {
       id: 'view.toggleActivityBar',
@@ -109,7 +109,7 @@ function initSystemCommands() {
       description: '显示或隐藏活动栏',
       icon: Eye,
       category: 'view' as const,
-      action: () => console.log('[Command] view.toggleActivityBar'),
+      action: () => {},
     },
     {
       id: 'view.toggleAiPanel',
@@ -118,7 +118,7 @@ function initSystemCommands() {
       icon: PanelRightClose,
       category: 'view' as const,
       shortcut: 'Ctrl+J',
-      action: () => console.log('[Command] view.toggleAiPanel'),
+      action: () => {},
     },
     {
       id: 'view.toggleBottomPanel',
@@ -126,7 +126,7 @@ function initSystemCommands() {
       description: '显示或隐藏底部面板',
       icon: Terminal,
       category: 'view' as const,
-      action: () => console.log('[Command] view.toggleBottomPanel'),
+      action: () => {},
     },
     {
       id: 'view.zoomIn',
@@ -135,7 +135,7 @@ function initSystemCommands() {
       icon: Eye,
       category: 'view' as const,
       shortcut: 'Ctrl+=',
-      action: () => console.log('[Command] view.zoomIn'),
+      action: () => {},
     },
     {
       id: 'view.zoomOut',
@@ -144,7 +144,7 @@ function initSystemCommands() {
       icon: Eye,
       category: 'view' as const,
       shortcut: 'Ctrl+-',
-      action: () => console.log('[Command] view.zoomOut'),
+      action: () => {},
     },
 
     // Tool commands
@@ -154,7 +154,7 @@ function initSystemCommands() {
       description: '手动触发数据同步',
       icon: RefreshCw,
       category: 'tool' as const,
-      action: () => console.log('[Command] tool.sync'),
+      action: () => {},
     },
     {
       id: 'tool.export',
@@ -162,7 +162,7 @@ function initSystemCommands() {
       description: '导出项目数据',
       icon: Download,
       category: 'tool' as const,
-      action: () => console.log('[Command] tool.export'),
+      action: () => {},
     },
     {
       id: 'tool.import',
@@ -170,7 +170,7 @@ function initSystemCommands() {
       description: '导入外部数据',
       icon: Upload,
       category: 'tool' as const,
-      action: () => console.log('[Command] tool.import'),
+      action: () => {},
     },
     {
       id: 'tool.terminal',
@@ -179,7 +179,7 @@ function initSystemCommands() {
       icon: Terminal,
       category: 'tool' as const,
       shortcut: 'Ctrl+`',
-      action: () => console.log('[Command] tool.terminal'),
+      action: () => {},
     },
 
     // Settings commands
@@ -190,7 +190,7 @@ function initSystemCommands() {
       icon: Settings,
       category: 'settings' as const,
       shortcut: 'Ctrl+,',
-      action: () => console.log('[Command] settings.open'),
+      action: () => {},
     },
     {
       id: 'settings.account',
@@ -198,7 +198,7 @@ function initSystemCommands() {
       description: '管理账户信息',
       icon: User,
       category: 'settings' as const,
-      action: () => console.log('[Command] settings.account'),
+      action: () => {},
     },
     {
       id: 'settings.notifications',
@@ -206,7 +206,7 @@ function initSystemCommands() {
       description: '管理通知偏好',
       icon: Bell,
       category: 'settings' as const,
-      action: () => console.log('[Command] settings.notifications'),
+      action: () => {},
     },
     {
       id: 'settings.shortcuts',
@@ -214,7 +214,7 @@ function initSystemCommands() {
       description: '查看和修改快捷键',
       icon: Terminal,
       category: 'settings' as const,
-      action: () => console.log('[Command] settings.shortcuts'),
+      action: () => {},
     },
 
     // Navigation commands
@@ -225,7 +225,7 @@ function initSystemCommands() {
       icon: Eye,
       category: 'navigation' as const,
       shortcut: 'Ctrl+1',
-      action: () => console.log('[Command] nav.homepage'),
+      action: () => {},
     },
     {
       id: 'nav.hr',
@@ -233,7 +233,7 @@ function initSystemCommands() {
       description: '跳转到人事管理模块',
       icon: Users,
       category: 'navigation' as const,
-      action: () => console.log('[Command] nav.hr'),
+      action: () => {},
     },
     {
       id: 'nav.finance',
@@ -241,7 +241,7 @@ function initSystemCommands() {
       description: '跳转到财务管理模块',
       icon: Shield,
       category: 'navigation' as const,
-      action: () => console.log('[Command] nav.finance'),
+      action: () => {},
     },
     {
       id: 'nav.warehouse',
@@ -249,7 +249,7 @@ function initSystemCommands() {
       description: '跳转到仓储管理模块',
       icon: Package,
       category: 'navigation' as const,
-      action: () => console.log('[Command] nav.warehouse'),
+      action: () => {},
     },
     {
       id: 'warehouse.inventory',
@@ -259,7 +259,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['库存', '商品', '查询', '盘点'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.inventory'),
+      action: () => {},
     },
     {
       id: 'warehouse.inbound',
@@ -269,7 +269,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['入库', '采购', '收货'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.inbound'),
+      action: () => {},
     },
     {
       id: 'warehouse.outbound',
@@ -279,7 +279,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['出库', '发货', '销售'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.outbound'),
+      action: () => {},
     },
     {
       id: 'warehouse.stocktaking',
@@ -289,7 +289,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['盘点', '清点', '核对'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.stocktaking'),
+      action: () => {},
     },
     {
       id: 'warehouse.warning',
@@ -299,7 +299,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['预警', '提醒', '库存不足'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.warning'),
+      action: () => {},
     },
     {
       id: 'warehouse.logistics',
@@ -309,7 +309,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['物流', '快递', '运输', '追踪'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.logistics'),
+      action: () => {},
     },
     {
       id: 'warehouse.location',
@@ -319,7 +319,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['库位', '货架', '区域'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.location'),
+      action: () => {},
     },
     {
       id: 'warehouse.movement',
@@ -329,7 +329,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['流水', '变动', '记录', '出入库'],
       pluginId: 'warehouse',
-      action: () => console.log('[Command] warehouse.movement'),
+      action: () => {},
     },
     {
       id: 'nav.sales',
@@ -337,7 +337,7 @@ function initSystemCommands() {
       description: '跳转到销售管理模块',
       icon: Shield,
       category: 'navigation' as const,
-      action: () => console.log('[Command] nav.sales'),
+      action: () => {},
     },
     {
       id: 'nav.admin',
@@ -345,7 +345,7 @@ function initSystemCommands() {
       description: '跳转到管理层视图',
       icon: Shield,
       category: 'navigation' as const,
-      action: () => console.log('[Command] nav.admin'),
+      action: () => {},
     },
     {
       id: 'nav.aiChat',
@@ -354,7 +354,7 @@ function initSystemCommands() {
       icon: Terminal,
       category: 'navigation' as const,
       shortcut: 'Ctrl+Shift+A',
-      action: () => console.log('[Command] nav.aiChat'),
+      action: () => {},
     },
 
     // Service commands
@@ -365,7 +365,7 @@ function initSystemCommands() {
       icon: HeadphonesIcon,
       category: 'navigation' as const,
       keywords: ['售后', '工单', '客服', '服务'],
-      action: () => console.log('[Command] nav.service'),
+      action: () => {},
     },
     {
       id: 'service.createTicket',
@@ -375,7 +375,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['工单', '创建', '售后', '新建'],
       pluginId: 'service',
-      action: () => console.log('[Command] service.createTicket'),
+      action: () => {},
     },
     {
       id: 'service.listTickets',
@@ -385,7 +385,7 @@ function initSystemCommands() {
       category: 'plugin' as const,
       keywords: ['工单', '列表', '售后', '查看'],
       pluginId: 'service',
-      action: () => console.log('[Command] service.listTickets'),
+      action: () => {},
     },
 
     // Help commands
@@ -395,7 +395,7 @@ function initSystemCommands() {
       description: '查看应用信息',
       icon: Info,
       category: 'tool' as const,
-      action: () => console.log('[Command] help.about'),
+      action: () => {},
     },
     {
       id: 'help.documentation',
@@ -403,7 +403,7 @@ function initSystemCommands() {
       description: '打开帮助文档',
       icon: HelpCircle,
       category: 'tool' as const,
-      action: () => console.log('[Command] help.documentation'),
+      action: () => {},
     },
     {
       id: 'help.feedback',
@@ -411,7 +411,7 @@ function initSystemCommands() {
       description: '报告问题或提供反馈',
       icon: Bug,
       category: 'tool' as const,
-      action: () => console.log('[Command] help.feedback'),
+      action: () => {},
     },
     {
       id: 'help.checkUpdate',
@@ -419,7 +419,7 @@ function initSystemCommands() {
       description: '检查应用更新',
       icon: RefreshCw,
       category: 'tool' as const,
-      action: () => console.log('[Command] help.checkUpdate'),
+      action: () => {},
     },
   ]
 

@@ -90,14 +90,14 @@ export function TicketDetail({ ticketId, open, onOpenChange }: TicketDetailProps
     }
   }
 
-  const handleFollowUpSubmit = async (data: CreateFollowUpRequest) => {
+  const handleFollowUpSubmit = async (_data: CreateFollowUpRequest) => {
     // TODO: 实现创建回访记录
-    console.log('Follow-up submitted:', data)
+    // Follow-up submitted
   }
 
-  const handleKnowledgeSubmit = async (data: KnowledgeContributionData) => {
+  const handleKnowledgeSubmit = async (_data: KnowledgeContributionData) => {
     // TODO: 实现提交知识贡献到知识库
-    console.log('Knowledge contribution submitted:', data)
+    // Knowledge contribution submitted
   }
 
   const handleClose = () => {

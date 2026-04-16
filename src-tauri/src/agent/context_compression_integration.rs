@@ -13,11 +13,9 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::agent::context_compression::{
-    CompressionStrategy, CompressedContext, ContextCompressor, MessageTokens,
-    SessionSummary, SessionSummaryService, SessionSummaryManager, ThresholdStatus, TokenBudget,
+    CompressedContext, ContextCompressor, MessageTokens, SessionSummaryService, SessionSummaryManager, ThresholdStatus, TokenBudget,
     CompressionStats,
 };
-use crate::agent::runtime_session::RuntimeSessionService;
 use crate::agent::AgentError;
 
 /// Compression trigger type

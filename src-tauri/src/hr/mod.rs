@@ -14,5 +14,4 @@ pub mod types;
 
 pub use commands::*;
 pub use department::*;
-pub use position::*;
 pub use types::*;

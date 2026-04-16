@@ -1,8 +1,6 @@
 //! Approval processor implementation.
 
-use super::{ApprovalStatus, ApprovalUrgency, ApprovalRequest};
-use crate::capability::CapabilityPackageManifest;
-use anyhow::Result;
+use super::ApprovalStatus;
 
 /// Approval decision
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

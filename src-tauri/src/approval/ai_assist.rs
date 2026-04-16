@@ -287,7 +287,7 @@ impl ApprovalAIAssist {
     }
 
     /// 时间异常检测
-    fn check_time_anomaly(&self, approval: &ApprovalData) -> Option<RiskAlert> {
+    fn check_time_anomaly(&self, _approval: &ApprovalData) -> Option<RiskAlert> {
         use chrono::{Utc, Timelike, Weekday, Datelike};
         
         let now = Utc::now();
@@ -330,7 +330,7 @@ impl ApprovalAIAssist {
     }
 
     /// 生成审批摘要
-    pub fn generate_summary(&self, approvals: &[ApprovalData], date_range: &DateRange) -> ApprovalSummary {
+    pub fn generate_summary(&self, approvals: &[ApprovalData], _date_range: &DateRange) -> ApprovalSummary {
         let total_count = approvals.len();
         let total_amount: f64 = approvals.iter().map(|a| a.amount).sum();
         
@@ -414,7 +414,7 @@ impl ApprovalAIAssist {
     }
 
     /// 智能表单填充
-    pub fn smart_fill(&self, form_type: &str, context: &str) -> SmartFillResult {
+    pub fn smart_fill(&self, form_type: &str, _context: &str) -> SmartFillResult {
         let mut suggestions = Vec::new();
         let mut filled_data = HashMap::new();
         

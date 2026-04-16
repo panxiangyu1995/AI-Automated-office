@@ -6,7 +6,7 @@ use tauri::State;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::message::group::{Group, GroupMember, GroupType, MemberRole, GroupStore, GroupError};
+use crate::message::group::{Group, GroupMember, GroupType, MemberRole, GroupStore};
 use crate::message::group_message::{GroupMessage, GroupMessageStore};
 
 pub struct GroupServiceState(pub Arc<RwLock<GroupStore>>);

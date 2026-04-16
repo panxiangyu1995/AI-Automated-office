@@ -271,6 +271,66 @@ impl DataSyncEngine {
                     "remote": conflict.remote_data,
                 })
             }
+            ConflictResolution::Merge => {
+                // Smart merge: for simple fields take the newer value, for arrays take union
+                match (&conflict.local_data, &conflict.remote_data) {
+                    (serde_json::Value::Object(local_map), serde_json::Value::Object(remote_map)) => {
+                        let mut merged = serde_json::Map::new();
+                        // Collect all keys from both
+                        let all_keys: std::collections::HashSet<&String> = local_map.keys().chain(remote_map.keys()).collect();
+                        for key in all_keys {
+                            let local_val = local_map.get(key);
+                            let remote_val = remote_map.get(key);
+                            match (local_val, remote_val) {
+                                (Some(l), Some(r)) => {
+                                    // For arrays, take union; for scalars, take newer
+                                    if l.is_array() && r.is_array() {
+                                        let mut arr = l.as_array().unwrap().clone();
+                                        for item in r.as_array().unwrap() {
+                                            if !arr.contains(item) {
+                                                arr.push(item.clone());
+                                            }
+                                        }
+                                        merged.insert(key.clone(), serde_json::Value::Array(arr));
+                                    } else {
+                                        // Take the value from the newer timestamp
+                                        if conflict.local_timestamp >= conflict.remote_timestamp {
+                                            merged.insert(key.clone(), l.clone());
+                                        } else {
+                                            merged.insert(key.clone(), r.clone());
+                                        }
+                                    }
+                                }
+                                (Some(v), None) | (None, Some(v)) => {
+                                    merged.insert(key.clone(), v.clone());
+                                }
+                                (None, None) => {}
+                            }
+                        }
+                        serde_json::Value::Object(merged)
+                    }
+                    _ => {
+                        // Fallback: if not objects, use last-write-wins
+                        if conflict.local_timestamp >= conflict.remote_timestamp {
+                            conflict.local_data.clone()
+                        } else {
+                            conflict.remote_data.clone()
+                        }
+                    }
+                }
+            }
+            ConflictResolution::AskUser => {
+                // Return conflict details for frontend to handle
+                serde_json::json!({
+                    "conflict": true,
+                    "entity_type": conflict.entity_type,
+                    "entity_id": conflict.entity_id,
+                    "local_data": conflict.local_data,
+                    "remote_data": conflict.remote_data,
+                    "local_timestamp": conflict.local_timestamp,
+                    "remote_timestamp": conflict.remote_timestamp,
+                })
+            }
         }
     }
 

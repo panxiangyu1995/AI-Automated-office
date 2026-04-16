@@ -535,7 +535,7 @@ impl RecoveryService {
     /// Restore session from a checkpoint
     pub async fn restore_from_checkpoint(
         &self,
-        checkpoint_id: &str,
+        _checkpoint_id: &str,
     ) -> Result<SessionCheckpoint> {
         // In a real implementation, we would query the database
         // For now, return an error indicating this needs database integration
@@ -545,7 +545,7 @@ impl RecoveryService {
     /// Get the most recent checkpoint for a session
     pub async fn get_latest_checkpoint(
         &self,
-        session_id: &str,
+        _session_id: &str,
     ) -> Result<Option<SessionCheckpoint>> {
         // In a real implementation, we would query the database
         Ok(None)
@@ -622,10 +622,10 @@ impl RecoveryService {
 /// Trait for components that handle recovery events
 #[async_trait]
 pub trait RecoveryEventHandler: Send + Sync {
-    async fn on_recovery_start(&self, context: &RecoveryContext) {}
-    async fn on_recovery_action(&self, decision: &RecoveryDecision) {}
-    async fn on_recovery_complete(&self, success: bool, context: &RecoveryContext) {}
-    async fn on_recovery_failure(&self, error: &str, context: &RecoveryContext) {}
+    async fn on_recovery_start(&self, _context: &RecoveryContext) {}
+    async fn on_recovery_action(&self, _decision: &RecoveryDecision) {}
+    async fn on_recovery_complete(&self, _success: bool, _context: &RecoveryContext) {}
+    async fn on_recovery_failure(&self, _error: &str, _context: &RecoveryContext) {}
 }
 
 /// Checkpoint management for orchestrator integration

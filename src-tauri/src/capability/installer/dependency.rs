@@ -1,6 +1,6 @@
 //! Dependency checker implementation.
 
-use crate::capability::types::{CapabilityPackageManifest, PackageDependency};
+use crate::capability::types::CapabilityPackageManifest;
 use anyhow::Result;
 use std::collections::HashMap;
 

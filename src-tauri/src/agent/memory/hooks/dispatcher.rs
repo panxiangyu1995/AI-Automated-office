@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use super::registry::{HookHandler, HookRegistry};
+use super::registry::HookRegistry;
 use super::super::types::HookEvent;
 use super::super::config::MemoryError;
 

@@ -1,6 +1,5 @@
 //! Skill discovery service.
 
-use std::path::Path;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;

@@ -252,7 +252,7 @@ impl ServiceTicket {
         priority: TicketPriority,
         customer_name: String,
         customer_contact: Option<String>,
-        customer_email: Option<String>,
+        _customer_email: Option<String>,
         tenant_id: String,
         customer_id: Option<String>,
     ) -> Self {

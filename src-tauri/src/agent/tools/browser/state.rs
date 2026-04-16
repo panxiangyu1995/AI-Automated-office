@@ -2,7 +2,6 @@
 //!
 //! Contains: set_offline, set_extra_headers, set_geolocation
 
-use std::collections::HashMap;
 use crate::agent::tools::browser::{
     BrowserInteractResult, get_or_init_state, update_state,
 };

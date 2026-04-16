@@ -6,10 +6,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 
-use super::{Invoice, InvoiceQueryResult, InvoiceType, ExpenseStatus, DateRange, AmountRange, FinanceRole};
+use super::{Invoice, InvoiceType, ExpenseStatus, DateRange, AmountRange, FinanceRole};
 use crate::agent::tools::descriptor::{Tool, ToolCapabilities, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolReturnType};
 
 /// 发票查询参数
@@ -271,7 +271,7 @@ impl FinanceQueryTool {
         
         // 分页
         let start = (params.page.saturating_sub(1)) * params.page_size;
-        let end = (start + params.page_size).min(filtered.len());
+        let _end = (start + params.page_size).min(filtered.len());
         let paged: Vec<&Invoice> = filtered.into_iter().skip(start).take(params.page_size).collect();
         
         // 字段过滤

@@ -229,7 +229,7 @@ impl IntentRouter {
     async fn find_available_subagent(
         &self,
         target: &SubagentType,
-        context: &ExecutionContext,
+        _context: &ExecutionContext,
     ) -> Result<Option<String>, RoutingError> {
         // In a real implementation, this would query the subagent manager
         // For now, return a default name based on target type

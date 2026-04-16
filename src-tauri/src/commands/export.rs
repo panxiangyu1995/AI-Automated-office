@@ -7,11 +7,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::export::{
-    ExportFormat, ExportStatus, MigrationDirection, MigrationStatus,
     csv_exporter::{CsvExporter, CsvExportConfig},
     json_exporter::{JsonExporter, JsonExportConfig},
     excel_exporter::{ExcelExporter, ExcelExportConfig},
-    migrator::{DataMigrator, ValidationResult, ImportResult},
+    migrator::{ValidationResult, ImportResult},
     ExportMigrationState,
 };
 
@@ -94,7 +93,7 @@ pub async fn create_migration(
     direction: String,
     source_data: String,
 ) -> Result<crate::export::migrator::MigrationRecord, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut migrator = state.migrator.write().await;
     let record = migrator.create_migration(&direction, &source_data);
     tracing::info!("Created migration {} with direction {}", record.id, direction);
@@ -108,7 +107,7 @@ pub async fn complete_migration(
     migration_id: String,
     target_data: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut migrator = state.migrator.write().await;
     migrator.complete_migration(&migration_id, &target_data, None)
         .ok_or_else(|| format!("Migration not found: {}", migration_id))?;
@@ -122,7 +121,7 @@ pub async fn rollback_migration(
     state: State<'_, Arc<RwLock<ExportMigrationState>>>,
     migration_id: String,
 ) -> Result<String, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut migrator = state.migrator.write().await;
     let rollback_data = migrator.rollback_migration(&migration_id)?;
     tracing::info!("Rolled back migration {}", migration_id);
@@ -185,7 +184,7 @@ pub async fn execute_import(
     state: State<'_, Arc<RwLock<ExportMigrationState>>>,
     data: String,
 ) -> Result<ImportResult, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut migrator = state.migrator.write().await;
     
     // 创建迁移记录

@@ -1,7 +1,6 @@
 //! Marketing 模块类型定义
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 // ==================== 营销活动类型 ====================
 

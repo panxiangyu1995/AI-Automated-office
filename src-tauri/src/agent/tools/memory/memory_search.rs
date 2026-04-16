@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::time::Instant;
 
-use crate::agent::tools::descriptor::ToolCapabilities;
 use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, ToolExecutor};
 use crate::agent::tools::pipeline::ToolErrorCode;
 

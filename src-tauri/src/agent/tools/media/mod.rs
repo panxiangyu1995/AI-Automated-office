@@ -73,7 +73,7 @@ pub fn register_media_tools(
         handler_module: Some("agent::tools::media".to_string()),
         handler_function: Some("image_understand".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "image_understand".to_string(),
         Arc::new(image_understand::ImageUnderstandExecutor::new()),
@@ -123,7 +123,7 @@ pub fn register_media_tools(
         handler_module: Some("agent::tools::media".to_string()),
         handler_function: Some("tts_speak".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "tts_speak".to_string(),
         Arc::new(tts_speak::TtsSpeakExecutor::new()),

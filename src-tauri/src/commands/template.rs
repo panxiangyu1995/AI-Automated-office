@@ -8,12 +8,11 @@ use tauri::State;
 use tracing::info;
 
 use crate::storage::{
-    TemplateStore, StorageManager,
+    StorageManager,
     template_schema::TemplateSchema,
     template_binding::{TemplateBindEngine, BindResult, BindPreview},
     template_designer::{
         TemplateDesigner, ElementOperation, LayerOperation, Alignment,
-        SchemaChangeTracker,
     },
 };
 

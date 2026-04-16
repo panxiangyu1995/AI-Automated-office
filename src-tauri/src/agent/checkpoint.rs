@@ -277,7 +277,7 @@ impl CheckpointService {
     /// 仅恢复对话历史
     async fn restore_conversation(&self, checkpoint: &Checkpoint) -> Result<SessionContext, CheckpointError> {
         // 提取消息ID
-        let message_ids = checkpoint.message_ids.clone()
+        let _message_ids = checkpoint.message_ids.clone()
             .ok_or(CheckpointError::InvalidData)?;
         
         // 构建上下文

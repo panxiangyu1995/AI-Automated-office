@@ -1,6 +1,5 @@
 //! Built-in hook handlers for memory events.
 
-use std::sync::Arc;
 use async_trait::async_trait;
 
 use super::registry::HookHandler;

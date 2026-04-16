@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::config::HeartbeatConfig;
 use super::delivery::{DeliveryService, HeartbeatNotification, NotificationLevel};
 use super::events::{HeartbeatEvent, HeartbeatEventEmitter};
-use super::parser::{CheckItemStatus, HeartbeatMdContent};
+use super::parser::CheckItemStatus;
 use super::preflight::{HeartbeatPreflight, PreflightResult, SessionInfo};
 
 /// Heartbeat execution result

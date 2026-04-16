@@ -7,7 +7,7 @@ use tokio::sync::RwLock;
 use tauri::State;
 
 use crate::agent::checkpoint::{
-    Checkpoint, CheckpointService, RollbackMode, SessionContext, CheckpointError,
+    Checkpoint, CheckpointService, RollbackMode, SessionContext,
 };
 
 pub struct CheckpointState(pub Arc<RwLock<CheckpointService>>);

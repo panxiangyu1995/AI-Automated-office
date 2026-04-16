@@ -8,7 +8,7 @@ use crate::agent::tools::browser::{
 use crate::agent::tools::pipeline::ToolExecutionError;
 
 pub async fn execute_get_network_requests(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let state = get_or_init_state();
 
@@ -28,7 +28,7 @@ pub async fn execute_get_network_requests(
 }
 
 pub async fn execute_get_response_body(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let state = get_or_init_state();
 

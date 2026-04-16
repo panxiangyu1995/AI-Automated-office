@@ -4,7 +4,6 @@ use std::process::Command;
 use std::sync::Arc;
 use std::sync::RwLock;
 
-use async_trait::async_trait;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
@@ -99,11 +98,11 @@ pub fn register_shell_tools(
     executors: &mut HashMap<String, Arc<dyn ToolExecutor>>,
 ) {
     let (descriptor, executor) = sandbox_execute();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = pattern_search();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 }
 

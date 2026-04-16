@@ -5,14 +5,17 @@
 
 use tauri::State;
 use std::sync::Arc;
+use crate::auth::{AuthService, verify_and_check, Permission};
 use crate::approval::attachment::{
     AttachmentService, AuditAction, TimelineEventType,
 };
 
-/// Create and add a new attachment
+/// Create and add a new attachment (Write)
 #[tauri::command]
 pub async fn add_attachment(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
     file_name: String,
     file_size: u64,
@@ -20,49 +23,62 @@ pub async fn add_attachment(
     storage_path: String,
     uploaded_by: String,
 ) -> Result<crate::approval::attachment::Attachment, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     Ok(service
         .add_attachment(record_id, file_name, file_size, mime_type, storage_path, uploaded_by)
         .await)
 }
 
-/// Get attachment by ID
+/// Get attachment by ID (Read)
 #[tauri::command]
 pub async fn get_attachment(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     attachment_id: String,
 ) -> Result<Option<crate::approval::attachment::Attachment>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     Ok(service.get_attachment(&attachment_id).await)
 }
 
-/// Get all attachments for a record
+/// Get all attachments for a record (Read)
 #[tauri::command]
 pub async fn get_record_attachments(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
 ) -> Result<Vec<crate::approval::attachment::Attachment>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     Ok(service.get_record_attachments(&record_id).await)
 }
 
-/// Delete attachment (soft delete)
+/// Delete attachment (soft delete) (Admin)
 #[tauri::command]
 pub async fn delete_attachment(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     attachment_id: String,
     deleted_by: String,
 ) -> Result<bool, String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     Ok(service.delete_attachment(&attachment_id, deleted_by).await)
 }
 
-/// Add audit entry
+/// Add audit entry (Write)
 #[tauri::command]
 pub async fn add_audit_entry(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
     operator_id: String,
     operator_name: String,
     action: String,
     details: String,
 ) -> Result<crate::approval::attachment::AuditEntry, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     let action = match action.as_str() {
         "create" => AuditAction::Create,
         "update" => AuditAction::Update,
@@ -83,10 +99,12 @@ pub async fn add_audit_entry(
         .await)
 }
 
-/// Add audit entry with state change
+/// Add audit entry with state change (Write)
 #[tauri::command]
 pub async fn add_audit_with_state(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
     operator_id: String,
     operator_name: String,
@@ -95,6 +113,7 @@ pub async fn add_audit_with_state(
     before_state: String,
     after_state: String,
 ) -> Result<crate::approval::attachment::AuditEntry, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     let action = match action.as_str() {
         "create" => AuditAction::Create,
         "update" => AuditAction::Update,
@@ -119,33 +138,42 @@ pub async fn add_audit_with_state(
         .await)
 }
 
-/// Get audit entries for a record
+/// Get audit entries for a record (Read)
 #[tauri::command]
 pub async fn get_record_audits(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
 ) -> Result<Vec<crate::approval::attachment::AuditEntry>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     Ok(service.get_record_audits(&record_id).await)
 }
 
-/// Get all audit entries
+/// Get all audit entries (Read)
 #[tauri::command]
 pub async fn get_all_audits(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
 ) -> Result<Vec<crate::approval::attachment::AuditEntry>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     Ok(service.get_all_audits().await)
 }
 
-/// Query audits with filters
+/// Query audits with filters (Read)
 #[tauri::command]
 pub async fn query_audits(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: Option<String>,
     operator_id: Option<String>,
     action: Option<String>,
     start_time: Option<i64>,
     end_time: Option<i64>,
 ) -> Result<Vec<crate::approval::attachment::AuditEntry>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let action = match action.as_ref().map(|a| a.as_str()) {
         Some("create") => Some(AuditAction::Create),
         Some("update") => Some(AuditAction::Update),
@@ -165,10 +193,12 @@ pub async fn query_audits(
     Ok(service.query_audits(record_id, operator_id, action, start_time, end_time).await)
 }
 
-/// Add timeline event
+/// Add timeline event (Write)
 #[tauri::command]
 pub async fn add_timeline_event(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
     event_type: String,
     title: String,
@@ -176,6 +206,7 @@ pub async fn add_timeline_event(
     actor_id: String,
     actor_name: String,
 ) -> Result<crate::approval::attachment::TimelineEvent, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     let event_type = match event_type.as_str() {
         "submitted" => TimelineEventType::Submitted,
         "approved" => TimelineEventType::Approved,
@@ -195,20 +226,26 @@ pub async fn add_timeline_event(
         .await)
 }
 
-/// Get timeline for a record
+/// Get timeline for a record (Read)
 #[tauri::command]
 pub async fn get_record_timeline(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
 ) -> Result<Vec<crate::approval::attachment::TimelineEvent>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     Ok(service.get_record_timeline(&record_id).await)
 }
 
-/// Check if timeline exists for record
+/// Check if timeline exists for record (Read)
 #[tauri::command]
 pub async fn has_timeline(
     service: State<'_, Arc<AttachmentService>>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     record_id: String,
 ) -> Result<bool, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     Ok(service.has_timeline(&record_id).await)
 }

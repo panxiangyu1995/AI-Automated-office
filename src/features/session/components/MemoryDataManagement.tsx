@@ -332,12 +332,12 @@ export function MemoryDataManagement(): React.ReactNode {
     setShowEditDialog(true)
   }
 
-  const handleDelete = (recordId: string) => {
-    console.log('Delete record:', recordId)
+  const handleDelete = (_recordId: string) => {
+    // Delete record
   }
 
   const handleExport = () => {
-    console.log('Export records')
+    // Export records
   }
 
   const handleBackup = () => {
@@ -345,7 +345,7 @@ export function MemoryDataManagement(): React.ReactNode {
   }
 
   const handleRestore = () => {
-    console.log('Restore from backup')
+    // Restore from backup
   }
 
   const toggleExpand = (recordId: string) => {

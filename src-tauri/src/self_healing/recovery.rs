@@ -7,8 +7,6 @@ use super::{
     RecoveryStatus, TriggeredBy, chrono_now, uuid_simple,
 };
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 /// Recovery configuration
 #[derive(Debug, Clone)]

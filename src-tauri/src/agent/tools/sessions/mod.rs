@@ -80,7 +80,7 @@ pub fn register_sessions_tools(
         handler_module: Some("agent::tools::sessions".to_string()),
         handler_function: Some("sessions_list".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "sessions_list".to_string(),
         Arc::new(sessions_list::SessionsListExecutor::new()),
@@ -129,7 +129,7 @@ pub fn register_sessions_tools(
         handler_module: Some("agent::tools::sessions".to_string()),
         handler_function: Some("sessions_history".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "sessions_history".to_string(),
         Arc::new(sessions_history::SessionsHistoryExecutor::new()),
@@ -178,7 +178,7 @@ pub fn register_sessions_tools(
         handler_module: Some("agent::tools::sessions".to_string()),
         handler_function: Some("sessions_send".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "sessions_send".to_string(),
         Arc::new(sessions_send::SessionsSendExecutor::new()),
@@ -227,7 +227,7 @@ pub fn register_sessions_tools(
         handler_module: Some("agent::tools::sessions".to_string()),
         handler_function: Some("sessions_spawn".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "sessions_spawn".to_string(),
         Arc::new(sessions_spawn::SessionsSpawnExecutor::new()),
@@ -276,7 +276,7 @@ pub fn register_sessions_tools(
         handler_module: Some("agent::tools::sessions".to_string()),
         handler_function: Some("sessions_yield".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "sessions_yield".to_string(),
         Arc::new(sessions_yield::SessionsYieldExecutor::new()),
@@ -325,7 +325,7 @@ pub fn register_sessions_tools(
         handler_module: Some("agent::tools::sessions".to_string()),
         handler_function: Some("session_status".to_string()),
     };
-    registry.register(descriptor);
+    let _ = registry.register(descriptor);
     executors.insert(
         "session_status".to_string(),
         Arc::new(session_status::SessionStatusExecutor::new()),

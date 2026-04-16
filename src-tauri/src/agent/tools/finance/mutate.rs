@@ -2,14 +2,13 @@
 //!
 //! 报销操作工具：提交、审核、调整等
 
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 
-use super::{ExpenseAction, ExpenseOperation, ExpenseStatus, FinanceRole};
+use super::{ExpenseAction, ExpenseOperation, FinanceRole};
 use crate::agent::tools::descriptor::{Tool, ToolCapabilities, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolReturnType};
 
 /// 报销操作参数

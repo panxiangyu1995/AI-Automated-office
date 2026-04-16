@@ -5,12 +5,11 @@
 //! - Error handling
 //! - Session lifecycle management
 
-use std::sync::Arc;
 use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use super::{RouteDecision, RoutingError, SubagentType};
+use super::RouteDecision;
 
 /// Execution errors
 #[derive(Error, Debug)]
@@ -257,7 +256,7 @@ impl DelegationExecutor {
     /// Execute session (placeholder)
     async fn execute_session(
         &self,
-        session_id: String,
+        _session_id: String,
         contract: DelegationContract,
     ) -> Result<SubagentResult, ExecutionError> {
         // In a real implementation, this would:

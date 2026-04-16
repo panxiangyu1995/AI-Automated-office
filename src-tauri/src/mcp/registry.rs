@@ -10,16 +10,13 @@ pub use super::manager::ServiceManager;
 pub use super::store::ConfigStore;
 pub use super::engine::PolicyEngine;
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
-use tokio::sync::RwLock;
 
 
-use super::client::{MCPClient, MCPClientConfig};
 use super::types::{
     MCPServiceConfig, MCPServiceStatus, MCPServiceInfo, MCPTool,
-    PerToolApprovalConfig, ApprovalPolicy, AutoApproveResult,
+    PerToolApprovalConfig, AutoApproveResult,
 };
 
 /// Global MCP service registry

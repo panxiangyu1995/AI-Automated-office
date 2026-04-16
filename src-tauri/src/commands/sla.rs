@@ -7,10 +7,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::sla::{
-    metrics::{MetricsCollector, MetricType, AggregateType, MetricStatistics},
-    alerts::{AlertEngine, AlertRule, AlertCondition, AlertSeverity, Alert},
-    dashboard::{SlaDashboard, ServiceHealth, HealthStatus, DashboardTimeRange},
-    reporter::{SlaReporter, SlaReport, ReportPeriod, ReportFormat},
+    metrics::{MetricType, AggregateType, MetricStatistics},
+    alerts::{AlertRule, AlertCondition, AlertSeverity, Alert},
+    dashboard::{ServiceHealth, DashboardTimeRange},
+    reporter::{SlaReport, ReportPeriod},
     SlaMonitoringState,
 };
 
@@ -27,7 +27,7 @@ pub async fn record_sla_metric(
     value: f64,
     unit: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut collector = state.metrics_collector.write().await;
     
     let mtype = match metric_type.as_str() {
@@ -109,7 +109,7 @@ pub async fn reset_sla_metric(
     state: State<'_, Arc<RwLock<SlaMonitoringState>>>,
     name: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut collector = state.metrics_collector.write().await;
     collector.reset(&name);
     Ok(())
@@ -129,7 +129,7 @@ pub async fn create_alert_rule(
     threshold: f64,
     severity: String,
 ) -> Result<AlertRule, String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut engine = state.alert_engine.write().await;
     
     let condition = match condition_type.as_str() {
@@ -169,7 +169,7 @@ pub async fn delete_alert_rule(
     state: State<'_, Arc<RwLock<SlaMonitoringState>>>,
     rule_id: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut engine = state.alert_engine.write().await;
     engine.remove_rule(&rule_id)
         .ok_or_else(|| format!("Rule not found: {}", rule_id))?;
@@ -192,7 +192,7 @@ pub async fn acknowledge_alert(
     state: State<'_, Arc<RwLock<SlaMonitoringState>>>,
     alert_id: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut engine = state.alert_engine.write().await;
     engine.acknowledge_alert(&alert_id)
         .ok_or_else(|| format!("Alert not found: {}", alert_id))?;
@@ -205,7 +205,7 @@ pub async fn resolve_alert(
     state: State<'_, Arc<RwLock<SlaMonitoringState>>>,
     alert_id: String,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut engine = state.alert_engine.write().await;
     engine.resolve_alert(&alert_id)
         .ok_or_else(|| format!("Alert not found: {}", alert_id))?;
@@ -237,7 +237,7 @@ pub async fn add_service_health(
     error_rate: f64,
     sla_target: f64,
 ) -> Result<(), String> {
-    let mut state = state.write().await;
+    let state = state.write().await;
     let mut dashboard = state.dashboard.write().await;
     
     let status = ServiceHealth::calculate_status(availability, sla_target);
@@ -266,7 +266,7 @@ pub async fn get_sla_dashboard_data(
     let state = state.read().await;
     let dashboard = state.dashboard.read().await;
     
-    let range = match time_range.as_str() {
+    let _range = match time_range.as_str() {
         "last_hour" => DashboardTimeRange::LastHour,
         "last_6_hours" => DashboardTimeRange::Last6Hours,
         "last_24_hours" => DashboardTimeRange::Last24Hours,

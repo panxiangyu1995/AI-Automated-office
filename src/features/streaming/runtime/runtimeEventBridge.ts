@@ -223,7 +223,7 @@ export async function attachWebSocketRuntimeEventBridge(
       // For now, mark as connected
       bridgeState.isConnected = true
 
-      console.log(`[WebSocketBridge] Connected with session: ${wsSessionId}`)
+      // Connected with session
     } catch (error) {
       console.warn('[WebSocketBridge] Failed to connect via WebSocket:', error)
 
@@ -232,7 +232,7 @@ export async function attachWebSocketRuntimeEventBridge(
       }
 
       // Fall back to Tauri IPC
-      console.log('[WebSocketBridge] Falling back to Tauri IPC')
+      // Falling back to Tauri IPC
       unlistenTauri = await attachTauriRuntimeEventBridge(options)
     }
   } else if (fallbackToTauri) {
@@ -278,7 +278,7 @@ export async function reconnectWebSocket(
   // Calculate delay with exponential backoff (1s, 2s, 4s, 8s, 16s, max 30s)
   const delay = Math.min(1000 * Math.pow(2, attempt), 30000)
   
-  console.log(`[WebSocketBridge] Reconnecting in ${delay}ms (attempt ${attempt + 1}/${eventBridge.maxReconnectAttempts})`)
+  // Reconnecting with backoff
   
   await new Promise(resolve => setTimeout(resolve, delay))
 
@@ -287,7 +287,7 @@ export async function reconnectWebSocket(
     eventBridge.wsSessionId = wsSessionId
     eventBridge.reconnectAttempts = 0
     eventBridge.isConnected = true
-    console.log(`[WebSocketBridge] Reconnected successfully`)
+    // Reconnected successfully
   } catch (error) {
     console.error(`[WebSocketBridge] Reconnect failed:`, error)
     eventBridge.reconnectAttempts = attempt + 1

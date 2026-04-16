@@ -4,10 +4,8 @@
 
 use super::{
     PluginHealthSignal, PluginHealthStatus, FaultSeverity, DiagnosticEntry,
-    DiagnosticLevel, RecoveryAction, HealthCheckConfig, HealthCheckResult,
-    IsolationReason, chrono_now, uuid_simple,
+    DiagnosticLevel, RecoveryAction, HealthCheckConfig, HealthCheckResult, chrono_now, uuid_simple,
 };
-use std::collections::HashMap;
 
 /// Health monitoring configuration
 #[derive(Debug, Clone)]

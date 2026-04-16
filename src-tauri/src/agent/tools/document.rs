@@ -2,13 +2,12 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::sync::RwLock;
 
 use super::descriptor::{
     ToolCapabilities, ToolCategory, ToolContextRequirements, ToolDescriptor, ToolExecutionMode,
-    ToolMetadata, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolPermissionRequirement,
+    ToolMetadata, ToolParameter, ToolParameterType, ToolParameterTypeSpec,
 };
 use super::pipeline::{ToolExecutionContext, ToolExecutionError, ToolErrorCode, ToolExecutor};
 
@@ -64,11 +63,11 @@ pub fn register_document_tools(
     executors: &mut HashMap<String, Arc<dyn ToolExecutor>>,
 ) {
     let (descriptor, executor) = document_parse();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 
     let (descriptor, executor) = document_convert();
-    registry.register(descriptor.clone());
+    let _ = registry.register(descriptor.clone());
     executors.insert(descriptor.id.clone(), executor);
 }
 

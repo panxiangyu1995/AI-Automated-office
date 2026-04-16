@@ -29,19 +29,14 @@ export function useGlobalShortcuts() {
 
     // 使用 async/await 正确处理 Promise
     const setupListeners = async () => {
-      console.log('[useGlobalShortcuts] 开始设置事件监听器...')
-
       const [openAiUnlisten, quickSearchUnlisten, openSettingsUnlisten] = await Promise.all([
         listen('open-ai-chat', () => {
-          console.log('[useGlobalShortcuts] 收到 open-ai-chat 事件，派发 window 事件')
           window.dispatchEvent(new CustomEvent('shortcut:open-ai-chat'))
         }),
         listen('open-quick-search', () => {
-          console.log('[useGlobalShortcuts] 收到 open-quick-search 事件，派发 window 事件')
           window.dispatchEvent(new CustomEvent('shortcut:open-quick-search'))
         }),
         listen('open-settings', () => {
-          console.log('[useGlobalShortcuts] 收到 open-settings 事件，派发 window 事件')
           window.dispatchEvent(new CustomEvent('shortcut:open-settings'))
         }),
       ])
@@ -62,8 +57,6 @@ export function useGlobalShortcuts() {
         unlistenOpenSettings()
         unlistenOpenSettings = null
       }
-
-      console.log('[useGlobalShortcuts] 事件监听器设置完成')
     }
 
     setupListeners().catch((err) => {
@@ -72,7 +65,6 @@ export function useGlobalShortcuts() {
 
     return () => {
       cancelled = true
-      console.log('[useGlobalShortcuts] 清理事件监听器')
       if (unlistenOpenAiChat) unlistenOpenAiChat()
       if (unlistenQuickSearch) unlistenQuickSearch()
       if (unlistenOpenSettings) unlistenOpenSettings()
@@ -151,18 +143,14 @@ export function useShortcutListener(
   }, [callback])
 
   useEffect(() => {
-    console.log(`[useShortcutListener] 设置 window 事件监听: shortcut:${event}`)
-    
     const handler = () => {
-      console.log(`[useShortcutListener] 收到 window 事件: shortcut:${event}`)
       // 调用最新的 callback
       savedCallback.current()
     }
-    
+
     window.addEventListener(`shortcut:${event}`, handler)
-    
+
     return () => {
-      console.log(`[useShortcutListener] 清理 window 事件监听: shortcut:${event}`)
       window.removeEventListener(`shortcut:${event}`, handler)
     }
   }, [event])

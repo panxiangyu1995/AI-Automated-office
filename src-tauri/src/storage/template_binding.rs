@@ -12,8 +12,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::template_schema::{
-    BindingDataType, ElementBounds, LoopConfig,
-    RenderCondition, TemplateElement, TemplateLayer, TemplateSchema,
+    BindingDataType, ElementBounds, LoopConfig, TemplateElement, TemplateLayer, TemplateSchema,
 };
 
 /// 数据绑定结果

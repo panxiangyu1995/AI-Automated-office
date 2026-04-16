@@ -85,7 +85,7 @@ impl CapabilityPackageRegistry {
         }
 
         // Resolve dependencies
-        let resolved = self.dependency_resolver.resolve(package).await?;
+        let _resolved = self.dependency_resolver.resolve(package).await?;
 
         // Create registry entry
         let entry = RegistryEntry {
@@ -121,7 +121,7 @@ impl CapabilityPackageRegistry {
     /// Unregister a package
     pub async fn unregister(&self, package_id: &str) -> Result<()> {
         // Check if package exists
-        let entry = self.get_entry(package_id).await?;
+        let _entry = self.get_entry(package_id).await?;
 
         // Check for dependents
         self.check_dependents(package_id).await?;
@@ -252,7 +252,7 @@ impl CapabilityPackageRegistry {
         let target_version = version.unwrap_or(&marketplace_pkg.latest_version);
 
         // Get specific version
-        let package_version = client.get_version(package_id, target_version).await?;
+        let _package_version = client.get_version(package_id, target_version).await?;
 
         // Download package
         let archive = client.download(package_id, target_version).await?;

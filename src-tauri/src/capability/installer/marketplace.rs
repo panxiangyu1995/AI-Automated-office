@@ -44,7 +44,7 @@ impl MarketplaceInstaller {
         let target_version = version.unwrap_or_else(|| package.latest_version.clone());
 
         // Find the specific version
-        let version_info = package
+        let _version_info = package
             .versions
             .iter()
             .find(|v| v.version == target_version)
@@ -53,7 +53,7 @@ impl MarketplaceInstaller {
             })?;
 
         // Download the package
-        let data = self
+        let _data = self
             .client
             .download_package(&resource_id, &target_version)
             .await

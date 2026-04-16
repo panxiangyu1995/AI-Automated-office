@@ -332,12 +332,12 @@ export function EnterpriseKnowledgeBase(): React.ReactNode {
     setShowDocDetail(true)
   }
 
-  const handleRetryIndex = (docId: string) => {
-    console.log('Retry indexing:', docId)
+  const handleRetryIndex = (_docId: string) => {
+    // Retry indexing
   }
 
-  const handleDeleteDocument = (docId: string) => {
-    console.log('Delete document:', docId)
+  const handleDeleteDocument = (_docId: string) => {
+    // Delete document
   }
 
   return (

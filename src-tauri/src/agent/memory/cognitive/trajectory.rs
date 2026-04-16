@@ -134,7 +134,7 @@ impl TrajectoryTracker {
     }
 
     /// Calculate switching cost between domains
-    pub fn calculate_switching_cost(&self, user_id: &str, from_domain: &str, to_domain: &str) -> f64 {
+    pub fn calculate_switching_cost(&self, user_id: &str, from_domain: &str, _to_domain: &str) -> f64 {
         if let Some(trajectory) = self.get_trajectory(user_id) {
             let recent_steps: Vec<_> = trajectory.steps.iter().rev().take(10).collect();
 

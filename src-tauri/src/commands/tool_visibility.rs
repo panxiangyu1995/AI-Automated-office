@@ -12,7 +12,7 @@
 use tauri::State;
 use crate::agent::tools::visibility::{
     ToolVisibilityService, ToolCallEntry, ToolCallFilter, ToolVisibilityStats,
-    BatchOperation, ToolCategory, ToolCallStatus,
+    BatchOperation, ToolCategory,
 };
 
 /// Create a new tool call entry for visibility tracking

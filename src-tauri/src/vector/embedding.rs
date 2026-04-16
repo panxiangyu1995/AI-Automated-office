@@ -2,6 +2,7 @@ use crate::vector::config::EmbeddingConfig;
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
 
+#[derive(Clone)]
 pub struct EmbeddingService {
     client: reqwest::Client,
     config: EmbeddingConfig,

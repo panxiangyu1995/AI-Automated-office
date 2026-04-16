@@ -61,13 +61,13 @@ export interface UsePluginLifecycleReturn {
  *     version: '1.0.0',
  *     hooks: {
  *       onInit: async () => {
- *         console.log('Plugin initialized')
+ *         // Plugin initialized
  *       },
  *       onMount: async () => {
- *         console.log('Plugin mounted')
+ *         // Plugin mounted
  *       },
  *       onEvent: (event, payload) => {
- *         console.log('Received event:', event, payload)
+ *         // Handle received event
  *       },
  *     },
  *   })

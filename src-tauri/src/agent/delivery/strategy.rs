@@ -380,7 +380,7 @@ impl DeliveryStrategyService {
         let window_ms = (pref.batch_window_minutes as i64) * 60 * 1000;
 
         let mut ready = Vec::new();
-        queue.retain(|id, entry| {
+        queue.retain(|_id, entry| {
             if entry.items.len() >= pref.batch_min_items as usize
                 || (now - entry.window_start) * 1000 >= window_ms
             {

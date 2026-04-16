@@ -2,7 +2,7 @@
 //!
 //! 员工查询工具，遵循 {plugin}_{entity}_{action} 命名: hr_employee_query
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::agent::tools::descriptor::{
     Tool, ToolCapabilities, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolReturnType,

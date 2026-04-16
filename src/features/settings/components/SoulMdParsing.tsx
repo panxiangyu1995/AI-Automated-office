@@ -120,7 +120,7 @@ const MOCK_PERSONAS: SoulPersona[] = [
       gender: '男',
       role: 'HR智能助手',
       tagline: '让每一位员工感受到关怀',
-      avatar: '🤖',
+      avatar: 'Bot',
     },
     values: {
       core: ['尊重', '公平', '关怀', '专业'],

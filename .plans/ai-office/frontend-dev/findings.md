@@ -4,6 +4,4 @@
 
 ---
 
-- [completed] [C1 前端差距修复](task-c1-frontend/findings.md) - G6核心布局颜色系统接入+G4同步冲突UI
-- [completed] [C2 前端修复] - H1 feature/admin颜色迁移+H5 ProblemCenter+H4部门组件测试
-- [completed] [C3 前端修复] - H3群聊Agent协作UI(AgentCollaboration)+H8消息状态(MessageStatusIndicator)+templateVersionStore接SQLite+52前端测试
+- [DONE] G9 Updater配置 + G21 Knowledge id — tauri.conf.json 移除空updater配置；Sidebar.tsx admin-knowledge id去重

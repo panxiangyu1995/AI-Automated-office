@@ -22,6 +22,8 @@ import { FinancePage } from '@/features/finance/pages/FinancePage'
 import { SalesPage } from '@/features/sales/pages/SalesPage'
 import { ApprovalPage } from '@/features/approval/pages/ApprovalPage'
 import { WarehousePage } from '@/features/warehouse/pages/WarehousePage'
+/** 知识库页面 */
+import { KnowledgePage } from '@/features/knowledge/pages/KnowledgePage'
 /** Agent 协作页面 */
 import { GroupChat } from '@/features/agent/components/GroupChat'
 
@@ -222,6 +224,14 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     resource: 'warehouse',
     mode: 'static',
     component: WarehousePage,
+  },
+  {
+    id: 'knowledge',
+    path: 'knowledge',
+    title: '知识库',
+    resource: 'knowledge',
+    mode: 'static',
+    component: KnowledgePage,
   },
   // ===== Agent 协作路由 =====
   {

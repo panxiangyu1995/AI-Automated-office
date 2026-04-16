@@ -9,8 +9,7 @@ use crate::agent::monitoring::{
     SubAgentMonitoringService, MonitoringConfig,
     SubAgentMetrics, SessionSubAgentStats, DiagnosticEntry,
     DiagnosticSummary,
-    Trace, Span, TraceStatus, SpanType, SpanStatus,
-    SpanAttribute, AttributeValue, SpanEvent, TraceMetadata,
+    Trace, Span,
 };
 
 /// Monitoring State wrapper

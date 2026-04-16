@@ -6,10 +6,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 
-use super::{DateRange, FinanceRole, FinanceStatistics};
+use super::{DateRange, FinanceRole};
 use crate::agent::tools::descriptor::{Tool, ToolCapabilities, ToolParameter, ToolParameterType, ToolParameterTypeSpec, ToolReturnType};
 
 /// 统计查询参数

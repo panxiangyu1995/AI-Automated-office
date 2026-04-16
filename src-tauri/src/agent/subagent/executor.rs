@@ -14,8 +14,8 @@ use tokio::time::timeout;
 use uuid::Uuid;
 
 use super::types::{
-    AgentConfig, DelegationConstraints, DelegationContext, OutputFormat,
-    SubagentError, SubagentExecutionResult, SubagentResult, ToolPermissions,
+    AgentConfig, DelegationContext,
+    SubagentError, SubagentResult, ToolPermissions,
 };
 
 /// 委派执行结果
@@ -228,7 +228,7 @@ impl SubagentExecutor {
         context: DelegationContext,
     ) -> Result<String, SubagentError> {
         // 构建 SubAgent 提示
-        let prompt = self.build_subagent_prompt(config, &context)?;
+        let _prompt = self.build_subagent_prompt(config, &context)?;
 
         // 这里应该调用 LLM Provider 执行
         // 暂时返回模拟结果

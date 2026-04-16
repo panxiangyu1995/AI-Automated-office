@@ -7,8 +7,7 @@ use tokio::sync::RwLock;
 use tauri::State;
 
 use crate::agent::permission::sandbox::{
-    ToolSandbox, MatchPattern, PermissionResult, SandboxConfig, 
-    DefaultPolicy, SandboxStats, SandboxError,
+    ToolSandbox, MatchPattern, PermissionResult, SandboxStats,
 };
 
 pub struct SandboxState(pub Arc<RwLock<ToolSandbox>>);

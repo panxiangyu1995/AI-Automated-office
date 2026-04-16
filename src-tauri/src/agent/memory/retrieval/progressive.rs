@@ -1,6 +1,6 @@
 //! Progressive disclosure for memory retrieval.
 
-use crate::agent::memory::types::{HybridSearchResult, MemorySearchResult};
+use crate::agent::memory::types::HybridSearchResult;
 
 /// Progressive disclosure strategy
 #[derive(Debug, Clone)]
@@ -75,7 +75,7 @@ impl ProgressiveStrategy {
     pub fn calculate_level(
         &self,
         context_size: usize,
-        total_results: usize,
+        _total_results: usize,
     ) -> DisclosureLevel {
         let usage_ratio = context_size as f64 / self.token_budget as f64;
 

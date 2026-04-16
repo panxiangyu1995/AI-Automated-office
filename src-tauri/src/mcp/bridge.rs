@@ -59,7 +59,7 @@ impl ToolBridge for AgentToolBridge {
     fn register_tool(&self, tool: MCPTool, service_id: &str) -> Result<String, String> {
         let tool_name = format!("mcp_{}_{}", service_id, tool.name);
         
-        let map = futures::executor::block_on(async {
+        let _map = futures::executor::block_on(async {
             let mut map = self.tool_service_map.write().await;
             map.insert(tool_name.clone(), service_id.to_string());
         });
@@ -185,7 +185,7 @@ impl MCPToolBridge {
             // Register with tool registry if available
             if let Some(ref tr) = *self.tool_registry.read().await {
                 let descriptor = self.bridge.create_descriptor(&tool, service_id);
-                tr.register(descriptor);
+                let _ = tr.register(descriptor);
             }
 
             // Store mapping
@@ -210,7 +210,7 @@ impl MCPToolBridge {
         // Unregister from tool registry
         if let Some(ref tr) = *self.tool_registry.read().await {
             for tool_name in &tools_to_remove {
-                tr.unregister(tool_name);
+                let _ = tr.unregister(tool_name);
                 let _ = self.bridge.unregister_tool(tool_name);
             }
         }

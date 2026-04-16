@@ -84,6 +84,10 @@ pub enum ConflictResolution {
     KeepRemote,
     /// Keep both versions (creates duplicate)
     KeepBoth,
+    /// Smart merge: for simple fields take the newer value, for arrays take union
+    Merge,
+    /// Ask user to resolve manually via frontend
+    AskUser,
 }
 
 /// Sync statistics

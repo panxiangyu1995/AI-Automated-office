@@ -360,8 +360,8 @@ export function TicketKnowledgeGeneration({ className = '' }: TicketKnowledgeGen
   }
 
   // Handle status change
-  const handleStatusChange = (entryId: string, newStatus: GenerationStatus) => {
-    console.log('Status change:', entryId, newStatus)
+  const handleStatusChange = (_entryId: string, _newStatus: GenerationStatus) => {
+    // Status change
   }
 
   return (

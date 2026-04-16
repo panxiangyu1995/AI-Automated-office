@@ -4,14 +4,13 @@
 
 use std::sync::Arc;
 use std::collections::HashMap;
-use tauri::State;
 use tokio::sync::RwLock;
 
 use crate::agent::subagent::{
     get_subagent_manager, init_subagent_manager,
-    types::{AgentConfig, SubagentResult, DelegationContext},
+    types::{AgentConfig, DelegationContext},
     CreatePersonalSubagentRequest, PersonalLoader, UpdatePersonalSubagentRequest,
-    executor::{SubagentExecutor, DelegationOutcome, DelegationStatus},
+    executor::{SubagentExecutor, DelegationOutcome},
 };
 use crate::agent::subagent::loader::SubagentLoader;
 use crate::agent::subagent::manager::SubagentStats;

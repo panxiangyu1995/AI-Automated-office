@@ -1,7 +1,6 @@
 //! Three-layer storage abstraction.
 
 use async_trait::async_trait;
-use std::sync::Arc;
 
 use super::super::types::{MemoryItem, MemoryLayer, MemoryQuery};
 use super::super::config::MemoryError;

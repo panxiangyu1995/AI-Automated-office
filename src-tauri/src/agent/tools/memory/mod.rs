@@ -21,7 +21,7 @@ use std::sync::Arc;
 use crate::agent::tools::descriptor::{
     ToolCapabilities, ToolCategory, ToolDescriptor, ToolExecutionMode, ToolMetadata,
 };
-use crate::agent::tools::pipeline::{ToolExecutionContext, ToolExecutionError, ToolExecutor};
+use crate::agent::tools::pipeline::ToolExecutor;
 use crate::agent::tools::registry::ToolRegistry;
 
 /// Register all memory tools to the registry and executor map
@@ -69,7 +69,7 @@ pub fn register_memory_tools(
         handler_module: Some("agent::tools::memory".to_string()),
         handler_function: Some("memory_search".to_string()),
     };
-    registry.register(memory_search_descriptor);
+    let _ = registry.register(memory_search_descriptor);
     executors.insert(
         "memory_search".to_string(),
         Arc::new(memory_search::MemorySearchExecutor::new()),
@@ -113,7 +113,7 @@ pub fn register_memory_tools(
         handler_module: Some("agent::tools::memory".to_string()),
         handler_function: Some("memory_get".to_string()),
     };
-    registry.register(memory_get_descriptor);
+    let _ = registry.register(memory_get_descriptor);
     executors.insert(
         "memory_get".to_string(),
         Arc::new(memory_get::MemoryGetExecutor::new()),

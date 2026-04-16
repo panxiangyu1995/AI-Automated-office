@@ -121,10 +121,7 @@ export const salesWarehouseEventBus = new SalesWarehouseEventBusImpl();
  */
 export function initWarehouseEventHandlers() {
   // Handle sales order created
-  salesWarehouseEventBus.subscribe('sales:order_created', async (event) => {
-    const typedEvent = event as SalesOrderCreatedEvent;
-    console.log('[Warehouse] Received sales order:', typedEvent.orderId);
-    
+  salesWarehouseEventBus.subscribe('sales:order_created', async (_event) => {
     // In a real implementation:
     // 1. Check inventory availability
     // 2. If available, create outbound draft
@@ -133,17 +130,13 @@ export function initWarehouseEventHandlers() {
   });
 
   // Handle sales order cancelled
-  salesWarehouseEventBus.subscribe('sales:order_cancelled', (event) => {
-    const typedEvent = event as SalesOrderCancelledEvent;
-    console.log('[Warehouse] Sales order cancelled:', typedEvent.orderId);
-    
+  salesWarehouseEventBus.subscribe('sales:order_cancelled', (_event) => {
+
     // In a real implementation:
     // 1. Find pending outbound for this order
     // 2. Cancel the outbound
     // 3. Restore inventory
   });
-
-  console.log('[Warehouse] Event handlers initialized');
 }
 
 // ==================== Sales Event Publishers ====================

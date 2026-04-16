@@ -3,11 +3,10 @@
 //! Provides intelligent document chunking that preserves semantic boundaries.
 //! Supports sentence-based chunking with token limits and overlapping windows.
 
-use crate::knowledge::types::{ChunkingStrategyConfig, ChunkingStrategyType, DocumentChunk};
+use crate::knowledge::types::{ChunkingStrategyConfig, DocumentChunk};
 use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
 
 /// Smart chunker configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -246,7 +245,7 @@ impl SmartChunker {
             start_offset: smart_chunk.start_offset,
             end_offset: smart_chunk.end_offset,
             heading: smart_chunk.heading.clone(),
-            page_number: smart_chunk.page_number,
+            page_number: smart_chunk.page_number.map(|p| p as u32),
             section: smart_chunk.section.clone(),
         }
     }

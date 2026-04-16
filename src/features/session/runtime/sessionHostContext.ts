@@ -179,7 +179,7 @@ export function useSessionHostContext(config: HostConfig): HostContextValue {
     if (autoCreate && !activeSession && !sessionCreatedRef.current) {
       sessionCreatedRef.current = true
       // Note: Owner must be provided by caller, this just sets up the pattern
-      console.log('Auto-create session requested for host:', hostId)
+      // Auto-create session requested
     }
   }, [autoCreate, activeSession, hostId])
 
@@ -238,7 +238,7 @@ export function useSessionCleanup(intervalMs: number = 60000): void {
     const interval = setInterval(() => {
       const cleaned = sessionStore.getState().cleanupExpiredSessions()
       if (cleaned > 0) {
-        console.log(`Cleaned up ${cleaned} expired sessions`)
+        // Cleaned up expired sessions
       }
     }, intervalMs)
 

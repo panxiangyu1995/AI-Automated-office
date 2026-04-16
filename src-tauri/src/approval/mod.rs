@@ -8,6 +8,7 @@ pub mod reminder;
 pub mod ai_assist;
 pub mod attachment;
 pub mod template;
+pub mod template_builtins;
 
 pub use commands::*;
 pub use types::*;

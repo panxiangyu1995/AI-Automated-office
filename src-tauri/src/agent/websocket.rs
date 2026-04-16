@@ -13,9 +13,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 use tokio::sync::{RwLock, broadcast};
-use tokio::time::{interval, Duration};
+use tokio::time::Duration;
 use uuid::Uuid;
 
 /// WebSocket event types for bidirectional communication

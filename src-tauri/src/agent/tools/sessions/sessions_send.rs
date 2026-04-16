@@ -70,7 +70,7 @@ impl ToolExecutor for SessionsSendExecutor {
     async fn execute(
         &self,
         params: Value,
-        context: &ToolExecutionContext,
+        _context: &ToolExecutionContext,
     ) -> Result<Value, ToolExecutionError> {
         let start = Instant::now();
 

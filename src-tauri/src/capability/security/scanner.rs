@@ -69,7 +69,7 @@ impl SecurityScanner {
     }
 
     /// Scan a package
-    pub async fn scan(&mut self, data: &[u8], package_id: &str) -> Result<SecurityScanResult> {
+    pub async fn scan(&mut self, data: &[u8], _package_id: &str) -> Result<SecurityScanResult> {
         let start = std::time::Instant::now();
         let mut warnings = Vec::new();
         let mut errors = Vec::new();

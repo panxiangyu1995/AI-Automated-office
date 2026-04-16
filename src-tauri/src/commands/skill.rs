@@ -3,13 +3,11 @@
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use tauri::State;
 
 use crate::agent::skill::{
-    Skill, SkillError, SkillExecutionContext, SkillExecutionResult,
+    Skill, SkillExecutionContext, SkillExecutionResult,
     SkillRegistry, SkillDiscoveryService, SkillLoader, SkillConverter,
 };
-use crate::agent::skill::types::ParametersSchema;
 use crate::agent::skill::parser::SkillParserTrait;
 
 /// Global skill registry instance

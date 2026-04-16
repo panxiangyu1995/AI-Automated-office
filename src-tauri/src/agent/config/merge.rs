@@ -88,7 +88,7 @@ impl ConfigMerger {
         &self,
         target: &mut AgentConfig,
         source: &AgentConfig,
-        source_priority: MergePriority,
+        _source_priority: MergePriority,
     ) -> Vec<String> {
         let mut merged = Vec::new();
 

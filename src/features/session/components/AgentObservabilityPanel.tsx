@@ -294,8 +294,8 @@ export function AgentObservabilityPanel() {
   }
 
   // 导出报告
-  const handleExport = (type: ReportType) => {
-    console.log(`Exporting ${type} report...`)
+  const handleExport = (_type: ReportType) => {
+    // Export report
   }
 
   return (

@@ -2,7 +2,7 @@
 //!
 //! 提供告警规则定义、评估和通知功能
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
 use uuid::Uuid;

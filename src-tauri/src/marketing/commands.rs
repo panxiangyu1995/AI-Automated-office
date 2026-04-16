@@ -1,5 +1,6 @@
 //! Marketing 模块 Tauri 命令
 
+use crate::auth::{AuthService, verify_and_check, Permission};
 use crate::marketing::db::MarketingDatabase;
 use crate::marketing::types::*;
 use std::sync::Arc;
@@ -30,9 +31,12 @@ impl Default for MarketingState {
 #[tauri::command]
 pub async fn marketing_create_campaign(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateCampaignRequest,
     tenant_id: Option<String>,
 ) -> Result<Campaign, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建营销活动: {}", request.name);
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     let now = chrono::Utc::now().timestamp();
@@ -65,8 +69,11 @@ pub async fn marketing_create_campaign(
 #[tauri::command]
 pub async fn marketing_get_campaign(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<Campaign, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取营销活动: {}", id);
     state.db.get_campaign(&id).ok_or_else(|| "活动不存在".to_string())
 }
@@ -74,8 +81,11 @@ pub async fn marketing_get_campaign(
 #[tauri::command]
 pub async fn marketing_list_campaigns(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryCampaignsParams>,
 ) -> Result<PagedResult<CampaignListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_campaigns(&params))
 }
@@ -83,9 +93,12 @@ pub async fn marketing_list_campaigns(
 #[tauri::command]
 pub async fn marketing_update_campaign(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateCampaignRequest,
 ) -> Result<Campaign, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新营销活动: {}", id);
     state.db.update_campaign(&id, request)
 }
@@ -93,8 +106,11 @@ pub async fn marketing_update_campaign(
 #[tauri::command]
 pub async fn marketing_delete_campaign(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除营销活动: {}", id);
     state.db.delete_campaign(&id)
 }
@@ -104,9 +120,12 @@ pub async fn marketing_delete_campaign(
 #[tauri::command]
 pub async fn marketing_create_content(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateContentRequest,
     tenant_id: Option<String>,
 ) -> Result<MarketingContent, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建营销内容: {}", request.title);
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     let now = chrono::Utc::now().timestamp();
@@ -137,8 +156,11 @@ pub async fn marketing_create_content(
 #[tauri::command]
 pub async fn marketing_get_content(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<MarketingContent, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取营销内容: {}", id);
     state.db.get_content(&id).ok_or_else(|| "内容不存在".to_string())
 }
@@ -146,8 +168,11 @@ pub async fn marketing_get_content(
 #[tauri::command]
 pub async fn marketing_list_contents(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryContentsParams>,
 ) -> Result<PagedResult<ContentListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_contents(&params))
 }
@@ -155,9 +180,12 @@ pub async fn marketing_list_contents(
 #[tauri::command]
 pub async fn marketing_update_content(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateContentRequest,
 ) -> Result<MarketingContent, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新营销内容: {}", id);
     state.db.update_content(&id, request)
 }
@@ -165,8 +193,11 @@ pub async fn marketing_update_content(
 #[tauri::command]
 pub async fn marketing_delete_content(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除营销内容: {}", id);
     state.db.delete_content(&id)
 }
@@ -176,9 +207,12 @@ pub async fn marketing_delete_content(
 #[tauri::command]
 pub async fn marketing_create_channel(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateChannelRequest,
     tenant_id: Option<String>,
 ) -> Result<Channel, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建营销渠道: {}", request.name);
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     let now = chrono::Utc::now().timestamp();
@@ -204,8 +238,11 @@ pub async fn marketing_create_channel(
 #[tauri::command]
 pub async fn marketing_get_channel(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<Channel, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取营销渠道: {}", id);
     state.db.get_channel(&id).ok_or_else(|| "渠道不存在".to_string())
 }
@@ -213,8 +250,11 @@ pub async fn marketing_get_channel(
 #[tauri::command]
 pub async fn marketing_list_channels(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryChannelsParams>,
 ) -> Result<PagedResult<ChannelListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_channels(&params))
 }
@@ -222,9 +262,12 @@ pub async fn marketing_list_channels(
 #[tauri::command]
 pub async fn marketing_update_channel(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateChannelRequest,
 ) -> Result<Channel, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新营销渠道: {}", id);
     state.db.update_channel(&id, request)
 }
@@ -232,8 +275,11 @@ pub async fn marketing_update_channel(
 #[tauri::command]
 pub async fn marketing_delete_channel(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除营销渠道: {}", id);
     state.db.delete_channel(&id)
 }
@@ -242,14 +288,17 @@ pub async fn marketing_delete_channel(
 
 #[tauri::command]
 pub async fn marketing_generate_content(
-    state: State<'_, MarketingState>,
+    _state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: GenerateContentRequest,
-    tenant_id: Option<String>,
+    _tenant_id: Option<String>,
 ) -> Result<GenerateContentResult, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("AI生成营销内容: {}", request.title);
     
     // 模拟 AI 生成
-    let platform = request.target_platform.unwrap_or(ChannelType::Wechat);
+    let _platform = request.target_platform.unwrap_or(ChannelType::Wechat);
     let hashtags: Vec<String> = request.keywords.iter().map(|k| format!("#{}", k)).collect();
     
     let content = format!(
@@ -276,8 +325,11 @@ pub async fn marketing_generate_content(
 
 #[tauri::command]
 pub async fn marketing_get_platform_adaptation(
+    auth_service: State<'_, AuthService>,
+    token: String,
     platform: ChannelType,
 ) -> Result<PlatformAdaptation, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取平台适配规则: {:?}", platform);
     
     let adaptation = match platform {
@@ -326,7 +378,10 @@ pub async fn marketing_get_platform_adaptation(
 #[tauri::command]
 pub async fn marketing_get_stats(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
 ) -> Result<MarketingStats, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取营销统计数据");
     
     let campaigns = state.db.get_campaigns();
@@ -378,7 +433,10 @@ pub async fn marketing_get_stats(
 #[tauri::command]
 pub async fn marketing_get_channel_distribution(
     state: State<'_, MarketingState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
 ) -> Result<Vec<ChannelDistribution>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取渠道分布");
     
     let channels = state.db.get_channels();

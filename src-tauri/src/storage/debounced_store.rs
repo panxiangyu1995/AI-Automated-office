@@ -11,7 +11,6 @@
 //! ```
 
 use std::collections::{HashMap, HashSet};
-use std::future;
 use std::hash::Hash;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -220,7 +219,7 @@ where
 // 带有防抖功能的存储管理器 - 集成到 StorageManager
 // ============================================================================
 
-use crate::storage::{session_store::Session, message_store::Message, SessionStore, MessageStore, StorageManager};
+use crate::storage::{session_store::Session, message_store::Message, SessionStore, MessageStore};
 
 /// 带有防抖功能的存储管理器
 ///

@@ -242,7 +242,7 @@ impl NestedCallService {
             // If same sub-agent at same depth within short time, might be a loop
             if recent_entries.len() >= 2 {
                 let last = recent_entries[recent_entries.len() - 1];
-                let policy = self.policy.read().await;
+                let _policy = self.policy.read().await;
                 let time_diff = Utc::now().timestamp() - last.timestamp;
                 if time_diff < 60 && last.depth == self.get_current_depth_from_history(history) {
                     return true;

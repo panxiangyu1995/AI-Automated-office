@@ -89,9 +89,9 @@ impl From<&KnowledgeDocument> for DocumentSummary {
         Self {
             id: doc.id.clone(),
             name: doc.name.clone(),
-            file_type: doc.file_type,
+            file_type: doc.file_type.clone(),
             file_size: doc.file_size,
-            status: doc.status,
+            status: doc.status.clone(),
             tags: doc.tags.clone(),
             chunk_count: doc.chunk_count,
             created_at: doc.created_at,
@@ -101,7 +101,7 @@ impl From<&KnowledgeDocument> for DocumentSummary {
 }
 
 /// Document filter params
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentFilter {
     pub search: Option<String>,
     pub status: Option<DocumentStatus>,

@@ -138,7 +138,7 @@ impl ToolExecutor for SessionsSpawnExecutor {
         let agent_id = spawn_params.agent_id.unwrap_or_else(|| "sub-agent".to_string());
 
         // Create session entry
-        let new_session = SessionInfo {
+        let _new_session = SessionInfo {
             id: session_id.clone(),
             title: spawn_params.task.chars().take(50).collect(),
             status: SessionStatus::Pending,

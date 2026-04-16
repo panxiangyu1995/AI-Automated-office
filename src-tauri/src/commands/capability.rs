@@ -7,13 +7,11 @@
 //! - Version checking and updates
 
 use crate::capability::{
-    ApprovalDecision, ApprovalRequest, ApprovalStatus, ApprovalUrgency,
+    ApprovalDecision,
     CapabilityInstaller, InstallOptions, InstallRequest, InstallResult, InstallSource,
-    SandboxConfig, SandboxType, SecurityConfig, SecurityScanResult,
+    SandboxConfig, SandboxType, SecurityConfig,
 };
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use tauri::State;
 
 /// Install result response
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -254,8 +252,8 @@ pub async fn capability_security_scan(data: Vec<u8>) -> Result<SecurityScanRespo
 pub async fn capability_submit_approval(
     package_id: String,
     reason: String,
-    urgency: String,
-    tenant_id: String,
+    _urgency: String,
+    _tenant_id: String,
     requested_by: String,
 ) -> Result<String, String> {
     // Create approval request with placeholder manifest
@@ -316,7 +314,7 @@ pub async fn capability_pending_approvals() -> Result<Vec<ApprovalRequestRespons
 /// Process an approval decision
 #[tauri::command]
 pub async fn capability_process_approval(
-    request_id: String,
+    _request_id: String,
     decision: String,
     notes: Option<String>,
     user_id: String,
@@ -344,7 +342,7 @@ pub async fn capability_process_approval(
 /// Check for capability package updates
 #[tauri::command]
 pub async fn capability_check_updates(
-    tenant_id: String,
+    _tenant_id: String,
 ) -> Result<Vec<UpdateInfoResponse>, String> {
     // Placeholder - return empty list
     Ok(vec![])

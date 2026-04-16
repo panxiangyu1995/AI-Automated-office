@@ -1,6 +1,7 @@
 //! Agent runtime core module.
 
 pub mod audit;
+pub mod audit_types;
 pub mod audit_siem;
 pub mod config_cache;
 pub mod context_compression;
@@ -19,6 +20,7 @@ pub mod memory;
 pub mod mock_provider;
 pub mod skill;
 pub mod monitoring;
+pub mod monitoring_types;
 pub mod config;
 pub mod mode;
 pub mod nested;
@@ -26,13 +28,16 @@ pub mod checkpoint;
 pub mod permission;
 pub mod result;
 pub mod routing;
+pub mod routing_types;
 pub mod template;
 pub mod agent_orchestrator;
 pub mod provider;
 pub mod llm_provider;
 pub mod prompt_builder;
+pub mod prompt_types;
 pub mod runtime_session;
 pub mod security;
+pub mod security_types;
 pub mod tools;
 pub mod websocket;
 pub mod message_sync;

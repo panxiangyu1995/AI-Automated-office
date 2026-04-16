@@ -16,8 +16,8 @@ use crate::agent::llm_provider::config::{
 };
 use crate::agent::llm_provider::ProviderConfigService;
 use crate::agent::routing::{
-    ApprovalItem, ApprovalStatus, ConfirmationState, RiskEvaluation,
-    RoutingContext, RoutingMode, RoutingRule, SubAgentRoutingService, YoloTtl,
+    ApprovalItem, ConfirmationState, RiskEvaluation,
+    RoutingContext, RoutingMode, SubAgentRoutingService, YoloTtl,
 };
 
 /// Provider config service state

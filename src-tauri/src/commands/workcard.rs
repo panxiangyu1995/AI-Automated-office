@@ -8,7 +8,7 @@ use tokio::sync::RwLock;
 
 use crate::workcard::{
     ActionResult, CardAction, CardField, CardPriority, CardStatus, CardActionType,
-    WorkCard, WorkCardService, WorkCardTemplate, TemplateContext, FieldType,
+    WorkCard, WorkCardService, WorkCardTemplate, TemplateContext,
 };
 
 /// WorkCard State wrapper

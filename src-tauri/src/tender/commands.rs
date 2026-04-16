@@ -1,5 +1,6 @@
 //! Tender 模块 Tauri 命令
 
+use crate::auth::{AuthService, verify_and_check, Permission};
 use crate::tender::db::TenderDatabase;
 use crate::tender::types::*;
 use std::sync::Arc;
@@ -30,13 +31,16 @@ impl Default for TenderState {
 #[tauri::command]
 pub async fn tender_create_qualification(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateQualificationRequest,
     tenant_id: Option<String>,
 ) -> Result<Qualification, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建资质: {}", request.name);
-    
+
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
-    
+
     let mut qualification = Qualification::new(
         request.name,
         request.qualification_type,
@@ -45,15 +49,18 @@ pub async fn tender_create_qualification(
         tenant_id,
     );
     qualification.cert_number = request.cert_number;
-    
+
     state.db.create_qualification(qualification)
 }
 
 #[tauri::command]
 pub async fn tender_get_qualification(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<Qualification, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取资质: {}", id);
     state.db.get_qualification(&id).ok_or_else(|| "资质不存在".to_string())
 }
@@ -61,8 +68,11 @@ pub async fn tender_get_qualification(
 #[tauri::command]
 pub async fn tender_list_qualifications(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryQualificationsParams>,
 ) -> Result<PagedResult<QualificationListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_qualifications(&params))
 }
@@ -70,9 +80,12 @@ pub async fn tender_list_qualifications(
 #[tauri::command]
 pub async fn tender_update_qualification(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateQualificationRequest,
 ) -> Result<Qualification, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新资质: {}", id);
     state.db.update_qualification(&id, request)
 }
@@ -80,8 +93,11 @@ pub async fn tender_update_qualification(
 #[tauri::command]
 pub async fn tender_delete_qualification(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除资质: {}", id);
     state.db.delete_qualification(&id)
 }
@@ -91,14 +107,17 @@ pub async fn tender_delete_qualification(
 #[tauri::command]
 pub async fn tender_create_case(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateCaseRequest,
     tenant_id: Option<String>,
 ) -> Result<Case, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建业绩: {}", request.project_name);
-    
+
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     let now = chrono::Utc::now().timestamp();
-    
+
     let case_data = Case {
         id: uuid::Uuid::new_v4().to_string(),
         project_name: request.project_name,
@@ -115,15 +134,18 @@ pub async fn tender_create_case(
         created_at: now,
         updated_at: now,
     };
-    
+
     state.db.create_case(case_data)
 }
 
 #[tauri::command]
 pub async fn tender_get_case(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<Case, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取业绩: {}", id);
     state.db.get_case(&id).ok_or_else(|| "业绩不存在".to_string())
 }
@@ -131,8 +153,11 @@ pub async fn tender_get_case(
 #[tauri::command]
 pub async fn tender_list_cases(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryCasesParams>,
 ) -> Result<PagedResult<CaseListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_cases(&params))
 }
@@ -140,9 +165,12 @@ pub async fn tender_list_cases(
 #[tauri::command]
 pub async fn tender_update_case(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateCaseRequest,
 ) -> Result<Case, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新业绩: {}", id);
     state.db.update_case(&id, request)
 }
@@ -150,8 +178,11 @@ pub async fn tender_update_case(
 #[tauri::command]
 pub async fn tender_delete_case(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除业绩: {}", id);
     state.db.delete_case(&id)
 }
@@ -161,13 +192,16 @@ pub async fn tender_delete_case(
 #[tauri::command]
 pub async fn tender_create_project(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateTenderProjectRequest,
     tenant_id: Option<String>,
 ) -> Result<TenderProject, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建投标项目: {}", request.project_name);
-    
+
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
-    
+
     let project = TenderProject::new(
         request.project_name,
         request.customer_name,
@@ -178,15 +212,18 @@ pub async fn tender_create_project(
     project.bidding_amount = request.bidding_amount;
     project.deadline = request.deadline;
     project.notes = request.notes;
-    
+
     state.db.create_project(project)
 }
 
 #[tauri::command]
 pub async fn tender_get_project(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<TenderProject, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取投标项目: {}", id);
     state.db.get_project(&id).ok_or_else(|| "投标项目不存在".to_string())
 }
@@ -194,8 +231,11 @@ pub async fn tender_get_project(
 #[tauri::command]
 pub async fn tender_list_projects(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryTenderProjectsParams>,
 ) -> Result<PagedResult<TenderProjectListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_projects(&params))
 }
@@ -203,9 +243,12 @@ pub async fn tender_list_projects(
 #[tauri::command]
 pub async fn tender_update_project(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateTenderProjectRequest,
 ) -> Result<TenderProject, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新投标项目: {}", id);
     state.db.update_project(&id, request)
 }
@@ -213,9 +256,12 @@ pub async fn tender_update_project(
 #[tauri::command]
 pub async fn tender_update_project_status(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateTenderStatusRequest,
 ) -> Result<TenderProject, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新投标项目状态: {}", id);
     state.db.update_project_status(&id, request.status)
 }
@@ -223,8 +269,11 @@ pub async fn tender_update_project_status(
 #[tauri::command]
 pub async fn tender_delete_project(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除投标项目: {}", id);
     state.db.delete_project(&id)
 }
@@ -232,7 +281,10 @@ pub async fn tender_delete_project(
 #[tauri::command]
 pub async fn tender_get_statistics(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
 ) -> Result<TenderStatistics, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取投标统计");
     Ok(state.db.get_statistics())
 }
@@ -242,14 +294,17 @@ pub async fn tender_get_statistics(
 #[tauri::command]
 pub async fn tender_create_template(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateTemplateRequest,
     tenant_id: Option<String>,
 ) -> Result<BidTemplate, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建模板: {}", request.name);
-    
+
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     let now = chrono::Utc::now().timestamp();
-    
+
     let template = BidTemplate {
         id: uuid::Uuid::new_v4().to_string(),
         name: request.name,
@@ -263,15 +318,18 @@ pub async fn tender_create_template(
         created_at: now,
         updated_at: now,
     };
-    
+
     state.db.create_template(template)
 }
 
 #[tauri::command]
 pub async fn tender_get_template(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<BidTemplate, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取模板: {}", id);
     state.db.get_template(&id).ok_or_else(|| "模板不存在".to_string())
 }
@@ -279,8 +337,11 @@ pub async fn tender_get_template(
 #[tauri::command]
 pub async fn tender_list_templates(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryTemplatesParams>,
 ) -> Result<PagedResult<TemplateListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_templates(&params))
 }
@@ -288,9 +349,12 @@ pub async fn tender_list_templates(
 #[tauri::command]
 pub async fn tender_update_template(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateTemplateRequest,
 ) -> Result<BidTemplate, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新模板: {}", id);
     state.db.update_template(&id, request)
 }
@@ -298,8 +362,11 @@ pub async fn tender_update_template(
 #[tauri::command]
 pub async fn tender_delete_template(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除模板: {}", id);
     state.db.delete_template(&id)
 }
@@ -309,14 +376,17 @@ pub async fn tender_delete_template(
 #[tauri::command]
 pub async fn tender_create_document(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     request: CreateDocumentRequest,
     tenant_id: Option<String>,
 ) -> Result<TenderDocument, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("创建文档: {}", request.title);
-    
+
     let tenant_id = tenant_id.unwrap_or_else(|| "default".to_string());
     let now = chrono::Utc::now().timestamp();
-    
+
     let document = TenderDocument {
         id: uuid::Uuid::new_v4().to_string(),
         project_id: request.project_id,
@@ -330,15 +400,18 @@ pub async fn tender_create_document(
         created_at: now,
         updated_at: now,
     };
-    
+
     state.db.create_document(document)
 }
 
 #[tauri::command]
 pub async fn tender_get_document(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<TenderDocument, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     info!("获取文档: {}", id);
     state.db.get_document(&id).ok_or_else(|| "文档不存在".to_string())
 }
@@ -346,8 +419,11 @@ pub async fn tender_get_document(
 #[tauri::command]
 pub async fn tender_list_documents(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     params: Option<QueryDocumentsParams>,
 ) -> Result<PagedResult<DocumentListItem>, String> {
+    verify_and_check(&token, &auth_service, Permission::Read).await?;
     let params = params.unwrap_or_default();
     Ok(state.db.list_documents(&params))
 }
@@ -355,9 +431,12 @@ pub async fn tender_list_documents(
 #[tauri::command]
 pub async fn tender_update_document(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
     request: UpdateDocumentRequest,
 ) -> Result<TenderDocument, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("更新文档: {}", id);
     state.db.update_document(&id, request)
 }
@@ -365,8 +444,11 @@ pub async fn tender_update_document(
 #[tauri::command]
 pub async fn tender_delete_document(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     id: String,
 ) -> Result<(), String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
     info!("删除文档: {}", id);
     state.db.delete_document(&id)
 }
@@ -374,25 +456,28 @@ pub async fn tender_delete_document(
 #[tauri::command]
 pub async fn tender_generate_document(
     state: State<'_, TenderState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
     document_id: String,
     request: GenerateDocumentRequest,
 ) -> Result<TenderDocument, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
     info!("生成文档内容: {}", document_id);
-    
+
     let content = state.db.generate_document_content(&request.template_id, &request.variables)?;
-    
+
     let mut document = state.db.get_document(&document_id).ok_or("文档不存在")?;
     document.content = content;
     document.template_id = Some(request.template_id);
     document.variables = request.variables.clone();
     document.status = DocumentStatus::Generated;
     document.updated_at = chrono::Utc::now().timestamp();
-    
+
     state.db.update_document(&document_id, UpdateDocumentRequest {
         title: None,
         content: Some(document.content.clone()),
         variables: Some(document.variables.clone()),
     })?;
-    
+
     Ok(document)
 }

@@ -9,7 +9,7 @@ use super::types::{
     MCPServiceConfig, MCPServiceStatus, MCPServiceInfo,
     MCPTool, MCPToolCall, MCPToolResult, MCPMessage,
 };
-use super::transport::{Transport, TransportFactory, StdioTransport, HttpTransport, WebSocketTransport};
+use super::transport::{Transport, TransportFactory};
 
 /// MCP client configuration
 #[derive(Debug, Clone)]

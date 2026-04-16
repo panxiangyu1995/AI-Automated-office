@@ -8,7 +8,7 @@ use crate::agent::tools::browser::{
 use crate::agent::tools::pipeline::ToolExecutionError;
 
 pub async fn execute_arm_download(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let mut state = get_or_init_state();
     state.armed_download = true;
@@ -30,7 +30,7 @@ pub async fn execute_arm_download(
 }
 
 pub async fn execute_wait_for_download(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let state = get_or_init_state();
 

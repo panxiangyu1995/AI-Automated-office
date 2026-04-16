@@ -29,6 +29,7 @@ pub fn default_office_ruleset() -> Ruleset {
 
 // Permission engine - three-layer permission calculation
 pub mod engine;
+pub mod engine_types;
 
 // Field-level permission checker
 pub mod field_checker;
@@ -39,20 +40,7 @@ pub mod scope_filter;
 // Permission middleware for tool execution pipeline
 pub mod middleware;
 
-pub use engine::{
-    PermissionEngine, PermissionEngineConfig, ExecutionContext, UserPermissions,
-    PermissionDomain, PermissionError,
-};
-pub use field_checker::{
-    FieldPermissionChecker, FieldPermissionConfig, FieldPermissionRule,
-    check_field_access, get_allowed_fields,
-};
-pub use scope_filter::{
-    DataScopeFilter, ScopeFilterResult, apply_scope_filter, build_scope_query,
-};
-pub use middleware::PermissionMiddleware;
 
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 /// Role type for permission system

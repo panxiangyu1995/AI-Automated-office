@@ -5,7 +5,7 @@
 use crate::department::registry::DepartmentRegistry;
 use crate::department::types::*;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use tracing::{error, info, warn};
 
 /// 部门加载状态
@@ -262,7 +262,7 @@ impl DepartmentLoader {
     }
 
     /// 执行卸载逻辑
-    fn execute_unload(&self, registry: &DepartmentRegistry, department_id: &str) -> Result<(), (DepartmentErrorCode, String)> {
+    fn execute_unload(&self, _registry: &DepartmentRegistry, department_id: &str) -> Result<(), (DepartmentErrorCode, String)> {
         // 更新加载状态记录
         {
             let mut states = self.load_states.write().unwrap();

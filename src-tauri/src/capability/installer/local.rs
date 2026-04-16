@@ -1,6 +1,6 @@
 //! Local file installer implementation.
 
-use super::{DependencyChecker, DependencyInfo, InstallOptions, InstallResult, InstallSource};
+use super::{DependencyChecker, InstallOptions, InstallResult};
 use crate::capability::{CapabilityPackageManifest, ClawHubFormatAdapter, CloudMarketClient, MarketplaceConfig};
 use anyhow::{Context, Result};
 use std::io::Cursor;
@@ -28,8 +28,8 @@ impl LocalInstaller {
         data: Vec<u8>,
         file_name: &str,
         options: InstallOptions,
-        tenant_id: &str,
-        requested_by: &str,
+        _tenant_id: &str,
+        _requested_by: &str,
     ) -> Result<InstallResult> {
         // Validate file extension
         if !file_name.ends_with(".zip") {

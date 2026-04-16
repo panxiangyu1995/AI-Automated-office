@@ -67,7 +67,7 @@ pub async fn execute_act(
 }
 
 pub async fn execute_arm_file_chooser(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let mut state = get_or_init_state();
     state.armed_file_chooser = true;
@@ -89,7 +89,7 @@ pub async fn execute_arm_file_chooser(
 }
 
 pub async fn execute_disarm_file_chooser(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let mut state = get_or_init_state();
     state.armed_file_chooser = false;
@@ -152,7 +152,7 @@ pub async fn execute_arm_dialog(
 }
 
 pub async fn execute_accept_dialog(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let mut state = get_or_init_state();
     let dialog = state.armed_dialog.clone();
@@ -186,7 +186,7 @@ pub async fn execute_accept_dialog(
 }
 
 pub async fn execute_dismiss_dialog(
-    params: &serde_json::Map<String, serde_json::Value>,
+    _params: &serde_json::Map<String, serde_json::Value>,
 ) -> Result<BrowserInteractResult, ToolExecutionError> {
     let mut state = get_or_init_state();
     state.armed_dialog = None;

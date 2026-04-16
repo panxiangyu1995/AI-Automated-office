@@ -18,7 +18,7 @@ pub struct IntercomServiceState(pub Arc<RwLock<Option<AgentIntercomService>>>);
 #[tauri::command]
 pub async fn send_agent_message(
     state: State<'_, IntercomServiceState>,
-    agent_state: State<'_, Arc<RwLock<AgentState>>>,
+    _agent_state: State<'_, Arc<RwLock<AgentState>>>,
     sender_id: String,
     receiver_id: String,
     content: String,
@@ -176,7 +176,7 @@ pub async fn recall_agent_message(
 /// 初始化Agent通信服务
 pub fn init_intercom_service() -> IntercomServiceState {
     use crate::agent::intercom::service::AgentIntercomServiceBuilder;
-    use crate::agent::intercom::types::AgentIntercomConfig;
+    
     
     let service = AgentIntercomServiceBuilder::new()
         .enabled(true)

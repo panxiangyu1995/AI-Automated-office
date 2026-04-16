@@ -7,6 +7,8 @@ pub mod core;
 pub mod descriptor;
 pub mod document;
 pub mod enterprise;
+pub mod enterprise_types;
+pub mod enterprise_helpers;
 pub mod filesystem;
 pub mod finance;
 pub mod hr;
@@ -26,9 +28,7 @@ pub mod shell;
 pub mod visibility;
 pub mod web;
 
-pub use common::*;
 pub use descriptor::*;
 pub use pipeline::*;
-pub use profile::*;
 pub use registry::*;
 pub use visibility::*;
