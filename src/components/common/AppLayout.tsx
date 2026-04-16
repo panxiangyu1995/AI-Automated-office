@@ -12,6 +12,7 @@ import { BottomPanel } from './BottomPanel'
 import { StatusBar } from './StatusBar'
 import { LayoutSettingsDialog } from './LayoutSettingsDialog'
 import { CommandPalette } from './CommandPalette'
+import { QuickAsk } from './QuickAsk'
 import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
 import { usePluginSidebar } from '../../hooks/usePluginSidebar'
 import { systemCommands } from '../../lib/systemCommands'
@@ -30,6 +31,7 @@ export function AppLayout() {
     }))
   )
   const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
+  const [quickAskOpen, setQuickAskOpen] = useState(false)
   const activeEditorDocument = useEditorStore((state) => state.activeDocument)
 
   // Initialize system commands once
@@ -56,6 +58,11 @@ export function AppLayout() {
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'm') {
         event.preventDefault()
         toggleTopBar()
+      }
+      // Quick Ask: Ctrl+L / Cmd+L
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+        event.preventDefault()
+        setQuickAskOpen(true)
       }
     }
 
@@ -84,7 +91,7 @@ export function AppLayout() {
   return (
     <div 
       className="h-screen flex flex-col overflow-hidden" 
-      style={{ backgroundColor: '#0F1419' }}
+      style={{ backgroundColor: 'var(--ao-workbench-background)' }}
     >
       {/* 顶部工具栏 - 必须 */}
       <TopBar 
@@ -124,9 +131,15 @@ export function AppLayout() {
       />
 
       {/* Command Palette */}
-      <CommandPalette 
-        open={quickSearchOpen} 
-        onClose={closeQuickSearch} 
+      <CommandPalette
+        open={quickSearchOpen}
+        onClose={closeQuickSearch}
+      />
+
+      {/* Quick Ask */}
+      <QuickAsk
+        open={quickAskOpen}
+        onClose={() => setQuickAskOpen(false)}
       />
     </div>
   )

@@ -160,7 +160,7 @@ function RoleItem({ role, isSelected, onClick }: RoleItemProps) {
       className={cn(
         'flex w-full items-center gap-2 rounded-md px-3 py-2 text-left transition-colors',
         isSelected
-          ? 'bg-[#1E3A5F] text-white'
+          ? 'bg-[var(--ao-button.background)] text-white'
           : 'hover:bg-gray-100 text-gray-700'
       )}
     >

@@ -9,10 +9,11 @@ import {
   getPilotContext,
   type PilotToolBinding,
   type PilotAuditEntry,
-  type PilotStats,
   type BindingStatus,
   type ExecutionStatus,
 } from '../api/pilotApi'
+
+export type { BindingStatus, ExecutionStatus }
 
 export type SalesPhase = 'read' | 'generate' | 'confirm' | 'execute' | 'complete' | 'failed'
 export type OpportunityStage = 'lead' | 'qualified' | 'proposal' | 'negotiation' | 'closed_won' | 'closed_lost'

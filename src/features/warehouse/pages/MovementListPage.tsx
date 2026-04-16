@@ -135,8 +135,7 @@ export function MovementListPage() {
             title="加载失败"
             description={error}
             icon={AlertTriangle}
-            actionLabel="重试"
-            onAction={fetchData}
+            action={{ label: "重试", onClick: fetchData }}
           />
         </div>
       </div>

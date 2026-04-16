@@ -138,7 +138,6 @@ export function FinancePanel() {
           ) : invoices.length === 0 ? (
             <EmptyState title="暂无发票" description="发票记录将在此处显示" icon={Receipt} />
           ) : (
-          ) : (
             <div className="space-y-2">
               {invoices.map((inv) => (
                 <Card key={inv.id}>
@@ -185,7 +184,6 @@ export function FinancePanel() {
             <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}</div>
           ) : ledgerEntries.length === 0 ? (
             <EmptyState title="暂无台账" description="账目记录将在此处显示" icon={Wallet} />
-          ) : (
           ) : (
             <div className="space-y-2">
               {ledgerEntries.map((entry) => (

@@ -130,7 +130,7 @@ export function CompressionConfigPanel({
       {/* 标题 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings2 className="h-5 w-5 text-[#1E3A5F]" />
+          <Settings2 className="h-5 w-5 text-[var(--ao-button.background)]" />
           <h3 className="text-lg font-semibold">压缩配置</h3>
         </div>
         <TooltipProvider>

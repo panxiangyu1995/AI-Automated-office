@@ -126,8 +126,7 @@ export function EmployeeList({ onSelectEmployee, onAddEmployee }: EmployeeListPr
           title="暂无员工数据"
           description={keyword || status ? '尝试调整筛选条件' : '添加员工后将在此处显示'}
           icon={Users}
-          actionLabel={onAddEmployee ? '添加员工' : undefined}
-          onAction={onAddEmployee}
+          action={onAddEmployee ? { label: '添加员工', onClick: onAddEmployee } : undefined}
         />
       ) : (
         <>

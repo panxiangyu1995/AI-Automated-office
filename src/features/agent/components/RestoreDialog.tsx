@@ -7,7 +7,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
- * - UX-02: 品牌色 #1E3A5F
+ * - UX-02: 品牌色 var(--ao-button.background)
  * - UX-04: 对话驱动交互
  */
 
@@ -63,7 +63,7 @@ export function RestoreDialog({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-2">
-          <RotateCcw size={18} style={{ color: '#1E3A5F' }} />
+          <RotateCcw size={18} style={{ color: 'var(--ao-button.background)' }} />
           <h3 className="font-semibold text-slate-800">恢复检查点</h3>
         </div>
         
@@ -109,7 +109,7 @@ export function RestoreDialog({
                   ? 'border-primary bg-blue-50'
                   : 'border-slate-200 hover:bg-slate-50'
               }`}
-              style={{ borderColor: selectedMode === 'conversation_only' ? '#1E3A5F' : undefined }}
+              style={{ borderColor: selectedMode === 'conversation_only' ? 'var(--ao-button.background)' : undefined }}
             >
               <MessageSquare size={20} className="text-slate-400 flex-shrink-0" />
               <div>
@@ -131,7 +131,7 @@ export function RestoreDialog({
                   ? 'border-primary bg-blue-50'
                   : 'border-slate-200 hover:bg-slate-50'
               }`}
-              style={{ borderColor: selectedMode === 'conversation_plus_content' ? '#1E3A5F' : undefined }}
+              style={{ borderColor: selectedMode === 'conversation_plus_content' ? 'var(--ao-button.background)' : undefined }}
             >
               <Package size={20} className="text-slate-400 flex-shrink-0" />
               <div>

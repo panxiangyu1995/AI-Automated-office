@@ -231,7 +231,7 @@ export function OrganizationPage() {
   return (
     <div className="flex h-full">
       {/* 左侧部门树 */}
-      <aside className="w-[280px] flex-shrink-0 border-r border-gray-200 bg-[#F9FAFB]">
+      <aside className="w-[280px] flex-shrink-0 border-r border-gray-200 bg-[var(--ao-workbench.background)]">
         <DepartmentTree
           tree={tree}
           selectedId={selectedId}
@@ -277,7 +277,7 @@ export function OrganizationPage() {
               <h2 className="text-xl font-bold text-gray-900">全部岗位</h2>
               <Button
                 onClick={handleCreatePosition}
-                className="bg-[#1E3A5F] hover:bg-[#1E3A5F]/90"
+                className="bg-[var(--ao-button.background)] hover:bg-[var(--ao-button.background)]/90"
               >
                 创建岗位
               </Button>

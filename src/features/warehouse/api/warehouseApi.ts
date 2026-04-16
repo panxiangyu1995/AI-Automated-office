@@ -15,9 +15,7 @@ import type {
 } from '../types/warehouse.types'
 import type {
   Location,
-  InventoryWarning,
   ListWarningsResponse,
-  MovementRecord,
   ListMovementsResponse,
   LogisticsRecord,
 } from '../types/inventory'
@@ -56,13 +54,13 @@ export async function listLocations(): Promise<Location[]> {
 }
 export async function listWarnings(): Promise<ListWarningsResponse> {
   try {
-    return await invoke('warehouse_list_warnings', { request: { page: 1, page_size: 100 } })
+    return await invoke('warehouse_list_warnings', { request: { page: 1, pageSize: 100 } })
   } catch {
     return {
       items: [],
       total: 0,
       page: 1,
-      page_size: 100,
+      pageSize: 100,
       summary: { low_count: 0, high_count: 0, expiring_count: 0 },
     }
   }
@@ -84,7 +82,7 @@ export async function listMovements(request?: {
       items: [],
       total: 0,
       page: 1,
-      page_size: 100,
+      pageSize: 100,
       summary: { total_inbound: 0, total_outbound: 0, net_change: 0 },
     }
   }

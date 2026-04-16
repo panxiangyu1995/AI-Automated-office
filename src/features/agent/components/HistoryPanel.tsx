@@ -6,7 +6,7 @@
  *
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - ARCH: 分层架构，连接 history store
  * - FR11: 提供可搜索的历史对话管理
  */
@@ -334,7 +334,7 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
             value={filter.keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="w-full pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-            style={{ '--tw-ring-color': '#1E3A5F' } as React.CSSProperties}
+            style={{ '--tw-ring-color': 'var(--ao-button.background)' } as React.CSSProperties}
           />
           {filter.keyword && (
             <button
@@ -355,7 +355,7 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
               filter.timeRange !== 'all' && 'border-primary text-primary'
             )}
             style={
-              filter.timeRange !== 'all' ? { borderColor: '#1E3A5F', color: '#1E3A5F' } : undefined
+              filter.timeRange !== 'all' ? { borderColor: 'var(--ao-button.background)', color: 'var(--ao-button.background)' } : undefined
             }
           >
             <span className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
                       'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors',
                       filter.timeRange === option.value && 'text-primary bg-primary/5'
                     )}
-                    style={filter.timeRange === option.value ? { color: '#1E3A5F' } : undefined}
+                    style={filter.timeRange === option.value ? { color: 'var(--ao-button.background)' } : undefined}
                   >
                     {option.label}
                   </button>
@@ -414,7 +414,7 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
               ? 'text-primary border-b-2 border-primary'
               : 'text-slate-500 hover:text-slate-700'
           )}
-          style={!showArchived ? { color: '#1E3A5F', borderColor: '#1E3A5F' } : undefined}
+          style={!showArchived ? { color: 'var(--ao-button.background)', borderColor: 'var(--ao-button.background)' } : undefined}
         >
           会话 ({filteredSessions.length})
         </button>
@@ -426,7 +426,7 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
               ? 'text-primary border-b-2 border-primary'
               : 'text-slate-500 hover:text-slate-700'
           )}
-          style={showArchived ? { color: '#1E3A5F', borderColor: '#1E3A5F' } : undefined}
+          style={showArchived ? { color: 'var(--ao-button.background)', borderColor: 'var(--ao-button.background)' } : undefined}
         >
           已归档 ({archivedSessions.length})
         </button>
@@ -441,8 +441,7 @@ export function HistoryPanel({ className, onSelectSession }: HistoryPanelProps) 
               title={hasFilters ? '未找到匹配的会话' : '暂无历史对话'}
               description={hasFilters ? '尝试调整筛选条件' : '开始新的对话后将会显示在这里'}
               icon={Search}
-              actionLabel={hasFilters ? '清除筛选' : undefined}
-              onAction={hasFilters ? clearFilters : undefined}
+              action={hasFilters ? { label: '清除筛选', onClick: clearFilters } : undefined}
             />
           ) : (
             <div className="space-y-1">

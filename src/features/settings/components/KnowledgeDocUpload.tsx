@@ -93,19 +93,19 @@ const CATEGORY_LABELS: Record<DocCategory, string> = {
 const getStatusConfig = (status: DocStatus) => {
   switch (status) {
     case 'uploading':
-      return { icon: Upload, color: 'text-[#58A6FF]', label: '上传中', variant: 'secondary' as const }
+      return { icon: Upload, color: 'text-[var(--ao-button.linkForeground)]', label: '上传中', variant: 'secondary' as const }
     case 'parsing':
-      return { icon: Loader2, color: 'text-[#D29922]', label: '解析中', variant: 'secondary' as const, animate: true }
+      return { icon: Loader2, color: 'text-[var(--ao-warningForeground)]', label: '解析中', variant: 'secondary' as const, animate: true }
     case 'indexing':
-      return { icon: Loader2, color: 'text-[#A371F7]', label: '索引中', variant: 'secondary' as const, animate: true }
+      return { icon: Loader2, color: 'text-[var(--ao-infoForeground)]', label: '索引中', variant: 'secondary' as const, animate: true }
     case 'ready':
-      return { icon: CheckCircle2, color: 'text-[#3FB950]', label: '就绪', variant: 'default' as const }
+      return { icon: CheckCircle2, color: 'text-[var(--ao-successForeground)]', label: '就绪', variant: 'default' as const }
     case 'error':
-      return { icon: AlertCircle, color: 'text-[#F85149]', label: '错误', variant: 'destructive' as const }
+      return { icon: AlertCircle, color: 'text-[var(--ao-errorForeground)]', label: '错误', variant: 'destructive' as const }
     case 'archived':
-      return { icon: Archive, color: 'text-[#6E7681]', label: '已归档', variant: 'outline' as const }
+      return { icon: Archive, color: 'text-[var(--ao-workbench.secondaryForeground)]', label: '已归档', variant: 'outline' as const }
     case 'deleted':
-      return { icon: Trash, color: 'text-[#6E7681]', label: '已删除', variant: 'outline' as const }
+      return { icon: Trash, color: 'text-[var(--ao-workbench.secondaryForeground)]', label: '已删除', variant: 'outline' as const }
   }
 }
 
@@ -307,11 +307,11 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2" style={{ color: '#C9D1D9' }}>
-            <FileText className="h-6 w-6" style={{ color: '#3FB950' }} />
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2" style={{ color: 'var(--ao-foreground)' }}>
+            <FileText className="h-6 w-6" style={{ color: 'var(--ao-successForeground)' }} />
             知识文档管理
           </h2>
-          <p className="text-sm mt-1" style={{ color: '#8B949E' }}>
+          <p className="text-sm mt-1" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             上传、组织和管理企业知识文档，支持全文检索和智能问答
           </p>
         </div>
@@ -323,79 +323,79 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-7">
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" style={{ color: '#8B949E' }} />
+              <FileText className="h-5 w-5" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{stats.totalDocs}</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>文档总数</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-foreground)' }}>{stats.totalDocs}</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>文档总数</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5" style={{ color: '#8B949E' }} />
+              <HardDrive className="h-5 w-5" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{formatSize(stats.totalSize)}</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>总大小</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-foreground)' }}>{formatSize(stats.totalSize)}</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>总大小</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5" style={{ color: '#3FB950' }} />
+              <CheckCircle2 className="h-5 w-5" style={{ color: 'var(--ao-successForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#3FB950' }}>{stats.readyDocs}</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>已就绪</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-successForeground)' }}>{stats.readyDocs}</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>已就绪</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Loader2 className="h-5 w-5" style={{ color: '#D29922' }} />
+              <Loader2 className="h-5 w-5" style={{ color: 'var(--ao-warningForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#D29922' }}>{stats.parsingDocs}</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>处理中</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-warningForeground)' }}>{stats.parsingDocs}</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>处理中</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" style={{ color: '#F85149' }} />
+              <AlertCircle className="h-5 w-5" style={{ color: 'var(--ao-errorForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#F85149' }}>{stats.errorDocs}</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>错误</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-errorForeground)' }}>{stats.errorDocs}</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>错误</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <FolderOpen className="h-5 w-5" style={{ color: '#A371F7' }} />
+              <FolderOpen className="h-5 w-5" style={{ color: 'var(--ao-infoForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{stats.categoriesCount}</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>分类</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-foreground)' }}>{stats.categoriesCount}</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>分类</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" style={{ color: '#58A6FF' }} />
+              <BarChart3 className="h-5 w-5" style={{ color: 'var(--ao-button.linkForeground)' }} />
               <div>
-                <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{stats.avgParseTime}秒</div>
-                <div className="text-xs" style={{ color: '#8B949E' }}>平均解析</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--ao-foreground)' }}>{stats.avgParseTime}秒</div>
+                <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>平均解析</div>
               </div>
             </div>
           </CardContent>
@@ -404,20 +404,20 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
       {/* Upload Tasks */}
       {uploadTasks.length > 0 && (
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
-            <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: '#C9D1D9' }}>
+            <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--ao-foreground)' }}>
               <Upload className="h-4 w-4" />
               上传任务
             </h3>
             <div className="space-y-2">
               {uploadTasks.map(task => (
                 <div key={task.id} className="flex items-center gap-3">
-                  <File className="h-4 w-4" style={{ color: '#8B949E' }} />
+                  <File className="h-4 w-4" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
                   <div className="flex-1">
-                    <div className="flex justify-between text-sm mb-1" style={{ color: '#C9D1D9' }}>
+                    <div className="flex justify-between text-sm mb-1" style={{ color: 'var(--ao-foreground)' }}>
                       <span>{task.fileName}</span>
-                      <span style={{ color: '#8B949E' }}>{task.progress}%</span>
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>{task.progress}%</span>
                     </div>
                     <Progress value={task.progress} />
                   </div>
@@ -429,25 +429,25 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
       )}
 
       <Tabs defaultValue="all">
-        <TabsList className="mb-4" style={{ backgroundColor: '#21262D' }}>
-          <TabsTrigger value="all" style={{ color: '#8B949E' }}>全部文档</TabsTrigger>
-          <TabsTrigger value="manual" style={{ color: '#8B949E' }}>
+        <TabsList className="mb-4" style={{ backgroundColor: 'var(--ao-bottomPanel.activeBackground)' }}>
+          <TabsTrigger value="all" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>全部文档</TabsTrigger>
+          <TabsTrigger value="manual" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             {CATEGORY_LABELS.manual}
             {categoryCounts.manual && <Badge variant="secondary" className="ml-1">{categoryCounts.manual}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="policy" style={{ color: '#8B949E' }}>
+          <TabsTrigger value="policy" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             {CATEGORY_LABELS.policy}
             {categoryCounts.policy && <Badge variant="secondary" className="ml-1">{categoryCounts.policy}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="contract" style={{ color: '#8B949E' }}>
+          <TabsTrigger value="contract" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             {CATEGORY_LABELS.contract}
             {categoryCounts.contract && <Badge variant="secondary" className="ml-1">{categoryCounts.contract}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="report" style={{ color: '#8B949E' }}>
+          <TabsTrigger value="report" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             {CATEGORY_LABELS.report}
             {categoryCounts.report && <Badge variant="secondary" className="ml-1">{categoryCounts.report}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="guideline" style={{ color: '#8B949E' }}>
+          <TabsTrigger value="guideline" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             {CATEGORY_LABELS.guideline}
             {categoryCounts.guideline && <Badge variant="secondary" className="ml-1">{categoryCounts.guideline}</Badge>}
           </TabsTrigger>
@@ -456,22 +456,22 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
         {/* Filters */}
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#8B949E' }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
             <Input
               placeholder="搜索文档..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
-              style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
+              style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)', borderColor: 'var(--ao-border)', color: 'var(--ao-foreground)' }}
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <Filter className="h-4 w-4" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
             <select
               className="rounded px-2 py-1 text-sm"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as DocStatus | 'all')}
-              style={{ backgroundColor: '#0D1117', borderColor: '#30363D', color: '#C9D1D9' }}
+              style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)', borderColor: 'var(--ao-border)', color: 'var(--ao-foreground)' }}
             >
               <option value="all">全部状态</option>
               <option value="ready">就绪</option>
@@ -481,20 +481,20 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
               <option value="archived">已归档</option>
             </select>
           </div>
-          <div className="flex items-center gap-1 rounded p-1" style={{ border: '1px solid #30363D' }}>
+          <div className="flex items-center gap-1 rounded p-1" style={{ border: '1px solid var(--ao-border)' }}>
             <button
-              className={cn('p-1 rounded', viewMode === 'grid' ? 'bg-[#238636]' : '')}
+              className={cn('p-1 rounded', viewMode === 'grid' ? 'bg-[var(--ao-sidebarActiveIndicator)]' : '')}
               onClick={() => setViewMode('grid')}
               style={viewMode !== 'grid' ? { backgroundColor: 'transparent' } : {}}
             >
-              <Grid className="h-4 w-4" style={{ color: viewMode === 'grid' ? '#FFFFFF' : '#8B949E' }} />
+              <Grid className="h-4 w-4" style={{ color: viewMode === 'grid' ? 'var(--ao-activityBar.activeForeground)' : 'var(--ao-workbench.secondaryForeground)' }} />
             </button>
             <button
-              className={cn('p-1 rounded', viewMode === 'list' ? 'bg-[#238636]' : '')}
+              className={cn('p-1 rounded', viewMode === 'list' ? 'bg-[var(--ao-sidebarActiveIndicator)]' : '')}
               onClick={() => setViewMode('list')}
               style={viewMode !== 'list' ? { backgroundColor: 'transparent' } : {}}
             >
-              <List className="h-4 w-4" style={{ color: viewMode === 'list' ? '#FFFFFF' : '#8B949E' }} />
+              <List className="h-4 w-4" style={{ color: viewMode === 'list' ? 'var(--ao-activityBar.activeForeground)' : 'var(--ao-workbench.secondaryForeground)' }} />
             </button>
           </div>
         </div>
@@ -502,10 +502,10 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
         {/* Documents Grid/List */}
         <TabsContent value="all">
           {filteredDocuments.length === 0 ? (
-            <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+            <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
               <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto mb-4" style={{ color: '#8B949E' }} />
-                <p style={{ color: '#8B949E' }}>暂无文档，点击上传按钮添加</p>
+                <FileText className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
+                <p style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>暂无文档，点击上传按钮添加</p>
               </CardContent>
             </Card>
           ) : viewMode === 'grid' ? (
@@ -517,25 +517,25 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
                   <Card
                     key={doc.id}
                     className={`cursor-pointer transition-all hover:shadow-lg ${
-                      selectedDoc?.id === doc.id ? 'ring-2 ring-[#238636]' : ''
+                      selectedDoc?.id === doc.id ? 'ring-2 ring-[var(--ao-sidebarActiveIndicator)]' : ''
                     }`}
-                    style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}
+                    style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}
                     onClick={() => setSelectedDoc(doc)}
                   >
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between mb-3">
-                        <div className="h-10 w-10 rounded flex items-center justify-center" style={{ backgroundColor: '#21262D' }}>
-                          <FileText className="h-5 w-5" style={{ color: '#8B949E' }} />
+                        <div className="h-10 w-10 rounded flex items-center justify-center" style={{ backgroundColor: 'var(--ao-bottomPanel.activeBackground)' }}>
+                          <FileText className="h-5 w-5" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
                         </div>
                         <div className="flex items-center gap-1">
                           <StatusIcon className={`h-4 w-4 ${statusConfig.color} ${statusConfig.animate ? 'animate-spin' : ''}`} />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="font-medium text-sm truncate" style={{ color: '#C9D1D9' }} title={doc.name}>
+                        <div className="font-medium text-sm truncate" style={{ color: 'var(--ao-foreground)' }} title={doc.name}>
                           {doc.name}
                         </div>
-                        <div className="flex items-center gap-2 text-xs" style={{ color: '#8B949E' }}>
+                        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
                           <Badge variant="secondary" className="text-xs">
                             {CATEGORY_LABELS[doc.category]}
                           </Badge>
@@ -544,8 +544,8 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
                         {doc.status === 'parsing' && doc.parseProgress !== undefined && (
                           <div className="space-y-1">
                             <div className="flex justify-between text-xs">
-                              <span style={{ color: '#8B949E' }}>解析进度</span>
-                              <span style={{ color: '#C9D1D9' }}>{doc.parseProgress}%</span>
+                              <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>解析进度</span>
+                              <span style={{ color: 'var(--ao-foreground)' }}>{doc.parseProgress}%</span>
                             </div>
                             <Progress value={doc.parseProgress} />
                           </div>
@@ -553,13 +553,13 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
                         {doc.status === 'indexing' && doc.indexProgress !== undefined && (
                           <div className="space-y-1">
                             <div className="flex justify-between text-xs">
-                              <span style={{ color: '#8B949E' }}>索引进度</span>
-                              <span style={{ color: '#C9D1D9' }}>{doc.indexProgress}%</span>
+                              <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>索引进度</span>
+                              <span style={{ color: 'var(--ao-foreground)' }}>{doc.indexProgress}%</span>
                             </div>
                             <Progress value={doc.indexProgress} />
                           </div>
                         )}
-                        <div className="text-xs" style={{ color: '#8B949E' }}>
+                        <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
                           {formatTimeAgo(doc.uploadTime)}
                         </div>
                       </div>
@@ -569,7 +569,7 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
               })}
             </div>
           ) : (
-            <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+            <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
               <CardContent className="p-0">
                 <div>
                   {filteredDocuments.map((doc, idx) => {
@@ -581,17 +581,17 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
                         className={cn(
                           'flex items-center gap-4 p-4 cursor-pointer transition-colors',
                           idx !== 0 && 'border-t',
-                          selectedDoc?.id === doc.id ? 'bg-[#21262D]' : 'hover:bg-[#21262D]/50'
+                          selectedDoc?.id === doc.id ? 'bg-[var(--ao-bottomPanel.activeBackground)]' : 'hover:bg-[var(--ao-bottomPanel.activeBackground)]/50'
                         )}
-                        style={{ borderColor: '#30363D' }}
+                        style={{ borderColor: 'var(--ao-border)' }}
                         onClick={() => setSelectedDoc(doc)}
                       >
-                        <div className="h-10 w-10 rounded flex items-center justify-center" style={{ backgroundColor: '#21262D' }}>
-                          <FileText className="h-5 w-5" style={{ color: '#8B949E' }} />
+                        <div className="h-10 w-10 rounded flex items-center justify-center" style={{ backgroundColor: 'var(--ao-bottomPanel.activeBackground)' }}>
+                          <FileText className="h-5 w-5" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium truncate" style={{ color: '#C9D1D9' }}>{doc.name}</span>
+                            <span className="font-medium truncate" style={{ color: 'var(--ao-foreground)' }}>{doc.name}</span>
                             <Badge variant="secondary" className="text-xs">
                               {CATEGORY_LABELS[doc.category]}
                             </Badge>
@@ -600,7 +600,7 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
                               {statusConfig.label}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-4 text-xs mt-1" style={{ color: '#8B949E' }}>
+                          <div className="flex items-center gap-4 text-xs mt-1" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
                             <span>{formatSize(doc.size)}</span>
                             {doc.pageCount && <span>{doc.pageCount}页</span>}
                             {doc.chunkCount && <span>{doc.chunkCount}块</span>}
@@ -617,7 +617,7 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleArchive(doc.id); }}>
                             <Archive className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }} style={{ color: '#F85149' }}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }} style={{ color: 'var(--ao-errorForeground)' }}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -677,10 +677,10 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
       {/* Document Detail Panel */}
       {selectedDoc && (
-        <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium flex items-center gap-2" style={{ color: '#C9D1D9' }}>
+              <h3 className="font-medium flex items-center gap-2" style={{ color: 'var(--ao-foreground)' }}>
                 <FileText className="h-4 w-4" />
                 文档详情
               </h3>
@@ -692,39 +692,39 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm font-medium mb-2" style={{ color: '#C9D1D9' }}>基本信息</div>
+                  <div className="text-sm font-medium mb-2" style={{ color: 'var(--ao-foreground)' }}>基本信息</div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                      <span style={{ color: '#8B949E' }}>文件名</span>
-                      <span className="font-medium truncate max-w-[200px]" style={{ color: '#C9D1D9' }} title={selectedDoc.name}>
+                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>文件名</span>
+                      <span className="font-medium truncate max-w-[200px]" style={{ color: 'var(--ao-foreground)' }} title={selectedDoc.name}>
                         {selectedDoc.name}
                       </span>
                     </div>
-                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                      <span style={{ color: '#8B949E' }}>分类</span>
+                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>分类</span>
                       <Badge variant="secondary">{CATEGORY_LABELS[selectedDoc.category]}</Badge>
                     </div>
-                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                      <span style={{ color: '#8B949E' }}>状态</span>
+                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>状态</span>
                       <Badge {...getStatusConfig(selectedDoc.status)}>
                         {getStatusConfig(selectedDoc.status).label}
                       </Badge>
                     </div>
-                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                      <span style={{ color: '#8B949E' }}>大小</span>
-                      <span style={{ color: '#C9D1D9' }}>{formatSize(selectedDoc.size)}</span>
+                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>大小</span>
+                      <span style={{ color: 'var(--ao-foreground)' }}>{formatSize(selectedDoc.size)}</span>
                     </div>
-                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                      <span style={{ color: '#8B949E' }}>版本</span>
-                      <span style={{ color: '#C9D1D9' }}>v{selectedDoc.version}</span>
+                    <div className="flex justify-between p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>版本</span>
+                      <span style={{ color: 'var(--ao-foreground)' }}>v{selectedDoc.version}</span>
                     </div>
                   </div>
                 </div>
 
                 {selectedDoc.description && (
                   <div>
-                    <div className="text-sm font-medium mb-2" style={{ color: '#C9D1D9' }}>描述</div>
-                    <p className="text-sm p-2 rounded" style={{ backgroundColor: '#0D1117', color: '#8B949E' }}>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--ao-foreground)' }}>描述</div>
+                    <p className="text-sm p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)', color: 'var(--ao-workbench.secondaryForeground)' }}>
                       {selectedDoc.description}
                     </p>
                   </div>
@@ -732,10 +732,10 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
                 {selectedDoc.tags.length > 0 && (
                   <div>
-                    <div className="text-sm font-medium mb-2" style={{ color: '#C9D1D9' }}>标签</div>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--ao-foreground)' }}>标签</div>
                     <div className="flex flex-wrap gap-1">
                       {selectedDoc.tags.map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs" style={{ borderColor: '#30363D', color: '#C9D1D9' }}>
+                        <Badge key={tag} variant="outline" className="text-xs" style={{ borderColor: 'var(--ao-border)', color: 'var(--ao-foreground)' }}>
                           <Tag className="h-3 w-3 mr-1" />
                           {tag}
                         </Badge>
@@ -747,25 +747,25 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm font-medium mb-2" style={{ color: '#C9D1D9' }}>时间信息</div>
+                  <div className="text-sm font-medium mb-2" style={{ color: 'var(--ao-foreground)' }}>时间信息</div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                      <Upload className="h-4 w-4" style={{ color: '#8B949E' }} />
-                      <span style={{ color: '#8B949E' }}>上传时间</span>
-                      <span className="ml-auto" style={{ color: '#C9D1D9' }}>{new Date(selectedDoc.uploadTime).toLocaleString()}</span>
+                    <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                      <Upload className="h-4 w-4" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
+                      <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>上传时间</span>
+                      <span className="ml-auto" style={{ color: 'var(--ao-foreground)' }}>{new Date(selectedDoc.uploadTime).toLocaleString()}</span>
                     </div>
                     {selectedDoc.parsedAt && (
-                      <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                        <CheckCircle2 className="h-4 w-4" style={{ color: '#3FB950' }} />
-                        <span style={{ color: '#8B949E' }}>解析完成</span>
-                        <span className="ml-auto" style={{ color: '#C9D1D9' }}>{new Date(selectedDoc.parsedAt).toLocaleString()}</span>
+                      <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                        <CheckCircle2 className="h-4 w-4" style={{ color: 'var(--ao-successForeground)' }} />
+                        <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>解析完成</span>
+                        <span className="ml-auto" style={{ color: 'var(--ao-foreground)' }}>{new Date(selectedDoc.parsedAt).toLocaleString()}</span>
                       </div>
                     )}
                     {selectedDoc.indexedAt && (
-                      <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: '#0D1117' }}>
-                        <Link2 className="h-4 w-4" style={{ color: '#58A6FF' }} />
-                        <span style={{ color: '#8B949E' }}>索引完成</span>
-                        <span className="ml-auto" style={{ color: '#C9D1D9' }}>{new Date(selectedDoc.indexedAt).toLocaleString()}</span>
+                      <div className="flex items-center gap-2 p-2 rounded" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                        <Link2 className="h-4 w-4" style={{ color: 'var(--ao-button.linkForeground)' }} />
+                        <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>索引完成</span>
+                        <span className="ml-auto" style={{ color: 'var(--ao-foreground)' }}>{new Date(selectedDoc.indexedAt).toLocaleString()}</span>
                       </div>
                     )}
                   </div>
@@ -773,18 +773,18 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
                 {(selectedDoc.pageCount || selectedDoc.chunkCount) && (
                   <div>
-                    <div className="text-sm font-medium mb-2" style={{ color: '#C9D1D9' }}>统计信息</div>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--ao-foreground)' }}>统计信息</div>
                     <div className="grid grid-cols-2 gap-2">
                       {selectedDoc.pageCount && (
-                        <div className="p-3 rounded text-center" style={{ backgroundColor: '#0D1117' }}>
-                          <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{selectedDoc.pageCount}</div>
-                          <div className="text-xs" style={{ color: '#8B949E' }}>页数</div>
+                        <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                          <div className="text-2xl font-bold" style={{ color: 'var(--ao-foreground)' }}>{selectedDoc.pageCount}</div>
+                          <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>页数</div>
                         </div>
                       )}
                       {selectedDoc.chunkCount && (
-                        <div className="p-3 rounded text-center" style={{ backgroundColor: '#0D1117' }}>
-                          <div className="text-2xl font-bold" style={{ color: '#C9D1D9' }}>{selectedDoc.chunkCount}</div>
-                          <div className="text-xs" style={{ color: '#8B949E' }}>块数</div>
+                        <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}>
+                          <div className="text-2xl font-bold" style={{ color: 'var(--ao-foreground)' }}>{selectedDoc.chunkCount}</div>
+                          <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>块数</div>
                         </div>
                       )}
                     </div>
@@ -793,8 +793,8 @@ export function KnowledgeDocUpload({ className = '' }: KnowledgeDocUploadProps) 
 
                 {selectedDoc.error && (
                   <div>
-                    <div className="text-sm font-medium mb-2" style={{ color: '#F85149' }}>错误信息</div>
-                    <div className="p-3 rounded text-sm" style={{ backgroundColor: 'rgba(248, 81, 73, 0.1)', border: '1px solid rgba(248, 81, 73, 0.3)', color: '#F85149' }}>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--ao-errorForeground)' }}>错误信息</div>
+                    <div className="p-3 rounded text-sm" style={{ backgroundColor: 'rgba(248, 81, 73, 0.1)', border: '1px solid rgba(248, 81, 73, 0.3)', color: 'var(--ao-errorForeground)' }}>
                       {selectedDoc.error}
                     </div>
                   </div>

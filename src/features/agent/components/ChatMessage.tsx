@@ -9,7 +9,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - ARCH: 分层架构，复用消息模型
  */
 
@@ -342,7 +342,7 @@ export function ChatMessage({ message, streamingContent, isStreaming }: ChatMess
             ? 'bg-slate-200' 
             : 'bg-primary'
         )}
-        style={!isUser ? { backgroundColor: '#1E3A5F' } : undefined}
+        style={!isUser ? { backgroundColor: 'var(--ao-button.background)' } : undefined}
       >
         {isUser ? (
           <User size={16} className="text-slate-600" />
@@ -365,7 +365,7 @@ export function ChatMessage({ message, streamingContent, isStreaming }: ChatMess
               ? 'bg-primary text-white rounded-tr-sm'
               : 'bg-slate-100 text-slate-800 rounded-tl-sm'
           )}
-          style={isUser ? { backgroundColor: '#1E3A5F' } : undefined}
+          style={isUser ? { backgroundColor: 'var(--ao-button.background)' } : undefined}
         >
           {/* Render Parts */}
           {message.parts.map((part) => (

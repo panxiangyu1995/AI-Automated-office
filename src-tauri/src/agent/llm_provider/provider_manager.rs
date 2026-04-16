@@ -7,8 +7,8 @@ use std::sync::Arc;
 use crate::agent::llm_provider::config::ProviderConfig;
 use crate::agent::llm_provider::LlmProviderError;
 use crate::agent::llm_provider::{
-    DeepSeekProvider, MinimaxProvider, OpenAICompatibleProvider, ZhipuProvider,
-    ZhipuConfig, DeepSeekConfig, MinimaxConfig, OpenAICompatibleConfig,
+    DashScopeProvider, DeepSeekProvider, MinimaxProvider, OpenAICompatibleProvider, ZhipuProvider,
+    DashScopeConfig, ZhipuConfig, DeepSeekConfig, MinimaxConfig, OpenAICompatibleConfig,
 };
 
 /// Result type for provider creation
@@ -42,6 +42,24 @@ impl LlmProviderManager {
                 // Use a default or fail
                 let minimax_config = MinimaxConfig::new(api_key, "default_group");
                 Arc::new(MinimaxProvider::with_config(minimax_config))
+            }
+            "dashscope" | "bailian" => {
+                let mut dashscope_config = DashScopeConfig::new(api_key);
+                if !config.model.is_empty() {
+                    let model = match config.model.as_str() {
+                        "qwen-max" => crate::agent::llm_provider::DashScopeModel::QwenMax,
+                        "qwen-plus" => crate::agent::llm_provider::DashScopeModel::QwenPlus,
+                        "qwen-turbo" => crate::agent::llm_provider::DashScopeModel::QwenTurbo,
+                        "qwen-long" => crate::agent::llm_provider::DashScopeModel::QwenLong,
+                        "qwq" => crate::agent::llm_provider::DashScopeModel::QwQ,
+                        other => crate::agent::llm_provider::DashScopeModel::Custom(other.to_string()),
+                    };
+                    dashscope_config = dashscope_config.with_model(model);
+                }
+                if let Some(ref endpoint) = config.api_endpoint {
+                    dashscope_config = dashscope_config.with_endpoint(endpoint.clone());
+                }
+                Arc::new(DashScopeProvider::with_config(dashscope_config))
             }
             "openai-compatible" | "openai" => {
                 let mut openai_config = OpenAICompatibleConfig::new(
@@ -100,5 +118,20 @@ impl LlmProviderManager {
             );
         }
         Ok(Arc::new(OpenAICompatibleProvider::with_config(config)))
+    }
+
+    /// Create a DashScope provider with API key
+    pub fn create_dashscope_provider(api_key: &str, model: &str) -> ProviderResult<Arc<dyn crate::agent::llm_provider::LlmProvider>> {
+        let model = match model {
+            "qwen-max" => crate::agent::llm_provider::DashScopeModel::QwenMax,
+            "qwen-plus" => crate::agent::llm_provider::DashScopeModel::QwenPlus,
+            "qwen-turbo" => crate::agent::llm_provider::DashScopeModel::QwenTurbo,
+            "qwen-long" => crate::agent::llm_provider::DashScopeModel::QwenLong,
+            "qwq" => crate::agent::llm_provider::DashScopeModel::QwQ,
+            other => crate::agent::llm_provider::DashScopeModel::Custom(other.to_string()),
+        };
+        let config = DashScopeConfig::new(api_key.to_string())
+            .with_model(model);
+        Ok(Arc::new(DashScopeProvider::with_config(config)))
     }
 }

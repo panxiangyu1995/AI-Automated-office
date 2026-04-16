@@ -6,33 +6,36 @@
  * - 创建群组会话和管理成员
  * - 持久化群组级权限和角色
  * - 支持群组消息历史和未读状态
+ * - FR634: Agent 自动入群
+ * - FR639: AI 标识显示 (AgentBadge)
+ * - FR640: Agent 默认静默 + 行为控制 (AgentBehaviorToggle)
+ * - FR641: @提及 Agent (AgentMentionInput)
+ * - FR642: Agent 任务通知 (TaskNotificationCard)
+ * - FR643: Agent 数据卡片 (AgentDataCardComponent)
+ * - FR644: Agent 进度汇报 (AgentProgressReportCard)
+ * - FR622-FR630: 消息状态追踪 (MessageStatusIcon)
  *
  * 铁律合规：
  * - FR613, FR614, FR615, FR616, FR617, FR618, FR619
+ * - FR622-FR630, FR631-FR649
  * - NFR1
  * - ADR-037
  */
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import {
   Search,
   Send,
   MoreVertical,
-  Check,
-  CheckCheck,
-  Clock,
   Image as ImageIcon,
   File,
-  X,
   Trash2,
   Users,
   Plus,
   Settings,
   UserPlus,
   UserMinus,
-  Shield,
   ShieldCheck,
-  Crown,
   VolumeX,
   BellOff,
   Search as SearchIcon,
@@ -58,90 +61,49 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AgentBadge,
+  AgentMentionInput,
+  AgentBehaviorToggle,
+  TaskNotificationCard,
+  AgentDataCardComponent,
+  AgentProgressReportCard,
+} from './AgentCollaboration'
+import { AgentGroupParticipant } from './AgentGroupParticipant'
+import type {
+  MentionTarget,
+  AgentTaskNotification,
+  AgentDataCard,
+  AgentProgressReport,
+} from './AgentCollaboration'
+import type {
+  GroupMessage,
+  Group,
+  GroupChatProps,
+  MessageBubbleProps,
+  MemberItemProps,
+} from './GroupChatTypes'
+import {
+  calculateStats,
+  getRoleBadgeColor,
+  getRoleText,
+  getRoleIcon,
+  getStatusIcon,
+} from './GroupChatHelpers'
 
-// Types
-export type GroupRole = 'owner' | 'admin' | 'member'
-
-export type GroupMemberStatus = 'active' | 'muted' | 'left'
-
-export interface GroupMember {
-  id: string
-  userId: string
-  name: string
-  avatar?: string
-  role: GroupRole
-  status: GroupMemberStatus
-  joinedAt: string
-  isCurrentUser?: boolean
-}
-
-export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
-
-export type MessageType = 'text' | 'image' | 'file' | 'system'
-
-export interface GroupMessage {
-  id: string
-  groupId: string
-  senderId: string
-  senderName: string
-  senderAvatar?: string
-  senderRole: GroupRole
-  content: string
-  type: MessageType
-  status: MessageStatus
-  timestamp: string
-  attachments?: GroupAttachment[]
-  replyTo?: string
-  isSystem?: boolean
-}
-
-export interface GroupAttachment {
-  id: string
-  type: 'image' | 'file'
-  name: string
-  size: number
-  url?: string
-  thumbnail?: string
-}
-
-export interface Group {
-  id: string
-  name: string
-  avatar?: string
-  description?: string
-  ownerId: string
-  memberCount: number
-  members: GroupMember[]
-  lastMessage?: string
-  lastMessageTime?: string
-  unreadCount: number
-  messages: GroupMessage[]
-  createdAt: string
-  isJoined: boolean
-}
-
-export interface GroupChatStats {
-  totalGroups: number
-  totalMessages: number
-  unreadMessages: number
-  joinedGroups: number
-}
-
-export interface GroupChatProps {
-  currentUserId: string
-  groups: Group[]
-  onSendMessage: (groupId: string, content: string, type?: MessageType) => void
-  onDeleteMessage?: (messageId: string) => void
-  onCreateGroup?: (name: string, description?: string, memberIds?: string[]) => void
-  onJoinGroup?: (groupId: string) => void
-  onLeaveGroup?: (groupId: string) => void
-  onAddMember?: (groupId: string, userId: string) => void
-  onRemoveMember?: (groupId: string, userId: string) => void
-  onChangeMemberRole?: (groupId: string, userId: string, role: GroupRole) => void
-  onMuteMember?: (groupId: string, userId: string) => void
-  onMarkAsRead?: (groupId: string) => void
-  onSearchMessages?: (query: string) => GroupMessage[]
-}
+// Re-export types for backward compatibility
+export type {
+  GroupRole,
+  GroupMemberStatus,
+  GroupMember,
+  MessageStatus,
+  MessageType,
+  GroupMessage,
+  GroupAttachment,
+  Group,
+  GroupChatStats,
+  GroupChatProps,
+} from './GroupChatTypes'
 
 // Mock current user
 const CURRENT_USER_ID = 'current-user'
@@ -195,6 +157,19 @@ const MOCK_GROUPS: Group[] = [
         status: 'muted',
         joinedAt: '2026-01-17',
       },
+      {
+        id: 'gm-agent-1',
+        userId: 'agent-hr',
+        name: 'HR 助手',
+        role: 'member',
+        status: 'active',
+        joinedAt: '2026-01-16',
+        isAgent: true,
+        agentBehavior: 'reactive',
+        agentJoinMode: 'auto',
+        agentCapabilities: ['请假审批', '员工查询', '考勤统计'],
+        isAgentMuted: false,
+      },
     ],
     messages: [
       {
@@ -229,6 +204,47 @@ const MOCK_GROUPS: Group[] = [
         type: 'text',
         status: 'read',
         timestamp: '10:35',
+      },
+      {
+        id: 'gmsg-1-4',
+        groupId: 'group-1',
+        senderId: 'agent-hr',
+        senderName: 'HR 助手',
+        senderRole: 'member',
+        content: '正在处理考勤统计任务',
+        type: 'agent_task',
+        status: 'read',
+        timestamp: '10:36',
+        agentPayload: {
+          id: 'task-notif-1',
+          agentId: 'agent-hr',
+          agentName: 'HR 助手',
+          taskId: 'task-001',
+          taskName: '月度考勤统计',
+          status: 'in_progress',
+          progress: 65,
+          message: '正在汇总本月考勤数据，已完成 65%',
+          timestamp: '10:36',
+        },
+      },
+      {
+        id: 'gmsg-1-5',
+        groupId: 'group-1',
+        senderId: 'agent-hr',
+        senderName: 'HR 助手',
+        senderRole: 'member',
+        content: '本月考勤数据已生成',
+        type: 'agent_data',
+        status: 'read',
+        timestamp: '10:38',
+        agentPayload: {
+          id: 'data-card-1',
+          agentId: 'agent-hr',
+          title: '本月出勤率',
+          type: 'metric',
+          data: { value: '96.5%' },
+          timestamp: '10:38',
+        },
       },
     ],
   },
@@ -294,87 +310,9 @@ const MOCK_GROUPS: Group[] = [
   },
 ]
 
-// Calculate stats
-function calculateStats(groups: Group[]): GroupChatStats {
-  const totalMessages = groups.reduce((sum, g) => sum + g.messages.length, 0)
-  const unreadMessages = groups.reduce((sum, g) => sum + g.unreadCount, 0)
-  const joinedGroups = groups.filter((g) => g.isJoined).length
-
-  return {
-    totalGroups: groups.length,
-    totalMessages,
-    unreadMessages,
-    joinedGroups,
-  }
-}
-
-// Get role badge color
-function getRoleBadgeColor(role: GroupRole): string {
-  switch (role) {
-    case 'owner':
-      return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-    case 'admin':
-      return 'bg-purple-100 text-purple-700 border-purple-200'
-    case 'member':
-      return 'bg-slate-100 text-slate-700 border-slate-200'
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-200'
-  }
-}
-
-// Get role text
-function getRoleText(role: GroupRole): string {
-  switch (role) {
-    case 'owner':
-      return '群主'
-    case 'admin':
-      return '管理员'
-    case 'member':
-      return '成员'
-    default:
-      return '成员'
-  }
-}
-
-// Get role icon
-function getRoleIcon(role: GroupRole) {
-  switch (role) {
-    case 'owner':
-      return <Crown className="h-3 w-3" />
-    case 'admin':
-      return <ShieldCheck className="h-3 w-3" />
-    default:
-      return <Shield className="h-3 w-3" />
-  }
-}
-
-// Get message status icon
-function getStatusIcon(status: MessageStatus) {
-  switch (status) {
-    case 'sending':
-      return <Clock className="h-3 w-3 text-slate-400" />
-    case 'sent':
-      return <Check className="h-3 w-3 text-slate-400" />
-    case 'delivered':
-      return <CheckCheck className="h-3 w-3 text-slate-400" />
-    case 'read':
-      return <CheckCheck className="h-3 w-3 text-blue-500" />
-    case 'failed':
-      return <X className="h-3 w-3 text-red-500" />
-    default:
-      return null
-  }
-}
-
 // Message bubble component
-interface MessageBubbleProps {
-  message: GroupMessage
-  isOwn: boolean
-  onDelete?: (messageId: string) => void
-  onReply?: (messageId: string) => void
-}
 
-function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
+function MessageBubble({ message, isOwn, onDelete, isAgentMessage }: MessageBubbleProps) {
   const [showMenu, setShowMenu] = useState(false)
 
   return (
@@ -393,6 +331,11 @@ function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
         {!isOwn && (
           <div className="flex items-center gap-1 mb-1">
             <span className="text-xs font-medium">{message.senderName}</span>
+            {isAgentMessage && (
+              <AgentBadge
+                agent={{ name: message.senderName, behavior: 'reactive', isMuted: false }}
+              />
+            )}
             <Badge
               variant="secondary"
               className={`text-xs ${getRoleBadgeColor(message.senderRole)}`}
@@ -415,6 +358,21 @@ function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
 
         {message.type === 'system' && (
           <p className="text-xs text-slate-500 italic text-center">{message.content}</p>
+        )}
+
+        {/* FR642: Agent 任务通知卡片 */}
+        {message.type === 'agent_task' && message.agentPayload && 'taskId' in message.agentPayload && (
+          <TaskNotificationCard notification={message.agentPayload as AgentTaskNotification} />
+        )}
+
+        {/* FR643: Agent 数据卡片 */}
+        {message.type === 'agent_data' && message.agentPayload && 'data' in message.agentPayload && (
+          <AgentDataCardComponent card={message.agentPayload as AgentDataCard} />
+        )}
+
+        {/* FR644: Agent 进度汇报 */}
+        {message.type === 'agent_progress' && message.agentPayload && 'totalSteps' in message.agentPayload && (
+          <AgentProgressReportCard report={message.agentPayload as AgentProgressReport} />
         )}
 
         <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
@@ -450,17 +408,11 @@ function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
 }
 
 // Member list item
-interface MemberItemProps {
-  member: GroupMember
-  currentUserRole: GroupRole
-  onRemove?: (userId: string) => void
-  onChangeRole?: (userId: string, role: GroupRole) => void
-  onMute?: (userId: string) => void
-}
 
 function MemberItem({ member, currentUserRole, onRemove, onChangeRole, onMute }: MemberItemProps) {
   const canManage =
     currentUserRole === 'owner' || (currentUserRole === 'admin' && member.role !== 'owner')
+  const isAgent = member.isAgent ?? false
 
   return (
     <div className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg">
@@ -481,6 +433,16 @@ function MemberItem({ member, currentUserRole, onRemove, onChangeRole, onMute }:
             {member.name}
             {member.isCurrentUser && <span className="text-slate-400 ml-1">(我)</span>}
           </span>
+          {/* FR639: AI 标识显示 */}
+          {isAgent && (
+            <AgentBadge
+              agent={{
+                name: member.name,
+                behavior: member.agentBehavior ?? 'reactive',
+                isMuted: member.isAgentMuted ?? false,
+              }}
+            />
+          )}
           <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor(member.role)}`}>
             {getRoleIcon(member.role)}
             <span className="ml-1">{getRoleText(member.role)}</span>
@@ -488,6 +450,15 @@ function MemberItem({ member, currentUserRole, onRemove, onChangeRole, onMute }:
         </div>
         <p className="text-xs text-slate-500">加入于 {member.joinedAt}</p>
       </div>
+      {/* FR640: Agent 行为控制 */}
+      {isAgent && member.agentBehavior && (
+        <AgentBehaviorToggle
+          behavior={member.agentBehavior}
+          isMuted={member.isAgentMuted ?? false}
+          onBehaviorChange={() => {}}
+          onMuteToggle={() => onMute?.(member.userId)}
+        />
+      )}
       {canManage && !member.isCurrentUser && member.role !== 'owner' && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -546,6 +517,10 @@ export function GroupChat({
   const [searchResults, setSearchResults] = useState<GroupMessage[]>([])
   const [newGroupName, setNewGroupName] = useState('')
   const [newGroupDesc, setNewGroupDesc] = useState('')
+  /** FR641: @提及 Agent - mention 查询字符串 */
+  const [mentionQuery, setMentionQuery] = useState('')
+  /** FR641: @提及 Agent - mention 选择器是否打开 */
+  const [mentionOpen, setMentionOpen] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -554,6 +529,39 @@ export function GroupChat({
     () => groups.find((g) => g.id === selectedGroupId),
     [groups, selectedGroupId]
   )
+
+  // FR641: Build mention targets from group members
+  const mentionTargets = useMemo<MentionTarget[]>(() => {
+    if (!selectedGroup) return []
+    return selectedGroup.members
+      .filter((m) => !m.isCurrentUser)
+      .map((m) => ({
+        id: m.userId,
+        name: m.name,
+        type: (m.isAgent ? 'agent' : 'user') as 'agent' | 'user',
+        capabilities: m.agentCapabilities,
+      }))
+  }, [selectedGroup])
+
+  // Filter mention targets by query
+  const filteredMentionTargets = useMemo(() => {
+    if (!mentionQuery) return mentionTargets
+    return mentionTargets.filter((t) =>
+      t.name.toLowerCase().includes(mentionQuery.toLowerCase())
+    )
+  }, [mentionTargets, mentionQuery])
+
+  const handleMentionSelect = useCallback((target: MentionTarget) => {
+    setMessageInput((prev) => {
+      const atIdx = prev.lastIndexOf('@')
+      if (atIdx >= 0) {
+        return prev.slice(0, atIdx) + `@${target.name} `
+      }
+      return prev
+    })
+    setMentionOpen(false)
+    setMentionQuery('')
+  }, [])
 
   // Get current user role in selected group
   const currentUserRole = useMemo(() => {
@@ -601,9 +609,28 @@ export function GroupChat({
 
   // Handle key press
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !mentionOpen) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  // Handle input change - detect @ for mention (FR641)
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setMessageInput(value)
+
+    const atIdx = value.lastIndexOf('@')
+    if (atIdx >= 0) {
+      const afterAt = value.slice(atIdx + 1)
+      if (!afterAt.includes(' ') && afterAt.length <= 20) {
+        setMentionQuery(afterAt)
+        setMentionOpen(true)
+      } else {
+        setMentionOpen(false)
+      }
+    } else {
+      setMentionOpen(false)
     }
   }
 
@@ -783,14 +810,19 @@ export function GroupChat({
             {/* Messages */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-1">
-                {selectedGroup.messages.map((msg) => (
-                  <MessageBubble
-                    key={msg.id}
-                    message={msg}
-                    isOwn={msg.senderId === currentUserId}
-                    onDelete={onDeleteMessage}
-                  />
-                ))}
+                {selectedGroup.messages.map((msg) => {
+                  const sender = selectedGroup.members.find((m) => m.userId === msg.senderId)
+                  const isAgentMsg = sender?.isAgent ?? false
+                  return (
+                    <MessageBubble
+                      key={msg.id}
+                      message={msg}
+                      isOwn={msg.senderId === currentUserId}
+                      onDelete={onDeleteMessage}
+                      isAgentMessage={isAgentMsg}
+                    />
+                  )
+                })}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
@@ -798,12 +830,20 @@ export function GroupChat({
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-slate-200">
               <div className="flex items-end gap-2">
-                <div className="flex-1">
+                <div className="flex-1 relative">
+                  {/* FR641: @提及 Agent 选择器 */}
+                  {mentionOpen && filteredMentionTargets.length > 0 && (
+                    <AgentMentionInput
+                      agents={filteredMentionTargets}
+                      onSelect={handleMentionSelect}
+                      query={mentionQuery}
+                    />
+                  )}
                   <textarea
                     value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyDown={handleKeyPress}
-                    placeholder="输入群消息..."
+                    placeholder="输入群消息... (@ 提及成员或 Agent)"
                     className="w-full resize-none rounded-lg border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={2}
                   />
@@ -872,13 +912,13 @@ export function GroupChat({
 
       {/* Members Dialog */}
       <Dialog open={showMembersDialog} onOpenChange={setShowMembersDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>群成员</DialogTitle>
+            <DialogTitle>群成员 & Agent 协作</DialogTitle>
             <DialogDescription>共 {selectedGroup?.members.length || 0} 位成员</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="h-80">
-            <div className="space-y-1 py-4">
+          <ScrollArea className="h-64">
+            <div className="space-y-1 py-2">
               {selectedGroup?.members.map((member) => (
                 <MemberItem
                   key={member.id}
@@ -893,6 +933,15 @@ export function GroupChat({
               ))}
             </div>
           </ScrollArea>
+          {/* Agent 协作参与面板 (FR631-FR649) */}
+          <div className="border-t pt-3 mt-1" style={{ borderColor: 'var(--ao-workbench.border)' }}>
+            <AgentGroupParticipant
+              agents={[]}
+              groupId={selectedGroup?.id ?? ''}
+              groupName={selectedGroup?.name ?? ''}
+              currentUserId={currentUserId}
+            />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowMembersDialog(false)}>
               关闭

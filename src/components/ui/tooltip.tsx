@@ -21,9 +21,9 @@ const TooltipContent = React.forwardRef<
       className
     )}
     style={{
-      backgroundColor: '#161B22',
-      borderColor: '#30363D',
-      color: '#C9D1D9',
+      backgroundColor: 'var(--ao-bottomPanel.background)',
+      borderColor: 'var(--ao-border)',
+      color: 'var(--ao-foreground)',
     }}
     {...props}
   />

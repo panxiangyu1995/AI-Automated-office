@@ -2,6 +2,7 @@ export interface ShortcutConfig {
   showApp: string
   openAiChat: string
   quickSearch: string
+  quickAsk: string
   openSettings: string
 }
 
@@ -13,6 +14,7 @@ export const DEFAULT_SHORTCUTS: ShortcutConfig = {
   showApp: 'CmdOrCtrl+Shift+A',
   openAiChat: 'CmdOrCtrl+Shift+I',
   quickSearch: 'CmdOrCtrl+Shift+F',
+  quickAsk: 'CmdOrCtrl+L',
   openSettings: 'CmdOrCtrl+,',
 }
 
@@ -47,6 +49,7 @@ export function normalizeShortcutConfig(
       'quickSearch',
       parsed?.quickSearch?.trim() || DEFAULT_SHORTCUTS.quickSearch
     ),
+    quickAsk: parsed?.quickAsk?.trim() || DEFAULT_SHORTCUTS.quickAsk,
     openSettings: parsed?.openSettings?.trim() || DEFAULT_SHORTCUTS.openSettings,
   }
 }

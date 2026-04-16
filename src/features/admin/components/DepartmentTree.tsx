@@ -52,7 +52,7 @@ function TreeNode({
         className={cn(
           'group flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 transition-colors',
           isSelected
-            ? 'bg-[#EFF6FF] text-[#1E3A5F]'
+            ? 'bg-[var(--ao-selectionHighlightBackground)] text-[var(--ao-button.background)]'
             : 'hover:bg-gray-100 text-gray-600'
         )}
         style={{ paddingLeft: `${level * 24 + 8}px` }}
@@ -87,7 +87,7 @@ function TreeNode({
         <Building2
           className={cn(
             'h-4 w-4 flex-shrink-0',
-            isSelected ? 'text-[#1E3A5F]' : 'text-gray-500'
+            isSelected ? 'text-[var(--ao-button.background)]' : 'text-gray-500'
           )}
         />
 
@@ -95,7 +95,7 @@ function TreeNode({
         <span
           className={cn(
             'flex-1 truncate text-sm',
-            isSelected ? 'font-medium text-[#1E3A5F]' : 'text-gray-700'
+            isSelected ? 'font-medium text-[var(--ao-button.background)]' : 'text-gray-700'
           )}
         >
           {node.name}
@@ -194,7 +194,7 @@ export function DepartmentTree({
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#1E3A5F] border-t-transparent" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--ao-button.background)] border-t-transparent" />
           <p className="text-sm text-gray-500">加载中...</p>
         </div>
       </div>
@@ -208,7 +208,7 @@ export function DepartmentTree({
         <h3 className="text-lg font-bold text-gray-900">组织架构</h3>
         <Button
           size="sm"
-          className="h-7 bg-[#1E3A5F] hover:bg-[#1E3A5F]/90 text-white"
+          className="h-7 bg-[var(--ao-button.background)] hover:bg-[var(--ao-button.background)]/90 text-white"
           onClick={() => onAdd()}
         >
           <Plus className="h-3.5 w-3.5" />

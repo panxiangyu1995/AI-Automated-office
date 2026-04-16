@@ -396,3 +396,61 @@ impl<T> PagedResult<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_employee_status_display() {
+        assert_eq!(EmployeeStatus::Active.to_string(), "active");
+        assert_eq!(EmployeeStatus::Inactive.to_string(), "inactive");
+        assert_eq!(EmployeeStatus::Probation.to_string(), "probation");
+    }
+
+    #[test]
+    fn test_employee_default() {
+        let emp = Employee::default();
+        assert!(!emp.id.is_empty());
+        assert_eq!(emp.status, EmployeeStatus::Probation);
+    }
+
+    #[test]
+    fn test_department_default() {
+        let dept = HrDepartment::default();
+        assert!(!dept.id.is_empty());
+        assert_eq!(dept.level, 1);
+        assert!(dept.children.is_empty());
+    }
+
+    #[test]
+    fn test_position_default() {
+        let pos = Position::default();
+        assert!(!pos.id.is_empty());
+        assert_eq!(pos.level, 1);
+    }
+
+    #[test]
+    fn test_paged_result() {
+        let items = vec![1, 2, 3];
+        let result = PagedResult::new(items, 10, 1, 3);
+        assert_eq!(result.items.len(), 3);
+        assert_eq!(result.total, 10);
+        assert_eq!(result.total_pages, 4);
+    }
+
+    #[test]
+    fn test_employee_query_params_default() {
+        let params = EmployeeQueryParams::default();
+        assert!(params.keyword.is_none());
+        assert!(params.department_id.is_none());
+    }
+
+    #[test]
+    fn test_employee_status_serde_roundtrip() {
+        let status = EmployeeStatus::Active;
+        let json = serde_json::to_string(&status).unwrap();
+        let deserialized: EmployeeStatus = serde_json::from_str(&json).unwrap();
+        assert_eq!(status, deserialized);
+    }
+}

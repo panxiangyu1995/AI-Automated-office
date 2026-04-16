@@ -116,7 +116,14 @@ pub fn run() {
 
                 // Initialize Webhook Service (Task 204)
                 let webhook_service = Arc::new(webhook::WebhookService::new());
-                app.manage(webhook_service);
+                app.manage(webhook_service.clone());
+
+                // Initialize Audit SIEM Bridge (J4)
+                let siem_bridge = Arc::new(agent::audit_siem::AuditSiemBridge::new(
+                    webhook_service,
+                    agent::audit_siem::SiemConfig::default(),
+                ));
+                app.manage(siem_bridge);
 
                 // Initialize Subagent system (Task 199 - ADR-059)
                 commands::subagent::init_subagent_commands();
@@ -928,6 +935,30 @@ pub fn run() {
             commands::sla::get_sla_reports,
             commands::sla::export_sla_report,
             commands::sla::get_reporter_summary,
+            // Template commands (J10)
+            commands::template::template_create,
+            commands::template::template_create_with_schema,
+            commands::template::template_get,
+            commands::template::template_list,
+            commands::template::template_save_schema,
+            commands::template::template_get_schema,
+            commands::template::template_validate_schema,
+            commands::template::template_create_draft,
+            commands::template::template_publish_version,
+            commands::template::template_get_active_version,
+            commands::template::template_list_versions,
+            commands::template::template_set_default_version,
+            commands::template::template_analyze_schema,
+            commands::template::template_preview_binding,
+            commands::template::template_fill_bindings,
+            commands::template::template_apply_element_operation,
+            commands::template::template_apply_layer_operation,
+            commands::template::template_align_elements,
+            // SIEM commands (J4)
+            commands::siem::siem_get_config,
+            commands::siem::siem_update_config,
+            commands::siem::siem_flush,
+            commands::siem::siem_pending_count,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 应用时出错");

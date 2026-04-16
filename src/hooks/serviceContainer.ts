@@ -186,9 +186,9 @@ export const serviceContainer = ServiceContainerImpl.getInstance()
 /**
  * 初始化核心服务
  */
-export function initializeCoreServices(): void {
+export async function initializeCoreServices(): Promise<void> {
   // 注册事件总线
-  serviceContainer.registerInstance('core:event-bus', require('./eventBus').eventBus)
+  serviceContainer.registerInstance('core:event-bus', (await import('./eventBus')).eventBus)
 
   // 其他核心服务可以在此初始化
 }

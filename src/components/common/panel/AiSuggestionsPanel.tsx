@@ -44,8 +44,8 @@ export function AiSuggestionsPanel({
   if (suggestions.length === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-[#21262D] px-4 py-2">
-          <span className="text-sm font-medium" style={{ color: '#8B949E' }}>
+        <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'var(--ao-bottomPanel-border)' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             {title}
           </span>
         </div>
@@ -53,14 +53,14 @@ export function AiSuggestionsPanel({
           <div className="flex flex-col items-center gap-2">
             <div
               className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: '#21262D' }}
+              style={{ backgroundColor: 'var(--ao-bottomPanel-activeBackground)' }}
             >
-              <Lightbulb className="h-5 w-5" style={{ color: '#8B949E' }} />
+              <Lightbulb className="h-5 w-5" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
             </div>
-            <span className="text-sm" style={{ color: '#8B949E' }}>
+            <span className="text-sm" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
               暂无 AI 建议
             </span>
-            <span className="text-xs" style={{ color: '#6E7681' }}>
+            <span className="text-xs" style={{ color: 'var(--ao-workbench-secondaryForeground)' }}>
               AI 会根据上下文提供建议
             </span>
           </div>
@@ -72,22 +72,23 @@ export function AiSuggestionsPanel({
   return (
     <div className="flex h-full flex-col">
       <div
-        className="flex cursor-pointer items-center justify-between border-b border-[#21262D] px-4 py-2"
+        className="flex cursor-pointer items-center justify-between border-b px-4 py-2"
+        style={{ borderColor: 'var(--ao-bottomPanel-border)' }}
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-2">
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <ChevronRight className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           ) : (
-            <ChevronDown className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <ChevronDown className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           )}
-          <Lightbulb className="h-4 w-4" style={{ color: '#F59E0B' }} />
-          <span className="text-sm font-medium" style={{ color: '#8B949E' }}>
+          <Lightbulb className="h-4 w-4" style={{ color: 'var(--ao-warningForeground)' }} />
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             {title}
           </span>
           <span
             className="rounded px-1.5 py-0.5 text-xs"
-            style={{ backgroundColor: '#F59E0B20', color: '#F59E0B' }}
+            style={{ color: 'var(--ao-warningForeground)' }}
           >
             {suggestions.length}
           </span>
@@ -102,18 +103,18 @@ export function AiSuggestionsPanel({
                 key={suggestion.id}
                 className="rounded border p-3"
                 style={{
-                  backgroundColor: '#161B22',
-                  borderColor: suggestion.accepted ? '#238636' : '#21262D',
+                  backgroundColor: 'var(--ao-bottomPanel-background)',
+                  borderColor: suggestion.accepted ? 'var(--ao-successForeground)' : 'var(--ao-bottomPanel-border)',
                 }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm" style={{ color: '#C9D1D9' }}>
+                    <p className="text-sm" style={{ color: 'var(--ao-bottomPanel-activeForeground)' }}>
                       {suggestion.content}
                     </p>
                     <div
                       className="mt-1 flex items-center gap-1 text-xs"
-                      style={{ color: '#6E7681' }}
+                      style={{ color: 'var(--ao-workbench-secondaryForeground)' }}
                     >
                       <Clock className="h-3 w-3" />
                       <span>{formatTimestamp(suggestion.timestamp)}</span>
@@ -124,18 +125,20 @@ export function AiSuggestionsPanel({
                       <button
                         type="button"
                         aria-label="采纳建议"
-                        className="flex h-6 w-6 items-center justify-center rounded hover:bg-[#238636]"
+                        className="flex h-6 w-6 items-center justify-center rounded"
+                        style={{ color: 'var(--ao-successForeground)' }}
                         onClick={() => handleAccept(suggestion.id)}
                       >
-                        <Check className="h-3 w-3" style={{ color: '#238636' }} />
+                        <Check className="h-3 w-3" />
                       </button>
                       <button
                         type="button"
                         aria-label="忽略建议"
-                        className="flex h-6 w-6 items-center justify-center rounded hover:bg-[#F85149]"
+                        className="flex h-6 w-6 items-center justify-center rounded"
+                        style={{ color: 'var(--ao-errorForeground)' }}
                         onClick={() => handleDismiss(suggestion.id)}
                       >
-                        <X className="h-3 w-3" style={{ color: '#F85149' }} />
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
                   )}

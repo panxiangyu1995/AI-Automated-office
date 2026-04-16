@@ -21,12 +21,14 @@ pub use provider_trait::LlmProviderError as ProviderError;
 pub mod zhipu;
 
 pub mod deepseek;
+pub mod dashscope;
 pub mod minimax;
 pub mod openai_compatible;
 
 // Re-export providers
 pub use zhipu::{ZhipuProvider, ZhipuConfig, ZhipuModel};
 pub use deepseek::{DeepSeekProvider, DeepSeekConfig, DeepSeekModel};
+pub use dashscope::{DashScopeProvider, DashScopeConfig, DashScopeModel};
 pub use minimax::{MinimaxProvider, MinimaxConfig, MinimaxModel};
 pub use openai_compatible::{OpenAICompatibleProvider, OpenAICompatibleConfig, OpenAICompatibleModel};
 

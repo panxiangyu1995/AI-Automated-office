@@ -27,6 +27,12 @@ pub enum LifecycleEvent {
     OnError,
 }
 
+impl std::fmt::Display for LifecycleEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 impl LifecycleEvent {
     /// Get the event name as a string
     pub fn as_str(&self) -> &'static str {

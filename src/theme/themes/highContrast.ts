@@ -33,7 +33,9 @@ export const highContrastTheme: ThemeData = {
     // Activity Bar
     activityBarBackground: '#000000',
     activityBarForeground: '#FFFFFF',
-    activityBarBadgeBackground: '#F38518',
+    'activityBar.activeBackground': '#1A1A1A',
+    'activityBar.activeForeground': '#FFFFFF',
+    'activityBar.border': '#6FC3DF',
 
     // Sidebar
     sidebarBackground: '#000000',
@@ -58,6 +60,33 @@ export const highContrastTheme: ThemeData = {
     // Status Bar
     statusBarBackground: '#000000',
     statusBarForeground: '#FFFFFF',
+    'statusBar.border': '#6FC3DF',
+
+    // Workbench
+    'workbench.background': '#000000',
+    'workbench.foreground': '#FFFFFF',
+    'workbench.secondaryForeground': '#FFFFFF',
+
+    // Tab Bar
+    'tabBar.background': '#000000',
+    'tabBar.border': '#6FC3DF',
+    'tabBar.foreground': '#FFFFFF',
+    'tabBar.activeBackground': '#000000',
+    'tabBar.activeForeground': '#FFFFFF',
+    'tabBar.hoverBackground': '#1A1A1A',
+
+    // Bottom Panel
+    'bottomPanel.background': '#000000',
+    'bottomPanel.border': '#6FC3DF',
+    'bottomPanel.foreground': '#FFFFFF',
+    'bottomPanel.activeBackground': '#1A1A1A',
+    'bottomPanel.activeForeground': '#FFFFFF',
+    'bottomPanel.hoverBackground': '#1A1A1A',
+
+    // AI Chat Panel
+    'aiChatPanel.background': '#000000',
+    'aiChatPanel.border': '#6FC3DF',
+    'aiChatPanel.foreground': '#FFFFFF',
 
     // Input
     inputBackground: '#000000',
@@ -97,6 +126,16 @@ export const highContrastTheme: ThemeData = {
     'card.foreground': '#FFFFFF',
     'card.headerBorder': '#FFFFFF',
     'card.footerBorder': '#FFFFFF',
+
+    // Command Palette
+    'commandPalette.background': '#000000',
+    'commandPalette.border': '#6FC3DF',
+    'commandPalette.foreground': '#FFFFFF',
+    'commandPalette.secondaryForeground': '#FFFFFF',
+    'commandPalette.selectedBackground': '#1A1A1A',
+    'commandPalette.badgeBackground': '#1A1A1A',
+    'commandPalette.footerBackground': '#0A0A0A',
+    'commandPalette.activeForeground': '#FFFFFF',
 
     // Topbar
     'topbar.background': '#000000',

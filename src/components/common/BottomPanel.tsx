@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, Wrench, Eye, MessageSquare, ChevronUp, ChevronDown } from 'lucide-react'
+import { Settings, Wrench, Eye, MessageSquare, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-react'
 import { ResizablePanel } from './ResizablePanel'
 import { useUIStore } from '../../stores/uiStore'
 import { bottomPanelEventBus, type PanelType } from '../../lib/bottomPanelEventBus'
@@ -8,6 +8,7 @@ import {
   DiagnosticsPanel,
   PreviewPanel,
   AiSuggestionsPanel,
+  ProblemCenter,
 } from './panel'
 
 const PANEL_TYPES: { type: PanelType; icon: React.ReactNode; label: string }[] = [
@@ -15,6 +16,7 @@ const PANEL_TYPES: { type: PanelType; icon: React.ReactNode; label: string }[] =
   { type: 'diagnostics', icon: <Wrench className="h-3.5 w-3.5" />, label: '诊断' },
   { type: 'preview', icon: <Eye className="h-3.5 w-3.5" />, label: '预览' },
   { type: 'ai-suggestions', icon: <MessageSquare className="h-3.5 w-3.5" />, label: 'AI 建议' },
+  { type: 'problems', icon: <AlertTriangle className="h-3.5 w-3.5" />, label: '问题' },
 ]
 
 export function BottomPanel() {
@@ -50,6 +52,8 @@ export function BottomPanel() {
         return <PreviewPanel preview={undefined} />
       case 'ai-suggestions':
         return <AiSuggestionsPanel suggestions={[]} />
+      case 'problems':
+        return <ProblemCenter problems={[]} />
       default:
         return null
     }
@@ -64,11 +68,11 @@ export function BottomPanel() {
       direction="top"
       collapsed={bottomPanelCollapsed}
       className="border-t"
-      style={{ borderColor: '#30363D' }}
+      style={{ borderColor: 'var(--ao-bottomPanel-border)' }}
     >
       <div
         className="flex h-full flex-col"
-        style={{ backgroundColor: '#161B22' }}
+        style={{ backgroundColor: 'var(--ao-bottomPanel-background)' }}
       >
         <div className="flex items-center justify-between flex-1 px-1">
           <div className="flex gap-1">
@@ -81,10 +85,14 @@ export function BottomPanel() {
                 className={`
                   flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors
                   ${activePanel === panel.type
-                    ? 'bg-[#21262D] text-white'
-                    : 'text-[#8B949E] hover:bg-white/[0.05] hover:text-white'
+                    ? 'text-white'
+                    : 'hover:text-white'
                   }
                 `}
+                style={activePanel === panel.type
+                  ? { backgroundColor: 'var(--ao-bottomPanel-activeBackground)', color: 'var(--ao-bottomPanel-activeForeground)' }
+                  : { color: 'var(--ao-bottomPanel-foreground)' }
+                }
                 onClick={() => setActivePanel(panel.type)}
               >
                 {panel.icon}
@@ -96,7 +104,8 @@ export function BottomPanel() {
           <button
             type="button"
             aria-label={bottomPanelCollapsed ? '展开面板' : '折叠面板'}
-            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[#8B949E] hover:bg-white/[0.05] hover:text-white transition-colors"
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors"
+            style={{ color: 'var(--ao-bottomPanel-foreground)' }}
             onClick={() => bottomPanelEventBus.toggle()}
           >
             {bottomPanelCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}

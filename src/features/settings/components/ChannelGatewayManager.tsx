@@ -57,6 +57,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 
 // ==================== Types ====================
@@ -638,10 +639,7 @@ function ChannelDetailDialog({ channel, open, onClose, onTest, onDelete }: Chann
           {activeTab === 'queues' && (
             <div className="space-y-3 p-2">
               {channel.queues.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>暂无队列配置</p>
-                </div>
+                <EmptyState icon={Database} variant="data" title="暂无队列配置" description="当前通道没有配置队列" />
               ) : (
                 channel.queues.map((queue) => (
                   <div key={queue.id} className="rounded-lg border p-4 space-y-3">
@@ -686,10 +684,7 @@ function ChannelDetailDialog({ channel, open, onClose, onTest, onDelete }: Chann
           {activeTab === 'events' && (
             <div className="space-y-2 p-2">
               {channel.events.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>暂无事件记录</p>
-                </div>
+                <EmptyState icon={Clock} variant="default" title="暂无事件记录" description="当前通道没有事件记录" />
               ) : (
                 channel.events.map((event) => (
                   <div

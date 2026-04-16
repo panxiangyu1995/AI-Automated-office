@@ -198,7 +198,7 @@ export function registerBuiltinSidebarEntries() {
     badge: {
       targetId: 'approval',
       count: 3,
-      color: '#F59E0B',
+      color: 'var(--ao-warningForeground)',
     },
   })
 }

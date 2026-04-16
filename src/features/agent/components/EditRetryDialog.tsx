@@ -9,7 +9,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
- * - UX-02: 品牌色 #1E3A5F
+ * - UX-02: 品牌色 var(--ao-button.background)
  * - UX-04: 对话驱动交互
  */
 
@@ -82,7 +82,7 @@ export function EditRetryDialog({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-2">
-          <Edit3 size={18} style={{ color: '#1E3A5F' }} />
+          <Edit3 size={18} style={{ color: 'var(--ao-button.background)' }} />
           <h3 className="font-semibold text-slate-800">编辑并重试</h3>
         </div>
         
@@ -142,7 +142,7 @@ export function EditRetryDialog({
               placeholder="编辑消息内容..."
               className="w-full min-h-[100px] p-3 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               style={{ 
-                borderColor: messageChanged ? '#1E3A5F' : undefined,
+                borderColor: messageChanged ? 'var(--ao-button.background)' : undefined,
               }}
             />
             <p className="text-xs text-slate-400">
@@ -162,7 +162,7 @@ export function EditRetryDialog({
               placeholder="例如: 修复后的查询"
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               style={{
-                borderColor: branchLabel ? '#1E3A5F' : undefined,
+                borderColor: branchLabel ? 'var(--ao-button.background)' : undefined,
               }}
             />
           </div>

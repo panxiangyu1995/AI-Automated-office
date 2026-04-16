@@ -9,7 +9,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - FR413: 检测计划偏离
  * - FR415: 有界重规划
  */
@@ -250,7 +250,7 @@ function ChangeCard({ change, isExpanded, onToggleExpand }: ChangeCardProps) {
           <button
             onClick={onToggleExpand}
             className="flex items-center gap-1 text-xs text-primary hover:underline mt-2"
-            style={{ color: '#1E3A5F' }}
+            style={{ color: 'var(--ao-button.background)' }}
           >
             {isExpanded ? (
               <ChevronDown className="w-3 h-3" />
@@ -453,7 +453,7 @@ export function DynamicReplanning({
                   ? 'border-primary text-primary'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
               )}
-              style={activeTab === tab ? { borderColor: '#1E3A5F', color: '#1E3A5F' } : undefined}
+              style={activeTab === tab ? { borderColor: 'var(--ao-button.background)', color: 'var(--ao-button.background)' } : undefined}
             >
               {tab === 'current' && '当前重规划'}
               {tab === 'history' && '历史记录'}
@@ -531,7 +531,7 @@ export function DynamicReplanning({
                 <Button
                   onClick={onApprove}
                   className="gap-2"
-                  style={{ backgroundColor: '#1E3A5F' }}
+                  style={{ backgroundColor: 'var(--ao-button.background)' }}
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   批准重规划

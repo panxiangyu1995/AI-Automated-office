@@ -31,13 +31,12 @@ impl LifecycleManager {
     }
 
     /// Register a lifecycle hook
-    pub async fn register<H: LifecycleHook + 'static>(&self, hook: H) -> Arc<dyn LifecycleHook> {
+    pub async fn register(&self, hook: Arc<dyn LifecycleHook>) -> Arc<dyn LifecycleHook> {
         let name = hook.name().to_string();
-        let hook = Arc::new(hook);
-        
+
         let mut hooks = self.hooks.write().await;
         hooks.insert(name.clone(), Arc::clone(&hook));
-        
+
         hook
     }
 
@@ -150,7 +149,7 @@ impl LifecycleManager {
     pub async fn register_context(&self, ctx: PluginContext) {
         let mut contexts = self.contexts.write().await;
         let plugin_id = ctx.plugin_id.clone();
-        contexts.insert(plugin_id, ctx);
+        contexts.insert(plugin_id.clone(), ctx);
 
         // Subscribe plugin to all its supported events
         if let Some(hook) = self.get(&plugin_id).await {
@@ -216,12 +215,12 @@ mod tests {
     #[tokio::test]
     async fn test_register_and_get() {
         let manager = LifecycleManager::new();
-        
-        let hook = TestHook;
+
+        let hook = Arc::new(TestHook) as Arc<dyn LifecycleHook>;
         let registered = manager.register(hook).await;
-        
+
         assert_eq!(registered.name(), "test-hook");
-        
+
         let retrieved = manager.get("test-hook").await;
         assert!(retrieved.is_some());
     }
@@ -229,13 +228,13 @@ mod tests {
     #[tokio::test]
     async fn test_unregister() {
         let manager = LifecycleManager::new();
-        
-        let hook = TestHook;
+
+        let hook = Arc::new(TestHook) as Arc<dyn LifecycleHook>;
         manager.register(hook).await;
-        
+
         let removed = manager.unregister("test-hook").await;
         assert!(removed.is_some());
-        
+
         let retrieved = manager.get("test-hook").await;
         assert!(retrieved.is_none());
     }
@@ -243,8 +242,8 @@ mod tests {
     #[tokio::test]
     async fn test_register_context() {
         let manager = LifecycleManager::new();
-        
-        let hook = TestHook;
+
+        let hook = Arc::new(TestHook) as Arc<dyn LifecycleHook>;
         manager.register(hook).await;
         
         let ctx = PluginContext::new("test-hook", "Test Plugin", "1.0.0");

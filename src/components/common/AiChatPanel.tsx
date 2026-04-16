@@ -14,7 +14,7 @@ interface AiChatPanelProps {
  *
  * 功能：
  * - 响应 Ctrl+Shift+I (Cmd+Shift+I) 全局快捷键打开/关闭
- * - 可调整宽度（400-600px）
+ * - 可调整宽度（300-500px）
  * - 可折叠
  * - 会话管理列表
  */
@@ -39,18 +39,18 @@ export function AiChatPanel({ children }: AiChatPanelProps) {
   return (
     <ResizablePanel
       width={chatPanelWidth}
-      minWidth={400}
-      maxWidth={600}
+      minWidth={300}
+      maxWidth={500}
       onWidthChange={setChatPanelWidth}
       direction="left"
       collapsed={chatPanelCollapsed}
       className="h-full"
     >
-      <div 
+      <div
         className="h-full flex flex-col border-l"
-        style={{ 
-          backgroundColor: '#0F1419',
-          borderColor: '#30363D',
+        style={{
+          backgroundColor: 'var(--ao-aiChatPanel-background)',
+          borderColor: 'var(--ao-aiChatPanel-border)',
         }}
       >
         {children || (

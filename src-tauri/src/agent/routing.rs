@@ -767,9 +767,10 @@ impl SubAgentRoutingService {
         }
 
         // If subagent is selected, verify routing is allowed
-        // 安全：使用ok处理None情况
-        let subagent_id = decision.selected_sub_agent_id.as_ref()
-            .expect("subagent_id should be Some when checked above");
+        // 安全：使用 match 替代 expect，避免 panic
+        let Some(subagent_id) = decision.selected_sub_agent_id.as_ref() else {
+            return false; // 逻辑上不会到达此处，但安全兜底
+        };
         self.can_route_to_subagent(subagent_id, context)
     }
 

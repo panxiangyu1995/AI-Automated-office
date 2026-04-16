@@ -30,11 +30,16 @@ export function Tab({ tab, isActive, onClick, onClose, className = '' }: TabProp
         group relative flex h-full min-w-[120px] max-w-[200px] cursor-pointer items-center gap-2 border-r px-3 py-2
         transition-colors duration-150
         ${isActive
-          ? 'border-b-2 border-b-[#238636] bg-[#21262D] text-white'
-          : 'border-b-2 border-b-transparent text-[#8B949E] hover:bg-white/[0.05] hover:text-white'
+          ? 'border-b-2'
+          : 'border-b-2 border-b-transparent hover:bg-white/[0.05]'
         }
         ${className}
       `}
+      style={{
+        borderBottomColor: isActive ? 'var(--ao-sidebarActiveIndicator)' : undefined,
+        backgroundColor: isActive ? 'var(--ao-tabBar-hoverBackground)' : undefined,
+        color: isActive ? 'var(--ao-tabBar-activeForeground)' : 'var(--ao-tabBar-foreground)',
+      }}
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -55,7 +60,8 @@ export function Tab({ tab, isActive, onClick, onClose, className = '' }: TabProp
 
       {tab.dirty && (
         <span
-          className="h-2 w-2 shrink-0 rounded-full bg-[#F59E0B]"
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ backgroundColor: 'var(--ao-warningForeground)' }}
           title="有未保存的更改"
           aria-label="未保存"
         />
@@ -65,7 +71,10 @@ export function Tab({ tab, isActive, onClick, onClose, className = '' }: TabProp
         <button
           type="button"
           aria-label={`关闭 ${tab.title}`}
-          className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded opacity-0 transition-opacity duration-150 hover:bg-[#F85149] hover:text-white group-hover:opacity-100"
+          className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded opacity-0 transition-colors duration-150 group-hover:opacity-100"
+          style={{ color: 'var(--ao-tabBar-foreground)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ao-button-dangerHoverBackground)'; e.currentTarget.style.color = 'var(--ao-button-dangerForeground)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--ao-tabBar-foreground)' }}
           onClick={onClose}
           tabIndex={-1}
         >

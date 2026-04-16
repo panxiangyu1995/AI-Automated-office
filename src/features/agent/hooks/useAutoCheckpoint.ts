@@ -14,7 +14,7 @@ import { useEffect, useRef } from 'react'
 import { eventBus } from '@/hooks/eventBus'
 import { useChatStore } from './useChatStore'
 import { useCheckpointStore } from './useCheckpointStore'
-import type { ChatEvents } from '@/hooks/types/eventBus'
+import type { MessageAddPayload } from '@/hooks/types/eventBus'
 import type { TextPart } from '../../message/runtime/messageModel'
 
 /**
@@ -89,7 +89,7 @@ export function useAutoCheckpoint(options: UseAutoCheckpointOptions = {}): void 
     }
 
     // 订阅事件
-    const handleMessageAdd = (payload: ChatEvents.MessageAddPayload) => {
+    const handleMessageAdd = (payload: MessageAddPayload) => {
       // 只处理用户消息
       if (payload.role !== 'user') return
 

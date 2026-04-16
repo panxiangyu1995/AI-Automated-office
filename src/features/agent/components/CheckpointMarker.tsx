@@ -12,7 +12,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
- * - UX-02: 品牌色 #1E3A5F
+ * - UX-02: 品牌色 var(--ao-button.background)
  * - UX-04: 对话驱动交互
  */
 
@@ -174,7 +174,7 @@ export function CheckpointMarker({
       >
         <Bookmark 
           size={12} 
-          style={{ color: '#1E3A5F' }}
+          style={{ color: 'var(--ao-button.background)' }}
         />
         <span className="text-slate-600">
           {checkpoint.label || getCheckpointTypeLabel(checkpoint.type)}
@@ -273,7 +273,7 @@ export function CheckpointMarker({
                     variant="outline"
                     onClick={handleEditRetryClick}
                     className="h-7 text-xs gap-1"
-                    style={{ borderColor: '#1E3A5F', color: '#1E3A5F' }}
+                    style={{ borderColor: 'var(--ao-button.background)', color: 'var(--ao-button.background)' }}
                   >
                     <Edit3 size={12} />
                     编辑重试

@@ -6,7 +6,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - ARCH: 分层架构，连接 runtime session store
  */
 
@@ -100,7 +100,7 @@ function SessionItem({ session, isActive, onSelect, onRename, onDelete }: Sessio
           onKeyDown={handleKeyDown}
           onBlur={handleSaveEdit}
           className="flex-1 px-2 py-0.5 text-sm border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary"
-          style={{ borderColor: '#1E3A5F' }}
+          style={{ borderColor: 'var(--ao-button.background)' }}
           autoFocus
           onClick={(e) => e.stopPropagation()}
         />
@@ -247,7 +247,7 @@ export function SessionList({ className, onNewSession, onSelectSession }: Sessio
             <button
               onClick={handleNewSession}
               className="mt-2 text-sm text-primary hover:underline"
-              style={{ color: '#1E3A5F' }}
+              style={{ color: 'var(--ao-button.background)' }}
             >
               开始新对话
             </button>

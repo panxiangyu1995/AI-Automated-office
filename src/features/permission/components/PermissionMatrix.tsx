@@ -76,7 +76,7 @@ export function PermissionMatrix({
                 <button
                   onClick={() => onBatchToggle(group.module, true)}
                   disabled={disabled}
-                  className="text-sm font-medium text-[#1E3A5F] hover:underline disabled:opacity-50"
+                  className="text-sm font-medium text-[var(--ao-button.background)] hover:underline disabled:opacity-50"
                 >
                   全选
                 </button>
@@ -157,7 +157,7 @@ function PermissionRow({ permission, isSelected, onToggle, disabled }: Permissio
           disabled={disabled}
           className={cn(
             'h-4 w-4 rounded',
-            isSelected && 'border-[#1E3A5F] bg-[#1E3A5F]'
+            isSelected && 'border-[var(--ao-button.background)] bg-[var(--ao-button.background)]'
           )}
         />
         <label

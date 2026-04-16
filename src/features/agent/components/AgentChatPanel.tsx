@@ -8,7 +8,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - ARCH: 分层架构，复用消息模型
  * - ARCH-037: 前端通过 Tauri IPC 调用后端
  */
@@ -181,7 +181,7 @@ function ChatHeader({
       <div className="flex items-center gap-2">
         <div 
           className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: '#1E3A5F' }}
+          style={{ backgroundColor: 'var(--ao-button.background)' }}
         >
           <span className="text-white text-sm font-bold">AI</span>
         </div>

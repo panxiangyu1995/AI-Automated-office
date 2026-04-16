@@ -44,7 +44,7 @@ export function PositionTable({
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1E3A5F] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--ao-button.background)] border-t-transparent" />
           <p className="text-sm text-muted-foreground">加载中...</p>
         </div>
       </div>

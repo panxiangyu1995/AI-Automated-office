@@ -56,10 +56,10 @@ const MenubarTrigger = React.forwardRef<
   <MenubarPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-3 py-1.5 text-xs font-medium outline-none focus:bg-[#30363D] data-[state=open]:bg-[#30363D]",
+      "flex cursor-default select-none items-center rounded-sm px-3 py-1.5 text-xs font-medium outline-none focus:bg-[var(--ao-border)] data-[state=open]:bg-[var(--ao-border)]",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   />
 ))
@@ -74,15 +74,15 @@ const MenubarSubTrigger = React.forwardRef<
   <MenubarPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[#21262D] data-[state=open]:bg-[#21262D]",
+      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[state=open]:bg-[var(--ao-bottomPanel.activeBackground)]",
       inset && "pl-8",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" style={{ color: '#8B949E' }} />
+    <ChevronRight className="ml-auto h-4 w-4" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
   </MenubarPrimitive.SubTrigger>
 ))
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
@@ -98,9 +98,9 @@ const MenubarSubContent = React.forwardRef<
       className
     )}
     style={{
-      backgroundColor: '#161B22',
-      borderColor: '#30363D',
-      color: '#C9D1D9',
+      backgroundColor: 'var(--ao-bottomPanel.background)',
+      borderColor: 'var(--ao-border)',
+      color: 'var(--ao-foreground)',
     }}
     {...props}
   />
@@ -126,9 +126,9 @@ const MenubarContent = React.forwardRef<
           className
         )}
         style={{
-          backgroundColor: '#161B22',
-          borderColor: '#30363D',
-          color: '#C9D1D9',
+          backgroundColor: 'var(--ao-bottomPanel.background)',
+          borderColor: 'var(--ao-border)',
+          color: 'var(--ao-foreground)',
         }}
         {...props}
       />
@@ -146,11 +146,11 @@ const MenubarItem = React.forwardRef<
   <MenubarPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       inset && "pl-8",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   />
 ))
@@ -163,16 +163,16 @@ const MenubarCheckboxItem = React.forwardRef<
   <MenubarPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <MenubarPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" style={{ color: '#58A6FF' }} />
+        <Check className="h-4 w-4" style={{ color: 'var(--ao-button.linkForeground)' }} />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}
@@ -187,15 +187,15 @@ const MenubarRadioItem = React.forwardRef<
   <MenubarPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <MenubarPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" style={{ color: '#58A6FF' }} />
+        <Circle className="h-2 w-2 fill-current" style={{ color: 'var(--ao-button.linkForeground)' }} />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}
@@ -216,7 +216,7 @@ const MenubarLabel = React.forwardRef<
       inset && "pl-8",
       className
     )}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))
@@ -229,7 +229,7 @@ const MenubarSeparator = React.forwardRef<
   <MenubarPrimitive.Separator
     ref={ref}
     className={cn("-mx-1 my-1 h-px", className)}
-    style={{ backgroundColor: '#30363D' }}
+    style={{ backgroundColor: 'var(--ao-border)' }}
     {...props}
   />
 ))
@@ -245,7 +245,7 @@ const MenubarShortcut = ({
         "ml-auto text-xs tracking-widest",
         className
       )}
-      style={{ color: '#8B949E' }}
+      style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
       {...props}
     />
   )

@@ -759,7 +759,6 @@ function PluginDetailDialog({
                     title="暂无故障记录"
                     description="运行正常，无故障记录"
                     icon={Shield}
-                    size="sm"
                   />
                 ) : (
                   mockFaultRecords
@@ -814,7 +813,6 @@ function PluginDetailDialog({
                     title="暂无诊断信息"
                     description="暂无诊断数据"
                     icon={Activity}
-                    size="sm"
                   />
                 ) : (
                   mockDiagnostics
@@ -879,7 +877,6 @@ function PluginDetailDialog({
                     title="暂无恢复事件"
                     description="恢复记录将在此显示"
                     icon={RefreshCcw}
-                    size="sm"
                   />
                 ) : (
                   mockRecoveryEvents

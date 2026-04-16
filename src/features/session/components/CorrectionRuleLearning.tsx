@@ -313,7 +313,7 @@ export function CorrectionRuleLearning(): React.ReactNode {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">错题集与规则学习</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">错题集与规则学习</h2>
           <p className="text-muted-foreground">捕获纠正输出，提取规则，持续改进 Agent 能力</p>
         </div>
         <div className="flex gap-2">
@@ -332,7 +332,7 @@ export function CorrectionRuleLearning(): React.ReactNode {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-[#1E3A5F]" />
+              <BookOpen className="h-5 w-5 text-[var(--ao-button.background)]" />
               <div>
                 <p className="text-2xl font-bold">{mockStats.totalRules}</p>
                 <p className="text-sm text-muted-foreground">总规则数</p>

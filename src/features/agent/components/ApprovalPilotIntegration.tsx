@@ -366,7 +366,7 @@ export function ApprovalPilotIntegration({
       </div>
       ) : (
         <EmptyState
-          icon={<FileCheck className="h-12 w-12" />}
+          icon={FileCheck}
           title="暂无审批上下文"
           description="当前没有活跃的审批任务"
         />
@@ -557,7 +557,7 @@ export function ApprovalPilotIntegration({
             <div className="space-y-2">
               {filteredAudit.length === 0 ? (
                 <EmptyState
-                  icon={<History className="h-12 w-12" />}
+                  icon={History}
                   title="没有审计日志"
                   description="暂无审批场景的审计记录"
                 />

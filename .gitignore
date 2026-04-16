@@ -37,6 +37,8 @@ pnpm-debug.log*
 
 # Tauri
 src-tauri/target/
+src-tauri/build.txt
+src-tauri/build_errors.txt
 
 # Test coverage
 coverage/
@@ -53,3 +55,5 @@ bin/
 playwright-report
 开源库参考项目
 test-results
+# Archive files
+openspec/changes/archive/*.json

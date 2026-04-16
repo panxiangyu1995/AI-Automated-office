@@ -109,9 +109,9 @@ const KIND_LABELS: Record<SettingsSectionKind, string> = {
 }
 
 const KIND_STYLES: Record<SettingsSectionKind, string> = {
-  config: 'border-[#30363D] bg-[#21262D] text-[#C9D1D9]',
-  monitor: 'border-[#58A6FF]/30 bg-[#58A6FF]/10 text-[#58A6FF]',
-  audit: 'border-[#D29922]/30 bg-[#D29922]/10 text-[#D29922]',
+  config: 'border-[var(--ao-border)] bg-[var(--ao-bottomPanel.activeBackground)] text-[var(--ao-foreground)]',
+  monitor: 'border-[var(--ao-button.linkForeground)]/30 bg-[var(--ao-button.linkForeground)]/10 text-[var(--ao-button.linkForeground)]',
+  audit: 'border-[var(--ao-warningForeground)]/30 bg-[var(--ao-warningForeground)]/10 text-[var(--ao-warningForeground)]',
 }
 
 const RISK_LABELS: Record<SettingsRiskLevel, string> = {
@@ -121,9 +121,9 @@ const RISK_LABELS: Record<SettingsRiskLevel, string> = {
 }
 
 const RISK_STYLES: Record<SettingsRiskLevel, string> = {
-  low: 'border-[#3FB950]/30 bg-[#3FB950]/10 text-[#3FB950]',
-  medium: 'border-[#D29922]/30 bg-[#D29922]/10 text-[#D29922]',
-  high: 'border-[#F85149]/30 bg-[#F85149]/10 text-[#F85149]',
+  low: 'border-[var(--ao-successForeground)]/30 bg-[var(--ao-successForeground)]/10 text-[var(--ao-successForeground)]',
+  medium: 'border-[var(--ao-warningForeground)]/30 bg-[var(--ao-warningForeground)]/10 text-[var(--ao-warningForeground)]',
+  high: 'border-[var(--ao-errorForeground)]/30 bg-[var(--ao-errorForeground)]/10 text-[var(--ao-errorForeground)]',
 }
 
 type SectionStatusTone = 'neutral' | 'success' | 'warning' | 'danger'
@@ -141,10 +141,10 @@ interface RecentSectionVisit {
 }
 
 const STATUS_STYLES: Record<SectionStatusTone, string> = {
-  neutral: 'border-[#30363D] bg-[#161B22] text-[#C9D1D9]',
-  success: 'border-[#3FB950]/30 bg-[#3FB950]/10 text-[#3FB950]',
-  warning: 'border-[#D29922]/30 bg-[#D29922]/10 text-[#D29922]',
-  danger: 'border-[#F85149]/30 bg-[#F85149]/10 text-[#F85149]',
+  neutral: 'border-[var(--ao-border)] bg-[var(--ao-bottomPanel.background)] text-[var(--ao-foreground)]',
+  success: 'border-[var(--ao-successForeground)]/30 bg-[var(--ao-successForeground)]/10 text-[var(--ao-successForeground)]',
+  warning: 'border-[var(--ao-warningForeground)]/30 bg-[var(--ao-warningForeground)]/10 text-[var(--ao-warningForeground)]',
+  danger: 'border-[var(--ao-errorForeground)]/30 bg-[var(--ao-errorForeground)]/10 text-[var(--ao-errorForeground)]',
 }
 
 function loadShortcutsFromStorage() {
@@ -306,7 +306,7 @@ function ShortcutSettingsSection(props: {
               </div>
               <div 
                 className="flex items-center gap-1 rounded px-3 py-2 font-mono text-sm"
-                style={{ backgroundColor: '#0D1117', color: '#C9D1D9' }}
+                style={{ backgroundColor: 'var(--ao-commandPalette.footerBackground)', color: 'var(--ao-foreground)' }}
               >
                 {props.draftShortcuts[field.key]}
               </div>
@@ -455,7 +455,7 @@ function SettingsQuickAccessCard(props: {
             <div 
               key={item.key} 
               className="flex items-start gap-2 rounded-lg p-3"
-              style={{ border: '1px solid #30363D', backgroundColor: '#0D1117' }}
+              style={{ border: '1px solid var(--ao-border)', backgroundColor: 'var(--ao-commandPalette.footerBackground)' }}
             >
               <button
                 type="button"
@@ -474,7 +474,7 @@ function SettingsQuickAccessCard(props: {
                   variant="ghost"
                   aria-label={item.isFavorite ? `取消收藏${item.title}` : `收藏${item.title}`}
                   onClick={() => props.onToggleFavorite?.(item.key)}
-                  className={cn(item.isFavorite && 'text-[#D29922] hover:text-[#D29922]')}
+                  className={cn(item.isFavorite && 'text-[var(--ao-warningForeground)] hover:text-[var(--ao-warningForeground)]')}
                 >
                   <Star className={cn(item.isFavorite && 'fill-current')} />
                 </Button>
@@ -543,7 +543,7 @@ function SettingsSearchResults(props: {
               <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="border-[#30363D]">
+                    <Badge variant="outline" className="border-[var(--ao-border)]">
                       {category?.title ?? '治理域'}
                     </Badge>
                     <Badge variant="outline" className={cn('border', KIND_STYLES[section.kind])}>
@@ -569,7 +569,7 @@ function SettingsSearchResults(props: {
                     variant="ghost"
                     aria-label={props.favoriteKeys.has(section.key) ? `取消收藏${section.title}` : `收藏${section.title}`}
                     onClick={() => props.onToggleFavorite(section.key)}
-                    className={cn(props.favoriteKeys.has(section.key) && 'text-[#D29922] hover:text-[#D29922]')}
+                    className={cn(props.favoriteKeys.has(section.key) && 'text-[var(--ao-warningForeground)] hover:text-[var(--ao-warningForeground)]')}
                   >
                     <Star className={cn(props.favoriteKeys.has(section.key) && 'fill-current')} />
                   </Button>
@@ -683,36 +683,36 @@ function SettingsHome(props: {
               onClick={() => props.onOpenSection(sections[0]?.key ?? category.key)}
               className="cursor-pointer rounded-xl p-5 text-left transition-all duration-200 hover:shadow-lg"
               style={{ 
-                border: '1px solid #30363D', 
-                backgroundColor: '#161B22',
+                border: '1px solid var(--ao-border)', 
+                backgroundColor: 'var(--ao-bottomPanel.background)',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
               }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div
                   className="flex h-11 w-11 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: 'rgba(35, 134, 54, 0.15)', color: '#3FB950' }}
+                  style={{ backgroundColor: 'rgba(35, 134, 54, 0.15)', color: 'var(--ao-successForeground)' }}
                 >
                   <category.icon className="h-5 w-5" />
                 </div>
                 <Badge 
                   variant="outline" 
-                  className="border-[#30363D]"
-                  style={{ color: '#8B949E', backgroundColor: '#21262D' }}
+                  className="border-[var(--ao-border)]"
+                  style={{ color: 'var(--ao-workbench.secondaryForeground)', backgroundColor: 'var(--ao-bottomPanel.activeBackground)' }}
                 >
                   {sections.length} 项
                 </Badge>
               </div>
               <div className="mt-4 space-y-2">
-                <div className="text-base font-semibold" style={{ color: '#C9D1D9' }}>{category.title}</div>
-                <p className="text-sm leading-6" style={{ color: '#8B949E' }}>{category.description}</p>
+                <div className="text-base font-semibold" style={{ color: 'var(--ao-foreground)' }}>{category.title}</div>
+                <p className="text-sm leading-6" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>{category.description}</p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {previewSections.slice(0, 4).map((section) => (
                     <Badge 
                       key={section.key} 
                       variant="outline" 
-                      className="border-[#30363D]"
-                      style={{ color: '#C9D1D9', backgroundColor: 'transparent' }}
+                      className="border-[var(--ao-border)]"
+                      style={{ color: 'var(--ao-foreground)', backgroundColor: 'transparent' }}
                     >
                       {section.title}
                     </Badge>
@@ -1100,24 +1100,24 @@ export function SettingsPanel() {
   return (
     <section 
       className="flex min-w-0 flex-1 flex-col h-full"
-      style={{ backgroundColor: '#0F1419' }}
+      style={{ backgroundColor: 'var(--ao-workbench.background)' }}
     >
       {/* Header */}
       <header 
         className="px-6 py-5"
-        style={{ borderBottom: '1px solid #21262D', backgroundColor: '#0F1419' }}
+        style={{ borderBottom: '1px solid var(--ao-bottomPanel.activeBackground)', backgroundColor: 'var(--ao-workbench.background)' }}
       >
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
             {/* 面包屑导航 */}
             <div className="flex items-center gap-2 text-sm">
-              <span style={{ color: '#8B949E' }}>设置</span>
-              <span style={{ color: '#6E7681' }}>/</span>
-              <span className="font-medium" style={{ color: '#C9D1D9' }}>{activeCategoryDescriptor.title}</span>
+              <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>设置</span>
+              <span style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>/</span>
+              <span className="font-medium" style={{ color: 'var(--ao-foreground)' }}>{activeCategoryDescriptor.title}</span>
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-semibold" style={{ color: '#C9D1D9' }}>{headerTitle}</h1>
-              <p className="max-w-3xl text-sm leading-6" style={{ color: '#8B949E' }}>{headerDescription}</p>
+              <h1 className="text-2xl font-semibold" style={{ color: 'var(--ao-foreground)' }}>{headerTitle}</h1>
+              <p className="max-w-3xl text-sm leading-6" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>{headerDescription}</p>
             </div>
           </div>
         </div>

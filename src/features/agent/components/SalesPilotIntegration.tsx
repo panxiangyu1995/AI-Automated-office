@@ -105,6 +105,8 @@ function getPhaseColor(phase: SalesPhase): string {
       return 'text-green-500'
     case 'failed':
       return 'text-red-500'
+    default:
+      return 'text-muted-foreground'
   }
 }
 
@@ -122,6 +124,8 @@ function getStatusIcon(status: ExecutionStatus) {
       return <XCircle className="h-4 w-4 text-red-500" />
     case 'cancelled':
       return <Square className="h-4 w-4 text-gray-500" />
+    default:
+      return <Clock className="h-4 w-4 text-muted-foreground" />
   }
 }
 
@@ -401,7 +405,7 @@ export function SalesPilotIntegration({
       </div>
       ) : (
         <EmptyState
-          icon={<BarChart3 className="h-12 w-12" />}
+          icon={BarChart3}
           title="暂无销售上下文"
           description="当前没有活跃的销售任务"
         />
@@ -594,7 +598,7 @@ export function SalesPilotIntegration({
             <div className="space-y-2">
               {filteredAudit.length === 0 ? (
                 <EmptyState
-                  icon={<History className="h-12 w-12" />}
+                  icon={History}
                   title="没有审计日志"
                   description="暂无销售场景的审计记录"
                 />

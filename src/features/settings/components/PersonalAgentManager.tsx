@@ -344,7 +344,7 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-[#1E3A5F]" />
+          <Bot className="h-5 w-5 text-[var(--ao-button.background)]" />
           <h2 className="text-lg font-semibold">Personal Subagent</h2>
           <Badge variant="secondary">{filteredSubagents.length}</Badge>
         </div>
@@ -421,11 +421,11 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         'flex h-10 w-10 items-center justify-center rounded-full',
-                        subagent.enabled ? 'bg-[#1E3A5F]/10' : 'bg-muted'
+                        subagent.enabled ? 'bg-[var(--ao-button.background)]/10' : 'bg-muted'
                       )}>
                         <Bot className={cn(
                           'h-5 w-5',
-                          subagent.enabled ? 'text-[#1E3A5F]' : 'text-muted-foreground'
+                          subagent.enabled ? 'text-[var(--ao-button.background)]' : 'text-muted-foreground'
                         )} />
                       </div>
                       

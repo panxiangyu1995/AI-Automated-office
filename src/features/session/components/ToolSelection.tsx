@@ -9,7 +9,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - FR412: 工具选择可见和可度量
  */
 
@@ -156,7 +156,7 @@ function ToolCard({ tool, isSelected, isExpanded, onToggleExpand, onSelect }: To
         isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200',
         getScoreBg(tool.score)
       )}
-      style={isSelected ? { borderColor: '#1E3A5F' } : undefined}
+      style={isSelected ? { borderColor: 'var(--ao-button.background)' } : undefined}
     >
       <div className="flex items-start gap-3">
         {/* 排名和分数 */}
@@ -221,7 +221,7 @@ function ToolCard({ tool, isSelected, isExpanded, onToggleExpand, onSelect }: To
           <button
             onClick={onToggleExpand}
             className="flex items-center gap-1 text-xs text-primary hover:underline mt-2"
-            style={{ color: '#1E3A5F' }}
+            style={{ color: 'var(--ao-button.background)' }}
           >
             {isExpanded ? (
               <ChevronDown className="w-4 h-4" />
@@ -455,7 +455,7 @@ export function ToolSelection({
                   ? 'border-primary text-primary'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
               )}
-              style={activeTab === tab ? { borderColor: '#1E3A5F', color: '#1E3A5F' } : undefined}
+              style={activeTab === tab ? { borderColor: 'var(--ao-button.background)', color: 'var(--ao-button.background)' } : undefined}
             >
               {tab === 'ranking' && '工具排名'}
               {tab === 'context' && '选择上下文'}
@@ -523,7 +523,7 @@ export function ToolSelection({
                       ? 'bg-primary text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   )}
-                  style={categoryFilter === cat ? { backgroundColor: '#1E3A5F' } : undefined}
+                  style={categoryFilter === cat ? { backgroundColor: 'var(--ao-button.background)' } : undefined}
                 >
                   {cat === 'all' ? '全部' : cat}
                 </button>
@@ -674,7 +674,7 @@ export function ToolSelection({
                           className="h-full transition-all"
                           style={{
                             width: `${percentage}%`,
-                            backgroundColor: '#1E3A5F',
+                            backgroundColor: 'var(--ao-button.background)',
                           }}
                         />
                       </div>

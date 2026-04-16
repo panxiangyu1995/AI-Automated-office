@@ -148,3 +148,56 @@ pub struct SalesStats {
     pub total_contracts: i64,
     pub total_amount: f64,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_customer_type_default() {
+        assert_eq!(CustomerType::default(), CustomerType::Individual);
+    }
+
+    #[test]
+    fn test_customer_level_default() {
+        assert_eq!(CustomerLevel::default(), CustomerLevel::C);
+    }
+
+    #[test]
+    fn test_quote_status_default() {
+        assert_eq!(QuoteStatus::default(), QuoteStatus::Draft);
+    }
+
+    #[test]
+    fn test_contract_status_default() {
+        assert_eq!(ContractStatus::default(), ContractStatus::Draft);
+    }
+
+    #[test]
+    fn test_customer_type_serde_roundtrip() {
+        let ct = CustomerType::Corporate;
+        let json = serde_json::to_string(&ct).unwrap();
+        let de: CustomerType = serde_json::from_str(&json).unwrap();
+        assert_eq!(ct, de);
+    }
+
+    #[test]
+    fn test_customer_level_serde_roundtrip() {
+        let cl = CustomerLevel::A;
+        let json = serde_json::to_string(&cl).unwrap();
+        let de: CustomerLevel = serde_json::from_str(&json).unwrap();
+        assert_eq!(cl, de);
+    }
+
+    #[test]
+    fn test_quote_item_total() {
+        let item = QuoteItem {
+            id: "qi-1".to_string(),
+            product: "widget".to_string(),
+            quantity: 10.0,
+            unit_price: 5.0,
+            total: 50.0,
+        };
+        assert_eq!(item.quantity * item.unit_price, item.total);
+    }
+}

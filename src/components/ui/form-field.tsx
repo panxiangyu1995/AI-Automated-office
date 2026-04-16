@@ -1,4 +1,4 @@
-import type { Control, FieldValues, Path } from 'react-hook-form'
+import type { Control, FieldValues, Path, ControllerRenderProps } from 'react-hook-form'
 import { Controller, useFormContext } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -62,20 +62,20 @@ export function FormField<T extends FieldValues>(props: FormFieldProps<T>) {
       render={({ field, fieldState }) => (
         <div className={cn('space-y-2', className)}>
           <div className="flex items-center justify-between">
-            <Label htmlFor={name} style={{ color: 'var(--ao-editor-foreground, #1e293b)' }}>
+            <Label htmlFor={name} style={{ color: 'var(--ao-editor-foreground, var(--ao-bottomPanel.activeBackground))' }}>
               {label}
             </Label>
             {fieldState.error && (
               <span
                 className="text-xs"
-                style={{ color: 'var(--ao-inputValidation-errorForeground, #ef4444)' }}
+                style={{ color: 'var(--ao-inputValidation-errorForeground, var(--ao-errorForeground))' }}
               >
                 {fieldState.error.message}
               </span>
             )}
           </div>
           {description && (
-            <p className="text-xs" style={{ color: 'var(--ao-editor-foreground, #64748b)' }}>
+            <p className="text-xs" style={{ color: 'var(--ao-editor-foreground, var(--ao-workbench.secondaryForeground))' }}>
               {description}
             </p>
           )}
@@ -86,7 +86,7 @@ export function FormField<T extends FieldValues>(props: FormFieldProps<T>) {
   )
 }
 
-function renderInput<T extends FieldValues>(props: FormFieldProps<T>, field: any) {
+function renderInput<T extends FieldValues>(props: FormFieldProps<T>, field: ControllerRenderProps<T>) {
   switch (props.type) {
     case 'text':
       return (

@@ -37,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -767,7 +768,7 @@ export function ResourceExecutionAudit() {
             </CardHeader>
             <CardContent>
               {alerts.filter(a => a.acknowledged).length === 0 ? (
-                <div className="text-center py-4 text-slate-400">暂无已处理的告警</div>
+                <EmptyState variant="default" title="暂无已处理的告警" description="当前没有已处理的告警记录" />
               ) : (
                 <div className="space-y-3">
                   {alerts.filter(a => a.acknowledged).map(alert => (

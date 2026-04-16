@@ -376,8 +376,8 @@ export function ToolHistory() {
         {/* 标题 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="h-5 w-5 text-[#1E3A5F]" />
-            <h2 className="text-lg font-semibold text-[#1E3A5F]">工具调用历史</h2>
+            <History className="h-5 w-5 text-[var(--ao-button.background)]" />
+            <h2 className="text-lg font-semibold text-[var(--ao-button.background)]">工具调用历史</h2>
             <p className="text-sm text-muted-foreground">按通用工具、平台工具、部门能力工具的分层追溯执行记录。</p>
           </div>
           <Button variant="outline" size="sm">
@@ -393,9 +393,9 @@ export function ToolHistory() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">总调用次数</p>
-                  <p className="text-2xl font-bold text-[#1E3A5F]">{mockStats.totalCalls}</p>
+                  <p className="text-2xl font-bold text-[var(--ao-button.background)]">{mockStats.totalCalls}</p>
                 </div>
-                <Activity className="h-8 w-8 text-[#1E3A5F]/20" />
+                <Activity className="h-8 w-8 text-[var(--ao-button.background)]/20" />
               </div>
             </CardContent>
           </Card>
@@ -417,9 +417,9 @@ export function ToolHistory() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">平均延迟</p>
-                  <p className="text-2xl font-bold text-[#1E3A5F]">{mockStats.avgLatency}ms</p>
+                  <p className="text-2xl font-bold text-[var(--ao-button.background)]">{mockStats.avgLatency}ms</p>
                 </div>
-                <Timer className="h-8 w-8 text-[#1E3A5F]/20" />
+                <Timer className="h-8 w-8 text-[var(--ao-button.background)]/20" />
               </div>
             </CardContent>
           </Card>
@@ -541,7 +541,7 @@ export function ToolHistory() {
                     {filteredHistory.map((entry) => (
                       <TableRow
                         key={entry.id}
-                        className={selectedEntry?.id === entry.id ? 'bg-[#1E3A5F]/5' : ''}
+                        className={selectedEntry?.id === entry.id ? 'bg-[var(--ao-button.background)]/5' : ''}
                         onClick={() => setSelectedEntry(entry)}
                       >
                         <TableCell>
@@ -730,7 +730,7 @@ export function ToolHistory() {
                   key={tool.name}
                   className="flex items-center gap-2 rounded-lg border p-3"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E3A5F] text-xs text-white">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--ao-button.background)] text-xs text-white">
                     {index + 1}
                   </div>
                   <div>

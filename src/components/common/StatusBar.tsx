@@ -14,12 +14,12 @@ export function StatusBar({ message = '系统就绪', rightContent }: StatusBarP
   return (
     <footer
       className="h-6 px-3 flex items-center justify-between flex-shrink-0"
-      style={{ backgroundColor: '#161B22' }}
+      style={{ backgroundColor: 'var(--ao-statusBar-background)' }}
     >
       {/* 左侧：状态信息 */}
       <span
         className="text-xs"
-        style={{ color: '#8B949E' }}
+        style={{ color: 'var(--ao-statusBar-foreground)' }}
       >
         {message}
       </span>
@@ -31,8 +31,8 @@ export function StatusBar({ message = '系统就绪', rightContent }: StatusBarP
         
         {/* 主题指示 */}
         <div className="flex items-center gap-1.5">
-          <Moon size={12} style={{ color: '#8B949E' }} />
-          <span className="text-xs" style={{ color: '#8B949E' }}>
+          <Moon size={12} style={{ color: 'var(--ao-statusBar-foreground)' }} />
+          <span className="text-xs" style={{ color: 'var(--ao-statusBar-foreground)' }}>
             深色主题
           </span>
         </div>

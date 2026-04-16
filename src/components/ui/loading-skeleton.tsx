@@ -4,7 +4,7 @@ function SkeletonBox({ className }: { className?: string }) {
   return (
     <div
       className={cn('animate-pulse rounded-md', className)}
-      style={{ backgroundColor: 'var(--ao-editor-inactiveSelectionBackground, #e2e8f0)' }}
+      style={{ backgroundColor: 'var(--ao-editor-inactiveSelectionBackground, var(--ao-border))' }}
     />
   )
 }
@@ -39,7 +39,7 @@ export function CardSkeleton({ rows = 3 }: { rows?: number }) {
   return (
     <div
       className="rounded-lg border p-5 space-y-4"
-      style={{ borderColor: 'var(--ao-card-border, #e2e8f0)' }}
+      style={{ borderColor: 'var(--ao-card-border, var(--ao-border))' }}
     >
       <SkeletonBox className="h-5 w-2/3" />
       {Array.from({ length: rows }).map((_, i) => (

@@ -187,18 +187,18 @@ export interface LayerGroup {
 export const LAYER_CONFIG: Record<PermissionLayer, { name: string; color: string; bgColor: string }> = {
   base: {
     name: '基础权限',
-    color: '#4B5563',
-    bgColor: '#F3F4F6',
+    color: 'var(--ao-foreground)',
+    bgColor: 'var(--ao-selectionHighlightBackground)',
   },
   department: {
     name: '部门权限',
-    color: '#92400E',
-    bgColor: '#FEF3C7',
+    color: 'var(--ao-warningForeground)',
+    bgColor: 'var(--ao-selectionHighlightBackground)',
   },
   approval: {
     name: '审批权限',
-    color: '#166534',
-    bgColor: '#DCFCE7',
+    color: 'var(--ao-successForeground)',
+    bgColor: 'var(--ao-selectionHighlightBackground)',
   },
 }
 

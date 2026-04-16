@@ -10,7 +10,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - FR410: 生成多步骤计划
  * - FR411: 捕获依赖和排序
  * - FR414: 呈现计划输出
@@ -438,7 +438,7 @@ export function TaskPlanning({
                   ? 'border-primary text-primary'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
               )}
-              style={activeTab === tab ? { borderColor: '#1E3A5F', color: '#1E3A5F' } : undefined}
+              style={activeTab === tab ? { borderColor: 'var(--ao-button.background)', color: 'var(--ao-button.background)' } : undefined}
             >
               {tab === 'plan' && '计划视图'}
               {tab === 'dependencies' && '依赖关系'}
@@ -485,7 +485,7 @@ export function TaskPlanning({
                 className="h-full transition-all"
                 style={{
                   width: `${stats.progress}%`,
-                  backgroundColor: '#1E3A5F',
+                  backgroundColor: 'var(--ao-button.background)',
                 }}
               />
             </div>
@@ -549,7 +549,7 @@ export function TaskPlanning({
                 <Button
                   onClick={onExecute}
                   className="gap-2"
-                  style={{ backgroundColor: '#1E3A5F' }}
+                  style={{ backgroundColor: 'var(--ao-button.background)' }}
                 >
                   <Play className="w-4 h-4" />
                   开始执行

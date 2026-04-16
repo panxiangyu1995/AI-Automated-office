@@ -10,7 +10,7 @@ const Table = React.forwardRef<
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", className)}
-      style={{ color: '#C9D1D9' }}
+      style={{ color: 'var(--ao-foreground)' }}
       {...props}
     />
   </div>
@@ -24,7 +24,7 @@ const TableHeader = React.forwardRef<
   <thead 
     ref={ref} 
     className={cn("[&_tr]:border-b", className)} 
-    style={{ borderColor: '#30363D' }}
+    style={{ borderColor: 'var(--ao-border)' }}
     {...props} 
   />
 ))
@@ -53,8 +53,8 @@ const TableFooter = React.forwardRef<
       className
     )}
     style={{ 
-      borderColor: '#30363D',
-      backgroundColor: '#0D1117',
+      borderColor: 'var(--ao-border)',
+      backgroundColor: 'var(--ao-commandPalette.footerBackground)',
     }}
     {...props}
   />
@@ -68,10 +68,10 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-[#161B22]",
+      "border-b transition-colors hover:bg-[var(--ao-bottomPanel.background)]",
       className
     )}
-    style={{ borderColor: '#30363D' }}
+    style={{ borderColor: 'var(--ao-border)' }}
     {...props}
   />
 ))
@@ -87,7 +87,7 @@ const TableHead = React.forwardRef<
       "h-12 px-4 text-left align-middle font-medium",
       className
     )}
-    style={{ color: '#8B949E', borderColor: '#30363D' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)', borderColor: 'var(--ao-border)' }}
     {...props}
   />
 ))
@@ -100,7 +100,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn("p-4 align-middle", className)}
-    style={{ borderColor: '#30363D' }}
+    style={{ borderColor: 'var(--ao-border)' }}
     {...props}
   />
 ))
@@ -113,7 +113,7 @@ const TableCaption = React.forwardRef<
   <caption
     ref={ref}
     className={cn("mt-4 text-sm", className)}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))

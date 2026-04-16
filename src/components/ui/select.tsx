@@ -17,19 +17,19 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#58A6FF] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ao-button.linkForeground)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
     style={{
-      backgroundColor: '#0D1117',
-      borderColor: '#30363D',
-      color: '#C9D1D9',
+      backgroundColor: 'var(--ao-commandPalette.footerBackground)',
+      borderColor: 'var(--ao-border)',
+      color: 'var(--ao-foreground)',
     }}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" style={{ color: '#8B949E' }} />
+      <ChevronDown className="h-4 w-4 opacity-50" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -45,7 +45,7 @@ const SelectScrollUpButton = React.forwardRef<
       "flex cursor-default items-center justify-center py-1",
       className
     )}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   >
     <ChevronUp className="h-4 w-4" />
@@ -63,7 +63,7 @@ const SelectScrollDownButton = React.forwardRef<
       "flex cursor-default items-center justify-center py-1",
       className
     )}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   >
     <ChevronDown className="h-4 w-4" />
@@ -87,9 +87,9 @@ const SelectContent = React.forwardRef<
       )}
       position={position}
       style={{
-        backgroundColor: '#161B22',
-        borderColor: '#30363D',
-        color: '#C9D1D9',
+        backgroundColor: 'var(--ao-bottomPanel.background)',
+        borderColor: 'var(--ao-border)',
+        color: 'var(--ao-foreground)',
       }}
       {...props}
     >
@@ -116,7 +116,7 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))
@@ -129,15 +129,15 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" style={{ color: '#58A6FF' }} />
+        <Check className="h-4 w-4" style={{ color: 'var(--ao-button.linkForeground)' }} />
       </SelectPrimitive.ItemIndicator>
     </span>
 
@@ -153,7 +153,7 @@ const SelectSeparator = React.forwardRef<
   <SelectPrimitive.Separator
     ref={ref}
     className={cn("-mx-1 my-1 h-px", className)}
-    style={{ backgroundColor: '#30363D' }}
+    style={{ backgroundColor: 'var(--ao-border)' }}
     {...props}
   />
 ))

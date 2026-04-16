@@ -94,46 +94,12 @@ export const borderDisabled = registerColor('borderDisabled', {
 // ============================================
 // Activity Bar
 // ============================================
-
-export const activityBarBackground = registerColor('activityBar.background', {
-  light: '#F3F3F3',
-  dark: '#333333',
-  hc: '#000000',
-}, 'Activity bar background color')
-
-export const activityBarForeground = registerColor('activityBar.foreground', {
-  light: '#616161',
-  dark: '#FFFFFF',
-  hc: '#FFFFFF',
-}, 'Activity bar foreground color')
-
-export const activityBarBadgeBackground = registerColor('activityBarBadge.background', {
-  light: '#0078D4',
-  dark: '#0078D4',
-  hc: '#F38518',
-}, 'Activity bar badge background color')
+// (Moved to activityBarColors.ts)
 
 // ============================================
 // Sidebar
 // ============================================
-
-export const sideBarBackground = registerColor('sideBar.background', {
-  light: '#F3F3F3',
-  dark: '#252526',
-  hc: '#000000',
-}, 'Sidebar background color')
-
-export const sideBarForeground = registerColor('sideBar.foreground', {
-  light: '#616161',
-  dark: '#CCCCCC',
-  hc: '#FFFFFF',
-}, 'Sidebar foreground color')
-
-export const sideBarBorder = registerColor('sideBar.border', {
-  light: '#E0E0E0',
-  dark: '#3C3C3C',
-  hc: '#6FC3DF',
-}, 'Sidebar border color')
+// (Moved to sidebarColors.ts)
 
 // ============================================
 // Editor / Workbench
@@ -160,18 +126,7 @@ export const editorLineHighlightBackground = registerColor('editor.lineHighlight
 // ============================================
 // Status Bar
 // ============================================
-
-export const statusBarBackground = registerColor('statusBar.background', {
-  light: '#007ACC',
-  dark: '#007ACC',
-  hc: '#000000',
-}, 'Status bar background color')
-
-export const statusBarForeground = registerColor('statusBar.foreground', {
-  light: '#FFFFFF',
-  dark: '#FFFFFF',
-  hc: '#FFFFFF',
-}, 'Status bar foreground color')
+// (Moved to statusBarColors.ts)
 
 // ============================================
 // Input Controls

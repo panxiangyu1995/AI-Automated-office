@@ -53,28 +53,28 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
     <div
       className="flex flex-col items-center justify-center py-12 px-6 text-center"
       style={{
-        backgroundColor: 'var(--ao-editor-background, #ffffff)',
+        backgroundColor: 'var(--ao-editor-background, var(--ao-activityBar.activeForeground))',
         minHeight: '200px',
       }}
     >
       <div
         className="flex h-16 w-16 items-center justify-center rounded-full mb-4"
-        style={{ backgroundColor: 'var(--ao-inputValidation-errorBackground, #fef2f2)' }}
+        style={{ backgroundColor: 'var(--ao-inputValidation-errorBackground, var(--ao-selectionHighlightBackground))' }}
       >
         <AlertTriangle
           className="h-8 w-8"
-          style={{ color: 'var(--ao-inputValidation-errorForeground, #ef4444)' }}
+          style={{ color: 'var(--ao-inputValidation-errorForeground, var(--ao-errorForeground))' }}
         />
       </div>
       <h3
         className="text-base font-semibold mb-1"
-        style={{ color: 'var(--ao-editor-foreground, #1e293b)' }}
+        style={{ color: 'var(--ao-editor-foreground, var(--ao-bottomPanel.activeBackground))' }}
       >
         页面出了点问题
       </h3>
       <p
         className="text-sm mb-4 max-w-md"
-        style={{ color: 'var(--ao-editor-foreground, #64748b)' }}
+        style={{ color: 'var(--ao-editor-foreground, var(--ao-workbench.secondaryForeground))' }}
       >
         数据加载时发生了错误，请尝试刷新页面。
       </p>
@@ -82,8 +82,8 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
         <pre
           className="text-xs text-left p-3 rounded mb-4 max-w-lg overflow-auto"
           style={{
-            backgroundColor: 'var(--ao-editor-inactiveSelectionBackground, #f1f5f9)',
-            color: 'var(--ao-inputValidation-errorForeground, #ef4444)',
+            backgroundColor: 'var(--ao-editor-inactiveSelectionBackground, var(--ao-selectionHighlightBackground))',
+            color: 'var(--ao-inputValidation-errorForeground, var(--ao-errorForeground))',
             maxHeight: '120px',
           }}
         >

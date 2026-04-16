@@ -39,8 +39,8 @@ const AvatarFallback = React.forwardRef<
       className
     )}
     style={{ 
-      backgroundColor: '#21262D',
-      color: '#C9D1D9',
+      backgroundColor: 'var(--ao-bottomPanel.activeBackground)',
+      color: 'var(--ao-foreground)',
     }}
     {...props}
   />

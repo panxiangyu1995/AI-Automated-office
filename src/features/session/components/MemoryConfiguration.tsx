@@ -293,7 +293,7 @@ export function MemoryConfiguration(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">记忆层配置</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">记忆层配置</h2>
           <p className="text-muted-foreground">配置记忆存储、提取、保留策略和企业知识访问</p>
         </div>
         <div className="flex gap-2">
@@ -353,36 +353,36 @@ export function MemoryConfiguration(): React.ReactNode {
               <div className="grid grid-cols-3 gap-4">
                 <Card
                   className={`cursor-pointer border-2 transition-all ${
-                    config.deployment.mode === 'local' ? 'border-[#1E3A5F] bg-[#1E3A5F]/5' : 'border-transparent'
+                    config.deployment.mode === 'local' ? 'border-[var(--ao-button.background)] bg-[var(--ao-button.background)]/5' : 'border-transparent'
                   }`}
                   onClick={() => updateDeployment({ mode: 'local' })}
                 >
                   <CardContent className="pt-4 text-center">
-                    <HardDrive className="h-8 w-8 mx-auto mb-2 text-[#1E3A5F]" />
+                    <HardDrive className="h-8 w-8 mx-auto mb-2 text-[var(--ao-button.background)]" />
                     <p className="font-medium">本地存储</p>
                     <p className="text-xs text-muted-foreground mt-1">数据仅存储在本地设备</p>
                   </CardContent>
                 </Card>
                 <Card
                   className={`cursor-pointer border-2 transition-all ${
-                    config.deployment.mode === 'cloud' ? 'border-[#1E3A5F] bg-[#1E3A5F]/5' : 'border-transparent'
+                    config.deployment.mode === 'cloud' ? 'border-[var(--ao-button.background)] bg-[var(--ao-button.background)]/5' : 'border-transparent'
                   }`}
                   onClick={() => updateDeployment({ mode: 'cloud' })}
                 >
                   <CardContent className="pt-4 text-center">
-                    <Cloud className="h-8 w-8 mx-auto mb-2 text-[#1E3A5F]" />
+                    <Cloud className="h-8 w-8 mx-auto mb-2 text-[var(--ao-button.background)]" />
                     <p className="font-medium">云端存储</p>
                     <p className="text-xs text-muted-foreground mt-1">数据存储在云端服务器</p>
                   </CardContent>
                 </Card>
                 <Card
                   className={`cursor-pointer border-2 transition-all ${
-                    config.deployment.mode === 'hybrid' ? 'border-[#1E3A5F] bg-[#1E3A5F]/5' : 'border-transparent'
+                    config.deployment.mode === 'hybrid' ? 'border-[var(--ao-button.background)] bg-[var(--ao-button.background)]/5' : 'border-transparent'
                   }`}
                   onClick={() => updateDeployment({ mode: 'hybrid' })}
                 >
                   <CardContent className="pt-4 text-center">
-                    <Database className="h-8 w-8 mx-auto mb-2 text-[#1E3A5F]" />
+                    <Database className="h-8 w-8 mx-auto mb-2 text-[var(--ao-button.background)]" />
                     <p className="font-medium">混合模式</p>
                     <p className="text-xs text-muted-foreground mt-1">本地+云端同步</p>
                   </CardContent>

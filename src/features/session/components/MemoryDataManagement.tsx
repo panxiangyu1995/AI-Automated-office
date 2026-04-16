@@ -370,7 +370,7 @@ export function MemoryDataManagement(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">记忆数据管理</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">记忆数据管理</h2>
           <p className="text-muted-foreground">管理记忆条目、查看历史、导出备份</p>
         </div>
         <div className="flex gap-2">
@@ -394,7 +394,7 @@ export function MemoryDataManagement(): React.ReactNode {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-[#1E3A5F]" />
+              <Database className="h-5 w-5 text-[var(--ao-button.background)]" />
               <div>
                 <p className="text-2xl font-bold">{mockStats.totalRecords}</p>
                 <p className="text-sm text-muted-foreground">总记录数</p>

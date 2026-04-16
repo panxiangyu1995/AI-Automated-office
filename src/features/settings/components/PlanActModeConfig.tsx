@@ -246,7 +246,7 @@ export const PlanActModeConfig = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <CardTitle style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bot style={{ width: '16px', height: '16px', color: '#9663f1' }} />
+              <Bot style={{ width: '16px', height: '16px', color: 'var(--ao-infoForeground)' }} />
               Agent Mode
             </CardTitle>
             <CardDescription style={{ fontSize: '12px' }}>

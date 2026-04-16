@@ -42,14 +42,18 @@ export function WarningListPage() {
     try {
       await markWarningRead(id)
       setWarnings(warnings.map((w) => (w.id === id ? { ...w, is_read: true } : w)))
-    } catch {}
+    } catch (_e) {
+      // 错误已忽略：标记已读失败时静默处理
+    }
   }
 
   const handleResolve = async (id: string) => {
     try {
       await resolveWarning(id)
       setWarnings(warnings.map((w) => (w.id === id ? { ...w, is_resolved: true } : w)))
-    } catch {}
+    } catch (_e) {
+      // 错误已忽略：解决预警失败时静默处理
+    }
   }
 
   const getLevelBadge = (level: string) => {
@@ -97,8 +101,7 @@ export function WarningListPage() {
             title="加载失败"
             description={error}
             icon={AlertTriangle}
-            actionLabel="重试"
-            onAction={fetchData}
+            action={{ label: "重试", onClick: fetchData }}
           />
         </div>
       </div>

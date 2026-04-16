@@ -1,6 +1,7 @@
 import { useMemo, useEffect, type ReactNode } from 'react'
 import { useLocation, useOutlet, useParams } from 'react-router-dom'
 import { SettingsPanel } from '../../features/settings/components/SettingsPanel'
+import { DashboardHome } from '../../features/dashboard/components/DashboardHome'
 import { useUIStore } from '../../stores/uiStore'
 import {
   WorkbenchHostRenderer,
@@ -62,6 +63,15 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
       }
     }
 
+    if (activeActivityItem === 'dashboard') {
+      return {
+        id: 'dashboard-static-host',
+        title: 'Dashboard',
+        mode: 'static',
+        render: () => <DashboardHome />,
+      }
+    }
+
     return {
       id: `static-route:${location.pathname || '/'}`,
       title: 'Workbench',
@@ -72,11 +82,11 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
             <div className="flex h-full flex-col items-center justify-center p-8">
               <h2
                 className="mb-2 text-2xl font-bold"
-                style={{ color: '#C9D1D9' }}
+                style={{ color: 'var(--ao-workbench-foreground)' }}
               >
                 欢迎使用 AI-Automated-Office
               </h2>
-              <p style={{ color: '#8B949E' }}>AI 赋能的企业 ERP 系统</p>
+              <p style={{ color: 'var(--ao-workbench-secondaryForeground)' }}>AI 赋能的企业 ERP 系统</p>
             </div>
           )
         ),
@@ -118,7 +128,7 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
   return (
     <main
       className={`flex flex-1 flex-col overflow-hidden ${className}`}
-      style={{ backgroundColor: '#0F1419' }}
+      style={{ backgroundColor: 'var(--ao-workbench-background)' }}
     >
       <TabBar onNewTab={handleNewTab} />
 

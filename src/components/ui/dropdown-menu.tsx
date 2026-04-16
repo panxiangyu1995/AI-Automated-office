@@ -25,15 +25,15 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[#21262D] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[var(--ao-bottomPanel.activeBackground)] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto" style={{ color: '#8B949E' }} />
+    <ChevronRight className="ml-auto" style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName =
@@ -50,9 +50,9 @@ const DropdownMenuSubContent = React.forwardRef<
       className
     )}
     style={{
-      backgroundColor: '#161B22',
-      borderColor: '#30363D',
-      color: '#C9D1D9',
+      backgroundColor: 'var(--ao-bottomPanel.background)',
+      borderColor: 'var(--ao-border)',
+      color: 'var(--ao-foreground)',
     }}
     {...props}
   />
@@ -73,9 +73,9 @@ const DropdownMenuContent = React.forwardRef<
         className
       )}
       style={{
-        backgroundColor: '#161B22',
-        borderColor: '#30363D',
-        color: '#C9D1D9',
+        backgroundColor: 'var(--ao-bottomPanel.background)',
+        borderColor: 'var(--ao-border)',
+        color: 'var(--ao-foreground)',
       }}
       {...props}
     />
@@ -92,11 +92,11 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   />
 ))
@@ -109,16 +109,16 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" style={{ color: '#58A6FF' }} />
+        <Check className="h-4 w-4" style={{ color: 'var(--ao-button.linkForeground)' }} />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -134,15 +134,15 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-[#21262D] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-[var(--ao-bottomPanel.activeBackground)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" style={{ color: '#58A6FF' }} />
+        <Circle className="h-2 w-2 fill-current" style={{ color: 'var(--ao-button.linkForeground)' }} />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -163,7 +163,7 @@ const DropdownMenuLabel = React.forwardRef<
       inset && "pl-8",
       className
     )}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))
@@ -176,7 +176,7 @@ const DropdownMenuSeparator = React.forwardRef<
   <DropdownMenuPrimitive.Separator
     ref={ref}
     className={cn("-mx-1 my-1 h-px", className)}
-    style={{ backgroundColor: '#30363D' }}
+    style={{ backgroundColor: 'var(--ao-border)' }}
     {...props}
   />
 ))
@@ -189,7 +189,7 @@ const DropdownMenuShortcut = ({
   return (
     <span
       className={cn("ml-auto text-xs tracking-widest opacity-60", className)}
-      style={{ color: '#8B949E' }}
+      style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
       {...props}
     />
   )

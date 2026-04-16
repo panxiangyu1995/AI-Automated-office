@@ -7,7 +7,7 @@
  * 铁律合规：
  * - UX: 使用 Shadcn/ui 组件
  * - ARCH: 分层架构，复用 message model 和 memory pipeline
- * - Brand Color: #1E3A5F
+ * - Brand Color: var(--ao-button.background)
  */
 
 import { useState, useCallback } from 'react'
@@ -55,7 +55,7 @@ import type { ToolDescriptor } from '../tools/toolDescriptor'
 
 // ==================== Constants ====================
 
-const BRAND_COLOR = '#1E3A5F'
+const BRAND_COLOR = 'var(--ao-button.background)'
 
 /**
  * 纠偏类型

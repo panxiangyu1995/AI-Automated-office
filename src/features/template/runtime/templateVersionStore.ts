@@ -1,3 +1,13 @@
+/**
+ * Template Version Store
+ *
+ * I3: 前端模板存储接入 SQLite (替代 localStorage)
+ * 铁律来源: 架构ADR-003 本地优先 SQLite 存储
+ *
+ * 优先通过 Tauri IPC 调用 template_store Rust 后端，
+ * 当 Tauri 环境不可用时回退到 localStorage。
+ */
+
 export type TemplateStatus = 'draft' | 'published' | 'archived'
 
 export interface TemplateVersion {
@@ -17,27 +27,83 @@ export interface TemplateRuntimeState {
   versions: TemplateVersion[]
 }
 
+// ==================== Storage Adapter ====================
+
 const STORAGE_PREFIX = 'template:version:'
 
 function storageKey(templateId: string) {
   return `${STORAGE_PREFIX}${templateId}`
 }
 
-function loadState(templateId: string): TemplateRuntimeState {
-  const raw = localStorage.getItem(storageKey(templateId))
-  if (!raw) {
-    return { templateId, versions: [] }
-  }
+/** localStorage fallback 适配器 */
+const localStorageAdapter = {
+  loadState(templateId: string): TemplateRuntimeState {
+    const raw = localStorage.getItem(storageKey(templateId))
+    if (!raw) return { templateId, versions: [] }
+    try {
+      return JSON.parse(raw) as TemplateRuntimeState
+    } catch {
+      return { templateId, versions: [] }
+    }
+  },
 
-  try {
-    return JSON.parse(raw) as TemplateRuntimeState
-  } catch {
-    return { templateId, versions: [] }
-  }
+  saveState(state: TemplateRuntimeState) {
+    localStorage.setItem(storageKey(state.templateId), JSON.stringify(state))
+  },
 }
 
-function saveState(state: TemplateRuntimeState) {
-  localStorage.setItem(storageKey(state.templateId), JSON.stringify(state))
+/** Tauri IPC 适配器 */
+let tauriAvailable: boolean | null = null
+
+async function isTauriAvailable(): Promise<boolean> {
+  if (tauriAvailable !== null) return tauriAvailable
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+    await invoke('plugin:template-store|ping')
+    tauriAvailable = true
+  } catch {
+    tauriAvailable = false
+  }
+  return tauriAvailable
+}
+
+const tauriAdapter = {
+  async loadState(templateId: string): Promise<TemplateRuntimeState> {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const versions = await invoke<TemplateVersion[]>('list_template_versions', { templateId })
+      const activeVersionId = await invoke<string | null>('get_active_template_version', { templateId })
+      const defaultVersionId = await invoke<string | null>('get_default_template_version', { templateId })
+      return { templateId, versions, activeVersionId: activeVersionId ?? undefined, defaultVersionId: defaultVersionId ?? undefined }
+    } catch {
+      return localStorageAdapter.loadState(templateId)
+    }
+  },
+
+  async saveState(state: TemplateRuntimeState): Promise<void> {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      await invoke('save_template_state', { state })
+    } catch {
+      localStorageAdapter.saveState(state)
+    }
+  },
+}
+
+// ==================== Unified API ====================
+
+async function loadState(templateId: string): Promise<TemplateRuntimeState> {
+  if (await isTauriAvailable()) {
+    return tauriAdapter.loadState(templateId)
+  }
+  return localStorageAdapter.loadState(templateId)
+}
+
+async function saveState(state: TemplateRuntimeState): Promise<void> {
+  if (await isTauriAvailable()) {
+    return tauriAdapter.saveState(state)
+  }
+  localStorageAdapter.saveState(state)
 }
 
 function nextVersionNumber(state: TemplateRuntimeState): number {
@@ -45,8 +111,10 @@ function nextVersionNumber(state: TemplateRuntimeState): number {
   return maxVersion + 1
 }
 
-export function createDraft(templateId: string, content: string): TemplateVersion {
-  const state = loadState(templateId)
+// ==================== Public API ====================
+
+export async function createDraft(templateId: string, content: string): Promise<TemplateVersion> {
+  const state = await loadState(templateId)
   const now = new Date().toISOString()
   const version: TemplateVersion = {
     id: `${templateId}-v${nextVersionNumber(state)}`,
@@ -59,17 +127,15 @@ export function createDraft(templateId: string, content: string): TemplateVersio
   }
 
   state.versions.push(version)
-  saveState(state)
+  await saveState(state)
   return version
 }
 
-export function publishVersion(templateId: string, versionId: string): TemplateVersion | null {
-  const state = loadState(templateId)
+export async function publishVersion(templateId: string, versionId: string): Promise<TemplateVersion | null> {
+  const state = await loadState(templateId)
   const now = new Date().toISOString()
   const version = state.versions.find((item) => item.id === versionId)
-  if (!version) {
-    return null
-  }
+  if (!version) return null
 
   state.versions = state.versions.map((item) => {
     if (item.id === versionId) {
@@ -82,17 +148,15 @@ export function publishVersion(templateId: string, versionId: string): TemplateV
   })
 
   state.activeVersionId = versionId
-  saveState(state)
+  await saveState(state)
   return state.versions.find((item) => item.id === versionId) ?? null
 }
 
-export function rollbackToVersion(templateId: string, versionId: string): TemplateVersion | null {
-  const state = loadState(templateId)
+export async function rollbackToVersion(templateId: string, versionId: string): Promise<TemplateVersion | null> {
+  const state = await loadState(templateId)
   const now = new Date().toISOString()
   const version = state.versions.find((item) => item.id === versionId)
-  if (!version) {
-    return null
-  }
+  if (!version) return null
 
   state.versions = state.versions.map((item) => {
     if (item.id === versionId) {
@@ -103,33 +167,30 @@ export function rollbackToVersion(templateId: string, versionId: string): Templa
     }
     return item
   })
+
   state.activeVersionId = versionId
-  saveState(state)
+  await saveState(state)
   return state.versions.find((item) => item.id === versionId) ?? null
 }
 
-export function setDefaultTemplateVersion(templateId: string, versionId: string): boolean {
-  const state = loadState(templateId)
+export async function setDefaultTemplateVersion(templateId: string, versionId: string): Promise<boolean> {
+  const state = await loadState(templateId)
   const version = state.versions.find((item) => item.id === versionId)
-  if (!version) {
-    return false
-  }
+  if (!version) return false
 
   state.defaultVersionId = versionId
-  saveState(state)
+  await saveState(state)
   return true
 }
 
-export function getActiveTemplateVersion(templateId: string): TemplateVersion | null {
-  const state = loadState(templateId)
+export async function getActiveTemplateVersion(templateId: string): Promise<TemplateVersion | null> {
+  const state = await loadState(templateId)
   const targetId = state.activeVersionId ?? state.defaultVersionId
-  if (!targetId) {
-    return null
-  }
+  if (!targetId) return null
   return state.versions.find((item) => item.id === targetId) ?? null
 }
 
-export function listTemplateVersions(templateId: string): TemplateVersion[] {
-  return loadState(templateId).versions
+export async function listTemplateVersions(templateId: string): Promise<TemplateVersion[]> {
+  const state = await loadState(templateId)
+  return state.versions
 }
-

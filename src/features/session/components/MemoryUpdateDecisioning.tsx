@@ -362,7 +362,7 @@ export function MemoryUpdateDecisioning(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">记忆智能更新</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">记忆智能更新</h2>
           <p className="text-muted-foreground">智能决策ADD、UPDATE、DELETE和NONE操作</p>
         </div>
         <div className="flex gap-2">
@@ -382,7 +382,7 @@ export function MemoryUpdateDecisioning(): React.ReactNode {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-[#1E3A5F]" />
+              <Activity className="h-5 w-5 text-[var(--ao-button.background)]" />
               <div>
                 <p className="text-2xl font-bold">{mockStats.totalDecisions}</p>
                 <p className="text-sm text-muted-foreground">总决策数</p>

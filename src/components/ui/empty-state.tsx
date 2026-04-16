@@ -59,22 +59,22 @@ export function EmptyState({
     >
       <div
         className="flex h-16 w-16 items-center justify-center rounded-full mb-4"
-        style={{ backgroundColor: 'var(--ao-editor-inactiveSelectionBackground, #f1f5f9)' }}
+        style={{ backgroundColor: 'var(--ao-editor-inactiveSelectionBackground, var(--ao-selectionHighlightBackground))' }}
       >
         <IconComponent
           className="h-8 w-8"
-          style={{ color: 'var(--ao-editor-foreground, #64748b)' }}
+          style={{ color: 'var(--ao-editor-foreground, var(--ao-workbench.secondaryForeground))' }}
         />
       </div>
       <h3
         className="text-base font-semibold mb-1"
-        style={{ color: 'var(--ao-editor-foreground, #1e293b)' }}
+        style={{ color: 'var(--ao-editor-foreground, var(--ao-bottomPanel.activeBackground))' }}
       >
         {title ?? config.title}
       </h3>
       <p
         className="text-sm max-w-md mb-4"
-        style={{ color: 'var(--ao-editor-foreground, #64748b)' }}
+        style={{ color: 'var(--ao-editor-foreground, var(--ao-workbench.secondaryForeground))' }}
       >
         {description ?? config.description}
       </p>

@@ -24,8 +24,8 @@ export function OrgChartNode({
         'group absolute flex flex-col rounded-lg border-2 bg-white shadow-sm transition-all duration-200',
         'hover:shadow-md cursor-pointer',
         isSelected
-          ? 'border-[#1E3A5F] shadow-lg ring-2 ring-[#1E3A5F]/20'
-          : 'border-gray-200 hover:border-[#1E3A5F]/50'
+          ? 'border-[var(--ao-button.background)] shadow-lg ring-2 ring-[var(--ao-button.background)]/20'
+          : 'border-gray-200 hover:border-[var(--ao-button.background)]/50'
       )}
       style={{
         left: node.x,
@@ -41,13 +41,13 @@ export function OrgChartNode({
         <div
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            isSelected ? 'bg-[#1E3A5F]' : 'bg-[#1E3A5F]/10'
+            isSelected ? 'bg-[var(--ao-button.background)]' : 'bg-[var(--ao-button.background)]/10'
           )}
         >
           <Building2
             className={cn(
               'h-4 w-4',
-              isSelected ? 'text-white' : 'text-[#1E3A5F]'
+              isSelected ? 'text-white' : 'text-[var(--ao-button.background)]'
             )}
           />
         </div>
@@ -87,7 +87,7 @@ export function OrgChartNode({
         {/* 负责人信息 */}
         {node.manager ? (
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E3A5F]/10 text-xs font-medium text-[#1E3A5F]">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--ao-button.background)]/10 text-xs font-medium text-[var(--ao-button.background)]">
               {node.manager.name.charAt(0)}
             </div>
             <span className="text-xs text-gray-600">{node.manager.name}</span>
@@ -105,7 +105,7 @@ export function OrgChartNode({
 
       {/* 子节点数量指示 */}
       {hasChildren && !node.expanded && (
-        <div className="absolute -bottom-2 left-1/2 flex h-5 min-w-[24px] -translate-x-1/2 items-center justify-center rounded-full bg-[#1E3A5F] px-2 text-[10px] font-medium text-white shadow-sm">
+        <div className="absolute -bottom-2 left-1/2 flex h-5 min-w-[24px] -translate-x-1/2 items-center justify-center rounded-full bg-[var(--ao-button.background)] px-2 text-[10px] font-medium text-white shadow-sm">
           {node.children?.length}
         </div>
       )}

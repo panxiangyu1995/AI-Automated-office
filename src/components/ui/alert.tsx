@@ -10,13 +10,13 @@ const alertVariants = cva(
       variant: {
         default: "",
         destructive:
-          "border-[#F85149]/50 text-[#F85149] [&>svg]:text-[#F85149]",
+          "border-[var(--ao-errorForeground)]/50 text-[var(--ao-errorForeground)] [&>svg]:text-[var(--ao-errorForeground)]",
         warning:
-          "border-[#D29922]/50 text-[#D29922] [&>svg]:text-[#D29922]",
+          "border-[var(--ao-warningForeground)]/50 text-[var(--ao-warningForeground)] [&>svg]:text-[var(--ao-warningForeground)]",
         success:
-          "border-[#3FB950]/50 text-[#3FB950] [&>svg]:text-[#3FB950]",
+          "border-[var(--ao-successForeground)]/50 text-[var(--ao-successForeground)] [&>svg]:text-[var(--ao-successForeground)]",
         info:
-          "border-[#58A6FF]/50 text-[#58A6FF] [&>svg]:text-[#58A6FF]",
+          "border-[var(--ao-button.linkForeground)]/50 text-[var(--ao-button.linkForeground)] [&>svg]:text-[var(--ao-button.linkForeground)]",
       },
     },
     defaultVariants: {
@@ -34,9 +34,9 @@ const Alert = React.forwardRef<
     role="alert"
     className={cn(alertVariants({ variant }), className)}
     style={{
-      backgroundColor: '#161B22',
-      borderColor: '#30363D',
-      color: '#C9D1D9',
+      backgroundColor: 'var(--ao-bottomPanel.background)',
+      borderColor: 'var(--ao-border)',
+      color: 'var(--ao-foreground)',
     }}
     {...props}
   />
@@ -50,7 +50,7 @@ const AlertTitle = React.forwardRef<
   <h5
     ref={ref}
     className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   />
 ))
@@ -63,7 +63,7 @@ const AlertDescription = React.forwardRef<
   <div
     ref={ref}
     className={cn("text-sm [&_p]:leading-relaxed", className)}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))

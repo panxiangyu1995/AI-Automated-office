@@ -68,7 +68,7 @@ export function StagedReviewPanel({ sessionId, className }: StagedReviewPanelPro
         onClick={() => setCollapsed((value) => !value)}
       >
         <div className="flex items-center gap-2">
-          <ListChecks className="h-4 w-4 text-[#1E3A5F]" />
+          <ListChecks className="h-4 w-4 text-[var(--ao-button.background)]" />
           <span className="text-sm font-medium text-slate-800">候选改动清单</span>
           <Badge variant="outline" className="text-xs">
             {pendingCount}

@@ -64,7 +64,7 @@ export function UserListPage() {
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
-          <Button onClick={handleCreateUser} className="bg-[#1E3A5F] hover:bg-[#1E3A5F]/90">
+          <Button onClick={handleCreateUser} className="bg-[var(--ao-button.background)] hover:bg-[var(--ao-button.background)]/90">
             <UserPlus className="h-4 w-4" />
             创建用户
           </Button>

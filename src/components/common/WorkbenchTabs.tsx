@@ -24,10 +24,10 @@ export function WorkbenchTabs({ renderContent, emptyState, className = '' }: Wor
         <div className="flex h-full flex-col items-center justify-center">
           {emptyState ?? (
             <div className="text-center">
-              <p className="mb-2 text-lg font-medium" style={{ color: '#C9D1D9' }}>
+              <p className="mb-2 text-lg font-medium" style={{ color: 'var(--ao-workbench-foreground)' }}>
                 暂无打开的标签页
               </p>
-              <p className="text-sm" style={{ color: '#8B949E' }}>
+              <p className="text-sm" style={{ color: 'var(--ao-workbench-secondaryForeground)' }}>
                 从侧边栏或 AI 导航打开内容
               </p>
             </div>

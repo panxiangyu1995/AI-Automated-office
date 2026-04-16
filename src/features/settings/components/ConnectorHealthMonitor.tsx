@@ -631,7 +631,6 @@ export function ConnectorHealthMonitor() {
                     title="暂无活跃事件"
                     description="连接器运行正常"
                     icon={CheckCircle2}
-                    size="sm"
                   />
                 </div>
               ) : (
@@ -713,7 +712,6 @@ export function ConnectorHealthMonitor() {
                   title="暂无已解决事件"
                   description="所有事件已处理"
                   icon={CheckCircle2}
-                  size="sm"
                 />
               ) : (
                 <div className="space-y-3">

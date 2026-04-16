@@ -85,8 +85,7 @@ export function LogisticsTrackingPage() {
             title="加载失败"
             description={error}
             icon={AlertCircle}
-            actionLabel="重试"
-            onAction={fetchData}
+            action={{ label: "重试", onClick: fetchData }}
           />
         </div>
       </div>

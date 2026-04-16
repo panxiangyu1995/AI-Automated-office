@@ -143,8 +143,7 @@ export function TicketList({ onTicketClick, onCreateClick }: TicketListProps) {
           title="暂无工单"
           description="点击下方按钮创建第一个工单"
           icon={ClipboardList}
-          actionLabel="新建工单"
-          onAction={onCreateClick}
+          action={{ label: "新建工单", onClick: onCreateClick ?? (() => {}) }}
         />
       ) : (
         <>

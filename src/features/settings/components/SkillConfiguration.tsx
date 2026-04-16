@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { EmptyState } from '@/components/ui/empty-state'
 
 // Types
 export type SkillStatus = 'installed' | 'loading' | 'active' | 'error' | 'disabled' | 'deprecated'
@@ -664,9 +665,8 @@ export function SkillConfiguration() {
       <div className="space-y-4">
         {filteredSkills.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <p>未找到匹配的技能</p>
+            <CardContent className="pt-0">
+              <EmptyState icon={Package} variant="search" title="未找到匹配的技能" description="没有找到匹配的技能，请尝试其他搜索条件" />
             </CardContent>
           </Card>
         ) : (
@@ -993,9 +993,7 @@ export function SkillConfiguration() {
             ))}
 
             {state.selectedSkill?.parameters.length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
-                此技能没有可配置的参数
-              </div>
+              <EmptyState variant="default" title="没有可配置的参数" description="此技能没有可配置的参数" />
             )}
           </div>
 
@@ -1059,9 +1057,7 @@ export function SkillConfiguration() {
             ))}
 
             {state.selectedSkill?.downgradeHistory.length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
-                没有降级历史记录
-              </div>
+              <EmptyState variant="default" title="没有降级历史记录" description="此技能没有降级历史记录" />
             )}
           </div>
 

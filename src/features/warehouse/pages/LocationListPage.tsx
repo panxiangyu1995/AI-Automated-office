@@ -105,7 +105,9 @@ export function LocationListPage() {
       }
       setDialogOpen(false)
       fetchData()
-    } catch {}
+    } catch (_e) {
+      // 错误已忽略：创建库位失败时静默处理
+    }
   }
 
   if (error) {
@@ -119,8 +121,7 @@ export function LocationListPage() {
             title="加载失败"
             description={error}
             icon={AlertTriangle}
-            actionLabel="重试"
-            onAction={fetchData}
+            action={{ label: "重试", onClick: fetchData }}
           />
         </div>
       </div>
@@ -305,7 +306,7 @@ export function LocationListPage() {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleSave} className="bg-[#1E3A5F] hover:bg-[#1E3A5F]/90">
+            <Button onClick={handleSave} className="bg-[var(--ao-button.background)] hover:bg-[var(--ao-button.background)]/90">
               保存
             </Button>
           </DialogFooter>

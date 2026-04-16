@@ -24,13 +24,13 @@ export function PropertiesPanel({ properties, title = '属性' }: PropertiesPane
   if (properties.length === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-[#21262D] px-4 py-2">
-          <span className="text-sm font-medium" style={{ color: '#8B949E' }}>
+        <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'var(--ao-bottomPanel-border)' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             {title}
           </span>
         </div>
         <div className="flex flex-1 items-center justify-center">
-          <span className="text-sm" style={{ color: '#8B949E' }}>
+          <span className="text-sm" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             暂无属性信息
           </span>
         </div>
@@ -41,21 +41,22 @@ export function PropertiesPanel({ properties, title = '属性' }: PropertiesPane
   return (
     <div className="flex h-full flex-col">
       <div
-        className="flex cursor-pointer items-center justify-between border-b border-[#21262D] px-4 py-2"
+        className="flex cursor-pointer items-center justify-between border-b px-4 py-2"
+        style={{ borderColor: 'var(--ao-bottomPanel-border)' }}
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-2">
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <ChevronRight className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           ) : (
-            <ChevronDown className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <ChevronDown className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           )}
-          <span className="text-sm font-medium" style={{ color: '#8B949E' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             {title}
           </span>
           <span
             className="rounded px-1.5 py-0.5 text-xs"
-            style={{ backgroundColor: '#21262D', color: '#8B949E' }}
+            style={{ backgroundColor: 'var(--ao-bottomPanel-activeBackground)', color: 'var(--ao-bottomPanel-foreground)' }}
           >
             {properties.length}
           </span>
@@ -72,13 +73,13 @@ export function PropertiesPanel({ properties, title = '属性' }: PropertiesPane
               >
                 <dt
                   className="min-w-[80px] max-w-[120px] flex-shrink-0 text-xs"
-                  style={{ color: '#8B949E' }}
+                  style={{ color: 'var(--ao-bottomPanel-foreground)' }}
                 >
                   {property.label}
                 </dt>
                 <dd
                   className="min-w-0 flex-1 truncate text-sm"
-                  style={{ color: '#C9D1D9' }}
+                  style={{ color: 'var(--ao-bottomPanel-activeForeground)' }}
                   title={property.value}
                 >
                   {property.value}
@@ -87,16 +88,19 @@ export function PropertiesPanel({ properties, title = '属性' }: PropertiesPane
                   <button
                     type="button"
                     aria-label={`复制 ${property.label}`}
-                    className="ml-2 flex-shrink-0 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#21262D]"
+                    className="ml-2 flex-shrink-0 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                    style={{ backgroundColor: 'transparent' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--ao-bottomPanel-activeBackground)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     onClick={(e) => {
                       e.stopPropagation()
                       handleCopy(property.value, index)
                     }}
                   >
                     {copiedIndex === index ? (
-                      <Check className="h-3 w-3 text-[#238636]" />
+                      <Check className="h-3 w-3" style={{ color: 'var(--ao-successForeground)' }} />
                     ) : (
-                      <Copy className="h-3 w-3" style={{ color: '#8B949E' }} />
+                      <Copy className="h-3 w-3" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
                     )}
                   </button>
                 )}

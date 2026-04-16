@@ -12,7 +12,7 @@
  *
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  */
 
 import { useRef, useEffect, useState, useCallback } from 'react'
@@ -66,7 +66,7 @@ function EmptyState({ onQuickAction }: EmptyStateProps) {
       {/* Welcome Icon */}
       <div 
         className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-        style={{ backgroundColor: '#1E3A5F' }}
+        style={{ backgroundColor: 'var(--ao-button.background)' }}
       >
         <Sparkles size={32} className="text-white" />
       </div>

@@ -8,7 +8,7 @@
  * 铁律合规：
  * - UX: 使用 Shadcn/ui 组件
  * - ARCH: 分层架构，复用 compression hook
- * - Brand Color: #1E3A5F
+ * - Brand Color: var(--ao-button.background)
  */
 
 import { useState, useMemo, useCallback } from 'react'
@@ -62,7 +62,7 @@ import { cn } from '@/lib/utils'
 
 // ==================== Constants ====================
 
-const BRAND_COLOR = '#1E3A5F'
+const BRAND_COLOR = 'var(--ao-button.background)'
 
 // ==================== Types ====================
 

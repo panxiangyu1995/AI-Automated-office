@@ -47,7 +47,7 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
-const BRAND_COLOR = '#1E3A5F'
+const BRAND_COLOR = 'var(--ao-button.background)'
 
 // 降级行为类型
 export type DowngradeBehavior = 

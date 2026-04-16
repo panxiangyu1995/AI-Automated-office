@@ -45,3 +45,5 @@ pub mod load_balancing;
 pub mod export;
 pub mod sla;
 pub mod warehouse;
+pub mod template;
+pub mod siem;

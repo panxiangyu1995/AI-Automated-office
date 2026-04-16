@@ -7,7 +7,7 @@
  * 铁律合规：
  * - ARCH: 分层架构，使用 Zustand 状态管理
  * - UX-01: 使用 Shadcn/ui 组件
- * - UX-04: 品牌色 #1E3A5F
+ * - UX-04: 品牌色 var(--ao-button.background)
  */
 
 import { useState } from 'react'
@@ -162,7 +162,7 @@ function CheckpointCard({
     <>
       <div
         className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-          selected ? 'border-[#1E3A5F] bg-[#1E3A5F]/5' : 'border-gray-200 hover:border-gray-300'
+          selected ? 'border-[var(--ao-button.background)] bg-[var(--ao-button.background)]/5' : 'border-gray-200 hover:border-gray-300'
         }`}
       >
         {/* 选择框 */}
@@ -170,7 +170,7 @@ function CheckpointCard({
           type="checkbox"
           checked={selected}
           onChange={onToggleSelect}
-          className="mt-1 rounded border-gray-300 text-[#1E3A5F] focus:ring-[#1E3A5F]"
+          className="mt-1 rounded border-gray-300 text-[var(--ao-button.background)] focus:ring-[var(--ao-button.background)]"
         />
         
         {/* 内容 */}
@@ -544,7 +544,7 @@ export function CheckpointManagementPanel({
       <div className="p-4 border-b bg-gray-50">
         <div className="grid grid-cols-6 gap-2 text-center">
           <div className="p-2 rounded bg-white border">
-            <div className="text-2xl font-bold text-[#1E3A5F]">{stats.total}</div>
+            <div className="text-2xl font-bold text-[var(--ao-button.background)]">{stats.total}</div>
             <div className="text-xs text-gray-500">总计</div>
           </div>
           <div className="p-2 rounded bg-white border">

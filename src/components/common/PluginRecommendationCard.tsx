@@ -54,7 +54,7 @@ export function PluginRecommendationCard({
         <div className="flex items-start gap-3">
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: '#1E3A5F' }}
+            style={{ backgroundColor: 'var(--ao-button.background)' }}
           >
             <Icon className="w-5 h-5 text-white" />
           </div>
@@ -108,7 +108,7 @@ export function PluginRecommendationCard({
             'text-xs font-medium text-white',
             'transition-colors'
           )}
-          style={{ backgroundColor: '#1E3A5F' }}
+          style={{ backgroundColor: 'var(--ao-button.background)' }}
         >
           试试
           <ArrowRight className="w-3.5 h-3.5" />

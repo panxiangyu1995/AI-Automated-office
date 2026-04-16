@@ -68,8 +68,8 @@ function ConfigLevelSelector() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Layers size={16} style={{ color: '#8B949E' }} />
-        <Label className="text-sm" style={{ color: '#C9D1D9' }}>配置层级</Label>
+        <Layers size={16} style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
+        <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>配置层级</Label>
       </div>
 
       {/* Level Selection Tabs */}
@@ -85,14 +85,14 @@ function ConfigLevelSelector() {
                 'flex items-center gap-2 px-3 py-2 text-sm rounded-lg border transition-all duration-200',
                 configLevel === level
                   ? 'border-transparent'
-                  : 'border-[#30363D] hover:border-[#8B949E]'
+                  : 'border-[var(--ao-border)] hover:border-[var(--ao-workbench.secondaryForeground)]'
               )}
               style={configLevel === level ? {
-                backgroundColor: '#1F6FEB',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--ao-button.linkForeground)',
+                color: 'var(--ao-activityBar.activeForeground)',
               } : {
-                backgroundColor: '#161B22',
-                color: '#C9D1D9',
+                backgroundColor: 'var(--ao-bottomPanel.background)',
+                color: 'var(--ao-foreground)',
               }}
             >
               <Icon size={14} />
@@ -111,15 +111,15 @@ function ConfigLevelSelector() {
         }}
       >
         <div className="flex items-center gap-2 mb-1">
-          <LevelIcon size={14} style={{ color: '#58A6FF' }} />
-          <span className="text-sm font-medium" style={{ color: '#58A6FF' }}>
+          <LevelIcon size={14} style={{ color: 'var(--ao-button.linkForeground)' }} />
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-button.linkForeground)' }}>
             当前: {currentLevelInfo.label}
           </span>
-          <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(88, 166, 255, 0.2)', color: '#58A6FF' }}>
+          <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(88, 166, 255, 0.2)', color: 'var(--ao-button.linkForeground)' }}>
             优先级 {currentLevelInfo.priority}
           </span>
         </div>
-        <p className="text-xs" style={{ color: '#8B949E' }}>
+        <p className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
           {currentLevelInfo.description}
         </p>
       </div>
@@ -127,16 +127,16 @@ function ConfigLevelSelector() {
       {/* Tenant ID Input (for tenant level) */}
       {configLevel === 'tenant' && (
         <div className="space-y-2">
-          <Label className="text-xs" style={{ color: '#8B949E' }}>租户 ID</Label>
+          <Label className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>租户 ID</Label>
           <Input
             type="text"
             value={tenantId ?? ''}
             onChange={(e) => setTenantId(e.target.value || null)}
             placeholder="输入租户 ID"
             style={{
-              backgroundColor: '#0D1117',
-              borderColor: '#30363D',
-              color: '#C9D1D9',
+              backgroundColor: 'var(--ao-commandPalette.footerBackground)',
+              borderColor: 'var(--ao-border)',
+              color: 'var(--ao-foreground)',
             }}
           />
         </div>
@@ -145,16 +145,16 @@ function ConfigLevelSelector() {
       {/* User ID Input (for user level) */}
       {configLevel === 'user' && (
         <div className="space-y-2">
-          <Label className="text-xs" style={{ color: '#8B949E' }}>用户 ID</Label>
+          <Label className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>用户 ID</Label>
           <Input
             type="text"
             value={userId ?? ''}
             onChange={(e) => setUserId(e.target.value || null)}
             placeholder="输入用户 ID"
             style={{
-              backgroundColor: '#0D1117',
-              borderColor: '#30363D',
-              color: '#C9D1D9',
+              backgroundColor: 'var(--ao-commandPalette.footerBackground)',
+              borderColor: 'var(--ao-border)',
+              color: 'var(--ao-foreground)',
             }}
           />
         </div>
@@ -174,7 +174,7 @@ function ConfigPriorityPreview() {
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm" style={{ color: '#C9D1D9' }}>配置优先级</Label>
+      <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>配置优先级</Label>
       <div className="space-y-2">
         {levels.map((level, _index) => {
           const info = CONFIG_LEVEL_INFO[level]
@@ -184,29 +184,29 @@ function ConfigPriorityPreview() {
               key={level}
               className={cn(
                 'flex items-center justify-between p-2 rounded-lg border',
-                isActive && 'border-[#1F6FEB]'
+                isActive && 'border-[var(--ao-button.linkForeground)]'
               )}
               style={{
-                backgroundColor: isActive ? 'rgba(31, 111, 235, 0.15)' : '#161B22',
-                borderColor: isActive ? '#1F6FEB' : '#30363D',
+                backgroundColor: isActive ? 'rgba(31, 111, 235, 0.15)' : 'var(--ao-bottomPanel.background)',
+                borderColor: isActive ? 'var(--ao-button.linkForeground)' : 'var(--ao-border)',
               }}
             >
               <div className="flex items-center gap-2">
                 <span
                   className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
                   style={{
-                    backgroundColor: isActive ? '#1F6FEB' : '#30363D',
-                    color: isActive ? '#FFFFFF' : '#8B949E',
+                    backgroundColor: isActive ? 'var(--ao-button.linkForeground)' : 'var(--ao-border)',
+                    color: isActive ? 'var(--ao-activityBar.activeForeground)' : 'var(--ao-workbench.secondaryForeground)',
                   }}
                 >
                   {info.priority}
                 </span>
-                <span style={{ color: isActive ? '#C9D1D9' : '#8B949E' }}>
+                <span style={{ color: isActive ? 'var(--ao-foreground)' : 'var(--ao-workbench.secondaryForeground)' }}>
                   {info.label}
                 </span>
               </div>
               {isActive && (
-                <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: '#238636', color: '#FFFFFF' }}>
+                <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--ao-sidebarActiveIndicator)', color: 'var(--ao-activityBar.activeForeground)' }}>
                   当前生效
                 </span>
               )}
@@ -214,7 +214,7 @@ function ConfigPriorityPreview() {
           )
         })}
       </div>
-      <p className="text-xs" style={{ color: '#8B949E' }}>
+      <p className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
         用户级 &gt; 租户级 &gt; 平台官方（高优先级会覆盖低优先级）
       </p>
     </div>
@@ -230,7 +230,7 @@ function ProviderSelect() {
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm" style={{ color: '#C9D1D9' }}>选择提供商</Label>
+      <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>选择提供商</Label>
       <div className="grid grid-cols-2 gap-2">
         {providerList.map((provider) => (
           <button
@@ -240,15 +240,15 @@ function ProviderSelect() {
               'px-3 py-3 text-sm rounded-lg border transition-all duration-200 text-left',
               activeProvider === provider.type
                 ? 'border-transparent shadow-sm'
-                : 'border-[#30363D] hover:border-[#8B949E]'
+                : 'border-[var(--ao-border)] hover:border-[var(--ao-workbench.secondaryForeground)]'
             )}
             style={activeProvider === provider.type ? {
-              backgroundColor: '#238636',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--ao-sidebarActiveIndicator)',
+              color: 'var(--ao-activityBar.activeForeground)',
               boxShadow: '0 2px 4px rgba(35, 134, 54, 0.3)'
             } : {
-              backgroundColor: '#161B22',
-              color: '#C9D1D9'
+              backgroundColor: 'var(--ao-bottomPanel.background)',
+              color: 'var(--ao-foreground)'
             }}
           >
             {provider.name}
@@ -271,24 +271,24 @@ function ModelSelect() {
   
   return (
     <div className="space-y-3">
-      <Label className="text-sm" style={{ color: '#C9D1D9' }}>选择模型</Label>
+      <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>选择模型</Label>
       <Select value={selectedModel ?? ''} onValueChange={setSelectedModel}>
         <SelectTrigger 
           className="w-full"
           style={{ 
-            backgroundColor: '#0D1117', 
-            borderColor: '#30363D', 
-            color: '#C9D1D9' 
+            backgroundColor: 'var(--ao-commandPalette.footerBackground)', 
+            borderColor: 'var(--ao-border)', 
+            color: 'var(--ao-foreground)' 
           }}
         >
           <SelectValue placeholder="请选择模型" />
         </SelectTrigger>
-        <SelectContent style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+        <SelectContent style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
           {activeProviderConfig.models.map((model) => (
             <SelectItem 
               key={model.id} 
               value={model.id}
-              style={{ color: '#C9D1D9' }}
+              style={{ color: 'var(--ao-foreground)' }}
             >
               {model.name}
               {model.supportsVision ? ' (支持视觉)' : ''}
@@ -312,7 +312,7 @@ function ApiKeyInput() {
   
   return (
     <div className="space-y-3">
-      <Label className="text-sm" style={{ color: '#C9D1D9' }}>API 密钥</Label>
+      <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>API 密钥</Label>
       <div className="relative">
         <Input
           type={showKey ? 'text' : 'password'}
@@ -321,21 +321,21 @@ function ApiKeyInput() {
           placeholder="请输入 API 密钥"
           className="pr-10"
           style={{ 
-            backgroundColor: '#0D1117', 
-            borderColor: '#30363D', 
-            color: '#C9D1D9' 
+            backgroundColor: 'var(--ao-commandPalette.footerBackground)', 
+            borderColor: 'var(--ao-border)', 
+            color: 'var(--ao-foreground)' 
           }}
         />
         <button
           type="button"
           onClick={() => setShowKey(!showKey)}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-1"
-          style={{ color: '#8B949E' }}
+          style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
         >
           {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
       </div>
-      <p className="text-xs" style={{ color: '#8B949E' }}>
+      <p className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
         API 密钥将安全存储在本地，不会上传到服务器
       </p>
     </div>
@@ -354,19 +354,19 @@ function BaseUrlInput() {
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm" style={{ color: '#C9D1D9' }}>API 端点（可选）</Label>
+      <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>API 端点（可选）</Label>
       <Input
         type="text"
         value={activeProviderConfig.baseUrl ?? ''}
         onChange={(e) => updateBaseUrl(activeProvider, e.target.value)}
         placeholder="自定义 API 端点 URL"
         style={{
-          backgroundColor: '#0D1117',
-          borderColor: '#30363D',
-          color: '#C9D1D9'
+          backgroundColor: 'var(--ao-commandPalette.footerBackground)',
+          borderColor: 'var(--ao-border)',
+          color: 'var(--ao-foreground)'
         }}
       />
-      <p className="text-xs" style={{ color: '#8B949E' }}>
+      <p className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
         留空使用默认端点
       </p>
     </div>
@@ -427,11 +427,11 @@ function PlanActModeConfig() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Layers size={16} style={{ color: '#8B949E' }} />
-          <Label className="text-sm" style={{ color: '#C9D1D9' }}>Plan/Act 双配置</Label>
+          <Layers size={16} style={{ color: 'var(--ao-workbench.secondaryForeground)' }} />
+          <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>Plan/Act 双配置</Label>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: '#8B949E' }}>
+          <span className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             {enableRoutingConfig ? '启用' : '禁用'}
           </span>
           <Switch
@@ -454,14 +454,14 @@ function PlanActModeConfig() {
                 'flex-1 px-3 py-2 text-sm rounded-lg border transition-all duration-200',
                 agentMode === 'plan'
                   ? 'border-transparent'
-                  : 'border-[#30363D] hover:border-[#8B949E]'
+                  : 'border-[var(--ao-border)] hover:border-[var(--ao-workbench.secondaryForeground)]'
               )}
               style={agentMode === 'plan' ? {
-                backgroundColor: '#A371F7',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--ao-infoForeground)',
+                color: 'var(--ao-activityBar.activeForeground)',
               } : {
-                backgroundColor: '#161B22',
-                color: '#C9D1D9',
+                backgroundColor: 'var(--ao-bottomPanel.background)',
+                color: 'var(--ao-foreground)',
               }}
             >
               Plan 模式
@@ -475,14 +475,14 @@ function PlanActModeConfig() {
                 'flex-1 px-3 py-2 text-sm rounded-lg border transition-all duration-200',
                 agentMode === 'act'
                   ? 'border-transparent'
-                  : 'border-[#30363D] hover:border-[#8B949E]'
+                  : 'border-[var(--ao-border)] hover:border-[var(--ao-workbench.secondaryForeground)]'
               )}
               style={agentMode === 'act' ? {
-                backgroundColor: '#238636',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--ao-sidebarActiveIndicator)',
+                color: 'var(--ao-activityBar.activeForeground)',
               } : {
-                backgroundColor: '#161B22',
-                color: '#C9D1D9',
+                backgroundColor: 'var(--ao-bottomPanel.background)',
+                color: 'var(--ao-foreground)',
               }}
             >
               Act 模式
@@ -495,20 +495,20 @@ function PlanActModeConfig() {
             style={{
               backgroundColor: agentMode === 'plan' ? 'rgba(163, 113, 247, 0.1)' : 'rgba(35, 134, 54, 0.1)',
               border: `1px solid ${agentMode === 'plan' ? 'rgba(163, 113, 247, 0.3)' : 'rgba(35, 134, 54, 0.3)'}`,
-              color: '#8B949E',
+              color: 'var(--ao-workbench.secondaryForeground)',
             }}
           >
             {agentMode === 'plan' ? (
-              <p><strong style={{ color: '#A371F7' }}>Plan 模式</strong>：用于生成任务计划的阶段，仅使用只读工具</p>
+              <p><strong style={{ color: 'var(--ao-infoForeground)' }}>Plan 模式</strong>：用于生成任务计划的阶段，仅使用只读工具</p>
             ) : (
-              <p><strong style={{ color: '#238636' }}>Act 模式</strong>：用于执行已批准计划的阶段，可以使用所有工具</p>
+              <p><strong style={{ color: 'var(--ao-sidebarActiveIndicator)' }}>Act 模式</strong>：用于执行已批准计划的阶段，可以使用所有工具</p>
             )}
           </div>
 
           {/* Mode-specific Configuration */}
           {routingConfig && (
             <div className="space-y-3">
-              <Label className="text-xs" style={{ color: '#8B949E' }}>
+              <Label className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
                 {agentMode === 'plan' ? 'Plan' : 'Act'} 模式配置
               </Label>
 
@@ -520,19 +520,19 @@ function PlanActModeConfig() {
                 <SelectTrigger
                   className="w-full"
                   style={{
-                    backgroundColor: '#0D1117',
-                    borderColor: '#30363D',
-                    color: '#C9D1D9',
+                    backgroundColor: 'var(--ao-commandPalette.footerBackground)',
+                    borderColor: 'var(--ao-border)',
+                    color: 'var(--ao-foreground)',
                   }}
                 >
                   <SelectValue placeholder="选择提供商" />
                 </SelectTrigger>
-                <SelectContent style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+                <SelectContent style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
                   {Object.values(providers).filter((p) => p.isActive).map((provider) => (
                     <SelectItem
                       key={provider.type}
                       value={provider.type}
-                      style={{ color: '#C9D1D9' }}
+                      style={{ color: 'var(--ao-foreground)' }}
                     >
                       {provider.name}
                     </SelectItem>
@@ -548,21 +548,21 @@ function PlanActModeConfig() {
                 <SelectTrigger
                   className="w-full"
                   style={{
-                    backgroundColor: '#0D1117',
-                    borderColor: '#30363D',
-                    color: '#C9D1D9',
+                    backgroundColor: 'var(--ao-commandPalette.footerBackground)',
+                    borderColor: 'var(--ao-border)',
+                    color: 'var(--ao-foreground)',
                   }}
                 >
                   <SelectValue placeholder="选择模型" />
                 </SelectTrigger>
-                <SelectContent style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+                <SelectContent style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
                   {getProviderModels(
                     (agentMode === 'plan' ? routingConfig.planMode?.provider : routingConfig.actMode.provider) ?? activeProvider
                   ).map((model) => (
                     <SelectItem
                       key={model.id}
                       value={model.id}
-                      style={{ color: '#C9D1D9' }}
+                      style={{ color: 'var(--ao-foreground)' }}
                     >
                       {model.name}
                     </SelectItem>
@@ -594,7 +594,7 @@ function ConnectionTest() {
   
   return (
     <div className="space-y-3">
-      <Label className="text-sm" style={{ color: '#C9D1D9' }}>连接测试</Label>
+      <Label className="text-sm" style={{ color: 'var(--ao-foreground)' }}>连接测试</Label>
       
       <div className="flex items-center gap-3">
         <Button
@@ -614,7 +614,7 @@ function ConnectionTest() {
         </Button>
         
         {connectionStatus.lastChecked && (
-          <span className="text-xs" style={{ color: '#8B949E' }}>
+          <span className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
             上次测试: {formatTime(connectionStatus.lastChecked)}
           </span>
         )}
@@ -626,8 +626,8 @@ function ConnectionTest() {
             'flex items-center gap-2 px-3 py-2 rounded-lg text-sm',
           )}
           style={connectionStatus.isConnected 
-            ? { backgroundColor: 'rgba(63, 185, 80, 0.1)', color: '#3FB950', border: '1px solid rgba(63, 185, 80, 0.3)' }
-            : { backgroundColor: 'rgba(248, 81, 73, 0.1)', color: '#F85149', border: '1px solid rgba(248, 81, 73, 0.3)' }
+            ? { backgroundColor: 'rgba(63, 185, 80, 0.1)', color: 'var(--ao-successForeground)', border: '1px solid rgba(63, 185, 80, 0.3)' }
+            : { backgroundColor: 'rgba(248, 81, 73, 0.1)', color: 'var(--ao-errorForeground)', border: '1px solid rgba(248, 81, 73, 0.3)' }
           }
         >
           {connectionStatus.isConnected ? (
@@ -645,7 +645,7 @@ function ConnectionTest() {
       )}
       
       {selectedModel && (
-        <div className="text-xs" style={{ color: '#8B949E' }}>
+        <div className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
           当前模型: {selectedModel.name}
           {selectedModel.supportsVision && ' · 支持图片'}
           {selectedModel.supportsFunctionCall && ' · 支持工具调用'}
@@ -663,16 +663,16 @@ export function ModelProviderSettings({ className }: ModelProviderSettingsProps)
   return (
     <div className={cn('space-y-6', className)}>
       <div>
-        <h3 className="text-base font-semibold" style={{ color: '#C9D1D9' }}>模型提供商</h3>
-        <p className="text-sm mt-1" style={{ color: '#8B949E' }}>
+        <h3 className="text-base font-semibold" style={{ color: 'var(--ao-foreground)' }}>模型提供商</h3>
+        <p className="text-sm mt-1" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
           配置 AI 模型提供商和 API 密钥
         </p>
       </div>
 
       {/* Configuration Level Section */}
-      <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+      <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: '#C9D1D9' }}>
+          <CardTitle className="text-sm" style={{ color: 'var(--ao-foreground)' }}>
             层级配置
           </CardTitle>
         </CardHeader>
@@ -683,9 +683,9 @@ export function ModelProviderSettings({ className }: ModelProviderSettingsProps)
       </Card>
 
       {/* Provider Configuration Section */}
-      <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+      <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm" style={{ color: '#C9D1D9' }}>
+          <CardTitle className="text-sm" style={{ color: 'var(--ao-foreground)' }}>
             提供商配置
           </CardTitle>
         </CardHeader>
@@ -704,14 +704,14 @@ export function ModelProviderSettings({ className }: ModelProviderSettingsProps)
       </Card>
 
       {/* Plan/Act Mode Configuration */}
-      <Card style={{ backgroundColor: '#161B22', borderColor: '#30363D' }}>
+      <Card style={{ backgroundColor: 'var(--ao-bottomPanel.background)', borderColor: 'var(--ao-border)' }}>
         <CardContent className="pt-6">
           <PlanActModeConfig />
         </CardContent>
       </Card>
 
-      <div className="pt-4" style={{ borderTop: '1px solid #30363D' }}>
-        <p className="text-xs" style={{ color: '#8B949E' }}>
+      <div className="pt-4" style={{ borderTop: '1px solid var(--ao-border)' }}>
+        <p className="text-xs" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>
           提示: API 密钥存储在本地浏览器中，请勿在公共电脑上保存敏感密钥。
         </p>
       </div>

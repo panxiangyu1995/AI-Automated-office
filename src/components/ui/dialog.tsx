@@ -41,15 +41,15 @@ const DialogContent = React.forwardRef<
         className
       )}
       style={{
-        backgroundColor: '#161B22',
-        border: '1px solid #30363D',
+        backgroundColor: 'var(--ao-bottomPanel.background)',
+        border: '1px solid var(--ao-border)',
       }}
       {...props}
     >
       {children}
       <DialogPrimitive.Close 
-        className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#58A6FF] focus:ring-offset-2 disabled:pointer-events-none"
-        style={{ color: '#8B949E' }}
+        className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--ao-button.linkForeground)] focus:ring-offset-2 disabled:pointer-events-none"
+        style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
       >
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
@@ -97,7 +97,7 @@ const DialogTitle = React.forwardRef<
       "text-lg font-semibold leading-none tracking-tight",
       className
     )}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   />
 ))
@@ -110,7 +110,7 @@ const DialogDescription = React.forwardRef<
   <DialogPrimitive.Description
     ref={ref}
     className={cn("text-sm", className)}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))

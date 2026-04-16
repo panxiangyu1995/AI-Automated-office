@@ -194,7 +194,7 @@ const createMockLayers = (): PromptLayerContent[] => [
 1. 始终使用 UTF-8 编码
 2. 遵循项目铁律文档（PRD、架构、UX、Epic）
 3. 使用 Shadcn/ui 组件和 Lucide React 图标
-4. 品牌色使用 #1E3A5F
+4. 品牌色使用 var(--ao-button.background)
 
 {{agent_name}} - 你的身份标识
 {{user_name}} - 当前用户名称`,

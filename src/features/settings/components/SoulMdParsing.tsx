@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { EmptyState } from '@/components/ui/empty-state'
 
 // Types
 export type ParsedPersonaStatus = 'draft' | 'active' | 'archived'
@@ -770,7 +771,7 @@ export function SoulMdParsing() {
                       ))}
                     </div>
                   ) : (
-                    <div className="px-3 py-4 text-center text-sm text-slate-400">暂无审计记录</div>
+                    <EmptyState variant="default" title="暂无审计记录" description="当前没有审计记录" />
                   )}
                 </div>
               ))}

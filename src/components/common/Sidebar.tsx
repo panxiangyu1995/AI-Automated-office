@@ -18,6 +18,11 @@ import {
   Wrench,
   HeadphonesIcon,
   Megaphone,
+  Briefcase,
+  Receipt,
+  TrendingUp,
+  ClipboardCheck,
+  Warehouse,
   type LucideIcon,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -73,11 +78,49 @@ const adminMenuItems: FixedSidebarEntry[] = [
 ]
 
 const defaultMenuItems: FixedSidebarEntry[] = [
+  // ===== 核心部门（不可卸载） =====
+  {
+    id: 'hr',
+    label: '人事管理',
+    icon: Briefcase,
+    target: { path: '/hr', mode: 'static' },
+  },
+  {
+    id: 'finance',
+    label: '财务管理',
+    icon: Receipt,
+    target: { path: '/finance', mode: 'static' },
+  },
+  {
+    id: 'sales',
+    label: '销售管理',
+    icon: TrendingUp,
+    target: { path: '/sales', mode: 'static' },
+  },
+  {
+    id: 'approval',
+    label: '审批中心',
+    icon: ClipboardCheck,
+    target: { path: '/approval', mode: 'static' },
+  },
+  {
+    id: 'warehouse',
+    label: '仓库管理',
+    icon: Warehouse,
+    target: { path: '/warehouse', mode: 'static' },
+  },
+  // ===== 扩展部门 =====
   {
     id: 'service',
     label: '售后服务',
     icon: HeadphonesIcon,
     target: { path: '/service', mode: 'static' },
+  },
+  {
+    id: 'group-chat',
+    label: '群组聊天',
+    icon: Bot,
+    target: { path: '/chat/group', mode: 'static' },
   },
   {
     id: 'tender',
@@ -291,10 +334,10 @@ function SettingsSidebarContent({
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
               style={{
                 backgroundColor: isActive ? 'var(--ao-sidebar-border)' : 'transparent',
-                color: hasActiveChild || isActive ? '#FFFFFF' : 'var(--ao-sidebar-foreground)',
+                color: hasActiveChild || isActive ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-foreground)',
               }}
             >
-              <IconComponent size={16} style={{ color: hasActiveChild || isActive ? '#FFFFFF' : 'var(--ao-sidebar-secondaryForeground)' }} />
+              <IconComponent size={16} style={{ color: hasActiveChild || isActive ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-secondaryForeground)' }} />
               <span className="flex-1 text-left truncate">{category.title}</span>
               <Badge
                 variant="outline"
@@ -316,7 +359,7 @@ function SettingsSidebarContent({
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors"
                     style={{
                       backgroundColor: activeSection === section.key ? 'var(--ao-sidebar-searchBackground)' : 'transparent',
-                      color: activeSection === section.key ? '#FFFFFF' : 'var(--ao-sidebar-secondaryForeground)',
+                      color: activeSection === section.key ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-secondaryForeground)',
                     }}
                   >
                     <span
@@ -372,10 +415,10 @@ function SidebarSection({
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
               style={{
                 backgroundColor: isActive ? 'var(--ao-sidebar-border)' : 'transparent',
-                color: isActive ? '#FFFFFF' : 'var(--ao-sidebar-foreground)',
+                color: isActive ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-foreground)',
               }}
             >
-              <Icon className="h-4 w-4" style={{ color: isActive ? '#FFFFFF' : 'var(--ao-sidebar-secondaryForeground)' }} />
+              <Icon className="h-4 w-4" style={{ color: isActive ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-secondaryForeground)' }} />
               {entry.label}
             </button>
           )
@@ -412,10 +455,10 @@ function SidebarResourceSection({
               className="flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors"
               style={{
                 backgroundColor: isActive ? 'var(--ao-sidebar-border)' : 'transparent',
-                color: isActive ? '#FFFFFF' : 'var(--ao-sidebar-foreground)',
+                color: isActive ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-foreground)',
               }}
             >
-              <Icon className="mt-0.5 h-4 w-4 shrink-0" style={{ color: isActive ? '#FFFFFF' : 'var(--ao-sidebar-secondaryForeground)' }} />
+              <Icon className="mt-0.5 h-4 w-4 shrink-0" style={{ color: isActive ? 'var(--ao-sidebar-activeForeground)' : 'var(--ao-sidebar-secondaryForeground)' }} />
               <span className="min-w-0">
                 <span className="block truncate">{entry.label}</span>
                 {entry.description && (

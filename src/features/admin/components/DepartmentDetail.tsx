@@ -125,7 +125,7 @@ export function DepartmentDetail({
           <Button
             size="sm"
             onClick={onCreatePosition}
-            className="h-8 bg-[#1E3A5F] hover:bg-[#1E3A5F]/90"
+            className="h-8 bg-[var(--ao-button.background)] hover:bg-[var(--ao-button.background)]/90"
           >
             <Plus className="h-4 w-4" />
             创建岗位

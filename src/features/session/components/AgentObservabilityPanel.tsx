@@ -303,9 +303,9 @@ export function AgentObservabilityPanel() {
       {/* 标题栏 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-[#1E3A5F]" />
+          <BarChart3 className="h-5 w-5 text-[var(--ao-button.background)]" />
           <div>
-            <h2 className="text-lg font-semibold text-[#1E3A5F]">可观测性面板</h2>
+            <h2 className="text-lg font-semibold text-[var(--ao-button.background)]">可观测性面板</h2>
             <p className="text-sm text-muted-foreground">聚合通用工具、平台工具和部门能力工具的运行指标。</p>
           </div>
         </div>
@@ -339,11 +339,11 @@ export function AgentObservabilityPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">总会话数</p>
-                <p className="text-xl font-bold text-[#1E3A5F]">
+                <p className="text-xl font-bold text-[var(--ao-button.background)]">
                   {formatNumber(correctiveTenantStats.totalSessions)}
                 </p>
               </div>
-              <Activity className="h-6 w-6 text-[#1E3A5F]/20" />
+              <Activity className="h-6 w-6 text-[var(--ao-button.background)]/20" />
             </div>
             <div className="mt-1 flex items-center gap-1">
               {getTrendIcon('up')}
@@ -357,11 +357,11 @@ export function AgentObservabilityPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">活跃用户</p>
-                <p className="text-xl font-bold text-[#1E3A5F]">
+                <p className="text-xl font-bold text-[var(--ao-button.background)]">
                   {formatNumber(correctiveTenantStats.activeUsers)}
                 </p>
               </div>
-              <Users className="h-6 w-6 text-[#1E3A5F]/20" />
+              <Users className="h-6 w-6 text-[var(--ao-button.background)]/20" />
             </div>
             <div className="mt-1 flex items-center gap-1">
               {getTrendIcon('up')}
@@ -375,11 +375,11 @@ export function AgentObservabilityPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Token 总量</p>
-                <p className="text-xl font-bold text-[#1E3A5F]">
+                <p className="text-xl font-bold text-[var(--ao-button.background)]">
                   {formatNumber(correctiveTenantStats.totalTokens.input + correctiveTenantStats.totalTokens.output)}
                 </p>
               </div>
-              <Cpu className="h-6 w-6 text-[#1E3A5F]/20" />
+              <Cpu className="h-6 w-6 text-[var(--ao-button.background)]/20" />
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
               输入: {formatNumber(correctiveTenantStats.totalTokens.input)} / 输出: {formatNumber(correctiveTenantStats.totalTokens.output)}
@@ -392,11 +392,11 @@ export function AgentObservabilityPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">工具调用</p>
-                <p className="text-xl font-bold text-[#1E3A5F]">
+                <p className="text-xl font-bold text-[var(--ao-button.background)]">
                   {formatNumber(correctiveTenantStats.totalToolCalls)}
                 </p>
               </div>
-              <Zap className="h-6 w-6 text-[#1E3A5F]/20" />
+              <Zap className="h-6 w-6 text-[var(--ao-button.background)]/20" />
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
               成功率: {correctiveTenantStats.successRate}%
@@ -409,11 +409,11 @@ export function AgentObservabilityPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">平均响应</p>
-                <p className="text-xl font-bold text-[#1E3A5F]">
+                <p className="text-xl font-bold text-[var(--ao-button.background)]">
                   {formatTime(correctiveTenantStats.avgResponseTime)}
                 </p>
               </div>
-              <Clock className="h-6 w-6 text-[#1E3A5F]/20" />
+              <Clock className="h-6 w-6 text-[var(--ao-button.background)]/20" />
             </div>
             <div className="mt-1 flex items-center gap-1">
               {getTrendIcon('down')}
@@ -427,11 +427,11 @@ export function AgentObservabilityPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">总成本</p>
-                <p className="text-xl font-bold text-[#1E3A5F]">
+                <p className="text-xl font-bold text-[var(--ao-button.background)]">
                   {formatCost(correctiveTenantStats.totalCost)}
                 </p>
               </div>
-              <Database className="h-6 w-6 text-[#1E3A5F]/20" />
+              <Database className="h-6 w-6 text-[var(--ao-button.background)]/20" />
             </div>
             <div className="mt-1 flex items-center gap-1">
               {getTrendIcon('up')}
@@ -556,7 +556,7 @@ export function AgentObservabilityPanel() {
                   {correctiveTenantStats.topModels.map((model, index) => (
                     <div key={model.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E3A5F] text-xs text-white">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--ao-button.background)] text-xs text-white">
                           {index + 1}
                         </div>
                         <span className="font-medium">{model.name}</span>
@@ -586,7 +586,7 @@ export function AgentObservabilityPanel() {
                   {correctiveTenantStats.topTools.map((tool, index) => (
                     <div key={tool.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E3A5F] text-xs text-white">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--ao-button.background)] text-xs text-white">
                           {index + 1}
                         </div>
                         <span className="font-medium">{tool.name}</span>
@@ -636,7 +636,7 @@ export function AgentObservabilityPanel() {
                           <div className="flex items-center gap-2">
                             <div className="h-2 w-20 rounded-full bg-gray-200">
                               <div
-                                className="h-full rounded-full bg-[#1E3A5F]"
+                                className="h-full rounded-full bg-[var(--ao-button.background)]"
                                 style={{ width: `${percentage}%` }}
                               />
                             </div>
@@ -668,7 +668,7 @@ export function AgentObservabilityPanel() {
                     <div key={day.date} className="flex flex-1 flex-col items-center gap-2">
                       <div className="relative w-full">
                         <div
-                          className="w-full rounded-t bg-[#1E3A5F]"
+                          className="w-full rounded-t bg-[var(--ao-button.background)]"
                           style={{ height: `${height}px` }}
                         />
                       </div>
@@ -691,8 +691,8 @@ export function AgentObservabilityPanel() {
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="rounded-lg bg-[#1E3A5F]/10 p-3">
-                    <FileText className="h-6 w-6 text-[#1E3A5F]" />
+                  <div className="rounded-lg bg-[var(--ao-button.background)]/10 p-3">
+                    <FileText className="h-6 w-6 text-[var(--ao-button.background)]" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">使用报告</h3>
@@ -716,8 +716,8 @@ export function AgentObservabilityPanel() {
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="rounded-lg bg-[#1E3A5F]/10 p-3">
-                    <TrendingUp className="h-6 w-6 text-[#1E3A5F]" />
+                  <div className="rounded-lg bg-[var(--ao-button.background)]/10 p-3">
+                    <TrendingUp className="h-6 w-6 text-[var(--ao-button.background)]" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">性能报告</h3>
@@ -741,8 +741,8 @@ export function AgentObservabilityPanel() {
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="rounded-lg bg-[#1E3A5F]/10 p-3">
-                    <Database className="h-6 w-6 text-[#1E3A5F]" />
+                  <div className="rounded-lg bg-[var(--ao-button.background)]/10 p-3">
+                    <Database className="h-6 w-6 text-[var(--ao-button.background)]" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">成本报告</h3>
@@ -766,8 +766,8 @@ export function AgentObservabilityPanel() {
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="rounded-lg bg-[#1E3A5F]/10 p-3">
-                    <Activity className="h-6 w-6 text-[#1E3A5F]" />
+                  <div className="rounded-lg bg-[var(--ao-button.background)]/10 p-3">
+                    <Activity className="h-6 w-6 text-[var(--ao-button.background)]" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">安全报告</h3>

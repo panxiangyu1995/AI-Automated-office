@@ -2,6 +2,13 @@ export { PropertiesPanel } from './PropertiesPanel'
 export { DiagnosticsPanel } from './DiagnosticsPanel'
 export { PreviewPanel } from './PreviewPanel'
 export { AiSuggestionsPanel } from './AiSuggestionsPanel'
+export { ProblemCenter } from './ProblemCenter'
+export type {
+  ProblemSeverity,
+  ProblemSource,
+  ProblemItem,
+  ProblemFilter,
+} from './ProblemCenter'
 export type {
   PanelType,
   DiagnosticSeverity,

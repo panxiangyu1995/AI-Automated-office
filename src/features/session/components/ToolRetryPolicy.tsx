@@ -44,7 +44,7 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
-const BRAND_COLOR = '#1E3A5F'
+const BRAND_COLOR = 'var(--ao-button.background)'
 
 export type RetryableErrorType =
   | 'network_error' | 'timeout_error' | 'rate_limit_error' | 'service_unavailable'

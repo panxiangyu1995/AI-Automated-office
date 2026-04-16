@@ -5,7 +5,7 @@ export function LoginPage() {
   return (
     <main className="flex min-h-screen bg-white">
       {/* 左侧品牌区 */}
-      <div className="hidden lg:flex w-[520px] flex-col justify-between bg-gradient-to-b from-[#4F46E5] to-[#7C3AED] p-16">
+      <div className="hidden lg:flex w-[520px] flex-col justify-between bg-gradient-to-b from-[var(--ao-button.background)] to-[var(--ao-infoForeground)] p-16">
         {/* Logo区 */}
         <div className="flex items-center gap-4">
           <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded-xl" />

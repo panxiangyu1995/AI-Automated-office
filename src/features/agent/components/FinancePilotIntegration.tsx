@@ -54,6 +54,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { useFinancePilot } from '../hooks/useFinancePilot'
 
 // ==================== Types ====================
 
@@ -116,162 +117,6 @@ export interface FinancePilotStats {
   activeBindings: number
   totalProcessedAmount: number
 }
-
-// ==================== Mock Data ====================
-
-const mockFinanceContext: FinanceContext = {
-  id: 'finance-001',
-  transactionType: 'expense',
-  amount: 158000,
-  currency: 'CNY',
-  department: '技术部',
-  description: '服务器采购费用 - 年度云服务续费',
-  submittedBy: '王强',
-  approvedBy: '张总',
-  createdAt: new Date(Date.now() - 86400000 * 2),
-  status: 'approved',
-}
-
-const mockFinanceToolBindings: FinanceToolBinding[] = [
-  {
-    toolId: 'finance_account_query',
-    toolName: '账户查询',
-    status: 'bound',
-    permission: 'read',
-    lastUsed: new Date(Date.now() - 3600000),
-    usageCount: 28,
-  },
-  {
-    toolId: 'finance_balance_check',
-    toolName: '余额检查',
-    status: 'bound',
-    permission: 'read',
-    lastUsed: new Date(Date.now() - 1800000),
-    usageCount: 35,
-  },
-  {
-    toolId: 'finance_transaction_create',
-    toolName: '交易创建',
-    status: 'bound',
-    permission: 'write',
-    usageCount: 0,
-  },
-  {
-    toolId: 'approval_workflow_trigger',
-    toolName: '审批工作流',
-    status: 'bound',
-    permission: 'write',
-    lastUsed: new Date(Date.now() - 7200000),
-    usageCount: 18,
-  },
-  {
-    toolId: 'notification_send',
-    toolName: '通知发送',
-    status: 'bound',
-    permission: 'write',
-    lastUsed: new Date(Date.now() - 900000),
-    usageCount: 42,
-  },
-]
-
-const mockFinanceRuntimeSteps: FinanceRuntimeStep[] = [
-  {
-    id: 'step-1',
-    phase: 'read',
-    label: '读取财务数据',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 480000),
-    completedAt: new Date(Date.now() - 440000),
-    duration: 40000,
-    result: '账户余额充足，预算校验通过',
-  },
-  {
-    id: 'step-2',
-    phase: 'analyze',
-    label: '分析合规性',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 440000),
-    completedAt: new Date(Date.now() - 380000),
-    duration: 60000,
-    result: '符合财务审批流程，预算充足',
-  },
-  {
-    id: 'step-3',
-    phase: 'confirm',
-    label: '确认交易',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 380000),
-    completedAt: new Date(Date.now() - 360000),
-    duration: 20000,
-    result: '审批已通过，等待执行',
-  },
-  {
-    id: 'step-4',
-    phase: 'execute',
-    label: '执行交易',
-    status: 'running',
-    startedAt: new Date(Date.now() - 60000),
-  },
-  {
-    id: 'step-5',
-    phase: 'complete',
-    label: '完成',
-    status: 'idle',
-  },
-]
-
-const mockFinanceAuditEntries: FinanceAuditEntry[] = [
-  {
-    id: 'audit-001',
-    timestamp: new Date(Date.now() - 480000),
-    actor: '系统',
-    action: '上下文绑定',
-    target: 'finance-001',
-    result: 'success',
-    details: '财务上下文成功绑定到运行时',
-    correlationId: 'corr-finance-001',
-  },
-  {
-    id: 'audit-002',
-    timestamp: new Date(Date.now() - 460000),
-    actor: 'Agent',
-    action: '账户查询',
-    target: 'finance_account_query',
-    result: 'success',
-    details: '查询账户余额：可用余额 ¥2,850,000',
-    correlationId: 'corr-finance-002',
-  },
-  {
-    id: 'audit-003',
-    timestamp: new Date(Date.now() - 440000),
-    actor: 'Agent',
-    action: '预算检查',
-    target: 'finance_balance_check',
-    result: 'success',
-    details: '预算检查：技术部预算剩余 ¥580,000，申请金额 ¥158,000，校验通过',
-    correlationId: 'corr-finance-003',
-  },
-  {
-    id: 'audit-004',
-    timestamp: new Date(Date.now() - 380000),
-    actor: '张总',
-    action: '审批确认',
-    target: 'finance-001',
-    result: 'success',
-    details: '审批通过，批准金额 ¥158,000',
-    correlationId: 'corr-finance-004',
-  },
-  {
-    id: 'audit-005',
-    timestamp: new Date(Date.now() - 60000),
-    actor: '系统',
-    action: '执行交易',
-    target: 'finance_transaction_create',
-    result: 'success',
-    details: '交易执行中，目标账户：云服务提供商',
-    correlationId: 'corr-finance-005',
-  },
-]
 
 // ==================== Helper Functions ====================
 
@@ -496,15 +341,47 @@ export interface FinancePilotIntegrationProps {
 
 export function FinancePilotIntegration({
   className,
-  financeContext: initialContext,
-  financeToolBindings: initialBindings,
-  financeRuntimeSteps: initialSteps,
-  financeAuditEntries: initialAudit,
+  financeContext: externalContext,
+  financeToolBindings: externalBindings,
+  financeRuntimeSteps: externalSteps,
+  financeAuditEntries: externalAudit,
 }: FinancePilotIntegrationProps) {
-  const financeContext = initialContext || mockFinanceContext
-  const financeToolBindings = initialBindings || mockFinanceToolBindings
-  const financeRuntimeSteps = initialSteps || mockFinanceRuntimeSteps
-  const financeAuditEntries = initialAudit || mockFinanceAuditEntries
+  const {
+    bindings: apiBindings,
+    isLoading,
+    error: pilotError,
+    stats: pilotStats,
+    bindTools,
+    releaseTools,
+    refresh,
+  } = useFinancePilot()
+
+  const financeToolBindings = useMemo<FinanceToolBinding[]>(() => {
+    if (externalBindings) return externalBindings
+    return apiBindings.map(b => ({
+      toolId: b.toolId,
+      toolName: b.toolName,
+      status: b.status,
+      permission: b.permission,
+      lastUsed: b.lastUsed,
+      usageCount: b.usageCount,
+    }))
+  }, [externalBindings, apiBindings])
+
+  const financeRuntimeSteps = useMemo(() => externalSteps || [], [externalSteps])
+  const financeAuditEntries = useMemo(() => externalAudit || [], [externalAudit])
+
+  const financeContext = externalContext || {
+    id: 'finance-pending',
+    transactionType: 'expense' as TransactionType,
+    amount: 0,
+    currency: 'CNY',
+    department: '-',
+    description: '等待财务上下文绑定',
+    submittedBy: '-',
+    createdAt: new Date(),
+    status: 'pending' as const,
+  }
 
   const [activeTab, setActiveTab] = useState<'flow' | 'bindings' | 'audit'>('flow')
   const [searchQuery, setSearchQuery] = useState('')
@@ -536,20 +413,20 @@ export function FinancePilotIntegration({
       completedSteps.length > 0
         ? completedSteps.reduce((sum, s) => sum + (s.duration || 0), 0) /
           completedSteps.length
-        : 0
+        : pilotStats.avgExecutionTime
     const activeBindings = financeToolBindings.filter((b) => b.status === 'bound').length
-    const totalProcessedAmount = mockFinanceContext.amount
+    const totalProcessedAmount = financeContext.amount
 
     return {
-      totalExecutions,
-      successfulExecutions,
-      failedExecutions,
-      pendingConfirmations,
+      totalExecutions: totalExecutions || pilotStats.totalExecutions,
+      successfulExecutions: successfulExecutions || pilotStats.successfulExecutions,
+      failedExecutions: failedExecutions || pilotStats.failedExecutions,
+      pendingConfirmations: pendingConfirmations || pilotStats.pendingConfirmations,
       avgExecutionTime,
-      activeBindings,
+      activeBindings: activeBindings || pilotStats.activeBindings,
       totalProcessedAmount,
     }
-  }, [financeRuntimeSteps, financeToolBindings])
+  }, [financeRuntimeSteps, financeToolBindings, financeContext.amount, pilotStats])
 
   const filteredAudit = useMemo(() => {
     if (!searchQuery) return financeAuditEntries
@@ -576,8 +453,11 @@ export function FinancePilotIntegration({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline">{financeContext.id}</Badge>
-          <Button size="sm" variant="outline">
-            <RefreshCw className="h-3 w-3 mr-1" />
+          {pilotError && (
+            <Badge variant="destructive" className="text-xs">{pilotError}</Badge>
+          )}
+          <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={isLoading}>
+            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             刷新
           </Button>
         </div>
@@ -902,11 +782,11 @@ export function FinancePilotIntegration({
                   <Lock className="h-3 w-3 mr-1" />
                   锁定
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => { void bindTools([selectedBinding.toolId]); setConfigOpen(false); }}>
                   <RefreshCw className="h-3 w-3 mr-1" />
                   重新绑定
                 </Button>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" onClick={() => { void releaseTools(); setConfigOpen(false); }}>
                   <XCircle className="h-3 w-3 mr-1" />
                   释放
                 </Button>

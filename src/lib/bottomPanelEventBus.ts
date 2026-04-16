@@ -4,7 +4,7 @@
  * Event bus for BottomPanel smart expand/collapse actions.
  */
 
-export type PanelType = 'properties' | 'diagnostics' | 'preview' | 'ai-suggestions'
+export type PanelType = 'properties' | 'diagnostics' | 'preview' | 'ai-suggestions' | 'problems'
 
 export interface BottomPanelExpandEvent {
   type: 'ai-execution' | 'user-action' | 'manual'

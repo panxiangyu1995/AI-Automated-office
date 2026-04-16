@@ -205,10 +205,10 @@ export const DEPARTMENT_ICONS: Record<string, string> = {
 
 // 部门颜色映射
 export const DEPARTMENT_COLORS: Record<string, string> = {
-  hr: '#4F46E5',
-  approval: '#059669',
-  sales: '#D97706',
-  finance: '#DC2626',
-  warehouse: '#0891B2',
-  management: '#7C3AED',
+  hr: 'var(--ao-infoForeground)',
+  approval: 'var(--ao-successForeground)',
+  sales: 'var(--ao-warningForeground)',
+  finance: 'var(--ao-errorForeground)',
+  warehouse: 'var(--ao-button.linkForeground)',
+  management: 'var(--ao-button.background)',
 }

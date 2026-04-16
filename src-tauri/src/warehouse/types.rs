@@ -188,3 +188,66 @@ pub struct ListInventoryResponse {
     pub page_size: usize,
     pub categories: Vec<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_inbound_type_default() {
+        assert_eq!(InboundType::default(), InboundType::Purchase);
+    }
+
+    #[test]
+    fn test_inbound_status_default() {
+        assert_eq!(InboundStatus::default(), InboundStatus::Draft);
+    }
+
+    #[test]
+    fn test_outbound_type_default() {
+        assert_eq!(OutboundType::default(), OutboundType::Sale);
+    }
+
+    #[test]
+    fn test_outbound_status_default() {
+        assert_eq!(OutboundStatus::default(), OutboundStatus::Draft);
+    }
+
+    #[test]
+    fn test_inbound_type_serde_roundtrip() {
+        let t = InboundType::Return;
+        let json = serde_json::to_string(&t).unwrap();
+        let de: InboundType = serde_json::from_str(&json).unwrap();
+        assert_eq!(t, de);
+    }
+
+    #[test]
+    fn test_inventory_available_quantity() {
+        let inv = Inventory {
+            id: "inv-1".to_string(),
+            product_id: "p-1".to_string(),
+            product_name: "widget".to_string(),
+            warehouse_id: "wh-1".to_string(),
+            quantity: 100.0,
+            reserved_quantity: 30.0,
+            available_quantity: 70.0,
+            updated_at: 0,
+        };
+        assert_eq!(inv.quantity - inv.reserved_quantity, inv.available_quantity);
+    }
+
+    #[test]
+    fn test_stocktaking_adjustment() {
+        let record = StocktakingRecord {
+            id: "sr-1".to_string(),
+            product_id: "p-1".to_string(),
+            product_name: "widget".to_string(),
+            before_quantity: 100.0,
+            after_quantity: 95.0,
+            adjustment: -5.0,
+            remark: None,
+            created_at: 0,
+        };
+        assert_eq!(record.after_quantity - record.before_quantity, record.adjustment);
+    }
+}

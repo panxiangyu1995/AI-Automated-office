@@ -16,6 +16,14 @@ import type { WorkbenchPageContext } from '@/components/common'
 import { ServicePage } from '@/features/service/pages/ServicePage'
 import { TenderPage } from '@/features/tender/pages/TenderPage'
 import { MarketingPage } from '@/features/marketing/pages/MarketingPage'
+/** 核心部门页面（不可卸载） */
+import { HrPage } from '@/features/hr/pages/HrPage'
+import { FinancePage } from '@/features/finance/pages/FinancePage'
+import { SalesPage } from '@/features/sales/pages/SalesPage'
+import { ApprovalPage } from '@/features/approval/pages/ApprovalPage'
+import { WarehousePage } from '@/features/warehouse/pages/WarehousePage'
+/** Agent 协作页面 */
+import { GroupChat } from '@/features/agent/components/GroupChat'
 
 const fallbackEditorDescriptor: EditorDescriptor = {
   id: 'builtin-text-editor',
@@ -173,6 +181,56 @@ export const workbenchRoutes: WorkbenchRouteDefinition[] = [
     resource: 'marketing',
     mode: 'static',
     component: MarketingPage,
+  },
+  // ===== 核心部门路由（不可卸载） =====
+  {
+    id: 'hr',
+    path: 'hr',
+    title: '人事管理',
+    resource: 'hr',
+    mode: 'static',
+    component: HrPage,
+  },
+  {
+    id: 'finance',
+    path: 'finance',
+    title: '财务管理',
+    resource: 'finance',
+    mode: 'static',
+    component: FinancePage,
+  },
+  {
+    id: 'sales',
+    path: 'sales',
+    title: '销售管理',
+    resource: 'sales',
+    mode: 'static',
+    component: SalesPage,
+  },
+  {
+    id: 'approval',
+    path: 'approval',
+    title: '审批中心',
+    resource: 'approval',
+    mode: 'static',
+    component: ApprovalPage,
+  },
+  {
+    id: 'warehouse',
+    path: 'warehouse',
+    title: '仓库管理',
+    resource: 'warehouse',
+    mode: 'static',
+    component: WarehousePage,
+  },
+  // ===== Agent 协作路由 =====
+  {
+    id: 'group-chat',
+    path: 'chat/group',
+    title: '群组聊天',
+    resource: 'chat/group',
+    mode: 'static',
+    component: () => <GroupChat currentUserId="current-user" groups={[]} onSendMessage={() => {}} />,
   },
   {
     id: 'builtin-text-editor',

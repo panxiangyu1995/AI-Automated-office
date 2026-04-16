@@ -482,7 +482,7 @@ export function UserPreferenceMemory(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">用户偏好记忆</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">用户偏好记忆</h2>
           <p className="text-muted-foreground">管理长期用户偏好捕获和应用</p>
         </div>
         <div className="flex gap-2">
@@ -506,7 +506,7 @@ export function UserPreferenceMemory(): React.ReactNode {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-[#1E3A5F]" />
+              <Settings className="h-5 w-5 text-[var(--ao-button.background)]" />
               <div>
                 <p className="text-2xl font-bold">{mockStats.totalPreferences}</p>
                 <p className="text-sm text-muted-foreground">总偏好设置</p>

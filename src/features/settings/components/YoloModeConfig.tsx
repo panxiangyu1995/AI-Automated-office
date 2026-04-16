@@ -160,7 +160,7 @@ export const YoloConfirmDialog = ({ open, onClose, onConfirm }: YoloConfirmDialo
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <AlertTriangle style={{ color: '#d97706', width: '20px', height: '20px' }} />
+          <AlertTriangle style={{ color: 'var(--ao-warningForeground)', width: '20px', height: '20px' }} />
           <h3 style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>Activate YOLO Mode</h3>
         </div>
 
@@ -374,7 +374,7 @@ export const YoloModeConfig = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <CardTitle style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Zap style={{ width: '16px', height: '16px', color: '#9663f1' }} />
+                <Zap style={{ width: '16px', height: '16px', color: 'var(--ao-infoForeground)' }} />
                 Routing Mode
               </CardTitle>
               <CardDescription style={{ fontSize: '12px' }}>
@@ -425,7 +425,7 @@ export const YoloModeConfig = ({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Zap style={{ width: '16px', height: '16px', color: '#d97706' }} />
+                <Zap style={{ width: '16px', height: '16px', color: 'var(--ao-warningForeground)' }} />
                 <div>
                   <p style={{ fontSize: '13px', fontWeight: 500 }}>YOLO Mode Active</p>
                   {remainingSeconds !== undefined && (

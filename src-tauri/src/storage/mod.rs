@@ -11,6 +11,11 @@ pub mod quota_store;
 pub mod session_store;
 pub mod sqlite;
 pub mod sync_queue;
+pub mod template_binding;
+pub mod template_designer;
+pub mod template_designer_types;
+pub mod template_schema;
+pub mod template_store;
 
 use checkpoint_store::CheckpointStore;
 use debounced_store::DebouncedStorageManager;
@@ -20,6 +25,7 @@ use provider_config_store::ProviderConfigStore;
 use quota_store::QuotaStore;
 use session_store::SessionStore;
 use sync_queue::SyncQueueStore;
+pub use template_store::TemplateStore;
 
 pub struct StorageManager {
     pool: SqlitePool,
@@ -79,6 +85,10 @@ impl StorageManager {
 
     pub fn quota_store(&self) -> QuotaStore {
         QuotaStore::new(self.pool.clone())
+    }
+
+    pub fn template_store(&self) -> TemplateStore {
+        TemplateStore::new(self.pool.clone(), self.tenant_id.clone())
     }
 
     /// 获取防抖存储管理器

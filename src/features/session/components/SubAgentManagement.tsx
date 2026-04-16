@@ -394,7 +394,7 @@ export function SubAgentManagement() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-[#1E3A5F]" />
+              <Users className="h-5 w-5 text-[var(--ao-button.background)]" />
               <CardTitle className="text-lg">Sub-Agent 管理</CardTitle>
             </div>
             <CardDescription>用户主 Agent 在自己的权限、部门边界和知识范围内配置子 Agent。</CardDescription>
@@ -414,7 +414,7 @@ export function SubAgentManagement() {
       </CardHeader>
       <CardContent>
         <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Card className="p-3"><div className="text-xs text-muted-foreground">活跃子 Agent</div><div className="text-2xl font-bold text-[#1E3A5F]">{stats.activeAgents}</div><div className="text-xs text-muted-foreground">/ {stats.totalAgents} 总数</div></Card>
+          <Card className="p-3"><div className="text-xs text-muted-foreground">活跃子 Agent</div><div className="text-2xl font-bold text-[var(--ao-button.background)]">{stats.activeAgents}</div><div className="text-xs text-muted-foreground">/ {stats.totalAgents} 总数</div></Card>
           <Card className="p-3"><div className="text-xs text-muted-foreground">已完成任务</div><div className="text-2xl font-bold text-emerald-600">{stats.completedTasks}</div><div className="text-xs text-muted-foreground">平均 {stats.avgExecutionTime}s</div></Card>
           <Card className="p-3"><div className="text-xs text-muted-foreground">失败任务</div><div className="text-2xl font-bold text-red-600">{stats.failedTasks}</div><div className="text-xs text-muted-foreground">由权限或执行异常触发</div></Card>
           <Card className="p-3"><div className="text-xs text-muted-foreground">累计 Tokens</div><div className="text-2xl font-bold text-amber-600">{stats.totalTokensUsed}</div><div className="text-xs text-muted-foreground">仅统计已完成执行</div></Card>
@@ -422,7 +422,7 @@ export function SubAgentManagement() {
 
         <div className="mb-4 flex border-b">
           {(['agents', 'executions', 'delegation'] as const).map((tab) => (
-            <button key={tab} type="button" className={cn('border-b-2 px-4 py-2 text-sm font-medium transition-colors', activeTab === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-muted-foreground hover:text-foreground')} onClick={() => setActiveTab(tab)}>
+            <button key={tab} type="button" className={cn('border-b-2 px-4 py-2 text-sm font-medium transition-colors', activeTab === tab ? 'border-[var(--ao-button.background)] text-[var(--ao-button.background)]' : 'border-transparent text-muted-foreground hover:text-foreground')} onClick={() => setActiveTab(tab)}>
               {tab === 'agents' ? '子 Agent 列表' : tab === 'executions' ? '执行记录' : '委派请求'}
             </button>
           ))}
@@ -438,7 +438,7 @@ export function SubAgentManagement() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-[#1E3A5F]" />
+                        <Icon className="h-4 w-4 text-[var(--ao-button.background)]" />
                         <CardTitle className="text-sm">{agent.name}</CardTitle>
                         <Badge variant="outline" className="text-xs">{TYPE_LABELS[agent.type]}</Badge>
                       </div>
@@ -471,7 +471,7 @@ export function SubAgentManagement() {
             <Card key={item.id} className="mb-3">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2"><Activity className="h-4 w-4 text-[#1E3A5F]" /><CardTitle className="text-sm">{state.agents.find((agent) => agent.id === item.agentId)?.name ?? item.agentId}</CardTitle></div>
+                  <div className="flex items-center gap-2"><Activity className="h-4 w-4 text-[var(--ao-button.background)]" /><CardTitle className="text-sm">{state.agents.find((agent) => agent.id === item.agentId)?.name ?? item.agentId}</CardTitle></div>
                   <StatusBadge status={item.status} />
                 </div>
                 <CardDescription className="text-xs">{item.taskLabel}</CardDescription>

@@ -13,7 +13,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - FR403: 接受图片和PDF
  * - FR404: 提取结构化内容
  */
@@ -442,7 +442,7 @@ export function MessageInput({
                   ? 'text-white hover:opacity-90'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               )}
-              style={canSend && !hasExtracting ? { backgroundColor: '#1E3A5F' } : undefined}
+              style={canSend && !hasExtracting ? { backgroundColor: 'var(--ao-button.background)' } : undefined}
               title={hasExtracting ? '等待内容提取完成' : '发送消息'}
             >
               <Send size={18} />

@@ -12,7 +12,7 @@
  *
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  */
 
 import { useState, useMemo } from 'react'

@@ -80,7 +80,7 @@ export function SessionPanel({ className, onSendMessage, onStopGeneration }: Ses
   const currentSurface = agentSecondarySurface === 'none' ? null : SURFACE_META[agentSecondarySurface]
 
   return (
-    <div className={cn('relative flex h-full', className)} style={{ backgroundColor: '#0F1419' }}>
+    <div className={cn('relative flex h-full', className)} style={{ backgroundColor: 'var(--ao-workbench.background)' }}>
       <AgentChatPanel
         className="h-full min-w-0 flex-1"
         onSendMessage={onSendMessage}
@@ -103,27 +103,27 @@ export function SessionPanel({ className, onSendMessage, onStopGeneration }: Ses
           <section
             className="absolute inset-y-0 left-0 z-20 flex w-full max-w-[320px] flex-col shadow-xl"
             style={{ 
-              backgroundColor: '#161B22',
-              borderRight: '1px solid #30363D',
+              backgroundColor: 'var(--ao-bottomPanel.background)',
+              borderRight: '1px solid var(--ao-border)',
             }}
             aria-label={currentSurface.title}
           >
             <div 
               className="flex items-start justify-between gap-3 px-4 py-3"
-              style={{ borderBottom: '1px solid #21262D' }}
+              style={{ borderBottom: '1px solid var(--ao-bottomPanel.activeBackground)' }}
             >
               <div className="min-w-0">
-                <div className="flex items-center gap-2" style={{ color: '#C9D1D9' }}>
+                <div className="flex items-center gap-2" style={{ color: 'var(--ao-foreground)' }}>
                   <currentSurface.icon size={16} />
                   <h3 className="text-sm font-semibold">{currentSurface.title}</h3>
                 </div>
-                <p className="mt-1 text-xs leading-5" style={{ color: '#8B949E' }}>{currentSurface.description}</p>
+                <p className="mt-1 text-xs leading-5" style={{ color: 'var(--ao-workbench.secondaryForeground)' }}>{currentSurface.description}</p>
               </div>
               <button
                 type="button"
                 onClick={closeAgentSecondarySurface}
-                className="rounded-lg p-1.5 transition-colors hover:bg-[#21262D]"
-                style={{ color: '#8B949E' }}
+                className="rounded-lg p-1.5 transition-colors hover:bg-[var(--ao-bottomPanel.activeBackground)]"
+                style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
                 title="关闭"
                 aria-label="关闭"
               >

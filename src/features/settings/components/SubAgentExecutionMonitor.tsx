@@ -486,7 +486,6 @@ export function SubAgentExecutionMonitor({ className = '' }: SubAgentExecutionMo
                   title="暂无活跃执行任务"
                   description="子代理执行任务将在此处显示"
                   icon={Activity}
-                  size="sm"
                 />
               </CardContent>
             </Card>

@@ -7,7 +7,7 @@
  * 铁律合规：
  * - UX: 使用 Shadcn/ui 组件
  * - ARCH: 分层架构，复用 tool registry 和 plugin system
- * - Brand Color: #1E3A5F
+ * - Brand Color: var(--ao-button.background)
  */
 
 import { useState, useCallback, useMemo } from 'react'
@@ -44,7 +44,7 @@ import { cn } from '@/lib/utils'
 
 // ==================== Constants ====================
 
-const BRAND_COLOR = '#1E3A5F'
+const BRAND_COLOR = 'var(--ao-button.background)'
 
 /**
  * 模块健康状态
@@ -324,7 +324,7 @@ export function ModuleStatusCard({
   return (
     <div
       className="rounded-lg border bg-white overflow-hidden transition-all hover:shadow-md cursor-pointer"
-      style={{ borderLeftWidth: '3px', borderLeftColor: module.healthStatus === 'healthy' ? '#22c55e' : module.healthStatus === 'error' ? '#ef4444' : BRAND_COLOR }}
+      style={{ borderLeftWidth: '3px', borderLeftColor: module.healthStatus === 'healthy' ? 'var(--ao-successForeground)' : module.healthStatus === 'error' ? 'var(--ao-errorForeground)' : BRAND_COLOR }}
       onClick={() => onModuleClick?.(module)}
     >
       {/* 头部 */}

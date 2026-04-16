@@ -7,7 +7,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 风格设计
- * - UX-02: 使用品牌色 #1E3A5F
+ * - UX-02: 使用品牌色 var(--ao-button.background)
  * - ARCH: 分层架构，使用 Zustand 状态管理
  */
 
@@ -145,7 +145,7 @@ function TaskItem({ task, onCancel, onDelete, onRetry }: TaskItemProps) {
             <div className="flex items-center gap-2 mt-0.5">
               <RecurrenceBadge recurrence={task.recurrence} />
               {(task.nextRunAt || task.nextRetryAt) && (task.status === 'pending' || task.status === 'retrying') && (
-                <span className="text-xs text-primary" style={{ color: '#1E3A5F' }}>
+                <span className="text-xs text-primary" style={{ color: 'var(--ao-button.background)' }}>
                   {getNextRunLabel()}
                 </span>
               )}
@@ -393,7 +393,7 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
         <div className="flex items-center gap-2">
-          <Clock size={18} className="text-primary" style={{ color: '#1E3A5F' }} />
+          <Clock size={18} className="text-primary" style={{ color: 'var(--ao-button.background)' }} />
           <h3 className="font-semibold text-slate-800">定时任务</h3>
         </div>
         <Button
@@ -467,7 +467,7 @@ export function ScheduledTaskPanel({ className }: ScheduledTaskPanelProps) {
                   <button
                     onClick={() => setShowCreateForm(true)}
                     className="mt-2 text-sm text-primary hover:underline"
-                    style={{ color: '#1E3A5F' }}
+                    style={{ color: 'var(--ao-button.background)' }}
                   >
                     创建第一个任务
                   </button>

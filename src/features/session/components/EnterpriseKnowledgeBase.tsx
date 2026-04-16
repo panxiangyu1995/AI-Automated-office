@@ -345,7 +345,7 @@ export function EnterpriseKnowledgeBase(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">企业知识库管理</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">企业知识库管理</h2>
           <p className="text-muted-foreground">上传、处理和管理企业知识文档</p>
         </div>
         <div className="flex gap-2">
@@ -365,7 +365,7 @@ export function EnterpriseKnowledgeBase(): React.ReactNode {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-[#1E3A5F]" />
+              <FileText className="h-5 w-5 text-[var(--ao-button.background)]" />
               <div>
                 <p className="text-2xl font-bold">{mockStats.totalDocuments}</p>
                 <p className="text-sm text-muted-foreground">总文档数</p>

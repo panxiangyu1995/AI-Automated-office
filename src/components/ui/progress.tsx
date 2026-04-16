@@ -13,14 +13,14 @@ const Progress = React.forwardRef<
       "relative h-4 w-full overflow-hidden rounded-full",
       className
     )}
-    style={{ backgroundColor: '#21262D' }}
+    style={{ backgroundColor: 'var(--ao-bottomPanel.activeBackground)' }}
     {...props}
   >
     <ProgressPrimitive.Indicator
       className="h-full w-full flex-1 transition-all"
       style={{ 
         transform: `translateX(-${100 - (value || 0)}%)`,
-        backgroundColor: '#238636',
+        backgroundColor: 'var(--ao-sidebarActiveIndicator)',
       }}
     />
   </ProgressPrimitive.Root>

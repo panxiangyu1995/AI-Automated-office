@@ -1,8 +1,14 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(python test_ralph_prompt.py)"
-    ]
+    ],
+    "defaultMode": "bypassPermissions"
+  },
+  "enabledPlugins": {
+    "CCteam-creator-cn@ccteam": true
   }
 }

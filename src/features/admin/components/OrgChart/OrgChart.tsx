@@ -228,7 +228,7 @@ export function OrgChart({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#1E3A5F] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--ao-button.background)] border-t-transparent" />
           <p className="text-sm text-gray-500">加载组织架构...</p>
         </div>
       </div>
@@ -263,7 +263,7 @@ export function OrgChart({
       {/* 画布区域 */}
       <div
         ref={containerRef}
-        className="relative flex-1 overflow-hidden bg-[#F9FAFB]"
+        className="relative flex-1 overflow-hidden bg-[var(--ao-workbench.background)]"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

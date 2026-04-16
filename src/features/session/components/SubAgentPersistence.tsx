@@ -241,7 +241,7 @@ export function SubAgentPersistence() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Archive className="h-5 w-5 text-[#1E3A5F]" />
+              <Archive className="h-5 w-5 text-[var(--ao-button.background)]" />
               <CardTitle className="text-lg">Sub-Agent 状态持久化</CardTitle>
             </div>
             <CardDescription>保存子 Agent 执行上下文、暂存写回 checkpoint 和恢复记录。</CardDescription>
@@ -254,7 +254,7 @@ export function SubAgentPersistence() {
       </CardHeader>
       <CardContent>
         <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Card className="p-3"><div className="text-xs text-muted-foreground">持久化记录</div><div className="text-2xl font-bold text-[#1E3A5F]">{stats.totalRecords}</div><div className="text-xs text-muted-foreground">条记录</div></Card>
+          <Card className="p-3"><div className="text-xs text-muted-foreground">持久化记录</div><div className="text-2xl font-bold text-[var(--ao-button.background)]">{stats.totalRecords}</div><div className="text-xs text-muted-foreground">条记录</div></Card>
           <Card className="p-3"><div className="text-xs text-muted-foreground">检查点</div><div className="text-2xl font-bold text-blue-600">{stats.checkpointCount}</div><div className="text-xs text-muted-foreground">个 checkpoint</div></Card>
           <Card className="p-3"><div className="text-xs text-muted-foreground">存储使用</div><div className="text-2xl font-bold text-emerald-600">{(stats.totalSize / 1024).toFixed(1)}</div><div className="text-xs text-muted-foreground">KB</div></Card>
           <Card className="p-3"><div className="text-xs text-muted-foreground">恢复成功率</div><div className="text-2xl font-bold text-amber-600">{stats.successRate}%</div><div className="text-xs text-muted-foreground">平均 {stats.averageRestoreTime}s</div></Card>
@@ -270,7 +270,7 @@ export function SubAgentPersistence() {
 
         <div className="mb-4 flex border-b">
           {(['records', 'checkpoints', 'config'] as const).map((tab) => (
-            <button key={tab} type="button" className={cn('border-b-2 px-4 py-2 text-sm font-medium transition-colors', activeTab === tab ? 'border-[#1E3A5F] text-[#1E3A5F]' : 'border-transparent text-muted-foreground hover:text-foreground')} onClick={() => setActiveTab(tab)}>
+            <button key={tab} type="button" className={cn('border-b-2 px-4 py-2 text-sm font-medium transition-colors', activeTab === tab ? 'border-[var(--ao-button.background)] text-[var(--ao-button.background)]' : 'border-transparent text-muted-foreground hover:text-foreground')} onClick={() => setActiveTab(tab)}>
               {tab === 'records' ? '持久化记录' : tab === 'checkpoints' ? '检查点历史' : '配置'}
             </button>
           ))}

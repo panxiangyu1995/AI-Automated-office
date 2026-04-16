@@ -371,7 +371,7 @@ export function PrintDialog({ open, onOpenChange, documentContent }: PrintDialog
 
           {/* 右侧预览面板 */}
           <div className="flex-1 bg-slate-100/50 flex flex-col items-center justify-center relative p-8">
-            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(var(--ao-border)_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"></div>
             
             <div className="relative z-10 w-full max-w-[320px] aspect-[210/297] bg-white rounded shadow-2xl transition-all duration-500 flex flex-col items-center justify-center group">
               {/* 纸张纹理 */}

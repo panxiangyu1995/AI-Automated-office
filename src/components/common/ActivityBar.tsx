@@ -33,7 +33,7 @@ export function ActivityBar() {
       className="flex flex-col items-center py-3 flex-shrink-0"
       style={{
         width: '48px',
-        backgroundColor: '#1C2128',
+        backgroundColor: 'var(--ao-activityBar-background)',
         gap: '4px',
       }}
     >
@@ -50,7 +50,7 @@ export function ActivityBar() {
               onClick={() => setActiveActivityItem(id)}
               className="flex items-center justify-center w-10 h-10 rounded-md transition-colors cursor-pointer"
               style={{
-                backgroundColor: isActive ? '#0F1419' : 'transparent',
+                backgroundColor: isActive ? 'var(--ao-activityBar-activeBackground)' : 'transparent',
               }}
               aria-label={label}
               title={label}
@@ -58,7 +58,7 @@ export function ActivityBar() {
               <Icon
                 size={22}
                 style={{
-                  color: isActive ? '#FFFFFF' : '#C9D1D9',
+                  color: isActive ? 'var(--ao-activityBar-activeForeground)' : 'var(--ao-activityBar-foreground)',
                 }}
               />
             </button>
@@ -77,7 +77,7 @@ export function ActivityBar() {
         {/* 分隔线 */}
         <div
           className="w-6 h-px mb-2"
-          style={{ backgroundColor: '#30363D' }}
+          style={{ backgroundColor: 'var(--ao-activityBar-border)' }}
         />
 
         {/* 账号按钮 */}
@@ -93,7 +93,7 @@ export function ActivityBar() {
           <User
             size={22}
             style={{
-              color: '#C9D1D9',
+              color: 'var(--ao-activityBar-foreground)',
             }}
           />
         </button>
@@ -103,7 +103,7 @@ export function ActivityBar() {
           onClick={() => setActiveActivityItem('settings')}
           className="flex items-center justify-center w-10 h-10 rounded-md transition-colors cursor-pointer"
           style={{
-            backgroundColor: activeActivityItem === 'settings' ? '#0F1419' : 'transparent',
+            backgroundColor: activeActivityItem === 'settings' ? 'var(--ao-activityBar-activeBackground)' : 'transparent',
           }}
           aria-label="设置"
           title="设置"
@@ -111,7 +111,7 @@ export function ActivityBar() {
           <Settings
             size={22}
             style={{
-              color: activeActivityItem === 'settings' ? '#FFFFFF' : '#C9D1D9',
+              color: activeActivityItem === 'settings' ? 'var(--ao-activityBar-activeForeground)' : 'var(--ao-activityBar-foreground)',
             }}
           />
         </button>

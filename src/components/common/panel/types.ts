@@ -1,4 +1,4 @@
-export type PanelType = 'properties' | 'diagnostics' | 'preview' | 'ai-suggestions'
+export type PanelType = 'properties' | 'diagnostics' | 'preview' | 'ai-suggestions' | 'problems'
 
 export type DiagnosticSeverity = 'info' | 'warning' | 'error'
 

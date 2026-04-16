@@ -31,8 +31,8 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
   if (!preview) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-[#21262D] px-4 py-2">
-          <span className="text-sm font-medium" style={{ color: '#8B949E' }}>
+        <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'var(--ao-bottomPanel-border)' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             {title}
           </span>
         </div>
@@ -40,14 +40,14 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
           <div className="flex flex-col items-center gap-2">
             <div
               className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: '#21262D' }}
+              style={{ backgroundColor: 'var(--ao-bottomPanel-activeBackground)' }}
             >
-              <FileText className="h-5 w-5" style={{ color: '#8B949E' }} />
+              <FileText className="h-5 w-5" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
             </div>
-            <span className="text-sm" style={{ color: '#8B949E' }}>
+            <span className="text-sm" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
               暂无预览内容
             </span>
-            <span className="text-xs" style={{ color: '#6E7681' }}>
+            <span className="text-xs" style={{ color: 'var(--ao-workbench-secondaryForeground)' }}>
               打开文件或图片以查看预览
             </span>
           </div>
@@ -60,15 +60,15 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-[#21262D] px-4 py-2">
+      <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'var(--ao-bottomPanel-border)' }}>
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4" style={{ color: '#8B949E' }} />
-          <span className="text-sm font-medium" style={{ color: '#8B949E' }}>
+          <Icon className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
+          <span className="text-sm font-medium" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
             {title}
           </span>
           <span
             className="rounded px-1.5 py-0.5 text-xs uppercase"
-            style={{ backgroundColor: '#21262D', color: '#8B949E' }}
+            style={{ backgroundColor: 'var(--ao-bottomPanel-activeBackground)', color: 'var(--ao-bottomPanel-foreground)' }}
           >
             {preview.type}
           </span>
@@ -77,34 +77,34 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
           <button
             type="button"
             aria-label="缩小"
-            className="rounded p-1 hover:bg-[#21262D] disabled:opacity-50"
+            className="rounded p-1 disabled:opacity-50"
             onClick={handleZoomOut}
             disabled={zoom <= 25}
           >
-            <ZoomOut className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <ZoomOut className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           </button>
           <span
             className="min-w-[3rem] text-center text-xs"
-            style={{ color: '#8B949E' }}
+            style={{ color: 'var(--ao-bottomPanel-foreground)' }}
           >
             {zoom}%
           </span>
           <button
             type="button"
             aria-label="放大"
-            className="rounded p-1 hover:bg-[#21262D] disabled:opacity-50"
+            className="rounded p-1 disabled:opacity-50"
             onClick={handleZoomIn}
             disabled={zoom >= 300}
           >
-            <ZoomIn className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <ZoomIn className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           </button>
           <button
             type="button"
             aria-label="重置"
-            className="rounded p-1 hover:bg-[#21262D]"
+            className="rounded p-1"
             onClick={handleReset}
           >
-            <RotateCcw className="h-4 w-4" style={{ color: '#8B949E' }} />
+            <RotateCcw className="h-4 w-4" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
           </button>
         </div>
       </div>
@@ -122,7 +122,7 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
               src={preview.url}
               alt="预览"
               className="max-w-full rounded"
-              style={{ backgroundColor: '#161B22' }}
+              style={{ backgroundColor: 'var(--ao-bottomPanel-background)' }}
             />
           ) : preview.type === 'pdf' ? (
             <iframe
@@ -133,11 +133,11 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
           ) : (
             <div
               className="flex h-[400px] w-[600px] items-center justify-center rounded"
-              style={{ backgroundColor: '#161B22' }}
+              style={{ backgroundColor: 'var(--ao-bottomPanel-background)' }}
             >
               <div className="flex flex-col items-center gap-2">
-                <Icon className="h-12 w-12" style={{ color: '#8B949E' }} />
-                <span className="text-sm" style={{ color: '#8B949E' }}>
+                <Icon className="h-12 w-12" style={{ color: 'var(--ao-bottomPanel-foreground)' }} />
+                <span className="text-sm" style={{ color: 'var(--ao-bottomPanel-foreground)' }}>
                   文档预览
                 </span>
                 <a
@@ -145,7 +145,7 @@ export function PreviewPanel({ preview, title = '预览' }: PreviewPanelProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm underline"
-                  style={{ color: '#58A6FF' }}
+                  style={{ color: 'var(--ao-button-linkForeground)' }}
                 >
                   在新窗口打开
                 </a>

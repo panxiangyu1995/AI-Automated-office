@@ -59,7 +59,7 @@ export function OrgChartTree({
           key={`conn-${index}`}
           d={path}
           fill="none"
-          stroke="#D1D5DB"
+          stroke="var(--ao-border)"
           strokeWidth={2}
           className="transition-colors duration-200"
         />

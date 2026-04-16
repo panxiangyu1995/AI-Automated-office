@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Select,
   SelectContent,
@@ -761,8 +762,8 @@ export function LLMProviderDefaults() {
               />
             ) : (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  未设置全局默认，点击上方按钮创建
+                <CardContent className="py-0">
+                  <EmptyState variant="data" title="未设置全局默认" description="点击上方按钮创建" />
                 </CardContent>
               </Card>
             )}
@@ -793,8 +794,8 @@ export function LLMProviderDefaults() {
               </div>
             ) : (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  未设置会话默认
+                <CardContent className="py-0">
+                  <EmptyState variant="data" title="未设置会话默认" description="当前没有会话默认配置" />
                 </CardContent>
               </Card>
             )}

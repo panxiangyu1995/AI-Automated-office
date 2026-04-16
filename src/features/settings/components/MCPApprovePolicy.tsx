@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Card,
   CardContent,
@@ -859,8 +860,8 @@ export function MCPApprovePolicy() {
 
           {filteredPolicies.length === 0 && (
             <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                没有找到匹配的策略配置
+              <CardContent className="py-0">
+                <EmptyState variant="search" title="没有找到匹配的策略配置" description="请尝试其他搜索条件" />
               </CardContent>
             </Card>
           )}

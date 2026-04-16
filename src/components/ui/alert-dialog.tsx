@@ -39,8 +39,8 @@ const AlertDialogContent = React.forwardRef<
         className
       )}
       style={{
-        backgroundColor: '#161B22',
-        border: '1px solid #30363D',
+        backgroundColor: 'var(--ao-bottomPanel.background)',
+        border: '1px solid var(--ao-border)',
       }}
       {...props}
     />
@@ -83,7 +83,7 @@ const AlertDialogTitle = React.forwardRef<
   <AlertDialogPrimitive.Title
     ref={ref}
     className={cn("text-lg font-semibold", className)}
-    style={{ color: '#C9D1D9' }}
+    style={{ color: 'var(--ao-foreground)' }}
     {...props}
   />
 ))
@@ -96,7 +96,7 @@ const AlertDialogDescription = React.forwardRef<
   <AlertDialogPrimitive.Description
     ref={ref}
     className={cn("text-sm", className)}
-    style={{ color: '#8B949E' }}
+    style={{ color: 'var(--ao-workbench.secondaryForeground)' }}
     {...props}
   />
 ))

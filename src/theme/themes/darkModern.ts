@@ -31,9 +31,11 @@ export const darkModernTheme: ThemeData = {
     borderDisabled: '#3C3C3C50',
 
     // Activity Bar
-    activityBarBackground: '#333333',
-    activityBarForeground: '#FFFFFF',
-    activityBarBadgeBackground: '#0078D4',
+    activityBarBackground: '#1C2128',
+    activityBarForeground: '#C9D1D9',
+    'activityBar.activeBackground': '#0F1419',
+    'activityBar.activeForeground': '#FFFFFF',
+    'activityBar.border': '#30363D',
 
     // Sidebar
     sidebarBackground: '#161B22',
@@ -56,8 +58,35 @@ export const darkModernTheme: ThemeData = {
     editorLineHighlightBackground: '#2A2A2A',
 
     // Status Bar
-    statusBarBackground: '#007ACC',
-    statusBarForeground: '#FFFFFF',
+    statusBarBackground: '#161B22',
+    statusBarForeground: '#8B949E',
+    'statusBar.border': '#30363D',
+
+    // Workbench
+    'workbench.background': '#0F1419',
+    'workbench.foreground': '#C9D1D9',
+    'workbench.secondaryForeground': '#8B949E',
+
+    // Tab Bar
+    'tabBar.background': '#161B22',
+    'tabBar.border': '#21262D',
+    'tabBar.foreground': '#8B949E',
+    'tabBar.activeBackground': '#0F1419',
+    'tabBar.activeForeground': '#FFFFFF',
+    'tabBar.hoverBackground': '#21262D',
+
+    // Bottom Panel
+    'bottomPanel.background': '#161B22',
+    'bottomPanel.border': '#30363D',
+    'bottomPanel.foreground': '#8B949E',
+    'bottomPanel.activeBackground': '#21262D',
+    'bottomPanel.activeForeground': '#FFFFFF',
+    'bottomPanel.hoverBackground': '#21262D40',
+
+    // AI Chat Panel
+    'aiChatPanel.background': '#0F1419',
+    'aiChatPanel.border': '#30363D',
+    'aiChatPanel.foreground': '#C9D1D9',
 
     // Input
     inputBackground: '#3C3C3C',
@@ -97,6 +126,16 @@ export const darkModernTheme: ThemeData = {
     'card.foreground': '#C9D1D9',
     'card.headerBorder': '#21262D',
     'card.footerBorder': '#21262D',
+
+    // Command Palette
+    'commandPalette.background': '#161B22',
+    'commandPalette.border': '#30363D',
+    'commandPalette.foreground': '#C9D1D9',
+    'commandPalette.secondaryForeground': '#8B949E',
+    'commandPalette.selectedBackground': '#21262D',
+    'commandPalette.badgeBackground': '#21262D',
+    'commandPalette.footerBackground': '#0D1117',
+    'commandPalette.activeForeground': '#FFFFFF',
 
     // Topbar
     'topbar.background': '#1C2128',

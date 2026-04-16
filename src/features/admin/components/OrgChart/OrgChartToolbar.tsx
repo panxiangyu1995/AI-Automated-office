@@ -48,7 +48,7 @@ export function OrgChartToolbar({
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
                   layout === 'tree'
-                    ? 'bg-[#1E3A5F] text-white'
+                    ? 'bg-[var(--ao-button.background)] text-white'
                     : 'text-gray-500 hover:bg-gray-100'
                 )}
                 onClick={() => onLayoutChange('tree')}
@@ -67,7 +67,7 @@ export function OrgChartToolbar({
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
                   layout === 'matrix'
-                    ? 'bg-[#1E3A5F] text-white'
+                    ? 'bg-[var(--ao-button.background)] text-white'
                     : 'text-gray-500 hover:bg-gray-100'
                 )}
                 onClick={() => onLayoutChange('matrix')}

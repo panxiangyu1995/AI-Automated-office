@@ -334,7 +334,7 @@ export function PositionForm({
         >
           取消
         </Button>
-        <Button type="submit" disabled={loading} className="bg-[#1E3A5F] hover:bg-[#1E3A5F]/90">
+        <Button type="submit" disabled={loading} className="bg-[var(--ao-button.background)] hover:bg-[var(--ao-button.background)]/90">
           {loading ? (
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

@@ -37,7 +37,7 @@ export function RoleInfoCard({ role, onEdit, onDelete }: RoleInfoCardProps) {
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Shield className="h-5 w-5 text-[#1E3A5F]" />
+            <Shield className="h-5 w-5 text-[var(--ao-button.background)]" />
             <h3 className="text-lg font-bold text-gray-900">{role.name}</h3>
             {role.is_system && (
               <Badge variant="secondary" className="bg-gray-100 text-gray-600">

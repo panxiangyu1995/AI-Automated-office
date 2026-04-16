@@ -160,7 +160,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <style>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
-          color: #9ca3af;
+          color: var(--ao-workbench-secondaryForeground);
           pointer-events: none;
           display: block;
         }

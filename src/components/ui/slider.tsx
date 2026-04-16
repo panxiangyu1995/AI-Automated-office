@@ -16,13 +16,13 @@ const Slider = React.forwardRef<
     {...props}
   >
     <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full">
-      <SliderPrimitive.Range className="absolute h-full" style={{ backgroundColor: '#238636' }} />
+      <SliderPrimitive.Range className="absolute h-full" style={{ backgroundColor: 'var(--ao-sidebarActiveIndicator)' }} />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb 
-      className="block h-5 w-5 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58A6FF] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+      className="block h-5 w-5 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ao-button.linkForeground)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
       style={{ 
-        borderColor: '#238636',
-        backgroundColor: '#161B22',
+        borderColor: 'var(--ao-sidebarActiveIndicator)',
+        backgroundColor: 'var(--ao-bottomPanel.background)',
       }}
     />
   </SliderPrimitive.Root>

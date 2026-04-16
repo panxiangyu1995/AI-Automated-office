@@ -9,11 +9,11 @@ const Switch = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58A6FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1419] disabled:cursor-not-allowed disabled:opacity-50",
+      "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ao-button.linkForeground)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ao-workbench.background)] disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     style={{
-      backgroundColor: '#30363D',
+      backgroundColor: 'var(--ao-border)',
     }}
     {...props}
     ref={ref}
@@ -23,7 +23,7 @@ const Switch = React.forwardRef<
         "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
       )}
       style={{
-        backgroundColor: '#8B949E',
+        backgroundColor: 'var(--ao-workbench.secondaryForeground)',
       }}
     />
   </SwitchPrimitives.Root>

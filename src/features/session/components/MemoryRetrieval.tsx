@@ -286,7 +286,7 @@ export function MemoryRetrieval(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">记忆检索功能</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">记忆检索功能</h2>
           <p className="text-muted-foreground">混合检索和认知状态重建</p>
         </div>
         <div className="flex gap-2">
@@ -306,7 +306,7 @@ export function MemoryRetrieval(): React.ReactNode {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-[#1E3A5F]" />
+              <Database className="h-5 w-5 text-[var(--ao-button.background)]" />
               <div>
                 <p className="text-2xl font-bold">{mockStats.totalQueries}</p>
                 <p className="text-sm text-muted-foreground">总查询次数</p>

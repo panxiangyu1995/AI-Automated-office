@@ -7,7 +7,7 @@
  * 
  * 铁律合规：
  * - UX-01: 使用 Shadcn/ui 组件
- * - UX-02: 品牌色 #1E3A5F
+ * - UX-02: 品牌色 var(--ao-button.background)
  * - UX-04: 对话驱动交互
  */
 

@@ -139,15 +139,15 @@ const categoryLabels: Record<IntentCategory, string> = {
 }
 
 const categoryColors: Record<IntentCategory, string> = {
-  task_execution: '#3B82F6',
-  information_query: '#10B981',
-  data_manipulation: '#F59E0B',
-  navigation: '#8B5CF6',
-  configuration: '#EC4899',
-  communication: '#06B6D4',
-  analysis: '#84CC16',
-  automation: '#F97316',
-  unknown: '#6B7280',
+  task_execution: 'var(--ao-infoForeground)',
+  information_query: 'var(--ao-successForeground)',
+  data_manipulation: 'var(--ao-warningForeground)',
+  navigation: 'var(--ao-infoForeground)',
+  configuration: 'var(--ao-errorForeground)',
+  communication: 'var(--ao-button.linkForeground)',
+  analysis: 'var(--ao-successForeground)',
+  automation: 'var(--ao-warningForeground)',
+  unknown: 'var(--ao-workbench.secondaryForeground)',
 }
 
 // Mock intent parsing function
@@ -313,7 +313,7 @@ export function IntentParsing(): React.ReactNode {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E3A5F]">意图解析</h2>
+          <h2 className="text-2xl font-bold text-[var(--ao-button.background)]">意图解析</h2>
           <p className="text-muted-foreground">解析用户输入、提取参数、检测歧义</p>
         </div>
         <div className="flex gap-4">
@@ -750,14 +750,14 @@ export function IntentParsing(): React.ReactNode {
                   {/* Pipeline visualization */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-[var(--ao-button.background)] text-white flex items-center justify-center">
                         1
                       </div>
                       <span className="text-sm">意图解析</span>
                     </div>
                     <Zap className="h-4 w-4 text-muted-foreground" />
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-[var(--ao-button.background)] text-white flex items-center justify-center">
                         2
                       </div>
                       <span className="text-sm">参数提取</span>

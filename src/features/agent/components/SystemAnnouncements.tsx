@@ -10,7 +10,7 @@
  * 铁律合规：
  * - ARCH: 分层架构，使用 Zustand 状态管理
  * - UX-01: 使用 Shadcn/ui 组件
- * - UX-04: 品牌色 #1E3A5F
+ * - UX-04: 品牌色 var(--ao-button.background)
  */
 
 import { useState, useMemo } from 'react'

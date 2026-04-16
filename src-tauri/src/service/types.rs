@@ -575,3 +575,106 @@ impl ServiceError {
         Self::new("SERVICE_007", msg)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ticket_type_default() {
+        assert_eq!(TicketType::default(), TicketType::Repair);
+    }
+
+    #[test]
+    fn test_ticket_status_default() {
+        assert_eq!(TicketStatus::default(), TicketStatus::New);
+    }
+
+    #[test]
+    fn test_ticket_priority_default() {
+        assert_eq!(TicketPriority::default(), TicketPriority::Medium);
+    }
+
+    #[test]
+    fn test_ticket_type_from_str() {
+        assert_eq!("repair".parse::<TicketType>().unwrap(), TicketType::Repair);
+        assert_eq!("consultation".parse::<TicketType>().unwrap(), TicketType::Consultation);
+        assert_eq!("complaint".parse::<TicketType>().unwrap(), TicketType::Complaint);
+        assert!("unknown".parse::<TicketType>().is_err());
+    }
+
+    #[test]
+    fn test_ticket_new() {
+        let ticket = ServiceTicket::new(
+            "测试工单".to_string(),
+            Some("描述".to_string()),
+            TicketType::Repair,
+            TicketPriority::High,
+            "张三".to_string(),
+            Some("13800000000".to_string()),
+            None,
+            "tenant-1".to_string(),
+            None,
+        );
+        assert!(!ticket.id.is_empty());
+        assert_eq!(ticket.title, "测试工单");
+        assert_eq!(ticket.status, TicketStatus::New);
+        assert!(ticket.assigned_to.is_none());
+    }
+
+    #[test]
+    fn test_ticket_status_transition_new_to_processing() {
+        let mut ticket = ServiceTicket::default();
+        assert!(ticket.can_transition_to(TicketStatus::Processing));
+        assert!(ticket.update_status(TicketStatus::Processing));
+        assert_eq!(ticket.status, TicketStatus::Processing);
+    }
+
+    #[test]
+    fn test_ticket_status_transition_processing_to_pending() {
+        let mut ticket = ServiceTicket::default();
+        ticket.update_status(TicketStatus::Processing);
+        assert!(ticket.can_transition_to(TicketStatus::PendingConfirm));
+        assert!(ticket.update_status(TicketStatus::PendingConfirm));
+    }
+
+    #[test]
+    fn test_ticket_status_transition_invalid() {
+        let ticket = ServiceTicket::default();
+        // New -> Completed is invalid
+        assert!(!ticket.can_transition_to(TicketStatus::Completed));
+    }
+
+    #[test]
+    fn test_ticket_assign() {
+        let mut ticket = ServiceTicket::default();
+        ticket.assign("user-001".to_string(), "李四".to_string());
+        assert_eq!(ticket.assigned_to.as_ref().unwrap(), "user-001");
+        assert_eq!(ticket.assigned_name.as_ref().unwrap(), "李四");
+    }
+
+    #[test]
+    fn test_ticket_complete_sets_completed_at() {
+        let mut ticket = ServiceTicket::default();
+        ticket.update_status(TicketStatus::Processing);
+        ticket.update_status(TicketStatus::PendingConfirm);
+        ticket.update_status(TicketStatus::Completed);
+        assert!(ticket.completed_at.is_some());
+    }
+
+    #[test]
+    fn test_service_personnel_default() {
+        let p = ServicePersonnel::default();
+        assert!(!p.id.is_empty());
+        assert_eq!(p.current_ticket_count, 0);
+        assert_eq!(p.max_ticket_count, 10);
+    }
+
+    #[test]
+    fn test_service_error_codes() {
+        let e = ServiceError::ticket_not_found();
+        assert_eq!(e.code, "SERVICE_001");
+        let e = ServiceError::invalid_status();
+        assert_eq!(e.code, "SERVICE_002");
+    }
+}

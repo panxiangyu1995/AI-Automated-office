@@ -18,7 +18,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import type { Message, TextPart, Part, MessageStatus, MessageRole } from '../../message/runtime/messageModel'
 import { eventBus } from '@/hooks/eventBus'
-import { ChatEvents } from '@/hooks/types/eventBus'
+import { ChatEvents, MessageAddPayload } from '@/hooks/types/eventBus'
 
 // ==================== Helper Functions ====================
 
@@ -204,7 +204,7 @@ export const useChatStore = create<ChatStoreState>()(
       
       // 发布事件通知其他模块（解耦 CheckpointStore）
       // 订阅者可以决定是否创建检查点
-      eventBus.publish<ChatEvents.MessageAddPayload>(ChatEvents.MESSAGE_ADD, {
+      eventBus.publish<MessageAddPayload>(ChatEvents.MESSAGE_ADD, {
         sessionId,
         messageId: 'pending', // 将由下方创建后填充
         role: 'user',
@@ -226,7 +226,7 @@ export const useChatStore = create<ChatStoreState>()(
       }))
       
       // 消息创建后，发布更新事件
-      eventBus.publish<ChatEvents.MessageAddPayload>(ChatEvents.MESSAGE_ADD, {
+      eventBus.publish<MessageAddPayload>(ChatEvents.MESSAGE_ADD, {
         sessionId,
         messageId: message.id,
         role: 'user',

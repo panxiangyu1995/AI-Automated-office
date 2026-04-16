@@ -102,20 +102,20 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-[440px] flex flex-col gap-10">
       <div className="flex flex-col gap-3">
-        <h1 className="font-sans text-[32px] font-bold text-[#111827]">{mode === 'login' ? '欢迎回来' : '创建账号'}</h1>
-        <p className="font-sans text-base text-[#6B7280]">
+        <h1 className="font-sans text-[32px] font-bold text-[var(--ao-workbench.foreground)]">{mode === 'login' ? '欢迎回来' : '创建账号'}</h1>
+        <p className="font-sans text-base text-[var(--ao-workbench.secondaryForeground)]">
           {mode === 'login' ? '请输入您的账号信息以登录系统' : '填写以下信息以创建新账号'}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <label htmlFor={mode === 'login' ? 'username' : 'register-username'} className="font-sans text-sm font-medium text-[#374151]">
+          <label htmlFor={mode === 'login' ? 'username' : 'register-username'} className="font-sans text-sm font-medium text-[var(--ao-foreground)]">
             用户名
           </label>
           <div className="relative flex items-center">
             <div className="absolute left-4 flex items-center justify-center">
-              <User className="h-5 w-5 text-[#9CA3AF]" />
+              <User className="h-5 w-5 text-[var(--ao-workbench.secondaryForeground)]" />
             </div>
             <input
               id={mode === 'login' ? 'username' : 'register-username'}
@@ -129,14 +129,14 @@ export function LoginForm() {
                   : setRegisterData({ ...registerData, username: e.target.value })
               }
               disabled={loading}
-              className="h-[52px] w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] pl-12 pr-4 font-sans text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-[52px] w-full rounded-xl border border-[var(--ao-border)] bg-[var(--ao-workbench.background)] pl-12 pr-4 font-sans text-base text-[var(--ao-workbench.foreground)] placeholder:text-[var(--ao-workbench.secondaryForeground)] focus:border-[var(--ao-button.background)] focus:outline-none focus:ring-1 focus:ring-[var(--ao-button.background)] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </div>
 
         {mode === 'register' && (
           <div className="flex flex-col gap-2">
-            <label htmlFor="name" className="font-sans text-sm font-medium text-[#374151]">
+            <label htmlFor="name" className="font-sans text-sm font-medium text-[var(--ao-foreground)]">
               姓名
             </label>
             <input
@@ -147,18 +147,18 @@ export function LoginForm() {
               value={registerData.name}
               onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
               disabled={loading}
-              className="h-[52px] w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 font-sans text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-[52px] w-full rounded-xl border border-[var(--ao-border)] bg-[var(--ao-workbench.background)] px-4 font-sans text-base text-[var(--ao-workbench.foreground)] placeholder:text-[var(--ao-workbench.secondaryForeground)] focus:border-[var(--ao-button.background)] focus:outline-none focus:ring-1 focus:ring-[var(--ao-button.background)] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         )}
 
         <div className="flex flex-col gap-2">
-          <label htmlFor={mode === 'login' ? 'password' : 'register-password'} className="font-sans text-sm font-medium text-[#374151]">
+          <label htmlFor={mode === 'login' ? 'password' : 'register-password'} className="font-sans text-sm font-medium text-[var(--ao-foreground)]">
             密码
           </label>
           <div className="relative flex items-center">
             <div className="absolute left-4 flex items-center justify-center">
-              <Lock className="h-5 w-5 text-[#9CA3AF]" />
+              <Lock className="h-5 w-5 text-[var(--ao-workbench.secondaryForeground)]" />
             </div>
             <input
               id={mode === 'login' ? 'password' : 'register-password'}
@@ -172,14 +172,14 @@ export function LoginForm() {
                   : setRegisterData({ ...registerData, password: e.target.value })
               }
               disabled={loading}
-              className="h-[52px] w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] pl-12 pr-4 font-sans text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-[52px] w-full rounded-xl border border-[var(--ao-border)] bg-[var(--ao-workbench.background)] pl-12 pr-4 font-sans text-base text-[var(--ao-workbench.foreground)] placeholder:text-[var(--ao-workbench.secondaryForeground)] focus:border-[var(--ao-button.background)] focus:outline-none focus:ring-1 focus:ring-[var(--ao-button.background)] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </div>
 
         {mode === 'register' && (
           <div className="flex flex-col gap-2">
-            <label htmlFor="department" className="font-sans text-sm font-medium text-[#374151]">
+            <label htmlFor="department" className="font-sans text-sm font-medium text-[var(--ao-foreground)]">
               部门
             </label>
             <input
@@ -189,7 +189,7 @@ export function LoginForm() {
               value={registerData.department}
               onChange={(e) => setRegisterData({ ...registerData, department: e.target.value })}
               disabled={loading}
-              className="h-[52px] w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 font-sans text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:outline-none focus:ring-1 focus:ring-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-[52px] w-full rounded-xl border border-[var(--ao-border)] bg-[var(--ao-workbench.background)] px-4 font-sans text-base text-[var(--ao-workbench.foreground)] placeholder:text-[var(--ao-workbench.secondaryForeground)] focus:border-[var(--ao-button.background)] focus:outline-none focus:ring-1 focus:ring-[var(--ao-button.background)] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         )}
@@ -202,7 +202,7 @@ export function LoginForm() {
                 checked={credentials.rememberMe}
                 onCheckedChange={(checked) => setCredentials({ ...credentials, rememberMe: checked === true })}
                 disabled={loading}
-                className="rounded-md border-[#D1D5DB] text-[#4F46E5] focus:ring-[#4F46E5]"
+                className="rounded-md border-[var(--ao-border)] text-[var(--ao-button.background)] focus:ring-[var(--ao-button.background)]"
               />
               <label
                 htmlFor="remember"
@@ -215,7 +215,7 @@ export function LoginForm() {
               type="button"
               onClick={handleForgotPassword}
               disabled={loading || forgotPasswordLoading}
-              className="font-sans text-sm font-medium text-[#4F46E5] hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              className="font-sans text-sm font-medium text-[var(--ao-button.background)] hover:underline disabled:cursor-not-allowed disabled:opacity-60"
             >
               {forgotPasswordLoading ? '提交中...' : '忘记密码？'}
             </button>
@@ -228,7 +228,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex h-[52px] w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#4338CA] font-sans text-base font-bold text-white shadow-[0_8px_16px_rgba(79,70,229,0.3)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-[52px] w-full items-center justify-center rounded-xl bg-gradient-to-r from-[var(--ao-button.background)] to-[var(--ao-button.background)] font-sans text-base font-bold text-white shadow-[0_8px_16px_rgba(79,70,229,0.3)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           {mode === 'login' ? '立即登录' : '立即注册'}
@@ -236,7 +236,7 @@ export function LoginForm() {
       </form>
 
       <div className="flex items-center justify-center gap-1">
-        <span className="font-sans text-sm text-[#6B7280]">
+        <span className="font-sans text-sm text-[var(--ao-workbench.secondaryForeground)]">
           {mode === 'login' ? '还没有账号？' : '已经有账号？'}
         </span>
         <button
@@ -246,7 +246,7 @@ export function LoginForm() {
             setError('')
             setMessage('')
           }}
-          className="font-sans text-sm font-medium text-[#4F46E5] hover:underline"
+          className="font-sans text-sm font-medium text-[var(--ao-button.background)] hover:underline"
         >
           {mode === 'login' ? '立即注册' : '返回登录'}
         </button>

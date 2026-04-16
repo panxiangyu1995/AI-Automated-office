@@ -58,25 +58,28 @@ export function TabBar({ onNewTab, className = '' }: TabBarProps) {
   if (tabs.length === 0) {
     return (
       <div
-        className={`flex h-10 items-center border-b border-[#21262D] bg-[#161B22] px-4 ${className}`}
+        className={`flex h-10 items-center border-b px-4 ${className}`}
+        style={{ backgroundColor: 'var(--ao-tabBar-background)', borderBottomColor: 'var(--ao-tabBar-border)' }}
       >
-        <span className="text-xs text-[#8B949E]">暂无打开的标签页</span>
+        <span className="text-xs" style={{ color: 'var(--ao-tabBar-foreground)' }}>暂无打开的标签页</span>
       </div>
     )
   }
 
   return (
     <div
-      className={`relative flex h-10 items-center border-b border-[#21262D] bg-[#161B22] ${className}`}
+      className={`relative flex h-10 items-center border-b ${className}`}
+      style={{ backgroundColor: 'var(--ao-tabBar-background)', borderBottomColor: 'var(--ao-tabBar-border)' }}
     >
       {showLeftScroll && (
         <button
           type="button"
           aria-label="向左滚动"
-          className="absolute left-0 top-0 z-10 flex h-full w-6 items-center justify-center bg-[#161B22]/95 shadow-[2px_0_4px_rgba(0,0,0,0.3)] hover:bg-[#21262D]"
+          className="absolute left-0 top-0 z-10 flex h-full w-6 items-center justify-center shadow-[2px_0_4px_rgba(0,0,0,0.3)]"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--ao-tabBar-background) 95%, transparent)' }}
           onClick={() => scrollBy('left')}
         >
-          <ChevronLeft className="h-4 w-4 text-[#8B949E]" />
+          <ChevronLeft className="h-4 w-4" style={{ color: 'var(--ao-tabBar-foreground)' }} />
         </button>
       )}
 
@@ -105,10 +108,11 @@ export function TabBar({ onNewTab, className = '' }: TabBarProps) {
         <button
           type="button"
           aria-label="向右滚动"
-          className="absolute right-10 top-0 z-10 flex h-full w-6 items-center justify-center bg-[#161B22]/95 shadow-[-2px_0_4px_rgba(0,0,0,0.3)] hover:bg-[#21262D]"
+          className="absolute right-10 top-0 z-10 flex h-full w-6 items-center justify-center shadow-[-2px_0_4px_rgba(0,0,0,0.3)]"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--ao-tabBar-background) 95%, transparent)' }}
           onClick={() => scrollBy('right')}
         >
-          <ChevronRight className="h-4 w-4 text-[#8B949E]" />
+          <ChevronRight className="h-4 w-4" style={{ color: 'var(--ao-tabBar-foreground)' }} />
         </button>
       )}
 
@@ -116,7 +120,8 @@ export function TabBar({ onNewTab, className = '' }: TabBarProps) {
         <button
           type="button"
           aria-label="新建标签页"
-          className="absolute right-0 top-0 flex h-full w-10 items-center justify-center border-l border-[#21262D] text-[#8B949E] hover:bg-[#21262D] hover:text-white"
+          className="absolute right-0 top-0 flex h-full w-10 items-center justify-center border-l"
+          style={{ borderColor: 'var(--ao-tabBar-border)', color: 'var(--ao-tabBar-foreground)' }}
           onClick={onNewTab}
         >
           <Plus className="h-4 w-4" />
