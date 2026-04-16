@@ -26,6 +26,7 @@ pub mod sensitivity;
 pub mod sessions;
 pub mod shell;
 pub mod visibility;
+pub mod visibility_types;
 pub mod web;
 
 pub use descriptor::*;

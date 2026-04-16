@@ -627,6 +627,14 @@ macro_rules! register_all_commands {
             $crate::commands::siem::siem_update_config,
             $crate::commands::siem::siem_flush,
             $crate::commands::siem::siem_pending_count,
+
+            // Knowledge commands
+            $crate::knowledge::commands::knowledge_create_base,
+            $crate::knowledge::commands::knowledge_list_bases,
+            $crate::knowledge::commands::knowledge_get_base,
+            $crate::knowledge::commands::knowledge_delete_base,
+            $crate::knowledge::commands::knowledge_upload_document,
+            $crate::knowledge::commands::knowledge_list_documents,
         ]
     };
 }

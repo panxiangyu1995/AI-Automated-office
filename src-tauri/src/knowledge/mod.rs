@@ -15,6 +15,7 @@ pub mod bm25;
 pub mod metadata_filter;
 pub mod retrieval_config;
 pub mod smart_chunker;
+pub mod commands;
 
 pub use types::*;
 pub use embedding_cache::*;
