@@ -176,6 +176,16 @@ async fn init_memory_and_embedding(app: &App) {
     app.manage(Arc::new(pipeline));
     let context_builder = knowledge::RagContextBuilder::new(embedding_service);
     app.manage(Arc::new(context_builder));
+
+    // Initialize Vector Service for hybrid search
+    let vector_config = crate::vector::config::VectorConfig::load();
+    let mut vector_service = crate::vector::VectorService::new(vector_config);
+    if let Err(e) = vector_service.initialize().await {
+        tracing::warn!("[VectorService] 初始化失败，使用降级模式: {}", e);
+    }
+    let vector_state_inner: crate::knowledge::search::VectorServiceState = 
+        Arc::new(tokio::sync::RwLock::new(Some(vector_service)));
+    app.manage(vector_state_inner);
 }
 
 /// Initialize capability package services

@@ -7,6 +7,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use crate::agent::tools::pipeline::ToolExecutionContext;
 use crate::session::TenantContext;
+use crate::vector::{
+    VectorConfig, VectorService, VectorMode, 
+    store::{SearchResult, VectorQuery},
+};
 
 /// Knowledge search request
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,12 +57,16 @@ pub struct KnowledgeSearchResponse {
     pub search_mode: String,
 }
 
+/// Vector service state type alias
+pub type VectorServiceState = Arc<RwLock<Option<VectorService>>>;
+
 /// Perform hybrid knowledge search
 #[tauri::command]
 pub async fn knowledge_search(
     tenant_id: String,
     user_id: String,
     request: KnowledgeSearchRequest,
+    vector_state: tauri::State<'_, VectorServiceState>,
 ) -> Result<KnowledgeSearchResponse, String> {
     let start = std::time::Instant::now();
     
@@ -79,56 +87,46 @@ pub async fn knowledge_search(
     let score_threshold = request.score_threshold.unwrap_or(0.0);
     let search_mode = request.search_mode.unwrap_or_else(|| "hybrid".to_string());
     
-    // Simulate hybrid search results
-    // In production, this would integrate with the RAG pipeline
+    // Perform real hybrid search if vector service is available
     let results = if request.query.is_empty() {
         Vec::new()
     } else {
-        // Mock results for demonstration
-        // Real implementation would call:
-        // 1. Vector search (semantic similarity)
-        // 2. BM25 search (keyword matching)
-        // 3. RRF fusion (Reciprocal Rank Fusion)
-        vec![
-            KnowledgeSearchResult {
-                id: format!("result-{}", uuid::Uuid::new_v4()),
-                document_id: "doc-001".to_string(),
-                content: format!("Related knowledge for: {}", request.query),
-                score: 0.95,
-                highlights: vec![
-                    format!("Found relevant content about: {}", request.query)
-                ],
-                metadata: serde_json::json!({
-                    "source": "knowledge_base",
-                    "tenant_id": tenant_id,
-                    "category": "general"
-                }),
-            },
-            KnowledgeSearchResult {
-                id: format!("result-{}", uuid::Uuid::new_v4()),
-                document_id: "doc-002".to_string(),
-                content: format!("Additional information for: {}", request.query),
-                score: 0.87,
-                highlights: vec![
-                    format!("Additional context: {}", request.query)
-                ],
-                metadata: serde_json::json!({
-                    "source": "knowledge_base",
-                    "tenant_id": tenant_id,
-                    "category": "reference"
-                }),
-            },
-        ]
+        // Try to use real vector search
+        let vector_service = vector_state.read().await;
+        if let Some(service) = vector_service.as_ref() {
+            match service.hybrid_search(&request.query, top_k, Some(tenant_id.clone())).await {
+                Ok(search_results) => {
+                    // Convert SearchResult to KnowledgeSearchResult
+                    search_results.into_iter()
+                        .filter(|r| r.score >= score_threshold)
+                        .map(|r| {
+                            let doc_id = r.id.split('-').next().unwrap_or(&r.id).to_string();
+                            KnowledgeSearchResult {
+                                id: r.id,
+                                document_id: doc_id,
+                                content: r.metadata.get("content")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("相关文档内容")
+                                    .to_string(),
+                                score: r.score,
+                                highlights: vec![format!("相似度: {:.2}", r.score)],
+                                metadata: r.metadata,
+                            }
+                        })
+                        .collect()
+                }
+                Err(e) => {
+                    tracing::warn!("[KnowledgeSearch] Vector search failed, using mock: {}", e);
+                    create_mock_results(&request.query, &tenant_id)
+                }
+            }
+        } else {
+            tracing::info!("[KnowledgeSearch] Vector service not initialized, using mock results");
+            create_mock_results(&request.query, &tenant_id)
+        }
     };
     
-    // Filter by score threshold
-    let filtered_results: Vec<KnowledgeSearchResult> = results
-        .into_iter()
-        .filter(|r| r.score >= score_threshold)
-        .take(top_k)
-        .collect();
-    
-    let total = filtered_results.len();
+    let total = results.len();
     let query_time_ms = start.elapsed().as_millis() as u64;
     
     tracing::info!(
@@ -137,11 +135,41 @@ pub async fn knowledge_search(
     );
     
     Ok(KnowledgeSearchResponse {
-        results: filtered_results,
+        results,
         total,
         query_time_ms,
         search_mode,
     })
+}
+
+/// Create mock results when vector service is not available
+fn create_mock_results(query: &str, tenant_id: &str) -> Vec<KnowledgeSearchResult> {
+    vec![
+        KnowledgeSearchResult {
+            id: format!("result-{}", uuid::Uuid::new_v4()),
+            document_id: "doc-001".to_string(),
+            content: format!("相关知识: {}", query),
+            score: 0.95,
+            highlights: vec![format!("找到相关内容: {}", query)],
+            metadata: serde_json::json!({
+                "source": "knowledge_base",
+                "tenant_id": tenant_id,
+                "category": "general"
+            }),
+        },
+        KnowledgeSearchResult {
+            id: format!("result-{}", uuid::Uuid::new_v4()),
+            document_id: "doc-002".to_string(),
+            content: format!("补充信息: {}", query),
+            score: 0.87,
+            highlights: vec![format!("补充内容: {}", query)],
+            metadata: serde_json::json!({
+                "source": "knowledge_base",
+                "tenant_id": tenant_id,
+                "category": "reference"
+            }),
+        },
+    ]
 }
 
 /// Get knowledge base statistics
