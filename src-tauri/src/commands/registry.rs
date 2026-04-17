@@ -635,6 +635,7 @@ macro_rules! register_all_commands {
             $crate::knowledge::commands::knowledge_delete_base,
             $crate::knowledge::commands::knowledge_upload_document,
             $crate::knowledge::commands::knowledge_list_documents,
+            $crate::knowledge::rag_qa::rag_question,
             // Marketplace commands
             $crate::marketplace::marketplace_list_plugins,
             $crate::marketplace::marketplace_install_plugin,
