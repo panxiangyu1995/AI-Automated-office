@@ -45,6 +45,7 @@ pub mod tender;
 pub mod marketing;
 pub mod workspace;
 pub mod security;
+pub mod workflow;
 
 pub mod commands;
 

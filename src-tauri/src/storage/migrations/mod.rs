@@ -13,6 +13,7 @@ mod v8_users_tenant_id;
 mod v9_store_tenant_id;
 mod v10_template_tables;
 mod v11_template_schema_json;
+mod v12_dashboard_tables;
 
 pub struct Migration {
     pub version: i64,
@@ -41,6 +42,7 @@ pub fn all_migrations() -> Vec<Migration> {
         v9_store_tenant_id::migration(),
         v10_template_tables::migration(),
         v11_template_schema_json::migration(),
+        v12_dashboard_tables::migration(),
     ]
 }
 

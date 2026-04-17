@@ -4,7 +4,9 @@
 
 use serde::{Deserialize, Serialize};
 use chrono::Utc;
-use tracing::info;
+use sqlx::{Row, SqlitePool};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 /// Dashboard统计数据
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,20 +68,192 @@ impl Default for ServiceTicketStats {
     }
 }
 
+/// 查询员工总数
+async fn query_employee_count(pool: &SqlitePool, tenant_id: &str) -> Result<u32, String> {
+    let row = sqlx::query(
+        "SELECT COUNT(*) as count FROM hr_employees WHERE tenant_id = ? AND status = 'active';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询员工失败: {}", e))?;
+    
+    let count: i64 = row.try_get("count").unwrap_or(0);
+    Ok(count as u32)
+}
+
+/// 查询客户总数
+async fn query_customer_count(pool: &SqlitePool, tenant_id: &str) -> Result<u32, String> {
+    let row = sqlx::query(
+        "SELECT COUNT(*) as count FROM sales_customers WHERE tenant_id = ? AND status = 'active';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询客户失败: {}", e))?;
+    
+    let count: i64 = row.try_get("count").unwrap_or(0);
+    Ok(count as u32)
+}
+
+/// 查询销售总额
+async fn query_sales_total(pool: &SqlitePool, tenant_id: &str) -> Result<f64, String> {
+    let row = sqlx::query(
+        "SELECT COALESCE(SUM(amount), 0) as total FROM sales_orders WHERE tenant_id = ? AND status = 'completed';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询销售额失败: {}", e))?;
+    
+    let total: f64 = row.try_get("total").unwrap_or(0.0);
+    Ok(total)
+}
+
+/// 查询合同总数
+async fn query_contract_count(pool: &SqlitePool, tenant_id: &str) -> Result<u32, String> {
+    let row = sqlx::query(
+        "SELECT COUNT(*) as count FROM sales_contracts WHERE tenant_id = ?;"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询合同失败: {}", e))?;
+    
+    let count: i64 = row.try_get("count").unwrap_or(0);
+    Ok(count as u32)
+}
+
+/// 查询待审批数
+async fn query_pending_approvals(pool: &SqlitePool, tenant_id: &str) -> Result<u32, String> {
+    let row = sqlx::query(
+        "SELECT COUNT(*) as count FROM approvals WHERE tenant_id = ? AND status = 'pending';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询待审批失败: {}", e))?;
+    
+    let count: i64 = row.try_get("count").unwrap_or(0);
+    Ok(count as u32)
+}
+
+/// 查询应收总额
+async fn query_receivable(pool: &SqlitePool, tenant_id: &str) -> Result<f64, String> {
+    let row = sqlx::query(
+        "SELECT COALESCE(SUM(amount), 0) as total FROM finance_receivable WHERE tenant_id = ? AND status = 'unpaid';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询应收款失败: {}", e))?;
+    
+    let total: f64 = row.try_get("total").unwrap_or(0.0);
+    Ok(total)
+}
+
+/// 查询应付总额
+async fn query_payable(pool: &SqlitePool, tenant_id: &str) -> Result<f64, String> {
+    let row = sqlx::query(
+        "SELECT COALESCE(SUM(amount), 0) as total FROM finance_payable WHERE tenant_id = ? AND status = 'unpaid';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询应付款失败: {}", e))?;
+    
+    let total: f64 = row.try_get("total").unwrap_or(0.0);
+    Ok(total)
+}
+
+/// 查询售后工单统计
+async fn query_service_tickets(pool: &SqlitePool, tenant_id: &str) -> Result<ServiceTicketStats, String> {
+    // 查询总数
+    let total_row = sqlx::query(
+        "SELECT COUNT(*) as count FROM service_tickets WHERE tenant_id = ?;"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询工单总数失败: {}", e))?;
+    let total: i64 = total_row.try_get("count").unwrap_or(0);
+
+    // 查询待处理数
+    let pending_row = sqlx::query(
+        "SELECT COUNT(*) as count FROM service_tickets WHERE tenant_id = ? AND status = 'pending';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询待处理工单失败: {}", e))?;
+    let pending: i64 = pending_row.try_get("count").unwrap_or(0);
+
+    // 查询已完成数
+    let completed_row = sqlx::query(
+        "SELECT COUNT(*) as count FROM service_tickets WHERE tenant_id = ? AND status = 'completed';"
+    )
+    .bind(tenant_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("查询已完成工单失败: {}", e))?;
+    let completed: i64 = completed_row.try_get("count").unwrap_or(0);
+
+    Ok(ServiceTicketStats {
+        total: total as u32,
+        pending: pending as u32,
+        completed: completed as u32,
+    })
+}
+
 /// 获取Dashboard统计数据
 /// 
 /// 从各个业务模块聚合统计数据
 #[tauri::command]
 pub async fn get_dashboard_stats(
+    state: tauri::State<'_, Arc<RwLock<Option<SqlitePool>>>>,
     tenant_id: String,
 ) -> Result<DashboardStats, String> {
     tracing::info!("[Dashboard] Getting stats for tenant: {}", tenant_id);
     
-    // TODO: 从实际数据库查询聚合数据
-    // 当前返回默认统计数据，后续需要连接实际数据源
-    let stats = DashboardStats::default();
+    let pool_guard = state.read().await;
+    let pool = pool_guard.as_ref().ok_or_else(|| {
+        "数据库连接未初始化，请先登录".to_string()
+    })?;
     
-    tracing::info!("[Dashboard] Stats retrieved successfully");
+    // 并行查询各部门数据
+    let (
+        employees_result,
+        customers_result,
+        sales_result,
+        contracts_result,
+        approvals_result,
+        receivable_result,
+        payable_result,
+        tickets_result,
+    ) = tokio::join!(
+        query_employee_count(pool, &tenant_id),
+        query_customer_count(pool, &tenant_id),
+        query_sales_total(pool, &tenant_id),
+        query_contract_count(pool, &tenant_id),
+        query_pending_approvals(pool, &tenant_id),
+        query_receivable(pool, &tenant_id),
+        query_payable(pool, &tenant_id),
+        query_service_tickets(pool, &tenant_id),
+    );
+    
+    let stats = DashboardStats {
+        total_employees: employees_result.unwrap_or(0),
+        total_customers: customers_result.unwrap_or(0),
+        total_sales: sales_result.unwrap_or(0.0),
+        total_contracts: contracts_result.unwrap_or(0),
+        pending_approvals: approvals_result.unwrap_or(0),
+        total_receivable: receivable_result.unwrap_or(0.0),
+        total_payable: payable_result.unwrap_or(0.0),
+        service_tickets: tickets_result.unwrap_or_default(),
+        last_updated: Utc::now().to_rfc3339(),
+    };
+    
+    tracing::info!("[Dashboard] Stats retrieved successfully: {:?}", stats);
     Ok(stats)
 }
 
