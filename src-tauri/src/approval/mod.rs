@@ -9,6 +9,10 @@ pub mod ai_assist;
 pub mod attachment;
 pub mod template;
 pub mod template_builtins;
+pub mod workflow_integration;
+pub mod workflow_commands;
 
 pub use commands::*;
 pub use types::*;
+pub use workflow_integration::*;
+pub use workflow_commands::*;

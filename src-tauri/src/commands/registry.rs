@@ -211,6 +211,13 @@ macro_rules! register_all_commands {
             $crate::approval::approval_reject,
             $crate::approval::approval_cancel,
             $crate::approval::approval_get_stats,
+            // Approval Workflow commands
+            $crate::approval::create_approval_workflow,
+            $crate::approval::get_workflow_pending_approvals,
+            $crate::approval::get_pending_approval_count,
+            $crate::approval::approve_workflow_step,
+            $crate::approval::reject_workflow_step,
+            $crate::approval::create_sample_approval_workflow,
             // Sales commands
             $crate::sales::sales_create_customer,
             $crate::sales::sales_list_customers,
