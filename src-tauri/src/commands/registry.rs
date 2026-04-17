@@ -577,6 +577,13 @@ macro_rules! register_all_commands {
             $crate::commands::export::export_csv,
             $crate::commands::export::export_json,
             $crate::commands::export::export_excel,
+            // Tenant data commands
+            $crate::export::tenant_export_data,
+            $crate::export::tenant_import_data,
+            $crate::export::tenant_get_export,
+            $crate::export::tenant_get_import,
+            $crate::export::tenant_get_data_categories,
+            $crate::export::tenant_validate_import,
             $crate::commands::export::get_csv_export_config,
             $crate::commands::export::get_json_export_config,
             $crate::commands::export::get_excel_export_config,

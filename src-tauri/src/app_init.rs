@@ -74,6 +74,7 @@ pub async fn init_services(app: &App, app_data_dir: PathBuf) {
     app.manage(commands::config_cache::ConfigCacheState::new());
     app.manage(load_balancing::LoadBalancingState::new());
     app.manage(export::ExportMigrationState::new());
+    app.manage(Arc::new(tokio::sync::RwLock::new(export::TenantDataService::new())));
     app.manage(sla::SlaMonitoringState::new());
 
     // Initialize LLM provider

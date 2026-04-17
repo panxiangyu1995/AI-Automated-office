@@ -6,6 +6,8 @@ pub mod csv_exporter;
 pub mod json_exporter;
 pub mod excel_exporter;
 pub mod migrator;
+pub mod tenant_data;
+pub mod tenant_commands;
 
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -82,3 +84,10 @@ impl ExportMigrationState {
         }
     }
 }
+
+pub use tenant_data::{
+    DataCategory, TenantDataService, TenantDataState,
+    TenantExportRequest, TenantExportResult,
+    TenantImportRequest, TenantImportResult,
+};
+pub use tenant_commands::*;
