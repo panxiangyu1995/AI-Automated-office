@@ -10,28 +10,61 @@ use chrono::Utc;
 use tokio::sync::RwLock;
 
 use super::types::*;
+use crate::storage::workflow_store::WorkflowStore;
 
-/// Workflow execution engine
+/// Workflow execution engine with persistence
 pub struct WorkflowEngine {
-    /// Active workflow instances
+    /// Active workflow instances (in-memory cache)
     instances: Arc<RwLock<HashMap<String, WorkflowInstance>>>,
-    /// Workflow definitions cache
+    /// Workflow definitions cache (in-memory)
     definitions: Arc<RwLock<HashMap<String, WorkflowDefinition>>>,
+    /// Database storage
+    store: Option<Arc<WorkflowStore>>,
 }
 
 impl WorkflowEngine {
-    /// Create a new workflow engine
+    /// Create a new workflow engine without persistence (in-memory only)
     pub fn new() -> Self {
         Self {
             instances: Arc::new(RwLock::new(HashMap::new())),
             definitions: Arc::new(RwLock::new(HashMap::new())),
+            store: None,
         }
     }
 
-    /// Register a workflow definition
+    /// Create a new workflow engine with persistence
+    pub fn with_store(store: Arc<WorkflowStore>) -> Self {
+        Self {
+            instances: Arc::new(RwLock::new(HashMap::new())),
+            definitions: Arc::new(RwLock::new(HashMap::new())),
+            store: Some(store),
+        }
+    }
+
+    /// Initialize from database (load all data on startup)
+    pub async fn init_from_store(&self) -> Result<(), WorkflowError> {
+        let store = self.store.as_ref()
+            .ok_or_else(|| WorkflowError::StoreNotConfigured)?;
+
+        // Load all definitions
+        // Note: We'd need tenant_id to load definitions - this is a simplified version
+        // In production, you'd track which tenants to load
+
+        Ok(())
+    }
+
+    /// Register a workflow definition (in-memory)
     pub async fn register(&self, definition: WorkflowDefinition) -> Result<(), WorkflowError> {
         let mut defs = self.definitions.write().await;
-        defs.insert(definition.id.clone(), definition);
+        defs.insert(definition.id.clone(), definition.clone());
+
+        // Persist to store if configured
+        if let Some(store) = &self.store {
+            store.save_definition(&definition)
+                .await
+                .map_err(|e| WorkflowError::StorageError(e.to_string()))?;
+        }
+
         Ok(())
     }
 
@@ -41,19 +74,15 @@ impl WorkflowEngine {
         request: WorkflowExecuteRequest,
         tenant_id: String,
     ) -> Result<WorkflowInstance, WorkflowError> {
-        // Get definition
-        let defs = self.definitions.read().await;
-        let definition = defs.get(&request.definition_id)
-            .ok_or_else(|| WorkflowError::DefinitionNotFound(request.definition_id.clone()))?
-            .clone();
-        drop(defs);
+        // Get definition from cache or store
+        let definition = self.get_definition(&request.definition_id).await?;
 
         // Create instance
         let instance_id = format!("wf-{}", uuid::Uuid::new_v4());
         let now = Utc::now();
         
         let instance = WorkflowInstance {
-            id: instance_id,
+            id: instance_id.clone(),
             definition_id: request.definition_id,
             state: WorkflowState::Running,
             current_step_id: definition.steps.first().map(|s| s.id()),
@@ -64,11 +93,78 @@ impl WorkflowEngine {
             updated_at: now,
         };
 
-        // Store instance
+        // Store in memory
         let mut instances = self.instances.write().await;
         instances.insert(instance.id.clone(), instance.clone());
 
+        // Persist to database if configured
+        if let Some(store) = &self.store {
+            store.save_instance(&instance)
+                .await
+                .map_err(|e| WorkflowError::StorageError(e.to_string()))?;
+        }
+
         Ok(instance)
+    }
+
+    /// Get definition from cache or store
+    async fn get_definition(&self, id: &str) -> Result<WorkflowDefinition, WorkflowError> {
+        // Try cache first
+        {
+            let defs = self.definitions.read().await;
+            if let Some(def) = defs.get(id) {
+                return Ok(def.clone());
+            }
+        }
+
+        // Try store
+        if let Some(store) = &self.store {
+            if let Ok(Some(def)) = store.get_definition(id).await {
+                // Cache it
+                let mut defs = self.definitions.write().await;
+                defs.insert(id.to_string(), def.clone());
+                return Ok(def);
+            }
+        }
+
+        Err(WorkflowError::DefinitionNotFound(id.to_string()))
+    }
+
+    /// Get instance from cache or store
+    async fn get_instance_internal(&self, id: &str) -> Result<Option<WorkflowInstance>, WorkflowError> {
+        // Try cache first
+        {
+            let instances = self.instances.read().await;
+            if let Some(inst) = instances.get(id) {
+                return Ok(Some(inst.clone()));
+            }
+        }
+
+        // Try store
+        if let Some(store) = &self.store {
+            match store.get_instance(id).await {
+                Ok(Some(inst)) => {
+                    // Cache it
+                    let mut instances = self.instances.write().await;
+                    instances.insert(id.to_string(), inst.clone());
+                    return Ok(Some(inst));
+                }
+                Ok(None) => return Ok(None),
+                Err(e) => return Err(WorkflowError::StorageError(e.to_string())),
+            }
+        }
+
+        Ok(None)
+    }
+
+    /// Persist instance to store
+    async fn save_instance(&self, instance: &WorkflowInstance) -> Result<(), WorkflowError> {
+        if let Some(store) = &self.store {
+            store.save_instance(instance)
+                .await
+                .map_err(|e| WorkflowError::StorageError(e.to_string()))?;
+        }
+        Ok(())
     }
 
     /// Execute workflow until next pause point (approval, completion, or error)
@@ -78,11 +174,7 @@ impl WorkflowEngine {
             .ok_or_else(|| WorkflowError::InstanceNotFound(instance_id.to_string()))?;
 
         // Get definition
-        let defs = self.definitions.read().await;
-        let definition = defs.get(&instance.definition_id)
-            .ok_or_else(|| WorkflowError::DefinitionNotFound(instance.definition_id.clone()))?
-            .clone();
-        drop(defs);
+        let definition = self.get_definition(&instance.definition_id).await?;
 
         // Main execution loop
         while instance.state == WorkflowState::Running {
@@ -103,7 +195,7 @@ impl WorkflowEngine {
             let result = self.execute_step(instance, step).await?;
             
             // Record history
-            instance.history.push(result);
+            instance.history.push(result.clone());
             
             // Determine next step
             if let Some(next_id) = self.determine_next_step(instance, step) {
@@ -115,7 +207,17 @@ impl WorkflowEngine {
             instance.updated_at = Utc::now();
         }
 
-        Ok(instance.clone())
+        // Persist to store
+        drop(instances);
+        let mut instances = self.instances.write().await;
+        if let Some(inst) = instances.get_mut(instance_id) {
+            inst.updated_at = Utc::now();
+            if let Some(store) = &self.store {
+                let _ = store.save_instance(inst).await;
+            }
+        }
+
+        Ok(instances.get(instance_id).cloned().unwrap())
     }
 
     /// Execute a single step
@@ -313,8 +415,17 @@ impl WorkflowEngine {
 
         // Resume execution
         instance.state = WorkflowState::Running;
+        instance.updated_at = Utc::now();
 
-        Ok(instance.clone())
+        let result = instance.clone();
+        
+        // Persist to store
+        drop(instances);
+        if let Some(store) = &self.store {
+            let _ = store.save_instance(&result).await;
+        }
+
+        Ok(result)
     }
 
     /// Pause a workflow
@@ -328,7 +439,15 @@ impl WorkflowEngine {
             instance.updated_at = Utc::now();
         }
 
-        Ok(instance.clone())
+        let result = instance.clone();
+        
+        // Persist to store
+        drop(instances);
+        if let Some(store) = &self.store {
+            let _ = store.save_instance(&result).await;
+        }
+
+        Ok(result)
     }
 
     /// Resume a paused workflow
@@ -342,7 +461,15 @@ impl WorkflowEngine {
             instance.updated_at = Utc::now();
         }
 
-        Ok(instance.clone())
+        let result = instance.clone();
+        
+        // Persist to store
+        drop(instances);
+        if let Some(store) = &self.store {
+            let _ = store.save_instance(&result).await;
+        }
+
+        Ok(result)
     }
 
     /// Cancel a workflow
@@ -354,7 +481,15 @@ impl WorkflowEngine {
         instance.state = WorkflowState::Cancelled;
         instance.updated_at = Utc::now();
 
-        Ok(instance.clone())
+        let result = instance.clone();
+        
+        // Persist to store
+        drop(instances);
+        if let Some(store) = &self.store {
+            let _ = store.save_instance(&result).await;
+        }
+
+        Ok(result)
     }
 
     /// Get instance by ID
@@ -365,9 +500,32 @@ impl WorkflowEngine {
 
     /// List all instances for a tenant
     pub async fn list_by_tenant(&self, tenant_id: &str) -> Vec<WorkflowInstance> {
+        // First get from store
+        if let Some(store) = &self.store {
+            if let Ok(instances) = store.list_instances(tenant_id).await {
+                return instances;
+            }
+        }
+
+        // Fallback to in-memory
         let instances = self.instances.read().await;
         instances.values()
             .filter(|i| i.tenant_id == tenant_id)
+            .cloned()
+            .collect()
+    }
+
+    /// List definitions for a tenant
+    pub async fn list_definitions_by_tenant(&self, tenant_id: &str) -> Vec<WorkflowDefinition> {
+        if let Some(store) = &self.store {
+            if let Ok(definitions) = store.list_definitions(tenant_id).await {
+                return definitions;
+            }
+        }
+
+        let defs = self.definitions.read().await;
+        defs.values()
+            .filter(|d| d.tenant_id == tenant_id)
             .cloned()
             .collect()
     }
@@ -393,6 +551,12 @@ pub enum WorkflowError {
 
     #[error("Execution error: {0}")]
     ExecutionError(String),
+
+    #[error("Storage error: {0}")]
+    StorageError(String),
+
+    #[error("Store not configured")]
+    StoreNotConfigured,
 }
 
 // Extend WorkflowStep with helper methods

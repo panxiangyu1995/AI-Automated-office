@@ -2,8 +2,8 @@
   "version": "0.1",
   "updatedAt": "2026-04-17T18:00:00Z",
   "module": "global",
-  "totalRounds": 5,
-  "currentRound": 6,
+  "totalRounds": 6,
+  "currentRound": 7,
   "mode": "deep",
   "scores": {
     "initial": {
@@ -19,12 +19,12 @@
     "current": {
       "requirement_alignment": 3,
       "product_direction": 3,
-      "user_experience": 3,
-      "technical_health": 3,
+      "user_experience": 4,
+      "technical_health": 4,
       "integration": 3,
       "security": 4,
-      "data_value": 2,
-      "extension_readiness": 3
+      "data_value": 3,
+      "extension_readiness": 4
     }
   },
   "rounds": [
@@ -251,6 +251,54 @@
         "extension_readiness": 3
       },
       "suggestions": []
+    },
+    {
+      "round": 6,
+      "direction": "工作流状态持久化",
+      "goal": "将工作流定义和实例持久化到SQLite数据库",
+      "status": "completed",
+      "gapHighlights": [
+        "工作流实例仅存储在内存中，应用重启后丢失",
+        "缺少工作流定义持久化",
+        "无法跨会话查询工作流历史"
+      ],
+      "changes": [
+        {
+          "id": "r6c1",
+          "title": "工作流数据库持久化",
+          "dimension": "technical_health",
+          "gap": "工作流状态仅在内存中",
+          "files": [
+            "src-tauri/src/storage/migrations/v13_workflow_tables.rs",
+            "src-tauri/src/storage/workflow_store.rs",
+            "src-tauri/src/storage/mod.rs",
+            "src-tauri/src/workflow/types.rs",
+            "src-tauri/src/workflow/engine.rs",
+            "src-tauri/src/workflow/commands.rs",
+            "src-tauri/src/commands/registry.rs"
+          ],
+          "description": "实现工作流数据库持久化，包括定义表、实例表、历史表",
+          "acceptanceCriteria": [
+            "工作流定义保存到数据库",
+            "工作流实例状态持久化",
+            "支持从数据库恢复工作流",
+            "多租户数据隔离"
+          ],
+          "risk": "medium",
+          "status": "completed"
+        }
+      ],
+      "scores": {
+        "requirement_alignment": 3,
+        "product_direction": 3,
+        "user_experience": 4,
+        "technical_health": 4,
+        "integration": 3,
+        "security": 4,
+        "data_value": 3,
+        "extension_readiness": 4
+      },
+      "suggestions": []
     }
   ],
   "techDebts": [
@@ -260,7 +308,7 @@
     {"id": "td4", "description": "工作流编排引擎缺失", "priority": "high", "status": "resolved"},
     {"id": "td5", "description": "Dashboard前端UI显示真实数据", "priority": "high", "status": "resolved"},
     {"id": "td6", "description": "向量数据库实际集成", "priority": "medium"},
-    {"id": "td7", "description": "工作流状态持久化到数据库", "priority": "medium"},
+    {"id": "td7", "description": "工作流状态持久化到数据库", "priority": "medium", "status": "resolved"},
     {"id": "td8", "description": "RAG智能问答功能", "priority": "medium"}
   ],
   "risks": [

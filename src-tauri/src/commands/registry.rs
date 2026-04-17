@@ -645,6 +645,18 @@ macro_rules! register_all_commands {
             // Dashboard commands
             $crate::commands::dashboard::get_dashboard_stats,
             $crate::commands::dashboard::get_dashboard_stats_simple,
+            // Workflow commands
+            $crate::workflow::commands::workflow_create_definition,
+            $crate::workflow::commands::workflow_execute,
+            $crate::workflow::commands::workflow_continue,
+            $crate::workflow::commands::workflow_approve,
+            $crate::workflow::commands::workflow_pause,
+            $crate::workflow::commands::workflow_resume,
+            $crate::workflow::commands::workflow_cancel,
+            $crate::workflow::commands::workflow_get,
+            $crate::workflow::commands::workflow_list,
+            $crate::workflow::commands::workflow_list_definitions,
+            $crate::workflow::commands::workflow_create_sample,
         ]
     };
 }

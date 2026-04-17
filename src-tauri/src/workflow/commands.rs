@@ -148,9 +148,10 @@ pub async fn workflow_list(
 
 /// Create a sample workflow definition (for testing)
 #[tauri::command]
-pub fn workflow_create_sample() -> WorkflowDefinition {
+pub fn workflow_create_sample(tenant_id: String) -> WorkflowDefinition {
     WorkflowDefinition {
-        id: "sample-employee-onboarding".to_string(),
+        id: format!("sample-employee-onboarding-{}", &tenant_id[..8.min(tenant_id.len())]),
+        tenant_id,
         name: "员工入职流程".to_string(),
         description: Some("示例：员工入职流程".to_string()),
         steps: vec![
@@ -199,4 +200,16 @@ pub fn workflow_create_sample() -> WorkflowDefinition {
         created_at: chrono::Utc::now(),
         updated_at: chrono::Utc::now(),
     }
+}
+
+/// List workflow definitions for a tenant
+#[tauri::command]
+pub async fn workflow_list_definitions(
+    engine: tauri::State<'_, Arc<RwLock<WorkflowEngine>>>,
+    tenant_id: String,
+) -> Result<Vec<WorkflowDefinition>, String> {
+    tracing::info!("[Workflow] Listing definitions for tenant: {}", tenant_id);
+
+    let engine = engine.read().await;
+    Ok(engine.list_definitions_by_tenant(&tenant_id).await)
 }

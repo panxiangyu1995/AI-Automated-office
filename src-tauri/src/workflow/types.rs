@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 pub struct WorkflowDefinition {
     /// Unique workflow ID
     pub id: String,
+    /// Tenant ID for isolation
+    pub tenant_id: String,
     /// Workflow name
     pub name: String,
     /// Workflow description
