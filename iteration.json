@@ -1,9 +1,9 @@
 {
   "version": "0.1",
-  "updatedAt": "2026-04-17T16:00:00Z",
+  "updatedAt": "2026-04-17T18:00:00Z",
   "module": "global",
-  "totalRounds": 4,
-  "currentRound": 5,
+  "totalRounds": 5,
+  "currentRound": 6,
   "mode": "deep",
   "scores": {
     "initial": {
@@ -21,7 +21,7 @@
       "product_direction": 3,
       "user_experience": 3,
       "technical_health": 3,
-      "integration": 2,
+      "integration": 3,
       "security": 4,
       "data_value": 2,
       "extension_readiness": 3
@@ -208,6 +208,49 @@
         "extension_readiness": 4
       },
       "suggestions": []
+    },
+    {
+      "round": 5,
+      "direction": "Dashboard前端UI完善",
+      "goal": "连接后端真实数据到前端Dashboard组件",
+      "status": "completed",
+      "gapHighlights": [
+        "management_get_dashboard返回硬编码模拟数据",
+        "前端未传递tenant_id参数",
+        "需要连接真实数据源"
+      ],
+      "changes": [
+        {
+          "id": "r5c1",
+          "title": "Dashboard前后端数据连接",
+          "dimension": "integration",
+          "gap": "前后端数据未连接",
+          "files": [
+            "src-tauri/src/management/commands.rs",
+            "src/features/management/api/managementApi.ts"
+          ],
+          "description": "修改management_get_dashboard传递tenant_id，调用真实数据",
+          "acceptanceCriteria": [
+            "前端传递tenant_id到后端",
+            "后端返回真实统计数据",
+            "Dashboard显示实际数据"
+          ],
+          "risk": "low",
+          "status": "completed",
+          "openspecChange": "iterate-6-5-dashboard-ui"
+        }
+      ],
+      "scores": {
+        "requirement_alignment": 3,
+        "product_direction": 3,
+        "user_experience": 4,
+        "technical_health": 3,
+        "integration": 3,
+        "security": 4,
+        "data_value": 3,
+        "extension_readiness": 3
+      },
+      "suggestions": []
     }
   ],
   "techDebts": [
@@ -215,18 +258,19 @@
     {"id": "td2", "description": "Agent多租户支持未完成", "priority": "high", "status": "resolved"},
     {"id": "td3", "description": "RAG检索Pipeline未完整", "priority": "high", "status": "resolved"},
     {"id": "td4", "description": "工作流编排引擎缺失", "priority": "high", "status": "resolved"},
-    {"id": "td5", "description": "向量数据库实际集成", "priority": "medium"},
-    {"id": "td6", "description": "工作流状态持久化到数据库", "priority": "medium"}
+    {"id": "td5", "description": "Dashboard前端UI显示真实数据", "priority": "high", "status": "resolved"},
+    {"id": "td6", "description": "向量数据库实际集成", "priority": "medium"},
+    {"id": "td7", "description": "工作流状态持久化到数据库", "priority": "medium"},
+    {"id": "td8", "description": "RAG智能问答功能", "priority": "medium"}
   ],
   "risks": [
     {"id": "r1", "description": "向量数据库集成可能遇到兼容性问题", "severity": "medium", "status": "open"},
     {"id": "r2", "description": "工作流引擎复杂度高，可能超出当前周期", "severity": "high", "status": "resolved"}
   ],
   "nextSuggestions": [
-    "Dashboard前端UI完善，显示真实数据",
-    "Agent多租户完善后可实现跨部门协作",
-    "RAG功能完善后可实现智能问答",
-    "工作流引擎完成后可实现复杂审批自动化",
-    "向量数据库实际集成测试"
+    "向量数据库实际集成测试",
+    "工作流状态持久化到数据库",
+    "RAG智能问答功能",
+    "审批流程自动化"
   ]
 }

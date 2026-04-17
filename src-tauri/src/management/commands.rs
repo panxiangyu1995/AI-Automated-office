@@ -1,5 +1,6 @@
 //! Management 模块 Tauri 命令
 
+use crate::commands::dashboard::{DashboardStats, get_dashboard_stats_simple};
 use crate::management::types::*;
 use tauri::State;
 use std::sync::Mutex;
@@ -31,18 +32,49 @@ impl ManagementState {
 
 impl Default for ManagementState { fn default() -> Self { Self::new() } }
 
+/// 转换 DashboardStats 到 DashboardData
+fn convert_dashboard_stats(stats: DashboardStats) -> DashboardData {
+    DashboardData {
+        total_employees: stats.total_employees as i64,
+        total_customers: stats.total_customers as i64,
+        total_sales: stats.total_sales,
+        total_contracts: stats.total_contracts as i64,
+        pending_approvals: stats.pending_approvals as i64,
+        pending_inventory: 0, // DashboardStats 暂无此字段
+        total_receivable: stats.total_receivable,
+        total_payable: stats.total_payable,
+    }
+}
+
 #[tauri::command]
-pub async fn management_get_dashboard() -> Result<DashboardData, String> {
-    Ok(DashboardData {
-        total_employees: 3,
-        total_customers: 1,
-        total_sales: 50000.0,
-        total_contracts: 0,
-        pending_approvals: 1,
-        pending_inventory: 0,
-        total_receivable: 50000.0,
-        total_payable: 0.0,
-    })
+pub async fn management_get_dashboard(
+    tenant_id: Option<String>,
+) -> Result<DashboardData, String> {
+    // 如果提供了 tenant_id，尝试获取真实数据
+    // 否则返回模拟数据（用于未登录状态）
+    match tenant_id {
+        Some(tid) if !tid.is_empty() => {
+            // 调用真实数据获取命令
+            // 注意：这里需要获取 app state 中的数据库连接
+            // 暂时使用模拟数据，待后续完善状态管理
+            tracing::info!("[Management] Getting dashboard for tenant: {}", tid);
+            let simple_stats = get_dashboard_stats_simple();
+            Ok(convert_dashboard_stats(simple_stats))
+        }
+        _ => {
+            // 返回模拟数据
+            Ok(DashboardData {
+                total_employees: 3,
+                total_customers: 1,
+                total_sales: 50000.0,
+                total_contracts: 0,
+                pending_approvals: 1,
+                pending_inventory: 0,
+                total_receivable: 50000.0,
+                total_payable: 0.0,
+            })
+        }
+    }
 }
 
 #[tauri::command]
