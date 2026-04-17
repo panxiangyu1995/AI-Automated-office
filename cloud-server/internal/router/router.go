@@ -6,6 +6,7 @@ import (
 	"cloud-server/api/swagger"
 	"cloud-server/internal/config"
 	"cloud-server/internal/handler"
+	"cloud-server/internal/metrics"
 	"cloud-server/internal/middleware"
 	adminHandler "cloud-server/internal/module/admin/interface/handler"
 	adminModule "cloud-server/internal/module/admin"
@@ -14,6 +15,7 @@ import (
 	auditHandler "cloud-server/internal/module/audit/interface/handler"
 	permissionHandler "cloud-server/internal/module/permission/interface/handler"
 	permissionModule "cloud-server/internal/module/permission"
+	syncHandler "cloud-server/internal/module/sync/interface/handler"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -37,15 +39,18 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 	r.Use(middleware.RecoveryMiddleware(log))
 	r.Use(middleware.LoggerMiddleware(log))
 	r.Use(middleware.CORSMiddleware(cfg.Cors))
+	r.Use(middleware.TraceMiddleware())
+	r.Use(metrics.Middleware())
+
+	// Prometheus 指标端点
+	metricsHandler := handler.NewMetricsHandler()
+	r.GET("/metrics", metricsHandler.Metrics)
 
 	swagger.SwaggerInfo.Host = ""
 	swagger.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	healthHandler := &handler.HealthHandler{
-		Version: "1.0.0",
-		SQLDB:   sqlDB,
-	}
+	healthHandler := handler.NewHealthHandler("1.0.0", sqlDB)
 	authHandler := &handler.AuthHandler{
 		SQLDB:      sqlDB,
 		JWT:        cfg.JWT,
@@ -90,12 +95,22 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		v1.GET("/health", healthHandler.Health)
 		v1.GET("/health/liveness", healthHandler.Liveness)
 		v1.GET("/health/readiness", healthHandler.Readiness)
-		v1.POST("/auth/login", authHandler.Login)
-		v1.POST("/auth/register", authHandler.Register)
-		v1.POST("/auth/forgot-password", authHandler.ForgotPassword)
+		
+		// 登录接口限流
+		authGroup := v1.Group("/auth")
+		authGroup.Use(middleware.LoginRateLimitMiddleware())
+		{
+			authGroup.POST("/login", authHandler.Login)
+			authGroup.POST("/register", authHandler.Register)
+			authGroup.POST("/forgot-password", authHandler.ForgotPassword)
+		}
 
+		// 全局限流中间件（认证后的请求）
+		ipLimiter := middleware.NewRateLimiter(1000) // 1000 req/min
+		
 		// 需要认证的路由组
 		protected := v1.Group("")
+		protected.Use(middleware.RateLimitMiddleware(ipLimiter))
 		protected.Use(middleware.TenantMiddleware(sqlDB, log))
 		protected.Use(middleware.AuthMiddleware(sqlDB, cfg.JWT, log))
 		protected.Use(middleware.PermissionMiddleware(
@@ -121,6 +136,10 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 			audit.GET("/logs/:id", auditH.Get)
 			audit.GET("/export", auditH.Export)
 		}
+
+		// Sync routes (数据同步)
+		syncH := syncHandler.NewSyncHandler(log)
+		syncH.RegisterRoutes(protected)
 	}
 
 	return r
@@ -144,15 +163,17 @@ func NewRouterWithMiddleware(
 	r.Use(middleware.RecoveryMiddleware(log))
 	r.Use(middleware.LoggerMiddleware(log))
 	r.Use(middleware.CORSMiddleware(cfg.Cors))
+	r.Use(middleware.TraceMiddleware())
+	r.Use(metrics.Middleware())
+
+	metricsHandler := handler.NewMetricsHandler()
+	r.GET("/metrics", metricsHandler.Metrics)
 
 	swagger.SwaggerInfo.Host = ""
 	swagger.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	healthHandler := &handler.HealthHandler{
-		Version: "1.0.0",
-		SQLDB:   sqlDB,
-	}
+	healthHandler := handler.NewHealthHandler("1.0.0", sqlDB)
 	authHandler := &handler.AuthHandler{
 		SQLDB:      sqlDB,
 		JWT:        cfg.JWT,
@@ -192,6 +213,7 @@ func NewRouterWithMiddleware(
 		v1.GET("/health", healthHandler.Health)
 		v1.GET("/health/liveness", healthHandler.Liveness)
 		v1.GET("/health/readiness", healthHandler.Readiness)
+		v1.GET("/health/detailed", healthHandler.DetailedHealth)
 		v1.POST("/auth/login", authHandler.Login)
 		v1.POST("/auth/register", authHandler.Register)
 		v1.POST("/auth/forgot-password", authHandler.ForgotPassword)

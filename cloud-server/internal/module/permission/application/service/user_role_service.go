@@ -15,9 +15,10 @@ var (
 
 // UserRoleService 用户角色服务
 type UserRoleService struct {
-	userRoleRepo   repository.UserRoleRepository
-	roleRepo       repository.RoleRepository
-	calculator     *PermissionCalculator
+	userRoleRepo    repository.UserRoleRepository
+	roleRepo        repository.RoleRepository
+	calculator      *PermissionCalculator
+	cacheService   *PermissionCacheService
 	logger         *zap.Logger
 }
 
@@ -26,12 +27,14 @@ func NewUserRoleService(
 	userRoleRepo repository.UserRoleRepository,
 	roleRepo repository.RoleRepository,
 	calculator *PermissionCalculator,
+	cacheService *PermissionCacheService,
 	logger *zap.Logger,
 ) *UserRoleService {
 	return &UserRoleService{
 		userRoleRepo: userRoleRepo,
 		roleRepo:     roleRepo,
 		calculator:   calculator,
+		cacheService: cacheService,
 		logger:       logger,
 	}
 }
@@ -89,6 +92,9 @@ func (s *UserRoleService) UpdateUserRoles(ctx context.Context, tenantID, userID,
 	}
 
 	// 使缓存失效
+	if s.cacheService != nil {
+		s.cacheService.InvalidateUserPermissions(userID)
+	}
 	s.calculator.InvalidateCache(userID)
 
 	s.logger.Info("user roles updated",
@@ -132,6 +138,9 @@ func (s *UserRoleService) AssignRole(ctx context.Context, tenantID, assignedBy s
 	}
 
 	// 使缓存失效
+	if s.cacheService != nil {
+		s.cacheService.InvalidateUserPermissions(req.UserID)
+	}
 	s.calculator.InvalidateCache(req.UserID)
 
 	s.logger.Info("role assigned",
@@ -161,6 +170,9 @@ func (s *UserRoleService) RemoveRole(ctx context.Context, req *RemoveRoleRequest
 	}
 
 	// 使缓存失效
+	if s.cacheService != nil {
+		s.cacheService.InvalidateUserPermissions(req.UserID)
+	}
 	s.calculator.InvalidateCache(req.UserID)
 
 	s.logger.Info("role removed",

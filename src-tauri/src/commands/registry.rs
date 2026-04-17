@@ -635,6 +635,16 @@ macro_rules! register_all_commands {
             $crate::knowledge::commands::knowledge_delete_base,
             $crate::knowledge::commands::knowledge_upload_document,
             $crate::knowledge::commands::knowledge_list_documents,
+            // Marketplace commands
+            $crate::marketplace::marketplace_list_plugins,
+            $crate::marketplace::marketplace_install_plugin,
+            $crate::marketplace::marketplace_uninstall_plugin,
+            $crate::marketplace::marketplace_enable_plugin,
+            $crate::marketplace::marketplace_disable_plugin,
+            $crate::marketplace::marketplace_get_stats,
+            // Dashboard commands
+            $crate::commands::dashboard::get_dashboard_stats,
+            $crate::commands::dashboard::get_dashboard_stats_simple,
         ]
     };
 }

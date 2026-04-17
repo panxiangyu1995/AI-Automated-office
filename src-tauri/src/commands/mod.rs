@@ -48,3 +48,4 @@ pub mod sla;
 pub mod warehouse;
 pub mod template;
 pub mod siem;
+pub mod dashboard;

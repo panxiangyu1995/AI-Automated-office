@@ -3,6 +3,7 @@ package permission_module
 import (
 	"database/sql"
 
+	"cloud-server/internal/cache"
 	"cloud-server/internal/module/permission/application/service"
 	"cloud-server/internal/module/permission/domain/repository"
 	"cloud-server/internal/module/permission/infrastructure/persistence"
@@ -10,18 +11,28 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	// PermissionCacheTTL 权限缓存TTL (5分钟)
+	PermissionCacheTTL = 5 * cache.Minute
+	// RoleCacheTTL 角色缓存TTL (10分钟)
+	RoleCacheTTL = 10 * cache.Minute
+)
+
 // PermissionModule 权限模块
 type PermissionModule struct {
 	RoleService       *service.RoleService
 	PermissionService *service.PermissionService
-	UserRoleService   *service.UserRoleService
+	UserRoleService  *service.UserRoleService
 	PermissionCalculator *service.PermissionCalculator
+
+	// 权限缓存服务
+	PermissionCache *service.PermissionCacheService
 
 	// Story 2.6 细粒度权限覆盖
 	OverrideRepo            repository.PermissionOverrideRepository
 	OverrideService         *service.PermissionOverrideService
 	OverrideCRUDService     *service.PermissionOverrideCRUDService
-	DataScopeService        *service.DataScopeService
+	DataScopeService       *service.DataScopeService
 	FieldPermissionService  *service.FieldPermissionService
 
 	RoleRepo       repository.RoleRepository
@@ -37,13 +48,25 @@ func NewPermissionModule(db *sql.DB, logger *zap.Logger) *PermissionModule {
 	userRoleRepo := persistence.NewUserRoleRepository(db)
 	overrideRepo := persistence.NewPermissionOverrideRepository(db)
 
+	// 创建缓存
+	permissionCache := cache.NewCache(PermissionCacheTTL)
+	roleCache := cache.NewCache(RoleCacheTTL)
+
 	// 创建权限计算器
 	calculator := service.NewPermissionCalculator(permissionRepo, logger)
+
+	// 创建权限缓存服务
+	permissionCacheService := service.NewPermissionCacheService(
+		permissionRepo,
+		permissionCache,
+		roleCache,
+		logger,
+	)
 
 	// 创建基础服务
 	roleService := service.NewRoleService(roleRepo, permissionRepo, db, logger)
 	permissionService := service.NewPermissionService(permissionRepo, logger)
-	userRoleService := service.NewUserRoleService(userRoleRepo, roleRepo, calculator, logger)
+	userRoleService := service.NewUserRoleService(userRoleRepo, roleRepo, calculator, permissionCacheService, logger)
 
 	// 创建 Story 2.6 细粒度权限覆盖服务
 	overrideService := service.NewPermissionOverrideService(overrideRepo, logger)
@@ -61,13 +84,14 @@ func NewPermissionModule(db *sql.DB, logger *zap.Logger) *PermissionModule {
 		PermissionService:      permissionService,
 		UserRoleService:        userRoleService,
 		PermissionCalculator:   calculator,
+		PermissionCache:        permissionCacheService,
 		OverrideRepo:           overrideRepo,
 		OverrideService:        overrideService,
 		OverrideCRUDService:    overrideCRUDService,
 		DataScopeService:       dataScopeService,
 		FieldPermissionService: fieldPermissionService,
-		RoleRepo:               roleRepo,
-		PermissionRepo:         permissionRepo,
-		UserRoleRepo:           userRoleRepo,
+		RoleRepo:              roleRepo,
+		PermissionRepo:        permissionRepo,
+		UserRoleRepo:          userRoleRepo,
 	}
 }

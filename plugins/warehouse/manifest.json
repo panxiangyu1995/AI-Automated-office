@@ -1,0 +1,16 @@
+{
+  "id": "warehouse",
+  "name": "仓库管理",
+  "version": "1.0.0",
+  "description": "仓库管理模块 - 出入库、盘点、库存预警",
+  "entry": "index.ts",
+  "permissions": [
+    "warehouse:read",
+    "warehouse:write",
+    "inventory:read",
+    "inventory:write"
+  ],
+  "dependencies": [],
+  "author": "AI-Automated-office",
+  "homepage": "https://github.com/ai-automated-office"
+}

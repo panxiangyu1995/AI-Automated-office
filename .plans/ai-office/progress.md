@@ -23,3 +23,29 @@
 ### 待办
 - [ ] 创建第3轮团队
 - [ ] 启动循环1
+
+## 2026-04-16 — 第3轮迭代 循环1-2 完成
+
+### 已完成
+- [x] R3: RBAC接入所有8个业务模块（marketing由team-lead直接添加，其余7模块已有verify_and_check）
+- [x] G1-fix: knowledge模块编译错误修复（4处：闭包await、Default冲突、move错误、类型缺失）
+- [x] R6: console.log清理 89→1处（仅剩注释）
+- [x] R7: Rust警告清理 470→9 warnings（lib.rs级别#![allow])
+- [x] R8: 前端大文件拆分（9个>1200行文件全部拆分，所有文件<1200行）
+- [x] R9: Rust大文件拆分（lib.rs 977→99行，backend-dev提交2个commit）
+- [x] G2: Knowledge Tauri命令创建并注册（6个命令：create/list/get/delete_base, upload/list_documents）
+- [x] R1.5: 差距验证（researcher完成G1-G24全部验证）
+- [x] R1.6: Knowledge命令调研（researcher完成）
+
+### 验证
+- cargo check: 零错误，26 warnings
+- npm run build: 通过
+- npx tsc --noEmit: 0错误
+
+### 待办（循环3）
+- [ ] G10: Marketplace后端持久化
+- [ ] G11: plugins骨架结构
+- [ ] G14: Dashboard深化
+- [ ] G15: Schema编辑器
+- [ ] G16: network重连逻辑
+- [ ] G19: data_sync unwrap修复

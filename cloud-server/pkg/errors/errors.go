@@ -200,3 +200,9 @@ func FileTooLarge(maxSize string) *AppError {
 	return NewError(ErrFileTooLarge, http.StatusBadRequest,
 		fmt.Sprintf("File size exceeds maximum allowed size of %s", maxSize))
 }
+
+// RateLimitError creates a rate limit exceeded error.
+func RateLimitError(retryAfter int) *AppError {
+	return NewError(ErrRateLimitExceeded, http.StatusTooManyRequests,
+		fmt.Sprintf("Rate limit exceeded. Retry after %d seconds", retryAfter))
+}

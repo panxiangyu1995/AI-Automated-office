@@ -139,7 +139,7 @@ impl WebhookService {
                 "agent.tool.executed".to_string(),
                 "approval.created".to_string(),
             ],
-            secret: Some("whsec_default_secret".to_string()),
+            secret: std::env::var("WEBHOOK_SECRET").ok(),
             enabled: true,
             headers: HashMap::new(),
             retry_policy: RetryPolicy::default(),

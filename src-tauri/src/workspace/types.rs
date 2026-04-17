@@ -220,3 +220,100 @@ pub struct TodoListItem {
     pub status: TodoStatus,
     pub created_at: i64,
 }
+
+// ==================== 自定义字段类型 ====================
+
+/// 自定义字段数据类型
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
+#[serde(rename_all = "snake_case")]
+pub enum CustomFieldType {
+    Text,
+    Number,
+    Boolean,
+    Date,
+    Select,
+    MultiSelect,
+    RichText,
+    File,
+    Reference,
+}
+
+impl Default for CustomFieldType {
+    fn default() -> Self {
+        Self::Text
+    }
+}
+
+/// 自定义字段定义（Schema）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomFieldDefinition {
+    pub id: String,
+    pub name: String,
+    pub label: String,
+    pub field_type: CustomFieldType,
+    pub module: String,
+    pub required: bool,
+    pub default_value: Option<serde_json::Value>,
+    pub options: Option<Vec<SelectOption>>,
+    pub validation: Option<FieldValidation>,
+    pub ai_hint: Option<String>,
+    pub sort_order: i32,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+/// Select 选项
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelectOption {
+    pub value: String,
+    pub label: String,
+    pub color: Option<String>,
+}
+
+/// 字段验证规则
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FieldValidation {
+    pub min_length: Option<i32>,
+    pub max_length: Option<i32>,
+    pub min_value: Option<f64>,
+    pub max_value: Option<f64>,
+    pub pattern: Option<String>,
+    pub custom_validator: Option<String>,
+}
+
+/// 自定义字段值
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomFieldValue {
+    pub field_id: String,
+    pub entity_type: String,
+    pub entity_id: String,
+    pub value: serde_json::Value,
+    pub updated_at: i64,
+}
+
+/// 创建自定义字段请求
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateCustomFieldRequest {
+    pub name: String,
+    pub label: String,
+    pub field_type: CustomFieldType,
+    pub module: String,
+    pub required: Option<bool>,
+    pub default_value: Option<serde_json::Value>,
+    pub options: Option<Vec<SelectOption>>,
+    pub validation: Option<FieldValidation>,
+    pub ai_hint: Option<String>,
+}
+
+/// 字段验证结果
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FieldValidationResult {
+    pub valid: bool,
+    pub errors: Vec<String>,
+}

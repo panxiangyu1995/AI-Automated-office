@@ -1,0 +1,70 @@
+# Approval Center Subagent 配置
+
+name: approval
+display_name: 审批助手
+description: 处理审批相关任务，包括审批流程创建、审批操作、审批统计等
+agent_type: department
+plugin_id: approval
+version: "1.0.0"
+
+models:
+  primary:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    temperature: 0.7
+    max_tokens: 8192
+
+tools:
+  - name: approval_query
+    display_name: 审批查询
+    description: 查询审批流程和记录
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+
+  - name: approval_mutate
+    display_name: 审批操作
+    description: 创建/审批/驳回审批
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+    actions:
+      specialist:
+        - approve
+        - reject
+      manager:
+        - "*"
+      executive:
+        - "*"
+
+  - name: approval_analytics
+    display_name: 审批分析
+    description: 审批效率、通过率统计
+    allowed_roles:
+      - manager
+      - executive
+
+trigger:
+  mode: auto
+  keywords:
+    - "审批"
+    - "申请"
+    - "批准"
+    - "驳回"
+    - "流程"
+  priority: 9
+
+permissions:
+  data_scope:
+    staff: personal
+    specialist: department
+    manager: all
+    executive: executive
+
+limits:
+  max_steps: 15
+  max_concurrent: 3
+  timeout_seconds: 180

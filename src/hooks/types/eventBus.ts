@@ -1,158 +1,101 @@
 /**
- * EventBus 类型定义
- * 统一的事件发布/订阅系统类型
+ * EventBus类型定义
+ * 统一事件发布/订阅系统的类型声明
  */
 
-/**
- * 事件处理器类型
- */
-export type EventHandler<T = unknown> = (payload: T) => void
+// ==================== Chat Events ====================
 
 /**
- * 事件总线接口
- */
-export interface IEventBus {
-  /**
-   * 订阅事件
-   * @param event 事件名称
-   * @param handler 事件处理器
-   * @returns 取消订阅函数
-   */
-  subscribe<T>(event: string, handler: EventHandler<T>): () => void
-
-  /**
-   * 订阅一次性事件（自动取消订阅）
-   * @param event 事件名称
-   * @param handler 事件处理器
-   * @returns 取消订阅函数
-   */
-  once<T>(event: string, handler: EventHandler<T>): () => void
-
-  /**
-   * 发布事件
-   * @param event 事件名称
-   * @param payload 事件数据
-   */
-  publish<T>(event: string, payload: T): void
-
-  /**
-   * 取消订阅
-   * @param event 事件名称
-   * @param handler 要移除的处理器（可选，不传则移除该事件所有处理器）
-   */
-  unsubscribe(event: string, handler?: EventHandler): void
-
-  /**
-   * 清除所有订阅或指定事件的订阅
-   * @param event 可选的事件名称
-   */
-  clear(event?: string): void
-
-  /**
-   * 获取订阅数量
-   * @param event 可选的事件名称
-   */
-  getSubscriptionCount(event?: string): number
-
-  /**
-   * 获取所有已订阅的事件名称
-   */
-  getSubscribedEvents(): string[]
-}
-
-// ==================== 预定义事件类型 ====================
-
-/**
- * Chat 相关事件
+ * 聊天事件名称
  */
 export const ChatEvents = {
   MESSAGE_ADD: 'chat:message:add',
   MESSAGE_UPDATE: 'chat:message:update',
   MESSAGE_DELETE: 'chat:message:delete',
   SESSION_CREATE: 'chat:session:create',
+  SESSION_UPDATE: 'chat:session:update',
   SESSION_DELETE: 'chat:session:delete',
-  SESSION_SWITCH: 'chat:session:switch',
   STREAMING_START: 'chat:streaming:start',
-  STREAMING_UPDATE: 'chat:streaming:update',
   STREAMING_END: 'chat:streaming:end',
-} as const
+} as const;
 
+/**
+ * 消息添加事件载荷
+ */
 export interface MessageAddPayload {
-  sessionId: string
-  messageId: string
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
-
-export interface SessionCreatePayload {
-  sessionId: string
-  title?: string
-}
-
-export interface StreamingPayload {
-  sessionId: string
-  messageId: string
-  content: string
+  sessionId: string;
+  messageId: string;
+  role: string;
+  content: string;
 }
 
 /**
- * Agent 相关事件
+ * 事件处理器类型
  */
-export const AgentEvents = {
-  RUNTIME_START: 'agent:runtime:start',
-  RUNTIME_END: 'agent:runtime:end',
-  TOOL_CALL: 'agent:tool:call',
-  TOOL_RESULT: 'agent:tool:result',
-  ERROR: 'agent:error',
-  WARNING: 'agent:warning',
-} as const
-
-export interface RuntimeStartPayload {
-  sessionId: string
-  traceId: string
-}
-
-export interface RuntimeEndPayload {
-  sessionId: string
-  traceId: string
-  duration: number
-  reason: 'completed' | 'interrupted' | 'failed'
-}
-
-export interface ToolCallPayload {
-  sessionId: string
-  toolId: string
-  toolName: string
-  params: Record<string, unknown>
+export interface EventHandler<T = unknown> {
+  (payload: T): void;
 }
 
 /**
- * 插件相关事件
+ * EventBus接口
  */
-export const PluginEvents = {
-  LOAD: 'plugin:load',
-  UNLOAD: 'plugin:unload',
-  ENABLE: 'plugin:enable',
-  DISABLE: 'plugin:disable',
-  ERROR: 'plugin:error',
-  SIDEBAR_UPDATE: 'plugin:sidebar:update',
-} as const
+export interface IEventBus {
+  /**
+   * 订阅事件
+   * @param event 事件名称，支持通配符 * 和 **
+   * @param handler 事件处理器
+   * @returns 取消订阅函数
+   */
+  subscribe<T>(event: string, handler: EventHandler<T>): () => void;
 
-export interface PluginLoadPayload {
-  pluginId: string
-  version: string
-}
+  /**
+   * 订阅一次性事件
+   * @param event 事件名称
+   * @param handler 事件处理器
+   * @returns 取消订阅函数
+   */
+  once<T>(event: string, handler: EventHandler<T>): () => void;
 
-export interface PluginErrorPayload {
-  pluginId: string
-  error: string
+  /**
+   * 发布事件
+   * @param event 事件名称
+   * @param payload 事件数据
+   */
+  publish<T>(event: string, payload: T): void;
+
+  /**
+   * 取消订阅
+   * @param event 事件名称
+   * @param handler 可选，指定处理器，如不指定则取消该事件所有订阅
+   */
+  unsubscribe(event: string, handler?: EventHandler): void;
+
+  /**
+   * 清除订阅
+   * @param event 可选，如指定则只清除该事件的订阅
+   */
+  clear(event?: string): void;
+
+  /**
+   * 获取订阅数量
+   * @param event 可选，如指定则返回该事件的订阅数
+   */
+  getSubscriptionCount(event?: string): number;
+
+  /**
+   * 获取所有已订阅的事件
+   */
+  getSubscribedEvents(): string[];
 }
 
 /**
- * 系统相关事件
+ * 内部订阅者结构
  */
-export const SystemEvents = {
-  ONLINE: 'system:online',
-  OFFLINE: 'system:offline',
-  CONFIG_UPDATE: 'system:config:update',
-} as const
+interface InternalSubscription {
+  handler: EventHandler;
+  event: string;
+  subscribedAt: number;
+}
+
+// 导出以供外部使用（如需要）
+export type { InternalSubscription };

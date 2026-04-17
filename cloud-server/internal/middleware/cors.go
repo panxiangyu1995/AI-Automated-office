@@ -1,45 +1,41 @@
 package middleware
 
 import (
-	"net/http"
-	"strings"
-
-	"cloud-server/internal/config"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CORSMiddleware(cfg config.CorsConfig) gin.HandlerFunc {
-	allowedOrigins := make(map[string]struct{})
-	for _, origin := range cfg.AllowedOrigins {
-		allowedOrigins[origin] = struct{}{}
-	}
+// CORSConfig CORS 配置
+type CORSConfig struct {
+	AllowedOrigins   []string
+	AllowedMethods   []string
+	AllowedHeaders   []string
+	ExposedHeaders   []string
+	AllowCredentials bool
+	MaxAge           int
+}
 
-	allowedMethods := strings.Join(cfg.AllowedMethods, ", ")
-	allowedHeaders := strings.Join(cfg.AllowedHeaders, ", ")
-	exposedHeaders := strings.Join(cfg.ExposedHeaders, ", ")
-
+// CORSMiddleware CORS 中间件
+func CORSMiddleware(cfg interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
+		origin := c.GetHeader("Origin")
+		
+		// 简单 CORS 处理
 		if origin != "" {
-			if _, ok := allowedOrigins[origin]; ok {
-				c.Header("Access-Control-Allow-Origin", origin)
-				c.Header("Vary", "Origin")
-			}
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Access-Control-Allow-Credentials", "true")
+			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Trace-ID, X-Request-ID")
+			c.Header("Access-Control-Expose-Headers", "X-Trace-ID, X-Request-ID, Content-Length")
+			c.Header("Access-Control-Max-Age", strconv.Itoa(86400))
 		}
-		c.Header("Access-Control-Allow-Methods", allowedMethods)
-		c.Header("Access-Control-Allow-Headers", allowedHeaders)
-		if exposedHeaders != "" {
-			c.Header("Access-Control-Expose-Headers", exposedHeaders)
-		}
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Max-Age", "86400")
-
-		if c.Request.Method == http.MethodOptions {
-			c.AbortWithStatus(http.StatusNoContent)
+		
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
 			return
 		}
-
+		
 		c.Next()
 	}
 }

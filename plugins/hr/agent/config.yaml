@@ -1,0 +1,93 @@
+# HR Department Subagent 配置
+# ADR-059 部门化 Subagent 架构 - 人事部门
+
+name: hr
+display_name: 人事助手
+description: 处理人事相关任务，包括员工管理、考勤统计、组织架构查询等
+agent_type: department
+plugin_id: hr
+version: "1.0.0"
+
+models:
+  primary:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    temperature: 0.7
+    max_tokens: 8192
+
+tools:
+  - name: hr_query
+    display_name: 员工查询
+    description: 查询员工信息和组织架构
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+    field_permissions:
+      staff:
+        - name
+        - department
+        - position
+      specialist:
+        - name
+        - department
+        - position
+        - email
+        - phone
+      manager:
+        - "*"
+      executive:
+        - "*"
+
+  - name: hr_mutate
+    display_name: 人事操作
+    description: 员工入职/离职/调岗
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+    actions:
+      specialist:
+        - update_employee_info
+      manager:
+        - "*"
+      executive:
+        - "*"
+
+  - name: hr_attendance
+    display_name: 考勤统计
+    description: 考勤数据查询和统计
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+
+trigger:
+  mode: auto
+  keywords:
+    - "员工"
+    - "入职"
+    - "离职"
+    - "考勤"
+    - "组织架构"
+    - "部门"
+    - "岗位"
+  priority: 9
+
+permissions:
+  data_scope:
+    staff: personal
+    specialist: department
+    manager: all
+    executive: executive
+  sensitive_fields:
+    - salary
+    - bonus
+    - id_number
+    - bank_account
+
+limits:
+  max_steps: 20
+  max_concurrent: 2
+  timeout_seconds: 300

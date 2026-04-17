@@ -1,0 +1,66 @@
+# Warehouse Department Subagent 配置
+
+name: warehouse
+display_name: 仓储助手
+description: 处理仓储相关任务，包括入库、出库、盘点、库存查询等
+agent_type: department
+plugin_id: warehouse
+version: "1.0.0"
+
+models:
+  primary:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    temperature: 0.7
+    max_tokens: 8192
+
+tools:
+  - name: warehouse_query
+    display_name: 库存查询
+    description: 查询库存、出入库记录
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+
+  - name: warehouse_mutate
+    display_name: 仓储操作
+    description: 入库/出库/盘点操作
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+
+  - name: warehouse_analytics
+    display_name: 仓储分析
+    description: 库存周转、预警统计
+    allowed_roles:
+      - manager
+      - executive
+
+trigger:
+  mode: auto
+  keywords:
+    - "库存"
+    - "入库"
+    - "出库"
+    - "盘点"
+    - "仓库"
+    - "物料"
+  priority: 7
+
+permissions:
+  data_scope:
+    staff: personal
+    specialist: department
+    manager: all
+    executive: executive
+  sensitive_fields:
+    - cost_price
+    - supplier_price
+
+limits:
+  max_steps: 20
+  max_concurrent: 2
+  timeout_seconds: 300

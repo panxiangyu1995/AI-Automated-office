@@ -1,0 +1,66 @@
+# Marketing Department Subagent 配置
+
+name: marketing
+display_name: 市场宣传助手
+description: 处理市场宣传相关任务，包括营销物料、推广活动、品牌管理等
+agent_type: department
+plugin_id: marketing
+version: "1.0.0"
+
+models:
+  primary:
+    provider: "anthropic"
+    model_id: "claude-sonnet-4-20250514"
+    temperature: 0.7
+    max_tokens: 8192
+
+tools:
+  - name: marketing_query
+    display_name: 营销查询
+    description: 查询营销活动、物料、推广数据
+    allowed_roles:
+      - staff
+      - specialist
+      - manager
+      - executive
+
+  - name: marketing_mutate
+    display_name: 营销操作
+    description: 创建/更新营销活动和物料
+    allowed_roles:
+      - specialist
+      - manager
+      - executive
+
+  - name: marketing_analytics
+    display_name: 营销分析
+    description: 推广效果、ROI分析
+    allowed_roles:
+      - manager
+      - executive
+
+trigger:
+  mode: auto
+  keywords:
+    - "营销"
+    - "推广"
+    - "宣传"
+    - "品牌"
+    - "活动"
+    - "物料"
+  priority: 6
+
+permissions:
+  data_scope:
+    staff: personal
+    specialist: department
+    manager: all
+    executive: executive
+  sensitive_fields:
+    - budget
+    - roi_data
+
+limits:
+  max_steps: 20
+  max_concurrent: 2
+  timeout_seconds: 300

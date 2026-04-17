@@ -9,7 +9,7 @@ use tauri::{Manager, App};
 use crate::commands;
 use crate::{
     agent, approval, capability, department, export, finance, hr,
-    knowledge, load_balancing, management, marketing, message,
+    knowledge, load_balancing, management, marketplace, marketing, message,
     sales, security, service, session, sla, storage, sync,
     tender, tenant, utils, warehouse, webhook, workcard, workspace,
 };
@@ -169,6 +169,8 @@ async fn init_memory_and_embedding(app: &App) {
     app.manage(Arc::new(skill_loader));
 
     // Initialize knowledge base RAG services
+    let knowledge_state = knowledge::commands::KnowledgeState::new();
+    app.manage(knowledge_state);
     let embedding_service = Arc::new(embedding_instance);
     let pipeline = knowledge::DocumentPipeline::new(embedding_service.clone());
     app.manage(Arc::new(pipeline));
@@ -257,6 +259,10 @@ async fn init_department_modules(app: &App, _app_data_dir: &PathBuf, pool: &sqlx
     // Initialize Marketing module (Task 237 - Epic 17 Story 17.1)
     let marketing_state = marketing::MarketingState::new();
     app.manage(marketing_state.db.clone());
+
+    // Initialize Marketplace module
+    let marketplace_state = marketplace::MarketplaceState::new();
+    app.manage(marketplace_state);
 
     // Initialize Workspace module (Task 240 - Epic 18 Story 18.1)
     let workspace_state = workspace::WorkspaceState::new();

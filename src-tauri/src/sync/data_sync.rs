@@ -285,8 +285,10 @@ impl DataSyncEngine {
                                 (Some(l), Some(r)) => {
                                     // For arrays, take union; for scalars, take newer
                                     if l.is_array() && r.is_array() {
-                                        let mut arr = l.as_array().unwrap().clone();
-                                        for item in r.as_array().unwrap() {
+                                        let l_arr = l.as_array().cloned().unwrap_or_default();
+                                        let r_arr = r.as_array().cloned().unwrap_or_default();
+                                        let mut arr = l_arr;
+                                        for item in &r_arr {
                                             if !arr.contains(item) {
                                                 arr.push(item.clone());
                                             }
