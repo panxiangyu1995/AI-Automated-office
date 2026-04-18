@@ -1,5 +1,5 @@
 /**
- * Message 模块 Hooks 导出
+ * Message Hooks - 统一导出
  */
 
 export * from './useMessage'
