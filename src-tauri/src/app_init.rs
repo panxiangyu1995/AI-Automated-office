@@ -29,6 +29,9 @@ pub async fn init_services(app: &App, app_data_dir: PathBuf) {
     let pool = storage::sqlite::create_pool("default").await.expect("无法创建数据库连接池");
     storage::migrations::run_migrations(&pool).await.expect("无法运行数据库迁移");
 
+    // 管理数据库连接池状态（供 Dashboard 等命令使用）
+    app.manage(Arc::new(tokio::sync::RwLock::new(Some(pool.clone()))));
+
     let auth_service = crate::auth::AuthService::new(pool.clone());
     auth_service.ensure_default_user("default").await.expect("无法初始化默认用户");
     app.manage(auth_service);

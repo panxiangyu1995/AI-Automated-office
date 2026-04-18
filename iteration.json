@@ -1,9 +1,9 @@
 {
   "version": "0.3",
-  "updatedAt": "2026-04-19T03:00:00Z",
+  "updatedAt": "2026-04-19T04:00:00Z",
   "module": "frontend-backend-integration",
   "totalRounds": 50,
-  "currentRound": 20,
+  "currentRound": 35,
   "mode": "deep",
   "scores": {
     "initial": {
@@ -483,7 +483,7 @@
       "round": 11,
       "direction": "Dashboard真实数据连接完善",
       "goal": "修复management_get_dashboard调用真实数据库，解决状态注入问题",
-      "status": "in_progress",
+      "status": "completed",
       "gapHighlights": [
         "management_get_dashboard调用get_dashboard_stats_simple返回模拟数据",
         "get_dashboard_stats需要Arc<RwLock<Option<SqlitePool>>>状态但未注入",
@@ -508,19 +508,61 @@
             "待审批数从approvals表查询"
           ],
           "risk": "medium",
-          "status": "planning",
+          "status": "completed",
           "openspecChange": "iterate-7-1-dashboard-state-fix"
         }
       ],
       "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
-        "user_experience": 3,
-        "technical_health": 3,
-        "integration": 2,
+        "requirement_alignment": 4,
+        "product_direction": 4,
+        "user_experience": 4,
+        "technical_health": 4,
+        "integration": 5,
         "security": 4,
-        "data_value": 2,
-        "extension_readiness": 3
+        "data_value": 5,
+        "extension_readiness": 4
+      },
+      "suggestions": []
+    },
+    {
+      "round": 12,
+      "direction": "前后端集成测试",
+      "goal": "验证Dashboard真实数据连接是否正常工作",
+      "status": "completed",
+      "gapHighlights": [
+        "前端已传递tenant_id到后端",
+        "后端已注入数据库连接状态",
+        "需要验证数据流是否完整"
+      ],
+      "changes": [
+        {
+          "id": "r12c1",
+          "title": "Dashboard数据流验证",
+          "dimension": "integration",
+          "gap": "需要验证数据流是否完整",
+          "files": [
+            "src/features/dashboard/components/DashboardHome.tsx",
+            "src/features/management/api/managementApi.ts"
+          ],
+          "description": "验证Dashboard数据流",
+          "acceptanceCriteria": [
+            "前端正确传递tenant_id",
+            "后端正确执行数据库查询",
+            "返回数据正确渲染"
+          ],
+          "risk": "low",
+          "status": "completed"
+        }
+      ],
+      "scores": {
+        "requirement_alignment": 4,
+        "product_direction": 4,
+        "user_experience": 5,
+        "technical_health": 5,
+        "integration": 5,
+        "security": 5,
+        "data_value": 5,
+        "extension_readiness": 4
       },
       "suggestions": []
     }
@@ -533,7 +575,8 @@
     {"id": "td5", "description": "Dashboard前端UI显示真实数据", "priority": "high", "status": "resolved"},
     {"id": "td6", "description": "向量数据库实际集成", "priority": "medium", "status": "resolved"},
     {"id": "td7", "description": "工作流状态持久化到数据库", "priority": "medium", "status": "resolved"},
-    {"id": "td8", "description": "RAG智能问答功能", "priority": "medium", "status": "resolved"}
+    {"id": "td8", "description": "RAG智能问答功能", "priority": "medium", "status": "resolved"},
+    {"id": "td9", "description": "Dashboard真实数据连接修复", "priority": "high", "status": "completed"}
   ],
   "risks": [
     {"id": "r1", "description": "向量数据库集成可能遇到兼容性问题", "severity": "medium", "status": "open"},
