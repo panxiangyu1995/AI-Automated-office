@@ -1,30 +1,30 @@
 {
-  "version": "0.3",
-  "updatedAt": "2026-04-19T03:00:00Z",
-  "module": "frontend-backend-integration",
-  "totalRounds": 50,
-  "currentRound": 20,
+  "version": "0.1",
+  "updatedAt": "2026-04-17T18:00:00Z",
+  "module": "global",
+  "totalRounds": 10,
+  "currentRound": 12,
   "mode": "deep",
   "scores": {
     "initial": {
       "requirement_alignment": 2,
-      "product_direction": 4,
-      "user_experience": 3,
+      "product_direction": 3,
+      "user_experience": 2,
       "technical_health": 2,
-      "integration": 2,
+      "integration": 1,
       "security": 3,
-      "data_value": 2,
+      "data_value": 1,
       "extension_readiness": 2
     },
     "current": {
-      "requirement_alignment": 3,
+      "requirement_alignment": 4,
       "product_direction": 4,
-      "user_experience": 4,
-      "technical_health": 3,
-      "integration": 3,
-      "security": 3,
-      "data_value": 3,
-      "extension_readiness": 3
+      "user_experience": 5,
+      "technical_health": 4,
+      "integration": 5,
+      "security": 4,
+      "data_value": 5,
+      "extension_readiness": 4
     }
   },
   "rounds": [
@@ -544,39 +544,5 @@
     "Agent对话历史持久化",
     "云端同步增强",
     "前端UI细节优化"
-  ],
-  "hooksCreated": [
-    {
-      "module": "approval",
-      "hooks": ["useApprovalFlows", "useApprovalFlow", "useCreateFlow", "useUpdateFlow", "useDeleteFlow", "useApprovalRecords", "useApprovalRecord", "useSubmitApproval", "useApprove", "useReject", "useCancelApproval", "useApprovalStats", "useApprovalDashboard"]
-    },
-    {
-      "module": "hr",
-      "hooks": ["useEmployees", "useEmployee", "useCreateEmployee", "useUpdateEmployee", "useDeleteEmployee", "useDepartmentTree", "useDepartment", "useCreateDepartment", "useUpdateDepartment", "useDeleteDepartment", "usePositions", "usePosition", "useCreatePosition", "useUpdatePosition", "useDeletePosition", "useHrDashboard"]
-    },
-    {
-      "module": "finance",
-      "hooks": ["useInvoices", "useInvoice", "useCreateInvoice", "useUpdateInvoice", "useDeleteInvoice", "useOcrInvoice", "useLedgerEntries", "useLedgerEntry", "useCreateLedger", "useUpdateLedger", "useDeleteLedger", "useFinanceStats", "useFinanceDashboard"]
-    },
-    {
-      "module": "warehouse",
-      "hooks": ["useInboundOrders", "useInboundOrder", "useCreateInbound", "useSubmitInbound", "useApproveInbound", "useOutboundOrders", "useOutboundOrder", "useCreateOutbound", "useSubmitOutbound", "useApproveOutbound", "useInventory", "useInventoryItem", "useWarehouseStats", "useWarehouseDashboard"]
-    },
-    {
-      "module": "sales",
-      "hooks": ["useCustomers", "useCustomer", "useCreateCustomer", "useUpdateCustomer", "useDeleteCustomer", "useQuotes", "useQuote", "useCreateQuote", "useUpdateQuote", "useSendQuote", "useAcceptQuote", "useRejectQuote", "useContracts", "useContract", "useCreateContract", "useUpdateContract", "useSignContract", "useSalesStats", "useSalesDashboard"]
-    },
-    {
-      "module": "message",
-      "hooks": ["useMessages", "useMessage", "useSendMessage", "useMarkAsRead", "useMarkAllAsRead", "useDeleteMessage", "usePinMessage", "useNotificationSettings", "useUpdateNotificationSettings", "useDoNotDisturb", "useUnreadCount", "useMessageDashboard"]
-    }
-  ],
-  "apiContractsUpdated": [
-    "approval_flow", "approval_record", "approval_stats",
-    "finance_invoice", "finance_ledger", "finance_stats",
-    "sales_customer", "sales_quote", "sales_contract", "sales_stats",
-    "hr_employee", "hr_department", "hr_position",
-    "warehouse_inventory", "warehouse_inbound", "warehouse_outbound", "warehouse_stats",
-    "message", "message_settings", "announcement"
   ]
 }

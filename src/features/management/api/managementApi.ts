@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 export async function getDashboard(): Promise<DashboardData> {
   const authStore = useAuthStore.getState()
-  const tenantId = authStore.user?.tenantId
+  const tenantId = authStore.user?.tenant_id
   return invoke('management_get_dashboard', { tenantId })
 }
 

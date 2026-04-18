@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   RefreshCw,
   Users,
@@ -23,6 +23,7 @@ import { ServiceOverview } from './ServiceOverview'
 import { WarningOverview } from './WarningOverview'
 import { FinanceOverview } from './FinanceOverview'
 import { SalesOverview } from './SalesOverview'
+import { useAutoRefresh, formatTimeSince } from '@/hooks/useAutoRefresh'
 
 function formatCurrency(n: number) {
   if (n >= 100000000) return `¥${(n / 100000000).toFixed(1)}亿`
@@ -41,13 +42,24 @@ export function DashboardHome() {
   const fetchApprovalStats = useApprovalStore((s) => s.fetchStats)
   const fetchServiceStatistics = useServiceStore((s) => s.fetchStatistics)
 
-  useEffect(() => {
-    fetchAll()
-    fetchSalesStats()
-    fetchFinanceStats()
-    fetchApprovalStats()
-    fetchServiceStatistics()
-  }, [fetchAll, fetchSalesStats, fetchFinanceStats, fetchApprovalStats, fetchServiceStatistics])
+  // 组合刷新函数
+  const refreshAll = useCallback(async () => {
+    await Promise.all([
+      fetchAll(),
+      fetchSalesStats(),
+      fetchFinanceStats(),
+      fetchApprovalStats(),
+      fetchServiceStatistics(),
+    ]);
+  }, [fetchAll, fetchSalesStats, fetchFinanceStats, fetchApprovalStats, fetchServiceStatistics]);
+
+  // 自动刷新Hook
+  const [autoRefreshConfig, _setAutoRefreshConfig] = useState({ enabled: true, interval: 30000 });
+  const { isRefreshing, lastRefreshTime, refresh } = useAutoRefresh({
+    enabled: autoRefreshConfig.enabled,
+    interval: autoRefreshConfig.interval,
+    onRefresh: refreshAll,
+  });
 
   const isLoading = mgmtLoading && !dashboard
 
@@ -75,12 +87,31 @@ export function DashboardHome() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">企业驾驶舱</h2>
-          <p className="text-sm text-muted-foreground">各部门关键指标概览</p>
+          <p className="text-sm text-muted-foreground">
+            各部门关键指标概览
+            {autoRefreshConfig.enabled && (
+              <span className="ml-2 text-xs text-muted-foreground/60">
+                ({formatTimeSince(lastRefreshTime)})
+              </span>
+            )}
+          </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => { fetchAll(); fetchSalesStats(); fetchFinanceStats(); fetchApprovalStats(); fetchServiceStatistics(); }}>
-          <RefreshCw className="h-4 w-4 mr-1" />
-          刷新
-        </Button>
+        <div className="flex items-center gap-2">
+          {autoRefreshConfig.enabled && (
+            <span className="text-xs text-muted-foreground">
+              每{Math.round(autoRefreshConfig.interval / 1000)}秒
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refresh()}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? '刷新中...' : '刷新'}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

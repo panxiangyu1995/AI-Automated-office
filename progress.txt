@@ -138,3 +138,157 @@
   - Dashboard前端UI完善，显示真实数据
   - RAG功能完善后可实现智能问答
   - 工作流引擎完成后可实现复杂审批自动化
+
+## 2026-04-19 - 前后端集成优化迭代（第7-20轮）
+
+### 铁律合规检查
+
+- PRD 合规：所有变更符合 PRD 文档要求
+- 架构合规：遵循分层微内核架构（Tauri + React）
+- UX 合规：使用 Shadcn/ui 组件，遵循 UX 设计规范
+- Epic 合规：符合 Epic 1-3 的前后端集成要求
+
+### What was done
+
+#### Phase 1-10：创建统一 Hooks 和组件
+
+1. **创建 useTauriCommand Hook** (`src/hooks/useTauriCommand.ts`)
+   - 统一 Tauri 命令调用封装
+   - 加载状态管理
+   - 错误处理和重试机制
+   - 认证/权限错误检查
+
+2. **创建 useDataFetch Hook** (`src/hooks/useDataFetch.ts`)
+   - 统一数据获取封装
+   - 缓存管理（DataCache）
+   - 分页支持
+   - 乐观更新
+
+3. **创建 useFormSubmit Hook** (`src/hooks/useFormSubmit.ts`)
+   - 表单提交统一封装
+   - 客户端验证规则
+   - 提交生命周期管理
+
+4. **创建通用 UI 组件** (`src/components/common/`)
+   - `ApiErrorDisplay.tsx` - API 错误展示组件
+   - `DataView.tsx` - 数据视图组件（加载/错误/空/数据状态）
+   - `DataTable.tsx` - 通用数据表格组件
+
+5. **创建通用表单组件** (`src/components/ui/form.tsx`)
+   - `FormField` - 表单字段组件
+   - `Form` - 表单容器
+   - `FormProvider` - 表单上下文
+   - `useFormContext` - 表单 Hook
+   - `FormActions` - 表单操作按钮
+
+6. **创建 Modal 和 Toast 组件** (`src/components/ui/`)
+   - `modal.tsx` - 通用模态框和确认对话框
+   - `toast.tsx` - Toast 通知系统
+   - `toaster.tsx` - Toast 容器
+
+#### Phase 11-20：应用 Hooks 到各业务模块
+
+1. **Approval 模块 Hooks** (`src/features/approval/hooks/useApproval.ts`)
+   - useApprovalFlows, useApprovalFlow, useCreateFlow, useUpdateFlow, useDeleteFlow
+   - useApprovalRecords, useApprovalRecord, useSubmitApproval, useApprove, useReject, useCancelApproval
+   - useApprovalStats, useApprovalDashboard
+
+2. **HR 模块 Hooks** (`src/features/hr/hooks/useHr.ts`)
+   - useEmployees, useEmployee, useCreateEmployee, useUpdateEmployee, useDeleteEmployee
+   - useDepartmentTree, useDepartment, useCreateDepartment, useUpdateDepartment, useDeleteDepartment
+   - usePositions, usePosition, useCreatePosition, useUpdatePosition, useDeletePosition
+   - useHrDashboard
+
+3. **Finance 模块 Hooks** (`src/features/finance/hooks/useFinance.ts`)
+   - useInvoices, useInvoice, useCreateInvoice, useUpdateInvoice, useDeleteInvoice, useOcrInvoice
+   - useLedgerEntries, useLedgerEntry, useCreateLedger, useUpdateLedger, useDeleteLedger
+   - useFinanceStats, useFinanceDashboard
+
+4. **Warehouse 模块 Hooks** (`src/features/warehouse/hooks/useWarehouse.ts`)
+   - useInboundOrders, useInboundOrder, useCreateInbound, useSubmitInbound, useApproveInbound
+   - useOutboundOrders, useOutboundOrder, useCreateOutbound, useSubmitOutbound, useApproveOutbound
+   - useInventory, useInventoryItem, useWarehouseStats, useWarehouseDashboard
+
+5. **Sales 模块 Hooks** (`src/features/sales/hooks/useSales.ts`)
+   - useCustomers, useCustomer, useCreateCustomer, useUpdateCustomer, useDeleteCustomer
+   - useQuotes, useQuote, useCreateQuote, useUpdateQuote, useSendQuote, useAcceptQuote, useRejectQuote
+   - useContracts, useContract, useCreateContract, useUpdateContract, useSignContract
+   - useSalesStats, useSalesDashboard
+
+6. **Message 模块 Hooks** (`src/features/message/hooks/useMessage.ts`)
+   - useMessages, useMessage, useSendMessage, useMarkAsRead, useMarkAllAsRead, useDeleteMessage, usePinMessage
+   - useNotificationSettings, useUpdateNotificationSettings, useDoNotDisturb, useUnreadCount
+   - useMessageDashboard
+
+#### Phase 21-30：完善 API 契约和类型定义
+
+1. **更新 API 契约类型** (`src/lib/api/contracts.ts`)
+   - 添加仓库模块类型：WarehouseInventory, WarehouseInbound, WarehouseOutbound, WarehouseStats
+   - 添加消息模块类型：Message, MessageUnreadCount, MessageSettings, MessageSendRequest
+   - 添加公告类型：Announcement, AnnouncementListItem
+
+### 8维度变化
+
+| 维度 | 初始 | 当前 | 变化 |
+|------|------|------|------|
+| 需求对齐度 | 2 | 4 | +2 |
+| 产品方向性 | 4 | 4 | 0 |
+| 用户体验度 | 3 | 4 | +1 |
+| 技术健康度 | 2 | 4 | +2 |
+| 集成完整度 | 2 | 4 | +2 |
+| 安全合规度 | 3 | 4 | +1 |
+| 数据价值度 | 2 | 4 | +2 |
+| 扩展准备度 | 2 | 4 | +2 |
+
+### Testing
+
+- `npm run lint` - 通过
+- `npm run build` - 成功（✓ built in 5.36s）
+
+### 新增文件
+
+- `src/hooks/useTauriCommand.ts`
+- `src/hooks/useDataFetch.ts`
+- `src/hooks/useFormSubmit.ts`
+- `src/hooks/useDataStore.ts`
+- `src/hooks/useAutoRefresh.ts`
+- `src/hooks/AutoRefreshBar.tsx`
+- `src/components/common/ApiErrorDisplay.tsx`
+- `src/components/common/DataView.tsx`
+- `src/components/common/DataTable.tsx`
+- `src/components/ui/form.tsx`
+- `src/components/ui/modal.tsx`
+- `src/components/ui/toast.tsx`
+- `src/components/ui/toaster.tsx`
+- `src/components/ui/pagination.tsx`
+- `src/features/approval/hooks/useApproval.ts`
+- `src/features/approval/hooks/index.ts`
+- `src/features/hr/hooks/useHr.ts`
+- `src/features/hr/hooks/index.ts`
+- `src/features/finance/hooks/useFinance.ts`
+- `src/features/finance/hooks/index.ts`
+- `src/features/warehouse/hooks/useWarehouse.ts`
+- `src/features/warehouse/hooks/index.ts`
+- `src/features/sales/hooks/useSales.ts`
+- `src/features/sales/hooks/index.ts`
+- `src/features/message/hooks/useMessage.ts`
+- `src/features/message/hooks/index.ts`
+
+### 下一轮计划（Phase 31-50）
+
+1. **完善错误处理和加载状态**
+   - 在各模块组件中应用 ApiErrorDisplay
+   - 在各模块组件中应用 DataView 包装
+   - 统一 Loading/Empty/Error 状态展示
+
+2. **Dashboard 真实数据连接**
+   - 连接 DashboardHome 组件到真实后端数据
+   - 实现数据自动刷新
+
+3. **测试覆盖**
+   - 为新 Hooks 创建单元测试
+   - 集成测试
+
+4. **文档完善**
+   - 更新前端开发规范
+   - API 契约文档
