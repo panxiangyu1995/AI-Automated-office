@@ -24,6 +24,17 @@ type EntityVersion struct {
 	Timestamp   time.Time   `json:"timestamp"`
 }
 
+// EntityChange 实体变更
+type EntityChange struct {
+	ID         string      `json:"id"`
+	EntityType string      `json:"entity_type"`
+	EntityID   string      `json:"entity_id"`
+	Operation  string      `json:"operation"`
+	Data       interface{} `json:"data"`
+	Version    int64       `json:"version"`
+	Timestamp  time.Time   `json:"timestamp"`
+}
+
 // Conflict 冲突信息
 type Conflict struct {
 	EntityType    string      `json:"entity_type"`
@@ -55,15 +66,11 @@ type LastWriteWinsResolver struct{}
 func (r *LastWriteWinsResolver) Resolve(ctx context.Context, conflict *Conflict) (*ResolvedConflict, error) {
 	// 比较时间戳，返回最新的
 	var resolved interface{}
-	var timestamp time.Time
-	
-	// 简单实现：假设 LocalData 和 ServerData 是 map，使用版本号判断
+
 	if conflict.LocalVersion >= conflict.ServerVersion {
 		resolved = conflict.LocalData
-		timestamp = time.Now()
 	} else {
 		resolved = conflict.ServerData
-		timestamp = time.Now()
 	}
 	
 	return &ResolvedConflict{

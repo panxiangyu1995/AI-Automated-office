@@ -3,19 +3,20 @@ package message
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"time"
+
+	"cloud-server/internal/module/notification"
 )
 
 // MessageService 消息服务
 type MessageService struct {
-	store *MessageStore
-	audit *MessageAuditStore
+	store       *MessageStore
+	audit       *MessageAuditStore
+	notifDisp   *notification.Dispatcher
 }
 
 // NewMessageService 创建消息服务
-func NewMessageService(store *MessageStore, audit *MessageAuditStore) *MessageService {
-	return &MessageService{store: store, audit: audit}
+func NewMessageService(store *MessageStore, audit *MessageAuditStore, notifDisp *notification.Dispatcher) *MessageService {
+	return &MessageService{store: store, audit: audit, notifDisp: notifDisp}
 }
 
 // SendMessage 发送消息
@@ -68,6 +69,22 @@ func (s *MessageService) SendMessage(ctx context.Context, tenantID, senderID, se
 
 	// 记录审计日志
 	s.recordAudit(ctx, tenantID, "send", msg.ID, &senderID, &req.RecipientID, &msg.Content, senderID, senderName)
+
+	// 发送通知（异步）
+	if s.notifDisp != nil {
+		go func() {
+			notif := &notification.Notification{
+				UserID:    req.RecipientID,
+				TenantID:  tenantID,
+				Title:     req.Title,
+				Content:   req.Content,
+				Channels:  []notification.Channel{notification.ChannelInApp},
+				Priority:  string(priority),
+				ActionURL: "",
+			}
+			notification.DefaultDispatcher.Dispatch(context.Background(), notif)
+		}()
+	}
 
 	return msg, nil
 }

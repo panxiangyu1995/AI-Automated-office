@@ -68,55 +68,58 @@ func AuthMiddleware(db *sql.DB, jwtConfig config.JWTConfig, log *zap.Logger) gin
 		}
 
 		// 检查会话是否被撤销
-		revoked, err := isTokenRevoked(c.Request.Context(), db, claims.SessionID)
-		if err != nil && log != nil {
-			log.Warn("failed to check token revoked status", zap.Error(err))
-		}
-		if revoked {
-			response.AuthError(c, response.ErrTokenRevoked, "令牌已被撤销")
-			c.Abort()
-			return
+		if db != nil {
+			revoked, err := isTokenRevoked(c.Request.Context(), db, claims.SessionID)
+			if err != nil && log != nil {
+				log.Warn("failed to check token revoked status", zap.Error(err))
+			}
+			if revoked {
+				response.AuthError(c, response.ErrTokenRevoked, "令牌已被撤销")
+				c.Abort()
+				return
+			}
 		}
 
 		// 获取租户ID（从上下文或 token）
 		tenantID := c.GetString("tenant_id")
-		if tenantID == "" {
-			// 尝试从用户信息获取
+		if tenantID == "" && db != nil {
 			tenantID = getUserTenantID(c.Request.Context(), db, claims.UserID)
-		}
-
-		// 加载用户信息
-		user, err := getUserByID(c.Request.Context(), db, claims.UserID, tenantID)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				response.AuthError(c, response.ErrUserNotFound, "用户不存在")
-				c.Abort()
-				return
-			}
-			if log != nil {
-				log.Error("failed to get user", zap.Error(err), zap.String("userID", claims.UserID))
-			}
-			response.Error(c, 500, "ERR_DB", "数据库错误", nil)
-			c.Abort()
-			return
-		}
-
-		// 检查用户状态
-		if user.Status != "active" {
-			response.Forbidden(c, response.ForbiddenResponse{
-				Code:    response.ErrUserInactive,
-				Message: "用户已被禁用",
-			})
-			c.Abort()
-			return
 		}
 
 		// 设置用户上下文
 		c.Set("user_id", claims.UserID)
-		c.Set("user", user)
 		c.Set("session_id", claims.SessionID)
 		if tenantID != "" {
 			c.Set("tenant_id", tenantID)
+		}
+
+		// 如果数据库可用，加载完整用户信息
+		if db != nil {
+			user, err := getUserByID(c.Request.Context(), db, claims.UserID, tenantID)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					response.AuthError(c, response.ErrUserNotFound, "用户不存在")
+					c.Abort()
+					return
+				}
+				if log != nil {
+					log.Error("failed to get user", zap.Error(err), zap.String("userID", claims.UserID))
+				}
+				response.Error(c, 500, "ERR_DB", "数据库错误", nil)
+				c.Abort()
+				return
+			}
+
+			if user.Status != "active" {
+				response.Forbidden(c, response.ForbiddenResponse{
+					Code:    response.ErrUserInactive,
+					Message: "用户已被禁用",
+				})
+				c.Abort()
+				return
+			}
+
+			c.Set("user", user)
 		}
 
 		c.Next()

@@ -75,16 +75,6 @@ func BadRequest(c *gin.Context, code string, message string, details map[string]
 	Error(c, http.StatusBadRequest, code, message, details)
 }
 
-// Unauthorized 返回 401 错误
-func Unauthorized(c *gin.Context, code string, message string) {
-	Error(c, http.StatusUnauthorized, code, message, nil)
-}
-
-// Forbidden 返回 403 错误
-func Forbidden(c *gin.Context, code string, message string) {
-	Error(c, http.StatusForbidden, code, message, nil)
-}
-
 // NotFound 返回 404 错误
 func NotFound(c *gin.Context, code string, message string) {
 	Error(c, http.StatusNotFound, code, message, nil)
@@ -93,11 +83,6 @@ func NotFound(c *gin.Context, code string, message string) {
 // InternalError 返回 500 错误
 func InternalError(c *gin.Context, code string, message string) {
 	Error(c, http.StatusInternalServerError, code, message, nil)
-}
-
-// AuthError 认证错误快捷方法
-func AuthError(c *gin.Context, code string, message string) {
-	Unauthorized(c, code, message)
 }
 
 // 错误码常量

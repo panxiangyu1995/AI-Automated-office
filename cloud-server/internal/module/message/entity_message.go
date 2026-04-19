@@ -77,6 +77,8 @@ type Message struct {
 
 // MessageListItem 消息列表项
 type MessageListItem struct {
+	TenantID    string         `json:"tenant_id"`
+	SenderID    string         `json:"sender_id"`
 	ID          string         `json:"id"`
 	MsgType     MessageType    `json:"msg_type"`
 	Title       string         `json:"title"`

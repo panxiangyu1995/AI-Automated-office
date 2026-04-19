@@ -11,7 +11,6 @@ import (
 	"cloud-server/internal/metrics"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // RateLimitType 限流类型
@@ -44,7 +43,6 @@ func NewDistributedRateLimiter(redisClient *redis.Client, limit int, window time
 // Allow 检查是否允许请求
 func (rl *DistributedRateLimiter) Allow(ctx context.Context, identifier string) (bool, int, error) {
 	key := fmt.Sprintf("%s:%s", rl.keyPrefix, identifier)
-	windowSeconds := int(rl.window.Seconds())
 
 	// 使用 Redis INCR
 	count, err := rl.redisClient.Incr(ctx, key)
@@ -83,14 +81,11 @@ func RedisRateLimitMiddleware(redisClient *redis.Client, limit int, window time.
 	return func(c *gin.Context) {
 		// 确定限流标识符
 		var identifier string
-		var limitType RateLimitType
 
 		if userID := c.GetString("user_id"); userID != "" {
 			identifier = "user:" + userID
-			limitType = RateLimitByUser
 		} else {
 			identifier = "ip:" + c.ClientIP()
-			limitType = RateLimitByIP
 		}
 
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)

@@ -4,7 +4,6 @@ import (
 	"cloud-server/internal/cache"
 	"cloud-server/internal/module/permission/domain/repository"
 	"context"
-	"time"
 
 	"go.uber.org/zap"
 )
@@ -53,10 +52,24 @@ func (s *PermissionCacheService) GetUserPermissions(ctx context.Context, userID 
 		return nil, err
 	}
 
-	// 存入缓存
-	s.permissionCache.Set(cacheKey, permissions)
+	// 转换为 PermissionItem
+	items := make([]*repository.PermissionItem, len(permissions))
+	for i, p := range permissions {
+		items[i] = &repository.PermissionItem{
+			ID:          p.ID,
+			Code:        p.Code,
+			Name:        p.Name,
+			Resource:    p.Resource,
+			Action:      p.Action,
+			Layer:       p.Layer,
+			Description: p.Description,
+		}
+	}
 
-	return permissions, nil
+	// 存入缓存
+	s.permissionCache.Set(cacheKey, items)
+
+	return items, nil
 }
 
 // InvalidateUserPermissions 使用户权限缓存失效

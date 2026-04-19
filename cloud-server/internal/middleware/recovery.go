@@ -15,5 +15,6 @@ func RecoveryMiddleware(log *zap.Logger) gin.HandlerFunc {
 			log.Error("panic recovered", zap.Any("error", recovered))
 		}
 		response.Error(c, http.StatusInternalServerError, "ERR_INTERNAL", "服务器内部错误", nil)
+		c.Abort()
 	})
 }

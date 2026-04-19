@@ -16,5 +16,6 @@ func NewMetricsHandler() *MetricsHandler {
 
 // Metrics 返回 Prometheus 指标
 func (h *MetricsHandler) Metrics(c *gin.Context) {
-	metrics.Handler().ServeHTTP(c.Writer, c.Request)
+	handler := metrics.Handler()
+	handler(c)
 }

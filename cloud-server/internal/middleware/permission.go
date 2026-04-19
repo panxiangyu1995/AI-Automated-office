@@ -103,7 +103,8 @@ func PermissionMiddleware(
 		}
 
 		// 检查权限
-		requiredPerm := fmt.Sprintf("%s_%s", resource, action)
+		permCode := strings.ReplaceAll(resource, ".", "_")
+		requiredPerm := fmt.Sprintf("%s_%s", permCode, action)
 		if !permResult.Permissions[requiredPerm] {
 			response.Forbidden(c, response.ForbiddenResponse{
 				Code:               response.ErrPermissionDenied,
