@@ -236,3 +236,189 @@ pub async fn hr_delete_position(
     info!("删除岗位: {}", id);
     state.db.delete_position(&id)
 }
+
+// ==================== 批量操作命令 ====================
+
+/// 批量创建员工 (Write)
+#[tauri::command]
+pub async fn hr_batch_create_employees(
+    state: State<'_, HrState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
+    requests: Vec<CreateEmployeeRequest>,
+) -> Result<BatchOperationResult<Employee>, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
+    let total = requests.len();
+    info!("批量创建员工: {}条", total);
+    
+    let mut results = Vec::with_capacity(total);
+    let mut success_count = 0;
+    let mut fail_count = 0;
+    
+    for request in requests {
+        match state.db.create_employee(request) {
+            Ok(employee) => {
+                success_count += 1;
+                results.push(Ok(employee));
+            }
+            Err(e) => {
+                fail_count += 1;
+                results.push(Err(e));
+            }
+        }
+    }
+    
+    Ok(BatchOperationResult {
+        total,
+        success_count,
+        fail_count,
+        results,
+    })
+}
+
+/// 批量更新员工 (Write)
+#[tauri::command]
+pub async fn hr_batch_update_employees(
+    state: State<'_, HrState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
+    updates: Vec<BatchUpdateItem>,
+) -> Result<BatchOperationResult<Employee>, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
+    let total = updates.len();
+    info!("批量更新员工: {}条", total);
+    
+    let mut results = Vec::with_capacity(total);
+    let mut success_count = 0;
+    let mut fail_count = 0;
+    
+    for update in updates {
+        match state.db.update_employee(&update.id, update.data) {
+            Ok(employee) => {
+                success_count += 1;
+                results.push(Ok(employee));
+            }
+            Err(e) => {
+                fail_count += 1;
+                results.push(Err(e));
+            }
+        }
+    }
+    
+    Ok(BatchOperationResult {
+        total,
+        success_count,
+        fail_count,
+        results,
+    })
+}
+
+/// 批量删除员工 (Admin)
+#[tauri::command]
+pub async fn hr_batch_delete_employees(
+    state: State<'_, HrState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
+    ids: Vec<String>,
+) -> Result<BatchDeleteResult, String> {
+    verify_and_check(&token, &auth_service, Permission::Admin).await?;
+    let total = ids.len();
+    info!("批量删除员工: {}条", total);
+    
+    let mut success_count = 0;
+    let mut fail_count = 0;
+    let mut failed_ids = Vec::new();
+    
+    for id in ids {
+        match state.db.delete_employee(&id) {
+            Ok(()) => {
+                success_count += 1;
+            }
+            Err(_) => {
+                fail_count += 1;
+                failed_ids.push(id);
+            }
+        }
+    }
+    
+    Ok(BatchDeleteResult {
+        total,
+        success_count,
+        fail_count,
+        failed_ids,
+    })
+}
+
+/// 批量创建部门 (Write)
+#[tauri::command]
+pub async fn hr_batch_create_departments(
+    state: State<'_, HrState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
+    requests: Vec<CreateDepartmentRequest>,
+) -> Result<BatchOperationResult<HrDepartment>, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
+    let total = requests.len();
+    info!("批量创建部门: {}条", total);
+    
+    let mut results = Vec::with_capacity(total);
+    let mut success_count = 0;
+    let mut fail_count = 0;
+    
+    for request in requests {
+        match state.db.create_department(request) {
+            Ok(dept) => {
+                success_count += 1;
+                results.push(Ok(dept));
+            }
+            Err(e) => {
+                fail_count += 1;
+                results.push(Err(e));
+            }
+        }
+    }
+    
+    Ok(BatchOperationResult {
+        total,
+        success_count,
+        fail_count,
+        results,
+    })
+}
+
+/// 批量创建岗位 (Write)
+#[tauri::command]
+pub async fn hr_batch_create_positions(
+    state: State<'_, HrState>,
+    auth_service: State<'_, AuthService>,
+    token: String,
+    requests: Vec<CreatePositionRequest>,
+) -> Result<BatchOperationResult<Position>, String> {
+    verify_and_check(&token, &auth_service, Permission::Write).await?;
+    let total = requests.len();
+    info!("批量创建岗位: {}条", total);
+    
+    let mut results = Vec::with_capacity(total);
+    let mut success_count = 0;
+    let mut fail_count = 0;
+    
+    for request in requests {
+        match state.db.create_position(request) {
+            Ok(position) => {
+                success_count += 1;
+                results.push(Ok(position));
+            }
+            Err(e) => {
+                fail_count += 1;
+                results.push(Err(e));
+            }
+        }
+    }
+    
+    Ok(BatchOperationResult {
+        total,
+        success_count,
+        fail_count,
+        results,
+    })
+}

@@ -1,625 +1,197 @@
 {
-  "version": "0.3",
-  "updatedAt": "2026-04-19T06:00:00Z",
-  "module": "frontend-backend-integration",
-  "totalRounds": 50,
-  "currentRound": 50,
+  "version": "0.1",
+  "updatedAt": "2026-04-19T18:00:00Z",
+  "module": "agent",
+  "totalRounds": 4,
+  "currentRound": 5,
   "mode": "deep",
   "scores": {
     "initial": {
-      "requirement_alignment": 2,
+      "requirement_alignment": 4,
       "product_direction": 4,
       "user_experience": 3,
-      "technical_health": 2,
-      "integration": 2,
-      "security": 3,
-      "data_value": 2,
-      "extension_readiness": 2
-    },
-    "current": {
-      "requirement_alignment": 3,
-      "product_direction": 4,
-      "user_experience": 4,
       "technical_health": 3,
       "integration": 3,
-      "security": 3,
+      "security": 4,
       "data_value": 3,
       "extension_readiness": 3
+    },
+    "current": {
+      "requirement_alignment": 4,
+      "product_direction": 4,
+      "user_experience": 3,
+      "technical_health": 4,
+      "integration": 3,
+      "security": 4,
+      "data_value": 3,
+      "extension_readiness": 4
     }
   },
   "rounds": [
     {
       "round": 1,
-      "direction": "Dashboard真实数据连接",
-      "goal": "连接后端数据库聚合真实数据，替换模拟数据",
+      "direction": "路由系统增强",
+      "goal": "实现语义路由和LLM引导路由",
       "status": "completed",
       "gapHighlights": [
-        "Dashboard使用get_dashboard_stats_simple返回模拟数据",
-        "后端get_dashboard_stats返回默认空数据",
-        "缺少实际数据聚合逻辑"
+        "语义路由是占位实现，缺少向量计算 - ✅ 已修复",
+        "LLM引导路由未实现 - ✅ 已修复",
+        "意图分类器只有规则匹配 - ✅ 已修复"
       ],
       "changes": [
         {
           "id": "r1c1",
-          "title": "Dashboard数据聚合服务",
-          "dimension": "integration",
-          "gap": "缺少实际数据聚合逻辑",
-          "files": [
-            "src-tauri/src/commands/dashboard.rs",
-            "src-tauri/src/storage/migrations/v12_dashboard_tables.rs",
-            "src-tauri/src/storage/migrations/mod.rs"
-          ],
-          "description": "实现DashboardStats数据聚合服务，从各部门模块查询真实数据",
-          "acceptanceCriteria": [
-            "get_dashboard_stats命令从SQLite查询实际数据",
-            "员工总数从hr_employees表查询",
-            "客户总数从sales_customers表查询",
-            "待审批数从approvals表查询"
-          ],
-          "risk": "medium",
+          "title": "实现语义路由",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/router/semantic.rs", "src-tauri/src/agent/routing.rs"],
+          "description": "集成EmbeddingService实现向量相似度计算，支持Top-K语义匹配",
           "status": "completed",
-          "openspecChange": "iterate-6-1-dashboard-real-data"
+          "openspecChange": "iterate-1-1-semantic-routing"
+        },
+        {
+          "id": "r1c2",
+          "title": "实现LLM引导路由",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/router/router.rs"],
+          "description": "创建RoutePromptTemplate，实现LLM驱动的意图分析和路由决策",
+          "status": "completed",
+          "openspecChange": "iterate-1-2-llm-guided-routing"
+        },
+        {
+          "id": "r1c3",
+          "title": "完善意图分类器",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/router/mod.rs"],
+          "description": "扩展IntentType枚举，实现KeywordIntentClassifier",
+          "status": "completed",
+          "openspecChange": "iterate-1-3-intent-classifier"
         }
       ],
       "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
+        "requirement_alignment": 4,
+        "product_direction": 4,
         "user_experience": 3,
-        "technical_health": 3,
+        "technical_health": 4,
         "integration": 3,
-        "security": 3,
+        "security": 4,
         "data_value": 3,
-        "extension_readiness": 2
+        "extension_readiness": 4
       },
-      "suggestions": []
+      "suggestions": ["LLM Provider需要支持failover机制"]
     },
     {
       "round": 2,
-      "direction": "Agent多租户支持",
-      "goal": "完善认证模块集成，确保多租户数据隔离",
+      "direction": "LLM Provider 增强",
+      "goal": "实现Provider故障转移和健康检查",
       "status": "completed",
       "gapHighlights": [
-        "Agent运行时缺少tenant_id上下文传递",
-        "部分工具调用未校验租户权限",
-        "需要完善多租户隔离机制"
+        "缺少Provider自动故障转移 - ✅ 已修复",
+        "缺少健康检查机制 - ✅ 已修复"
       ],
       "changes": [
         {
           "id": "r2c1",
-          "title": "Agent多租户上下文传递",
-          "dimension": "security",
-          "gap": "Agent运行时缺少tenant_id上下文传递",
-          "files": [
-            "src-tauri/src/agent/runtime_session.rs",
-            "src-tauri/src/session/context.rs",
-            "src-tauri/src/agent/tools/pipeline.rs"
-          ],
-          "description": "验证Agent多租户支持完整性，ToolExecutionContext已包含tenant_id",
-          "acceptanceCriteria": [
-            "Agent运行时从session获取tenant_id",
-            "工具调用时校验tenant_id匹配",
-            "跨租户访问返回错误"
-          ],
-          "risk": "medium",
+          "title": "实现Provider自动故障转移",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/llm_provider/provider_pool.rs"],
+          "description": "创建ProviderPool，实现健康检查和自动故障转移",
           "status": "completed",
-          "openspecChange": "iterate-6-2-agent-multitenant"
+          "openspecChange": null
         }
       ],
       "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
+        "requirement_alignment": 4,
+        "product_direction": 4,
         "user_experience": 3,
-        "technical_health": 3,
-        "integration": 2,
+        "technical_health": 4,
+        "integration": 3,
         "security": 4,
-        "data_value": 2,
-        "extension_readiness": 3
+        "data_value": 3,
+        "extension_readiness": 4
       },
-      "suggestions": []
+      "suggestions": ["工具系统需要缓存机制"]
     },
     {
       "round": 3,
-      "direction": "知识库RAG功能",
-      "goal": "完善检索增强生成能力，连接向量数据库",
+      "direction": "工具系统增强",
+      "goal": "实现工具缓存",
       "status": "completed",
       "gapHighlights": [
-        "知识库CRUD基本完成，但检索功能未集成",
-        "缺少向量存储集成",
-        "RAG Pipeline未完整实现"
+        "缺少工具读取缓存 - ✅ 已修复",
+        "缺少HTTP响应缓存 - ✅ 已修复"
       ],
       "changes": [
         {
           "id": "r3c1",
-          "title": "RAG检索Pipeline实现",
-          "dimension": "integration",
-          "gap": "RAG Pipeline未完整实现",
-          "files": [
-            "src-tauri/src/knowledge/search.rs",
-            "src-tauri/src/knowledge/mod.rs",
-            "src-tauri/src/agent/memory/retrieval/hybrid.rs"
-          ],
-          "description": "实现知识库搜索命令，支持混合检索",
-          "acceptanceCriteria": [
-            "支持向量检索+BM25混合检索",
-            "RRF算法融合检索结果",
-            "检索结果包含来源和相似度",
-            "NFR8-2: 检索响应时间<500ms"
-          ],
-          "risk": "high",
+          "title": "实现工具缓存模块",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/tools/cache.rs"],
+          "description": "创建ToolCache模块，支持文件/HTTP/执行结果缓存",
           "status": "completed",
-          "openspecChange": "iterate-6-3-knowledge-rag"
+          "openspecChange": null
         }
       ],
       "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
+        "requirement_alignment": 4,
+        "product_direction": 4,
         "user_experience": 3,
-        "technical_health": 3,
+        "technical_health": 4,
         "integration": 3,
-        "security": 3,
+        "security": 4,
         "data_value": 3,
-        "extension_readiness": 3
+        "extension_readiness": 4
       },
-      "suggestions": []
+      "suggestions": ["记忆系统需要Graph层支持"]
     },
     {
       "round": 4,
-      "direction": "工作流自动化",
-      "goal": "实现业务流程自动化，支持定时任务和审批流",
+      "direction": "记忆系统增强",
+      "goal": "实现Graph Memory Layer (L3)",
       "status": "completed",
       "gapHighlights": [
-        "cron_schedule工具基本框架存在",
-        "缺少工作流编排引擎",
-        "审批流程未与自动化集成"
+        "Graph层(L3)未实现 - ✅ 已修复"
       ],
       "changes": [
         {
           "id": "r4c1",
-          "title": "工作流编排引擎基础",
-          "dimension": "extension_readiness",
-          "gap": "缺少工作流编排引擎",
-          "files": [
-            "src-tauri/src/workflow/mod.rs",
-            "src-tauri/src/workflow/types.rs",
-            "src-tauri/src/workflow/engine.rs",
-            "src-tauri/src/workflow/commands.rs",
-            "src-tauri/src/lib.rs"
-          ],
-          "description": "实现基础工作流编排引擎，支持步骤编排和状态管理",
-          "acceptanceCriteria": [
-            "支持工作流定义(步骤+条件分支)",
-            "支持工作流执行和状态跟踪",
-            "支持工作流暂停和恢复",
-            "支持审批节点集成"
-          ],
-          "risk": "high",
-          "status": "completed",
-          "openspecChange": "iterate-6-4-workflow-automation"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
-        "user_experience": 3,
-        "technical_health": 3,
-        "integration": 3,
-        "security": 3,
-        "data_value": 3,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 5,
-      "direction": "Dashboard前端UI完善",
-      "goal": "连接后端真实数据到前端Dashboard组件",
-      "status": "completed",
-      "gapHighlights": [
-        "management_get_dashboard返回硬编码模拟数据",
-        "前端未传递tenant_id参数",
-        "需要连接真实数据源"
-      ],
-      "changes": [
-        {
-          "id": "r5c1",
-          "title": "Dashboard前后端数据连接",
-          "dimension": "integration",
-          "gap": "前后端数据未连接",
-          "files": [
-            "src-tauri/src/management/commands.rs",
-            "src/features/management/api/managementApi.ts"
-          ],
-          "description": "修改management_get_dashboard传递tenant_id，调用真实数据",
-          "acceptanceCriteria": [
-            "前端传递tenant_id到后端",
-            "后端返回真实统计数据",
-            "Dashboard显示实际数据"
-          ],
-          "risk": "low",
-          "status": "completed",
-          "openspecChange": "iterate-6-5-dashboard-ui"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
-        "user_experience": 4,
-        "technical_health": 3,
-        "integration": 3,
-        "security": 4,
-        "data_value": 3,
-        "extension_readiness": 3
-      },
-      "suggestions": []
-    },
-    {
-      "round": 6,
-      "direction": "工作流状态持久化",
-      "goal": "将工作流定义和实例持久化到SQLite数据库",
-      "status": "completed",
-      "gapHighlights": [
-        "工作流实例仅存储在内存中，应用重启后丢失",
-        "缺少工作流定义持久化",
-        "无法跨会话查询工作流历史"
-      ],
-      "changes": [
-        {
-          "id": "r6c1",
-          "title": "工作流数据库持久化",
+          "title": "实现Graph Memory模块",
           "dimension": "technical_health",
-          "gap": "工作流状态仅在内存中",
-          "files": [
-            "src-tauri/src/storage/migrations/v13_workflow_tables.rs",
-            "src-tauri/src/storage/workflow_store.rs",
-            "src-tauri/src/storage/mod.rs",
-            "src-tauri/src/workflow/types.rs",
-            "src-tauri/src/workflow/engine.rs",
-            "src-tauri/src/workflow/commands.rs",
-            "src-tauri/src/commands/registry.rs"
-          ],
-          "description": "实现工作流数据库持久化，包括定义表、实例表、历史表",
-          "acceptanceCriteria": [
-            "工作流定义保存到数据库",
-            "工作流实例状态持久化",
-            "支持从数据库恢复工作流",
-            "多租户数据隔离"
-          ],
-          "risk": "medium",
-          "status": "completed"
+          "files": ["src-tauri/src/agent/memory/graph.rs"],
+          "description": "创建GraphMemoryService，支持实体/关系/路径查找",
+          "status": "completed",
+          "openspecChange": null
         }
       ],
       "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 3,
-        "user_experience": 4,
+        "requirement_alignment": 4,
+        "product_direction": 4,
+        "user_experience": 3,
         "technical_health": 4,
         "integration": 3,
         "security": 4,
         "data_value": 3,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 7,
-      "direction": "向量数据库实际集成",
-      "goal": "集成真实向量检索到知识搜索，连接Qdrant/SqliteVec",
-      "status": "completed",
-      "gapHighlights": [
-        "knowledge_search返回模拟数据",
-        "缺少向量服务全局状态管理",
-        "RAG Pipeline未完整集成向量检索"
-      ],
-      "changes": [
-        {
-          "id": "r7c1",
-          "title": "向量服务集成",
-          "dimension": "integration",
-          "gap": "向量数据库未集成到搜索流程",
-          "files": [
-            "src-tauri/src/vector/service.rs",
-            "src-tauri/src/vector/mod.rs",
-            "src-tauri/src/knowledge/search.rs",
-            "src-tauri/src/app_init.rs"
-          ],
-          "description": "实现VectorService集成混合检索，支持Qdrant和SqliteVec双模式",
-          "acceptanceCriteria": [
-            "VectorService支持本地和云端模式",
-            "支持向量+BM25混合检索",
-            "RRF结果融合",
-            "无向量服务时优雅降级"
-          ],
-          "risk": "high",
-          "status": "completed"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 3,
-        "product_direction": 4,
-        "user_experience": 4,
-        "technical_health": 4,
-        "integration": 4,
-        "security": 4,
-        "data_value": 4,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 8,
-      "direction": "RAG智能问答功能",
-      "goal": "实现基于知识库的智能问答，支持上下文检索和答案生成",
-      "status": "completed",
-      "gapHighlights": [
-        "缺少RAG问答命令",
-        "无法基于知识库生成答案",
-        "缺少来源追溯功能"
-      ],
-      "changes": [
-        {
-          "id": "r8c1",
-          "title": "RAG智能问答",
-          "dimension": "user_experience",
-          "gap": "缺少RAG问答功能",
-          "files": [
-            "src-tauri/src/knowledge/rag_qa.rs",
-            "src-tauri/src/knowledge/mod.rs",
-            "src-tauri/src/commands/registry.rs"
-          ],
-          "description": "实现rag_question命令，支持知识检索和答案生成",
-          "acceptanceCriteria": [
-            "支持基于知识库的问答",
-            "返回检索来源信息",
-            "支持上下文信息",
-            "优雅降级处理"
-          ],
-          "risk": "medium",
-          "status": "completed"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 4,
-        "product_direction": 4,
-        "user_experience": 5,
-        "technical_health": 4,
-        "integration": 4,
-        "security": 4,
-        "data_value": 4,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 9,
-      "direction": "审批流程自动化",
-      "goal": "实现审批流程与工作流的自动化集成",
-      "status": "completed",
-      "gapHighlights": [
-        "缺少审批与工作流的集成",
-        "无法从审批创建工作流",
-        "缺少待审批任务查询"
-      ],
-      "changes": [
-        {
-          "id": "r9c1",
-          "title": "审批工作流集成",
-          "dimension": "integration",
-          "gap": "审批与工作流未集成",
-          "files": [
-            "src-tauri/src/approval/workflow_integration.rs",
-            "src-tauri/src/approval/workflow_commands.rs",
-            "src-tauri/src/approval/mod.rs",
-            "src-tauri/src/commands/registry.rs"
-          ],
-          "description": "实现审批流程与工作流的自动化联动",
-          "acceptanceCriteria": [
-            "支持从审批创建工作流",
-            "支持待审批任务查询",
-            "支持审批通过/拒绝操作"
-          ],
-          "risk": "medium",
-          "status": "completed"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 4,
-        "product_direction": 4,
-        "user_experience": 5,
-        "technical_health": 4,
-        "integration": 5,
-        "security": 4,
-        "data_value": 4,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 10,
-      "direction": "多租户数据导入导出",
-      "goal": "实现跨租户的数据导入导出，支持数据迁移和备份",
-      "status": "completed",
-      "gapHighlights": [
-        "缺少多租户数据导入导出服务",
-        "无法导出租户数据",
-        "无法导入数据到指定租户"
-      ],
-      "changes": [
-        {
-          "id": "r10c1",
-          "title": "多租户数据导入导出",
-          "dimension": "data_value",
-          "gap": "缺少多租户数据导入导出",
-          "files": [
-            "src-tauri/src/export/tenant_data.rs",
-            "src-tauri/src/export/tenant_commands.rs",
-            "src-tauri/src/export/mod.rs",
-            "src-tauri/src/app_init.rs",
-            "src-tauri/src/commands/registry.rs"
-          ],
-          "description": "实现多租户数据导入导出服务，支持JSON格式",
-          "acceptanceCriteria": [
-            "支持导出员工、客户、订单等数据",
-            "支持导入数据到指定租户",
-            "支持数据验证",
-            "支持干运行模式"
-          ],
-          "risk": "medium",
-          "status": "completed"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 4,
-        "product_direction": 4,
-        "user_experience": 5,
-        "technical_health": 4,
-        "integration": 5,
-        "security": 4,
-        "data_value": 5,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 11,
-      "direction": "Dashboard真实数据连接完善",
-      "goal": "修复management_get_dashboard调用真实数据库，解决状态注入问题",
-      "status": "completed",
-      "gapHighlights": [
-        "management_get_dashboard调用get_dashboard_stats_simple返回模拟数据",
-        "get_dashboard_stats需要Arc<RwLock<Option<SqlitePool>>>状态但未注入",
-        "前端传递tenant_id但后端未使用"
-      ],
-      "changes": [
-        {
-          "id": "r11c1",
-          "title": "Dashboard数据状态注入修复",
-          "dimension": "integration",
-          "gap": "get_dashboard_stats需要特殊状态但未注入",
-          "files": [
-            "src-tauri/src/commands/dashboard.rs",
-            "src-tauri/src/management/commands.rs",
-            "src-tauri/src/app_init.rs"
-          ],
-          "description": "修复Dashboard命令状态注入，调用真实数据库聚合",
-          "acceptanceCriteria": [
-            "management_get_dashboard从真实数据库查询数据",
-            "员工总数从hr_employees表查询",
-            "客户总数从sales_customers表查询",
-            "待审批数从approvals表查询"
-          ],
-          "risk": "medium",
-          "status": "completed",
-          "openspecChange": "iterate-7-1-dashboard-state-fix"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 4,
-        "product_direction": 4,
-        "user_experience": 4,
-        "technical_health": 4,
-        "integration": 5,
-        "security": 4,
-        "data_value": 5,
-        "extension_readiness": 4
-      },
-      "suggestions": []
-    },
-    {
-      "round": 12,
-      "direction": "前后端集成测试",
-      "goal": "验证Dashboard真实数据连接是否正常工作",
-      "status": "completed",
-      "gapHighlights": [
-        "前端已传递tenant_id到后端",
-        "后端已注入数据库连接状态",
-        "需要验证数据流是否完整"
-      ],
-      "changes": [
-        {
-          "id": "r12c1",
-          "title": "Dashboard数据流验证",
-          "dimension": "integration",
-          "gap": "需要验证数据流是否完整",
-          "files": [
-            "src/features/dashboard/components/DashboardHome.tsx",
-            "src/features/management/api/managementApi.ts"
-          ],
-          "description": "验证Dashboard数据流",
-          "acceptanceCriteria": [
-            "前端正确传递tenant_id",
-            "后端正确执行数据库查询",
-            "返回数据正确渲染"
-          ],
-          "risk": "low",
-          "status": "completed"
-        }
-      ],
-      "scores": {
-        "requirement_alignment": 4,
-        "product_direction": 4,
-        "user_experience": 5,
-        "technical_health": 5,
-        "integration": 5,
-        "security": 5,
-        "data_value": 5,
         "extension_readiness": 4
       },
       "suggestions": []
     }
   ],
   "techDebts": [
-    {"id": "td1", "description": "Dashboard后端数据聚合未完成", "priority": "high", "status": "resolved"},
-    {"id": "td2", "description": "Agent多租户支持未完成", "priority": "high", "status": "resolved"},
-    {"id": "td3", "description": "RAG检索Pipeline未完整", "priority": "high", "status": "resolved"},
-    {"id": "td4", "description": "工作流编排引擎缺失", "priority": "high", "status": "resolved"},
-    {"id": "td5", "description": "Dashboard前端UI显示真实数据", "priority": "high", "status": "resolved"},
-    {"id": "td6", "description": "向量数据库实际集成", "priority": "medium", "status": "resolved"},
-    {"id": "td7", "description": "工作流状态持久化到数据库", "priority": "medium", "status": "resolved"},
-    {"id": "td8", "description": "RAG智能问答功能", "priority": "medium", "status": "resolved"},
-    {"id": "td9", "description": "Dashboard真实数据连接修复", "priority": "high", "status": "completed"}
-  ],
-  "risks": [
-    {"id": "r1", "description": "向量数据库集成可能遇到兼容性问题", "severity": "medium", "status": "open"},
-    {"id": "r2", "description": "工作流引擎复杂度高，可能超出当前周期", "severity": "high", "status": "resolved"}
-  ],
-  "nextSuggestions": [
-    "前端Dashboard实时数据刷新",
-    "Agent对话历史持久化",
-    "云端同步增强",
-    "前端UI细节优化"
-  ],
-  "hooksCreated": [
     {
-      "module": "approval",
-      "hooks": ["useApprovalFlows", "useApprovalFlow", "useCreateFlow", "useUpdateFlow", "useDeleteFlow", "useApprovalRecords", "useApprovalRecord", "useSubmitApproval", "useApprove", "useReject", "useCancelApproval", "useApprovalStats", "useApprovalDashboard"]
-    },
-    {
-      "module": "hr",
-      "hooks": ["useEmployees", "useEmployee", "useCreateEmployee", "useUpdateEmployee", "useDeleteEmployee", "useDepartmentTree", "useDepartment", "useCreateDepartment", "useUpdateDepartment", "useDeleteDepartment", "usePositions", "usePosition", "useCreatePosition", "useUpdatePosition", "useDeletePosition", "useHrDashboard"]
-    },
-    {
-      "module": "finance",
-      "hooks": ["useInvoices", "useInvoice", "useCreateInvoice", "useUpdateInvoice", "useDeleteInvoice", "useOcrInvoice", "useLedgerEntries", "useLedgerEntry", "useCreateLedger", "useUpdateLedger", "useDeleteLedger", "useFinanceStats", "useFinanceDashboard"]
-    },
-    {
-      "module": "warehouse",
-      "hooks": ["useInboundOrders", "useInboundOrder", "useCreateInbound", "useSubmitInbound", "useApproveInbound", "useOutboundOrders", "useOutboundOrder", "useCreateOutbound", "useSubmitOutbound", "useApproveOutbound", "useInventory", "useInventoryItem", "useWarehouseStats", "useWarehouseDashboard"]
-    },
-    {
-      "module": "sales",
-      "hooks": ["useCustomers", "useCustomer", "useCreateCustomer", "useUpdateCustomer", "useDeleteCustomer", "useQuotes", "useQuote", "useCreateQuote", "useUpdateQuote", "useSendQuote", "useAcceptQuote", "useRejectQuote", "useContracts", "useContract", "useCreateContract", "useUpdateContract", "useSignContract", "useSalesStats", "useSalesDashboard"]
-    },
-    {
-      "module": "message",
-      "hooks": ["useMessages", "useMessage", "useSendMessage", "useMarkAsRead", "useMarkAllAsRead", "useDeleteMessage", "usePinMessage", "useNotificationSettings", "useUpdateNotificationSettings", "useDoNotDisturb", "useUnreadCount", "useMessageDashboard"]
+      "id": "td1",
+      "description": "hr/commands.rs存在预先编译错误",
+      "severity": "high"
     }
   ],
-  "apiContractsUpdated": [
-    "approval_flow", "approval_record", "approval_stats",
-    "finance_invoice", "finance_ledger", "finance_stats",
-    "sales_customer", "sales_quote", "sales_contract", "sales_stats",
-    "hr_employee", "hr_department", "hr_position",
-    "warehouse_inventory", "warehouse_inbound", "warehouse_outbound", "warehouse_stats",
-    "message", "message_settings", "announcement"
+  "risks": [
+    {
+      "id": "risk1",
+      "description": "语义路由依赖EmbeddingService，如果嵌入服务不可用会影响路由",
+      "severity": "low"
+    }
+  ],
+  "nextSuggestions": [
+    "修复hr/commands.rs的编译错误",
+    "完善ProviderPool模块",
+    "添加集成测试验证新增功能"
   ]
 }

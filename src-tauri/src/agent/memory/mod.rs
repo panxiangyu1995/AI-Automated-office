@@ -4,7 +4,7 @@
 //!
 //! - **L1 Personal Memory**: User-private memories, accessible only by the user
 //! - **L2 Enterprise Knowledge Base**: Tenant-wide knowledge, accessible by all tenant members
-//! - **L3 Graph Memory**: (Post-MVP) Relationship-based memory using graph structures
+//! - **L3 Graph Memory**: Relationship-based memory using graph structures
 //!
 //! # Key Components
 //!
@@ -13,6 +13,7 @@
 //! - `retrieval/`: Hybrid search engine (vector + BM25)
 //! - `update/`: Smart update decision engine
 //! - `cognitive/`: Cognitive state and trajectory tracking
+//! - `graph/`: Graph-based memory (L3)
 //!
 //! # Usage
 //!
@@ -37,6 +38,7 @@ pub mod retrieval;
 pub mod cognitive;
 pub mod update;
 pub mod service;
+pub mod graph;
 
 use std::sync::Arc;
 

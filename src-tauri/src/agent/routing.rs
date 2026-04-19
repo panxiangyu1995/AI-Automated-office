@@ -5,6 +5,7 @@
 //! - Delegation decisions based on runtime context
 //! - Routing outcomes written into main trace
 //! - Standardized input for Sub-Agent execution context
+//! - Semantic routing using vector embeddings
 
 use anyhow::Result;
 use chrono::Utc;
@@ -19,6 +20,8 @@ pub use super::routing_types::{
     ConfirmationState, RiskEvaluation, RiskRecommendation, get_default_routing_rules,
 };
 
+pub use super::router::semantic::{SemanticRouter, SemanticRoutingConfig, cosine_similarity};
+
 /// Sub-agent routing service
 #[derive(Clone)]
 pub struct SubAgentRoutingService {
@@ -29,6 +32,8 @@ pub struct SubAgentRoutingService {
     approval_queue: Arc<RwLock<Vec<ApprovalItem>>>,
     /// Confirmation state for double confirmation anti-misclick
     confirmation_state: Arc<RwLock<ConfirmationState>>,
+    /// Semantic router for vector-based matching
+    semantic_router: Option<Arc<SemanticRouter>>,
 }
 
 impl SubAgentRoutingService {
@@ -39,7 +44,29 @@ impl SubAgentRoutingService {
             routing_mode: RoutingMode::Hybrid,
             approval_queue: Arc::new(RwLock::new(Vec::new())),
             confirmation_state: Arc::new(RwLock::new(ConfirmationState::default())),
+            semantic_router: None,
         }
+    }
+
+    /// Create with semantic router for vector-based matching
+    pub fn with_semantic_router(mut self, semantic_router: SemanticRouter) -> Self {
+        self.semantic_router = Some(Arc::new(semantic_router));
+        self
+    }
+
+    /// Check if semantic router is available
+    pub fn has_semantic_router(&self) -> bool {
+        self.semantic_router.is_some()
+    }
+
+    /// Match rules using semantic routing (async, full semantic implementation)
+    pub async fn match_rules_semantic(
+        &self,
+        context: &RoutingContext,
+    ) -> Option<Vec<(RoutingRule, f32)>> {
+        let router = self.semantic_router.as_ref()?;
+        let rules = self.rules.read().await;
+        router.match_rules(context, &rules).await.ok()
     }
 
     /// Generate unique ID
@@ -80,7 +107,7 @@ impl SubAgentRoutingService {
                 continue;
             }
 
-            let score = Self::calculate_match_score(&rule, context);
+            let score = self.calculate_match_score(rule, context);
 
             if score > 0.0 {
                 matches.push((rule.clone(), score));
@@ -101,17 +128,32 @@ impl SubAgentRoutingService {
     }
 
     /// Calculate match score for a rule
-    fn calculate_match_score(rule: &RoutingRule, context: &RoutingContext) -> f64 {
+    fn calculate_match_score(
+        &self,
+        rule: &RoutingRule,
+        context: &RoutingContext,
+    ) -> f64 {
         match rule.match_strategy {
             MatchStrategy::Keyword => Self::keyword_match(rule, context),
             MatchStrategy::Semantic => {
-                // For semantic, we would use embeddings - here we use a simplified scoring
-                // In production, this would call an embedding service
-                Self::keyword_match(rule, context) * 0.8
+                if let Some(ref router) = self.semantic_router {
+                    // Use semantic router for vector-based matching
+                    // Fallback to keyword if semantic fails
+                    router.calculate_similarity(context, rule).unwrap_or_else(|_| {
+                        Self::keyword_match(rule, context) * 0.8
+                    })
+                } else {
+                    // Fallback to keyword match with semantic boost
+                    Self::keyword_match(rule, context) * 0.8
+                }
             }
             MatchStrategy::Combined => {
                 let keyword_score = Self::keyword_match(rule, context);
-                let semantic_score = Self::keyword_match(rule, context) * 0.8;
+                let semantic_score = if let Some(ref router) = self.semantic_router {
+                    router.calculate_similarity(context, rule).unwrap_or(keyword_score)
+                } else {
+                    keyword_score * 0.8
+                };
                 (keyword_score + semantic_score) / 2.0
             }
             MatchStrategy::LlmGuided => {
@@ -170,7 +212,7 @@ impl SubAgentRoutingService {
         } else {
             // Use highest priority match
             let best_rule = &matched_rules[0];
-            let score = Self::calculate_match_score(best_rule, context);
+            let score = self.calculate_match_score(best_rule, context);
 
             RoutingDecision {
                 id: Self::generate_id("rout"),

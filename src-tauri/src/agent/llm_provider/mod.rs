@@ -43,6 +43,8 @@ pub use config::ProviderConfigService;
 
 // ============ Provider Manager ============
 
+pub mod provider_pool;
+
 pub mod provider_manager;
 pub use provider_manager::LlmProviderManager;
 

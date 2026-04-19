@@ -2,6 +2,7 @@
 
 pub mod automation;
 pub mod browser;
+pub mod cache;
 pub mod common;
 pub mod core;
 pub mod descriptor;
