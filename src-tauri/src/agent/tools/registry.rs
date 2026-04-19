@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Mutex, PoisonError};
+use std::sync::{Arc, PoisonError, RwLock};
 
 use super::descriptor::{validate_parameters, ToolDescriptor};
 
@@ -22,8 +22,9 @@ impl std::error::Error for RegistryError {}
 /// 工具注册表
 ///
 /// 统一管理所有工具的注册和查询
+/// 使用 Arc<RwLock> 统一并发原语，读多写少场景下性能更优
 pub struct ToolRegistry {
-    tools: Mutex<HashMap<String, ToolDescriptor>>,
+    tools: Arc<RwLock<HashMap<String, ToolDescriptor>>>,
 }
 
 impl Default for ToolRegistry {
@@ -35,36 +36,44 @@ impl Default for ToolRegistry {
 impl ToolRegistry {
     pub fn new() -> Self {
         Self {
-            tools: Mutex::new(HashMap::new()),
+            tools: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    /// 安全地获取锁，使用map_err将PoisonError转换为RegistryError
-        fn lock_tools(&self) -> Result<std::sync::MutexGuard<'_, HashMap<String, ToolDescriptor>>, RegistryError> {
-            self.tools.lock()
-                .map_err(|e: PoisonError<std::sync::MutexGuard<'_, HashMap<String, ToolDescriptor>>>| {
-                    RegistryError::LockError(format!("Failed to acquire tools lock: {}", e))
-                })
-        }
+    /// 安全地获取读锁，将 PoisonError 转换为 RegistryError
+    fn read_tools(&self) -> Result<std::sync::RwLockReadGuard<'_, HashMap<String, ToolDescriptor>>, RegistryError> {
+        self.tools.read()
+            .map_err(|e: PoisonError<std::sync::RwLockReadGuard<'_, HashMap<String, ToolDescriptor>>>| {
+                RegistryError::LockError(format!("Failed to acquire tools read lock: {}", e))
+            })
+    }
+
+    /// 安全地获取写锁，将 PoisonError 转换为 RegistryError
+    fn write_tools(&self) -> Result<std::sync::RwLockWriteGuard<'_, HashMap<String, ToolDescriptor>>, RegistryError> {
+        self.tools.write()
+            .map_err(|e: PoisonError<std::sync::RwLockWriteGuard<'_, HashMap<String, ToolDescriptor>>>| {
+                RegistryError::LockError(format!("Failed to acquire tools write lock: {}", e))
+            })
+    }
 
     pub fn register(&self, descriptor: ToolDescriptor) -> Result<(), RegistryError> {
-        let mut tools = self.lock_tools()?;
+        let mut tools = self.write_tools()?;
         tools.insert(descriptor.id.clone(), descriptor);
         Ok(())
     }
 
     pub fn unregister(&self, tool_id: &str) -> Result<Option<ToolDescriptor>, RegistryError> {
-        let mut tools = self.lock_tools()?;
+        let mut tools = self.write_tools()?;
         Ok(tools.remove(tool_id))
     }
 
     pub fn get(&self, tool_id: &str) -> Result<Option<ToolDescriptor>, RegistryError> {
-        let tools = self.lock_tools()?;
+        let tools = self.read_tools()?;
         Ok(tools.get(tool_id).cloned())
     }
 
     pub fn list(&self) -> Result<Vec<ToolDescriptor>, RegistryError> {
-        let tools = self.lock_tools()?;
+        let tools = self.read_tools()?;
         Ok(tools.values().cloned().collect())
     }
 
@@ -83,7 +92,7 @@ impl ToolRegistry {
 
     /// Filter tools to only include read-only tools (for Plan mode)
     pub fn filter_readonly_tools(&self) -> Result<Vec<ToolDescriptor>, RegistryError> {
-        let tools = self.lock_tools()?;
+        let tools = self.read_tools()?;
         Ok(tools
             .values()
             .filter(|tool| tool.capabilities.is_read_only)

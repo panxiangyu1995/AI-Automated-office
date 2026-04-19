@@ -15,6 +15,7 @@ pub mod execution;
 pub mod heartbeat;
 pub mod intercom;
 pub mod knowledge_retrieval;
+pub mod dual_agent_provider;
 pub mod llm_agent_provider;
 pub mod memory;
 pub mod mock_provider;

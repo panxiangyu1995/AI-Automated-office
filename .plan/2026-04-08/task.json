@@ -2,7 +2,7 @@
   "plan_version": "1.0",
   "plan_date": "2026-04-08",
   "description": "AI-Automated-office 开发规划任务清单（排除重复后）",
-  "total_tasks": 79,
+  "total_tasks": 80,
   "completed_tasks": 0,
   "removed_tasks": [
     {
@@ -1361,6 +1361,57 @@
         "M1.2: 消息IM系统基础功能上线",
         "M1.3: 数据同步引擎完成"
       ]
+    },
+    {
+      "id": 79,
+      "epic": "架构优化",
+      "story": "优化-Agent核心模块",
+      "title": "Agent核心模块架构优化",
+      "description": "优化 Agent 核心模块架构：工具自注册解耦、并发原语统一、Provider Strategy模式、前端按域拆分、大文件拆分",
+      "implementationType": "optimize",
+      "phase": "架构升级迭代",
+      "priority": "high",
+      "backendRequired": true,
+      "existingCode": {
+        "frontend": ["src/features/agent/index.ts"],
+        "backend": [
+          "src-tauri/src/agent/tools/pipeline.rs",
+          "src-tauri/src/agent/tools/registry.rs",
+          "src-tauri/src/agent/llm_agent_provider.rs",
+          "src-tauri/src/agent/routing.rs",
+          "src-tauri/src/agent/tools/enterprise.rs",
+          "src-tauri/src/agent/tools/document.rs",
+          "src-tauri/src/agent/tools/filesystem.rs"
+        ],
+        "note": "6大架构问题：编译耦合、并发原语不统一、Provider模式僵硬、前端接口膨胀、大文件集中、路由逻辑混杂"
+      },
+      "openspec_change": "iterate-agent-architecture",
+      "steps": [
+        "阶段一：工具自注册模式 - pipeline.rs 解耦",
+        "阶段二：并发原语统一 - ToolRegistry 改用 RwLock",
+        "阶段三：Provider Strategy 模式 - Plan/Act 改为 Strategy",
+        "阶段四：前端按域拆分 - index.ts 按功能域导出",
+        "阶段五：大文件拆分 - enterprise/document/filesystem 拆分"
+      ],
+      "frs_covered": [],
+      "nfrs_covered": ["NFR3", "NFR5"],
+      "arch_covered": ["ARCH-01"],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": false,
+      "optimization": {
+        "preserveFunctions": [
+          "所有 Tauri IPC 命令接口",
+          "LLM Provider 多后端支持",
+          "工具注册和执行流程",
+          "路由匹配逻辑（keyword/semantic/combined/llm_guided）",
+          "三层记忆架构（Personal/Enterprise/Graph）",
+          "会话管理和检查点机制",
+          "权限和安全检查逻辑"
+        ],
+        "verificationMethod": ["cargo check", "cargo clippy -- -D warnings", "npm run lint", "npm run build", "cargo test --lib"],
+        "rollbackPlan": ["git revert 变更文件", "保留原有代码在单独分支"]
+      }
     },
     {
       "name": "Phase 2",
