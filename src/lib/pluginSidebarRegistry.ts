@@ -80,7 +80,7 @@ class PluginSidebarRegistryImpl {
   getBadges(): Array<{ targetId: string; count: number | string; color?: string; pluginId: string }> {
     const badges: Array<{ targetId: string; count: number | string; color?: string; pluginId: string }> = []
     for (const [pluginId, reg] of this.registrations) {
-      if (reg.badge && typeof reg.badge.count === 'number' ? reg.badge.count > 0 : true) {
+      if (reg.badge && (typeof reg.badge.count === 'number' ? reg.badge.count > 0 : true)) {
         badges.push({
           targetId: reg.badge!.targetId,
           count: reg.badge!.count,

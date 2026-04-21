@@ -35,6 +35,65 @@ const shouldRetry = (error: ApiError, attempt: number, retryCount: number) => {
 const isWriteMethod = (method: string) =>
   method === 'POST' || method === 'PUT' || method === 'DELETE'
 
+/**
+ * 请求去重器 - 防止同一请求重复发送
+ */
+class RequestDeduplicator {
+  private pending = new Map<string, Promise<unknown>>()
+
+  /**
+   * 生成请求唯一key
+   */
+  private getKey(method: string, url: string, data?: unknown): string {
+    return `${method}:${url}:${JSON.stringify(data ?? {})}`
+  }
+
+  /**
+   * 检查是否有相同请求正在执行
+   */
+  has(method: string, url: string, data?: unknown): boolean {
+    const key = this.getKey(method, url, data)
+    return this.pending.has(key)
+  }
+
+  /**
+   * 获取正在执行的相同请求
+   */
+  get<T>(method: string, url: string, data?: unknown): Promise<T> | undefined {
+    const key = this.getKey(method, url, data)
+    return this.pending.get(key) as Promise<T> | undefined
+  }
+
+  /**
+   * 注册请求
+   */
+  register(method: string, url: string, data: unknown, promise: Promise<unknown>): void {
+    const key = this.getKey(method, url, data)
+    this.pending.set(key, promise)
+    // 请求完成后自动清理
+    promise.finally(() => {
+      this.pending.delete(key)
+    })
+  }
+
+  /**
+   * 取消注册
+   */
+  unregister(method: string, url: string, data?: unknown): void {
+    const key = this.getKey(method, url, data)
+    this.pending.delete(key)
+  }
+
+  /**
+   * 清除所有挂起的请求
+   */
+  clear(): void {
+    this.pending.clear()
+  }
+}
+
+const globalDeduplicator = new RequestDeduplicator()
+
 export class ApiClient {
   private config: ApiClientConfig
   private token: string | null = null
@@ -54,6 +113,25 @@ export class ApiClient {
   }
 
   async request<T>(config: RequestConfig): Promise<T> {
+    const { method, url, data } = config
+    
+    // 检查是否有相同的GET请求正在执行（防止重复请求）
+    if (method === 'GET') {
+      const existingRequest = globalDeduplicator.get<T>(method, url, data)
+      if (existingRequest) {
+        return existingRequest
+      }
+      // 注册请求
+      const promise = this.executeWithRetry<T>(config)
+      globalDeduplicator.register(method, url, data, promise)
+      return promise
+    }
+    
+    // 非GET请求直接执行
+    return this.executeWithRetry<T>(config)
+  }
+  
+  private async executeWithRetry<T>(config: RequestConfig): Promise<T> {
     let lastError: ApiError | null = null
     for (let attempt = 0; attempt <= this.config.retryCount; attempt += 1) {
       try {

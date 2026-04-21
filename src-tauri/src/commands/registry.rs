@@ -198,6 +198,12 @@ macro_rules! register_all_commands {
             $crate::hr::hr_get_position,
             $crate::hr::hr_update_position,
             $crate::hr::hr_delete_position,
+            // HR Batch commands
+            $crate::hr::hr_batch_create_employees,
+            $crate::hr::hr_batch_update_employees,
+            $crate::hr::hr_batch_delete_employees,
+            $crate::hr::hr_batch_create_departments,
+            $crate::hr::hr_batch_create_positions,
             // Approval commands
             $crate::approval::approval_create_flow,
             $crate::approval::approval_list_flows,

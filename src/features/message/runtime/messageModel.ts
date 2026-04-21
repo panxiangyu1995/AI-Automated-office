@@ -1,8 +1,8 @@
 /**
- * Message and Part Model
- * Task 61: Story 43.2 - Message and Part Model
- * 
+ * Message Model for AI Conversation
+ *
  * This module defines message and part schemas for structured Agent conversation records.
+ * For enterprise messages (notifications/approvals/tasks), see ../types/message.types.ts
  */
 
 // ==================== Part Types ====================

@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 use super::{AgentError, AgentMessage, AgentResult};
 
@@ -35,5 +36,15 @@ impl UnconfiguredProvider {
 impl AgentProvider for UnconfiguredProvider {
     async fn complete(&self, _request: ProviderRequest) -> AgentResult<ProviderResponse> {
         Err(AgentError::ProviderNotConfigured)
+    }
+}
+
+/// Blanket implementation: Arc<dyn AgentProvider> delegates to the underlying trait object.
+/// This allows create_provider_from_config to return Arc<dyn AgentProvider> uniformly
+/// for both LlmAgentProvider and DualAgentProvider.
+#[async_trait]
+impl<T: AgentProvider + ?Sized> AgentProvider for Arc<T> {
+    async fn complete(&self, request: ProviderRequest) -> AgentResult<ProviderResponse> {
+        (**self).complete(request).await
     }
 }

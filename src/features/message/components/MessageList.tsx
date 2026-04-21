@@ -2,70 +2,76 @@
  * 消息列表组件
  */
 
-import { useEffect, useState } from 'react';
-import { Search, MessageSquare, User } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CardSkeleton } from '@/components/ui/loading-skeleton';
-import { cn } from '@/lib/utils';
+import { useEffect, useState, useCallback } from 'react'
+import { Search, MessageSquare, User } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { CardSkeleton } from '@/components/ui/loading-skeleton'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { useMessages, useMessageFilter, useMarkAsRead } from '../hooks/useMessage'
+import type { MessageFilter, MessageStatus } from '../types/message.types'
 
-export interface Message {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  recipientId: string;
-  recipientName: string;
-  content: string;
-  type: 'text' | 'image' | 'file';
-  status: 'sent' | 'delivered' | 'read';
-  createdAt: string;
+export interface MessageListItemProps {
+  id: string
+  senderId: string
+  senderName: string
+  senderAvatar?: string
+  recipientId: string
+  recipientName: string
+  content: string
+  type: 'text' | 'image' | 'file'
+  status: 'sent' | 'delivered' | 'read'
+  createdAt: string
 }
 
 interface MessageListProps {
   filter?: {
-    recipientId?: string;
-    status?: Message['status'];
-    keyword?: string;
-  };
-  pageSize?: number;
-  onMessageClick?: (message: Message) => void;
-  className?: string;
+    recipientId?: string
+    status?: MessageStatus
+    keyword?: string
+    msgType?: string
+  }
+  pageSize?: number
+  onMessageClick?: (message: MessageListItemProps) => void
+  className?: string
 }
 
-function MessageListItem({
+function formatTime(dateStr: string | number) {
+  const date = new Date(typeof dateStr === 'string' ? dateStr : dateStr * 1000)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const dayMs = 24 * 60 * 60 * 1000
+
+  if (diff < dayMs) {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  }
+  if (diff < 7 * dayMs) {
+    return date.toLocaleDateString('zh-CN', { weekday: 'short' })
+  }
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+}
+
+function MessageListItemComponent({
   message,
   onClick,
+  onMarkRead,
 }: {
-  message: Message;
-  onClick?: () => void;
+  message: MessageListItemProps
+  onClick?: () => void
+  onMarkRead?: (id: string) => void
 }) {
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const dayMs = 24 * 60 * 60 * 1000;
-
-    if (diff < dayMs) {
-      return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-    }
-    if (diff < 7 * dayMs) {
-      return date.toLocaleDateString('zh-CN', { weekday: 'short' });
-    }
-    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
-  };
-
-  const getStatusBadge = (status: Message['status']) => {
+  const getStatusBadge = (status: MessageListItemProps['status']) => {
     switch (status) {
       case 'sent':
-        return <Badge variant="outline" className="text-xs">已发送</Badge>;
+        return <Badge variant="outline" className="text-xs">已发送</Badge>
       case 'delivered':
-        return <Badge variant="secondary" className="text-xs">已送达</Badge>;
+        return <Badge variant="secondary" className="text-xs">已送达</Badge>
       case 'read':
-        return <Badge variant="default" className="text-xs">已读</Badge>;
+        return <Badge variant="default" className="text-xs">已读</Badge>
     }
-  };
+  }
 
   return (
     <Card
@@ -92,10 +98,23 @@ function MessageListItem({
               )}
             </div>
           </div>
+          {onMarkRead && message.status !== 'read' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onMarkRead(message.id)
+              }}
+              className="text-xs"
+            >
+              标记已读
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 export function MessageList({
@@ -104,48 +123,35 @@ export function MessageList({
   onMessageClick,
   className,
 }: MessageListProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [localFilter, setLocalFilter] = useState<MessageFilter>({
+    pinnedOnly: false,
+    searchKeyword: filter?.keyword,
+    status: filter?.status,
+  })
+
+  const { messages, isLoading, refetch } = useMessages()
+  const { filter: doFilter, messages: filteredMessages } = useMessageFilter()
+  const { markRead } = useMarkAsRead()
 
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setMessages([
-        {
-          id: '1',
-          senderId: 'user1',
-          senderName: '张三',
-          recipientId: 'me',
-          recipientName: '我',
-          content: '今天的会议几点开始？',
-          type: 'text',
-          status: 'read',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          senderId: 'user2',
-          senderName: '李四',
-          recipientId: 'me',
-          recipientName: '我',
-          content: '文件已上传，请查收',
-          type: 'file',
-          status: 'delivered',
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-        },
-      ]);
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [filter]);
-
-  const filteredMessages = messages.filter((msg) => {
-    if (searchQuery && !msg.content.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+    if (filter?.keyword) {
+      setLocalFilter((prev) => ({ ...prev, searchKeyword: filter.keyword }))
     }
-    return true;
-  });
+    if (filter?.status) {
+      setLocalFilter((prev) => ({ ...prev, status: filter.status }))
+    }
+  }, [filter])
+
+  const handleSearch = useCallback(async () => {
+    if (searchQuery) {
+      await doFilter({ ...localFilter, searchKeyword: searchQuery })
+    } else {
+      await refetch()
+    }
+  }, [searchQuery, localFilter, doFilter, refetch])
+
+  const displayMessages = localFilter.searchKeyword ? filteredMessages : messages
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -156,6 +162,7 @@ export function MessageList({
             placeholder="搜索消息..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-9"
           />
         </div>
@@ -166,21 +173,42 @@ export function MessageList({
           <div className="space-y-3">
             <CardSkeleton rows={3} />
           </div>
-        ) : filteredMessages.length === 0 ? (
+        ) : displayMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-slate-500">
             <MessageSquare className="w-12 h-12 mb-3" />
             <p className="text-sm">暂无消息</p>
           </div>
         ) : (
-          filteredMessages.map((msg) => (
-            <MessageListItem
+          displayMessages.map((msg) => (
+            <MessageListItemComponent
               key={msg.id}
-              message={msg}
-              onClick={() => onMessageClick?.(msg)}
+              message={{
+                id: msg.id,
+                senderId: '',
+                senderName: msg.senderName,
+                recipientId: '',
+                recipientName: '我',
+                content: msg.title,
+                type: 'text',
+                status: msg.status === 'unread' ? 'delivered' : 'read',
+                createdAt: String(msg.createdAt),
+              }}
+              onClick={() => onMessageClick?.({
+                id: msg.id,
+                senderId: '',
+                senderName: msg.senderName,
+                recipientId: '',
+                recipientName: '我',
+                content: msg.title,
+                type: 'text',
+                status: msg.status === 'unread' ? 'delivered' : 'read',
+                createdAt: String(msg.createdAt),
+              })}
+              onMarkRead={markRead}
             />
           ))
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -13,9 +13,11 @@ import (
 	auditModule "cloud-server/internal/module/audit"
 	auditService "cloud-server/internal/module/audit/application/service"
 	auditHandler "cloud-server/internal/module/audit/interface/handler"
+	messageModule "cloud-server/internal/module/message"
 	permissionHandler "cloud-server/internal/module/permission/interface/handler"
 	permissionModule "cloud-server/internal/module/permission"
 	syncHandler "cloud-server/internal/module/sync/interface/handler"
+	"cloud-server/internal/websocket"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -27,6 +29,7 @@ import (
 var _ = adminModule.NewAdminModule
 var _ = permissionModule.NewPermissionModule
 var _ = auditModule.NewModule
+var _ = messageModule.NewModule
 
 func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 	mode := cfg.Server.Mode
@@ -89,6 +92,15 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		log,
 	)
 
+	// 初始化 message 模块
+	messageMod := messageModule.NewModule(sqlDB)
+	messageMod.Init()
+
+	// 初始化 WebSocket Hub
+	wsHub := websocket.NewHub()
+	go wsHub.Run()
+	wsHandler := websocket.NewHandler(wsHub)
+
 	v1 := r.Group("/api/v1")
 	{
 		// 公开路由（不需要认证）
@@ -140,6 +152,12 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		// Sync routes (数据同步)
 		syncH := syncHandler.NewSyncHandler(log)
 		syncH.RegisterRoutes(protected)
+
+		// Message routes (消息模块)
+		messageMod.Handler().RegisterRoutes(protected)
+
+		// WebSocket routes
+		protected.GET("/ws", wsHandler.HandleWebSocket)
 	}
 
 	return r
@@ -208,6 +226,15 @@ func NewRouterWithMiddleware(
 		log,
 	)
 
+	// 初始化 message 模块
+	messageMod := messageModule.NewModule(sqlDB)
+	messageMod.Init()
+
+	// 初始化 WebSocket Hub
+	wsHub := websocket.NewHub()
+	go wsHub.Run()
+	wsHandler := websocket.NewHandler(wsHub)
+
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.Health)
@@ -231,6 +258,12 @@ func NewRouterWithMiddleware(
 		adminH.RegisterRoutes(protected)
 		permissionH.RegisterRoutes(protected)
 		permissionOverrideH.RegisterRoutes(protected)
+
+		// Message routes
+		messageMod.Handler().RegisterRoutes(protected)
+
+		// WebSocket routes
+		protected.GET("/ws", wsHandler.HandleWebSocket)
 	}
 
 	return r

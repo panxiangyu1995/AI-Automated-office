@@ -1,9 +1,9 @@
 {
   "version": "0.1",
-  "updatedAt": "2026-04-19T18:00:00Z",
+  "updatedAt": "2026-04-20T00:00:00Z",
   "module": "agent",
-  "totalRounds": 4,
-  "currentRound": 5,
+  "totalRounds": 5,
+  "currentRound": 6,
   "mode": "deep",
   "scores": {
     "initial": {
@@ -173,6 +173,57 @@
         "extension_readiness": 4
       },
       "suggestions": []
+    },
+    {
+      "round": 5,
+      "direction": "技术债务清理",
+      "goal": "消除pipeline.rs开闭原则违规、大文件拆分、DualAgentProvider集成",
+      "status": "completed",
+      "gapHighlights": [
+        "pipeline.rs硬编码10个register_*_tools()调用 - ✅ 已修复",
+        "document.rs(837行)/filesystem.rs(793行)超限 - ✅ 已拆分",
+        "DualAgentProvider未接入RuntimeConfig - ✅ 已集成"
+      ],
+      "changes": [
+        {
+          "id": "r5c1",
+          "title": "pipeline.rs引入TOOL_MODULES注册表动态自注册",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/tools/pipeline.rs"],
+          "description": "引入static TOOL_MODULES HashMap存储所有模块注册函数，移除硬编码的register_*_tools()调用链，消除开闭原则违规",
+          "status": "completed",
+          "openspecChange": null
+        },
+        {
+          "id": "r5c2",
+          "title": "filesystem.rs大文件拆分",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/tools/filesystem.rs", "src-tauri/src/agent/tools/filesystem/read.rs", "src-tauri/src/agent/tools/filesystem/write.rs", "src-tauri/src/agent/tools/filesystem/edit.rs", "src-tauri/src/agent/tools/filesystem/dir.rs"],
+          "description": "filesystem.rs(793行)拆分为filesystem/read.rs/write.rs/edit.rs/dir.rs子模块，mod.rs保留config+register主文件~130行",
+          "status": "completed",
+          "openspecChange": null
+        },
+        {
+          "id": "r5c3",
+          "title": "DualAgentProvider集成到RuntimeConfig",
+          "dimension": "technical_health",
+          "files": ["src-tauri/src/agent/mod.rs", "src-tauri/src/agent/dual_agent_provider.rs", "src-tauri/src/agent/provider.rs"],
+          "description": "create_provider_from_config返回Arc<dyn AgentProvider>，有plan_llm时用DualAgentProvider，否则用LlmAgentProvider；为Arc<dyn AgentProvider>实现trait委托",
+          "status": "completed",
+          "openspecChange": null
+        }
+      ],
+      "scores": {
+        "requirement_alignment": 4,
+        "product_direction": 4,
+        "user_experience": 3,
+        "technical_health": 4,
+        "integration": 3,
+        "security": 4,
+        "data_value": 3,
+        "extension_readiness": 4
+      },
+      "suggestions": []
     }
   ],
   "techDebts": [
@@ -180,6 +231,30 @@
       "id": "td1",
       "description": "hr/commands.rs存在预先编译错误",
       "severity": "high"
+    },
+    {
+      "id": "td2",
+      "description": "pipeline.rs硬编码10个register_*_tools()调用，违反开闭原则，新增工具模块需修改pipeline",
+      "severity": "medium",
+      "files": ["src-tauri/src/agent/tools/pipeline.rs"],
+      "task": "pipeline.rs引入TOOL_MODULES注册表动态自注册",
+      "status": "fixed"
+    },
+    {
+      "id": "td3",
+      "description": "document.rs(837行)和filesystem.rs(793行)超过Rust最佳实践阈值(500行)，增加维护成本",
+      "severity": "medium",
+      "files": ["src-tauri/src/agent/tools/filesystem"],
+      "task": "filesystem.rs拆分",
+      "status": "fixed"
+    },
+    {
+      "id": "td4",
+      "description": "DualAgentProvider已实现但未接入RuntimeConfig初始化流程，Plan/Act双模式无法生效",
+      "severity": "medium",
+      "files": ["src-tauri/src/agent/mod.rs", "src-tauri/src/agent/dual_agent_provider.rs", "src-tauri/src/agent/provider.rs"],
+      "task": "DualAgentProvider集成到RuntimeConfig初始化流程",
+      "status": "fixed"
     }
   ],
   "risks": [
@@ -192,6 +267,7 @@
   "nextSuggestions": [
     "修复hr/commands.rs的编译错误",
     "完善ProviderPool模块",
-    "添加集成测试验证新增功能"
+    "添加集成测试验证新增功能",
+    "document.rs大文件拆分（filesystem已完成，document仍837行）"
   ]
 }

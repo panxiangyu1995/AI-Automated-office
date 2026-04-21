@@ -454,3 +454,43 @@ mod tests {
         assert_eq!(status, deserialized);
     }
 }
+
+// ==================== 批量操作类型 ====================
+
+/// 批量操作结果
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchOperationResult<T> {
+    /// 总数
+    pub total: usize,
+    /// 成功数
+    pub success_count: usize,
+    /// 失败数
+    pub fail_count: usize,
+    /// 结果列表
+    pub results: Vec<Result<T, String>>,
+}
+
+/// 批量更新项
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchUpdateItem {
+    /// ID
+    pub id: String,
+    /// 更新数据
+    pub data: UpdateEmployeeRequest,
+}
+
+/// 批量删除结果
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchDeleteResult {
+    /// 总数
+    pub total: usize,
+    /// 成功数
+    pub success_count: usize,
+    /// 失败数
+    pub fail_count: usize,
+    /// 失败的ID列表
+    pub failed_ids: Vec<String>,
+}

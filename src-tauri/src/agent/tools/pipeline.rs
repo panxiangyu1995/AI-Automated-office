@@ -6,18 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::time::{timeout, Duration};
 
-use super::browser;
-use super::core::register_core_tools;
-use super::document;
-use super::enterprise;
-use super::filesystem;
-use super::media;
-use super::automation;
-use super::memory;
 use super::profile::{resolve_allowed_tools, check_tool_access, ToolProfile, ToolProfileConfig, ProfileManager, filter_tools_by_profile};
-use super::sessions;
-use super::shell;
-use super::web;
 use super::descriptor::ToolDescriptor;
 use super::permission::{check_permissions, PermissionCheckResult};
 use super::registry::ToolRegistry;
@@ -25,6 +14,51 @@ use super::sensitivity::{assess_sensitivity, SensitiveActionAssessment};
 use crate::agent::events::RuntimeEventEmitter;
 use crate::agent::llm_provider::config::AgentMode;
 use crate::agent::routing::{RoutingMode, YoloTtl};
+
+/// Registry of all tool modules for dynamic self-registration.
+/// Each tool module implements ToolModule and registers itself at startup.
+/// This eliminates the need to hardcode register_*_tools() calls in pipeline.rs,
+/// satisfying the Open/Closed Principle: new tool modules add themselves
+/// without modifying ToolExecutionPipeline.
+static TOOL_MODULES: std::sync::LazyLock<
+    HashMap<&'static str, fn(&mut ToolRegistry, &mut HashMap<String, Arc<dyn ToolExecutor>>)>,
+> = std::sync::LazyLock::new(|| {
+    let mut m: HashMap<&str, fn(&mut ToolRegistry, &mut HashMap<String, Arc<dyn ToolExecutor>>)> = HashMap::new();
+    m.insert("core", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::core::register_core_tools(reg, exe);
+    });
+    m.insert("filesystem", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::filesystem::register_filesystem_tools(reg, exe);
+    });
+    m.insert("shell", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::shell::register_shell_tools(reg, exe);
+    });
+    m.insert("web", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::web::register_web_tools(reg, exe);
+    });
+    m.insert("browser", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::browser::register_browser_tools(reg, exe);
+    });
+    m.insert("document", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::document::register_document_tools(reg, exe);
+    });
+    m.insert("enterprise", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::enterprise::register_enterprise_tools(reg, exe);
+    });
+    m.insert("memory", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::memory::register_memory_tools(reg, exe);
+    });
+    m.insert("sessions", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::sessions::register_sessions_tools(reg, exe);
+    });
+    m.insert("media", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::media::register_media_tools(reg, exe);
+    });
+    m.insert("automation", |reg: &mut ToolRegistry, exe: &mut HashMap<String, Arc<dyn ToolExecutor>>| {
+        crate::agent::tools::automation::register_automation_tools(reg, exe);
+    });
+    m
+});
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -157,17 +191,10 @@ impl ToolExecutionPipeline {
     pub fn new() -> Self {
         let mut registry = ToolRegistry::new();
         let mut executors: HashMap<String, Arc<dyn ToolExecutor>> = HashMap::new();
-        register_core_tools(&mut registry, &mut executors);
-        filesystem::register_filesystem_tools(&mut registry, &mut executors);
-        shell::register_shell_tools(&mut registry, &mut executors);
-        web::register_web_tools(&mut registry, &mut executors);
-        browser::register_browser_tools(&mut registry, &mut executors);
-        document::register_document_tools(&mut registry, &mut executors);
-        enterprise::register_enterprise_tools(&mut registry, &mut executors);
-        memory::register_memory_tools(&mut registry, &mut executors);
-        sessions::register_sessions_tools(&mut registry, &mut executors);
-        media::register_media_tools(&mut registry, &mut executors);
-        automation::register_automation_tools(&mut registry, &mut executors);
+
+        for (_, register_fn) in TOOL_MODULES.iter() {
+            register_fn(&mut registry, &mut executors);
+        }
 
         Self {
             registry: Arc::new(registry),

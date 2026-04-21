@@ -76,7 +76,57 @@ export interface MessageStore {
 
 // ==================== Store Implementation ====================
 
+let wsInitialized = false;
+
+function initWebSocket() {
+  if (wsInitialized) return;
+  wsInitialized = true;
+
+  if (typeof window !== "undefined") {
+    import("@/lib/ws").then(({ connectWs, on }) => {
+      connectWs();
+
+      on("new_message", (msg) => {
+        const payload = msg.payload as { message: Message };
+        if (payload?.message) {
+          set((state) => {
+            const newMessages = new Map(state.messages);
+            newMessages.set(payload.message.id, payload.message);
+            return { messages: newMessages };
+          });
+          get().stateListeners.forEach((listener) =>
+            listener({
+              type: "message_created",
+              message: payload.message,
+              sessionId: payload.message.sessionId,
+              timestamp: Date.now(),
+            })
+          );
+        }
+      });
+
+      on("message_read", (msg) => {
+        const payload = msg.payload as { messageId: string };
+        if (payload?.messageId) {
+          get().updateMessageStatus(payload.messageId, "complete");
+        }
+      });
+    }).catch(() => {
+      wsInitialized = false;
+    });
+  }
+}
+
 export const messageStore = create<MessageStore>((set, get) => ({
+  messages: new Map(),
+  sessionMessages: new Map(),
+  stateListeners: new Set(),
+  streamListeners: new Set(),
+
+  // Initialize WebSocket connection
+  ...(() => { initWebSocket(); return {}; })(),
+
+  // ==================== Message CRUD ====================
   messages: new Map(),
   sessionMessages: new Map(),
   stateListeners: new Set(),
@@ -454,6 +504,7 @@ export const messageStore = create<MessageStore>((set, get) => ({
   // ==================== Listeners ====================
   
   addStateListener: (listener: MessageStateListener): (() => void) => {
+    initWebSocket();
     set((state) => {
       const newListeners = new Set(state.stateListeners)
       newListeners.add(listener)

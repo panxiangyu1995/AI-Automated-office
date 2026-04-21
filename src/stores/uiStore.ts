@@ -44,6 +44,7 @@ interface UIState {
   agentSecondarySurface: AgentSecondarySurface
   quickSearchOpen: boolean
   activeActivityItem: ActivityBarItem
+  activeModule: string
   topBarVisible: boolean
   bottomPanelHeight: number
   bottomPanelCollapsed: boolean
@@ -78,6 +79,7 @@ interface UIState {
   closeQuickSearch: () => void
   toggleQuickSearch: () => void
   setActiveActivityItem: (item: ActivityBarItem) => void
+  setActiveModule: (module: string) => void
   setDynamicSidebarEntries: (entries: SidebarResourceEntry[]) => void
   setEditorSidebarEntries: (entries: SidebarResourceEntry[]) => void
   setActivityBarBadge: (targetId: string, count: number | string, color?: string) => void
@@ -101,6 +103,7 @@ type PersistedUIState = Pick<
   | 'bottomPanelHeight'
   | 'bottomPanelCollapsed'
   | 'activeActivityItem'
+  | 'activeModule'
   | 'topBarVisible'
   | 'activePresetId'
   | 'activePresetMode'
@@ -120,6 +123,7 @@ const defaultLayout = {
   activePresetMode: null,
   aiPanelVisible: true,
   aiPanelWidth: 400,
+  activeModule: 'dashboard',
 }
 
 const createDebouncedStorage = (storage: Storage, delay: number) => {
@@ -185,7 +189,8 @@ export const useUIStore = create<UIState>()(
       openQuickSearch: () => set({ quickSearchOpen: true }),
       closeQuickSearch: () => set({ quickSearchOpen: false }),
       toggleQuickSearch: () => set({ quickSearchOpen: !get().quickSearchOpen }),
-      setActiveActivityItem: (item) => set({ activeActivityItem: item }),
+      setActiveActivityItem: (item) => set({ activeActivityItem: item, activeModule: item }),
+      setActiveModule: (module) => set({ activeModule: module }),
       setDynamicSidebarEntries: (entries) => set({ dynamicSidebarEntries: entries }),
       setEditorSidebarEntries: (entries) => set({ editorSidebarEntries: entries }),
       setActivityBarBadge: (targetId, count, color) =>
@@ -254,6 +259,7 @@ export const useUIStore = create<UIState>()(
         bottomPanelHeight: state.bottomPanelHeight,
         bottomPanelCollapsed: state.bottomPanelCollapsed,
         activeActivityItem: state.activeActivityItem,
+        activeModule: state.activeModule,
         topBarVisible: state.topBarVisible,
         activePresetId: state.activePresetId,
         activePresetMode: state.activePresetMode,

@@ -56,6 +56,7 @@ use tokio::sync::RwLock;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::agent::dual_agent_provider::DualAgentProvider;
 use crate::agent::llm_agent_provider::LlmAgentProvider;
 use crate::agent::llm_provider::config::AgentMode;
 use crate::agent::llm_provider::provider_manager::LlmProviderManager;
@@ -190,16 +191,16 @@ impl AgentRuntimeState {
         let provider = Self::create_provider_from_config(&config).await?;
 
         Ok(Self {
-            provider: Arc::new(RwLock::new(Arc::new(provider))),
+            provider: Arc::new(RwLock::new(provider)),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(Some(config))),
             messages: Arc::new(RwLock::new(HashMap::new())),
         })
     }
 
-    /// Create LLM Agent Provider from configuration
-    async fn create_provider_from_config(config: &RuntimeConfig) -> Result<LlmAgentProvider, AgentError> {
-        // Create Act mode provider
+    /// Create Agent Provider from configuration
+    /// Uses DualAgentProvider for Plan/Act dual mode, or single LlmAgentProvider otherwise
+    async fn create_provider_from_config(config: &RuntimeConfig) -> Result<Arc<dyn AgentProvider>, AgentError> {
         let act_llm = Self::create_llm_provider(
             &config.provider_type,
             &config.api_key,
@@ -207,7 +208,6 @@ impl AgentRuntimeState {
             config.api_endpoint.as_deref(),
         )?;
 
-        // Create Plan mode provider if configured
         let plan_llm = if let Some(plan_config) = &config.plan_mode_config {
             Some(Self::create_llm_provider(
                 &plan_config.provider_type,
@@ -219,7 +219,11 @@ impl AgentRuntimeState {
             None
         };
 
-        Ok(LlmAgentProvider::with_dual_config(act_llm, plan_llm))
+        if plan_llm.is_some() {
+            Ok(Arc::new(DualAgentProvider::new(act_llm, plan_llm)))
+        } else {
+            Ok(Arc::new(LlmAgentProvider::new(act_llm)))
+        }
     }
 
     /// Create an LLM provider from parameters

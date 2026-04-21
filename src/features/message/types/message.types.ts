@@ -1,10 +1,48 @@
 /**
  * Message 模块类型定义
+ *
+ * 注意：此文件定义企业消息（通知/审批/任务）相关类型
+ * AI会话消息请参考 runtime/messageModel.ts
  */
 
 export type MessageType = 'system' | 'approval' | 'task' | 'mention' | 'chat'
 export type MessagePriority = 'low' | 'normal' | 'high' | 'urgent'
 export type MessageStatus = 'unread' | 'read' | 'archived'
+
+// WebSocket 消息事件类型
+export type WSEventType =
+  | 'new_message'
+  | 'message_read'
+  | 'message_recall'
+  | 'new_announcement'
+  | 'unread_update'
+  | 'system_notification'
+
+export interface WSEvent<T = unknown> {
+  type: WSEventType
+  payload: T
+  timestamp?: number
+}
+
+export interface WSNewMessagePayload {
+  message: Message
+}
+
+export interface WSMessageReadPayload {
+  messageId: string
+  readAt: number
+}
+
+export interface WSUnreadUpdatePayload {
+  unreadCount: number
+}
+
+export interface WSAnnouncementPayload {
+  id: string
+  title: string
+  priority: MessagePriority
+  publishedAt: number
+}
 
 export interface Sender {
   id: string

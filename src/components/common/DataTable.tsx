@@ -93,7 +93,6 @@ export function DataTable<T extends { id?: string | number }>({
 
   // 全选处理
   const allSelected = data.length > 0 && data.every((item) => selectedKeys?.has(item.id!))
-  const someSelected = data.some((item) => selectedKeys?.has(item.id!))
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -134,10 +133,8 @@ export function DataTable<T extends { id?: string | number }>({
           <tr>
             {selectable && (
               <th className="w-10 px-3 py-3">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <Checkbox
                   checked={allSelected}
-                  ref={(el) => { if (el) (el as any).indeterminate = someSelected && !allSelected }}
                   onCheckedChange={handleSelectAll}
                 />
               </th>

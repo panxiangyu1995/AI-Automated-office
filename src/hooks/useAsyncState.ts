@@ -4,7 +4,7 @@
  * 简化异步操作的状态管理：loading, error, data
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import type { TauriError } from './useTauriCommand'
 
 export interface AsyncState<T> {
@@ -177,22 +177,30 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 /**
- * 节流 Hook
+ * 节流 Hook - 使用 useMemo 避免 useCallback 警告
  */
 export function useThrottle<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T {
-  const lastRan = useRef(Date.now())
+  const lastRanRef = useRef(Date.now())
+  const callbackRef = useRef(callback)
+  
+  // 保持回调引用最新
+  useEffect(() => {
+    callbackRef.current = callback
+  }, [callback])
 
-  return useCallback(
-    ((...args: unknown[]) => {
+  // 使用 useMemo 创建节流函数
+  const throttledFn = useMemo(() => {
+    return ((...args: unknown[]) => {
       const now = Date.now()
-      if (now - lastRan.current >= delay) {
-        callback(...args)
-        lastRan.current = now
+      if (now - lastRanRef.current >= delay) {
+        callbackRef.current(...args)
+        lastRanRef.current = now
       }
-    }) as unknown as T,
-    [callback, delay]
-  )
+    }) as T
+  }, [delay])
+
+  return throttledFn
 }
