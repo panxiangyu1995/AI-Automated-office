@@ -30,26 +30,26 @@ export const lightModernTheme: ThemeData = {
     borderDisabled: '#C8C8C850',
 
     // Activity Bar
-    activityBarBackground: '#F3F3F3',
-    activityBarForeground: '#616161',
+    'activityBar.background': '#F3F3F3',
+    'activityBar.foreground': '#616161',
     'activityBar.activeBackground': '#E0E0E0',
     'activityBar.activeForeground': '#333333',
     'activityBar.border': '#E0E0E0',
 
     // Sidebar
-    sidebarBackground: '#F5F5F5',
-    sidebarBorder: '#E0E0E0',
-    sidebarForeground: '#333333',
-    sidebarHeaderBorder: '#E0E0E0',
-    sidebarSearchBackground: '#FFFFFF',
-    sidebarSearchIcon: '#666666',
-    sidebarSectionTitle: '#666666',
-    sidebarActiveBackground: '#E8E8E8',
-    sidebarActiveForeground: '#000000',
-    sidebarActiveIndicator: '#238636',
-    sidebarSecondaryForeground: '#666666',
-    sidebarBadgeBorder: '#E0E0E0',
-    sidebarBadgeForeground: '#666666',
+    'sidebar.background': '#F5F5F5',
+    'sidebar.border': '#E0E0E0',
+    'sidebar.foreground': '#333333',
+    'sidebar.headerBorder': '#E0E0E0',
+    'sidebar.searchBackground': '#FFFFFF',
+    'sidebar.searchIcon': '#666666',
+    'sidebar.sectionTitle': '#666666',
+    'sidebar.activeBackground': '#E8E8E8',
+    'sidebar.activeForeground': '#000000',
+    'sidebar.activeIndicator': '#238636',
+    'sidebar.secondaryForeground': '#666666',
+    'sidebar.badgeBorder': '#E0E0E0',
+    'sidebar.badgeForeground': '#666666',
 
     // Editor
     editorBackground: '#FFFFFF',
@@ -57,8 +57,8 @@ export const lightModernTheme: ThemeData = {
     editorLineHighlightBackground: '#F0F0F0',
 
     // Status Bar
-    statusBarBackground: '#007ACC',
-    statusBarForeground: '#FFFFFF',
+    'statusBar.background': '#007ACC',
+    'statusBar.foreground': '#FFFFFF',
     'statusBar.border': '#007ACC',
 
     // Workbench
@@ -88,15 +88,15 @@ export const lightModernTheme: ThemeData = {
     'aiChatPanel.foreground': '#333333',
 
     // Input
-    inputBackground: '#FFFFFF',
-    inputForeground: '#616161',
-    inputBorder: '#C8C8C8',
-    inputFocusBorder: '#0078D4',
+    'input.background': '#FFFFFF',
+    'input.foreground': '#616161',
+    'input.border': '#C8C8C8',
+    'input.focusBorder': '#0078D4',
 
     // Scrollbar
-    scrollbarSliderBackground: '#C8C8C880',
-    scrollbarSliderHoverBackground: '#C8C8C8B0',
-    scrollbarSliderActiveBackground: '#C8C8C8D0',
+    'scrollbarSlider.background': '#C8C8C880',
+    'scrollbarSlider.hoverBackground': '#C8C8C8B0',
+    'scrollbarSlider.activeBackground': '#C8C8C8D0',
 
     // Button
     'button.background': '#238636',

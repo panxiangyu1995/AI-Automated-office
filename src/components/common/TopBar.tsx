@@ -11,7 +11,11 @@ import {
   FileText,
   HardDrive,
   HelpCircle,
+  Info,
+  Keyboard,
   LayoutTemplate,
+  Maximize2,
+  Package,
   PanelBottom,
   PanelLeft,
   PanelRight,
@@ -22,10 +26,17 @@ import {
   Settings,
   LogOut,
   Wrench,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Database,
+  BookOpen,
+  Sparkles,
 } from 'lucide-react'
 import { ScanDialog } from './ScanDialog'
 import { PrintDialog } from './PrintDialog'
 import { HardwareDialog } from './HardwareDialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import {
   Menubar,
   MenubarContent,
@@ -62,6 +73,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     closeAgentSecondarySurface,
     toggleBottomPanel,
     setActiveActivityItem,
+    toggleActivityBar,
+    activityBarVisible,
+    zoomLevel,
+    setZoomLevel,
+    resetZoom,
   } = useUIStore(
     useShallow((state) => ({
       sidebarCollapsed: state.sidebarCollapsed,
@@ -74,6 +90,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
       closeAgentSecondarySurface: state.closeAgentSecondarySurface,
       toggleBottomPanel: state.toggleBottomPanel,
       setActiveActivityItem: state.setActiveActivityItem,
+      toggleActivityBar: state.toggleActivityBar,
+      activityBarVisible: state.activityBarVisible,
+      zoomLevel: state.zoomLevel,
+      setZoomLevel: state.setZoomLevel,
+      resetZoom: state.resetZoom,
     }))
   )
   const createSession = useChatStore((state) => state.createSession)
@@ -90,6 +111,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
   const [scanDialogOpen, setScanDialogOpen] = useState(false)
   const [printDialogOpen, setPrintDialogOpen] = useState(false)
   const [hardwareDialogOpen, setHardwareDialogOpen] = useState(false)
+  // 辅助对话框状态
+  const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false)
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false)
+  const [logsDialogOpen, setLogsDialogOpen] = useState(false)
 
   // 硬件对话框回调
   const handleOpenScanDialog = useCallback(() => {
@@ -143,6 +169,61 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
     createSession()
   }, [closeAgentSecondarySurface, createSession, openChatPanel])
 
+  // 视图菜单处理
+  const handleToggleActivityBar = useCallback(() => {
+    toggleActivityBar()
+  }, [toggleActivityBar])
+
+  const handleToggleFullscreen = useCallback(async () => {
+    const win = getCurrentWindow()
+    const isFullscreen = await win.isFullscreen()
+    await win.setFullscreen(!isFullscreen)
+  }, [])
+
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel(zoomLevel + 10)
+  }, [zoomLevel, setZoomLevel])
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel(zoomLevel - 10)
+  }, [zoomLevel, setZoomLevel])
+
+  const handleResetZoom = useCallback(() => {
+    resetZoom()
+  }, [resetZoom])
+
+  // 助手菜单处理
+  const handleOpenAgentSettings = useCallback(() => {
+    setActiveActivityItem('settings')
+  }, [setActiveActivityItem])
+
+  const handleOpenApiKeyManagement = useCallback(() => {
+    setActiveActivityItem('settings')
+  }, [setActiveActivityItem])
+
+  // 插件菜单处理
+  const handleOpenPluginMarket = useCallback(() => {
+    setActiveActivityItem('settings')
+  }, [setActiveActivityItem])
+
+  // 工具菜单处理
+  const handleOpenDataSync = useCallback(() => {
+    setSyncDialogOpen(true)
+  }, [])
+
+  const handleOpenSystemLogs = useCallback(() => {
+    setLogsDialogOpen(true)
+  }, [])
+
+  // 帮助菜单处理
+  const handleOpenShortcuts = useCallback(() => {
+    setShortcutsDialogOpen(true)
+  }, [])
+
+  const handleOpenAbout = useCallback(() => {
+    setAboutDialogOpen(true)
+  }, [])
+
   const handleOpenChatHistory = useCallback(() => {
     openChatPanel()
     openAgentSecondarySurface('history')
@@ -170,13 +251,33 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
       style={{ backgroundColor: 'var(--ao-topbar-background)' }}
     >
       {/* 左侧菜单 */}
-      <div className="flex items-center gap-6">
-        <span className="text-white font-semibold text-sm">Realline</span>
+      <div className="flex items-center gap-3">
+        {/* 品牌标识 */}
+        <div className="flex items-center gap-2 select-none mr-1">
+          <div
+            className="flex items-center justify-center w-6 h-6 rounded"
+            style={{ backgroundColor: 'var(--ao-primary, #1E3A5F)' }}
+          >
+            <Sparkles size={14} className="text-white" />
+          </div>
+          <span
+            className="font-semibold text-sm tracking-tight"
+            style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
+          >
+            AI-Office
+          </span>
+        </div>
+
+        {/* 分隔线 */}
+        <div
+          className="h-5 w-px"
+          style={{ backgroundColor: 'var(--ao-topbar-border)' }}
+        />
         
         <Menubar className="border-none bg-transparent h-auto p-0">
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               文件
@@ -235,8 +336,8 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               编辑
@@ -289,8 +390,8 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               视图
@@ -302,9 +403,10 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
                 <MenubarShortcut>⌘⇧M</MenubarShortcut>
               </MenubarItem>
               <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
-              <MenubarItem onSelect={handleMenuAction('View: Activity Bar')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+              <MenubarItem onSelect={handleMenuAction('View: Activity Bar', handleToggleActivityBar)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
                 活动栏
+                <MenubarShortcut>{activityBarVisible ? '✓' : ''}</MenubarShortcut>
               </MenubarItem>
               <MenubarItem onSelect={handleMenuAction('View: Sidebar', toggleSidebar)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Eye size={14} className="mr-2" />
@@ -316,33 +418,33 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
                 <MenubarShortcut>{aiPanelShortcutLabel}</MenubarShortcut>
               </MenubarItem>
               <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
-              <MenubarItem onSelect={handleMenuAction('View: Full Screen')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Eye size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('View: Full Screen', handleToggleFullscreen)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <Maximize2 size={14} className="mr-2" />
                 全屏
                 <MenubarShortcut>F11</MenubarShortcut>
               </MenubarItem>
               <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
-              <MenubarItem onSelect={handleMenuAction('View: Zoom In')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Eye size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('View: Zoom In', handleZoomIn)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <ZoomIn size={14} className="mr-2" />
                 放大
-                <MenubarShortcut>⌘+</MenubarShortcut>
+                <MenubarShortcut>Ctrl+=</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: Zoom Out')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Eye size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('View: Zoom Out', handleZoomOut)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <ZoomOut size={14} className="mr-2" />
                 缩小
-                <MenubarShortcut>⌘-</MenubarShortcut>
+                <MenubarShortcut>Ctrl+-</MenubarShortcut>
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('View: Reset Zoom')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Eye size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('View: Reset Zoom', handleResetZoom)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <RotateCcw size={14} className="mr-2" />
                 重置缩放
-                <MenubarShortcut>⌘0</MenubarShortcut>
+                <MenubarShortcut>Ctrl+0</MenubarShortcut>
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               助手
@@ -357,11 +459,11 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
                 历史记录...
               </MenubarItem>
               <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
-              <MenubarItem onSelect={handleMenuAction('Agent: Model Settings')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+              <MenubarItem onSelect={handleMenuAction('Agent: Model Settings', handleOpenAgentSettings)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Bot size={14} className="mr-2" />
                 模型设置...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Agent: API Key Management')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+              <MenubarItem onSelect={handleMenuAction('Agent: API Key Management', handleOpenApiKeyManagement)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Bot size={14} className="mr-2" />
                 API 密钥管理...
               </MenubarItem>
@@ -369,42 +471,42 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               插件
             </MenubarTrigger>
             <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
-              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Market')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Puzzle size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Market', handleOpenPluginMarket)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <Package size={14} className="mr-2" />
                 插件市场...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Plugins: Installed Plugins')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+              <MenubarItem onSelect={handleMenuAction('Plugins: Installed Plugins', handleOpenPluginMarket)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
                 <Puzzle size={14} className="mr-2" />
                 已安装插件...
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Settings')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Puzzle size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('Plugins: Plugin Settings', handleOpenPluginMarket)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <Settings size={14} className="mr-2" />
                 插件设置...
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               工具
             </MenubarTrigger>
             <MenubarContent style={{ backgroundColor: 'var(--ao-topbar-menuBackground)', borderColor: 'var(--ao-topbar-menuBorder)' }}>
-              <MenubarItem onSelect={handleMenuAction('Tools: Data Sync')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Wrench size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('Tools: Data Sync', handleOpenDataSync)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <Database size={14} className="mr-2" />
                 数据同步
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Tools: System Logs')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <Wrench size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('Tools: System Logs', handleOpenSystemLogs)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <BookOpen size={14} className="mr-2" />
                 系统日志...
               </MenubarItem>
               <MenubarItem onSelect={handleMenuAction('Tools: Performance Monitor')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
@@ -415,8 +517,8 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               硬件
@@ -441,8 +543,8 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
           </MenubarMenu>
 
           <MenubarMenu>
-            <MenubarTrigger 
-              className="text-xs px-3 py-1.5 rounded hover:bg-[var(--ao-topbar-border)] data-[state=open]:bg-[var(--ao-topbar-border)]"
+            <MenubarTrigger
+              className="text-xs px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--ao-topbar-menuItemHoverBackground)] data-[state=open]:bg-[var(--ao-topbar-menuItemActiveBackground)]"
               style={{ color: 'var(--ao-topbar-menuItemForeground)' }}
             >
               帮助
@@ -457,13 +559,13 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
                 <HelpCircle size={14} className="mr-2" />
                 文档
               </MenubarItem>
-              <MenubarItem onSelect={handleMenuAction('Help: Keyboard Shortcuts')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <HelpCircle size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('Help: Keyboard Shortcuts', handleOpenShortcuts)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <Keyboard size={14} className="mr-2" />
                 快捷键列表...
               </MenubarItem>
               <MenubarSeparator style={{ backgroundColor: 'var(--ao-topbar-menuBorder)' }} />
-              <MenubarItem onSelect={handleMenuAction('Help: About')} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
-                <HelpCircle size={14} className="mr-2" />
+              <MenubarItem onSelect={handleMenuAction('Help: About', handleOpenAbout)} style={{ color: 'var(--ao-topbar-menuItemForeground)', backgroundColor: 'var(--ao-topbar-menuBackground)' }}>
+                <Info size={14} className="mr-2" />
                 关于...
               </MenubarItem>
             </MenubarContent>
@@ -497,6 +599,83 @@ export function TopBar({ visible, onToggle, onOpenLayoutDialog }: TopBarProps) {
       <ScanDialog open={scanDialogOpen} onOpenChange={setScanDialogOpen} />
       <PrintDialog open={printDialogOpen} onOpenChange={setPrintDialogOpen} />
       <HardwareDialog open={hardwareDialogOpen} onOpenChange={setHardwareDialogOpen} />
+
+      {/* 快捷键列表对话框 */}
+      <Dialog open={shortcutsDialogOpen} onOpenChange={setShortcutsDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>快捷键列表</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex justify-between"><span>显示应用</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+Shift+A</kbd></div>
+              <div className="flex justify-between"><span>打开 AI 对话</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+Shift+I</kbd></div>
+              <div className="flex justify-between"><span>快速搜索</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+Shift+F</kbd></div>
+              <div className="flex justify-between"><span>快速提问</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+L</kbd></div>
+              <div className="flex justify-between"><span>打开设置</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+,</kbd></div>
+              <div className="flex justify-between"><span>切换菜单栏</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+Shift+M</kbd></div>
+              <div className="flex justify-between"><span>切换侧边栏</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">Ctrl+B</kbd></div>
+              <div className="flex justify-between"><span>全屏</span><kbd className="px-2 py-0.5 rounded bg-muted text-xs font-mono">F11</kbd></div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 关于对话框 */}
+      <Dialog open={aboutDialogOpen} onOpenChange={setAboutDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>AI-Automated-office</DialogTitle>
+            <DialogDescription>版本 1.0.0</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>AI 赋能的 ERP 系统，采用部门化架构设计。</p>
+            <p>核心能力：每个部门专属 AI 助手、跨部门数据联动、统一数据中台。</p>
+            <p className="text-xs pt-2">Built with Tauri + React + TypeScript</p>
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" size="sm" onClick={() => setAboutDialogOpen(false)}>关闭</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 数据同步对话框 */}
+      <Dialog open={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>数据同步</DialogTitle>
+            <DialogDescription>管理本地数据与云端服务的同步状态</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="flex justify-between text-sm"><span>同步状态</span><span className="text-green-500 font-medium">已同步</span></div>
+            <div className="flex justify-between text-sm"><span>最后同步</span><span className="text-muted-foreground">刚刚</span></div>
+            <div className="flex gap-2 pt-2">
+              <Button size="sm" onClick={() => {}}>立即同步</Button>
+              <Button variant="outline" size="sm" onClick={() => setSyncDialogOpen(false)}>关闭</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 系统日志对话框 */}
+      <Dialog open={logsDialogOpen} onOpenChange={setLogsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[70vh]">
+          <DialogHeader>
+            <DialogTitle>系统日志</DialogTitle>
+            <DialogDescription>查看系统运行日志</DialogDescription>
+          </DialogHeader>
+          <div className="bg-black/90 rounded p-3 font-mono text-xs text-green-400 h-64 overflow-auto">
+            <div>[INFO] 系统启动完成</div>
+            <div>[INFO] 加载插件: HR, Finance, Sales</div>
+            <div>[INFO] 数据同步服务已连接</div>
+            <div>[INFO] AI Agent 初始化成功</div>
+            <div className="text-yellow-400">[WARN] 检测到 2 个可用更新</div>
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" size="sm" onClick={() => setLogsDialogOpen(false)}>关闭</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   )
 }

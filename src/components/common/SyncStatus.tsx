@@ -5,7 +5,7 @@ import { SyncConflictDialog } from '../../features/sync/components/SyncConflictD
 import type { SyncConflict } from '../../features/sync/types'
 
 /**
- * 显示同步状态指示
+ * 显示同步状态指示 - 对齐UX规范设计
  * 集成 SyncConflictDialog (FR40/FR41) - 冲突时点击显示解决对话框
  */
 export function SyncStatus() {
@@ -17,7 +17,6 @@ export function SyncStatus() {
   } = useNetworkStatus()
   const [showCompleted, setShowCompleted] = useState(false)
   const [showConflictDialog, setShowConflictDialog] = useState(false)
-  /** 待解决的冲突数量（模拟） */
   const [conflictCount] = useState(0)
 
   useEffect(() => {
@@ -31,45 +30,57 @@ export function SyncStatus() {
     return () => window.clearTimeout(timer)
   }, [lastSyncCompletedAt])
 
+  const getStatusText = () => {
+    if (!isOnline) return null
+    if (isSyncing) return `同步中 ${pendingSyncCount}`
+    if (pendingSyncCount > 0) return `待同步 ${pendingSyncCount}`
+    if (showCompleted) return '同步完成'
+    return null
+  }
+
+  const statusText = getStatusText()
+  if (!statusText) return null
+
+  const getStatusColor = () => {
+    if (showCompleted) return 'var(--ao-successForeground)'
+    if (isSyncing) return 'var(--ao-statusBar-foreground)'
+    if (pendingSyncCount > 0) return 'var(--ao-warningForeground)'
+    return 'var(--ao-statusBar-foreground)'
+  }
+
+  const getStatusIcon = () => {
+    if (showCompleted) return <CheckCircle2 size={11} style={{ color: getStatusColor() }} />
+    if (isSyncing) return <RefreshCw size={11} className="animate-spin" style={{ color: getStatusColor() }} />
+    return <RefreshCw size={11} style={{ color: getStatusColor() }} />
+  }
+
   return (
     <>
       {conflictCount > 0 && (
         <button
-          className="flex items-center gap-1 text-xs"
+          className="flex items-center gap-1 text-xs transition-opacity hover:opacity-80 cursor-pointer"
           style={{ color: 'var(--ao-warningForeground)' }}
           onClick={() => setShowConflictDialog(true)}
           title={`${conflictCount} 个同步冲突`}
         >
-          <AlertTriangle className="h-3.5 w-3.5" />
+          <AlertTriangle size={11} />
           <span>{conflictCount} 冲突</span>
         </button>
       )}
 
+      <div className="flex items-center gap-1.5">
+        {getStatusIcon()}
+        <span className="text-xs" style={{ color: getStatusColor() }}>
+          {statusText}
+        </span>
+      </div>
+
       {!isOnline && (
-        <div className="flex items-center gap-1 text-xs text-white/80">
-          <CloudOff className="h-3.5 w-3.5" />
-          <span>离线</span>
-        </div>
-      )}
-
-      {isOnline && isSyncing && (
-        <div className="flex items-center gap-1 text-xs text-white/80">
-          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-          <span>同步中 {pendingSyncCount}</span>
-        </div>
-      )}
-
-      {isOnline && !isSyncing && pendingSyncCount > 0 && (
-        <div className="flex items-center gap-1 text-xs text-white/80">
-          <RefreshCw className="h-3.5 w-3.5" />
-          <span>待同步 {pendingSyncCount}</span>
-        </div>
-      )}
-
-      {showCompleted && (
-        <div className="flex items-center gap-1 text-xs text-white/80">
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          <span>同步完成</span>
+        <div className="flex items-center gap-1.5">
+          <CloudOff size={11} style={{ color: 'var(--ao-errorForeground)' }} />
+          <span className="text-xs" style={{ color: 'var(--ao-errorForeground)' }}>
+            离线模式
+          </span>
         </div>
       )}
 

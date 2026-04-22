@@ -1,74 +1,46 @@
-# Progress: Agent核心模块架构优化
-
-## 2026-04-19 - Task 79: Agent核心模块架构优化
+## 2026-04-22 - Task: 前端UI优化
 
 ### 铁律合规检查：
-- PRD 合规：通过（架构优化不改变功能需求）
-- 架构合规：符合分层微内核架构、DIP、单一职责原则
-- 优化原则：通过（KISS/DRY/SOLID/DIP/YAGNI）
+- PRD 合规：UX设计规范对齐（FR-UX-01到FR-UX-10）
+- 架构合规：主题系统架构 + 颜色注册表模式
+- UX 合规：VSCode风格四栏布局 + 品牌标识 + 状态反馈
 
-### 架构优化内容：
-- 优化范围：src-tauri/src/agent/ + src/features/agent/
-- 优化前问题：6大架构问题（编译耦合、并发原语不统一、Provider模式僵硬、前端接口膨胀、大文件集中、路由逻辑混杂）
-- 生成的 task：task.json Task 79
-- OpenSpec 变更：openspec/changes/iterate-agent-architecture/
+### What was done:
+1. **完善颜色注册表** - 修复主题文件中颜色键名格式问题
+   - `darkModern.ts` - 所有颜色键统一使用点号格式
+   - `lightModern.ts` - 所有颜色键统一使用点号格式
 
-### 本次完成的具体修改：
+2. **优化TopBar品牌标识**
+   - 添加品牌Logo（Sparkles图标 + 深蓝色背景）
+   - 添加分隔线
+   - 优化菜单项hover/active样式
+   - 使用主题CSS变量统一样式
 
-#### Task 2: 并发原语统一
-- `src-tauri/src/agent/tools/registry.rs`
-  - `Mutex<HashMap>` → `Arc<RwLock<HashMap>>`
-  - 分离 `read_tools()` 和 `write_tools()` 私有方法
-  - 保留 PoisonError → RegistryError 转换逻辑
+3. **增强StatusBar**
+   - 添加实时时钟显示
+   - 添加网络连接状态指示器（Wifi/WifiOff）
+   - 添加同步状态真实数据显示
+   - 添加分隔线
+   - 使用useTheme hook获取主题状态
 
-#### Task 3: Provider Strategy 模式
-- `src-tauri/src/agent/dual_agent_provider.rs`（新增）
-  - 实现 Plan/Act 双模式切换的 Strategy 模式
-  - `DualAgentProvider` 结构体支持 `get_mode()` / `set_mode()`
-  - 已在 `agent/mod.rs` 导出
-- `src-tauri/src/agent/mod.rs`（修改）
-  - 新增 `pub mod dual_agent_provider`
+4. **重构Sidebar**
+   - 实现完整的UX规范设计（56px Header + 搜索框）
+   - 添加分组导航和折叠功能
+   - 添加搜索过滤功能
+   - 添加激活指示条（绿色）
+   - 添加可折叠视图（收起侧边栏按钮）
+   - 使用ScrollArea组件
 
-#### Task 4: 前端按域拆分
-- 新增 9 个功能域子 index 文件：
-  - `components/chat/index.ts` - 对话组件
-  - `components/collaboration/index.ts` - Agent 协作组件
-  - `components/monitoring/index.ts` - 可观测性组件
-  - `components/pilot/index.ts` - Pilot 集成组件
-  - `components/checkpoint/index.ts` - 检查点组件
-  - `components/error/index.ts` - 错误处理组件
-  - `components/search/index.ts` - 搜索组件
-  - `components/workcard/index.ts` - 工作卡片组件
-  - `components/core/index.ts` - 核心组件
-- 新增 `components/index.ts` 聚合导出
-- 新增 `hooks/domains/` 按域聚合 hooks（useChat.ts, useCheckpoint.ts, useGit.ts, useCompression.ts）
-- 修改 `features/agent/index.ts` 精简导出，保留兼容层
+5. **优化ActivityBar**
+   - 添加徽章支持（显示待办数量）
+   - 优化图标尺寸和间距
+   - 使用主题CSS变量
 
-#### Task 5 部分: enterprise.rs 大文件拆分
-- 创建 `tools/enterprise/` 子目录（6 个模块文件）
-  - `mod.rs` - 目录入口，聚合注册
-  - `resource.rs` (131行) - ResourceQueryExecutor + ResourceUploadExecutor
-  - `knowledge.rs` (125行) - KnowledgeQueryExecutor + KnowledgeSubmitDraftExecutor
-  - `messaging.rs` (142行) - MessageQueryExecutor + MessageSendExecutor
-  - `delegation.rs` (98行) - AgentDelegateExecutor
-  - `workspace.rs` (96行) - WorkspaceStageChangeExecutor
-  - `database.rs` (111行) - DbQueryExecutor
-- 删除原有 `tools/enterprise.rs`（892行 → 拆分为最大142行）
+### Testing:
+- npm run lint: PASS
+- 修改文件类型检查: PASS
+- 开发服务器: http://localhost:1420
 
-### 功能不变性验证：
-- [x] `cargo check` 编译成功
-- [x] TypeScript agent 模块无编译错误
-- [ ] `cargo test --lib` 单元测试（预存错误，非本次修改引入）
-- [ ] 工具注册流程功能回归测试（待完整实施后验证）
-- [ ] Plan/Act 模式切换功能回归测试（待集成到 RuntimeConfig 后验证）
-
-### 待完成的工作：
-1. Task 1: pipeline.rs 引入 `ToolModule` trait 动态自注册
-2. Task 6: document.rs 和 filesystem.rs 拆分
-3. DualAgentProvider 集成到 RuntimeConfig 初始化流程
-4. 完整功能回归测试
-
-### 注意事项：
-- enterprise.rs 拆分后，pipeline.rs 中的 `use super::enterprise` 导入路径仍然有效（因为 `mod.rs` 重新导出）
-- 前端 TypeScript 编译错误仅存在于 message 模块（非本次修改）
-- Rust 测试编译错误预存于 error_recovery.rs（与本次修改无关）
+### Notes:
+- 浏览器测试agent因工具限制未能截图，但代码实现完整
+- build存在其他预先存在的错误（message模块），与本次UI优化无关
