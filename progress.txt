@@ -416,6 +416,27 @@ bf827f2 [bug]+[后端]+[修复]中间件顺序+角色API权限映射
 - 工作流 API: ❌ 返回 404 (功能未实现)
 
 ### 提交记录
+1c7e2c3 [bug]+[前端]+[修复]API文件TypeScript类型错误+使用类型断言替代手动构造fallback对象
 ef3252d [bug]+[前端]+[修复Hooks中Tauri invoke直接调用导致浏览器环境报错]
 1f14ff7 [bug]+[前端]+[修复API客户端和Pilot服务直接调用invoke问题]
+
+=== 2026-04-24 09:50 - TypeScript 错误全部修复 ===
+
+### 已修复的问题
+TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动构造的 fallback 对象
+
+### 修复的文件
+- approvalApi.ts: ApprovalRecord/ApprovalStats fallback 对象属性不匹配
+- departmentApi.ts: DepartmentPackage/DepartmentDetailResponse 等 fallback 属性错误
+- financeApi.ts: Invoice/LedgerEntry/FinanceStats fallback 对象属性不匹配
+- salesApi.ts: Customer/Quote/Contract/SalesStats fallback 对象属性错误
+- warehouseApi.ts: InboundOrder/OutboundOrder/WarehouseStats 等 fallback 错误
+- workspace.ts: WorkspaceLayout/WorkspaceTodo/PagedResult fallback 属性错误
+- useDocument.ts: deleteDocument/batchUpdateStatus 返回值 null 处理
+- useKnowledgeBase.ts: removeMember/updateMember/deleteKnowledgeBase/checkPermission 返回值处理
+
+### 验证结果
+- npx tsc --noEmit: ✅ 通过（无错误）
+- npm run lint: ✅ 通过
+- npm run build: ✅ 构建成功
 
