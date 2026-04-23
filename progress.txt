@@ -196,3 +196,41 @@ GET  /announcements       ✅ 正常
 - [ ] 工作流审批
 - [ ] 前端 UI E2E 测试
 
+
+=== 2026-04-23 19:35 - E2E 测试继续 ===
+
+### 已验证功能
+- [x] VSCode 四栏布局 (前端 UI 正常渲染)
+- [x] 侧边栏导航（仪表盘、人事部、财务部、销售部等）
+- [x] 搜索框输入功能正常
+- [x] 云端服务 API 路由注册完整 (100+ endpoints)
+- [x] 数据库连接成功 (PostgreSQL trust 认证)
+- [x] 用户登录 API (返回有效 JWT token)
+- [x] 健康检查 API (/health, /liveness, /readiness)
+- [x] 部门管理 API (CRUD)
+- [x] 用户管理 API (List)
+- [x] 角色管理 API (List)
+- [x] Position 管理 API (List)
+- [x] 消息通知系统 API
+- [x] 公告通知系统 API
+- [x] WebSocket 连接 (需要认证)
+
+### 修复的问题
+1. TenantMiddleware 优先检查 context 中已有的 tenant_id
+2. 数据库添加缺失的 hr_position_read 等权限
+
+### 前端 UI 测试结果
+- 浏览器自动化测试正常执行
+- 前端 UI 布局正常（VSCode 四栏布局）
+- 搜索框输入正常
+- AI 面板显示"正在初始化"（需要 Tauri 后端支持）
+
+### 待测试功能
+- [ ] AI Agent 对话 (需要 Tauri 桌面环境)
+- [ ] 工作流审批 (需要 Tauri 桌面环境)
+
+### 技术说明
+- 云端服务器端口: 3000
+- 前端开发服务器端口: 1420
+- JWT token 认证正常
+- WebSocket 需要认证才能连接
