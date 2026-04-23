@@ -378,3 +378,44 @@ e459827 [测试]+[E2E]+更新测试进度+核心API验证通过
 bf827f2 [bug]+[后端]+[修复]中间件顺序+角色API权限映射
 37f6e54 [bug]+[后端]+[Go云端]修复多处SQL和权限问题
 ```
+
+=== 2026-04-23 23:30 - Hooks修复继续 ===
+
+### 本次修复的文件
+- src/lib/tauri.ts - 导出 safeInvoke 函数
+- src/hooks/useDataFetch.ts - 改用 safeInvoke
+- src/hooks/useTauriCommand.ts - 改用 safeInvoke
+- src/hooks/useGlobalShortcuts.ts - 改用 safeInvoke
+- src/hooks/useHardware.ts - 改用 safeInvoke
+- src/hooks/useUpdate.ts - 改用 safeInvoke
+- src/lib/api/client.ts - 改用 safeInvoke
+- src/lib/pilot.ts - 改用 safeInvoke
+- src/features/agent/hooks/useAgentIntercom.ts - 改用 safeInvoke
+
+### 仍需修复的文件 (38个)
+大量 API 文件仍直接导入 invoke，包括：
+- features/agent/api/pilotApi.ts
+- features/agent/api/intercom.ts
+- features/agent/services/subagent.ts
+- features/settings/components/*.tsx
+- features/capability/hooks/*.ts
+- 等等...
+
+### 浏览器模式下的行为
+- 前端 UI 正常渲染 (VSCode 四栏布局)
+- 侧边栏导航正常工作
+- 搜索框功能正常
+- Tauri 特有功能 (事件监听、invoke) 在浏览器模式下不可用
+
+### 测试结果
+- 部门 CRUD: ✅ 全部通过
+- 用户认证: ✅ 登录/注册成功
+- 消息系统: ✅ 发送/获取正常
+- 公告系统: ✅ 创建/获取正常
+- API 路由: ✅ 100+ endpoints 注册完整
+- 工作流 API: ❌ 返回 404 (功能未实现)
+
+### 提交记录
+ef3252d [bug]+[前端]+[修复Hooks中Tauri invoke直接调用导致浏览器环境报错]
+1f14ff7 [bug]+[前端]+[修复API客户端和Pilot服务直接调用invoke问题]
+
