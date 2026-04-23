@@ -440,3 +440,51 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - npm run lint: ✅ 通过
 - npm run build: ✅ 构建成功
 
+=== 2026-04-24 - safeInvoke 转换继续完成 ===
+
+### 本次新增转换的文件
+**第五批转换（仓库组件 + capability hooks + session tools）:**
+- warehouseDataApi.ts - safeInvoke 转换
+- capability/hooks/useApproval.ts - safeInvoke 转换
+- capability/hooks/useInstaller.ts - safeInvoke 转换
+- capability/hooks/useSecurityScan.ts - safeInvoke 转换
+- capability/hooks/useVersion.ts - safeInvoke 转换
+- session/tools/backendToolClient.ts - safeInvoke 转换
+- warehouse/api/warehouse.ts - safeInvoke 转换
+- warehouse/api/warehouseDataApi.ts - safeInvoke 转换
+
+**第六批转换（message hooks + warehouse 组件）:**
+- message/hooks/useMessage.ts - safeInvoke 转换
+- warehouse/components/InboundFormDialog.tsx - safeInvoke 转换
+- warehouse/components/OutboundFormDialog.tsx - safeInvoke 转换
+- warehouse/components/StocktakingDialog.tsx - safeInvoke 转换
+- warehouse/pages/InboundListPage.tsx - safeInvoke 转换
+- warehouse/pages/OutboundListPage.tsx - safeInvoke 转换
+- warehouse/pages/InventoryListPage.tsx - safeInvoke 转换
+
+**第七批转换（template + agent 组件）:**
+- template/components/TemplateDesigner.tsx - safeInvoke 转换
+- agent/components/SubAgentDelegatePanel.tsx - safeInvoke 转换
+
+### 浏览器 E2E 测试验证
+- VSCode 四栏布局正常渲染 ✅
+- 侧边栏所有导航按钮可见 ✅
+- 状态栏显示"系统就绪"、"已连接" ✅
+- AI 面板显示"正在初始化"（Tauri 后端不可用时的预期行为）✅
+
+### 仍需转换的文件（较少使用，非关键）
+- settings/components/SettingsPanel.tsx - 快捷键设置，需要 Tauri 后端
+- settings/components/MCPServiceConfig.tsx - MCP 服务配置
+- settings/components/SubAgentConfig.tsx - SubAgent 配置
+- settings/components/PersonalAgentManager.tsx - 个人 Agent 管理
+
+### 验证结果
+- npm run build: ✅ 构建成功 (6.85s)
+- npm run lint: ✅ 通过
+
+### Git 提交记录
+- eb9b53a [修复]+[前端]+TemplateDesigner和SubAgentDelegatePanel safeInvoke转换
+- e4c01de [修复]+[前端]+warehouse组件safeInvoke转换
+- 57ad1fb [修复]+[前端]+useMessage.ts safeInvoke转换
+- 95c20af [修复]+[前端]+API文件safeInvoke转换-第四批
+

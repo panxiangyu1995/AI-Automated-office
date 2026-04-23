@@ -2,10 +2,11 @@
 // Subagent 服务 - 前端调用 Tauri Commands 的封装
 // ADR-059 部门化 Subagent 架构
 
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import {
   AgentConfig,
   AgentType,
+  AgentMode,
   CreatePersonalSubagentRequest,
   UpdatePersonalSubagentRequest,
   SubagentStats,
@@ -21,49 +22,56 @@ import {
  * 获取所有可用的 Subagent 列表
  */
 export async function getAvailableSubagents(): Promise<AgentConfig[]> {
-  return invoke<AgentConfig[]>('get_available_subagents');
+  const result = await safeInvoke<AgentConfig[]>('get_available_subagents');
+  return result ?? []
 }
 
 /**
  * 获取单个 Subagent 配置
  */
 export async function getSubagentConfig(name: string): Promise<AgentConfig | null> {
-  return invoke<AgentConfig | null>('get_subagent_config', { name });
+  const result = await safeInvoke<AgentConfig | null>('get_subagent_config', { name });
+  return result ?? null
 }
 
 /**
  * 获取 Subagent 统计信息
  */
 export async function getSubagentStats(): Promise<SubagentStats> {
-  return invoke<SubagentStats>('get_subagent_stats');
+  const result = await safeInvoke<SubagentStats>('get_subagent_stats');
+  return result ?? { hidden: 0, department: 0, personal: 0, total: 0 }
 }
 
 /**
  * 根据关键词匹配 Subagent
  */
 export async function matchSubagentsByKeywords(keywords: string[]): Promise<AgentConfig[]> {
-  return invoke<AgentConfig[]>('match_subagents_by_keywords', { keywords });
+  const result = await safeInvoke<AgentConfig[]>('match_subagents_by_keywords', { keywords });
+  return result ?? []
 }
 
 /**
  * 获取 Personal Subagent 列表
  */
 export async function listPersonalSubagents(): Promise<AgentConfig[]> {
-  return invoke<AgentConfig[]>('list_personal_subagents');
+  const result = await safeInvoke<AgentConfig[]>('list_personal_subagents');
+  return result ?? []
 }
 
 /**
  * 获取 Department Subagent 列表
  */
 export async function listDepartmentSubagents(): Promise<AgentConfig[]> {
-  return invoke<AgentConfig[]>('list_department_subagents');
+  const result = await safeInvoke<AgentConfig[]>('list_department_subagents');
+  return result ?? []
 }
 
 /**
  * 获取 Hidden Subagent 列表
  */
 export async function listHiddenSubagents(): Promise<AgentConfig[]> {
-  return invoke<AgentConfig[]>('list_hidden_subagents');
+  const result = await safeInvoke<AgentConfig[]>('list_hidden_subagents');
+  return result ?? []
 }
 
 /**
@@ -72,7 +80,7 @@ export async function listHiddenSubagents(): Promise<AgentConfig[]> {
 export async function createPersonalSubagent(
   request: CreatePersonalSubagentRequest
 ): Promise<AgentConfig> {
-  return invoke<AgentConfig>('create_personal_subagent', {
+  const result = await safeInvoke<AgentConfig>('create_personal_subagent', {
     name: request.name,
     display_name: request.displayName,
     description: request.description,
@@ -85,6 +93,20 @@ export async function createPersonalSubagent(
     trigger_keywords: request.trigger.keywords,
     allowed_tools: request.tools.allowed,
   });
+  if (result) return result
+  const defaultModel = createDefaultModelProvider()
+  return {
+    name: request.name,
+    displayName: request.displayName,
+    agentType: AgentType.Personal,
+    mode: AgentMode.General,
+    description: request.description ?? '',
+    models: { primary: defaultModel },
+    prompt: request.prompt,
+    tools: request.tools,
+    trigger: request.trigger,
+    limits: createDefaultLimitsConfig(),
+  }
 }
 
 /**
@@ -94,20 +116,34 @@ export async function updatePersonalSubagent(
   name: string,
   request: UpdatePersonalSubagentRequest
 ): Promise<AgentConfig> {
-  return invoke<AgentConfig>('update_personal_subagent', {
+  const result = await safeInvoke<AgentConfig>('update_personal_subagent', {
     name,
     display_name: request.displayName,
     description: request.description,
     prompt: request.prompt,
     enabled: request.enabled,
   });
+  if (result) return result
+  const defaultModel = createDefaultModelProvider()
+  return {
+    name,
+    displayName: request.displayName ?? name,
+    agentType: AgentType.Personal,
+    mode: AgentMode.General,
+    description: request.description ?? '',
+    models: { primary: defaultModel },
+    prompt: request.prompt ?? '',
+    tools: createDefaultToolPermissions(),
+    trigger: createDefaultTriggerConfig(),
+    limits: createDefaultLimitsConfig(),
+  }
 }
 
 /**
  * 删除 Personal Subagent
  */
 export async function deletePersonalSubagent(name: string): Promise<void> {
-  return invoke<void>('delete_personal_subagent', { name });
+  await safeInvoke('delete_personal_subagent', { name })
 }
 
 /**

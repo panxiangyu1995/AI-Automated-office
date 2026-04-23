@@ -8,16 +8,14 @@
 //!
 //! Story 55.1 - Trace, audit, and failure persistence
 
-use crate::agent::audit_types::*;
 // Re-export all types for backward compatibility
 pub use crate::agent::audit_types::{
     TraceStepStatus, StepType, ToolAuditEntry, StepLogEntry,
-    TraceContext, TraceSummary, FailureRecord, ConfirmationAuditEntry,
+    TraceContext, FailureRecord, ConfirmationAuditEntry,
 };
 
 use anyhow::Result;
 use chrono::Utc;
-use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 
 /// Audit store for database operations

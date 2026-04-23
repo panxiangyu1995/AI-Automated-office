@@ -1,10 +1,10 @@
 /**
  * Agent间通信 API 客户端
- * 
+ *
  * 提供与后端 Agent通信服务交互的 API
  */
 
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri'
 
 // Types from backend (mirrored from Rust types)
 export interface AgentMessageDTO {
@@ -50,11 +50,12 @@ export async function sendAgentMessage(
   receiverId: string,
   content: string
 ): Promise<AgentMessageDTO> {
-  return invoke<AgentMessageDTO>('send_agent_message', {
+  const result = await safeInvoke<AgentMessageDTO>('send_agent_message', {
     sender_id: senderId,
     receiver_id: receiverId,
     content,
   });
+  return result ?? { id: '', senderType: '', senderId: '', receiverType: '', receiverId: '', content: { type: 'text' }, status: 'failed', requiresConfirmation: false, createdAt: '' }
 }
 
 /**
@@ -64,10 +65,11 @@ export async function getAgentMessages(
   agentId: string,
   limit?: number
 ): Promise<AgentMessageDTO[]> {
-  return invoke<AgentMessageDTO[]>('get_agent_messages', {
+  const result = await safeInvoke<AgentMessageDTO[]>('get_agent_messages', {
     agent_id: agentId,
     limit,
   });
+  return result ?? []
 }
 
 /**
@@ -77,7 +79,7 @@ export async function updateAgentMessageStatus(
   messageId: string,
   status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
 ): Promise<void> {
-  return invoke('update_agent_message_status', {
+  await safeInvoke('update_agent_message_status', {
     message_id: messageId,
     status,
   });
@@ -90,10 +92,11 @@ export async function confirmAgentMessage(
   messageId: string,
   approved: boolean
 ): Promise<AgentMessageDTO> {
-  return invoke<AgentMessageDTO>('confirm_agent_message', {
+  const result = await safeInvoke<AgentMessageDTO>('confirm_agent_message', {
     message_id: messageId,
     approved,
   });
+  return result ?? { id: '', senderType: '', senderId: '', receiverType: '', receiverId: '', content: { type: 'text' }, status: 'failed', requiresConfirmation: false, createdAt: '' }
 }
 
 /**
@@ -103,7 +106,7 @@ export async function setAgentPermission(
   agentId: string,
   permission: AgentPermissionDTO
 ): Promise<void> {
-  return invoke('set_agent_permission', {
+  await safeInvoke('set_agent_permission', {
     agentId,
     permission,
   });
@@ -115,9 +118,10 @@ export async function setAgentPermission(
 export async function getAgentPermission(
   agentId: string
 ): Promise<AgentPermissionDTO> {
-  return invoke<AgentPermissionDTO>('get_agent_permission', {
+  const result = await safeInvoke<AgentPermissionDTO>('get_agent_permission', {
     agent_id: agentId,
   });
+  return result ?? { agentId: '', canSendToAgents: false, allowedReceivers: [], blockedReceivers: [], contentRestrictions: [], requiresConfirmation: false, allowExternal: false, maxMessageRate: 0 }
 }
 
 /**
@@ -127,7 +131,7 @@ export async function recallAgentMessage(
   messageId: string,
   senderId: string
 ): Promise<void> {
-  return invoke('recall_agent_message', {
+  await safeInvoke('recall_agent_message', {
     message_id: messageId,
     sender_id: senderId,
   });
@@ -139,9 +143,10 @@ export async function recallAgentMessage(
 export async function getAgentContacts(
   agentId: string
 ): Promise<AgentContactDTO[]> {
-  return invoke<AgentContactDTO[]>('get_agent_contacts', {
+  const result = await safeInvoke<AgentContactDTO[]>('get_agent_contacts', {
     agent_id: agentId,
   });
+  return result ?? []
 }
 
 export interface AgentContactDTO {
@@ -178,7 +183,7 @@ export function toAgentMessage(dto: AgentMessageDTO): {
 } {
   let text = '';
   let type: 'text' | 'file' | 'image' | 'system' | 'command' = 'text';
-  
+
   if (dto.content.type === 'text' && dto.content.text) {
     text = dto.content.text;
     type = 'text';

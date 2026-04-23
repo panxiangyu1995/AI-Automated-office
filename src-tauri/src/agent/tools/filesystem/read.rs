@@ -1,7 +1,6 @@
 //! Filesystem read tool.
 
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::fs;
 use std::io::{BufRead, BufReader};
 

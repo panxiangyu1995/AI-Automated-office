@@ -2,11 +2,7 @@
 //!
 //! Contains types, enums, and structs for sub-agent monitoring and diagnostics.
 
-use crate::agent::execution::SubAgentStatus;
-use crate::agent::nested::NestedCallRecord;
-use crate::agent::result::MergedResultRecord;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Sub-Agent metrics for monitoring
 #[derive(Debug, Clone, Serialize, Deserialize)]

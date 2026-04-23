@@ -763,6 +763,8 @@ cp .env.example .env  # 复制环境变量模板
 - 表名：snake_case
 - 敏感数据使用 AES-256 加密存储
 
+**数据库配置文档：** 详见 `DB_CONFIG.md`（包含连接配置、迁移管理、备份恢复等完整指南）
+
 ---
 
 ## 🎯 Key Rules
@@ -780,6 +782,7 @@ cp .env.example .env  # 复制环境变量模板
 11. **AI Agent 优先** - 核心交互是对话驱动，优先考虑自然语言交互场景
 12. **本地优先** - 数据存储采用本地优先 + 增量同步策略
 13. **UI占位不要使用模拟数据** - 前端 UI 占位符不使用模拟数据，如有需要仅展示功能描述
+14. **时间很充足** - 不存在什么时间有限的说法，不要使用任何简化的或者批量的方式降低代码质量！
 
 ## 🚀 快速启动清单
 
@@ -864,3 +867,139 @@ cp .env.example .env  # 复制环境变量模板
 新增注意事项：Qdrant 云端只接受数字或 UUID 格式的 ID
 现有测试框架：参考：I:\AI-Automated-office\tests\README.md
 UI原型图设计使用：pencil mcp
+
+---
+
+# ai-office - 团队运营手册
+
+> 由 CCteam-creator 自动生成，可按需修改。
+> 此文件让 team-lead 的团队知识在上下文压缩后仍然保持。
+
+## Team-Lead 控制平面
+
+- team-lead = 主对话，不是生成的 agent
+- team-lead 负责用户对齐、范围控制、任务分解和阶段推进
+- team-lead 维护项目全局真相：主 `task_plan.md`、`decisions.md` 和此 `CLAUDE.md`
+- team-lead 决定某个流程改进是项目本地的还是需要写回 `CCteam-creator` 的
+- **禁用独立子智能体**：团队存在后，所有工作通过 SendMessage 交给队友。不要启动独立的 Agent/子智能体（Explore、general-purpose 等）——它们绕过团队的规划文件和协作体系。唯一例外：用 `team_name` 生成新队友加入团队
+
+## 团队花名册（第3轮迭代）
+
+| 名称 | 角色 | 模型 | 核心能力 |
+|------|------|------|---------|
+| backend-dev | 后端开发 | sonnet | Rust/Tauri 服务端代码 + TDD |
+| frontend-dev | 前端开发 | sonnet | React+TS 客户端代码 + TDD |
+| researcher | 探索/研究 | sonnet | 代码搜索 + 铁律文档对比（只读） |
+
+> reviewer/custodian 按需在审查轮启动，e2e-tester 在测试轮启动
+
+## 任务下发协议
+
+### 消息送达时序（关键）
+`SendMessage` 只在接收方 idle 时送达——**无法**打断进行中的任务。初始派单必须前置上下文（没有中途追加），广播也没有抢占，实时状态靠直接读 `progress.md` / `findings.md`（**文件实时，消息不是**）。
+
+### TaskCreate 描述格式（team-lead 上下文压缩后参考）
+
+TaskCreate 描述：一句话范围 + 验收标准 + `.plans/` 路径。
+示例：`"C1 差距分析。输出：优先差距列表。详见 .plans/ai-office/researcher/research-c1-gap/findings.md"`
+
+### 大任务（功能开发、新模块）-- 停止检查后再发送
+
+**在给任何智能体下发大任务前，检查消息中是否包含以下 4 项。如有缺失，先补上再发。**
+
+1. **范围和目标**：要做什么、验收标准
+2. **文档提醒**："请创建 `<前缀>-<任务名>/` 任务文件夹（含 task_plan.md + findings.md + progress.md），并在你的根 findings.md 中添加索引条目"
+3. **依赖说明**：依赖哪些调研/任务的结论，关键文件路径和行号
+4. **审查预期**：完成后是否需要代码审查
+
+### 小任务（Bug 修复、配置变更）
+
+直接发消息说明改动即可，不需要任务文件夹，也不需要审查。
+
+## 通信速查
+
+| 操作 | 命令 |
+|------|------|
+| 给单个智能体分配任务 | `SendMessage(to: "<名称>", message: "...")` |
+| 广播给所有人（慎用） | `SendMessage(to: "*", message: "...")` |
+| dev 请求代码审查 | dev 直接联系 reviewer（不经过 team-lead） |
+
+## 状态检查
+
+| 要检查什么 | 怎么做 |
+|-----------|--------|
+| 全局概览 | `TaskList` — 所有任务、负责人、阻塞情况一览 |
+| 快速扫描 | 并行读取各 agent 的 `progress.md` |
+| 深入了解 | 读 agent 的 `findings.md`（索引）→ 再看具体任务文件夹 |
+| 方向检查 | 读 `.plans/ai-office/task_plan.md` |
+| 恢复项目 | 读 `team-snapshot.md` → 检查陈旧度 → 从缓存 prompt 启动智能体 |
+
+读取顺序：**progress**（到哪了）→ **findings**（遇到什么）→ **task_plan**（目标是什么）
+
+## 文档索引（知识库）
+
+> **导航地图**：`docs/index.md` 有各文档的 section 级导航（含行号范围）。
+> custodian 维护 docs/index.md。需要在 docs/ 中查找信息时先 Read 它。
+
+| 文档 | 位置 | 维护者 |
+|------|------|--------|
+| 导航地图 | .plans/ai-office/docs/index.md | custodian |
+| 架构 | .plans/ai-office/docs/architecture.md | team-lead, devs |
+| API 契约 | .plans/ai-office/docs/api-contracts.md | devs（API 变更时**必须**同步） |
+| 不变量 | .plans/ai-office/docs/invariants.md | team-lead, reviewer |
+
+**Doc-Code Sync 规则**：当代码变更了 API 或架构时，对应的 docs/ 文件**必须**在同一个任务中同步更新。
+
+## 审查维度
+
+| # | 维度 | 权重 | STRONG 表现 | WEAK 表现 |
+|---|------|------|-----------|---------|
+| RD-1 | 铁律合规 | 高 | 每个实现都有 PRD 编号来源，满足架构+UX+Epic 四方约束 | 实现无 PRD 来源，或违反铁律文档 |
+| RD-2 | 产品深度 | 高 | 涵盖真实用户边界情况（空状态、错误恢复、并发），不只是开心路径 | 仅开心路径工作，错误状态显示原始异常 |
+| RD-3 | 代码质量 | 中 | 函数<50行，文件<800行，不可变模式，明确错误处理 | 大函数，深层嵌套，吞异常，mutation 模式 |
+| RD-4 | 可测试性 | 中 | 关键行为被测试覆盖，添加新测试容易 | 无测试，或测试与实现耦合 |
+
+## 核心协议
+
+| 协议 | 触发时机 | 操作 |
+|------|---------|------|
+| 需求对齐 | 每循环开始 | researcher 对比铁律文档与代码实际，team-lead 与用户对齐 |
+| 3-Strike 上报 | 智能体报告 3 次失败 | 读其 progress.md，给新方向或重新分配 |
+| 代码审查 | 大功能/新模块完成 | dev 在 findings.md 写改动摘要，发给 reviewer |
+| 阶段推进 | 循环完成 | 调研完：读 findings 更新主计划。开发完：等 reviewer [OK]/[WARN] |
+| 上下文溢出 | 智能体报告上下文过长 | 进度已存文件，恢复或生成后继者 |
+| CI 门禁 | 任何代码变更 | 运行 CI 脚本，所有检查 PASS 后才能提交审查 |
+| 护栏捕获 | 3-Strike/reviewer [BLOCK] 修复后 | 问：会复现吗？如果会 → 追加到 Known Pitfalls |
+| custodian 巡检 | 2-3 个 dev 任务完成后 | team-lead 触发 custodian 合规巡检 |
+
+## Known Pitfalls
+
+### KP-1: 构建日志提交到仓库
+- 症状：build.txt / build_errors.txt 等大文件被提交到 git
+- 根因：.gitignore 未覆盖构建日志文件
+- 修复：删除文件 + 加入 .gitignore
+- 预防：reviewer 审查时检查是否有大文本文件被提交
+
+### KP-2: Rust 生产代码使用 expect/unwrap
+- 症状：routing.rs 用 expect 替代 ok_or_else，生产环境可能 panic
+- 根因：开发时为方便使用 expect，未替换为错误处理
+- 修复：恢复 ok_or_else 错误处理模式
+- 预防：reviewer 审查 Rust 代码时标记所有 expect/unwrap 使用
+
+### KP-3: Rust编译错误（enterprise_types/enterprise_helpers模块缺失）
+- 症状：cargo check 报 E0583 file not found for module
+- 根因：enterprise.rs拆分后子模块文件未创建或路径不对
+- 修复：确认enterprise_types.rs和enterprise_helpers.rs存在于src-tauri/src/agent/tools/目录
+- 预防：大文件拆分后立即cargo check验证
+
+### KP-4: AlertCondition字段名不匹配
+- 症状：cargo check 报 E0026 variant does not have a field named _percentage
+- 根因：定义用percentage但模式匹配用_percentage
+- 修复：统一字段名（定义和匹配都用percentage，匹配时用percentage并_前缀忽略）
+- 预防：Rust大文件拆分/重构后全量cargo check
+
+## 迭代节奏
+
+6 循环 × 5 轮 = 30 轮。每循环：差距分析(R1) → 开发(R2-R3) → 测试(R4) → 审查(R4) → 清理(R5)
+
+当前：第3轮迭代，循环1进行中。差距G1-G24，详见 .plans/ai-office/task_plan.md

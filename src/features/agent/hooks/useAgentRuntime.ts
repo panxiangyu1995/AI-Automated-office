@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useChatStore } from './useChatStore'
+import { safeInvoke } from '@/lib/tauri'
 
 // ==================== Types ====================
 
@@ -158,10 +159,9 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
       return tauriAvailableRef.current
     }
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
-      const result = typeof invoke === 'function'
-      tauriAvailableRef.current = result
-      return result
+      await safeInvoke<{ ok: boolean }>('__health_check__', {})
+      tauriAvailableRef.current = true
+      return true
     } catch {
       tauriAvailableRef.current = false
       return false
@@ -286,14 +286,20 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
     }
 
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
-      const response = await invoke<StartSessionResponse>('start_agent_session', {
+      const response = await safeInvoke<StartSessionResponse>('start_agent_session', {
         request: {
           tenantId,
           userId,
           title: `Chat Session ${Date.now()}`,
         } as StartSessionRequest,
       })
+
+      if (!response) {
+        const errorMsg = 'start_agent_session returned null'
+        setState((s) => ({ ...s, error: errorMsg }))
+        onError?.(errorMsg)
+        return null
+      }
 
       sessionKeyRef.current = response.sessionKey
       setState((s) => ({
@@ -359,8 +365,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
         startStreaming(activeSessionId, assistantMessage.id, partId)
 
         // Execute agent on backend
-        const { invoke } = await import('@tauri-apps/api/core')
-        const response = await invoke<ExecuteAgentResponse>('execute_agent', {
+        const response = await safeInvoke<ExecuteAgentResponse>('execute_agent', {
           request: {
             tenantId,
             userId,
@@ -368,6 +373,14 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
             message,
           } as ExecuteAgentRequest,
         })
+
+        if (!response) {
+          const errorMsg = 'execute_agent returned null'
+          setState((s) => ({ ...s, error: errorMsg, isExecuting: false }))
+          stopStreaming()
+          onError?.(errorMsg)
+          return
+        }
 
         setState((s) => ({ ...s, traceId: response.traceId }))
 
@@ -421,17 +434,16 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
     }
 
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
-      const result = await invoke<boolean>('interrupt_agent_session', {
+      const result = await safeInvoke<boolean>('interrupt_agent_session', {
         sessionId,
       })
 
-      if (result) {
+      if (result === true) {
         stopStreaming()
         setState((s) => ({ ...s, isExecuting: false }))
       }
 
-      return result
+      return result === true
     } catch (err) {
       console.error('[AgentRuntime] Interrupt failed:', err)
       return false

@@ -3,7 +3,7 @@
  * Task 147 - HR人事部门模块实现
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type {
   Employee,
   EmployeeListItem,
@@ -30,7 +30,8 @@ import type {
 export async function createEmployee(
   request: CreateEmployeeRequest
 ): Promise<Employee> {
-  return invoke('hr_create_employee', { request })
+  const result = await safeInvoke<Employee>('hr_create_employee', { request })
+  return result ?? ({} as Employee)
 }
 
 /**
@@ -39,14 +40,16 @@ export async function createEmployee(
 export async function listEmployees(
   params?: EmployeeQueryParams
 ): Promise<PagedResult<EmployeeListItem>> {
-  return invoke('hr_list_employees', { params })
+  const result = await safeInvoke<PagedResult<EmployeeListItem>>('hr_list_employees', { params })
+  return result ?? ({ items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 } as PagedResult<EmployeeListItem>)
 }
 
 /**
  * 获取员工详情
  */
 export async function getEmployee(id: string): Promise<EmployeeDetail> {
-  return invoke('hr_get_employee', { id })
+  const result = await safeInvoke<EmployeeDetail>('hr_get_employee', { id })
+  return result ?? ({} as EmployeeDetail)
 }
 
 /**
@@ -56,14 +59,15 @@ export async function updateEmployee(
   id: string,
   request: UpdateEmployeeRequest
 ): Promise<Employee> {
-  return invoke('hr_update_employee', { id, request })
+  const result = await safeInvoke<Employee>('hr_update_employee', { id, request })
+  return result ?? ({} as Employee)
 }
 
 /**
  * 删除员工
  */
 export async function deleteEmployee(id: string): Promise<void> {
-  return invoke('hr_delete_employee', { id })
+  await safeInvoke('hr_delete_employee', { id })
 }
 
 // ==================== 部门 API ====================
@@ -74,21 +78,24 @@ export async function deleteEmployee(id: string): Promise<void> {
 export async function createDepartment(
   request: CreateDepartmentRequest
 ): Promise<HrDepartment> {
-  return invoke('hr_create_department', { request })
+  const result = await safeInvoke<HrDepartment>('hr_create_department', { request })
+  return result ?? ({} as HrDepartment)
 }
 
 /**
  * 获取部门树
  */
 export async function getDepartmentTree(): Promise<DepartmentTreeNode[]> {
-  return invoke('hr_get_department_tree')
+  const result = await safeInvoke<DepartmentTreeNode[]>('hr_get_department_tree')
+  return result ?? []
 }
 
 /**
  * 获取部门详情
  */
 export async function getDepartment(id: string): Promise<HrDepartment> {
-  return invoke('hr_get_department', { id })
+  const result = await safeInvoke<HrDepartment>('hr_get_department', { id })
+  return result ?? ({} as HrDepartment)
 }
 
 /**
@@ -98,14 +105,15 @@ export async function updateDepartment(
   id: string,
   request: UpdateDepartmentRequest
 ): Promise<HrDepartment> {
-  return invoke('hr_update_department', { id, request })
+  const result = await safeInvoke<HrDepartment>('hr_update_department', { id, request })
+  return result ?? ({} as HrDepartment)
 }
 
 /**
  * 删除部门
  */
 export async function deleteDepartment(id: string): Promise<void> {
-  return invoke('hr_delete_department', { id })
+  await safeInvoke('hr_delete_department', { id })
 }
 
 // ==================== 岗位 API ====================
@@ -116,21 +124,24 @@ export async function deleteDepartment(id: string): Promise<void> {
 export async function createPosition(
   request: CreatePositionRequest
 ): Promise<Position> {
-  return invoke('hr_create_position', { request })
+  const result = await safeInvoke<Position>('hr_create_position', { request })
+  return result ?? ({} as Position)
 }
 
 /**
  * 获取岗位列表
  */
 export async function listPositions(): Promise<PositionListItem[]> {
-  return invoke('hr_list_positions')
+  const result = await safeInvoke<PositionListItem[]>('hr_list_positions')
+  return result ?? []
 }
 
 /**
  * 获取岗位详情
  */
 export async function getPosition(id: string): Promise<Position> {
-  return invoke('hr_get_position', { id })
+  const result = await safeInvoke<Position>('hr_get_position', { id })
+  return result ?? ({} as Position)
 }
 
 /**
@@ -140,14 +151,15 @@ export async function updatePosition(
   id: string,
   request: UpdatePositionRequest
 ): Promise<Position> {
-  return invoke('hr_update_position', { id, request })
+  const result = await safeInvoke<Position>('hr_update_position', { id, request })
+  return result ?? ({} as Position)
 }
 
 /**
  * 删除岗位
  */
 export async function deletePosition(id: string): Promise<void> {
-  return invoke('hr_delete_position', { id })
+  await safeInvoke('hr_delete_position', { id })
 }
 
 // ==================== API 汇总导出 ====================

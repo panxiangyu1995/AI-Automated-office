@@ -61,7 +61,6 @@ export function Sidebar() {
   const setActiveModule = useUIStore((s) => s.setActiveModule)
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed)
   const toggleSidebar = useUIStore((s) => s.toggleSidebar)
-  void activeModule // 用于UIStore订阅
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     navigation: true,

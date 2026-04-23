@@ -9,13 +9,11 @@
 //!
 //! Story 52.5 - Sub-Agent monitoring and diagnostics
 
-use crate::agent::monitoring_types::*;
 // Re-export all types for backward compatibility
 pub use crate::agent::monitoring_types::{
     SubAgentMetrics, SessionSubAgentStats, SubAgentSummary, MetricsSummary,
     DiagnosticEntry, DiagnosticSeverity, DiagnosticCategory, MonitoringConfig,
-    Trace, TraceStatus, TraceMetadata, Span, SpanType, SpanStatus,
-    SpanAttribute, AttributeValue, SpanEvent,
+    Trace, Span,
 };
 
 use crate::agent::execution::SubAgentStatus;

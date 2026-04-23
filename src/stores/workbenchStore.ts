@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export type TabType = 'file' | 'report' | 'detail' | 'form' | 'custom' | 'list'
 
@@ -43,204 +44,218 @@ export interface WorkbenchActions {
 
 export type WorkbenchStore = WorkbenchState & WorkbenchActions
 
+type PersistedState = Pick<WorkbenchState, 'tabs' | 'activeTabId' | 'maxTabs'>
+
 const defaultState: WorkbenchState = {
   tabs: [],
   activeTabId: null,
   maxTabs: 10,
 }
 
-export const useWorkbenchStore = create<WorkbenchStore>()((set, get) => ({
-  ...defaultState,
+export const useWorkbenchStore = create<WorkbenchStore>()(
+  persist<WorkbenchStore, [], [], PersistedState>(
+    (set, get) => ({
+      ...defaultState,
 
-  addTab: (tabData) => {
-    const { tabs, maxTabs } = get()
+      addTab: (tabData) => {
+        const { tabs, maxTabs } = get()
 
-    if (tabs.length >= maxTabs) {
-      console.warn(`[WorkbenchStore] Tab数量已达上限 (${maxTabs})，请先关闭不需要的Tab`)
-      return ''
+        if (tabs.length >= maxTabs) {
+          console.warn(`[WorkbenchStore] Tab数量已达上限 (${maxTabs})，请先关闭不需要的Tab`)
+          return ''
+        }
+
+        const newTab: WorkbenchTab = {
+          ...tabData,
+          id: crypto.randomUUID(),
+          createdAt: Date.now(),
+        }
+
+        set({
+          tabs: [...tabs, newTab],
+          activeTabId: newTab.id,
+        })
+
+        return newTab.id
+      },
+
+      removeTab: (id) => {
+        const { tabs, activeTabId } = get()
+        const index = tabs.findIndex((t) => t.id === id)
+
+        if (index === -1) return
+
+        const newTabs = tabs.filter((t) => t.id !== id)
+        let newActiveTabId = activeTabId
+
+        if (activeTabId === id) {
+          if (newTabs.length === 0) {
+            newActiveTabId = null
+          } else if (index >= newTabs.length) {
+            newActiveTabId = newTabs[newTabs.length - 1].id
+          } else {
+            newActiveTabId = newTabs[index].id
+          }
+        }
+
+        set({
+          tabs: newTabs,
+          activeTabId: newActiveTabId,
+        })
+      },
+
+      setActiveTab: (id) => {
+        const { tabs } = get()
+        if (tabs.some((t) => t.id === id)) {
+          set({ activeTabId: id })
+        }
+      },
+
+      updateTab: (id, updates) => {
+        const { tabs } = get()
+        const index = tabs.findIndex((t) => t.id === id)
+
+        if (index === -1) return
+
+        const newTabs = [...tabs]
+        newTabs[index] = { ...newTabs[index], ...updates }
+
+        set({ tabs: newTabs })
+      },
+
+      closeOtherTabs: (id) => {
+        const { tabs } = get()
+        const tab = tabs.find((t) => t.id === id)
+
+        if (!tab) return
+
+        set({
+          tabs: [tab],
+          activeTabId: id,
+        })
+      },
+
+      closeAllTabs: () => {
+        set({
+          tabs: [],
+          activeTabId: null,
+        })
+      },
+
+      closeTabsToLeft: (id) => {
+        const { tabs } = get()
+        const index = tabs.findIndex((t) => t.id === id)
+
+        if (index <= 0) return
+
+        const newTabs = tabs.slice(index)
+        const activeTabStillExists = newTabs.some((t) => t.id === id)
+
+        set({
+          tabs: newTabs,
+          activeTabId: activeTabStillExists ? id : (newTabs[0]?.id ?? null),
+        })
+      },
+
+      closeTabsToRight: (id) => {
+        const { tabs } = get()
+        const index = tabs.findIndex((t) => t.id === id)
+
+        if (index === -1 || index === tabs.length - 1) return
+
+        const newTabs = tabs.slice(0, index + 1)
+
+        set({
+          tabs: newTabs,
+          activeTabId: id,
+        })
+      },
+
+      reorderTabs: (fromIndex, toIndex) => {
+        const { tabs } = get()
+
+        if (
+          fromIndex < 0 ||
+          fromIndex >= tabs.length ||
+          toIndex < 0 ||
+          toIndex >= tabs.length ||
+          fromIndex === toIndex
+        ) {
+          return
+        }
+
+        const newTabs = [...tabs]
+        const [movedTab] = newTabs.splice(fromIndex, 1)
+        newTabs.splice(toIndex, 0, movedTab)
+
+        set({ tabs: newTabs })
+      },
+
+      getTabById: (id) => {
+        return get().tabs.find((t) => t.id === id)
+      },
+
+      getActiveTab: () => {
+        const { tabs, activeTabId } = get()
+        return tabs.find((t) => t.id === activeTabId)
+      },
+
+      setMaxTabs: (max) => {
+        set({ maxTabs: Math.max(1, max) })
+      },
+
+      clearDirty: (id) => {
+        const { tabs } = get()
+        const index = tabs.findIndex((t) => t.id === id)
+
+        if (index === -1) return
+
+        const newTabs = [...tabs]
+        newTabs[index] = { ...newTabs[index], dirty: false }
+
+        set({ tabs: newTabs })
+      },
+
+      openTabByRoute: (routeKey, params) => {
+        const { tabs, addTab, setActiveTab } = get()
+
+        const existingTab = tabs.find((t) => t.routeKey === routeKey)
+        if (existingTab) {
+          setActiveTab(existingTab.id)
+          return existingTab.id
+        }
+
+        const title = routeKey.split('.').pop() ?? routeKey
+        return addTab({
+          title,
+          type: 'custom',
+          closable: true,
+          dirty: false,
+          routeKey,
+          params,
+        })
+      },
+
+      findTabByRouteKey: (routeKey) => {
+        return get().tabs.find((t) => t.routeKey === routeKey)
+      },
+
+      closeTabByRoute: (routeKey) => {
+        const { tabs, removeTab } = get()
+        const tab = tabs.find((t) => t.routeKey === routeKey)
+        if (tab) {
+          removeTab(tab.id)
+        }
+      },
+    }),
+    {
+      name: 'app-workspace-tabs',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state): PersistedState => ({
+        tabs: state.tabs.slice(0, 10),
+        activeTabId: state.activeTabId,
+        maxTabs: state.maxTabs,
+      }),
     }
-
-    const newTab: WorkbenchTab = {
-      ...tabData,
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-    }
-
-    set({
-      tabs: [...tabs, newTab],
-      activeTabId: newTab.id,
-    })
-
-    return newTab.id
-  },
-
-  removeTab: (id) => {
-    const { tabs, activeTabId } = get()
-    const index = tabs.findIndex((t) => t.id === id)
-
-    if (index === -1) return
-
-    const newTabs = tabs.filter((t) => t.id !== id)
-    let newActiveTabId = activeTabId
-
-    if (activeTabId === id) {
-      if (newTabs.length === 0) {
-        newActiveTabId = null
-      } else if (index >= newTabs.length) {
-        newActiveTabId = newTabs[newTabs.length - 1].id
-      } else {
-        newActiveTabId = newTabs[index].id
-      }
-    }
-
-    set({
-      tabs: newTabs,
-      activeTabId: newActiveTabId,
-    })
-  },
-
-  setActiveTab: (id) => {
-    const { tabs } = get()
-    if (tabs.some((t) => t.id === id)) {
-      set({ activeTabId: id })
-    }
-  },
-
-  updateTab: (id, updates) => {
-    const { tabs } = get()
-    const index = tabs.findIndex((t) => t.id === id)
-
-    if (index === -1) return
-
-    const newTabs = [...tabs]
-    newTabs[index] = { ...newTabs[index], ...updates }
-
-    set({ tabs: newTabs })
-  },
-
-  closeOtherTabs: (id) => {
-    const { tabs } = get()
-    const tab = tabs.find((t) => t.id === id)
-
-    if (!tab) return
-
-    set({
-      tabs: [tab],
-      activeTabId: id,
-    })
-  },
-
-  closeAllTabs: () => {
-    set({
-      tabs: [],
-      activeTabId: null,
-    })
-  },
-
-  closeTabsToLeft: (id) => {
-    const { tabs } = get()
-    const index = tabs.findIndex((t) => t.id === id)
-
-    if (index <= 0) return
-
-    const newTabs = tabs.slice(index)
-    const activeTabStillExists = newTabs.some((t) => t.id === id)
-
-    set({
-      tabs: newTabs,
-      activeTabId: activeTabStillExists ? id : (newTabs[0]?.id ?? null),
-    })
-  },
-
-  closeTabsToRight: (id) => {
-    const { tabs } = get()
-    const index = tabs.findIndex((t) => t.id === id)
-
-    if (index === -1 || index === tabs.length - 1) return
-
-    const newTabs = tabs.slice(0, index + 1)
-
-    set({
-      tabs: newTabs,
-      activeTabId: id,
-    })
-  },
-
-  reorderTabs: (fromIndex, toIndex) => {
-    const { tabs } = get()
-
-    if (
-      fromIndex < 0 ||
-      fromIndex >= tabs.length ||
-      toIndex < 0 ||
-      toIndex >= tabs.length ||
-      fromIndex === toIndex
-    ) {
-      return
-    }
-
-    const newTabs = [...tabs]
-    const [movedTab] = newTabs.splice(fromIndex, 1)
-    newTabs.splice(toIndex, 0, movedTab)
-
-    set({ tabs: newTabs })
-  },
-
-  getTabById: (id) => {
-    return get().tabs.find((t) => t.id === id)
-  },
-
-  getActiveTab: () => {
-    const { tabs, activeTabId } = get()
-    return tabs.find((t) => t.id === activeTabId)
-  },
-
-  setMaxTabs: (max) => {
-    set({ maxTabs: Math.max(1, max) })
-  },
-
-  clearDirty: (id) => {
-    const { tabs } = get()
-    const index = tabs.findIndex((t) => t.id === id)
-
-    if (index === -1) return
-
-    const newTabs = [...tabs]
-    newTabs[index] = { ...newTabs[index], dirty: false }
-
-    set({ tabs: newTabs })
-  },
-
-  // 路由相关方法
-  openTabByRoute: (routeKey, params) => {
-    const { tabs, addTab, setActiveTab } = get()
-
-    const existingTab = tabs.find((t) => t.routeKey === routeKey)
-    if (existingTab) {
-      setActiveTab(existingTab.id)
-      return existingTab.id
-    }
-
-    const title = routeKey.split('.').pop() ?? routeKey
-    return addTab({
-      title,
-      type: 'custom',
-      closable: true,
-      dirty: false,
-      routeKey,
-      params,
-    })
-  },
-
-  findTabByRouteKey: (routeKey) => {
-    return get().tabs.find((t) => t.routeKey === routeKey)
-  },
-
-  closeTabByRoute: (routeKey) => {
-    const { tabs, removeTab } = get()
-    const tab = tabs.find((t) => t.routeKey === routeKey)
-    if (tab) {
-      removeTab(tab.id)
-    }
-  },
-}))
+  )
+)

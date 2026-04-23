@@ -46,6 +46,8 @@ interface UIState {
   activeActivityItem: ActivityBarItem
   activeModule: string
   topBarVisible: boolean
+  activityBarVisible: boolean
+  zoomLevel: number
   bottomPanelHeight: number
   bottomPanelCollapsed: boolean
   dynamicSidebarEntries: SidebarResourceEntry[]
@@ -80,6 +82,9 @@ interface UIState {
   toggleQuickSearch: () => void
   setActiveActivityItem: (item: ActivityBarItem) => void
   setActiveModule: (module: string) => void
+  toggleActivityBar: () => void
+  setZoomLevel: (level: number) => void
+  resetZoom: () => void
   setDynamicSidebarEntries: (entries: SidebarResourceEntry[]) => void
   setEditorSidebarEntries: (entries: SidebarResourceEntry[]) => void
   setActivityBarBadge: (targetId: string, count: number | string, color?: string) => void
@@ -105,10 +110,16 @@ type PersistedUIState = Pick<
   | 'activeActivityItem'
   | 'activeModule'
   | 'topBarVisible'
+  | 'activityBarVisible'
+  | 'zoomLevel'
   | 'activePresetId'
   | 'activePresetMode'
   | 'aiPanelVisible'
   | 'aiPanelWidth'
+  | 'dynamicSidebarEntries'
+  | 'editorSidebarEntries'
+  | 'recentSidebarEntries'
+  | 'activityBarBadges'
 >
 
 const defaultLayout = {
@@ -124,6 +135,8 @@ const defaultLayout = {
   aiPanelVisible: true,
   aiPanelWidth: 400,
   activeModule: 'dashboard',
+  activityBarVisible: true,
+  zoomLevel: 100,
 }
 
 const createDebouncedStorage = (storage: Storage, delay: number) => {
@@ -191,6 +204,9 @@ export const useUIStore = create<UIState>()(
       toggleQuickSearch: () => set({ quickSearchOpen: !get().quickSearchOpen }),
       setActiveActivityItem: (item) => set({ activeActivityItem: item, activeModule: item }),
       setActiveModule: (module) => set({ activeModule: module }),
+      toggleActivityBar: () => set((state) => ({ activityBarVisible: !state.activityBarVisible })),
+      setZoomLevel: (level) => set({ zoomLevel: Math.min(200, Math.max(50, level)) }),
+      resetZoom: () => set({ zoomLevel: 100 }),
       setDynamicSidebarEntries: (entries) => set({ dynamicSidebarEntries: entries }),
       setEditorSidebarEntries: (entries) => set({ editorSidebarEntries: entries }),
       setActivityBarBadge: (targetId, count, color) =>
@@ -261,10 +277,16 @@ export const useUIStore = create<UIState>()(
         activeActivityItem: state.activeActivityItem,
         activeModule: state.activeModule,
         topBarVisible: state.topBarVisible,
+        activityBarVisible: state.activityBarVisible,
+        zoomLevel: state.zoomLevel,
         activePresetId: state.activePresetId,
         activePresetMode: state.activePresetMode,
         aiPanelVisible: state.aiPanelVisible,
         aiPanelWidth: state.aiPanelWidth,
+        dynamicSidebarEntries: state.dynamicSidebarEntries.slice(0, 10),
+        editorSidebarEntries: state.editorSidebarEntries,
+        recentSidebarEntries: state.recentSidebarEntries,
+        activityBarBadges: state.activityBarBadges,
       }),
     }
   )

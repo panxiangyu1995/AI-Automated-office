@@ -9,7 +9,6 @@
 //!
 //! Story 36.1 - 工具调用可见性增强
 
-use crate::agent::tools::visibility_types::*;
 // Re-export types for backward compatibility
 pub use crate::agent::tools::visibility_types::{
     ToolCallStatus, ToolCategory, ToolCallEntry, ToolVisibilityStats, ToolCallFilter,

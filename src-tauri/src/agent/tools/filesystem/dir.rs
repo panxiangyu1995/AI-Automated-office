@@ -1,7 +1,6 @@
 //! Filesystem directory listing tool.
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use std::fs;
 
 use serde_json::Value;

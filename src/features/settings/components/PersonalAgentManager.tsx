@@ -37,7 +37,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 // Types
 export interface PersonalSubagent {
@@ -131,8 +131,8 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
     try {
       setLoading(true)
       setError(null)
-      const result = await invoke<PersonalSubagent[]>('list_personal_subagents')
-      setSubagents(result)
+      const result = await safeInvoke<PersonalSubagent[]>('list_personal_subagents')
+      setSubagents(result ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
       console.error('Failed to load subagents:', err)
@@ -171,7 +171,7 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
         .map((t) => t.trim())
         .filter((t) => t.length > 0)
 
-      await invoke<PersonalSubagent>('create_personal_subagent', {
+      await safeInvoke<PersonalSubagent>('create_personal_subagent', {
         name: createForm.name,
         displayName: createForm.display_name,
         description: createForm.description || null,
@@ -198,12 +198,12 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
   // Update subagent
   const handleUpdate = async () => {
     if (!selectedSubagent) return
-    
+
     try {
       setFormLoading(true)
       setFormError(null)
-      
-      await invoke<PersonalSubagent>('update_personal_subagent', {
+
+      await safeInvoke<PersonalSubagent>('update_personal_subagent', {
         name: selectedSubagent.name,
         displayName: createForm.display_name || null,
         description: createForm.description || null,
@@ -224,12 +224,12 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
   // Delete subagent
   const handleDelete = async () => {
     if (!selectedSubagent) return
-    
+
     try {
       setFormLoading(true)
       setFormError(null)
-      
-      await invoke('delete_personal_subagent', {
+
+      await safeInvoke('delete_personal_subagent', {
         name: selectedSubagent.name,
       })
 
@@ -246,7 +246,7 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
   // Toggle enabled
   const handleToggle = async (subagent: PersonalSubagent) => {
     try {
-      await invoke<PersonalSubagent>('update_personal_subagent', {
+      await safeInvoke<PersonalSubagent>('update_personal_subagent', {
         name: subagent.name,
         displayName: null,
         description: null,
@@ -291,8 +291,8 @@ export function PersonalAgentManager({ className }: PersonalAgentManagerProps) {
       
       // Create with new name
       const newName = `${data.name}-imported-${Date.now()}`
-      
-      await invoke<PersonalSubagent>('create_personal_subagent', {
+
+      await safeInvoke<PersonalSubagent>('create_personal_subagent', {
         name: newName,
         displayName: data.display_name || data.name,
         description: data.description || null,

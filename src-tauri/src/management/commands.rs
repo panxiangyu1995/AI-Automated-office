@@ -1,6 +1,6 @@
 //! Management 模块 Tauri 命令
 
-use crate::commands::dashboard::{DashboardStats, get_dashboard_stats};
+use crate::commands::dashboard::DashboardStats;
 use crate::management::types::*;
 use tauri::State;
 use std::sync::Mutex;
@@ -35,7 +35,7 @@ impl ManagementState {
     }
     
     pub async fn with_pool(pool: SqlitePool) -> Self {
-        let mut state = Self::new();
+        let state = Self::new();
         *state.db_pool.write().await = Some(pool);
         state
     }

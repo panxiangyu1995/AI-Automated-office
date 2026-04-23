@@ -3,10 +3,8 @@
 //! Provides caching for tool execution results and file reads.
 //! Reduces redundant operations and improves performance.
 
-use lru::LruCache;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::num::NonZeroUsize;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;

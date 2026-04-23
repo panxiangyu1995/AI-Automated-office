@@ -1,7 +1,6 @@
 //! Filesystem write tool.
 
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::fs;
 
 use serde_json::Value;

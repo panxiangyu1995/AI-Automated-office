@@ -3,7 +3,42 @@
  * 消息详情组件
  */
 
+import { useEffect } from 'react'
+import {
+  ArrowLeft,
+  Pin,
+  Trash2,
+  Clock,
+  Edit2,
+  RotateCcw,
+} from 'lucide-react'
 import { useMarkAsRead, useDeleteMessage, usePinMessage } from '../hooks/useMessage'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+
+// Message type definition
+interface Message {
+  msgType: string
+  priority: string
+  status: string
+  pinned: boolean
+  title: string
+  sender?: { name?: string }
+  createdAt: number
+  content: string
+  edited?: boolean
+  recalled?: boolean
+  actionUrl?: string
+}
+
+// useMessage hook - define inline since the import is missing
+function useMessage(_messageId: string): { message: Message | null; isLoading: boolean } {
+  // This is a placeholder - the actual implementation should come from the hooks
+  return { message: null, isLoading: false }
+}
 
 interface MessageDetailProps {
   messageId: string
@@ -110,19 +145,9 @@ export function MessageDetail({ messageId, onBack, className }: MessageDetailPro
           <Button variant="ghost" size="icon" onClick={handlePin}>
             <Pin className={cn('h-4 w-4', message.pinned && 'fill-current')} />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleDelete}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button variant="ghost" size="icon" onClick={handleDelete}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 

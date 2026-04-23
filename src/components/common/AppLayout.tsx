@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Outlet } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { useUIStore } from '../../stores/uiStore'
 import { useEditorStore } from '../../stores/editorStore'
+import { useAppStore } from '../../stores/appStore'
 import { TopBar } from './TopBar'
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
@@ -15,11 +16,12 @@ import { CommandPalette } from './CommandPalette'
 import { QuickAsk } from './QuickAsk'
 import { useShortcutListener } from '../../hooks/useGlobalShortcuts'
 import { usePluginSidebar } from '../../hooks/usePluginSidebar'
+import { useWorkspaceStateRecovery } from '../../hooks/useWorkspaceStateRecovery'
 import { systemCommands } from '../../lib/systemCommands'
 
 export function AppLayout() {
   const location = useLocation()
-  const { topBarVisible, sidebarCollapsed, toggleTopBar, setActiveActivityItem, quickSearchOpen: storeQuickSearchOpen, openQuickSearch: storeOpenQuickSearch, closeQuickSearch: storeCloseQuickSearch } = useUIStore(
+  const { topBarVisible, sidebarCollapsed, toggleTopBar, setActiveActivityItem, quickSearchOpen: storeQuickSearchOpen, openQuickSearch: storeOpenQuickSearch, closeQuickSearch: storeCloseQuickSearch, activityBarVisible, zoomLevel } = useUIStore(
     useShallow((state) => ({
       topBarVisible: state.topBarVisible,
       sidebarCollapsed: state.sidebarCollapsed,
@@ -28,11 +30,19 @@ export function AppLayout() {
       closeQuickSearch: state.closeQuickSearch,
       toggleTopBar: state.toggleTopBar,
       setActiveActivityItem: state.setActiveActivityItem,
+      activityBarVisible: state.activityBarVisible,
+      zoomLevel: state.zoomLevel,
     }))
   )
   const [layoutDialogOpen, setLayoutDialogOpen] = useState(false)
   const [quickAskOpen, setQuickAskOpen] = useState(false)
   const activeEditorDocument = useEditorStore((state) => state.activeDocument)
+
+  // Workspace state recovery
+  const restoreWorkspaceOnStartup = useAppStore((state) => state.restoreWorkspaceOnStartup)
+  useWorkspaceStateRecovery({
+    enabled: restoreWorkspaceOnStartup,
+  })
 
   // Initialize system commands once
   useEffect(() => {
@@ -101,9 +111,12 @@ export function AppLayout() {
       />
 
       {/* 主内容区 */}
-      <div className="flex-1 flex overflow-hidden">
+      <div
+        className="flex-1 flex overflow-hidden"
+        style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top left' }}
+      >
         {/* 活动栏 */}
-        <ActivityBar />
+        {activityBarVisible && <ActivityBar />}
 
         {/* 侧边栏 */}
         {!sidebarCollapsed && <Sidebar />}
@@ -111,8 +124,10 @@ export function AppLayout() {
         {/* 中间区域：工作区 + 底部面板 */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* 工作区 */}
-          <Workbench className="flex-1" />
-          
+          <Workbench className="flex-1">
+            <Outlet />
+          </Workbench>
+
           {/* 底部面板 */}
           <BottomPanel />
         </div>

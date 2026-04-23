@@ -14,7 +14,7 @@
  */
 
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, persist, createJSONStorage } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import type { Message, TextPart, Part, MessageStatus, MessageRole } from '../../message/runtime/messageModel'
 import { eventBus } from '@/hooks/eventBus'
@@ -101,6 +101,8 @@ const initialState = {
   toolCallStates: {},
 }
 
+type PersistedState = Pick<ChatStoreState, 'sessions' | 'activeSessionId'>
+
 // ==================== Message Creation Helpers ====================
 
 function createTextPart(content: string): TextPart {
@@ -133,10 +135,12 @@ function createMessage(
 // ==================== Store ====================
 
 export const useChatStore = create<ChatStoreState>()(
-  subscribeWithSelector((set, get) => ({
-    ...initialState,
-    
-    // ==================== Session Actions ====================
+  // @ts-expect-error - subscribeWithSelector and persist middleware types conflict but work at runtime
+  persist<ChatStoreState, [], [typeof subscribeWithSelector], PersistedState>(
+    subscribeWithSelector((set, get) => ({
+      ...initialState,
+
+      // ==================== Session Actions ====================
     
     createSession: (title?: string) => {
       const sessionId = generateId()
@@ -450,11 +454,33 @@ export const useChatStore = create<ChatStoreState>()(
     },
 
     // ==================== Reset ====================
-    
+
     reset: () => {
       set(initialState)
     },
-  }))
+  })),
+    {
+      name: 'app-workspace-chat',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state): PersistedState => {
+        const entries = Object.entries(state.sessions)
+        const limited = entries
+          .sort(([, a], [, b]) => b.updatedAt - a.updatedAt)
+          .slice(0, 20)
+          .map(([id, session]) => [
+            id,
+            {
+              ...session,
+              messages: session.messages.slice(-10),
+            },
+          ])
+        return {
+          sessions: Object.fromEntries(limited),
+          activeSessionId: state.activeSessionId,
+        }
+      },
+    }
+  )
 )
 
 // ==================== Selector Hooks ====================

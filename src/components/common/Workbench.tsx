@@ -133,7 +133,9 @@ export function Workbench({ children, className = '', descriptor }: WorkbenchPro
       <TabBar onNewTab={handleNewTab} />
 
       <div className="flex-1 overflow-hidden">
-        {activeTab ? (
+        {children ? (
+          children
+        ) : activeTab ? (
           <WorkbenchHostRenderer
             descriptor={{
               ...resolvedDescriptor,

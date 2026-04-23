@@ -1,4 +1,4 @@
-use super::{Migration, now_timestamp};
+use super::Migration;
 
 pub fn migration() -> Migration {
     Migration {

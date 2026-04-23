@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import {
   Server, Plus, Trash2, Edit,
   Settings, Terminal, Shield,
@@ -157,8 +157,8 @@ export function MCPServiceConfig() {
     const fetchApprovalConfigs = async () => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = await invoke<{ success: boolean; data?: any[]; error?: string }>('mcp_get_approval_configs')
-        if (response.success && response.data) {
+        const response = await safeInvoke<{ success: boolean; data?: any[]; error?: string }>('mcp_get_approval_configs')
+        if (response?.success && response?.data) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const configs = response.data.map((c: any) => ({
             id: c.id,
@@ -216,14 +216,14 @@ export function MCPServiceConfig() {
         enabled: selectedApproval?.enabled ?? true,
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await invoke<{ success: boolean; data?: any; error?: string }>('mcp_set_approval_config', { config })
-      if (response.success) {
+      const response = await safeInvoke<{ success: boolean; data?: any; error?: string }>('mcp_set_approval_config', { config })
+      if (response?.success) {
         setApprovalDialogOpen(false)
         setSelectedApproval(null)
         // Refresh approval configs
         // In real implementation, would trigger a refresh
       } else {
-        console.error('Failed to save approval config:', response.error)
+        console.error('Failed to save approval config:', response?.error ?? 'Unknown error')
       }
     } catch (error) {
       console.error('Failed to save approval config:', error)
@@ -235,8 +235,8 @@ export function MCPServiceConfig() {
   // Handle delete approval config
   const handleDeleteApproval = async (approvalId: string) => {
     try {
-      const response = await invoke<{ success: boolean; error?: string }>('mcp_delete_approval_config', { configId: approvalId })
-      if (response.success) {
+      const response = await safeInvoke<{ success: boolean; error?: string }>('mcp_delete_approval_config', { configId: approvalId })
+      if (response?.success) {
         setApprovalConfigs(prev => prev.filter(c => c.id !== approvalId))
       }
     } catch (error) {
@@ -248,8 +248,8 @@ export function MCPServiceConfig() {
   const handleToggleApproval = async (approval: PerToolApprovalConfig) => {
     const newEnabled = !approval.enabled
     try {
-      const response = await invoke<{ success: boolean; error?: string }>('mcp_set_approval_config_enabled', { configId: approval.id, enabled: newEnabled })
-      if (response.success) {
+      const response = await safeInvoke<{ success: boolean; error?: string }>('mcp_set_approval_config_enabled', { configId: approval.id, enabled: newEnabled })
+      if (response?.success) {
         setApprovalConfigs(prev =>
           prev.map(c => c.id === approval.id ? { ...c, enabled: newEnabled } : c)
         )
@@ -270,8 +270,8 @@ export function MCPServiceConfig() {
       try {
         setIsLoading(true)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = await invoke<{ success: boolean; data?: any[]; error?: string }>('mcp_list_services')
-        if (response.success && response.data) {
+        const response = await safeInvoke<{ success: boolean; data?: any[]; error?: string }>('mcp_list_services')
+        if (response?.success && response?.data) {
           // Transform backend data to frontend format
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const backendServices = response.data.map((s: any) => ({
@@ -382,16 +382,16 @@ export function MCPServiceConfig() {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await invoke<{ success: boolean; data?: any; error?: string }>('mcp_add_service', config)
+      const response = await safeInvoke<{ success: boolean; data?: any; error?: string }>('mcp_add_service', config)
 
-      if (response.success) {
+      if (response?.success) {
         setEditDialogOpen(false)
         setSelectedService(null)
         // Refresh services list
         // In real implementation, would trigger a refresh
       } else {
-        console.error('Failed to save service:', response.error)
-        alert(`保存失败: ${response.error}`)
+        console.error('Failed to save service:', response?.error ?? 'Unknown error')
+        alert(`保存失败: ${response?.error ?? 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Failed to save MCP service:', error)

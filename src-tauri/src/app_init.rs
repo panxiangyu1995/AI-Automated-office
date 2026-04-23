@@ -10,8 +10,8 @@ use crate::commands;
 use crate::{
     agent, approval, capability, department, export, finance, hr,
     knowledge, load_balancing, management, marketplace, marketing, message,
-    sales, security, service, session, sla, storage, sync,
-    tender, tenant, utils, warehouse, webhook, workcard, workspace,
+    sales, security, service, session, sla, storage,
+    tender, tenant, warehouse, webhook, workspace,
 };
 
 /// Get the application data directory

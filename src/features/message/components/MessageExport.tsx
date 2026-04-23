@@ -68,24 +68,6 @@ export function MessageExport({ filter, className, onExport }: MessageExportProp
     }
   }, [filter, selectedFormat, includeContent, exportMessages, onExport])
 
-  const _downloadFile = useCallback((data: string, filename: string, format: ExportFormat) => {
-    const mimeTypes: Record<ExportFormat, string> = {
-      csv: 'text/csv',
-      json: 'application/json',
-      txt: 'text/plain',
-    }
-
-    const blob = new Blob([data], { type: mimeTypes[format] })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }, [])
-
   return (
     <Card className={cn('', className)}>
       <CardHeader>
@@ -173,7 +155,7 @@ export function MessageExport({ filter, className, onExport }: MessageExportProp
               size="sm"
               className="w-full"
               onClick={() =>
-                handleExport().then(() => {
+                _handleExport().then(() => {
                   // Trigger download
                 })
               }

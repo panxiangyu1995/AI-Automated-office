@@ -5,12 +5,8 @@
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::agent::tools::pipeline::ToolExecutionContext;
 use crate::session::TenantContext;
-use crate::vector::{
-    VectorConfig, VectorService, VectorMode, 
-    store::{SearchResult, VectorQuery},
-};
+use crate::vector::VectorService;
 
 /// Knowledge search request
 #[derive(Debug, Clone, Serialize, Deserialize)]

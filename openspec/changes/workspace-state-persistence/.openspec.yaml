@@ -1,0 +1,66 @@
+schema: spec-driven
+created: 2026-04-22
+
+# OpenSpec Change: 工作场景即时恢复
+
+## 元信息
+
+- **变更名称**: 工作场景即时恢复
+- **变更ID**: workspace-state-persistence
+- **Epic**: Epic 1 - 桌面端UI与系统交互
+- **Story**: Story 1.X - 工作场景即时恢复
+- **FR 覆盖**: FR1560-FR1575
+- **实现类型**: feature
+- **优先级**: high
+- **阶段**: Phase 1
+
+## 变更概述
+
+为 AI-Automated-office 实现工作场景即时恢复能力，使软件退出后重新打开时能无缝恢复：工作区标签页、AI 对话会话、侧边栏资源状态等上下文。
+
+## 变更理由
+
+当前系统 `uiStore` 已持久化布局、主题等 UI 状态，但以下关键工作场景状态未持久化：
+
+- `workbenchStore` - Tab 列表和活跃 Tab 无持久化
+- `useChatStore` - AI 会话列表和活跃会话无持久化
+- `useHistoryStore` - 搜索/过滤状态无持久化
+- `editorStore` - 活跃文档状态无持久化
+- `uiStore` - 侧边栏资源列表和徽章计数无持久化
+
+## 影响范围
+
+### 受影响文件
+
+- `src/stores/workbenchStore.ts` - 添加 persist
+- `src/features/agent/hooks/useChatStore.ts` - 添加 persist
+- `src/features/agent/hooks/useHistoryStore.ts` - 添加 persist
+- `src/stores/editorStore.ts` - 添加 persist
+- `src/stores/uiStore.ts` - 扩展 partialize
+- `src/components/common/AppLayout.tsx` - 初始化恢复逻辑
+- `src/components/common/Sidebar.tsx` - 读取恢复状态
+- `src/components/common/Workbench.tsx` - 读取恢复状态
+
+### 新增文件
+
+- `src/hooks/useWorkspaceStateRecovery.ts` - 统一恢复 hook
+
+### 依赖关系
+
+- 依赖 `uiStore` 已有持久化基础设施
+- 依赖 `appStore` 已有的用户偏好持久化
+
+## 风险评估
+
+- **低风险**: 纯前端状态持久化，不涉及云端或数据迁移
+- **存储风险**: 需控制 localStorage 使用量，已设置上限（Tabs 10, Sessions 20）
+- **隐私风险**: 敏感内容可配置不持久化（FR1569）
+
+## 验收标准
+
+1. 软件重启后自动恢复上次打开的标签页列表和活跃 Tab
+2. 软件重启后自动恢复 AI 对话会话列表和活跃会话
+3. 侧边栏资源列表状态在重启后保持
+4. 所有持久化数据存储于独立的 localStorage key，不与其他 store 冲突
+5. 恢复时按依赖顺序执行：UI 布局 → 标签页 → AI 会话 → 面板状态
+6. `npm run lint` 和 `npm run build` 均通过

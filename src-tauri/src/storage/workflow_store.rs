@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use sqlx::{Row, SqlitePool};
-use std::sync::Arc;
 
 use crate::workflow::types::*;
 

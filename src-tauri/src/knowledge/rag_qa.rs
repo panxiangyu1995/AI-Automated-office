@@ -3,8 +3,6 @@
 //! Provides Tauri commands for RAG-based question answering.
 
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 use crate::knowledge::types::{RagContext, RetrievedChunk};
 use crate::knowledge::search::VectorServiceState;

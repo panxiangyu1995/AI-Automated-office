@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import {
   AlertTriangle,
   ArrowRight,
@@ -23,6 +23,7 @@ import {
 } from '../../../lib/shortcutConfig'
 import { cn } from '../../../lib/utils'
 import { useUIStore } from '../../../stores/uiStore'
+import { useAppStore } from '../../../stores/appStore'
 import {
   getSettingsCategory,
   getSettingsSection,
@@ -215,11 +216,13 @@ function WorkspacePreferencesSection(props: {
   sidebarCollapsed: boolean
   chatPanelCollapsed: boolean
   bottomPanelCollapsed: boolean
+  restoreWorkspaceOnStartup: boolean
   onToggleTopBar: () => void
   onToggleSidebar: () => void
   onToggleChatPanel: () => void
   onToggleBottomPanel: () => void
   onResetLayout: () => void
+  onToggleRestoreWorkspace: () => void
 }) {
   const items = [
     {
@@ -249,6 +252,13 @@ function WorkspacePreferencesSection(props: {
       description: '用于日志、诊断或输出等底部辅助视图。',
       checked: !props.bottomPanelCollapsed,
       onCheckedChange: props.onToggleBottomPanel,
+    },
+    {
+      id: 'restore-workspace',
+      title: '启动时恢复工作状态',
+      description: '重启后自动恢复上次打开的标签页、会话和侧边栏状态。',
+      checked: props.restoreWorkspaceOnStartup,
+      onCheckedChange: props.onToggleRestoreWorkspace,
     },
   ]
 
@@ -746,6 +756,10 @@ export function SettingsPanel() {
     setSettingsActiveSection,
   } = useUIStore()
 
+  // App settings
+  const { restoreWorkspaceOnStartup, setRestoreWorkspaceOnStartup } = useAppStore()
+  const toggleRestoreWorkspace = () => setRestoreWorkspaceOnStartup(!restoreWorkspaceOnStartup)
+
   // Local state for settings
   const [searchQuery, setSearchQuery] = useState('')
   const [shortcuts, setShortcuts] = useState<ShortcutConfig>(() => loadShortcutsFromStorage())
@@ -945,7 +959,10 @@ export function SettingsPanel() {
       }
 
       try {
-        await invoke<boolean>('check_shortcut_available', { shortcutStr: value })
+        const available = await safeInvoke<boolean>('check_shortcut_available', { shortcutStr: value })
+        if (!available) {
+          nextErrors[key] = '快捷键不可用'
+        }
       } catch (error) {
         nextErrors[key] = error instanceof Error ? error.message : '快捷键格式无效'
       }
@@ -958,10 +975,10 @@ export function SettingsPanel() {
     }
 
     try {
-      await invoke('update_shortcut', { action: 'show_app', newShortcut: draftShortcuts.showApp })
-      await invoke('update_shortcut', { action: 'open_ai_chat', newShortcut: draftShortcuts.openAiChat })
-      await invoke('update_shortcut', { action: 'quick_search', newShortcut: draftShortcuts.quickSearch })
-      await invoke('update_shortcut', { action: 'open_settings', newShortcut: draftShortcuts.openSettings })
+      await safeInvoke('update_shortcut', { action: 'show_app', newShortcut: draftShortcuts.showApp })
+      await safeInvoke('update_shortcut', { action: 'open_ai_chat', newShortcut: draftShortcuts.openAiChat })
+      await safeInvoke('update_shortcut', { action: 'quick_search', newShortcut: draftShortcuts.quickSearch })
+      await safeInvoke('update_shortcut', { action: 'open_settings', newShortcut: draftShortcuts.openSettings })
       localStorage.setItem(SHORTCUT_STORAGE_KEY, JSON.stringify(draftShortcuts))
       setShortcuts(draftShortcuts)
       setSaveMessage('快捷键已更新并生效')
@@ -981,10 +998,10 @@ export function SettingsPanel() {
     setShortcutErrors({})
 
     try {
-      await invoke('update_shortcut', { action: 'show_app', newShortcut: DEFAULT_SHORTCUTS.showApp })
-      await invoke('update_shortcut', { action: 'open_ai_chat', newShortcut: DEFAULT_SHORTCUTS.openAiChat })
-      await invoke('update_shortcut', { action: 'quick_search', newShortcut: DEFAULT_SHORTCUTS.quickSearch })
-      await invoke('update_shortcut', { action: 'open_settings', newShortcut: DEFAULT_SHORTCUTS.openSettings })
+      await safeInvoke('update_shortcut', { action: 'show_app', newShortcut: DEFAULT_SHORTCUTS.showApp })
+      await safeInvoke('update_shortcut', { action: 'open_ai_chat', newShortcut: DEFAULT_SHORTCUTS.openAiChat })
+      await safeInvoke('update_shortcut', { action: 'quick_search', newShortcut: DEFAULT_SHORTCUTS.quickSearch })
+      await safeInvoke('update_shortcut', { action: 'open_settings', newShortcut: DEFAULT_SHORTCUTS.openSettings })
       localStorage.setItem(SHORTCUT_STORAGE_KEY, JSON.stringify(DEFAULT_SHORTCUTS))
       setShortcuts(DEFAULT_SHORTCUTS)
       setDraftShortcuts(DEFAULT_SHORTCUTS)
@@ -1007,11 +1024,13 @@ export function SettingsPanel() {
             sidebarCollapsed={sidebarCollapsed}
             chatPanelCollapsed={chatPanelCollapsed}
             bottomPanelCollapsed={bottomPanelCollapsed}
+            restoreWorkspaceOnStartup={restoreWorkspaceOnStartup}
             onToggleTopBar={toggleTopBar}
             onToggleSidebar={toggleSidebar}
             onToggleChatPanel={toggleChatPanel}
             onToggleBottomPanel={toggleBottomPanel}
             onResetLayout={resetLayout}
+            onToggleRestoreWorkspace={toggleRestoreWorkspace}
           />
         )
       case 'shortcuts':

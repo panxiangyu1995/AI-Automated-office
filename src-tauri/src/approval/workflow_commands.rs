@@ -2,11 +2,9 @@
 //!
 //! Tauri commands for approval workflow integration.
 
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 use crate::approval::workflow_integration::{ApprovalWorkflowService, ApprovalWorkflowState, PendingApproval};
-use crate::approval::types::{ApprovalFlow, ApprovalStep, Approver, StepType, RecordStatus};
+use crate::approval::types::{ApprovalFlow, ApprovalStep, Approver, StepType};
 
 /// Create an approval workflow definition from approval flow
 #[tauri::command]

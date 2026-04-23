@@ -6,15 +6,13 @@
 //! - Provider traits with timeout, retry, and error mapping support
 //! - Request/Response contracts for provider communication
 
-use crate::agent::prompt_types::*;
 
 // Re-export all types from prompt_types for backward compatibility
 pub use crate::agent::prompt_types::{
     ProviderId, ProviderConfig, ToolDescriptor, SystemPromptComponents,
-    CustomPromptSection, RuntimeContext, ToolVisibility, PromptBuildOptions,
-    BuiltPrompt, PromptBuildMetadata, ProviderChatRequest, ProviderMessage,
-    ProviderToolCall, ProviderToolCallFunction, ProviderChatResponse,
-    ProviderResponseMetadata, ProviderTokenUsage, ErrorMappingConfig, ErrorMapping,
+    CustomPromptSection, RuntimeContext, PromptBuildOptions,
+    BuiltPrompt, PromptBuildMetadata, ProviderChatRequest, ProviderMessage, ProviderChatResponse,
+    ProviderResponseMetadata, ErrorMappingConfig,
 };
 
 use async_trait::async_trait;

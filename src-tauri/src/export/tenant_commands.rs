@@ -3,7 +3,7 @@
 //! Tauri commands for multi-tenant data operations.
 
 use crate::export::tenant_data::{
-    DataCategory, TenantDataService, TenantDataState,
+    TenantDataState,
     TenantExportRequest, TenantExportResult,
     TenantImportRequest, TenantImportResult,
 };

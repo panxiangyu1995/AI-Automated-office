@@ -5,7 +5,6 @@
 
 use crate::vector::embedding::EmbeddingService;
 use lru::LruCache;
-use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 use tokio::sync::RwLock;

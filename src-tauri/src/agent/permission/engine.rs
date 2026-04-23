@@ -7,20 +7,18 @@
 //!
 //! Final Permission = (Platform ∪ Department ∪ Role) \ Blacklist
 
-use crate::agent::permission::engine_types::*;
 // Re-export all types for backward compatibility
 pub use crate::agent::permission::engine_types::{
-    PermissionDomain, PermissionError, ExecutionContext, UserPermissions,
+    PermissionError, ExecutionContext, UserPermissions,
     PlatformPermissions, DepartmentPermissions, RolePermissions,
 };
 
-use super::{DataScopeType, ToolConstraint};
+use super::DataScopeType;
 use crate::session::TenantContext;
 
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use serde::{Deserialize, Serialize};
 
 /// Permission engine configuration
 #[derive(Debug, Clone)]

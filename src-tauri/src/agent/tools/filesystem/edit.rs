@@ -1,9 +1,8 @@
 //! Filesystem edit tool.
 
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::fs;
-use std::io::{BufRead, BufReader, Write as IoWrite};
+use std::io::{BufRead, BufReader};
 
 use serde_json::Value;
 

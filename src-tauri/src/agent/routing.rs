@@ -20,7 +20,7 @@ pub use super::routing_types::{
     ConfirmationState, RiskEvaluation, RiskRecommendation, get_default_routing_rules,
 };
 
-pub use super::router::semantic::{SemanticRouter, SemanticRoutingConfig, cosine_similarity};
+pub use super::router::semantic::SemanticRouter;
 
 /// Sub-agent routing service
 #[derive(Clone)]

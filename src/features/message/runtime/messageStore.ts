@@ -78,7 +78,10 @@ export interface MessageStore {
 
 let wsInitialized = false;
 
-function initWebSocket() {
+function initWebSocket(
+  set: (fn: (state: MessageStore) => Partial<MessageStore>) => void,
+  get: () => MessageStore
+) {
   if (wsInitialized) return;
   wsInitialized = true;
 
@@ -124,13 +127,7 @@ export const messageStore = create<MessageStore>((set, get) => ({
   streamListeners: new Set(),
 
   // Initialize WebSocket connection
-  ...(() => { initWebSocket(); return {}; })(),
-
-  // ==================== Message CRUD ====================
-  messages: new Map(),
-  sessionMessages: new Map(),
-  stateListeners: new Set(),
-  streamListeners: new Set(),
+  ...(() => { initWebSocket(set, get); return {}; })(),
 
   // ==================== Message CRUD ====================
   
@@ -502,9 +499,8 @@ export const messageStore = create<MessageStore>((set, get) => ({
   },
 
   // ==================== Listeners ====================
-  
+
   addStateListener: (listener: MessageStateListener): (() => void) => {
-    initWebSocket();
     set((state) => {
       const newListeners = new Set(state.stateListeners)
       newListeners.add(listener)

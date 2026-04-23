@@ -46,7 +46,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 // Types
 export type DelegationStatus = 'success' | 'timeout' | 'error' | 'rejected'
@@ -279,11 +279,15 @@ export function SubAgentConfig({ className = '' }: SubAgentConfigProps) {
     if (!selectedSubAgent || !delegateMessage.trim()) return
     setIsDelegating(true)
     try {
-      const result = await invoke<DelegationOutcome>('delegate_to_subagent', {
+      const result = await safeInvoke<DelegationOutcome>('delegate_to_subagent', {
         subagentId: selectedSubAgent.id,
         message: delegateMessage,
       })
-      setDelegateResult(result)
+      if (result) {
+        setDelegateResult(result)
+      } else {
+        throw new Error('委派失败')
+      }
     } catch (error) {
       // Mock result for demo
       setDelegateResult({

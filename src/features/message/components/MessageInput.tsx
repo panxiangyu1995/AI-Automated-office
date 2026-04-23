@@ -3,7 +3,7 @@
  * 消息输入组件
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Send, Paperclip, Image, AtSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'

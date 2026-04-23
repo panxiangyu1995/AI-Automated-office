@@ -106,3 +106,4 @@ export function ChatSkeleton({ messages = 4 }: { messages?: number }) {
 }
 
 export { SkeletonBox }
+export { SkeletonBox as Skeleton }

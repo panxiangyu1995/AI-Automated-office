@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::approval::types::{ApprovalFlow, ApprovalRecord, Approver, RecordStatus, StepType};
-use crate::workflow::types::{WorkflowDefinition, WorkflowInstance, WorkflowStep, WorkflowExecuteRequest, WorkflowApprovalRequest};
+use crate::approval::types::ApprovalFlow;
+use crate::workflow::types::{WorkflowDefinition, WorkflowInstance, WorkflowStep};
 
 /// Approval workflow integration service
 pub struct ApprovalWorkflowService {

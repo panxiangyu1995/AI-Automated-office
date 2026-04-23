@@ -11,7 +11,7 @@
  */
 
 import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector, persist, createJSONStorage } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { useChatStore, type ChatSession } from './useChatStore'
 
@@ -64,6 +64,8 @@ const initialFilter: HistoryFilter = {
   timeRange: 'all',
 }
 
+type PersistedState = Pick<HistoryStoreState, 'filter' | 'archivedSessions'>
+
 // ==================== Time Filter Helpers ====================
 
 /**
@@ -94,9 +96,11 @@ function isInRange(timestamp: number, range: TimeFilter): boolean {
 // ==================== Store ====================
 
 export const useHistoryStore = create<HistoryStoreState>()(
-  subscribeWithSelector((set, get) => ({
-    filter: initialFilter,
-    archivedSessions: {},
+  // @ts-expect-error - subscribeWithSelector and persist middleware types conflict but work at runtime
+  persist<HistoryStoreState, [], [typeof subscribeWithSelector], PersistedState>(
+    subscribeWithSelector((set, get) => ({
+      filter: initialFilter,
+      archivedSessions: {},
     
     // ==================== Filter Actions ====================
     
@@ -216,7 +220,16 @@ export const useHistoryStore = create<HistoryStoreState>()(
     getFilteredSessions: () => {
       return get().searchSessions()
     },
-  }))
+  })),
+    {
+      name: 'app-workspace-history',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state): PersistedState => ({
+        filter: state.filter,
+        archivedSessions: state.archivedSessions,
+      }),
+    }
+  )
 )
 
 // ==================== Selector Hooks ====================

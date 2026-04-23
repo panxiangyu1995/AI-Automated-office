@@ -5,7 +5,7 @@
  * 封装 Tauri 命令，提供工作卡片 CRUD、操作和模板功能
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type {
   WorkCard,
   WorkCardTemplate,
@@ -21,7 +21,7 @@ import type {
  * 创建工作卡片
  */
 export async function createWorkCard(request: CreateCardRequest): Promise<WorkCard> {
-  return invoke('create_work_card', {
+  const result = await safeInvoke<WorkCard>('create_work_card', {
     title: request.title,
     cardType: request.card_type,
     priority: request.priority,
@@ -30,27 +30,31 @@ export async function createWorkCard(request: CreateCardRequest): Promise<WorkCa
     fields: request.fields,
     actions: request.actions,
   })
+  return result ?? ({} as WorkCard)
 }
 
 /**
  * 获取工作卡片
  */
 export async function getWorkCard(cardId: string): Promise<WorkCard | null> {
-  return invoke('get_work_card', { cardId })
+  const result = await safeInvoke<WorkCard | null>('get_work_card', { cardId })
+  return result ?? null
 }
 
 /**
  * 列出所有工作卡片
  */
 export async function listWorkCards(): Promise<WorkCard[]> {
-  return invoke('list_work_cards')
+  const result = await safeInvoke<WorkCard[]>('list_work_cards')
+  return result ?? []
 }
 
 /**
  * 删除工作卡片
  */
 export async function deleteWorkCard(cardId: string): Promise<boolean> {
-  return invoke('delete_work_card', { cardId })
+  const result = await safeInvoke<boolean>('delete_work_card', { cardId })
+  return result ?? false
 }
 
 // ==================== Action API ====================
@@ -64,12 +68,13 @@ export async function executeCardAction(
   actorId: string,
   actorName: string
 ): Promise<{ type: string; message: string }> {
-  return invoke('execute_card_action', {
+  const result = await safeInvoke<{ type: string; message: string }>('execute_card_action', {
     cardId,
     actionId,
     actorId,
     actorName,
   })
+  return result ?? { type: '', message: '' }
 }
 
 // ==================== Template API ====================
@@ -84,20 +89,22 @@ export async function generateCardFromTemplate(
   senderName: string,
   context: Record<string, string>
 ): Promise<WorkCard> {
-  return invoke('generate_card_from_template', {
+  const result = await safeInvoke<WorkCard>('generate_card_from_template', {
     templateId,
     title,
     senderId,
     senderName,
     context,
   })
+  return result ?? ({} as WorkCard)
 }
 
 /**
  * 列出所有卡片模板
  */
 export async function listCardTemplates(): Promise<WorkCardTemplate[]> {
-  return invoke('list_card_templates')
+  const result = await safeInvoke<WorkCardTemplate[]>('list_card_templates')
+  return result ?? []
 }
 
 // ==================== Utility API ====================
@@ -106,21 +113,24 @@ export async function listCardTemplates(): Promise<WorkCardTemplate[]> {
  * 获取卡片状态列表
  */
 export async function getCardStatuses(): Promise<CardStatus[]> {
-  return invoke('get_card_statuses')
+  const result = await safeInvoke<CardStatus[]>('get_card_statuses')
+  return result ?? []
 }
 
 /**
  * 获取卡片优先级列表
  */
 export async function getCardPriorities(): Promise<CardPriority[]> {
-  return invoke('get_card_priorities')
+  const result = await safeInvoke<CardPriority[]>('get_card_priorities')
+  return result ?? []
 }
 
 /**
  * 获取卡片操作类型列表
  */
 export async function getCardActionTypes(): Promise<CardActionType[]> {
-  return invoke('get_card_action_types')
+  const result = await safeInvoke<CardActionType[]>('get_card_action_types')
+  return result ?? []
 }
 
 // ==================== API 汇总导出 ====================
