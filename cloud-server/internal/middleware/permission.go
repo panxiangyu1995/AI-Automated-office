@@ -35,11 +35,13 @@ func DefaultPermissionConfig() *PermissionConfig {
 		},
 		ResourceRouteMapping: map[string]string{
 			"/api/v1/admin/users":          "hr.employee",
-			"/api/v1/admin/departments":    "hr.department",
+			"/api/v1/admin/departments":    "department",
 			"/api/v1/admin/positions":      "hr.position",
 			"/api/v1/permissions":          "system.permission",
 			"/api/v1/permissions/roles":    "system.role",
 			"/api/v1/permissions/overrides": "system.permission_override",
+			"/api/v1/messages":             "message",
+			"/api/v1/announcements":        "announcement",
 		},
 	}
 }
@@ -167,9 +169,13 @@ func getResourceFromPath(fullPath string, mapping map[string]string) string {
 
 	// 默认从路径提取
 	parts := strings.Split(strings.Trim(fullPath, "/"), "/")
-	if len(parts) >= 3 {
-		// /api/v1/module/entity -> module.entity
+	// /api/v1/module/entity -> module.entity
+	// /api/v1/announcements -> announcements
+	if len(parts) >= 4 {
 		return parts[2] + "." + parts[3]
+	}
+	if len(parts) >= 3 {
+		return parts[2]
 	}
 
 	return "unknown"

@@ -27,9 +27,9 @@ func (s *MessageStore) Create(ctx context.Context, msg *Message) error {
 			recipient_id, recipient_type, priority, status, action_url, metadata,
 			created_at, pinned, edited, recalled, version, sync_status
 		) VALUES (
-			?, ?, ?, ?, ?, ?, ?, ?,
-			?, ?, ?, ?, ?, ?,
-			?, ?, ?, ?, ?, ?
+			$1, $2, $3, $4, $5, $6, $7, $8,
+			$9, $10, $11, $12, $13, $14,
+			$15, $16, $17, $18, $19, $20
 		)`
 
 	_, err := s.db.ExecContext(ctx, query,
@@ -50,7 +50,7 @@ func (s *MessageStore) GetByID(ctx context.Context, tenantID, id string) (*Messa
 			created_at, read_at, pinned, pinned_at, edited, edited_at, edit_history,
 			recalled, recalled_at, original_content, deleted_at, version, sync_status, synced_at
 		FROM messages
-		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL`
+		WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL`
 
 	msg := &Message{}
 	err := s.db.QueryRowContext(ctx, query, id, tenantID).Scan(
@@ -79,9 +79,9 @@ func (s *MessageStore) ListByRecipient(ctx context.Context, tenantID, recipientI
 			created_at, read_at, pinned, pinned_at, edited, edited_at, edit_history,
 			recalled, recalled_at, original_content, deleted_at, version, sync_status, synced_at
 		FROM messages
-		WHERE tenant_id = ? AND recipient_id = ? AND deleted_at IS NULL
+		WHERE tenant_id = $1 AND recipient_id = $2 AND deleted_at IS NULL
 		ORDER BY created_at DESC
-		LIMIT ? OFFSET ?`
+		LIMIT $3 OFFSET $4`
 
 	rows, err := s.db.QueryContext(ctx, query, tenantID, recipientID, limit, offset)
 	if err != nil {
@@ -115,10 +115,10 @@ func (s *MessageStore) UpdateStatus(ctx context.Context, tenantID, id string, st
 	var args []interface{}
 
 	if status == StatusRead {
-		query = `UPDATE messages SET status = ?, read_at = ?, version = version + 1 WHERE id = ? AND tenant_id = ?`
+		query = `UPDATE messages SET status = $1, read_at = $2, version = version + 1 WHERE id = $3 AND tenant_id = $4`
 		args = []interface{}{status, Now(), id, tenantID}
 	} else {
-		query = `UPDATE messages SET status = ?, version = version + 1 WHERE id = ? AND tenant_id = ?`
+		query = `UPDATE messages SET status = $1, version = version + 1 WHERE id = $2 AND tenant_id = $3`
 		args = []interface{}{status, id, tenantID}
 	}
 
@@ -137,12 +137,12 @@ func (s *MessageStore) UpdateStatus(ctx context.Context, tenantID, id string, st
 func (s *MessageStore) Update(ctx context.Context, msg *Message) error {
 	query := `
 		UPDATE messages SET
-			title = ?, content = ?, priority = ?, status = ?,
-			edited = ?, edited_at = ?, edit_history = ?,
-			recalled = ?, recalled_at = ?, original_content = ?,
-			pinned = ?, pinned_at = ?,
+			title = $1, content = $2, priority = $3, status = $4,
+			edited = $5, edited_at = $6, edit_history = $7,
+			recalled = $8, recalled_at = $9, original_content = $10,
+			pinned = $11, pinned_at = $12,
 			version = version + 1
-		WHERE id = ? AND tenant_id = ?`
+		WHERE id = $13 AND tenant_id = $14`
 
 	_, err := s.db.ExecContext(ctx, query,
 		msg.Title, msg.Content, msg.Priority, msg.Status,
@@ -156,7 +156,7 @@ func (s *MessageStore) Update(ctx context.Context, msg *Message) error {
 
 // SoftDelete 软删除消息
 func (s *MessageStore) SoftDelete(ctx context.Context, tenantID, id string) error {
-	query := `UPDATE messages SET deleted_at = ?, version = version + 1 WHERE id = ? AND tenant_id = ?`
+	query := `UPDATE messages SET deleted_at = $1, version = version + 1 WHERE id = $2 AND tenant_id = $3`
 	result, err := s.db.ExecContext(ctx, query, Now(), id, tenantID)
 	if err != nil {
 		return err
@@ -171,7 +171,7 @@ func (s *MessageStore) SoftDelete(ctx context.Context, tenantID, id string) erro
 // CountUnreadByRecipient 统计未读消息数
 func (s *MessageStore) CountUnreadByRecipient(ctx context.Context, tenantID, recipientID string) (*UnreadCount, error) {
 	query := `
-		SELECT 
+		SELECT
 			COUNT(*) as total,
 			COUNT(CASE WHEN msg_type = 'system' THEN 1 END) as system,
 			COUNT(CASE WHEN msg_type = 'approval' THEN 1 END) as approval,
@@ -179,7 +179,7 @@ func (s *MessageStore) CountUnreadByRecipient(ctx context.Context, tenantID, rec
 			COUNT(CASE WHEN msg_type = 'mention' THEN 1 END) as mention,
 			COUNT(CASE WHEN msg_type = 'chat' THEN 1 END) as chat
 		FROM messages
-		WHERE tenant_id = ? AND recipient_id = ? AND status = 'unread' AND deleted_at IS NULL`
+		WHERE tenant_id = $1 AND recipient_id = $2 AND status = 'unread' AND deleted_at IS NULL`
 
 	count := &UnreadCount{}
 	err := s.db.QueryRowContext(ctx, query, tenantID, recipientID).Scan(
@@ -197,43 +197,51 @@ func (s *MessageStore) Search(ctx context.Context, tenantID, recipientID string,
 	var conditions []string
 	var args []interface{}
 
-	conditions = append(conditions, "tenant_id = ? AND recipient_id = ? AND deleted_at IS NULL")
+	conditions = append(conditions, "tenant_id = $1 AND recipient_id = $2 AND deleted_at IS NULL")
 	args = append(args, tenantID, recipientID)
+	argIndex := 3
 
 	if req.Keyword != nil && *req.Keyword != "" {
-		conditions = append(conditions, "(title LIKE ? OR content LIKE ?)")
+		conditions = append(conditions, fmt.Sprintf("(title LIKE $%d OR content LIKE $%d)", argIndex, argIndex+1))
 		keyword := "%" + *req.Keyword + "%"
 		args = append(args, keyword, keyword)
+		argIndex += 2
 	}
 
 	if req.MsgType != nil {
-		conditions = append(conditions, "msg_type = ?")
+		conditions = append(conditions, fmt.Sprintf("msg_type = $%d", argIndex))
 		args = append(args, *req.MsgType)
+		argIndex++
 	}
 
 	if req.Priority != nil {
-		conditions = append(conditions, "priority = ?")
+		conditions = append(conditions, fmt.Sprintf("priority = $%d", argIndex))
 		args = append(args, *req.Priority)
+		argIndex++
 	}
 
 	if req.Status != nil {
-		conditions = append(conditions, "status = ?")
+		conditions = append(conditions, fmt.Sprintf("status = $%d", argIndex))
 		args = append(args, *req.Status)
+		argIndex++
 	}
 
 	if req.SenderID != nil {
-		conditions = append(conditions, "sender_id = ?")
+		conditions = append(conditions, fmt.Sprintf("sender_id = $%d", argIndex))
 		args = append(args, *req.SenderID)
+		argIndex++
 	}
 
 	if req.StartDate != nil {
-		conditions = append(conditions, "created_at >= ?")
+		conditions = append(conditions, fmt.Sprintf("created_at >= $%d", argIndex))
 		args = append(args, *req.StartDate)
+		argIndex++
 	}
 
 	if req.EndDate != nil {
-		conditions = append(conditions, "created_at <= ?")
+		conditions = append(conditions, fmt.Sprintf("created_at <= $%d", argIndex))
 		args = append(args, *req.EndDate)
+		argIndex++
 	}
 
 	if req.PinnedOnly != nil && *req.PinnedOnly {
@@ -260,12 +268,12 @@ func (s *MessageStore) Search(ctx context.Context, tenantID, recipientID string,
 	totalPages := int((total + int64(pageSize) - 1) / int64(pageSize))
 
 	// Query messages
-	query := `
+	query := fmt.Sprintf(`
 		SELECT id, tenant_id, msg_type, title, sender_id, sender_name, status, priority, created_at
 		FROM messages
-		WHERE ` + strings.Join(conditions, " AND ") + `
+		WHERE %s
 		ORDER BY pinned DESC, created_at DESC
-		LIMIT ? OFFSET ?`
+		LIMIT $%d OFFSET $%d`, strings.Join(conditions, " AND "), argIndex, argIndex+1)
 	args = append(args, pageSize, offset)
 
 	rows, err := s.db.QueryContext(ctx, query, args...)
@@ -298,7 +306,7 @@ func (s *MessageStore) GetPinned(ctx context.Context, tenantID, recipientID stri
 	query := `
 		SELECT message_id, pinned_at
 		FROM messages
-		WHERE tenant_id = ? AND recipient_id = ? AND pinned = TRUE AND deleted_at IS NULL
+		WHERE tenant_id = $1 AND recipient_id = $2 AND pinned = TRUE AND deleted_at IS NULL
 		ORDER BY pinned_at DESC`
 
 	rows, err := s.db.QueryContext(ctx, query, tenantID, recipientID)
@@ -323,7 +331,7 @@ func (s *MessageStore) CreateMessageStatus(ctx context.Context, status *MessageS
 	query := `
 		INSERT INTO message_status (
 			id, message_id, tenant_id, sender_id, recipient_id, status, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
 	_, err := s.db.ExecContext(ctx, query,
 		status.ID, status.MessageID, status.TenantID, status.SenderID,
@@ -340,13 +348,13 @@ func (s *MessageStore) UpdateMessageStatus(ctx context.Context, messageID string
 
 	switch status {
 	case DeliverySent:
-		query = `UPDATE message_status SET status = ?, sent_at = ?, updated_at = ? WHERE message_id = ?`
+		query = `UPDATE message_status SET status = $1, sent_at = $2, updated_at = $3 WHERE message_id = $4`
 		args = []interface{}{status, now, now, messageID}
 	case DeliveryDelivered:
-		query = `UPDATE message_status SET status = ?, delivered_at = ?, updated_at = ? WHERE message_id = ?`
+		query = `UPDATE message_status SET status = $1, delivered_at = $2, updated_at = $3 WHERE message_id = $4`
 		args = []interface{}{status, now, now, messageID}
 	case DeliveryRead:
-		query = `UPDATE message_status SET status = ?, read_at = ?, updated_at = ? WHERE message_id = ?`
+		query = `UPDATE message_status SET status = $1, read_at = $2, updated_at = $3 WHERE message_id = $4`
 		args = []interface{}{status, now, now, messageID}
 	default:
 		return fmt.Errorf("invalid status: %s", status)
@@ -361,7 +369,7 @@ func (s *MessageStore) GetMessageStatus(ctx context.Context, messageID string) (
 	query := `
 		SELECT id, message_id, tenant_id, sender_id, recipient_id, status,
 			sent_at, delivered_at, read_at, created_at, updated_at
-		FROM message_status WHERE message_id = ?`
+		FROM message_status WHERE message_id = $1`
 
 	var entry MessageStatusEntry
 	err := s.db.QueryRowContext(ctx, query, messageID).Scan(
@@ -383,7 +391,7 @@ func (s *MessageStore) GetRecipientStatus(ctx context.Context, tenantID, recipie
 	query := `
 		SELECT id, message_id, tenant_id, sender_id, recipient_id, status,
 			sent_at, delivered_at, read_at, created_at, updated_at
-		FROM message_status WHERE tenant_id = ? AND recipient_id = ?`
+		FROM message_status WHERE tenant_id = $1 AND recipient_id = $2`
 
 	rows, err := s.db.QueryContext(ctx, query, tenantID, recipientID)
 	if err != nil {

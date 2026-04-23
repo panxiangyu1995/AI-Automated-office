@@ -34,18 +34,18 @@ func nullStringToPtr(ns sql.NullString) *string {
 // FindByID 根据 ID 查找部门
 func (r *departmentRepository) FindByID(ctx context.Context, tenantID, departmentID string) (*model.Department, error) {
 	dept := &model.Department{}
-	var parentID, leaderID, path sql.NullString
+	var parentID, managerID, path sql.NullString
 	var deletedAt sql.NullTime
 
 	query := `
-		SELECT id, tenant_id, parent_id, name, code, leader_id, level, path, sort_order, status,
+		SELECT id, tenant_id, parent_id, name, code, manager_id, level, path, sort_order, status,
 		       created_at, updated_at, deleted_at
 		FROM departments
 		WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`
 
 	err := r.db.QueryRowContext(ctx, query, departmentID, tenantID).Scan(
-		&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &leaderID,
+		&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &managerID,
 		&dept.Level, &path, &dept.SortOrder, &dept.Status,
 		&dept.CreatedAt, &dept.UpdatedAt, &deletedAt,
 	)
@@ -57,7 +57,7 @@ func (r *departmentRepository) FindByID(ctx context.Context, tenantID, departmen
 	}
 
 	dept.ParentID = nullStringToPtr(parentID)
-	dept.LeaderID = nullStringToPtr(leaderID)
+	dept.LeaderID = nullStringToPtr(managerID)
 	dept.Path = path.String
 
 	return dept, nil
@@ -66,18 +66,18 @@ func (r *departmentRepository) FindByID(ctx context.Context, tenantID, departmen
 // FindByCode 根据编码查找部门
 func (r *departmentRepository) FindByCode(ctx context.Context, tenantID, code string) (*model.Department, error) {
 	dept := &model.Department{}
-	var parentID, leaderID, path sql.NullString
+	var parentID, managerID, path sql.NullString
 	var deletedAt sql.NullTime
 
 	query := `
-		SELECT id, tenant_id, parent_id, name, code, leader_id, level, path, sort_order, status,
+		SELECT id, tenant_id, parent_id, name, code, manager_id, level, path, sort_order, status,
 		       created_at, updated_at, deleted_at
 		FROM departments
 		WHERE code = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`
 
 	err := r.db.QueryRowContext(ctx, query, code, tenantID).Scan(
-		&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &leaderID,
+		&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &managerID,
 		&dept.Level, &path, &dept.SortOrder, &dept.Status,
 		&dept.CreatedAt, &dept.UpdatedAt, &deletedAt,
 	)
@@ -89,7 +89,7 @@ func (r *departmentRepository) FindByCode(ctx context.Context, tenantID, code st
 	}
 
 	dept.ParentID = nullStringToPtr(parentID)
-	dept.LeaderID = nullStringToPtr(leaderID)
+	dept.LeaderID = nullStringToPtr(managerID)
 	dept.Path = path.String
 
 	return dept, nil
@@ -99,10 +99,10 @@ func (r *departmentRepository) FindByCode(ctx context.Context, tenantID, code st
 func (r *departmentRepository) FindTree(ctx context.Context, tenantID string) ([]*repository.DepartmentTreeItem, error) {
 	// 查询所有部门
 	query := `
-		SELECT d.id, d.parent_id, d.name, d.code, d.leader_id, d.sort_order, d.status,
+		SELECT d.id, d.parent_id, d.name, d.code, d.manager_id, d.sort_order, d.status,
 		       COALESCE(u.name, '') as leader_name
 		FROM departments d
-		LEFT JOIN users u ON u.id = d.leader_id AND u.deleted_at IS NULL
+		LEFT JOIN users u ON u.id = d.manager_id AND u.deleted_at IS NULL
 		WHERE d.tenant_id = $1 AND d.deleted_at IS NULL
 		ORDER BY d.sort_order, d.created_at
 	`
@@ -120,18 +120,18 @@ func (r *departmentRepository) FindTree(ctx context.Context, tenantID string) ([
 
 	for rows.Next() {
 		item := &repository.DepartmentTreeItem{Children: []*repository.DepartmentTreeItem{}}
-		var parentID, leaderID, leaderName, code sql.NullString
+		var parentID, managerID, leaderName, code sql.NullString
 
-		err := rows.Scan(&item.ID, &parentID, &item.Name, &code, &leaderID, &item.SortOrder, &item.Status, &leaderName)
+		err := rows.Scan(&item.ID, &parentID, &item.Name, &code, &managerID, &item.SortOrder, &item.Status, &leaderName)
 		if err != nil {
 			return nil, err
 		}
 
 		item.Code = code.String
 		item.ParentID = nullStringToPtr(parentID)
-		if leaderID.Valid && leaderName.String != "" {
+		if managerID.Valid && leaderName.String != "" {
 			item.Leader = &repository.DepartmentLeaderRef{
-				ID:   leaderID.String,
+				ID:   managerID.String,
 				Name: leaderName.String,
 			}
 		}
@@ -195,11 +195,11 @@ func (r *departmentRepository) FindWithFilters(ctx context.Context, tenantID str
 	// 查询列表
 	listQuery := fmt.Sprintf(`
 		SELECT d.id, d.name, d.code, d.parent_id, COALESCE(pd.name, '') as parent_name,
-		       d.leader_id, COALESCE(u.name, '') as leader_name, d.sort_order, d.status, d.created_at,
+		       d.manager_id, COALESCE(u.name, '') as leader_name, d.sort_order, d.status, d.created_at,
 		       (SELECT COUNT(*) FROM user_departments ud WHERE ud.department_id = d.id) as employee_count
 		FROM departments d
 		LEFT JOIN departments pd ON pd.id = d.parent_id
-		LEFT JOIN users u ON u.id = d.leader_id AND u.deleted_at IS NULL
+		LEFT JOIN users u ON u.id = d.manager_id AND u.deleted_at IS NULL
 		%s
 		ORDER BY d.sort_order, d.created_at
 		LIMIT $%d OFFSET $%d
@@ -214,12 +214,12 @@ func (r *departmentRepository) FindWithFilters(ctx context.Context, tenantID str
 
 	for rows.Next() {
 		item := &repository.DepartmentListItem{}
-		var parentID, parentName, leaderID, leaderName, code sql.NullString
+		var parentID, parentName, managerID, leaderName, code sql.NullString
 		var createdAt time.Time
 
 		err := rows.Scan(
 			&item.ID, &item.Name, &code, &parentID, &parentName,
-			&leaderID, &leaderName, &item.SortOrder, &item.Status, &createdAt,
+			&managerID, &leaderName, &item.SortOrder, &item.Status, &createdAt,
 			&item.EmployeeCount,
 		)
 		if err != nil {
@@ -229,9 +229,9 @@ func (r *departmentRepository) FindWithFilters(ctx context.Context, tenantID str
 		item.Code = code.String
 		item.ParentID = nullStringToPtr(parentID)
 		item.ParentName = parentName.String
-		if leaderID.Valid && leaderName.String != "" {
+		if managerID.Valid && leaderName.String != "" {
 			item.Leader = &repository.DepartmentLeaderRef{
-				ID:   leaderID.String,
+				ID:   managerID.String,
 				Name: leaderName.String,
 			}
 		}
@@ -303,7 +303,7 @@ func (r *departmentRepository) FindDetailByID(ctx context.Context, tenantID, dep
 // FindChildren 查找子部门
 func (r *departmentRepository) FindChildren(ctx context.Context, departmentID string) ([]*model.Department, error) {
 	query := `
-		SELECT id, tenant_id, parent_id, name, code, leader_id, level, path, sort_order, status,
+		SELECT id, tenant_id, parent_id, name, code, manager_id, level, path, sort_order, status,
 		       created_at, updated_at
 		FROM departments
 		WHERE parent_id = $1 AND deleted_at IS NULL
@@ -319,10 +319,10 @@ func (r *departmentRepository) FindChildren(ctx context.Context, departmentID st
 	var departments []*model.Department
 	for rows.Next() {
 		dept := &model.Department{}
-		var parentID, leaderID, path sql.NullString
+		var parentID, managerID, path sql.NullString
 
 		err := rows.Scan(
-			&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &leaderID,
+			&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &managerID,
 			&dept.Level, &path, &dept.SortOrder, &dept.Status,
 			&dept.CreatedAt, &dept.UpdatedAt,
 		)
@@ -331,7 +331,7 @@ func (r *departmentRepository) FindChildren(ctx context.Context, departmentID st
 		}
 
 		dept.ParentID = nullStringToPtr(parentID)
-		dept.LeaderID = nullStringToPtr(leaderID)
+		dept.LeaderID = nullStringToPtr(managerID)
 		dept.Path = path.String
 
 		departments = append(departments, dept)
@@ -343,7 +343,7 @@ func (r *departmentRepository) FindChildren(ctx context.Context, departmentID st
 // FindAncestors 查找所有祖先部门（使用闭包表）
 func (r *departmentRepository) FindAncestors(ctx context.Context, departmentID string) ([]*model.Department, error) {
 	query := `
-		SELECT d.id, d.tenant_id, d.parent_id, d.name, d.code, d.leader_id, d.level, d.path,
+		SELECT d.id, d.tenant_id, d.parent_id, d.name, d.code, d.manager_id, d.level, d.path,
 		       d.sort_order, d.status, d.created_at, d.updated_at
 		FROM departments d
 		JOIN department_closure dc ON dc.ancestor_id = d.id
@@ -360,10 +360,10 @@ func (r *departmentRepository) FindAncestors(ctx context.Context, departmentID s
 	var departments []*model.Department
 	for rows.Next() {
 		dept := &model.Department{}
-		var parentID, leaderID, path sql.NullString
+		var parentID, managerID, path sql.NullString
 
 		err := rows.Scan(
-			&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &leaderID,
+			&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &managerID,
 			&dept.Level, &path, &dept.SortOrder, &dept.Status,
 			&dept.CreatedAt, &dept.UpdatedAt,
 		)
@@ -372,7 +372,7 @@ func (r *departmentRepository) FindAncestors(ctx context.Context, departmentID s
 		}
 
 		dept.ParentID = nullStringToPtr(parentID)
-		dept.LeaderID = nullStringToPtr(leaderID)
+		dept.LeaderID = nullStringToPtr(managerID)
 		dept.Path = path.String
 
 		departments = append(departments, dept)
@@ -384,7 +384,7 @@ func (r *departmentRepository) FindAncestors(ctx context.Context, departmentID s
 // FindDescendants 查找所有后代部门（使用闭包表）
 func (r *departmentRepository) FindDescendants(ctx context.Context, departmentID string) ([]*model.Department, error) {
 	query := `
-		SELECT d.id, d.tenant_id, d.parent_id, d.name, d.code, d.leader_id, d.level, d.path,
+		SELECT d.id, d.tenant_id, d.parent_id, d.name, d.code, d.manager_id, d.level, d.path,
 		       d.sort_order, d.status, d.created_at, d.updated_at
 		FROM departments d
 		JOIN department_closure dc ON dc.descendant_id = d.id
@@ -401,10 +401,10 @@ func (r *departmentRepository) FindDescendants(ctx context.Context, departmentID
 	var departments []*model.Department
 	for rows.Next() {
 		dept := &model.Department{}
-		var parentID, leaderID, path sql.NullString
+		var parentID, managerID, path sql.NullString
 
 		err := rows.Scan(
-			&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &leaderID,
+			&dept.ID, &dept.TenantID, &parentID, &dept.Name, &dept.Code, &managerID,
 			&dept.Level, &path, &dept.SortOrder, &dept.Status,
 			&dept.CreatedAt, &dept.UpdatedAt,
 		)
@@ -413,7 +413,7 @@ func (r *departmentRepository) FindDescendants(ctx context.Context, departmentID
 		}
 
 		dept.ParentID = nullStringToPtr(parentID)
-		dept.LeaderID = nullStringToPtr(leaderID)
+		dept.LeaderID = nullStringToPtr(managerID)
 		dept.Path = path.String
 
 		departments = append(departments, dept)
@@ -454,7 +454,7 @@ func (r *departmentRepository) Create(ctx context.Context, department *model.Dep
 	}
 
 	query := `
-		INSERT INTO departments (id, tenant_id, parent_id, name, code, leader_id, level, path, sort_order, status, created_at, updated_at)
+		INSERT INTO departments (id, tenant_id, parent_id, name, code, manager_id, level, path, sort_order, status, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 	`
 
@@ -476,7 +476,7 @@ func (r *departmentRepository) Update(ctx context.Context, department *model.Dep
 		UPDATE departments SET
 			name = $1,
 			code = $2,
-			leader_id = $3,
+			manager_id = $3,
 			sort_order = $4,
 			status = $5,
 			updated_at = $6
@@ -535,8 +535,17 @@ func (r *departmentRepository) Delete(ctx context.Context, tenantID, departmentI
 // ExistsByCode 检查编码是否存在
 func (r *departmentRepository) ExistsByCode(ctx context.Context, tenantID, code string, excludeID string) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM departments WHERE code = $1 AND tenant_id = $2 AND id != $3 AND deleted_at IS NULL)`
-	err := r.db.QueryRowContext(ctx, query, code, tenantID, excludeID).Scan(&exists)
+	var err error
+
+	// 根据 excludeID 是否为空选择不同的查询
+	if excludeID == "" {
+		query := `SELECT EXISTS(SELECT 1 FROM departments WHERE code = $1 AND tenant_id = $2 AND deleted_at IS NULL)`
+		err = r.db.QueryRowContext(ctx, query, code, tenantID).Scan(&exists)
+	} else {
+		query := `SELECT EXISTS(SELECT 1 FROM departments WHERE code = $1 AND tenant_id = $2 AND id != $3 AND deleted_at IS NULL)`
+		err = r.db.QueryRowContext(ctx, query, code, tenantID, excludeID).Scan(&exists)
+	}
+
 	return exists, err
 }
 

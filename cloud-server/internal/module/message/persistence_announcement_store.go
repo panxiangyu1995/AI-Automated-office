@@ -23,7 +23,7 @@ func (s *AnnouncementStore) Create(ctx context.Context, ann *Announcement) error
 		INSERT INTO announcements (
 			id, tenant_id, title, content, author_id, author_name, priority,
 			target_type, target_value, pinned, published_at, expires_at, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
 
 	_, err := s.db.ExecContext(ctx, query,
 		ann.ID, ann.TenantID, ann.Title, ann.Content, ann.AuthorID, ann.AuthorName,
@@ -39,7 +39,7 @@ func (s *AnnouncementStore) GetByID(ctx context.Context, tenantID, id string) (*
 		SELECT id, tenant_id, title, content, author_id, author_name, priority,
 			target_type, target_value, pinned, published_at, expires_at, created_at, updated_at, deleted_at
 		FROM announcements
-		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL`
+		WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL`
 
 	ann := &Announcement{}
 	err := s.db.QueryRowContext(ctx, query, id, tenantID).Scan(
@@ -64,15 +64,15 @@ func (s *AnnouncementStore) List(ctx context.Context, tenantID string, userID st
 			a.created_at, a.updated_at, a.deleted_at,
 			CASE WHEN ar.id IS NOT NULL THEN 1 ELSE 0 END as is_read
 		FROM announcements a
-		LEFT JOIN announcement_reads ar ON a.id = ar.announcement_id AND ar.user_id = ?
-		WHERE a.tenant_id = ? AND a.deleted_at IS NULL AND a.published_at IS NOT NULL
-			AND (a.expires_at IS NULL OR a.expires_at > ?)
+		LEFT JOIN announcement_reads ar ON a.id = ar.announcement_id AND ar.user_id = $1
+		WHERE a.tenant_id = $2 AND a.deleted_at IS NULL AND a.published_at IS NOT NULL
+			AND (a.expires_at IS NULL OR a.expires_at > $3)
 			AND (
-				a.target_type = 'all' 
-				OR (a.target_type = 'user' AND a.target_value = ?)
+				a.target_type = 'all'
+				OR (a.target_type = 'user' AND a.target_value = $4)
 			)
 		ORDER BY a.pinned DESC, a.published_at DESC
-		LIMIT ? OFFSET ?`
+		LIMIT $5 OFFSET $6`
 
 	rows, err := s.db.QueryContext(ctx, query, userID, tenantID, Now(), userID, limit, offset)
 	if err != nil {
@@ -100,9 +100,9 @@ func (s *AnnouncementStore) List(ctx context.Context, tenantID string, userID st
 func (s *AnnouncementStore) Update(ctx context.Context, ann *Announcement) error {
 	query := `
 		UPDATE announcements SET
-			title = ?, content = ?, priority = ?, target_type = ?, target_value = ?,
-			pinned = ?, expires_at = ?, updated_at = ?
-		WHERE id = ? AND tenant_id = ?`
+			title = $1, content = $2, priority = $3, target_type = $4, target_value = $5,
+			pinned = $6, expires_at = $7, updated_at = $8
+		WHERE id = $9 AND tenant_id = $10`
 
 	result, err := s.db.ExecContext(ctx, query,
 		ann.Title, ann.Content, ann.Priority, ann.TargetType, ann.TargetValue,
@@ -120,7 +120,7 @@ func (s *AnnouncementStore) Update(ctx context.Context, ann *Announcement) error
 
 // SoftDelete 软删除公告
 func (s *AnnouncementStore) SoftDelete(ctx context.Context, tenantID, id string) error {
-	query := `UPDATE announcements SET deleted_at = ? WHERE id = ? AND tenant_id = ?`
+	query := `UPDATE announcements SET deleted_at = $1 WHERE id = $2 AND tenant_id = $3`
 	result, err := s.db.ExecContext(ctx, query, Now(), id, tenantID)
 	if err != nil {
 		return err
@@ -136,7 +136,7 @@ func (s *AnnouncementStore) SoftDelete(ctx context.Context, tenantID, id string)
 func (s *AnnouncementStore) MarkRead(ctx context.Context, annID, tenantID, userID string) error {
 	query := `
 		INSERT INTO announcement_reads (id, announcement_id, tenant_id, user_id, read_at)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT(announcement_id, user_id) DO NOTHING`
 
 	_, err := s.db.ExecContext(ctx, query, GenerateID(), annID, tenantID, userID, Now())
@@ -147,11 +147,11 @@ func (s *AnnouncementStore) MarkRead(ctx context.Context, annID, tenantID, userI
 func (s *AnnouncementStore) CountUnreadByUser(ctx context.Context, tenantID, userID string) (int64, error) {
 	query := `
 		SELECT COUNT(*) FROM announcements a
-		LEFT JOIN announcement_reads ar ON a.id = ar.announcement_id AND ar.user_id = ?
-		WHERE a.tenant_id = ? AND a.deleted_at IS NULL
+		LEFT JOIN announcement_reads ar ON a.id = ar.announcement_id AND ar.user_id = $1
+		WHERE a.tenant_id = $2 AND a.deleted_at IS NULL
 			AND a.published_at IS NOT NULL
-			AND (a.expires_at IS NULL OR a.expires_at > ?)
-			AND (a.target_type = 'all' OR (a.target_type = 'user' AND a.target_value = ?))
+			AND (a.expires_at IS NULL OR a.expires_at > $3)
+			AND (a.target_type = 'all' OR (a.target_type = 'user' AND a.target_value = $4))
 			AND ar.id IS NULL`
 
 	var count int64
@@ -177,7 +177,7 @@ func (s *NotificationPreferencesStore) GetByUserID(ctx context.Context, tenantID
 			type_system, type_approval, type_task, type_mention, type_chat,
 			created_at, updated_at
 		FROM notification_preferences
-		WHERE tenant_id = ? AND user_id = ?`
+		WHERE tenant_id = $1 AND user_id = $2`
 
 	pref := &NotificationPreferences{}
 	err := s.db.QueryRowContext(ctx, query, tenantID, userID).Scan(
@@ -204,7 +204,7 @@ func (s *NotificationPreferencesStore) Create(ctx context.Context, pref *Notific
 			channel_in_app, channel_email, channel_push,
 			type_system, type_approval, type_task, type_mention, type_chat,
 			created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`
 
 	_, err := s.db.ExecContext(ctx, query,
 		pref.ID, pref.TenantID, pref.UserID,
@@ -220,11 +220,11 @@ func (s *NotificationPreferencesStore) Create(ctx context.Context, pref *Notific
 func (s *NotificationPreferencesStore) Update(ctx context.Context, pref *NotificationPreferences) error {
 	query := `
 		UPDATE notification_preferences SET
-			do_not_disturb_enabled = ?, dnd_start_time = ?, dnd_end_time = ?, dnd_days = ?,
-			channel_in_app = ?, channel_email = ?, channel_push = ?,
-			type_system = ?, type_approval = ?, type_task = ?, type_mention = ?, type_chat = ?,
-			updated_at = ?
-		WHERE tenant_id = ? AND user_id = ?`
+			do_not_disturb_enabled = $1, dnd_start_time = $2, dnd_end_time = $3, dnd_days = $4,
+			channel_in_app = $5, channel_email = $6, channel_push = $7,
+			type_system = $8, type_approval = $9, type_task = $10, type_mention = $11, type_chat = $12,
+			updated_at = $13
+		WHERE tenant_id = $14 AND user_id = $15`
 
 	result, err := s.db.ExecContext(ctx, query,
 		pref.DoNotDisturbEnabled, pref.DNDStartTime, pref.DNDEndTime, pref.DNDDays,
@@ -278,7 +278,7 @@ func (s *GroupMessageStore) Create(ctx context.Context, msg *GroupMessage) error
 		INSERT INTO group_messages (
 			id, tenant_id, group_id, sender_id, sender_type, sender_name, content,
 			mentions, reply_to, agent_response_id, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	_, err := s.db.ExecContext(ctx, query,
 		msg.ID, msg.TenantID, msg.GroupID, msg.SenderID, msg.SenderType, msg.SenderName,
@@ -293,9 +293,9 @@ func (s *GroupMessageStore) ListByGroup(ctx context.Context, tenantID, groupID s
 		SELECT id, tenant_id, group_id, sender_id, sender_type, sender_name, content,
 			mentions, reply_to, agent_response_id, created_at, updated_at, deleted_at
 		FROM group_messages
-		WHERE tenant_id = ? AND group_id = ? AND deleted_at IS NULL
+		WHERE tenant_id = $1 AND group_id = $2 AND deleted_at IS NULL
 		ORDER BY created_at DESC
-		LIMIT ? OFFSET ?`
+		LIMIT $3 OFFSET $4`
 
 	rows, err := s.db.QueryContext(ctx, query, tenantID, groupID, limit, offset)
 	if err != nil {
@@ -334,7 +334,7 @@ func (s *MessageAuditStore) Create(ctx context.Context, log *MessageAuditLog) er
 		INSERT INTO message_audit_logs (
 			id, tenant_id, action, message_id, sender_id, recipient_id,
 			content, metadata, operator_id, operator_name, created_at, expires_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	_, err := s.db.ExecContext(ctx, query,
 		log.ID, log.TenantID, log.Action, log.MessageID, log.SenderID, log.RecipientID,
@@ -349,9 +349,9 @@ func (s *MessageAuditStore) ListByOperator(ctx context.Context, tenantID, operat
 		SELECT id, tenant_id, action, message_id, sender_id, recipient_id,
 			content, metadata, operator_id, operator_name, created_at, expires_at
 		FROM message_audit_logs
-		WHERE tenant_id = ? AND operator_id = ?
+		WHERE tenant_id = $1 AND operator_id = $2
 		ORDER BY created_at DESC
-		LIMIT ? OFFSET ?`
+		LIMIT $3 OFFSET $4`
 
 	rows, err := s.db.QueryContext(ctx, query, tenantID, operatorID, limit, offset)
 	if err != nil {
@@ -376,7 +376,7 @@ func (s *MessageAuditStore) ListByOperator(ctx context.Context, tenantID, operat
 
 // CleanupExpired 清理过期审计日志
 func (s *MessageAuditStore) CleanupExpired(ctx context.Context) (int64, error) {
-	query := `DELETE FROM message_audit_logs WHERE expires_at < ?`
+	query := `DELETE FROM message_audit_logs WHERE expires_at < $1`
 	result, err := s.db.ExecContext(ctx, query, Now())
 	if err != nil {
 		return 0, err
@@ -389,41 +389,47 @@ func (s *MessageAuditStore) Search(ctx context.Context, tenantID string, req *Au
 	var conditions []string
 	var args []interface{}
 
-	conditions = append(conditions, "tenant_id = ?")
+	conditions = append(conditions, "tenant_id = $1")
 	args = append(args, tenantID)
+	argIndex := 2
 
 	if req.Action != nil {
-		conditions = append(conditions, "action = ?")
+		conditions = append(conditions, fmt.Sprintf("action = $%d", argIndex))
 		args = append(args, *req.Action)
+		argIndex++
 	}
 
 	if req.MessageID != nil {
-		conditions = append(conditions, "message_id = ?")
+		conditions = append(conditions, fmt.Sprintf("message_id = $%d", argIndex))
 		args = append(args, *req.MessageID)
+		argIndex++
 	}
 
 	if req.OperatorID != nil {
-		conditions = append(conditions, "operator_id = ?")
+		conditions = append(conditions, fmt.Sprintf("operator_id = $%d", argIndex))
 		args = append(args, *req.OperatorID)
+		argIndex++
 	}
 
 	if req.StartDate != nil {
-		conditions = append(conditions, "created_at >= ?")
+		conditions = append(conditions, fmt.Sprintf("created_at >= $%d", argIndex))
 		args = append(args, *req.StartDate)
+		argIndex++
 	}
 
 	if req.EndDate != nil {
-		conditions = append(conditions, "created_at <= ?")
+		conditions = append(conditions, fmt.Sprintf("created_at <= $%d", argIndex))
 		args = append(args, *req.EndDate)
+		argIndex++
 	}
 
-	query := `
+	query := fmt.Sprintf(`
 		SELECT id, tenant_id, action, message_id, sender_id, recipient_id,
 			content, metadata, operator_id, operator_name, created_at, expires_at
 		FROM message_audit_logs
-		WHERE ` + strings.Join(conditions, " AND ") + `
+		WHERE %s
 		ORDER BY created_at DESC
-		LIMIT ? OFFSET ?`
+		LIMIT $%d OFFSET $%d`, strings.Join(conditions, " AND "), argIndex, argIndex+1)
 
 	args = append(args, req.PageSize, req.Offset)
 
