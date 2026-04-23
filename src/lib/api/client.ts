@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import {
   applyRequestInterceptors,
   parseResponseBody,
@@ -196,7 +196,10 @@ export class ApiClient {
       timeout: this.config.timeout,
     }
 
-    const response = await invoke<HttpResponse>('http_request', { request })
+    const response = await safeInvoke<HttpResponse>('http_request', { request })
+    if (response === null) {
+      throw { code: 'ERR_INVOKE_FAILED', message: 'http_request 调用失败', success: false }
+    }
     const result = parseResponseBody<T>(response)
 
     if (result.success) {
@@ -247,6 +250,6 @@ export class ApiClient {
       idempotencyKey: config.idempotencyKey,
     }
 
-    await invoke<string>('enqueue_request', { request: queued })
+    await safeInvoke<string>('enqueue_request', { request: queued })
   }
 }

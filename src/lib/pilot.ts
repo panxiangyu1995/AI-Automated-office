@@ -3,7 +3,7 @@
  * 部门工具绑定和执行 API
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 // ==================== Types ====================
 
@@ -41,7 +41,8 @@ export async function bindPilotTools(
   department: PilotDepartment,
   tools: string[]
 ): Promise<ToolBinding[]> {
-  return invoke('bind_pilot_tools', { department, tools })
+  const result = await safeInvoke<ToolBinding[]>('bind_pilot_tools', { department, tools })
+  return result ?? []
 }
 
 /**
@@ -52,14 +53,16 @@ export async function executePilot(
   action: string,
   params?: Record<string, unknown>
 ): Promise<PilotResult> {
-  return invoke('execute_pilot', { department, action, params })
+  const result = await safeInvoke<PilotResult>('execute_pilot', { department, action, params })
+  return result ?? { success: false, department, action, error: 'execute_pilot 调用失败', duration_ms: 0 }
 }
 
 /**
  * Get all pilot bindings
  */
 export async function getPilotBindings(): Promise<ToolBinding[]> {
-  return invoke('get_pilot_bindings')
+  const result = await safeInvoke<ToolBinding[]>('get_pilot_bindings')
+  return result ?? []
 }
 
 /**
@@ -68,5 +71,5 @@ export async function getPilotBindings(): Promise<ToolBinding[]> {
 export async function releasePilotBindings(
   department: PilotDepartment
 ): Promise<void> {
-  return invoke('release_pilot_bindings', { department })
+  await safeInvoke('release_pilot_bindings', { department })
 }

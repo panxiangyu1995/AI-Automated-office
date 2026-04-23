@@ -6,9 +6,9 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { eventBus } from '@/hooks/eventBus';
+import { safeInvoke } from '@/lib/tauri';
 
 // Types
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
@@ -88,25 +88,25 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
     setError(null);
     try {
       // 从后端获取联系人列表
-      const contactsResult = await invoke<AgentContact[]>('get_agent_contacts', {
+      const contactsResult = await safeInvoke<AgentContact[]>('get_agent_contacts', {
         agentId: currentAgentId,
       });
-      setContacts(contactsResult);
+      setContacts(contactsResult ?? []);
 
       // 从后端获取消息列表
-      const messagesResult = await invoke<AgentMessage[]>('get_agent_messages', {
+      const messagesResult = await safeInvoke<AgentMessage[]>('get_agent_messages', {
         agentId: currentAgentId,
         limit: 100,
-      });
+      }) ?? [];
       setMessages(messagesResult.map(m => ({
         ...m,
         timestamp: new Date(m.timestamp),
       })));
       
       // 发布初始化完成事件
-      eventBus.publish('agent:intercom:initialized', { 
+      eventBus.publish('agent:intercom:initialized', {
         agentId: currentAgentId,
-        contactsCount: contactsResult.length,
+        contactsCount: (contactsResult ?? []).length,
         messagesCount: messagesResult.length,
       });
     } catch (err) {
@@ -125,11 +125,14 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   ): Promise<AgentMessage | null> => {
     setError(null);
     try {
-      const result = await invoke<AgentMessage>('send_agent_message', {
+      const result = await safeInvoke<AgentMessage>('send_agent_message', {
         senderId: currentAgentId,
         receiverId,
         content,
       });
+      if (!result) {
+        throw new Error('send_agent_message 调用失败');
+      }
 
       const newMessage: AgentMessage = {
         id: result.id,
@@ -196,7 +199,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
     status: MessageStatus
   ) => {
     try {
-      await invoke('update_agent_message_status', {
+      await safeInvoke('update_agent_message_status', {
         message_id: messageId,
         status,
       });
@@ -216,7 +219,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   ): Promise<boolean> => {
     setError(null);
     try {
-      await invoke<AgentMessage>('confirm_agent_message', {
+      await safeInvoke<AgentMessage>('confirm_agent_message', {
         messageId,
         approved,
       });
@@ -254,7 +257,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
         maxMessageRate: permission.maxMessageRate ?? 60,
       };
 
-      await invoke('set_agent_permission', {
+      await safeInvoke('set_agent_permission', {
         agent_id: agentId,
         permission: fullPermission,
       });
@@ -276,7 +279,7 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   const recallMessage = useCallback(async (messageId: string): Promise<boolean> => {
     setError(null);
     try {
-      await invoke('recall_agent_message', {
+      await safeInvoke('recall_agent_message', {
         message_id: messageId,
         sender_id: currentAgentId,
       });
@@ -295,10 +298,10 @@ export function useAgentIntercom(currentAgentId: string = 'current-agent') {
   // 获取Agent权限
   const getPermission = useCallback(async (agentId: string): Promise<AgentPermission | null> => {
     try {
-      const result = await invoke<AgentPermission>('get_agent_permission', {
+      const result = await safeInvoke<AgentPermission>('get_agent_permission', {
         agentId,
       });
-      return result;
+      return result ?? null;
     } catch (err) {
       console.error('获取Agent权限失败:', err);
       return null;
