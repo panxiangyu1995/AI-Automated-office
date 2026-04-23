@@ -2,7 +2,7 @@
  * Warehouse 模块 API
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type {
   InboundOrder,
   OutboundOrder,
@@ -21,78 +21,62 @@ import type {
 } from '../types/inventory'
 
 export async function listInbounds(): Promise<InboundListItem[]> {
-  return invoke('warehouse_list_inbounds')
+  const result = await safeInvoke<InboundListItem[]>('warehouse_list_inbounds')
+  return result ?? []
 }
 export async function getInbound(id: string): Promise<InboundOrder> {
-  return invoke('warehouse_get_inbound', { id })
+  const result = await safeInvoke<InboundOrder>('warehouse_get_inbound', { id })
+  return result ?? ({} as InboundOrder)
 }
 export async function createInbound(request: CreateInboundRequest): Promise<InboundOrder> {
-  return invoke('warehouse_create_inbound', { request })
+  const result = await safeInvoke<InboundOrder>('warehouse_create_inbound', { request })
+  return result ?? ({} as InboundOrder)
 }
 export async function listOutbounds(): Promise<OutboundListItem[]> {
-  return invoke('warehouse_list_outbounds')
+  const result = await safeInvoke<OutboundListItem[]>('warehouse_list_outbounds')
+  return result ?? []
 }
 export async function getOutbound(id: string): Promise<OutboundOrder> {
-  return invoke('warehouse_get_outbound', { id })
+  const result = await safeInvoke<OutboundOrder>('warehouse_get_outbound', { id })
+  return result ?? ({} as OutboundOrder)
 }
 export async function createOutbound(request: CreateOutboundRequest): Promise<OutboundOrder> {
-  return invoke('warehouse_create_outbound', { request })
+  const result = await safeInvoke<OutboundOrder>('warehouse_create_outbound', { request })
+  return result ?? ({} as OutboundOrder)
 }
 export async function listInventory(): Promise<InventoryListItem[]> {
-  return invoke('warehouse_list_inventory')
+  const result = await safeInvoke<InventoryListItem[]>('warehouse_list_inventory')
+  return result ?? []
 }
 export async function getWarehouseStats(): Promise<WarehouseStats> {
-  return invoke('warehouse_get_stats')
+  const result = await safeInvoke<WarehouseStats>('warehouse_get_stats')
+  return result ?? ({} as WarehouseStats)
 }
 
 export async function listLocations(): Promise<Location[]> {
-  try {
-    return await invoke('warehouse_list_locations')
-  } catch {
-    return []
-  }
+  const result = await safeInvoke<Location[]>('warehouse_list_locations')
+  return result ?? []
 }
 export async function listWarnings(): Promise<ListWarningsResponse> {
-  try {
-    return await invoke('warehouse_list_warnings', { request: { page: 1, pageSize: 100 } })
-  } catch {
-    return {
-      items: [],
-      total: 0,
-      page: 1,
-      pageSize: 100,
-      summary: { low_count: 0, high_count: 0, expiring_count: 0 },
-    }
-  }
+  const result = await safeInvoke<ListWarningsResponse>('warehouse_list_warnings', { request: { page: 1, pageSize: 100 } })
+  return result ?? ({} as ListWarningsResponse)
 }
 export async function markWarningRead(id: string): Promise<void> {
-  return invoke('warehouse_mark_warning_read', { id })
+  await safeInvoke('warehouse_mark_warning_read', { id })
 }
 export async function resolveWarning(id: string): Promise<void> {
-  return invoke('warehouse_resolve_warning', { id })
+  await safeInvoke('warehouse_resolve_warning', { id })
 }
 export async function listMovements(request?: {
   type?: string
   keyword?: string
 }): Promise<ListMovementsResponse> {
-  try {
-    return await invoke('warehouse_list_movements', { request: request ?? {} })
-  } catch {
-    return {
-      items: [],
-      total: 0,
-      page: 1,
-      pageSize: 100,
-      summary: { total_inbound: 0, total_outbound: 0, net_change: 0 },
-    }
-  }
+  const result = await safeInvoke<ListMovementsResponse>('warehouse_list_movements', { request: request ?? {} })
+  return result ?? ({} as ListMovementsResponse)
 }
 export async function listLogistics(): Promise<LogisticsRecord[]> {
-  try {
-    return await invoke('warehouse_list_logistics')
-  } catch {
-    return []
-  }
+  const result = await safeInvoke<LogisticsRecord[]>('warehouse_list_logistics')
+  return result ?? []
 }
 export async function createLocation(request: {
   code: string
@@ -100,13 +84,15 @@ export async function createLocation(request: {
   zone: string
   capacity?: number
 }): Promise<Location> {
-  return invoke('warehouse_create_location', { request })
+  const result = await safeInvoke<Location>('warehouse_create_location', { request })
+  return result ?? ({} as Location)
 }
 export async function updateLocation(
   id: string,
   request: { code?: string; name?: string; zone?: string; status?: string }
 ): Promise<Location> {
-  return invoke('warehouse_update_location', { id, request })
+  const result = await safeInvoke<Location>('warehouse_update_location', { id, request })
+  return result ?? ({} as Location)
 }
 
 export const warehouseApi = {

@@ -3,7 +3,7 @@
  * Task 148 - Approval审批中心模块
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type {
   ApprovalFlow,
   FlowListItem,
@@ -19,53 +19,64 @@ import type {
 // ==================== 流程 API ====================
 
 export async function createFlow(request: CreateFlowRequest, createdBy: string): Promise<ApprovalFlow> {
-  return invoke('approval_create_flow', { request, createdBy })
+  const result = await safeInvoke<ApprovalFlow>('approval_create_flow', { request, createdBy })
+  return result ?? ({} as ApprovalFlow)
 }
 
 export async function listFlows(): Promise<FlowListItem[]> {
-  return invoke('approval_list_flows')
+  const result = await safeInvoke<FlowListItem[]>('approval_list_flows')
+  return result ?? []
 }
 
 export async function getFlow(id: string): Promise<ApprovalFlow> {
-  return invoke('approval_get_flow', { id })
+  const result = await safeInvoke<ApprovalFlow>('approval_get_flow', { id })
+  return result ?? ({} as ApprovalFlow)
 }
 
 export async function updateFlow(id: string, request: UpdateFlowRequest): Promise<ApprovalFlow> {
-  return invoke('approval_update_flow', { id, request })
+  const result = await safeInvoke<ApprovalFlow>('approval_update_flow', { id, request })
+  return result ?? ({} as ApprovalFlow)
 }
 
 export async function deleteFlow(id: string): Promise<void> {
-  return invoke('approval_delete_flow', { id })
+  await safeInvoke('approval_delete_flow', { id })
 }
 
 // ==================== 记录 API ====================
 
 export async function createRecord(request: CreateRecordRequest): Promise<ApprovalRecord> {
-  return invoke('approval_create_record', { request })
+  const result = await safeInvoke<ApprovalRecord>('approval_create_record', { request })
+  return result ?? ({} as ApprovalRecord)
 }
 
 export async function listRecords(status?: string): Promise<RecordListItem[]> {
-  return invoke('approval_list_records', { status })
+  const result = await safeInvoke<RecordListItem[]>('approval_list_records', { status })
+  return result ?? []
 }
 
 export async function getRecord(id: string): Promise<ApprovalRecord> {
-  return invoke('approval_get_record', { id })
+  const result = await safeInvoke<ApprovalRecord>('approval_get_record', { id })
+  return result ?? ({} as ApprovalRecord)
 }
 
 export async function approveRecord(id: string, request: ApproveRequest): Promise<ApprovalRecord> {
-  return invoke('approval_approve', { id, request })
+  const result = await safeInvoke<ApprovalRecord>('approval_approve', { id, request })
+  return result ?? ({} as ApprovalRecord)
 }
 
 export async function rejectRecord(id: string, request: ApproveRequest): Promise<ApprovalRecord> {
-  return invoke('approval_reject', { id, request })
+  const result = await safeInvoke<ApprovalRecord>('approval_reject', { id, request })
+  return result ?? ({} as ApprovalRecord)
 }
 
 export async function cancelRecord(id: string): Promise<ApprovalRecord> {
-  return invoke('approval_cancel', { id })
+  const result = await safeInvoke<ApprovalRecord>('approval_cancel', { id })
+  return result ?? ({} as ApprovalRecord)
 }
 
 export async function getApprovalStats(): Promise<ApprovalStats> {
-  return invoke('approval_get_stats')
+  const result = await safeInvoke<ApprovalStats>('approval_get_stats')
+  return result ?? ({} as ApprovalStats)
 }
 
 // ==================== API 汇总导出 ====================

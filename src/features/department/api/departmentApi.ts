@@ -3,7 +3,7 @@
  * Task 146 - 部门模块基础框架
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type {
   DepartmentPackage,
   DepartmentListItem,
@@ -22,21 +22,24 @@ import type {
 export async function createDepartment(
   request: CreateDepartmentRequest
 ): Promise<DepartmentPackage> {
-  return invoke('department_create', { request })
+  const result = await safeInvoke<DepartmentPackage>('department_create', { request })
+  return result ?? ({} as DepartmentPackage)
 }
 
 /**
  * 获取部门列表
  */
 export async function listDepartments(): Promise<DepartmentListItem[]> {
-  return invoke('department_list')
+  const result = await safeInvoke<DepartmentListItem[]>('department_list')
+  return result ?? []
 }
 
 /**
  * 获取部门详情
  */
 export async function getDepartment(id: string): Promise<DepartmentDetailResponse> {
-  return invoke('department_get', { id })
+  const result = await safeInvoke<DepartmentDetailResponse>('department_get', { id })
+  return result ?? ({} as DepartmentDetailResponse)
 }
 
 /**
@@ -46,28 +49,31 @@ export async function updateDepartment(
   id: string,
   request: UpdateDepartmentRequest
 ): Promise<DepartmentPackage> {
-  return invoke('department_update', { id, request })
+  const result = await safeInvoke<DepartmentPackage>('department_update', { id, request })
+  return result ?? ({} as DepartmentPackage)
 }
 
 /**
  * 删除部门
  */
 export async function deleteDepartment(id: string): Promise<void> {
-  return invoke('department_delete', { id })
+  await safeInvoke('department_delete', { id })
 }
 
 /**
  * 启用部门
  */
 export async function enableDepartment(id: string): Promise<DepartmentPackage> {
-  return invoke('department_enable', { id })
+  const result = await safeInvoke<DepartmentPackage>('department_enable', { id })
+  return result ?? ({} as DepartmentPackage)
 }
 
 /**
  * 禁用部门
  */
 export async function disableDepartment(id: string): Promise<DepartmentPackage> {
-  return invoke('department_disable', { id })
+  const result = await safeInvoke<DepartmentPackage>('department_disable', { id })
+  return result ?? ({} as DepartmentPackage)
 }
 
 /**
@@ -76,28 +82,31 @@ export async function disableDepartment(id: string): Promise<DepartmentPackage> 
 export async function getDepartmentCapabilities(
   id: string
 ): Promise<DepartmentPackage['capabilities']> {
-  return invoke('department_capabilities', { id })
+  const result = await safeInvoke<DepartmentPackage['capabilities']>('department_capabilities', { id })
+  return result ?? []
 }
 
 /**
  * 加载部门
  */
 export async function loadDepartment(id: string): Promise<DepartmentPackage> {
-  return invoke('department_load', { id })
+  const result = await safeInvoke<DepartmentPackage>('department_load', { id })
+  return result ?? ({} as DepartmentPackage)
 }
 
 /**
  * 卸载部门
  */
 export async function unloadDepartment(id: string): Promise<void> {
-  return invoke('department_unload', { id })
+  await safeInvoke('department_unload', { id })
 }
 
 /**
  * 获取已加载的部门列表
  */
 export async function listLoadedDepartments(): Promise<DepartmentPackage[]> {
-  return invoke('department_loaded_list')
+  const result = await safeInvoke<DepartmentPackage[]>('department_loaded_list')
+  return result ?? []
 }
 
 /**
@@ -106,7 +115,8 @@ export async function listLoadedDepartments(): Promise<DepartmentPackage[]> {
 export async function getDepartmentLoadState(
   id: string
 ): Promise<DepartmentLoadState | null> {
-  return invoke('department_load_state', { id })
+  const result = await safeInvoke<DepartmentLoadState | null>('department_load_state', { id })
+  return result ?? null
 }
 
 /**
@@ -118,7 +128,8 @@ export async function sendDepartmentMessage(
   messageType: string,
   payload: unknown
 ): Promise<MessageResponse> {
-  return invoke('department_send_message', { from, to, messageType, payload })
+  const result = await safeInvoke<MessageResponse>('department_send_message', { from, to, messageType, payload })
+  return result ?? ({} as MessageResponse)
 }
 
 /**
@@ -127,7 +138,8 @@ export async function sendDepartmentMessage(
 export async function getMessageHistory(
   limit?: number
 ): Promise<DepartmentMessage[]> {
-  return invoke('department_message_history', { limit })
+  const result = await safeInvoke<DepartmentMessage[]>('department_message_history', { limit })
+  return result ?? []
 }
 
 /**
@@ -137,17 +149,19 @@ export async function getDepartmentMessageHistory(
   department: string,
   limit?: number
 ): Promise<DepartmentMessage[]> {
-  return invoke('department_message_history_by_department', {
+  const result = await safeInvoke<DepartmentMessage[]>('department_message_history_by_department', {
     department,
     limit,
   })
+  return result ?? []
 }
 
 /**
  * 获取部门统计信息
  */
 export async function getDepartmentStats(): Promise<DepartmentStats> {
-  return invoke('department_stats')
+  const result = await safeInvoke<DepartmentStats>('department_stats')
+  return result ?? ({} as DepartmentStats)
 }
 
 /**

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type {
   KnowledgeBase,
   KnowledgeBaseSummary,
@@ -78,7 +78,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<PaginatedResult<KnowledgeBaseSummary>>(
+      const result = await safeInvoke<PaginatedResult<KnowledgeBaseSummary> | null>(
         'knowledge_base_list',
         {
           user: getUserContext(),
@@ -86,9 +86,11 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
           filter,
         }
       );
-      setKnowledgeBases(result.items);
-      setTotalCount(result.total);
-      setPaginationState(paginationParams);
+      if (result) {
+        setKnowledgeBases(result.items);
+        setTotalCount(result.total);
+        setPaginationState(paginationParams);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -101,7 +103,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeBase | null>('knowledge_base_get', {
+      const result = await safeInvoke<KnowledgeBase | null>('knowledge_base_get', {
         user: getUserContext(),
         id,
       });
@@ -122,7 +124,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeBase>('knowledge_base_create', {
+      const result = await safeInvoke<KnowledgeBase>('knowledge_base_create', {
         user: getUserContext(),
         request,
       });
@@ -145,7 +147,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeBase | null>('knowledge_base_update', {
+      const result = await safeInvoke<KnowledgeBase | null>('knowledge_base_update', {
         user: getUserContext(),
         id,
         request,
@@ -169,7 +171,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<boolean>('knowledge_base_delete', {
+      const result = await safeInvoke<boolean>('knowledge_base_delete', {
         user: getUserContext(),
         id,
       });
@@ -178,7 +180,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
         // Refresh list
         await fetchKnowledgeBases();
       }
-      return result;
+      return result ?? false;
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return false;
@@ -192,7 +194,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeMember[] | null>('knowledge_member_list', {
+      const result = await safeInvoke<KnowledgeMember[] | null>('knowledge_member_list', {
         user: getUserContext(),
         knowledgeBaseId,
       });
@@ -217,7 +219,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      await invoke('knowledge_member_add', {
+      await safeInvoke('knowledge_member_add', {
         user: getUserContext(),
         knowledgeBaseId,
         targetUserId: userId,
@@ -243,7 +245,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<boolean>('knowledge_member_remove', {
+      const result = await safeInvoke<boolean>('knowledge_member_remove', {
         user: getUserContext(),
         knowledgeBaseId,
         targetUserId: userId,
@@ -251,7 +253,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
       if (result) {
         await fetchMembers(knowledgeBaseId);
       }
-      return result;
+      return result ?? false;
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return false;
@@ -269,7 +271,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<boolean>('knowledge_member_update', {
+      const result = await safeInvoke<boolean>('knowledge_member_update', {
         user: getUserContext(),
         knowledgeBaseId,
         targetUserId: userId,
@@ -278,7 +280,7 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
       if (result) {
         await fetchMembers(knowledgeBaseId);
       }
-      return result;
+      return result ?? false;
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return false;
@@ -293,11 +295,12 @@ export function useKnowledgeBase(): UseKnowledgeBaseReturn {
     requiredLevel: AccessLevel
   ): Promise<PermissionCheckResult> => {
     try {
-      return await invoke<PermissionCheckResult>('knowledge_check_permission', {
+      const result = await safeInvoke<PermissionCheckResult>('knowledge_check_permission', {
         user: getUserContext(),
         knowledgeBaseId,
         requiredLevel,
       });
+      return result ?? { allowed: false, reason: 'Permission check failed' };
     } catch (err) {
       return {
         allowed: false,

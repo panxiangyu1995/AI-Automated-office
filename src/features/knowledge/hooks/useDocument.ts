@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type {
   KnowledgeDocument,
   DocumentSummary,
@@ -69,7 +69,7 @@ export function useDocument(): UseDocumentReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<PaginatedResult<DocumentSummary> | null>(
+      const result = await safeInvoke<PaginatedResult<DocumentSummary> | null>(
         'knowledge_document_list',
         {
           userId: 'current_user',
@@ -96,7 +96,7 @@ export function useDocument(): UseDocumentReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeDocument | null>('knowledge_document_get', {
+      const result = await safeInvoke<KnowledgeDocument | null>('knowledge_document_get', {
         userId: 'current_user',
         tenantId: 'current_tenant',
         id,
@@ -118,7 +118,7 @@ export function useDocument(): UseDocumentReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeDocument | null>('knowledge_document_upload', {
+      const result = await safeInvoke<KnowledgeDocument | null>('knowledge_document_upload', {
         userId: 'current_user',
         tenantId: 'current_tenant',
         request,
@@ -140,7 +140,7 @@ export function useDocument(): UseDocumentReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<KnowledgeDocument | null>('knowledge_document_update', {
+      const result = await safeInvoke<KnowledgeDocument | null>('knowledge_document_update', {
         userId: 'current_user',
         tenantId: 'current_tenant',
         id,
@@ -163,7 +163,7 @@ export function useDocument(): UseDocumentReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<boolean>('knowledge_document_delete', {
+      const result = await safeInvoke<boolean>('knowledge_document_delete', {
         userId: 'current_user',
         tenantId: 'current_tenant',
         id,
@@ -171,7 +171,7 @@ export function useDocument(): UseDocumentReturn {
       if (result) {
         setCurrentDocument(null);
       }
-      return result;
+      return result ?? false;
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return false;
@@ -188,13 +188,13 @@ export function useDocument(): UseDocumentReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await invoke<string[]>('knowledge_document_batch_update_status', {
+      const result = await safeInvoke<string[]>('knowledge_document_batch_update_status', {
         userId: 'current_user',
         tenantId: 'current_tenant',
         ids,
         status,
       });
-      return result;
+      return result ?? [];
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return [];

@@ -2,47 +2,56 @@
  * Sales 模块 API
  */
 
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type { Customer, Quote, Contract, CustomerListItem, QuoteListItem, ContractListItem, SalesStats, CreateCustomerRequest } from '../types/sales.types'
 
 export async function createCustomer(request: CreateCustomerRequest): Promise<Customer> {
-  return invoke('sales_create_customer', { request })
+  const result = await safeInvoke<Customer>('sales_create_customer', { request })
+  return result ?? ({} as Customer)
 }
 
 export async function listCustomers(): Promise<CustomerListItem[]> {
-  return invoke('sales_list_customers')
+  const result = await safeInvoke<CustomerListItem[]>('sales_list_customers')
+  return result ?? []
 }
 
 export async function getCustomer(id: string): Promise<Customer> {
-  return invoke('sales_get_customer', { id })
+  const result = await safeInvoke<Customer>('sales_get_customer', { id })
+  return result ?? ({} as Customer)
 }
 
 export async function updateCustomer(id: string, request: CreateCustomerRequest): Promise<Customer> {
-  return invoke('sales_update_customer', { id, request })
+  const result = await safeInvoke<Customer>('sales_update_customer', { id, request })
+  return result ?? ({} as Customer)
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
-  return invoke('sales_delete_customer', { id })
+  await safeInvoke('sales_delete_customer', { id })
 }
 
 export async function listQuotes(): Promise<QuoteListItem[]> {
-  return invoke('sales_list_quotes')
+  const result = await safeInvoke<QuoteListItem[]>('sales_list_quotes')
+  return result ?? []
 }
 
 export async function getQuote(id: string): Promise<Quote> {
-  return invoke('sales_get_quote', { id })
+  const result = await safeInvoke<Quote>('sales_get_quote', { id })
+  return result ?? ({} as Quote)
 }
 
 export async function listContracts(): Promise<ContractListItem[]> {
-  return invoke('sales_list_contracts')
+  const result = await safeInvoke<ContractListItem[]>('sales_list_contracts')
+  return result ?? []
 }
 
 export async function getContract(id: string): Promise<Contract> {
-  return invoke('sales_get_contract', { id })
+  const result = await safeInvoke<Contract>('sales_get_contract', { id })
+  return result ?? ({} as Contract)
 }
 
 export async function getSalesStats(): Promise<SalesStats> {
-  return invoke('sales_get_stats')
+  const result = await safeInvoke<SalesStats>('sales_get_stats')
+  return result ?? ({} as SalesStats)
 }
 
 export const salesApi = { createCustomer, listCustomers, getCustomer, updateCustomer, deleteCustomer, listQuotes, getQuote, listContracts, getContract, getStats: getSalesStats }

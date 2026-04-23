@@ -1,6 +1,6 @@
 //! Workspace 模块 API 封装
 
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type {
   WorkspaceLayout,
   WorkspaceTodo,
@@ -18,47 +18,56 @@ import type {
 // ==================== 布局 API ====================
 
 export async function createLayout(request: CreateLayoutRequest, userId?: string): Promise<WorkspaceLayout> {
-  return invoke('workspace_create_layout', { request, userId });
+  const result = await safeInvoke<WorkspaceLayout>('workspace_create_layout', { request, userId })
+  return result ?? ({} as WorkspaceLayout)
 }
 
 export async function getLayout(id: string): Promise<WorkspaceLayout> {
-  return invoke('workspace_get_layout', { id });
+  const result = await safeInvoke<WorkspaceLayout>('workspace_get_layout', { id })
+  return result ?? ({} as WorkspaceLayout)
 }
 
 export async function listLayouts(userId?: string): Promise<LayoutListItem[]> {
-  return invoke('workspace_list_layouts', { userId });
+  const result = await safeInvoke<LayoutListItem[]>('workspace_list_layouts', { userId })
+  return result ?? []
 }
 
 export async function updateLayout(id: string, request: UpdateLayoutRequest): Promise<WorkspaceLayout> {
-  return invoke('workspace_update_layout', { id, request });
+  const result = await safeInvoke<WorkspaceLayout>('workspace_update_layout', { id, request })
+  return result ?? ({} as WorkspaceLayout)
 }
 
 export async function deleteLayout(id: string): Promise<void> {
-  return invoke('workspace_delete_layout', { id });
+  await safeInvoke('workspace_delete_layout', { id })
 }
 
 // ==================== 日清任务 API ====================
 
 export async function createTodo(request: CreateTodoRequest, userId?: string): Promise<WorkspaceTodo> {
-  return invoke('workspace_create_todo', { request, userId });
+  const result = await safeInvoke<WorkspaceTodo>('workspace_create_todo', { request, userId })
+  return result ?? ({} as WorkspaceTodo)
 }
 
 export async function getTodo(id: string): Promise<WorkspaceTodo> {
-  return invoke('workspace_get_todo', { id });
+  const result = await safeInvoke<WorkspaceTodo>('workspace_get_todo', { id })
+  return result ?? ({} as WorkspaceTodo)
 }
 
 export async function listTodos(params?: QueryTodosParams, userId?: string): Promise<PagedResult<TodoListItem>> {
-  return invoke('workspace_list_todos', { params, userId });
+  const result = await safeInvoke<PagedResult<TodoListItem>>('workspace_list_todos', { params, userId })
+  return result ?? ({} as PagedResult<TodoListItem>)
 }
 
 export async function updateTodo(id: string, request: UpdateTodoRequest): Promise<WorkspaceTodo> {
-  return invoke('workspace_update_todo', { id, request });
+  const result = await safeInvoke<WorkspaceTodo>('workspace_update_todo', { id, request })
+  return result ?? ({} as WorkspaceTodo)
 }
 
 export async function deleteTodo(id: string): Promise<void> {
-  return invoke('workspace_delete_todo', { id });
+  await safeInvoke('workspace_delete_todo', { id })
 }
 
 export async function getTaskAggregations(userId?: string): Promise<TaskAggregation[]> {
-  return invoke('workspace_get_task_aggregations', { userId });
+  const result = await safeInvoke<TaskAggregation[]>('workspace_get_task_aggregations', { userId })
+  return result ?? []
 }
