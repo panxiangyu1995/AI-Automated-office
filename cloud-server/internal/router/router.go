@@ -123,8 +123,9 @@ func NewRouter(cfg config.Config, log *zap.Logger, sqlDB *sql.DB) *gin.Engine {
 		// 需要认证的路由组
 		protected := v1.Group("")
 		protected.Use(middleware.RateLimitMiddleware(ipLimiter))
-		protected.Use(middleware.TenantMiddleware(sqlDB, log))
+		// AuthMiddleware 在 TenantMiddleware 之前执行，以确保在验证用户身份后能获取 tenant_id
 		protected.Use(middleware.AuthMiddleware(sqlDB, cfg.JWT, log))
+		protected.Use(middleware.TenantMiddleware(sqlDB, log))
 		protected.Use(middleware.PermissionMiddleware(
 			permissionMod.PermissionCalculator,
 			permissionMod.OverrideService,

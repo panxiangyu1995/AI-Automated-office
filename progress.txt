@@ -1,4 +1,4 @@
-## 2026-04-23 - E2E 测试：数据库已连接，继续完整测试
+## 2026-04-23 - E2E 测试：关键修复完成，API 大部分可用
 
 ### 已验证功能
 - [x] VSCode 四栏布局 (agent-browser 测试通过)
@@ -10,10 +10,43 @@
 - [x] 用户注册 API
 - [x] 用户登录 API (返回有效 JWT token)
 - [x] 健康检查 API (/health, /liveness, /readiness)
+- [x] 部门管理 API (CRUD) - 已修复并验证
+- [x] 消息通知系统 API - 已验证
+- [x] 公告通知系统 API - 已验证
+- [x] 用户管理 API (List) - 已验证
+- [x] 角色管理 API (List) - 已修复并验证
+
+### API 测试结果 (2026-04-23 14:59)
+```
+POST /auth/login          ✅ 正常
+POST /auth/register       ✅ 正常
+GET  /admin/departments   ✅ 正常 (需要 admin 角色)
+POST /admin/departments   ✅ 正常
+PUT  /admin/departments/:id ✅ 正常
+GET  /admin/users         ✅ 正常
+GET  /admin/roles        ✅ 正常 (修复映射后)
+GET  /messages            ✅ 正常
+GET  /announcements       ✅ 正常
+GET  /admin/positions     ❌ PERMISSION_DENIED (hr_position_read 权限不存在)
+```
+
+### 修复的问题
+
+#### 1. TenantMiddleware 与 AuthMiddleware 执行顺序 ✅ 已修复
+- **文件**: `cloud-server/internal/router/router.go`
+- **问题**: TenantMiddleware 在 AuthMiddleware 之前执行，导致所有受保护 API 返回 TENANT_REQUIRED
+- **修复**: 调整中间件顺序，AuthMiddleware 先执行以获取 tenant_id
+
+#### 2. 角色 API 权限映射缺失 ✅ 已修复
+- **文件**: `cloud-server/internal/middleware/permission.go`
+- **问题**: `/api/v1/admin/roles` 路由缺少资源映射，导致使用默认解析 `admin.roles`，但数据库权限是 `admin_role_read`
+- **修复**: 添加 `"/api/v1/admin/roles": "admin.role"` 映射
+
+#### 3. 其他待修复问题
+- Positions API 缺少 `hr_position_read` 权限（数据库种子数据问题）
+- 部分权限码格式不一致（冒号 vs 下划线），但系统能正常工作
 
 ### 待测试功能
-- [ ] 部门管理 API (CRUD)
-- [ ] 消息通知系统
 - [ ] AI Agent 对话 (需要 Tauri 桌面环境)
 - [ ] 工作流审批
 
@@ -21,90 +54,114 @@
 - PostgreSQL 已配置 trust 认证 (开发模式)
 - JWT token 认证正常
 - 前端 Tauri API 需要 Tauri 桌面环境才能完全测试
+- 服务器端口: 3000
 
 ---
 
-## 2026-04-23 - E2E 测试：agent-browser 界面验证
+## 2026-04-23 - E2E 测试：部门 CRUD + 消息通知系统修复完成
 
-### 测试方法
-- 使用 agent-browser CLI 进行浏览器自动化测试
-- 启动 Vite 开发服务器 (port 5174)
-- 截图和快照验证 UI 功能
+### 已验证功能
+- [x] VSCode 四栏布局 (agent-browser 测试通过)
+- [x] 顶部菜单栏导航
+- [x] 侧边栏导航（仪表盘、人事部、财务部，销售部等）
+- [x] 前端代码修复 (动态 import safeInvoke)
+- [x] 云端服务 API 路由注册完整 (100+ endpoints)
+- [x] 数据库连接成功 (PostgreSQL trust 认证)
+- [x] 用户注册 API
+- [x] 用户登录 API (返回有效 JWT token)
+- [x] 健康检查 API (/health, /liveness, /readiness)
+- [x] 部门管理 API (CRUD) - 已修复
+- [x] 消息通知系统 API - 已修复
+- [x] 公告通知系统 API - 已修复
 
-### 测试结果：✅ 通过
+### 修复的问题
 
-#### 1. 布局验证
-- [x] VSCode 四栏布局正常显示
-- [x] 顶部菜单栏（文件、编辑、视图、助手、插件、工具、硬件、帮助、账号菜单）
-- [x] 侧边栏导航（仪表盘、人事部、财务部、销售部、审批中心、售后服务、仓储部、知识库、账号、设置）
-- [x] 工作区面板（资源、文件管理、数据看板、文档库、最近文件）
-- [x] AI 对话面板（输入框、发送按钮、语音输入、候选改动清单、AI建议）
+#### 1. department_create/update/delete 权限缺失
+- **问题**：数据库 migration 009 缺少 department_create/update/delete 权限定义
+- **修复**：直接 SQL 插入缺失权限并分配给 admin 角色
 
-#### 2. 导航功能
-- [x] 点击人事部按钮正常响应
-- [x] 侧边栏收起/展开按钮可用
-- [x] 搜索框可输入
+#### 2. ExistsByCode 空指针问题
+- **文件**：`department_repo_impl.go`
+- **问题**：excludeID="" 时传入 PostgreSQL 导致 UUID 解析错误
+- **修复**：使用条件分支处理空 excludeID
 
-#### 3. AI 对话面板
-- [x] 输入框存在但显示"正在初始化..."（Tauri API 在 Vite 开发模式下不可用）
-- [x] 发送按钮、语音输入、添加附件按钮存在
-- [x] AI 建议、生成报告、使用帮助按钮正常
+#### 3. 消息存储 SQLite 占位符
+- **文件**：`persistence_message_store.go`, `persistence_announcement_store.go`
+- **问题**：使用了 SQLite 的 `?` 占位符，PostgreSQL 需要 `$1, $2...`
+- **修复**：重写所有 SQL 查询使用 PostgreSQL 格式
 
-### 技术说明
-Tauri API (@tauri-apps/api/core) 在 Vite 开发模式下不可用，这是设计限制而非 bug。完整的 Tauri API 测试需要在 Tauri 桌面应用中运行（`npm run tauri dev`）。
+#### 4. getResourceFromPath 数组越界
+- **文件**：`permission.go`
+- **问题**：路径 `/api/v1/announcements` 只有3段，访问 `parts[3]` 导致 panic
+- **修复**：添加边界检查，正确处理不同长度路径
 
-### 修复的代码问题
-1. src/lib/tauri.ts - safeInvoke 动态导入封装
-2. src/lib/ws/wsClient.ts - getWsUrl 动态导入修复
-3. src/features/message/api/messageApi.ts - safeInvoke 函数添加
-4. src/features/agent/hooks/useAgentRuntime.ts - checkTauriAvailable 动态检查
-5. src/features/message/stores/messageStore.ts - 空值处理修复 (messages ?? [])
+#### 5. 消息/公告资源映射缺失
+- **文件**：`permission.go`
+- **问题**：缺少 `/api/v1/messages` 和 `/api/v1/announcements` 的资源映射
+- **修复**：添加到 ResourceRouteMapping
 
----
+#### 6. 数据库 synced_at 列缺失（部分表）
+- **问题**：announcements 表缺少 synced_at 列
+- **修复**：执行 ALTER TABLE 添加列
 
-## 2026-04-22 - Task: 前端UI优化
+### API 测试结果
 
-### 铁律合规检查：
-- PRD 合规：UX设计规范对齐（FR-UX-01到FR-UX-10）
-- 架构合规：主题系统架构 + 颜色注册表模式
-- UX 合规：VSCode风格四栏布局 + 品牌标识 + 状态反馈
+```
+=== POST /departments (Create) ===
+{"success":true,"code":"SUCCESS","data":{"id":"...","name":"Test Department",...}}
 
-### What was done:
-1. **完善颜色注册表** - 修复主题文件中颜色键名格式问题
-   - `darkModern.ts` - 所有颜色键统一使用点号格式
-   - `lightModern.ts` - 所有颜色键统一使用点号格式
+=== GET /departments ===
+{"success":true,"code":"SUCCESS","data":{"items":[...],"total":1,...}}
 
-2. **优化TopBar品牌标识**
-   - 添加品牌Logo（Sparkles图标 + 深蓝色背景）
-   - 添加分隔线
-   - 优化菜单项hover/active样式
-   - 使用主题CSS变量统一样式
+=== PUT /departments/:id (Update) ===
+{"success":true,"code":"SUCCESS","data":{"id":"..."},"message":"部门更新成功"}
 
-3. **增强StatusBar**
-   - 添加实时时钟显示
-   - 添加网络连接状态指示器（Wifi/WifiOff）
-   - 添加同步状态真实数据显示
-   - 添加分隔线
-   - 使用useTheme hook获取主题状态
+=== DELETE /departments/:id ===
+{"success":true,"code":"SUCCESS","data":{"id":"..."},"message":"部门删除成功"}
 
-4. **重构Sidebar**
-   - 实现完整的UX规范设计（56px Header + 搜索框）
-   - 添加分组导航和折叠功能
-   - 添加搜索过滤功能
-   - 添加激活指示条（绿色）
-   - 添加可折叠视图（收起侧边栏按钮）
-   - 使用ScrollArea组件
+=== GET /messages ===
+{"code":"SUCCESS","data":[]}
 
-5. **优化ActivityBar**
-   - 添加徽章支持（显示待办数量）
-   - 优化图标尺寸和间距
-   - 使用主题CSS变量
+=== GET /announcements ===
+{"code":"SUCCESS","data":null}
+```
 
-### Testing:
-- npm run lint: PASS
-- 修改文件类型检查: PASS
-- 开发服务器: http://localhost:1420
+### 待测试功能
+- [ ] AI Agent 对话 (需要 Tauri 桌面环境)
+- [ ] 工作流审批
 
-### Notes:
-- 浏览器测试agent因工具限制未能截图，但代码实现完整
-- build存在其他预先存在的错误（message模块），与本次UI优化无关
+
+=== 2026-04-23 14:30 - 架构问题发现 ===
+
+发现关键架构问题：
+
+**问题：TenantMiddleware 与 AuthMiddleware 执行顺序错误**
+
+当前中间件执行顺序：
+1. TenantMiddleware - 要求客户端传递 tenant_id
+2. AuthMiddleware - 验证 token 并从用户获取 tenant_id
+
+问题：
+- 客户端登录后获得 token，但响应中不包含 tenant_id
+- 后续 API 调用被 TenantMiddleware 拦截，要求提供 tenant_id
+- AuthMiddleware 无法在 TenantMiddleware 之前运行来获取 tenant_id
+
+影响：
+- 所有需要认证的 API 都无法正常调用
+- 用户无法访问部门、消息等核心功能
+
+**根因分析**：
+- middleware/auth.go:84-86 会在 token 验证后从数据库获取 tenant_id
+- 但 TenantMiddleware (middleware/tenant.go:38-42) 先于 AuthMiddleware 执行
+- TenantMiddleware 要求请求必须包含 tenant_id（通过 X-Tenant-ID header、path 或 query）
+
+**需要的修复**：
+1. 方案A：调整中间件顺序，AuthMiddleware 在 TenantMiddleware 之前
+2. 方案B：修改 TenantMiddleware，在 AuthMiddleware 之后从已认证用户获取 tenant_id
+3. 方案C：登录响应中返回 tenant_id
+
+**API 测试结果**：
+- Health API: ✅ 正常
+- Auth Login: ✅ 正常（返回 token）
+- Auth Register: ✅ 正常
+- Admin APIs (departments, users): ❌ TENANT_REQUIRED 错误
