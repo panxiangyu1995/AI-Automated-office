@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 export interface ScannerDevice {
   id: string
@@ -32,7 +32,8 @@ export function useHardware() {
    * 获取扫描仪设备列表
    */
   const listScanners = useCallback(async (): Promise<ScannerDevice[]> => {
-    return invoke('list_scanners')
+    const result = await safeInvoke<ScannerDevice[]>('list_scanners')
+    return result ?? []
   }, [])
 
   /**
@@ -40,7 +41,8 @@ export function useHardware() {
    */
   const scanDocument = useCallback(
     async (deviceId: string, options: ScanOptions): Promise<number[]> => {
-      return invoke('scan_document', { deviceId, options })
+      const result = await safeInvoke<number[]>('scan_document', { deviceId, options })
+      return result ?? []
     },
     []
   )
@@ -49,7 +51,8 @@ export function useHardware() {
    * 获取打印机设备列表
    */
   const listPrinters = useCallback(async (): Promise<PrinterDevice[]> => {
-    return invoke('list_printers')
+    const result = await safeInvoke<PrinterDevice[]>('list_printers')
+    return result ?? []
   }, [])
 
   /**
@@ -57,7 +60,7 @@ export function useHardware() {
    */
   const printDocument = useCallback(
     async (printerId: string, content: number[], options: PrintOptions): Promise<void> => {
-      return invoke('print_document', { printerId, content, options })
+      await safeInvoke('print_document', { printerId, content, options })
     },
     []
   )
@@ -66,7 +69,8 @@ export function useHardware() {
    * 生成打印预览内容
    */
   const printPreview = useCallback(async (content: number[]): Promise<number[]> => {
-    return invoke('print_preview', { content })
+    const result = await safeInvoke<number[]>('print_preview', { content })
+    return result ?? []
   }, [])
 
   return {

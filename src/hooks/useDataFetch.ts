@@ -10,8 +10,8 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import type { TauriError } from './useTauriCommand'
+import { safeInvoke } from '@/lib/tauri'
 
 export interface PaginationParams {
   page?: number
@@ -182,7 +182,10 @@ export function useDataFetch<T extends object, P = PaginationParams>({
       setError(null)
 
       try {
-        const result = await invoke<T>(command, finalParams)
+        const result = await safeInvoke<T>(command, finalParams)
+        if (result === null) {
+          throw new Error(`命令 ${command} 执行失败`)
+        }
 
         // 缓存结果
         if (cacheTime > 0) {

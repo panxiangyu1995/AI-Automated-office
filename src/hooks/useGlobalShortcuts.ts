@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import {
   SHORTCUT_STORAGE_KEY,
   parseShortcutConfig,
   type ShortcutConfig,
 } from '../lib/shortcutConfig'
+import { safeInvoke } from '@/lib/tauri'
 
 /**
  * 全局快捷键 Hook
@@ -75,17 +75,17 @@ export function useGlobalShortcuts() {
   const updateShortcut = useCallback(
     async (key: keyof ShortcutConfig, value: string) => {
       try {
-        // 检查快捷键是否可用
-        const available = await invoke<boolean>('check_shortcut_available', {
-          shortcutStr: value,
-        })
-
-        if (!available) {
-          throw new Error('快捷键已被占用')
-        }
-
         // 更新快捷键
-        await invoke('update_shortcut', {
+      const available = await safeInvoke<boolean>('check_shortcut_available', {
+        shortcutStr: value,
+      })
+
+      if (!available) {
+        throw new Error('快捷键已被占用')
+      }
+
+      // 更新快捷键
+      await safeInvoke('update_shortcut', {
           action:
             key === 'showApp'
               ? 'show_app'
@@ -110,9 +110,10 @@ export function useGlobalShortcuts() {
   // 检查快捷键是否可用
   const checkAvailable = useCallback(async (shortcut: string): Promise<boolean> => {
     try {
-      return await invoke<boolean>('check_shortcut_available', {
+      const result = await safeInvoke<boolean>('check_shortcut_available', {
         shortcutStr: shortcut,
       })
+      return result ?? false
     } catch {
       return false
     }

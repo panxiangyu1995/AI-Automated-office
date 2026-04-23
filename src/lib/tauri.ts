@@ -50,7 +50,7 @@ async function isTauriAvailable(): Promise<boolean> {
  * 安全的 Tauri invoke 调用
  * 在非 Tauri 环境（如 Vite 开发模式）中返回 null 而不是抛出异常
  */
-async function safeInvoke<T>(command: string, args?: Record<string, unknown>): Promise<T | null> {
+export async function safeInvoke<T>(command: string, args?: Record<string, unknown>): Promise<T | null> {
   try {
     const available = await isTauriAvailable()
     if (!available) {

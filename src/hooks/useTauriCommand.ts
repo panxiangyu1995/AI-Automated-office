@@ -9,8 +9,8 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
-import { invoke, InvokeOptions } from '@tauri-apps/api/core'
 import { getErrorMessage, isAuthError, isPermissionError } from '@/lib/api/errorCodes'
+import { safeInvoke } from '@/lib/tauri'
 
 export interface TauriError {
   code: string
@@ -29,8 +29,8 @@ export interface UseTauriCommandOptions<T> {
   retryCount?: number
   /** 重试延迟(ms) */
   retryDelay?: number
-  /** 请求选项 */
-  invokeOptions?: InvokeOptions
+  /** 请求选项 (已废弃,不再支持) */
+  invokeOptions?: unknown
   /** 成功回调 */
   onSuccess?: (data: T) => void
   /** 错误回调 */
@@ -69,7 +69,7 @@ export function useTauriCommand<T>({
   immediate = false,
   retryCount = 0,
   retryDelay = 1000,
-  invokeOptions,
+  invokeOptions: _invokeOptions,
   onSuccess,
   onError,
   onFinally,
@@ -126,7 +126,10 @@ export function useTauriCommand<T>({
 
       const doExecute = async (attempt: number): Promise<T | null> => {
         try {
-          const result = await invoke<T>(command, finalParams, invokeOptions)
+          const result = await safeInvoke<T>(command, finalParams)
+          if (result === null) {
+            throw new Error(`命令 ${command} 执行失败`)
+          }
           setData(result)
           setLoading(false)
           onSuccess?.(result)
@@ -164,7 +167,7 @@ export function useTauriCommand<T>({
 
       return doExecute(0)
     },
-    [command, params, retryCount, retryDelay, invokeOptions, onSuccess, onError, onFinally]
+    [command, params, retryCount, retryDelay, onSuccess, onError, onFinally]
   )
 
   // 重置状态
@@ -218,9 +221,13 @@ export function useTauriCommand<T>({
 export async function invokeCommand<T>(
   command: string,
   params?: Record<string, unknown>,
-  options?: InvokeOptions
+  _options?: Record<string, unknown>
 ): Promise<T> {
-  return invoke<T>(command, params, options)
+  const result = await safeInvoke<T>(command, params)
+  if (result === null) {
+    throw new Error(`命令 ${command} 执行失败`)
+  }
+  return result
 }
 
 /**
@@ -235,7 +242,11 @@ export async function invokeCommandWithTimeout<T>(
     setTimeout(() => reject(new Error('请求超时')), timeoutMs)
   })
 
-  return Promise.race([invoke<T>(command, params), timeoutPromise])
+  const result = await Promise.race([safeInvoke<T>(command, params), timeoutPromise])
+  if (result === null) {
+    throw new Error(`命令 ${command} 执行失败`)
+  }
+  return result
 }
 
 /**
@@ -247,7 +258,10 @@ export async function invokeBatch<T>(
   return Promise.all(
     commands.map(async ({ command, params }) => {
       try {
-        const data = await invoke<T>(command, params)
+        const data = await safeInvoke<T>(command, params)
+        if (data === null) {
+          throw new Error(`命令 ${command} 执行失败`)
+        }
         return { success: true, data } as { success: true; data: T }
       } catch (err) {
         const error = typeof err === 'string'

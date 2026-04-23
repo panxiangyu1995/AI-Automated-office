@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Channel, invoke } from '@tauri-apps/api/core'
+import { Channel } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 export interface UpdateInfo {
   version: string
@@ -22,7 +23,7 @@ export function useUpdate() {
    */
   const checkUpdate = useCallback(async (): Promise<UpdateInfo | null> => {
     try {
-      const info = await invoke<UpdateInfo | null>('check_update')
+      const info = await safeInvoke<UpdateInfo | null>('check_update')
       if (!info) {
         setUpdateInfo(null)
         return null
@@ -53,7 +54,7 @@ export function useUpdate() {
     }
 
     try {
-      await invoke('download_and_install', { onProgress })
+      await safeInvoke('download_and_install', { onProgress })
     } catch (error) {
       console.error('[useUpdate] 下载更新失败:', error)
     } finally {
