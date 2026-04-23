@@ -1,11 +1,11 @@
 /**
  * Warehouse Data API
- * 
+ *
  * Provides API methods for other modules (sales, finance, management) to access warehouse data.
  * These APIs are designed for cross-department data access with permission control.
  */
 
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type { InventoryDetailItem, WarehouseStats } from '../types/inventory';
 
 /**
@@ -19,7 +19,17 @@ export async function getWarehouseSummary(): Promise<{
   pendingInbound: number;
   pendingOutbound: number;
 }> {
-  const stats = await invoke<WarehouseStats>('warehouse_get_stats');
+  const stats = await safeInvoke<WarehouseStats>('warehouse_get_stats');
+  if (!stats) {
+    return {
+      totalProducts: 0,
+      totalQuantity: 0,
+      lowStockCount: 0,
+      excessStockCount: 0,
+      pendingInbound: 0,
+      pendingOutbound: 0,
+    };
+  }
   return {
     totalProducts: stats.total_inventory,
     totalQuantity: stats.total_inventory * 100, // Mock: assume avg 100 per product
@@ -44,16 +54,17 @@ export async function checkInventoryForSales(
     sufficient: boolean;
   }>;
 }> {
-  const inventory = await invoke<InventoryDetailItem[]>('warehouse_list_inventory_detail', {
+  const inventory = await safeInvoke<InventoryDetailItem[]>('warehouse_list_inventory_detail', {
     request: {
       page: 1,
       page_size: 1000,
       stock_status: null,
     },
   });
+  const inventoryList = inventory ?? [];
 
   const checks = items.map((item) => {
-    const inv = inventory.find((i) => i.product_id === item.productId);
+    const inv = inventoryList.find((i) => i.product_id === item.productId);
     return {
       productId: item.productId,
       requested: item.quantity,
@@ -80,15 +91,16 @@ export async function getLowStockProducts(): Promise<
     shortage: number;
   }>
 > {
-  const inventory = await invoke<InventoryDetailItem[]>('warehouse_list_inventory_detail', {
+  const inventory = await safeInvoke<InventoryDetailItem[]>('warehouse_list_inventory_detail', {
     request: {
       page: 1,
       page_size: 1000,
       stock_status: 'low',
     },
   });
+  const inventoryList = inventory ?? [];
 
-  return inventory.map((item) => ({
+  return inventoryList.map((item) => ({
     productId: item.product_id,
     productName: item.product_name,
     currentQuantity: item.available_quantity,
@@ -108,17 +120,18 @@ export async function getInventoryValue(): Promise<{
     value: number;
   }>;
 }> {
-  const inventory = await invoke<InventoryDetailItem[]>('warehouse_list_inventory_detail', {
+  const inventory = await safeInvoke<InventoryDetailItem[]>('warehouse_list_inventory_detail', {
     request: {
       page: 1,
       page_size: 1000,
     },
   });
+  const inventoryList = inventory ?? [];
 
   const byCategory: Record<string, { count: number; value: number }> = {};
   let totalValue = 0;
 
-  for (const item of inventory) {
+  for (const item of inventoryList) {
     const value = item.quantity * (item.min_stock * 100); // Mock unit cost
     totalValue += value;
 

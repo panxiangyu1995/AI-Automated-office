@@ -1,7 +1,7 @@
 // Security scan hook for capability packages
 
 import { useState, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type { SecurityScanResponse } from '../types/capability.types';
 
 interface UseSecurityScanReturn {
@@ -21,9 +21,9 @@ export function useSecurityScan(): UseSecurityScanReturn {
     setScanning(true);
     setError(null);
     try {
-      const result = await invoke<SecurityScanResponse>('capability_security_scan', { data });
-      setScanResult(result);
-      return result;
+      const result = await safeInvoke<SecurityScanResponse>('capability_security_scan', { data });
+      setScanResult(result ?? null);
+      return result ?? null;
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return null;

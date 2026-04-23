@@ -1,7 +1,7 @@
 // Version management hook
 
 import { useState, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type { UpdateInfo, SandboxConfig } from '../types/capability.types';
 
 interface UseVersionReturn {
@@ -14,6 +14,18 @@ interface UseVersionReturn {
   updateSandboxConfig: (config: Partial<SandboxConfig>) => Promise<SandboxConfig>;
 }
 
+const DEFAULT_SANDBOX_CONFIG: SandboxConfig = {
+  sandboxType: 'process',
+  maxMemoryMb: 512,
+  maxCpuPercent: 50,
+  maxDurationSecs: 300,
+  networkAllowed: false,
+  filesystemReadonly: false,
+  environmentVars: {},
+  allowedSyscalls: [],
+  deniedSyscalls: [],
+};
+
 export function useVersion(): UseVersionReturn {
   const [loading, setLoading] = useState(false);
   const [updates, setUpdates] = useState<UpdateInfo[]>([]);
@@ -23,11 +35,11 @@ export function useVersion(): UseVersionReturn {
     setLoading(true);
     setError(null);
     try {
-      const result = await invoke<UpdateInfo[]>('capability_check_updates', {
+      const result = await safeInvoke<UpdateInfo[]>('capability_check_updates', {
         tenantId: 'default',
       });
-      setUpdates(result);
-      return result;
+      setUpdates(result ?? []);
+      return result ?? [];
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return [];
@@ -41,7 +53,7 @@ export function useVersion(): UseVersionReturn {
       setLoading(true);
       setError(null);
       try {
-        await invoke('capability_execute_update', {
+        await safeInvoke('capability_execute_update', {
           packageId,
           targetVersion,
         });
@@ -58,18 +70,20 @@ export function useVersion(): UseVersionReturn {
   );
 
   const getSandboxConfig = useCallback(async (): Promise<SandboxConfig> => {
-    return await invoke<SandboxConfig>('capability_get_sandbox_config');
+    const result = await safeInvoke<SandboxConfig>('capability_get_sandbox_config');
+    return result ?? DEFAULT_SANDBOX_CONFIG;
   }, []);
 
   const updateSandboxConfig = useCallback(
     async (config: Partial<SandboxConfig>): Promise<SandboxConfig> => {
-      return await invoke<SandboxConfig>('capability_update_sandbox_config', {
+      const result = await safeInvoke<SandboxConfig>('capability_update_sandbox_config', {
         sandboxType: config.sandboxType ?? 'process',
         maxMemoryMb: config.maxMemoryMb ?? 512,
         maxCpuPercent: config.maxCpuPercent ?? 50,
         maxDurationSecs: config.maxDurationSecs ?? 300,
         networkAllowed: config.networkAllowed ?? false,
       });
+      return result ?? DEFAULT_SANDBOX_CONFIG;
     },
     []
   );

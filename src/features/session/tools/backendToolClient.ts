@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 import type { ToolDescriptor } from './toolDescriptor'
 import type { ToolExecutionResult } from './toolExecutor'
@@ -54,11 +54,34 @@ export interface BackendToolExecutionResponse {
 }
 
 export async function listBackendTools(): Promise<ToolDescriptor[]> {
-  return invoke<ToolDescriptor[]>('list_tools')
+  const result = await safeInvoke<ToolDescriptor[]>('list_tools')
+  return result ?? []
 }
 
 export async function executeBackendTool(
   request: BackendToolExecutionRequest
 ): Promise<BackendToolExecutionResponse> {
-  return invoke<BackendToolExecutionResponse>('execute_tool', { request })
+  const result = await safeInvoke<BackendToolExecutionResponse>('execute_tool', { request })
+  if (!result) {
+    const now = Date.now()
+    return {
+      result: {
+        executionId: `fallback-${now}`,
+        toolId: request.toolId,
+        status: 'failed',
+        output: undefined,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Tool execution failed',
+          recoverable: false,
+          retryable: false,
+        },
+        duration: 0,
+        startedAt: now,
+        completedAt: now,
+        metadata: {},
+      },
+    }
+  }
+  return result
 }

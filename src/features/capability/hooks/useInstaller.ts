@@ -1,7 +1,7 @@
 // Capability package installer hook
 
 import { useState, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type {
   InstallResponse,
   InstallWizardState,
@@ -25,7 +25,7 @@ export function useInstaller() {
     async (data: number[], fileName: string, skipApprove: boolean = false, sandboxMode: boolean = true) => {
       setLoading(true);
       try {
-        const response = await invoke<InstallResponse>('capability_install_local', {
+        const response = await safeInvoke<InstallResponse>('capability_install_local', {
           data,
           fileName,
           skipApprove,
@@ -33,7 +33,7 @@ export function useInstaller() {
           tenantId: 'default',
           requestedBy: 'current_user',
         });
-        return response;
+        return response ?? { status: 'error', message: 'Installation failed' } as InstallResponse;
       } finally {
         setLoading(false);
       }
@@ -45,14 +45,14 @@ export function useInstaller() {
     async (resourceId: string, version?: string, marketplace: string = 'marketplace', skipApprove: boolean = false) => {
       setLoading(true);
       try {
-        const response = await invoke<InstallResponse>('capability_install_from_market', {
+        const response = await safeInvoke<InstallResponse>('capability_install_from_market', {
           resourceId,
           version,
           marketplace,
           skipApprove,
           sandboxMode: true,
         });
-        return response;
+        return response ?? { status: 'error', message: 'Installation failed' } as InstallResponse;
       } finally {
         setLoading(false);
       }
@@ -64,13 +64,13 @@ export function useInstaller() {
     async (url: string, version?: string, skipApprove: boolean = false) => {
       setLoading(true);
       try {
-        const response = await invoke<InstallResponse>('capability_install_from_url', {
+        const response = await safeInvoke<InstallResponse>('capability_install_from_url', {
           url,
           version,
           skipApprove,
           sandboxMode: true,
         });
-        return response;
+        return response ?? { status: 'error', message: 'Installation failed' } as InstallResponse;
       } finally {
         setLoading(false);
       }
@@ -82,15 +82,15 @@ export function useInstaller() {
     async (packageId: string, reason: string, urgency: string = 'normal') => {
       setLoading(true);
       try {
-        const requestId = await invoke<string>('capability_submit_approval', {
+        const requestId = await safeInvoke<string>('capability_submit_approval', {
           packageId,
           reason,
           urgency,
           tenantId: 'default',
           requestedBy: 'current_user',
         });
-        setState((prev) => ({ ...prev, approvalRequestId: requestId }));
-        return requestId;
+        setState((prev) => ({ ...prev, approvalRequestId: requestId ?? '' }));
+        return requestId ?? '';
       } finally {
         setLoading(false);
       }

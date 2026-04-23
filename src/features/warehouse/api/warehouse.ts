@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type {
   ListInventoryRequest,
   ListInventoryResponse,
@@ -10,17 +10,21 @@ import type {
 export async function listInventoryDetail(
   request?: ListInventoryRequest
 ): Promise<ListInventoryResponse> {
-  return invoke('warehouse_list_inventory_detail', { request });
+  const result = await safeInvoke<ListInventoryResponse>('warehouse_list_inventory_detail', { request });
+  return result ?? ({} as ListInventoryResponse);
 }
 
 export async function stocktaking(request: StocktakingRequest): Promise<StocktakingResponse> {
-  return invoke('warehouse_stocktaking', { request });
+  const result = await safeInvoke<StocktakingResponse>('warehouse_stocktaking', { request });
+  return result ?? ({} as StocktakingResponse);
 }
 
 export async function listStocktaking(): Promise<StocktakingResponse[]> {
-  return invoke('warehouse_list_stocktaking');
+  const result = await safeInvoke<StocktakingResponse[]>('warehouse_list_stocktaking');
+  return result ?? [];
 }
 
 export async function getWarehouseStats(): Promise<WarehouseStats> {
-  return invoke('warehouse_get_stats');
+  const result = await safeInvoke<WarehouseStats>('warehouse_get_stats');
+  return result ?? ({} as WarehouseStats);
 }

@@ -1,7 +1,7 @@
 // Approval workflow hook
 
 import { useState, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import type { ApprovalRequest } from '../types/capability.types';
 
 interface UseApprovalReturn {
@@ -22,9 +22,9 @@ export function useApproval(): UseApprovalReturn {
     setLoading(true);
     setError(null);
     try {
-      const approvals = await invoke<ApprovalRequest[]>('capability_pending_approvals');
-      setPendingApprovals(approvals);
-      return approvals;
+      const approvals = await safeInvoke<ApprovalRequest[]>('capability_pending_approvals');
+      setPendingApprovals(approvals ?? []);
+      return approvals ?? [];
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       return [];
@@ -37,14 +37,14 @@ export function useApproval(): UseApprovalReturn {
     setLoading(true);
     setError(null);
     try {
-      const status = await invoke<string>('capability_process_approval', {
+      const status = await safeInvoke<string>('capability_process_approval', {
         requestId,
         decision: 'approve',
         notes,
         userId: 'current_user',
       });
       setPendingApprovals((prev) => prev.filter((a) => a.requestId !== requestId));
-      return status;
+      return status ?? '';
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       throw err;
@@ -57,14 +57,14 @@ export function useApproval(): UseApprovalReturn {
     setLoading(true);
     setError(null);
     try {
-      const status = await invoke<string>('capability_process_approval', {
+      const status = await safeInvoke<string>('capability_process_approval', {
         requestId,
         decision: 'reject',
         notes: reason,
         userId: 'current_user',
       });
       setPendingApprovals((prev) => prev.filter((a) => a.requestId !== requestId));
-      return status;
+      return status ?? '';
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       throw err;
