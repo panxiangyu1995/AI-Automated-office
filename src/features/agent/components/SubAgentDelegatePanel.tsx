@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 
 // Types
 export interface DelegationStatus {
@@ -96,10 +96,10 @@ export function DelegationPanel({ className = '' }: DelegationPanelProps) {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      const history = await invoke<DelegationStatus[]>('get_delegation_history', {
+      const history = await safeInvoke<DelegationStatus[]>('get_delegation_history', {
         limit: 20,
       })
-      setDelegations(history)
+      setDelegations(history ?? mockDelegations)
     } catch {
       // Use mock data on error
       setDelegations(mockDelegations)

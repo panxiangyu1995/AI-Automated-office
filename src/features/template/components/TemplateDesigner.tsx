@@ -14,7 +14,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import {
   Maximize2,
   ZoomIn,
@@ -477,14 +477,16 @@ export function TemplateDesigner({
   const handleAlign = useCallback(async (alignment: AlignmentType) => {
     if (selectedElementIds.length < 2) return
     try {
-      const result = await invoke<string>('template_align_elements', {
+      const result = await safeInvoke<string>('template_align_elements', {
         schemaJson: JSON.stringify(schema),
         layerId: selectedLayerId ?? '',
         elementIds: selectedElementIds,
         alignment,
       })
-      const newSchema = JSON.parse(result) as TemplateSchema
-      updateSchema(newSchema)
+      if (result) {
+        const newSchema = JSON.parse(result) as TemplateSchema
+        updateSchema(newSchema)
+      }
     } catch {
       // Fallback: skip alignment if Tauri unavailable
     }
