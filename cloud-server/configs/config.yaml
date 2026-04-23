@@ -8,10 +8,10 @@ server:
 database:
   driver: postgres
   host: localhost
-  port: 54320
+  port: 5432
   name: ai_office
   user: postgres
-  password: ${DB_PASSWORD}
+  password: postgres
   sslmode: disable
   max_open_conns: 100
   max_idle_conns: 10
