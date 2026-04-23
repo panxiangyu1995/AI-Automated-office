@@ -329,3 +329,23 @@ E2E 测试覆盖范围：
 - [x] 职位管理 API - 验证通过
 - [ ] AI Agent 对话 - 需要 Tauri 桌面环境
 - [ ] 工作流审批 - API 返回 404 (未实现)
+
+### 2026-04-23 22:23 - 最终验证完成
+
+#### 最终测试结果
+```
+Health Check:      ✅ {"status":"healthy"}
+User Login:        ✅ Token obtained
+User List:         ✅ success:true
+Department CRUD:    ✅ Create/Delete success
+Messages:          ✅ SUCCESS
+Announcements:     ✅ SUCCESS
+```
+
+#### 本次测试修复的问题
+- WebSocket 权限 (ws_read) 添加到数据库
+- 分配 ws_read 权限给 employee 角色
+
+#### 待实现功能 (非Bug)
+- AI Agent 对话 - 需要 Tauri 桌面环境运行时
+- 工作流审批 - 后端 API 返回 404，功能尚未实现
