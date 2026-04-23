@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import type {
   Message,
   MessageListItem,
@@ -32,8 +32,8 @@ export function useMessages(status?: string) {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await invoke<MessageListItem[]>('message_list', { status })
-      setMessages(result)
+      const result = await safeInvoke<MessageListItem[]>('message_list', { status })
+      setMessages(result ?? [])
     } catch (e) {
       setError(e instanceof Error ? e.message : '获取消息失败')
     } finally {
@@ -57,8 +57,8 @@ export function useMessage(id: string) {
     if (!id) return
 
     setIsLoading(true)
-    invoke<Message>('message_get', { id })
-      .then(setMessage)
+    safeInvoke<Message>('message_get', { id })
+      .then((result) => setMessage(result ?? null))
       .catch((e) => setError(e instanceof Error ? e.message : '获取消息失败'))
       .finally(() => setIsLoading(false))
   }, [id])
@@ -74,8 +74,8 @@ export function useSendMessage() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await invoke<Message>('message_send', { request })
-      return result
+      const result = await safeInvoke<Message>('message_send', { request })
+      return result ?? null
     } catch (e) {
       setError(e instanceof Error ? e.message : '发送消息失败')
       return null
@@ -95,7 +95,7 @@ export function useMarkAsRead() {
     setIsLoading(true)
     setError(null)
     try {
-      await invoke('message_mark_read', { id })
+      await safeInvoke('message_mark_read', { id })
       return true
     } catch (e) {
       setError(e instanceof Error ? e.message : '标记已读失败')
@@ -109,7 +109,7 @@ export function useMarkAsRead() {
     setIsLoading(true)
     setError(null)
     try {
-      await invoke('message_read_all')
+      await safeInvoke('message_read_all')
       return true
     } catch (e) {
       setError(e instanceof Error ? e.message : '全部已读失败')
@@ -130,7 +130,7 @@ export function useDeleteMessage() {
     setIsLoading(true)
     setError(null)
     try {
-      await invoke('message_delete', { id })
+      await safeInvoke('message_delete', { id })
       return true
     } catch (e) {
       setError(e instanceof Error ? e.message : '删除失败')
@@ -156,8 +156,8 @@ export function useUnreadCount() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await invoke<UnreadCount>('message_unread_count')
-      setUnreadCount(result)
+      const result = await safeInvoke<UnreadCount>('message_unread_count')
+      setUnreadCount(result ?? null)
     } catch (e) {
       setError(e instanceof Error ? e.message : '获取未读数失败')
     } finally {
@@ -185,9 +185,9 @@ export function useMessageSearch() {
     setIsLoading(true)
     setError(null)
     try {
-      const searchResult = await invoke<MessageSearchResult>('message_search', { query })
-      setResult(searchResult)
-      return searchResult
+      const searchResult = await safeInvoke<MessageSearchResult>('message_search', { query })
+      setResult(searchResult ?? null)
+      return searchResult ?? null
     } catch (e) {
       setError(e instanceof Error ? e.message : '搜索失败')
       return null
@@ -208,9 +208,9 @@ export function useMessageFilter() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await invoke<MessageListItem[]>('message_filter', { filter })
-      setMessages(result)
-      return result
+      const result = await safeInvoke<MessageListItem[]>('message_filter', { filter })
+      setMessages(result ?? [])
+      return result ?? null
     } catch (e) {
       setError(e instanceof Error ? e.message : '筛选失败')
       return null
@@ -234,7 +234,7 @@ export function usePinMessage() {
     setIsLoading(true)
     setError(null)
     try {
-      await invoke<PinnedMessage>('message_pin', { id, reason })
+      await safeInvoke<PinnedMessage>('message_pin', { id, reason })
       return true
     } catch (e) {
       setError(e instanceof Error ? e.message : '置顶失败')
@@ -248,7 +248,7 @@ export function usePinMessage() {
     setIsLoading(true)
     setError(null)
     try {
-      await invoke('message_unpin', { id })
+      await safeInvoke('message_unpin', { id })
       return true
     } catch (e) {
       setError(e instanceof Error ? e.message : '取消置顶失败')
@@ -260,7 +260,8 @@ export function usePinMessage() {
 
   const listPinned = useCallback(async (): Promise<PinnedMessage[]> => {
     try {
-      return await invoke<PinnedMessage[]>('message_list_pinned')
+      const result = await safeInvoke<PinnedMessage[]>('message_list_pinned')
+      return result ?? []
     } catch (e) {
       setError(e instanceof Error ? e.message : '获取置顶失败')
       return []
@@ -282,8 +283,8 @@ export function useExportMessages() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await invoke<ExportResult>('message_export', { request })
-      return result
+      const result = await safeInvoke<ExportResult>('message_export', { request })
+      return result ?? null
     } catch (e) {
       setError(e instanceof Error ? e.message : '导出失败')
       return null
@@ -308,8 +309,8 @@ export function useNotificationPreferences() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await invoke<NotificationPreferences>('message_get_preferences')
-      setPreferences(result)
+      const result = await safeInvoke<NotificationPreferences>('message_get_preferences')
+      setPreferences(result ?? null)
     } catch (e) {
       setError(e instanceof Error ? e.message : '获取偏好失败')
     } finally {
@@ -321,7 +322,7 @@ export function useNotificationPreferences() {
     setIsLoading(true)
     setError(null)
     try {
-      await invoke('message_update_preferences', { preferences: prefs })
+      await safeInvoke('message_update_preferences', { preferences: prefs })
       setPreferences(prefs)
       return true
     } catch (e) {
@@ -360,20 +361,23 @@ export function useMessageDashboard() {
     setError(null)
     try {
       const [messages, unread] = await Promise.all([
-        invoke<MessageListItem[]>('message_list', { status: undefined }),
-        invoke<UnreadCount>('message_unread_count'),
+        safeInvoke<MessageListItem[]>('message_list', { status: undefined }),
+        safeInvoke<UnreadCount>('message_unread_count'),
       ])
 
+      const messageList = messages ?? []
+      const unreadInfo = unread
+
       const byType: Record<string, number> = {}
-      messages.forEach((m) => {
+      messageList.forEach((m) => {
         byType[m.msgType] = (byType[m.msgType] || 0) + 1
       })
 
       setDashboard({
-        totalMessages: messages.length,
-        unreadCount: unread?.total || 0,
+        totalMessages: messageList.length,
+        unreadCount: unreadInfo?.total || 0,
         byType,
-        recentMessages: messages.slice(0, 10),
+        recentMessages: messageList.slice(0, 10),
       })
     } catch (e) {
       setError(e instanceof Error ? e.message : '获取仪表盘失败')
