@@ -165,3 +165,34 @@ GET  /admin/positions     ❌ PERMISSION_DENIED (hr_position_read 权限不存�
 - Auth Login: ✅ 正常（返回 token）
 - Auth Register: ✅ 正常
 - Admin APIs (departments, users): ❌ TENANT_REQUIRED 错误
+
+=== 2026-04-23 19:30 - 关键修复完成 ===
+
+### 修复的问题
+
+#### 1. TenantMiddleware 与 AuthMiddleware 执行顺序 ✅ 已修复
+- **文件**: `cloud-server/internal/middleware/tenant.go`
+- **问题**: TenantMiddleware 要求请求必须传递 tenant_id，但 AuthMiddleware 验证用户后从数据库获取的 tenant_id 没有被使用
+- **修复**: TenantMiddleware 优先检查 context 中是否已有 tenant_id（由 AuthMiddleware 设置），有则跳过验证
+
+#### 2. Position API 权限缺失 ✅ 已修复
+- **问题**: 数据库缺少 hr_position_read 等权限
+- **修复**: 直接 SQL 插入缺失权限并分配给 admin 和 super_admin 角色
+
+### API 测试结果 (2026-04-23 19:30)
+```
+POST /auth/login          ✅ 正常
+POST /auth/register       ✅ 正常
+GET  /admin/departments   ✅ 正常
+GET  /admin/users         ✅ 正常
+GET  /admin/roles         ✅ 正常
+GET  /admin/positions     ✅ 正常 (修复权限后)
+GET  /messages            ✅ 正常
+GET  /announcements       ✅ 正常
+```
+
+### 待测试功能
+- [ ] AI Agent 对话 (需要 Tauri 桌面环境)
+- [ ] 工作流审批
+- [ ] 前端 UI E2E 测试
+

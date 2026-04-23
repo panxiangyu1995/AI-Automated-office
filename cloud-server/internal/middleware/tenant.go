@@ -22,6 +22,13 @@ func TenantMiddleware(db *sql.DB, log *zap.Logger) gin.HandlerFunc {
 		}
 		c.Set("trace_id", traceID)
 
+		// 优先检查 context 中是否已有 tenant_id（由 AuthMiddleware 设置）
+		// 如果 AuthMiddleware 已经从数据库获取了用户的 tenant_id，直接跳过租户验证
+		if existingTenantID := c.GetString("tenant_id"); existingTenantID != "" {
+			c.Next()
+			return
+		}
+
 		// 从请求头获取租户ID
 		tenantID := c.GetHeader("X-Tenant-ID")
 
