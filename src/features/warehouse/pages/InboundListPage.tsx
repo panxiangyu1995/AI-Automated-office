@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import { Plus, Package, FileText, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,8 +32,8 @@ export function InboundListPage() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await invoke<InboundListItem[]>('warehouse_list_inbounds')
-      setInbounds(data)
+      const data = await safeInvoke<InboundListItem[]>('warehouse_list_inbounds')
+      setInbounds(data ?? [])
     } catch (error) {
       console.error('Failed to fetch inbounds:', error)
     } finally {

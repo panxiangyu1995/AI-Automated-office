@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,7 +59,7 @@ export function OutboundFormDialog({ open, onOpenChange, onSuccess }: OutboundFo
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await invoke('warehouse_create_outbound', {
+      await safeInvoke('warehouse_create_outbound', {
         request: {
           outboundType,
           salesOrderId: salesOrderId || null,

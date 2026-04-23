@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { safeInvoke } from '@/lib/tauri';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,14 +44,14 @@ export function StocktakingDialog({
     if (quantity < 0) return;
     setLoading(true);
     try {
-      const record = await invoke<{ adjustment: number }>('warehouse_stocktaking', {
+      const record = await safeInvoke<{ adjustment: number }>('warehouse_stocktaking', {
         request: {
           product_id: productId,
           actual_quantity: quantity,
           remark: remark || null,
         },
       });
-      setResult({ adjustment: record.adjustment, success: true });
+      setResult({ adjustment: record?.adjustment ?? 0, success: true });
       onSuccess?.();
     } catch (error) {
       console.error('Stocktaking failed:', error);

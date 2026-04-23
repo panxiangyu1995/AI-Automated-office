@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { safeInvoke } from '@/lib/tauri'
 import { Search, Package, TrendingDown, TrendingUp, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,7 +42,7 @@ export function InventoryListPage({ onItemSelect }: InventoryListPageProps) {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await invoke<{
+      const response = await safeInvoke<{
         items: InventoryDetailItem[]
         total: number
         categories: string[]
@@ -55,9 +55,11 @@ export function InventoryListPage({ onItemSelect }: InventoryListPageProps) {
           stock_status: stockStatus !== 'all' ? stockStatus : null,
         },
       })
-      setItems(response.items)
-      setTotal(response.total)
-      setCategories(response.categories)
+      if (response) {
+        setItems(response.items ?? [])
+        setTotal(response.total ?? 0)
+        setCategories(response.categories ?? [])
+      }
     } catch (error) {
       console.error('Failed to fetch inventory:', error)
     } finally {
@@ -67,8 +69,8 @@ export function InventoryListPage({ onItemSelect }: InventoryListPageProps) {
 
   const fetchStats = useCallback(async () => {
     try {
-      const statsData = await invoke<WarehouseStats>('warehouse_get_stats')
-      setStats(statsData)
+      const statsData = await safeInvoke<WarehouseStats>('warehouse_get_stats')
+      setStats(statsData ?? null)
     } catch (error) {
       console.error('Failed to fetch stats:', error)
     }
