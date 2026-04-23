@@ -1,9 +1,8 @@
-import { invoke } from '@tauri-apps/api/core'
-import type { QueuedRequest } from './api/types'
-
 /**
  * Tauri 命令封装
  * 提供类型安全的 Rust 后端调用接口
+ *
+ * 使用动态 import 避免在非 Tauri 环境（如 Vite 开发模式）中调用失败
  */
 
 // ==================== Session Cache Types ====================
@@ -24,38 +23,80 @@ export interface SessionMetadata {
   created_at: number
 }
 
-// ==================== System Commands ====================
+// ==================== Safe Invoke ====================
 
-export const getAppVersion = async (): Promise<string> => {
-  return invoke('get_app_version')
+/**
+ * Tauri API 可用性缓存
+ */
+let tauriAvailable: boolean | null = null
+
+/**
+ * 检查 Tauri API 是否可用
+ */
+async function isTauriAvailable(): Promise<boolean> {
+  if (tauriAvailable !== null) {
+    return tauriAvailable
+  }
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+    tauriAvailable = typeof invoke === 'function'
+  } catch {
+    tauriAvailable = false
+  }
+  return tauriAvailable
 }
 
-export const getPlatform = async (): Promise<string> => {
-  return invoke('get_platform')
+/**
+ * 安全的 Tauri invoke 调用
+ * 在非 Tauri 环境（如 Vite 开发模式）中返回 null 而不是抛出异常
+ */
+async function safeInvoke<T>(command: string, args?: Record<string, unknown>): Promise<T | null> {
+  try {
+    const available = await isTauriAvailable()
+    if (!available) {
+      console.warn(`[tauri] Tauri API not available, skipping command: ${command}`)
+      return null
+    }
+    const { invoke } = await import('@tauri-apps/api/core')
+    return await invoke<T>(command, args)
+  } catch (error) {
+    console.warn(`[tauri] invoke failed for command: ${command}`, error)
+    return null
+  }
+}
+
+// ==================== System Commands ====================
+
+export async function getAppVersion(): Promise<string | null> {
+  return safeInvoke<string>('get_app_version')
+}
+
+export async function getPlatform(): Promise<string | null> {
+  return safeInvoke<string>('get_platform')
 }
 
 // ==================== Config Commands ====================
 
-export const getConfig = async <T>(key: string): Promise<T | null> => {
-  return invoke('get_config', { key })
+export async function getConfig<T>(key: string): Promise<T | null> {
+  return safeInvoke<T>('get_config', { key })
 }
 
-export const setConfig = async (key: string, value: unknown): Promise<void> => {
-  return invoke('set_config', { key, value })
+export async function setConfig(key: string, value: unknown): Promise<void> {
+  await safeInvoke('set_config', { key, value })
 }
 
 // ==================== Storage Commands ====================
 
-export const getStorage = async <T>(key: string): Promise<T | null> => {
-  return invoke('get_storage', { key })
+export async function getStorage<T>(key: string): Promise<T | null> {
+  return safeInvoke<T>('get_storage', { key })
 }
 
-export const setStorage = async (key: string, value: unknown): Promise<void> => {
-  return invoke('set_storage', { key, value })
+export async function setStorage(key: string, value: unknown): Promise<void> {
+  await safeInvoke('set_storage', { key, value })
 }
 
-export const removeStorage = async (key: string): Promise<void> => {
-  return invoke('remove_storage', { key })
+export async function removeStorage(key: string): Promise<void> {
+  await safeInvoke('remove_storage', { key })
 }
 
 // ==================== Session Cache Commands ====================
@@ -65,30 +106,31 @@ export const removeStorage = async (key: string): Promise<void> => {
  * @param metadata - Session metadata (must not contain password or access_token)
  * @throws Error if security violation or storage error
  */
-export const saveSessionMetadata = async (metadata: SessionMetadata): Promise<void> => {
-  return invoke('save_session_metadata', { metadata })
+export async function saveSessionMetadata(metadata: SessionMetadata): Promise<void> {
+  await safeInvoke('save_session_metadata', { metadata })
 }
 
 /**
  * Get session metadata from local cache
  * @returns Session metadata if valid cache exists, null otherwise
  */
-export const getSessionMetadata = async (): Promise<SessionMetadata | null> => {
-  return invoke<SessionMetadata | null>('get_session_metadata')
+export async function getSessionMetadata(): Promise<SessionMetadata | null> {
+  return safeInvoke<SessionMetadata>('get_session_metadata')
 }
 
 /**
  * Clear session cache (call on logout or session invalid)
  */
-export const clearSessionCache = async (): Promise<void> => {
-  return invoke('clear_session_cache')
+export async function clearSessionCache(): Promise<void> {
+  await safeInvoke('clear_session_cache')
 }
 
 /**
  * Check if session cache exists
  */
-export const hasSessionCache = async (): Promise<boolean> => {
-  return invoke<boolean>('has_session_cache')
+export async function hasSessionCache(): Promise<boolean> {
+  const result = await safeInvoke<boolean>('has_session_cache')
+  return result ?? false
 }
 
 // ==================== Network Commands ====================
@@ -96,8 +138,9 @@ export const hasSessionCache = async (): Promise<boolean> => {
 /**
  * 检测当前网络连通状态
  */
-export const checkNetworkStatus = async (): Promise<boolean> => {
-  return invoke('check_network_status')
+export async function checkNetworkStatus(): Promise<boolean> {
+  const result = await safeInvoke<boolean>('check_network_status')
+  return result ?? false
 }
 
 export interface SyncResult {
@@ -110,15 +153,17 @@ export interface SyncResult {
 /**
  * 获取待同步的请求列表
  */
-export const getPendingRequests = async (): Promise<QueuedRequest[]> => {
-  return invoke('get_pending_requests')
+export async function getPendingRequests(): Promise<unknown[]> {
+  const result = await safeInvoke<unknown[]>('get_pending_requests')
+  return result ?? []
 }
 
 /**
  * 处理待同步的请求并返回结果
  */
-export const processPendingRequests = async (): Promise<SyncResult[]> => {
-  return invoke('process_pending_requests')
+export async function processPendingRequests(): Promise<SyncResult[]> {
+  const result = await safeInvoke<SyncResult[]>('process_pending_requests')
+  return result ?? []
 }
 
 // ==================== WebSocket Commands (Task 136) ====================
@@ -175,49 +220,58 @@ export interface WebSocketEvent {
 /**
  * Create a new WebSocket connection
  */
-export const createWebSocketConnection = async (
+export async function createWebSocketConnection(
   config: WebSocketConfig,
   sessionId?: string
-): Promise<string> => {
-  return invoke('create_websocket_connection', { config, sessionId })
+): Promise<string | null> {
+  return safeInvoke<string>('create_websocket_connection', { config, sessionId })
 }
 
 /**
  * Get WebSocket connection state
  */
-export const getWebSocketConnectionState = async (
+export async function getWebSocketConnectionState(
   sessionId: string
-): Promise<WebSocketConnectionState> => {
-  return invoke('get_websocket_connection_state', { sessionId })
+): Promise<WebSocketConnectionState | null> {
+  return safeInvoke<WebSocketConnectionState>('get_websocket_connection_state', { sessionId })
 }
 
 /**
  * Check if WebSocket is connected
  */
-export const isWebSocketConnected = async (sessionId: string): Promise<boolean> => {
-  return invoke('is_websocket_connected', { sessionId })
+export async function isWebSocketConnected(sessionId: string): Promise<boolean> {
+  const result = await safeInvoke<boolean>('is_websocket_connected', { sessionId })
+  return result ?? false
 }
 
 /**
  * Close WebSocket connection
  */
-export const closeWebSocketConnection = async (sessionId: string): Promise<void> => {
-  return invoke('close_websocket_connection', { sessionId })
+export async function closeWebSocketConnection(sessionId: string): Promise<void> {
+  await safeInvoke('close_websocket_connection', { sessionId })
 }
 
 /**
  * Send message through WebSocket
  */
-export const sendWebSocketMessage = async (
+export async function sendWebSocketMessage(
   sessionId: string,
   event: WebSocketEvent
-): Promise<void> => {
-  return invoke('send_websocket_message', { sessionId, event })
+): Promise<void> {
+  await safeInvoke('send_websocket_message', { sessionId, event })
 }
 
 /**
  * Get all active WebSocket sessions
  */
-export const getActiveWebSocketSessions = async (): Promise<string[]> => {
-  return invoke('get_active_websocket_sessions')
+export async function getActiveWebSocketSessions(): Promise<string[]> {
+  const result = await safeInvoke<string[]>('get_active_websocket_sessions')
+  return result ?? []
+}
+
+/**
+ * Get API base URL from Tauri backend
+ */
+export async function getApiBaseUrl(): Promise<string | null> {
+  return safeInvoke<string>('get_api_base_url')
 }
