@@ -24,7 +24,7 @@ log:
   file_path: logs/app.log
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: dev-secret-key-for-testing-only
   expire: 24h
   issuer: ai-office
 

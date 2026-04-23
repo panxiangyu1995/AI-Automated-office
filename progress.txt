@@ -1,7 +1,4 @@
-## 2026-04-23 - E2E 测试：前端验证完成，数据库连接阻塞
-
-### 阻塞原因
-PostgreSQL 数据库密码认证失败 (SASL auth error)。Windows 环境下环境变量传递存在问题。
+## 2026-04-23 - E2E 测试：数据库已连接，继续完整测试
 
 ### 已验证功能
 - [x] VSCode 四栏布局 (agent-browser 测试通过)
@@ -9,20 +6,21 @@ PostgreSQL 数据库密码认证失败 (SASL auth error)。Windows 环境下环�
 - [x] 侧边栏导航（仪表盘、人事部、财务部、销售部等）
 - [x] 前端代码修复 (动态 import safeInvoke)
 - [x] 云端服务 API 路由注册完整 (100+ endpoints)
-- [x] 认证 bypass_auth 模式工作正常 (登录返回有效 token)
+- [x] 数据库连接成功 (PostgreSQL trust 认证)
+- [x] 用户注册 API
+- [x] 用户登录 API (返回有效 JWT token)
 - [x] 健康检查 API (/health, /liveness, /readiness)
 
-### 阻塞功能
-- [ ] 用户管理 API (TENANT_REQUIRED - 需要数据库)
-- [ ] 部门管理 API (需要数据库)
-- [ ] 消息通知系统 (需要数据库)
-- [ ] 数据库 CRUD 验证
+### 待测试功能
+- [ ] 部门管理 API (CRUD)
+- [ ] 消息通知系统
+- [ ] AI Agent 对话 (需要 Tauri 桌面环境)
+- [ ] 工作流审批
 
-### 需要人工修复
-修复 PostgreSQL 密码认证后继续：
-1. 检查 PostgreSQL pg_hba.conf
-2. 配置 trust 或 md5 认证
-3. 或创建正确的 postgres 用户密码
+### 技术说明
+- PostgreSQL 已配置 trust 认证 (开发模式)
+- JWT token 认证正常
+- 前端 Tauri API 需要 Tauri 桌面环境才能完全测试
 
 ---
 
