@@ -28,7 +28,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const messages = await messageApi.listMessages(status)
-      set({ messages, isLoading: false })
+      set({ messages: messages ?? [], isLoading: false })
     } catch (e) {
       set({ error: e instanceof Error ? e.message : '获取消息失败', isLoading: false })
     }

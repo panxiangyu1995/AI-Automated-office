@@ -1,10 +1,10 @@
 /**
  * useAgentRuntime - Agent Runtime Integration Hook
  * Story 51.4 - Chat host integration and E2E baseline
- * 
+ *
  * Connects the frontend chat panel to the real backend agent runtime
  * via Tauri commands and event streaming.
- * 
+ *
  * 铁律合规：
  * - ARCH: 分层架构，前端通过 Tauri IPC 调用后端
  * - NFR-1: 性能优化，使用流式传输
@@ -12,8 +12,6 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
-import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useChatStore } from './useChatStore'
 
 // ==================== Types ====================
@@ -148,8 +146,27 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
   })
 
   // Refs
-  const unlistenRef = useRef<UnlistenFn | null>(null)
+  const unlistenRef = useRef<(() => void) | null>(null)
   const sessionKeyRef = useRef<string | null>(null)
+
+  // Tauri API availability flag
+  const tauriAvailableRef = useRef<boolean | null>(null)
+
+  // Check if Tauri APIs are available
+  const checkTauriAvailable = useCallback(async (): Promise<boolean> => {
+    if (tauriAvailableRef.current !== null) {
+      return tauriAvailableRef.current
+    }
+    try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const result = typeof invoke === 'function'
+      tauriAvailableRef.current = result
+      return result
+    } catch {
+      tauriAvailableRef.current = false
+      return false
+    }
+  }, [])
 
   // Chat store
   const {
@@ -260,7 +277,16 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
    * Initialize a new backend session
    */
   const initSession = useCallback(async (): Promise<string | null> => {
+    const isAvailable = await checkTauriAvailable()
+    if (!isAvailable) {
+      const errorMsg = 'Tauri API 不可用，请在桌面应用中运行'
+      setState((s) => ({ ...s, error: errorMsg }))
+      onError?.(errorMsg)
+      return null
+    }
+
     try {
+      const { invoke } = await import('@tauri-apps/api/core')
       const response = await invoke<StartSessionResponse>('start_agent_session', {
         request: {
           tenantId,
@@ -284,7 +310,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
       onError?.(errorMsg)
       return null
     }
-  }, [tenantId, userId, onError])
+  }, [tenantId, userId, onError, checkTauriAvailable])
 
   /**
    * Execute agent with user message
@@ -307,6 +333,15 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
         return
       }
 
+      const isAvailable = await checkTauriAvailable()
+      if (!isAvailable) {
+        const errorMsg = 'Tauri API 不可用，请在桌面应用中运行'
+        setState((s) => ({ ...s, error: errorMsg, isExecuting: false }))
+        stopStreaming()
+        onError?.(errorMsg)
+        return
+      }
+
       try {
         setState((s) => ({ ...s, isExecuting: true, error: null }))
 
@@ -324,6 +359,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
         startStreaming(activeSessionId, assistantMessage.id, partId)
 
         // Execute agent on backend
+        const { invoke } = await import('@tauri-apps/api/core')
         const response = await invoke<ExecuteAgentResponse>('execute_agent', {
           request: {
             tenantId,
@@ -368,6 +404,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
       finalizeStreamingMessage,
       stopStreaming,
       onError,
+      checkTauriAvailable,
     ]
   )
 
@@ -378,7 +415,13 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
     const sessionId = state.backendSessionId
     if (!sessionId) return false
 
+    const isAvailable = await checkTauriAvailable()
+    if (!isAvailable) {
+      return false
+    }
+
     try {
+      const { invoke } = await import('@tauri-apps/api/core')
       const result = await invoke<boolean>('interrupt_agent_session', {
         sessionId,
       })
@@ -393,7 +436,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
       console.error('[AgentRuntime] Interrupt failed:', err)
       return false
     }
-  }, [state.backendSessionId, stopStreaming])
+  }, [state.backendSessionId, stopStreaming, checkTauriAvailable])
 
   /**
    * Reset runtime state
@@ -416,14 +459,24 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
     let mounted = true
 
     const setupListener = async () => {
-      unlistenRef.current = await listen<BackendRuntimeEvent>(
-        'agent_runtime_event',
-        (event) => {
-          if (mounted) {
-            handleRuntimeEvent(event.payload)
+      const isAvailable = await checkTauriAvailable()
+      if (!isAvailable) {
+        return
+      }
+
+      try {
+        const { listen } = await import('@tauri-apps/api/event')
+        unlistenRef.current = await listen<BackendRuntimeEvent>(
+          'agent_runtime_event',
+          (event) => {
+            if (mounted) {
+              handleRuntimeEvent(event.payload)
+            }
           }
-        }
-      )
+        )
+      } catch (err) {
+        console.warn('[AgentRuntime] Failed to setup event listener:', err)
+      }
     }
 
     void setupListener()
@@ -435,7 +488,7 @@ export function useAgentRuntime(options: UseAgentRuntimeOptions = {}) {
         unlistenRef.current = null
       }
     }
-  }, [handleRuntimeEvent])
+  }, [handleRuntimeEvent, checkTauriAvailable])
 
   // Auto-initialize session
   useEffect(() => {

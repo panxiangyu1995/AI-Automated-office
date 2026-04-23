@@ -1,5 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
-
 export type WSMessageType =
   | "new_message"
   | "message_read"
@@ -8,7 +6,8 @@ export type WSMessageType =
   | "unread_update"
   | "system_notification"
   | "ping"
-  | "pong";
+  | "pong"
+  | "*";
 
 export interface WSMessage<T = unknown> {
   type: WSMessageType;
@@ -60,7 +59,16 @@ function clearTimers() {
 }
 
 async function getWsUrl(): Promise<string> {
-  const apiUrl = await invoke<string | null>("get_api_base_url").catch(() => null);
+  // 使用动态 import 避免在非 Tauri 环境中调用不存在的 invoke
+  let apiUrl: string | null = null;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    if (invoke && typeof invoke === "function") {
+      apiUrl = await invoke<string | null>("get_api_base_url");
+    }
+  } catch {
+    // Tauri API 不可用，使用默认值
+  }
   const base = apiUrl || "http://localhost:8080";
   return base.replace(/^http/, "ws") + "/api/v1/ws";
 }
