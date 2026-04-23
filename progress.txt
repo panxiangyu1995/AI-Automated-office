@@ -291,6 +291,27 @@ DELETE: {"success":true,"code":"SUCCESS","data":{"id":"..."},"message":"部门�
 - 浏览器自动化 (agent-browser) 正常工作
 - AI 面板显示"正在初始化" (需要 Tauri 后端)
 
+### 2026-04-23 22:18 - 完善权限分配
+
+#### 问题修复
+- employee 角色缺少 hr_employee_read, hr_employee_write, hr_employee_create, hr_employee_delete 权限
+- employee 角色缺少 admin_role_read, admin_role_write 权限
+
+#### API 测试结果 (更新)
+```
+POST /auth/login          ✅ 正常
+POST /auth/register       ✅ 正常
+GET  /admin/departments   ✅ 正常
+POST /admin/departments   ✅ 正常
+GET  /admin/users         ✅ 正常 (修复权限后)
+GET  /admin/roles         ✅ 正常 (修复权限后)
+GET  /admin/positions     ✅ 正常 (修复权限后)
+GET  /messages            ✅ 正常
+POST /messages            ✅ 正常
+GET  /announcements       ✅ 正常
+POST /announcements      ✅ 正常
+```
+
 ### 待测试功能（需要人工/桌面环境）
 - [ ] AI Agent 对话 (需要 Tauri 桌面环境)
 - [ ] 工作流审批 (API返回404，未实现)
@@ -303,5 +324,8 @@ E2E 测试覆盖范围：
 - [x] 消息通知系统 - API 验证通过
 - [x] 公告通知系统 - API 验证通过
 - [x] 前端 UI 渲染 - 浏览器测试通过
+- [x] 用户管理 API - 验证通过
+- [x] 角色管理 API - 验证通过
+- [x] 职位管理 API - 验证通过
 - [ ] AI Agent 对话 - 需要 Tauri 桌面环境
 - [ ] 工作流审批 - API 返回 404 (未实现)
