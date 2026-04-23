@@ -1,18 +1,28 @@
-## 2026-04-23 - E2E 测试：数据库认证问题（阻塞）
+## 2026-04-23 - E2E 测试：前端验证完成，数据库连接阻塞
 
 ### 阻塞原因
-PostgreSQL 数据库密码认证失败。环境变量 `DB_PASSWORD` 无法通过 bash 传递到 Windows 程序。
-
-### 需要人工修复
-1. 检查 PostgreSQL pg_hba.conf 配置
-2. 确保允许 password 或 md5 认证方式
-3. 或者将 PostgreSQL 配置为 trust 认证（仅开发环境）
+PostgreSQL 数据库密码认证失败 (SASL auth error)。Windows 环境下环境变量传递存在问题。
 
 ### 已验证功能
 - [x] VSCode 四栏布局 (agent-browser 测试通过)
+- [x] 顶部菜单栏导航
+- [x] 侧边栏导航（仪表盘、人事部、财务部、销售部等）
 - [x] 前端代码修复 (动态 import safeInvoke)
-- [x] 云端服务 API 路由注册完整
-- [x] 认证 bypass_auth 模式工作正常
+- [x] 云端服务 API 路由注册完整 (100+ endpoints)
+- [x] 认证 bypass_auth 模式工作正常 (登录返回有效 token)
+- [x] 健康检查 API (/health, /liveness, /readiness)
+
+### 阻塞功能
+- [ ] 用户管理 API (TENANT_REQUIRED - 需要数据库)
+- [ ] 部门管理 API (需要数据库)
+- [ ] 消息通知系统 (需要数据库)
+- [ ] 数据库 CRUD 验证
+
+### 需要人工修复
+修复 PostgreSQL 密码认证后继续：
+1. 检查 PostgreSQL pg_hba.conf
+2. 配置 trust 或 md5 认证
+3. 或创建正确的 postgres 用户密码
 
 ---
 
