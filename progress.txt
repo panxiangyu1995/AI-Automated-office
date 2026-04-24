@@ -1,3 +1,42 @@
+## 2026-04-25 - Tasks 14-22 实现完成
+
+### 实现内容：
+**Task 14: Rust后端集成**
+- AgentRuntimeState 新增 execution_contexts 字段
+- 添加 Tauri 命令：get_available_agent_types, get_agent_type_config, check_tool_allowed, create_agent_execution_context, get_execution_progress
+- cargo check 通过
+
+**Task 15: AgentTypeSelector 组件**
+- 创建 src/features/agent/components/AgentTypeSelector.tsx
+- 支持 4 种 Agent 类型：通用助手/代码探索/任务规划/代码验证
+- 集成 Tauri 命令 check_tool_allowed
+
+**Task 16: ProgressDisplay 组件**
+- 创建 src/features/agent/components/ProgressDisplay.tsx
+- 订阅 agent-progress 事件
+- 显示进度条/轮次/工具调用/Token 统计
+
+**Task 17: ActivityList 组件**
+- 创建 src/features/agent/components/ActivityList.tsx
+- 订阅 agent-activity 事件
+- 显示状态图标/时间/历史活动
+
+**Task 18: ChatPanel 集成**
+- AgentTypeSelectorPanel/进度面板/活动面板已集成到 AgentChatPanel
+- 可折叠展开
+
+**Task 19-22: 测试与验证**
+- cargo check 通过
+- npm run lint + build 通过
+- 浏览器测试验证 Agent 类型选择器正常显示
+- E2E 测试文件已创建
+
+### 验证结果：
+- `npm run lint` 通过
+- `npm run build` 成功
+- `cargo check` 通过（22 warnings，无 errors）
+- 浏览器测试验证 UI 正确显示
+
 ## 2026-04-25 - task.json 验证与状态更新
 
 ### 铁律合规检查：

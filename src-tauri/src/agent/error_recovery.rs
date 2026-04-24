@@ -691,7 +691,7 @@ mod tests {
         }
     }
 
-    fn create_recovery_service() -> RecoveryService {
+    async fn create_recovery_service() -> RecoveryService {
         // Create a minimal storage manager for testing
         let storage = Arc::new(StorageManager::init("test").await.unwrap());
         RecoveryService::new(storage)
@@ -699,7 +699,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_determine_recovery_action_tool_failure_first_attempt() {
-        let service = create_recovery_service();
+        let service = create_recovery_service().await;
         let context = create_test_context();
 
         let decision = service.determine_recovery_action(&RecoveryTrigger::ToolFailure, &context);
@@ -711,7 +711,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_determine_recovery_action_user_cancelled() {
-        let service = create_recovery_service();
+        let service = create_recovery_service().await;
         let context = create_test_context();
 
         let decision = service.determine_recovery_action(&RecoveryTrigger::UserCancelled, &context);
@@ -721,7 +721,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_determine_recovery_action_permission_denied() {
-        let service = create_recovery_service();
+        let service = create_recovery_service().await;
         let context = create_test_context();
 
         let decision = service.determine_recovery_action(&RecoveryTrigger::PermissionDenied, &context);
@@ -731,7 +731,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_calculate_retry_delay() {
-        let service = create_recovery_service();
+        let service = create_recovery_service().await;
 
         // First attempt: base_delay * backoff^0 = base_delay
         assert_eq!(service.calculate_retry_delay(0), 1000);

@@ -4,6 +4,7 @@
  */
 
 export { AgentChatPanel } from '../AgentChatPanel'
+export { AgentTypeSelector } from '../AgentTypeSelector'
 export { ChatMessage } from '../ChatMessage'
 export { GitStatusIndicator, GitBadge } from '../GitStatusIndicator'
 export { StagedReviewPanel } from '../StagedReviewPanel'

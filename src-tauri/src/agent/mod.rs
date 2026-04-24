@@ -3,6 +3,7 @@
 pub mod audit;
 pub mod audit_types;
 pub mod audit_siem;
+pub mod builtin_agent;
 pub mod config_cache;
 pub mod context_compression;
 pub mod correction;
@@ -17,7 +18,11 @@ pub mod intercom;
 pub mod knowledge_retrieval;
 pub mod dual_agent_provider;
 pub mod llm_agent_provider;
+pub mod lifecycle_hooks;
+pub mod progress_tracking;
+pub mod layered_memory;
 pub mod memory;
+pub mod execution_integration;
 pub mod mock_provider;
 pub mod skill;
 pub mod monitoring;
@@ -170,6 +175,9 @@ pub struct AgentRuntimeState {
     config: Arc<RwLock<Option<RuntimeConfig>>>,
     /// Agent messages storage for intercom
     messages: Arc<RwLock<HashMap<String, intercom::types::AgentMessage>>>,
+    /// Execution contexts for builtin agent types (session_id -> context)
+    /// pub(crate) so commands/agent.rs can access
+    pub(crate) execution_contexts: Arc<RwLock<HashMap<String, execution_integration::AgentExecutionContext>>>,
 }
 
 /// Alias for backward compatibility
@@ -183,6 +191,7 @@ impl AgentRuntimeState {
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
             messages: Arc::new(RwLock::new(HashMap::new())),
+            execution_contexts: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -195,6 +204,7 @@ impl AgentRuntimeState {
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(Some(config))),
             messages: Arc::new(RwLock::new(HashMap::new())),
+            execution_contexts: Arc::new(RwLock::new(HashMap::new())),
         })
     }
 
@@ -263,6 +273,7 @@ impl AgentRuntimeState {
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
             messages: Arc::new(RwLock::new(HashMap::new())),
+            execution_contexts: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -273,6 +284,7 @@ impl AgentRuntimeState {
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
             messages: Arc::new(RwLock::new(HashMap::new())),
+            execution_contexts: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -284,6 +296,7 @@ impl AgentRuntimeState {
             cancellations: Arc::new(RwLock::new(HashSet::new())),
             config: Arc::new(RwLock::new(None)),
             messages: Arc::new(RwLock::new(HashMap::new())),
+            execution_contexts: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 

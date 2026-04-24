@@ -13,6 +13,13 @@ use crate::agent::agent_orchestrator::AgentOrchestrator;
 use crate::agent::runtime_session::RuntimeSessionService;
 use crate::agent::{AgentExecutionRequest, AgentExecutionResponse, AgentRuntimeState};
 
+// BuiltinAgentType imports
+use crate::agent::builtin_agent::{
+    builtin_agent_config::AgentConfigRegistry,
+    builtin_agent_types::BuiltinAgentType,
+};
+use crate::agent::execution_integration::AgentExecutionContext;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StartAgentSessionRequest {
     pub tenant_id: String,
@@ -237,4 +244,144 @@ pub fn format_knowledge_for_runtime(result: RetrievalResult) -> String {
 #[tauri::command]
 pub fn format_knowledge_for_tool(result: RetrievalResult, tool_name: Option<String>) -> String {
     format_for_tool_context(&result, tool_name.as_deref())
+}
+
+// ============================================================================
+// Builtin Agent Type Commands (Task 14)
+// ============================================================================
+
+/// Agent type information for frontend display
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentTypeInfo {
+    pub name: String,
+    pub description: String,
+    pub recommended_model: String,
+    pub allows_execution: bool,
+    pub allows_write: bool,
+    pub allows_search: bool,
+    pub priority: u8,
+}
+
+/// Get all available agent types
+#[tauri::command]
+pub fn get_available_agent_types() -> Vec<AgentTypeInfo> {
+    BuiltinAgentType::all()
+        .iter()
+        .map(|t| AgentTypeInfo {
+            name: t.name().to_string(),
+            description: t.description().to_string(),
+            recommended_model: t.recommended_model().to_string(),
+            allows_execution: t.allows_execution(),
+            allows_write: t.allows_write(),
+            allows_search: t.allows_search(),
+            priority: t.priority(),
+        })
+        .collect()
+}
+
+/// Get configuration for a specific agent type
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentTypeConfigInfo {
+    pub name: String,
+    pub system_prompt: String,
+    pub allowed_tools: Vec<String>,
+    pub disallowed_tools: Vec<String>,
+    pub max_turns: Option<u32>,
+    pub supports_streaming: bool,
+    pub supports_execution: bool,
+}
+
+#[tauri::command]
+pub fn get_agent_type_config(agent_type_name: String) -> Result<AgentTypeConfigInfo, String> {
+    let agent_type = BuiltinAgentType::from_name(&agent_type_name)
+        .ok_or_else(|| format!("Unknown agent type: {}", agent_type_name))?;
+
+    let registry = AgentConfigRegistry::new();
+    let config = registry
+        .get(&agent_type)
+        .ok_or_else(|| format!("No config for agent type: {}", agent_type_name))?;
+
+    Ok(AgentTypeConfigInfo {
+        name: agent_type.name().to_string(),
+        system_prompt: config.effective_system_prompt(),
+        allowed_tools: config.allowed_tools.clone(),
+        disallowed_tools: config.disallowed_tools.clone(),
+        max_turns: config.max_turns,
+        supports_streaming: config.supports_streaming,
+        supports_execution: config.supports_execution,
+    })
+}
+
+/// Check if a tool is allowed for a specific agent type
+#[tauri::command]
+pub fn check_tool_allowed(agent_type_name: String, tool_name: String) -> Result<bool, String> {
+    let agent_type = BuiltinAgentType::from_name(&agent_type_name)
+        .ok_or_else(|| format!("Unknown agent type: {}", agent_type_name))?;
+
+    let registry = AgentConfigRegistry::new();
+    Ok(registry.is_tool_allowed(&agent_type, &tool_name))
+}
+
+/// Create execution context request
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateExecutionContextRequest {
+    pub session_id: String,
+    pub user_id: String,
+    pub project_id: String,
+    pub tenant_id: String,
+    pub agent_type_name: String,
+}
+
+/// Create execution context response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateExecutionContextResponse {
+    pub task_id: String,
+    pub agent_type_name: String,
+    pub session_id: String,
+}
+
+/// Create a new agent execution context
+#[tauri::command]
+pub async fn create_agent_execution_context(
+    request: CreateExecutionContextRequest,
+    state: State<'_, AgentRuntimeState>,
+) -> Result<CreateExecutionContextResponse, String> {
+    let agent_type = BuiltinAgentType::from_name(&request.agent_type_name)
+        .ok_or_else(|| format!("Unknown agent type: {}", request.agent_type_name))?;
+
+    let context = AgentExecutionContext::new(
+        request.session_id.clone(),
+        request.user_id.clone(),
+        request.project_id.clone(),
+        request.tenant_id.clone(),
+        agent_type,
+    );
+
+    let task_id = context.task_id.to_string();
+
+    // Store in state
+    {
+        let mut contexts = state.execution_contexts.write().await;
+        contexts.insert(request.session_id.clone(), context);
+    }
+
+    Ok(CreateExecutionContextResponse {
+        task_id,
+        agent_type_name: request.agent_type_name,
+        session_id: request.session_id,
+    })
+}
+
+/// Get current execution progress for a session
+#[tauri::command]
+pub async fn get_execution_progress(
+    session_id: String,
+    state: State<'_, AgentRuntimeState>,
+) -> Result<Option<crate::agent::progress_tracking::ProgressUpdate>, String> {
+    let contexts = state.execution_contexts.read().await;
+    if let Some(ctx) = contexts.get(&session_id) {
+        Ok(ctx.get_progress().await)
+    } else {
+        Ok(None)
+    }
 }

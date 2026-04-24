@@ -14,13 +14,16 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Clock3, MessageSquare, Plus, AlertCircle, Zap, RefreshCw } from 'lucide-react'
+import { Clock3, MessageSquare, Plus, AlertCircle, Zap, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
 import { StagedReviewPanel } from './StagedReviewPanel'
 import { CompressionStatus } from './chat/CompressionStatus'
 import { CompressionHistory } from './chat/CompressionHistory'
+import { AgentTypeSelector } from './AgentTypeSelector'
+import { ProgressDisplay } from './ProgressDisplay'
+import { ActivityList } from './ActivityList'
 import { PluginRecommendationCard } from '@/components/common/PluginRecommendationCard'
 import { usePluginRecommendation } from '@/hooks/usePluginRecommendation'
 import { useChatStore, useActiveChatSession } from '../hooks/useChatStore'
@@ -157,6 +160,44 @@ function CompressionStatusBar({ activeSessionId, className }: CompressionStatusB
   )
 }
 
+// ==================== Agent Type Selector Panel ====================
+
+interface AgentTypeSelectorPanelProps {
+  activeSessionId: string | null
+  className?: string
+}
+
+function AgentTypeSelectorPanel({ activeSessionId, className }: AgentTypeSelectorPanelProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  if (!activeSessionId) return null
+
+  return (
+    <div className={cn('border-t border-slate-200 bg-white', className)}>
+      {/* Toggle */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-4 py-2 hover:bg-slate-50 transition-colors"
+      >
+        <span className="text-xs font-medium text-slate-600">Agent 类型</span>
+        {isExpanded ? (
+          <ChevronUp size={14} className="text-slate-400" />
+        ) : (
+          <ChevronDown size={14} className="text-slate-400" />
+        )}
+      </button>
+
+      {/* Expanded content */}
+      {isExpanded && (
+        <div className="px-4 pb-3">
+          <AgentTypeSelector />
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ==================== Header Component ====================
 
 function ChatHeader({
@@ -281,6 +322,10 @@ export function AgentChatPanel({
 
   // Plugin recommendation
   const { recommendations, hasRecommendations, dismiss: dismissRecommendation, match: matchRecommendations } = usePluginRecommendation()
+
+  // Agent panel collapsible state
+  const [showProgressPanel, setShowProgressPanel] = useState(false)
+  const [showActivityPanel, setShowActivityPanel] = useState(false)
 
   // Combined loading state for UI
   const isAgentRunning = frontendIsStreaming || isExecuting
@@ -415,10 +460,65 @@ export function AgentChatPanel({
         </div>
       )}
 
+      {/* Agent Type Selection */}
+      <AgentTypeSelectorPanel activeSessionId={activeSessionId} />
+
       <StagedReviewPanel sessionId={activeSessionId} />
       
       {/* Compression Status Bar */}
       <CompressionStatusBar activeSessionId={activeSessionId} />
+      
+      {/* Agent Type Selection & Tool Call Panel */}
+      {(showProgressPanel || showActivityPanel) && (
+        <div className="border-t border-slate-200 bg-slate-50">
+          {/* Panel toggles */}
+          <div className="flex items-center gap-1 px-4 py-1.5 border-b border-slate-200">
+            <button
+              onClick={() => setShowProgressPanel(!showProgressPanel)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors',
+                showProgressPanel
+                  ? 'bg-[var(--ao-button-background,#1E3A5F)] text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              )}
+            >
+              进度
+              {showProgressPanel ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            <button
+              onClick={() => setShowActivityPanel(!showActivityPanel)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors',
+                showActivityPanel
+                  ? 'bg-[var(--ao-button-background,#1E3A5F)] text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              )}
+            >
+              活动
+              {showActivityPanel ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {isAgentRunning && (
+              <span className="ml-auto text-xs text-blue-600 font-medium animate-pulse">
+                运行中
+              </span>
+            )}
+          </div>
+
+          {/* Panel content */}
+          <div className="max-h-64 overflow-y-auto">
+            {showProgressPanel && (
+              <div className="p-3 border-b border-slate-200">
+                <ProgressDisplay className="text-xs" />
+              </div>
+            )}
+            {showActivityPanel && (
+              <div className="p-3">
+                <ActivityList className="text-xs" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Message List */}
       <MessageList className="flex-1 overflow-y-auto" />

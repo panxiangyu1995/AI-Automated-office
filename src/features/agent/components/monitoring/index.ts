@@ -8,3 +8,5 @@ export { TaskTraceAnalysis, type TaskTraceAnalysisProps, type TraceStatus, type 
 export { HeartbeatChecklist, type HeartbeatChecklistProps, type CheckItemStatus, type QuietMode, type HeartbeatStatus, type CheckCategory, type CheckItem, type ChecklistRun, type HeartbeatSchedule, type HeartbeatStats } from '../HeartbeatChecklist'
 export { ScheduledTaskCenter, type ScheduledTaskCenterProps, type TaskStatus, type TaskType, type RetryPolicy, type MutexPolicy, type RiskLevel, type ApprovalStatus, type CronDefinition, type RetryConfig, type TimeoutConfig, type MutexConfig, type TaskPolicy, type ScheduledTask, type TaskExecution, type ScheduledTaskCenterStats } from '../ScheduledTaskCenter'
 export { TaskNotifications, type NotificationType, type NotificationStatus, type DeliveryChannel, type ReminderStatus, type NotificationPreference, type TaskNotification, type NotificationStats, type TaskNotificationsProps } from '../TaskNotifications'
+export { ProgressDisplay, type ProgressDisplayProps, type ProgressUpdate, type TokenUsage, type ActivityEntry } from '../ProgressDisplay'
+export { ActivityList, type ActivityListProps } from '../ActivityList'
