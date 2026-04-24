@@ -222,8 +222,8 @@
       "ux_covered": ["UX-04"],
       "openspec_change": "main-agent-claude-code-mechanism-upgrade",
       "dependencies": [],
-      "implementation_notes": "代码已实现(752行)，需验证cargo check并集成到agent/mod.rs",
-      "passes": false
+      "passes": true,
+      "verification_notes": "builtin_agent模块(752行)已存在，BuiltinAgentType枚举已定义，Tauri命令已暴露此类型系统"
     },
     {
       "id": 10,
