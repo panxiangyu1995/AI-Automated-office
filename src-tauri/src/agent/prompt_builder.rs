@@ -370,7 +370,6 @@ pub trait AgentProviderExt: Send + Sync {
         retry_policy: &RetryPolicy,
     ) -> AgentResult<ProviderChatResponse> {
         let mut attempt = 0;
-        let mut last_error: AgentError = AgentError::Execution("No attempts made".to_string());
 
         loop {
             match self.complete_chat(request.clone()).await {
@@ -379,17 +378,16 @@ pub trait AgentProviderExt: Send + Sync {
                     if !retry_policy.should_retry(&error, attempt) {
                         return Err(error);
                     }
-                    last_error = error;
                 }
             }
 
+            attempt += 1;
             if attempt >= retry_policy.max_attempts {
-                return Err(last_error);
+                return Err(AgentError::Execution("Max retry attempts exceeded".to_string()));
             }
 
-            let delay = retry_policy.calculate_delay(attempt);
+            let delay = retry_policy.calculate_delay(attempt - 1);
             tokio::time::sleep(delay).await;
-            attempt += 1;
         }
     }
 }

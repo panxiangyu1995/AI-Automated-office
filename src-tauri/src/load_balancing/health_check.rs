@@ -86,7 +86,7 @@ pub struct HealthChecker {
     /// 节点状态
     statuses: HashMap<String, HealthStatus>,
     /// HTTP 客户端
-    #[cfg(feature = "http")]
+    #[cfg(feature = "agent-http")]
     http_client: reqwest::Client,
 }
 
@@ -96,7 +96,7 @@ impl HealthChecker {
         Self {
             nodes: HashMap::new(),
             statuses: HashMap::new(),
-            #[cfg(feature = "http")]
+            #[cfg(feature = "agent-http")]
             http_client: reqwest::Client::builder()
                 .timeout(Duration::from_secs(5))
                 .build()
@@ -190,7 +190,7 @@ impl HealthChecker {
     }
 
     /// 执行 HTTP 健康检查
-    #[cfg(feature = "http")]
+    #[cfg(feature = "agent-http")]
     async fn check_http(&self, config: &HealthCheckConfig) -> Result<bool, String> {
         let url = config.extra_params
             .as_ref()
@@ -208,7 +208,7 @@ impl HealthChecker {
     }
 
     /// HTTP 检查占位实现（无 http feature）
-    #[cfg(not(feature = "http"))]
+    #[cfg(not(feature = "agent-http"))]
     async fn check_http(&self, _config: &HealthCheckConfig) -> Result<bool, String> {
         // 占位实现：总是返回成功
         Ok(true)

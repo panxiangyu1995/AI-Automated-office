@@ -110,11 +110,6 @@ impl CsvExporter {
             serde_json::Value::String(s) => s.clone(),
             serde_json::Value::Number(n) => n.to_string(),
             serde_json::Value::Bool(b) => b.to_string(),
-            serde_json::Value::Null => String::new(),
-            serde_json::Value::Array(arr) => format!("[{}]", arr.iter()
-                .map(|v| self.value_to_string(v))
-                .collect::<Vec<_>>()
-                .join(",")),
             serde_json::Value::Object(obj) => format!("{{{}}}", obj.iter()
                 .map(|(k, v)| format!("\"{}\":{}", k, self.value_to_string(v)))
                 .collect::<Vec<_>>()

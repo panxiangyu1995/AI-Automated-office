@@ -1,11 +1,11 @@
 //! Sub-Agent Routing Module
 //!
 //! This module implements:
-//! - Routing service for keyword, intent, and scenario matching
-//! - Delegation decisions based on runtime context
-//! - Routing outcomes written into main trace
-//! - Standardized input for Sub-Agent execution context
-//! - Semantic routing using vector embeddings
+//! - SimpleRouter: lightweight keyword-based routing (KISS principle)
+//! - SubAgentRoutingService: full-featured routing with keyword, semantic (optional), and rule management
+//!
+//! For simplified usage, use SimpleRouter directly.
+//! For full routing capabilities, use SubAgentRoutingService.
 
 use anyhow::Result;
 use chrono::Utc;
@@ -20,6 +20,8 @@ pub use super::routing_types::{
     ConfirmationState, RiskEvaluation, RiskRecommendation, get_default_routing_rules,
 };
 
+// SemanticRouter is still available for SubAgentRoutingService compatibility.
+// For new code, prefer SimpleRouter (keyword-only, KISS).
 pub use super::router::semantic::SemanticRouter;
 
 /// Sub-agent routing service
@@ -685,6 +687,190 @@ impl SubAgentRoutingService {
     #[allow(dead_code)]
     pub fn get_routing_mode(&self) -> RoutingMode {
         self.routing_mode.clone()
+    }
+}
+
+// ============================================================================
+// SimpleRouter - KISS routing (keyword-only, no semantic/semantic/approval overhead)
+// ============================================================================
+
+/// Simplified routing service using only keyword matching.
+/// This is the preferred router for simple use cases.
+/// It provides the same interface as SubAgentRoutingService but without:
+/// - Semantic routing
+/// - Approval queue
+/// - Double confirmation
+/// - Risk evaluation
+///
+/// For production use with complex routing rules, use SubAgentRoutingService directly.
+#[derive(Clone)]
+pub struct SimpleRouter {
+    rules: Arc<RwLock<Vec<RoutingRule>>>,
+    outcomes: Arc<RwLock<Vec<RoutingOutcome>>>,
+}
+
+impl SimpleRouter {
+    pub fn new() -> Self {
+        Self {
+            rules: Arc::new(RwLock::new(get_default_routing_rules())),
+            outcomes: Arc::new(RwLock::new(Vec::new())),
+        }
+    }
+
+    /// Create with custom rules
+    pub fn with_rules(rules: Vec<RoutingRule>) -> Self {
+        Self {
+            rules: Arc::new(RwLock::new(rules)),
+            outcomes: Arc::new(RwLock::new(Vec::new())),
+        }
+    }
+
+    /// Match rules using keyword matching only.
+    pub async fn match_rules(&self, context: &RoutingContext) -> Vec<RoutingRule> {
+        let rules = self.rules.read().await;
+        let mut matches: Vec<(RoutingRule, f64)> = Vec::new();
+
+        for rule in rules.iter() {
+            if !rule.enabled {
+                continue;
+            }
+            let score = Self::keyword_score(rule, context);
+            if score > 0.0 {
+                matches.push((rule.clone(), score));
+            }
+        }
+
+        matches.sort_by(|a, b| {
+            let priority_cmp = b.0.priority.cmp(&a.0.priority);
+            if priority_cmp == std::cmp::Ordering::Equal {
+                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
+            } else {
+                priority_cmp
+            }
+        });
+
+        matches.into_iter().map(|(r, _)| r).collect()
+    }
+
+    fn keyword_score(rule: &RoutingRule, context: &RoutingContext) -> f64 {
+        let text = context.user_message.to_lowercase();
+        let mut match_count = 0;
+
+        for keyword in &rule.keywords {
+            if text.contains(&keyword.to_lowercase()) {
+                match_count += 1;
+            }
+        }
+
+        if match_count == 0 {
+            0.0
+        } else {
+            match_count as f64 / rule.keywords.len() as f64
+        }
+    }
+
+    /// Make a routing decision using keyword matching only.
+    pub async fn decide(&self, context: &RoutingContext) -> RoutingResult {
+        let matched_rules = self.match_rules(context).await;
+
+        let decision = if matched_rules.is_empty() {
+            RoutingDecision {
+                id: format!("rout_{}", uuid::Uuid::new_v4()),
+                timestamp: Utc::now().timestamp(),
+                input_preview: context.user_message.chars().take(50).collect(),
+                matched_rule_id: None,
+                matched_rule_name: None,
+                selected_sub_agent_id: None,
+                selected_sub_agent_name: None,
+                routing_mode: RoutingMode::Auto,
+                confidence: Some(ConfidenceLevel::Low),
+                confidence_score: Some(0.0),
+                reasoning: Some("No matching rule found, fallback to main agent".to_string()),
+                accepted: None,
+            }
+        } else {
+            let best = &matched_rules[0];
+            let score = Self::keyword_score(best, context);
+            RoutingDecision {
+                id: format!("rout_{}", uuid::Uuid::new_v4()),
+                timestamp: Utc::now().timestamp(),
+                input_preview: context.user_message.chars().take(50).collect(),
+                matched_rule_id: Some(best.id.clone()),
+                matched_rule_name: Some(best.name.clone()),
+                selected_sub_agent_id: Some(best.sub_agent_id.clone()),
+                selected_sub_agent_name: Some(best.sub_agent_name.clone()),
+                routing_mode: RoutingMode::Auto,
+                confidence: Some(Self::score_to_confidence(score)),
+                confidence_score: Some(score),
+                reasoning: Some(format!("Matched '{}' with score {:.2}", best.name, score)),
+                accepted: None,
+            }
+        };
+
+        let outcome = RoutingOutcome {
+            id: format!("out_{}", uuid::Uuid::new_v4()),
+            trace_id: context.trace_id.clone(),
+            session_id: context.session_id.clone(),
+            decision_id: decision.id.clone(),
+            rule_id: decision.matched_rule_id.clone(),
+            sub_agent_id: decision.selected_sub_agent_id.clone(),
+            routing_mode: decision.routing_mode.clone(),
+            confidence: decision.confidence_score,
+            accepted: decision.accepted,
+            created_at: Utc::now().timestamp(),
+        };
+
+        {
+            let mut outcomes = self.outcomes.write().await;
+            outcomes.push(outcome.clone());
+        }
+
+        let sub_ctx = decision.selected_sub_agent_id.as_ref().map(|_| SubAgentExecutionContext {
+            sub_agent_id: decision.selected_sub_agent_id.clone().unwrap_or_default(),
+            sub_agent_name: decision.selected_sub_agent_name.clone().unwrap_or_default(),
+            session_id: context.session_id.clone(),
+            trace_id: context.trace_id.clone(),
+            original_input: context.user_message.clone(),
+            routing_context: HashMap::new(),
+            constraints: SubAgentConstraints {
+                max_steps: 10,
+                timeout_seconds: 300,
+                allowed_tools: Vec::new(),
+                denied_tools: Vec::new(),
+                permission_scope: "limited".to_string(),
+            },
+        });
+
+        RoutingResult {
+            decision,
+            sub_agent_context: sub_ctx,
+            outcome_record: outcome,
+        }
+    }
+
+    fn score_to_confidence(score: f64) -> ConfidenceLevel {
+        if score >= 0.8 {
+            ConfidenceLevel::High
+        } else if score >= 0.5 {
+            ConfidenceLevel::Medium
+        } else {
+            ConfidenceLevel::Low
+        }
+    }
+
+    pub async fn get_rules(&self) -> Vec<RoutingRule> {
+        self.rules.read().await.clone()
+    }
+
+    pub async fn add_rule(&self, rule: RoutingRule) {
+        let mut rules = self.rules.write().await;
+        rules.push(rule);
+    }
+}
+
+impl Default for SimpleRouter {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

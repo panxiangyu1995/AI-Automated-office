@@ -16,8 +16,6 @@ pub mod execution;
 pub mod heartbeat;
 pub mod intercom;
 pub mod knowledge_retrieval;
-pub mod dual_agent_provider;
-pub mod llm_agent_provider;
 pub mod lifecycle_hooks;
 pub mod progress_tracking;
 pub mod layered_memory;
@@ -37,6 +35,7 @@ pub mod routing;
 pub mod routing_types;
 pub mod template;
 pub mod agent_orchestrator;
+pub mod agent_loop;
 pub mod provider;
 pub mod llm_provider;
 pub mod prompt_builder;
@@ -51,8 +50,8 @@ pub mod context_compression_integration;
 pub mod subagent;
 pub mod router;
 pub mod model_router;
-pub mod pilot;
 pub mod prompt_guardrails;
+pub mod simple_monitoring;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -61,11 +60,9 @@ use tokio::sync::RwLock;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::agent::dual_agent_provider::DualAgentProvider;
-use crate::agent::llm_agent_provider::LlmAgentProvider;
 use crate::agent::llm_provider::config::AgentMode;
 use crate::agent::llm_provider::provider_manager::LlmProviderManager;
-use provider::AgentProvider;
+use provider::{AgentProvider, LlmAgentProviderAdapter};
 
 #[derive(Debug, Error)]
 pub enum AgentError {
@@ -209,7 +206,8 @@ impl AgentRuntimeState {
     }
 
     /// Create Agent Provider from configuration
-    /// Uses DualAgentProvider for Plan/Act dual mode, or single LlmAgentProvider otherwise
+    /// Creates a unified adapter wrapping LLM provider(s) with Plan/Act support.
+    /// The Plan/Act mode switching is handled by the AgentLoop at runtime.
     async fn create_provider_from_config(config: &RuntimeConfig) -> Result<Arc<dyn AgentProvider>, AgentError> {
         let act_llm = Self::create_llm_provider(
             &config.provider_type,
@@ -229,11 +227,7 @@ impl AgentRuntimeState {
             None
         };
 
-        if plan_llm.is_some() {
-            Ok(Arc::new(DualAgentProvider::new(act_llm, plan_llm)))
-        } else {
-            Ok(Arc::new(LlmAgentProvider::new(act_llm)))
-        }
+        Ok(Arc::new(LlmAgentProviderAdapter::new(act_llm, plan_llm)))
     }
 
     /// Create an LLM provider from parameters
@@ -290,7 +284,7 @@ impl AgentRuntimeState {
 
     /// Create AgentRuntimeState with a specific LLM provider (convenience method)
     pub async fn with_llm_provider(llm: Arc<dyn crate::agent::llm_provider::LlmProvider>) -> Self {
-        let agent_provider = LlmAgentProvider::new(llm);
+        let agent_provider = LlmAgentProviderAdapter::new(llm, None);
         Self {
             provider: Arc::new(RwLock::new(Arc::new(agent_provider))),
             cancellations: Arc::new(RwLock::new(HashSet::new())),
@@ -309,7 +303,7 @@ impl AgentRuntimeState {
 
     /// Set the LLM provider directly (creates LlmAgentProvider wrapper)
     pub async fn set_llm_provider(&self, llm: Arc<dyn crate::agent::llm_provider::LlmProvider>) {
-        let agent_provider = LlmAgentProvider::new(llm);
+        let agent_provider = LlmAgentProviderAdapter::new(llm, None);
         self.set_provider(Arc::new(agent_provider)).await;
     }
 

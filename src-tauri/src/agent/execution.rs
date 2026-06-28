@@ -20,10 +20,8 @@ use tokio::sync::RwLock;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum MemoryScope {
-    Private,      // Sub-Agent's own isolated memory
-    Shared,       // Shared with main agent
-    Inherited,    // Read-only copy from main agent
-    SessionOnly,  // Limited to current session
+    Private,  // Sub-Agent's own isolated memory
+    Shared,   // Shared with main agent
 }
 
 impl std::fmt::Display for MemoryScope {
@@ -31,8 +29,6 @@ impl std::fmt::Display for MemoryScope {
         match self {
             MemoryScope::Private => write!(f, "private"),
             MemoryScope::Shared => write!(f, "shared"),
-            MemoryScope::Inherited => write!(f, "inherited"),
-            MemoryScope::SessionOnly => write!(f, "session_only"),
         }
     }
 }
@@ -202,7 +198,7 @@ impl SubAgentExecutionService {
         let constraints = constraints.unwrap_or(ExecutionConstraints {
             max_steps: 10,
             timeout_seconds: 300,
-            memory_scope: MemoryScope::SessionOnly,
+            memory_scope: MemoryScope::Shared,
             tool_rules: vec![],
             permission_level: projection.permission_level.clone(),
         });
@@ -526,7 +522,7 @@ impl Default for ExecutionConstraints {
         Self {
             max_steps: 10,
             timeout_seconds: 300,
-            memory_scope: MemoryScope::SessionOnly,
+            memory_scope: MemoryScope::Shared,
             tool_rules: Vec::new(),
             permission_level: "read_only".to_string(),
         }
@@ -547,8 +543,6 @@ mod tests {
     fn test_memory_scope_display() {
         assert_eq!(MemoryScope::Private.to_string(), "private");
         assert_eq!(MemoryScope::Shared.to_string(), "shared");
-        assert_eq!(MemoryScope::Inherited.to_string(), "inherited");
-        assert_eq!(MemoryScope::SessionOnly.to_string(), "session_only");
     }
 
     #[test]

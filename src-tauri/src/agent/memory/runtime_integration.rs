@@ -146,7 +146,7 @@ struct L2Config {
 }
 
 #[derive(Debug, Clone)]
-struct HookStats {
+pub(crate) struct HookStats {
     pub session_start_count: u32,
     pub user_prompt_count: u32,
     pub tool_use_count: u32,
@@ -554,7 +554,7 @@ impl MemoryRuntimeIntegration {
     }
 
     /// 获取统计
-    pub async fn get_stats(&self) -> HookStats {
+    pub(crate) async fn get_stats(&self) -> HookStats {
         self.stats.read().await.clone()
     }
 

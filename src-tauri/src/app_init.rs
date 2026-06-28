@@ -120,8 +120,7 @@ async fn init_llm_provider(
             use agent::llm_provider::LlmProviderManager;
             if let Ok(real_provider) = LlmProviderManager::create_provider(&config) {
                 let agent_state = app.state::<agent::AgentRuntimeState>();
-                let llm_agent_provider = agent::llm_agent_provider::LlmAgentProvider::new(real_provider);
-                agent_state.set_provider(Arc::new(llm_agent_provider)).await;
+                agent_state.set_llm_provider(real_provider).await;
                 tracing::info!("Real LLM provider initialized from config: {}", config.provider_type);
             }
         }
@@ -141,8 +140,7 @@ async fn init_llm_provider(
                 );
                 if let Ok(provider) = openrouter_provider {
                     let agent_state = app.state::<agent::AgentRuntimeState>();
-                    let llm_agent_provider = agent::llm_agent_provider::LlmAgentProvider::new(provider);
-                    agent_state.set_provider(Arc::new(llm_agent_provider)).await;
+                    agent_state.set_llm_provider(provider).await;
                     tracing::info!("Real LLM provider initialized with OpenRouter (from env)");
                 }
             } else {

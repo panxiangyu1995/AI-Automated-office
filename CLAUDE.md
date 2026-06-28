@@ -783,6 +783,52 @@ cp .env.example .env  # 复制环境变量模板
 12. **本地优先** - 数据存储采用本地优先 + 增量同步策略
 13. **UI占位不要使用模拟数据** - 前端 UI 占位符不使用模拟数据，如有需要仅展示功能描述
 14. **时间很充足** - 不存在什么时间有限的说法，不要使用任何简化的或者批量的方式降低代码质量！
+15. **Think Before Coding**
+    Don't assume. Don't hide confusion. Surface tradeoffs.
+
+Before implementing:
+
+State your assumptions explicitly. If uncertain, ask.
+If multiple interpretations exist, present them - don't pick silently.
+If a simpler approach exists, say so. Push back when warranted.
+If something is unclear, stop. Name what's confusing. Ask. 
+16. **Simplicity First**
+Minimum code that solves the problem. Nothing speculative.
+
+No features beyond what was asked.
+No abstractions for single-use code.
+No "flexibility" or "configurability" that wasn't requested.
+No error handling for impossible scenarios.
+If you write 200 lines and it could be 50, rewrite it.
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify. 
+17**Surgical Changes**
+Touch only what you must. Clean up only your own mess.
+
+When editing existing code:
+
+Don't "improve" adjacent code, comments, or formatting.
+Don't refactor things that aren't broken.
+Match existing style, even if you'd do it differently.
+If you notice unrelated dead code, mention it - don't delete it.
+When your changes create orphans:
+
+Remove imports/variables/functions that YOUR changes made unused.
+Don't remove pre-existing dead code unless asked.
+The test: Every changed line should trace directly to the user's request. 13. **Goal-Driven Execution**
+Define success criteria. Loop until verified.
+
+Transform tasks into verifiable goals:
+
+"Add validation" → "Write tests for invalid inputs, then make them pass"
+"Fix the bug" → "Write a test that reproduces it, then make it pass"
+"Refactor X" → "Ensure tests pass before and after"
+For multi-step tasks, state a brief plan:
+
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+   Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
 
 ## 🚀 快速启动清单
 

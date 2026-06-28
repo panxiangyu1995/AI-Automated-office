@@ -3,7 +3,6 @@
 //! Implements Tauri commands for knowledge base operations.
 
 use crate::knowledge::permission::{AccessLevel, KnowledgeBase, KnowledgeBaseSummary, KnowledgePermission, KnowledgePermissionRecord, PermissionCheckResult, PermissionService, UserContext};
-use crate::vector::store::VectorStore;
 use anyhow::Result;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};

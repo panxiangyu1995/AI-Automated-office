@@ -4,7 +4,7 @@ workflowType: 'architecture'
 lastStep: 10
 status: 'complete'
 completedAt: '2026-03-11'
-lastEdited: '2026-04-06'
+lastEdited: '2026-04-25'
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - docs/memory-fusion-pdf-draft.md
@@ -50,6 +50,8 @@ inputDocuments:
   - _bmad-output/errorshandl/session-errors.md
   - _bmad-output/errorshandl/error-formatting.md
   - _bmad-output/planning-artifacts/clawhub-compatibility-design.md
+  - docs/agent-runtime-arch-refactoring.md
+  - 开源库参考项目/claude-code/
 workflowType: 'architecture'
 project_name: 'AI-Automated-office'
 user_name: 'PAN'
@@ -7828,3 +7830,202 @@ pub fn create_subagent_context(
 | 会话存储 | `src/server/web/session-store.ts` | `src-tauri/src/agent/session/store.rs` |
 | 进程通信 | `src/bridge/sessionRunner.ts` | `src-tauri/src/agent/process.rs` |
 | Agent 间通信 | `src/tools/SendMessageTool/SendMessageTool.ts` | `src-tauri/src/agent/mailbox.rs` |
+
+---
+
+## Agent Runtime 架构精简方案 (v2026.04)
+
+> **状态**: 铁律文档新增章节
+> **来源**: 基于 Claude Code 架构研究 + 项目现状分析
+> **目标**: 将 Agent Runtime 从 55+ 模块精简为 ~20 模块，执行链路从 10+ 层减少到 3 层
+> **约束**: 功能不变、API 契约不变、测试全部通过
+
+### 背景与问题识别
+
+当前 Agent Runtime 架构存在以下核心问题：
+
+| 问题 | 描述 | 影响 |
+|------|------|------|
+| **P1: 模块数量爆炸** | 55+ 子模块，Claude Code 参考约 15 个 | 理解成本高、维护困难 |
+| **P2: Provider 抽象过度** | 6 层 Provider 抽象（AgentProvider → LlmAgentProvider → DualAgentProvider → LlmProvider → 具体实现） | 性能开销、调试困难 |
+| **P3: 路由系统过度工程化** | SubAgentRoutingService 实现 4 种匹配策略、风险评估、双确认防误触 | 90% 功能未被使用 |
+| **P4: 内存系统复杂度过高** | 分层向量记忆 + RAG + 4 种 MemoryScope | 对 ERP 助手场景过于超前 |
+| **P5: 状态分散** | AgentRuntimeState 持有 7+ 个 Arc<RwLock<...>> | 状态一致性验证困难 |
+| **P6: 空壳聚合文件** | execution_integration.rs 等仅做导出聚合，无独立逻辑 | 无意义模块 |
+
+### 架构对比
+
+| 指标 | Claude Code | 当前项目 | 重构目标 |
+|------|-------------|----------|----------|
+| Agent 核心模块数 | ~15 | 55+ | ~20 |
+| 抽象层数 | 1-2 | 6+ | 2 |
+| 目录深度 | 2-3 层 | 5-6 层 | 3 层 |
+| 核心执行链路深度 | 3 层 | 10+ 层 | 3 层 |
+| 路由系统复杂度 | 10 行 if-else | ~700 行服务 | ~100 行 SimpleRouter |
+| 记忆系统 | .claude/memory 文本文件 | 分层向量内存 | 简化分层内存 |
+
+### 目标架构：3 层 + 4 核 + 1 桥
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Experience Layer                            │
+│  (React + Tauri Commands + Event Emitters)                │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+┌───────────────────────▼─────────────────────────────────────┐
+│                   AgentCore Loop                              │
+│  (单文件: agent_loop.rs ~800行)                            │
+│  - 消息接收/发送                                           │
+│  - LLM 调用（直接调用，无多层包装）                         │
+│  - 工具执行循环                                           │
+│  - 上下文压缩触发                                          │
+│  - 进度事件推送                                           │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+┌───────────────────────▼─────────────────────────────────────┐
+│                4 个核心子系统                                │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐         │
+│  │ToolSystem  │ │MemorySystem │ │HookSystem  │         │
+│  │(~400行)    │ │(~300行)    │ │(~300行)    │         │
+│  └─────────────┘ └─────────────┘ └─────────────┘         │
+│  ┌─────────────────────────────┐                          │
+│  │ProviderSystem(~200行)      │                          │
+│  └─────────────────────────────┘                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 执行链路重构
+
+**重构前（6+ 层调用）**:
+
+```
+AgentRuntimeState
+  → LlmAgentProvider.complete()
+    → DualAgentProvider.complete()
+      → LlmProvider.complete()
+        → ZhipuProvider / DeepSeekProvider / ...
+```
+
+**重构后（3 层调用）**:
+
+```
+AgentLoop.run()
+  → StandardAgentLoop
+    → Provider.complete() (直接调用)
+      → ZhipuProvider / DeepSeekProvider / ...
+```
+
+### 模块重构清单
+
+#### Phase A: 基础设施层
+
+| 操作 | 文件 | 说明 |
+|------|------|------|
+| 扩展 | `provider.rs` | AgentProvider trait 扩展，添加 stream_complete() |
+| 删除 | `llm_agent_provider.rs` | 空壳包装层 |
+| 删除 | `dual_agent_provider.rs` | 空壳双代理层 |
+| 新增 | `state.rs` | RuntimeState 统一状态入口 |
+
+#### Phase B: 执行核心层
+
+| 操作 | 文件 | 说明 |
+|------|------|------|
+| 新增 | `agent_loop.rs` (~800行) | 单文件核心执行引擎，灵感来自 Claude Code QueryEngine.ts |
+| 迁移 | LlmAgentProvider 逻辑 | 内联到 StandardAgentLoop |
+| 迁移 | DualAgentProvider 逻辑 | 内联为 AgentMode::Plan/Act |
+
+#### Phase C: 子系统精简
+
+| 操作 | 文件/模块 | 说明 |
+|------|-----------|------|
+| 简化 | `routing.rs` → `SimpleRouter` | 删除 Semantic/LlmGuided/风险评估/双确认 |
+| 精简 | `layered_memory/` | MemoryScope 从 4 值简化为 2 值（Private/Shared） |
+| 合并 | 6 个监控模块 → `monitoring.rs` | monitoring + audit + events |
+
+#### Phase D: 清理
+
+| 操作 | 文件 | 说明 |
+|------|------|------|
+| 删除 | `execution_integration.rs` | 空壳聚合 |
+| 删除 | `pilot.rs` | 孤立逻辑 |
+| 删除 | `router/` 目录 | 未使用 |
+| 删除 | `model_router.rs` | 未使用 |
+| 更新 | `mod.rs` | 导出从 55 个减少到 ~20 个 |
+
+### 精简后的目录结构
+
+```
+src-tauri/src/agent/
+├── mod.rs                     # 入口（~20 个 pub mod）
+│
+├── agent_loop.rs              # 新增: 核心执行环路 (~800行)
+├── provider.rs                 # 保留: AgentProvider trait + 直接实现
+├── provider/                   # 保留: LLM Provider 实现
+│   ├── zhipu.rs
+│   ├── deepseek.rs
+│   ├── minimax.rs
+│   ├── dashscope.rs
+│   └── openai_compatible.rs
+│
+├── tools/                      # 保留: 工具系统
+│   ├── registry.rs
+│   ├── executor.rs
+│   ├── core/
+│   └── mcp/
+│
+├── memory/                     # 精简: 记忆系统
+│   ├── layered_memory.rs      # 简化版
+│   └── compression.rs
+│
+├── hooks/                      # 精简: 生命周期钩子
+│   ├── hook_types.rs
+│   ├── hook_trait.rs
+│   └── hook_registry.rs
+│
+├── session.rs                  # 重命名: 会话管理
+├── monitoring.rs               # 合并: 监控+审计+事件
+├── builtin_agent/              # 保留: 内置代理类型
+├── routing.rs                  # 精简: SimpleRouter
+├── permission.rs               # 保留: 权限过滤
+└── error.rs                    # 统一错误类型
+```
+
+### OpenSpec 变更追踪
+
+| OpenSpec | 阶段 | Task | 状态 |
+|----------|------|------|------|
+| `agent-arch-phase-a-provider-merge` | Phase A | 23-25 | 待执行 |
+| `agent-arch-phase-b-loop-core` | Phase B | 26-27 | 待执行 |
+| `agent-arch-phase-cd-simplify-cleanup` | Phase C+D | 28-31 | 待执行 |
+
+### 功能不变性保证
+
+本次架构精简**不添加新功能、不删除现有功能、不改变业务逻辑、保持 API 向后兼容**。
+
+| 必须保留的功能 | 验证方法 |
+|---------------|----------|
+| Agent 执行环路 | cargo test |
+| 多 Provider 支持 | 分别测试 Zhipu/DeepSeek Provider |
+| Plan/Act 双代理模式 | AgentMode::Plan/Act 切换测试 |
+| 工具调用系统 | fs_read / bash 等核心工具测试 |
+| 内置 Agent 类型 | Explore/Plan 模式测试 |
+| 进度追踪 | ProgressUpdate 事件推送测试 |
+| 生命周期钩子 | HookRegistry 触发测试 |
+| 会话持久化 | 创建会话，验证存储/恢复 |
+| 权限过滤 | ToolRegistry 工具过滤测试 |
+| 前端集成 | npm run lint && npm run build |
+
+### 参考资料
+
+- Claude Code 源码: `src/QueryEngine.ts` (~46K 行) - 单文件内聚
+- Claude Code 架构文档: `docs/architecture.md`
+- 项目重构文档: `docs/agent-runtime-arch-refactoring.md`
+- OpenSpec 变更: `openspec/changes/agent-arch-phase-*/`
+
+### 架构原则约束
+
+- **KISS**: 保持简单，避免不必要的复杂性
+- **YAGNI**: 不实现当前不需要的功能
+- **SOLID**: 单一职责、开闭原则
+- **DRY**: 消除重复代码
+- **DIP**: 依赖抽象而非具体实现

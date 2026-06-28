@@ -5,6 +5,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 use chrono::Utc;
 
+use super::agent_loop::{AgentLoop, StandardAgentLoop};
 use super::events::RuntimeEventEmitter;
 use super::prompt_builder::{
     AgentProviderExt, BuiltPrompt, ProviderChatRequest, ProviderChatResponse,
@@ -12,8 +13,9 @@ use super::prompt_builder::{
     ProviderSelector, PromptBuilder, PromptBuildOptions,
     RetryPolicy, RuntimeContext, ToolDescriptor,
 };
-use super::provider::{AgentProvider, ProviderRequest};
+use super::provider::{AgentProvider, LoopMode, LoopRequest, ProviderRequest};
 use super::runtime_session::RuntimeSessionService;
+use super::tools::pipeline::ToolExecutionPipeline;
 use super::{
     AgentError,
     AgentExecutionRequest,
@@ -33,6 +35,8 @@ pub struct AgentOrchestrator {
     provider_selector: ProviderSelector,
     /// Default provider configuration
     default_config: ProviderConfig,
+    /// Tool execution pipeline (optional, enables multi-turn tool execution)
+    tool_pipeline: Option<Arc<ToolExecutionPipeline>>,
 }
 
 impl Clone for AgentOrchestrator {
@@ -44,6 +48,7 @@ impl Clone for AgentOrchestrator {
             prompt_builder: self.prompt_builder.clone(),
             provider_selector: self.provider_selector.clone(),
             default_config: self.default_config.clone(),
+            tool_pipeline: self.tool_pipeline.clone(),
         }
     }
 }
@@ -61,7 +66,13 @@ impl AgentOrchestrator {
             prompt_builder: PromptBuilder::new(),
             provider_selector: ProviderSelector::new(),
             default_config: ProviderConfig::default(),
+            tool_pipeline: None,
         }
+    }
+
+    pub fn with_tool_pipeline(mut self, pipeline: Arc<ToolExecutionPipeline>) -> Self {
+        self.tool_pipeline = Some(pipeline);
+        self
     }
 
     /// Create orchestrator with prompt builder configured
@@ -78,6 +89,7 @@ impl AgentOrchestrator {
             prompt_builder,
             provider_selector: ProviderSelector::new(),
             default_config: ProviderConfig::default(),
+            tool_pipeline: None,
         }
     }
 
@@ -97,6 +109,7 @@ impl AgentOrchestrator {
             prompt_builder,
             provider_selector,
             default_config: config,
+            tool_pipeline: None,
         }
     }
 
@@ -260,6 +273,93 @@ impl AgentOrchestrator {
             content: Some(provider_response.content),
             error: None,
         })
+    }
+
+    /// Execute using the multi-turn AgentLoop.
+    /// This uses StandardAgentLoop for multi-turn tool execution when tool_pipeline is available.
+    /// Falls back to single-turn execution if tool_pipeline is not configured.
+    pub async fn execute_with_loop(
+        &self,
+        request: AgentExecutionRequest,
+        mode: LoopMode,
+        max_turns: usize,
+    ) -> AgentResult<AgentExecutionResponse> {
+        self.clear_interrupt(&request.session_id).await;
+        if self.is_interrupted(&request.session_id).await {
+            return Err(AgentError::Interrupted);
+        }
+
+        let trace_id = Uuid::new_v4().to_string();
+
+        // Get or create session
+        self.runtime
+            .ensure_session(&request.session_id, &request.user_id)
+            .await?;
+
+        // Build messages from history
+        let history = self.runtime.list_messages(&request.session_id).await?;
+        let mut messages = Vec::new();
+        for msg in history {
+            if let Some(content) = msg.content {
+                messages.push(AgentMessage {
+                    role: msg.role,
+                    content,
+                    metadata: msg.metadata,
+                });
+            }
+        }
+
+        // Append user message
+        messages.push(AgentMessage {
+            role: "user".to_string(),
+            content: request.message.clone(),
+            metadata: None,
+        });
+
+        // Build StandardAgentLoop
+        let mut loop_instance = StandardAgentLoop::new(Arc::clone(&self.provider))
+            .with_session_service(Arc::clone(&self.runtime));
+
+        if let Some(ref pipeline) = self.tool_pipeline {
+            loop_instance = loop_instance.with_tool_pipeline(Arc::clone(pipeline));
+        }
+
+        let loop_req = LoopRequest {
+            session_id: request.session_id.clone(),
+            trace_id: trace_id.clone(),
+            messages,
+            mode,
+            max_turns,
+            metadata: None,
+        };
+
+        // Execute the loop
+        match loop_instance.run(loop_req).await {
+            Ok(response) => {
+                tracing::debug!(
+                    "Agent loop completed: {} turns, {} chars",
+                    response.total_turns,
+                    response.content.len()
+                );
+                Ok(AgentExecutionResponse {
+                    session_id: request.session_id,
+                    trace_id,
+                    status: AgentExecutionStatus::Completed,
+                    content: Some(response.content),
+                    error: None,
+                })
+            }
+            Err(AgentError::Interrupted) => {
+                Ok(AgentExecutionResponse {
+                    session_id: request.session_id,
+                    trace_id,
+                    status: AgentExecutionStatus::Interrupted,
+                    content: None,
+                    error: Some("execution interrupted".to_string()),
+                })
+            }
+            Err(e) => Err(e),
+        }
     }
 }
 

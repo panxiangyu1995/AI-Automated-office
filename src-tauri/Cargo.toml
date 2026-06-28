@@ -24,7 +24,7 @@ tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1"
 sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite"] }
 async-trait = "0.1"
-reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"], optional = true }
 futures-util = "0.3"
 futures = "0.3"
 tokio-tungstenite = "0.21"
@@ -63,6 +63,11 @@ regex = "1"
 urlencoding = "2"
 dirs = "5"
 url = "2"
+
+[features]
+default = ["agent-tauri", "agent-http"]
+agent-tauri = []
+agent-http = ["reqwest"]
 
 [profile.release]
 panic = "abort"

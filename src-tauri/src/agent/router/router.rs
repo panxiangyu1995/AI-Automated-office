@@ -155,7 +155,7 @@ pub struct IntentRouter {
 }
 
 #[derive(Clone)]
-struct RouteRule {
+pub(crate) struct RouteRule {
     target: SubagentType,
     required_permissions: Vec<String>,
     model: ModelProvider,
@@ -177,7 +177,7 @@ impl IntentRouter {
     }
 
     /// Register a routing rule
-    pub fn register_rule(&mut self, intent: String, rule: RouteRule) {
+    pub(crate) fn register_rule(&mut self, intent: String, rule: RouteRule) {
         self.routing_table.insert(intent, rule);
     }
 

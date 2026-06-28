@@ -8,8 +8,8 @@ use crate::agent::llm_provider::{
     ZhipuConfig, DeepSeekConfig, MinimaxConfig, OpenAICompatibleConfig,
     LlmProvider, LlmProviderError, LlmRequest, LlmMessage,
 };
-use crate::agent::llm_agent_provider::LlmAgentProvider;
-use crate::agent::llm_provider::config::AgentMode;
+use crate::agent::provider::LlmAgentProviderAdapter;
+use crate::agent::provider::LoopMode;
 
 #[cfg(test)]
 mod provider_tests {
@@ -131,31 +131,29 @@ mod provider_tests {
 
     #[test]
     fn test_llm_agent_provider_creation() {
-        // Create a real provider (even if not configured, it should be creatable)
         let config = OpenAICompatibleConfig::new("http://localhost:11434/v1/chat/completions");
         let llm = Arc::new(OpenAICompatibleProvider::with_config(config));
-        
-        let agent_provider = LlmAgentProvider::new(llm);
+
+        let agent_provider = LlmAgentProviderAdapter::new(llm, None);
         assert!(!agent_provider.has_plan_mode());
-        assert_eq!(agent_provider.get_active_mode(), AgentMode::Act);
+        assert_eq!(agent_provider.get_active_mode(), LoopMode::Act);
     }
 
     #[test]
     fn test_llm_agent_provider_dual_config() {
         let config1 = OpenAICompatibleConfig::new("http://plan-model:11434/v1/chat/completions");
         let config2 = OpenAICompatibleConfig::new("http://act-model:11434/v1/chat/completions");
-        
+
         let plan_llm = Arc::new(OpenAICompatibleProvider::with_config(config1));
         let act_llm = Arc::new(OpenAICompatibleProvider::with_config(config2));
-        
-        let agent_provider = LlmAgentProvider::with_dual_config(act_llm, Some(plan_llm));
+
+        let agent_provider = LlmAgentProviderAdapter::new(act_llm, Some(plan_llm));
         assert!(agent_provider.has_plan_mode());
-        assert_eq!(agent_provider.get_active_mode(), AgentMode::Act);
-        
-        // Test provider switching
-        let plan_provider = agent_provider.get_provider_for_mode(AgentMode::Plan);
-        let act_provider = agent_provider.get_provider_for_mode(AgentMode::Act);
-        
+        assert_eq!(agent_provider.get_active_mode(), LoopMode::Act);
+
+        let plan_provider = agent_provider.get_provider_for_mode(LoopMode::Plan);
+        let act_provider = agent_provider.get_provider_for_mode(LoopMode::Act);
+
         assert!(plan_provider.provider_id().contains("compatible"));
         assert!(act_provider.provider_id().contains("compatible"));
     }

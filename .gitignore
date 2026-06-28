@@ -52,7 +52,10 @@ coverage/
 test-results/.last-run.json
 playwright-report/index.html
 bin/
+test-results
 playwright-report
+playwright/.auth/
+tests/e2e/screenshots/
 开源库参考项目
 test-results
 # Archive files
