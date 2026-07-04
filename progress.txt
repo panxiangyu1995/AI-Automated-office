@@ -774,3 +774,25 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - api/pkg/response/response.go, response_test.go
 - api/config/config.yaml
 - api/.gitignore, .gitignore
+
+## 2026-07-04 - Task 2: CLI 项目初始化（Cobra）
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-011 (CLI多平台), FR-AUTH-014 (CLI后台服务)
+- 架构合规：遵循 Cobra CLI 架构，分层符合 architecture.md
+
+### What was done:
+- 初始化 Go module: `github.com/ai-office/cli`
+- 创建 CLI 骨架：cli/main.go → cmd/root.go 注册 auth/poll/skill 三个子命令
+- auth 命令：login/logout/status，支持 YAML 配置文件持久化 (~/.ao-cli/config.yaml)
+- poll 命令：start 启动消息轮询框架（60s 间隔）
+- skill 命令：list/describe/execute 框架，支持技能注册中心
+- API 客户端：pkg/api_client 支持 Login/Get/Post + Bearer token
+- 配置管理：internal/config (持久化) + pkg/config (环境变量)
+- 消息轮询器：internal/poller 可配置间隔 + 优雅停止
+
+### Testing:
+- go vet ./...: ✅ 通过
+- go build: ✅ 编译成功
+- go test -v ./...: ✅ 14/14 测试通过（cmd 4 + internal/config 3 + internal/poller 2 + internal/skill 3 + api_client 2）
+- CLI E2E: ao-cli --help / auth / poll / skill 全部正常输出 ✅
