@@ -1173,3 +1173,21 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 21: 老板跨企业视角切换
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-008 (跨企业切换), FR-GROUP-003 (同集团企业访问)
+- 架构合规：JWT enterprise_id 替换 + 同集团校验
+
+### What was done:
+- 扩展 AuthService：新增 SwitchEnterprise + CanAccessEnterprise（Operator 可任意切换，Owner 仅同集团）
+- 扩展 AuthHandler：POST /api/v1/auth/switch-enterprise 端点
+- 扩展 AuthServiceInterface：新增 SwitchEnterprise 方法
+- 更新 mockAuthService 测试：新增 SwitchEnterprise 方法
+- 更新 router.go：使用 NewAuthServiceWithEnterprise 构造 + 注册路由
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过

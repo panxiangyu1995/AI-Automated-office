@@ -12,8 +12,9 @@ import (
 )
 
 type AuthService struct {
-	userRepo   repository.UserRepository
-	jwtManager *auth.JWTManager
+	userRepo       repository.UserRepository
+	enterpriseRepo repository.EnterpriseRepository
+	jwtManager     *auth.JWTManager
 }
 
 type LoginRequest struct {
@@ -38,6 +39,14 @@ func NewAuthService(userRepo repository.UserRepository, jwtManager *auth.JWTMana
 	return &AuthService{
 		userRepo:   userRepo,
 		jwtManager: jwtManager,
+	}
+}
+
+func NewAuthServiceWithEnterprise(userRepo repository.UserRepository, enterpriseRepo repository.EnterpriseRepository, jwtManager *auth.JWTManager) *AuthService {
+	return &AuthService{
+		userRepo:       userRepo,
+		enterpriseRepo: enterpriseRepo,
+		jwtManager:     jwtManager,
 	}
 }
 
@@ -118,6 +127,87 @@ func (s *AuthService) Refresh(req RefreshRequest) (*TokenResponse, *apperrors.Ap
 	enterpriseID, _ := uuid.Parse(user.EnterpriseID)
 
 	accessToken, err := s.jwtManager.GenerateAccessToken(user.ID, enterpriseID, user.Role, user.Email)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("生成令牌失败")
+	}
+
+	refreshToken, _, err := s.jwtManager.GenerateRefreshToken(user.ID)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("生成刷新令牌失败")
+	}
+
+	return &TokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    int(s.jwtManager.AccessTTL().Seconds()),
+		UserID:       user.ID.String(),
+		Role:         user.Role,
+	}, nil
+}
+
+func (s *AuthService) CanAccessEnterprise(userID uuid.UUID, currentEnterpriseID, targetEnterpriseID uuid.UUID) (bool, *apperrors.AppError) {
+	if s.enterpriseRepo == nil {
+		return false, apperrors.ErrInternal.WithDetail("企业仓库未初始化")
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return false, apperrors.ErrInternal.WithDetail("查询用户失败")
+	}
+	if user == nil {
+		return false, apperrors.ErrUnauthorized.WithDetail("用户不存在")
+	}
+
+	if user.Role == "operator" {
+		return true, nil
+	}
+
+	if user.Role != "owner" {
+		return false, apperrors.ErrPermissionDenied.WithDetail("无权切换企业")
+	}
+
+	currentEnt, err := s.enterpriseRepo.FindByID(currentEnterpriseID)
+	if err != nil {
+		return false, apperrors.ErrInternal.WithDetail("查询当前企业失败")
+	}
+	if currentEnt == nil {
+		return false, apperrors.ErrNotFound.WithDetail("当前企业不存在")
+	}
+
+	targetEnt, err := s.enterpriseRepo.FindByID(targetEnterpriseID)
+	if err != nil {
+		return false, apperrors.ErrInternal.WithDetail("查询目标企业失败")
+	}
+	if targetEnt == nil {
+		return false, apperrors.ErrNotFound.WithDetail("目标企业不存在")
+	}
+
+	if currentEnt.GroupID != targetEnt.GroupID {
+		return false, apperrors.ErrPermissionDenied.WithDetail("无权访问该企业的数据")
+	}
+
+	return true, nil
+}
+
+func (s *AuthService) SwitchEnterprise(userID, currentEnterpriseID, targetEnterpriseID uuid.UUID) (*TokenResponse, *apperrors.AppError) {
+	allowed, appErr := s.CanAccessEnterprise(userID, currentEnterpriseID, targetEnterpriseID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if !allowed {
+		return nil, apperrors.ErrPermissionDenied.WithDetail("无权切换至目标企业")
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询用户失败")
+	}
+	if user == nil {
+		return nil, apperrors.ErrUnauthorized.WithDetail("用户不存在")
+	}
+
+	accessToken, err := s.jwtManager.GenerateAccessToken(user.ID, targetEnterpriseID, user.Role, user.Email)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("生成令牌失败")
 	}

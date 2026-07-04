@@ -45,6 +45,10 @@ func (m *mockAuthService) GetUser(userID uuid.UUID) (*model.User, *apperrors.App
 	return nil, nil
 }
 
+func (m *mockAuthService) SwitchEnterprise(userID, currentEnterpriseID, targetEnterpriseID uuid.UUID) (*service.TokenResponse, *apperrors.AppError) {
+	return nil, nil
+}
+
 func TestAuthHandler_Login_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	svc := &mockAuthService{
