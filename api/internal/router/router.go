@@ -16,6 +16,7 @@ import (
 	"github.com/ai-office/api/pkg/config"
 	"github.com/ai-office/api/pkg/observability"
 	"github.com/ai-office/api/pkg/ratelimit"
+	"github.com/ai-office/api/pkg/rbac"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -59,6 +60,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		authService := service.NewAuthService(userRepo, jwtManager)
 		authHandler := handler.NewAuthHandler(authService)
 
+		groupRepo := repository.NewGroupRepository(db)
+		groupService := service.NewGroupService(groupRepo, userRepo, jwtManager)
+		groupHandler := handler.NewGroupHandler(groupService)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -90,11 +95,23 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			auth.POST("/refresh", authHandler.Refresh)
 		}
 
+		operatorOnly := middleware.RequirePermission(rbac.PermSystemConfig)
+
 		protected := api.Group("")
 		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
 		{
 			protected.GET("/me", authHandler.Me)
 			protected.GET("/audit-logs", auditLogHandler.List)
+
+			groups := protected.Group("/groups")
+			groups.Use(operatorOnly)
+			{
+				groups.POST("", groupHandler.Create)
+				groups.PUT("/:id", groupHandler.Update)
+				groups.DELETE("/:id", groupHandler.Delete)
+				groups.GET("", groupHandler.List)
+				groups.GET("/:id", groupHandler.Get)
+			}
 			protected.GET("/quota", quotaHandler.GetQuota)
 			protected.PUT("/quota", quotaHandler.UpdateQuota)
 			protected.GET("/features", quotaHandler.ListFeatures)

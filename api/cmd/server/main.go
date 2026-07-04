@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/ai-office/api/internal/router"
+	"github.com/ai-office/api/internal/model"
 	"github.com/ai-office/api/pkg/config"
 	"github.com/ai-office/api/pkg/database"
 	"github.com/ai-office/api/pkg/tenant"
@@ -49,6 +50,9 @@ func main() {
 			sqlDB, _ := initDB.DB()
 			if sqlDB != nil {
 				defer sqlDB.Close()
+			}
+			if err := initDB.AutoMigrate(&model.Group{}); err != nil {
+				logger.Warn("auto-migrate group table failed", zap.Error(err))
 			}
 		}
 	} else {

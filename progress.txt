@@ -922,6 +922,42 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go build: ✅ 成功
 - go test: ✅ CLI 6包全部通过
 
+## 2026-07-04 - Task 14: 集团管理（创建/编辑/删除）
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-001 (集团管理)
+- 架构合规：系统级表（public schema），Operator角色操作
+
+### What was done:
+- 实现 model/group.go：Group 模型（系统级，BaseModel，无租户隔离）
+- 更新 main.go：AutoMigrate Group 表（public schema）
+- 实现 repository/group_repo.go/impl：完整 CRUD + 编码唯一性
+- 实现 service/group_service.go：验证（名称/编码非空 + 编码唯一）+ CRUD
+- 实现 handler/group_handler.go：POST/PUT/DELETE /api/v1/groups + GET 单条/列表（分页）
+- 更新 router.go：Operator 角色可访问 groups 路由
+- 新增 12 个 service 测试 + repository 测试
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功（API + CLI）
+- go test: ✅ 全部通过
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-011 (CLI多平台), FR-AUTH-014 (后台服务)
+- 架构合规：kardianos/service 库实现跨平台服务管理
+
+### What was done:
+- 新增依赖：github.com/kardianos/service (跨平台服务管理)
+- 实现 cmd/service.go：ao-cli service install/start/stop/uninstall/status 命令
+- 更新 cmd/root.go：注册 service 子命令
+- 创建 cli/Makefile：build, build-linux, build-darwin (amd64+arm64), build-windows, build-all
+- 更新 cmd_test.go：增加 service 子命令测试 (4个主命令 + 5个service子命令)
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ CLI 6包全部通过
+
 ## 2026-07-04 - Task 12: 可观测性架构（日志/监控/链路追踪）
 
 ### 铁律合规检查：
