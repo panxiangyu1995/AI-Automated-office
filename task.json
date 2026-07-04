@@ -1,23 +1,23 @@
 {
   "plan_version": "3.0",
   "plan_date": "2026-07-04",
-  "description": "AI-Automated-office 开发任务清单 (v3.0) - 基于 Epics 1-10 的完整 OpenSpec 变更",
+  "description": "AI-Automated-office \u5f00\u53d1\u4efb\u52a1\u6e05\u5355 (v3.0) - \u57fa\u4e8e Epics 1-10 \u7684\u5b8c\u6574 OpenSpec \u53d8\u66f4",
   "total_tasks": 118,
-  "completed_tasks": 44,
+  "completed_tasks": 52,
   "implementation_status": {
-    "overall": "37.3% - Epics 1-4 (40) + Epic 5 (4/12) 完成 (44/118)"
+    "overall": "44.1% - Epics 1-5 (52) + Epic 6 (0/12) (52/118)"
   },
   "tasks": [
     {
       "id": 1,
       "epic": "Epic 1",
       "story": "Story 1.1",
-      "title": "Go API 项目初始化",
-      "description": "As a 开发者, I want 创建一个可运行的 Go API 项目脚手架（Go + Gin + GORM + PostgreSQL）, So that 后续所有业务模块可以在标准化的项目结构上开发",
+      "title": "Go API \u9879\u76ee\u521d\u59cb\u5316",
+      "description": "As a \u5f00\u53d1\u8005, I want \u521b\u5efa\u4e00\u4e2a\u53ef\u8fd0\u884c\u7684 Go API \u9879\u76ee\u811a\u624b\u67b6\uff08Go + Gin + GORM + PostgreSQL\uff09, So that \u540e\u7eed\u6240\u6709\u4e1a\u52a1\u6a21\u5757\u53ef\u4ee5\u5728\u6807\u51c6\u5316\u7684\u9879\u76ee\u7ed3\u6784\u4e0a\u5f00\u53d1",
       "implementationType": "new",
       "openspec_change": "epic-1-story-1-go-api-scaffold",
       "steps": [
-        "完成 epic-1-story-1-go-api-scaffold 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-1-go-api-scaffold \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-011"
@@ -34,12 +34,12 @@
       "id": 2,
       "epic": "Epic 1",
       "story": "Story 1.2",
-      "title": "CLI 项目初始化（Cobra）",
-      "description": "As a 开发者, I want 创建一个可运行的 CLI 项目脚手架（Go + Cobra）, So that Agent 可以通过 CLI 调用后端 API",
+      "title": "CLI \u9879\u76ee\u521d\u59cb\u5316\uff08Cobra\uff09",
+      "description": "As a \u5f00\u53d1\u8005, I want \u521b\u5efa\u4e00\u4e2a\u53ef\u8fd0\u884c\u7684 CLI \u9879\u76ee\u811a\u624b\u67b6\uff08Go + Cobra\uff09, So that Agent \u53ef\u4ee5\u901a\u8fc7 CLI \u8c03\u7528\u540e\u7aef API",
       "implementationType": "new",
       "openspec_change": "epic-1-story-2-cli-scaffold",
       "steps": [
-        "完成 epic-1-story-2-cli-scaffold 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-2-cli-scaffold \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-011"
@@ -56,12 +56,12 @@
       "id": 3,
       "epic": "Epic 1",
       "story": "Story 1.3",
-      "title": "Docker Compose 部署配置",
-      "description": "As a 运维人员, I want 通过 Docker Compose 一键启动 PostgreSQL + Redis + API 服务, So that 开发和部署环境可以快速搭建",
+      "title": "Docker Compose \u90e8\u7f72\u914d\u7f6e",
+      "description": "As a \u8fd0\u7ef4\u4eba\u5458, I want \u901a\u8fc7 Docker Compose \u4e00\u952e\u542f\u52a8 PostgreSQL + Redis + API \u670d\u52a1, So that \u5f00\u53d1\u548c\u90e8\u7f72\u73af\u5883\u53ef\u4ee5\u5feb\u901f\u642d\u5efa",
       "implementationType": "new",
       "openspec_change": "epic-1-story-3-docker-compose-deploy",
       "steps": [
-        "完成 epic-1-story-3-docker-compose-deploy 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-3-docker-compose-deploy \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-DEPLOY-001"
@@ -81,12 +81,12 @@
       "id": 4,
       "epic": "Epic 1",
       "story": "Story 1.4",
-      "title": "数据库连接与多租户 Schema 管理",
-      "description": "As a 系统管理员, I want 系统能够自动管理 PostgreSQL Schema 实现多租户数据隔离, So that 不同企业的数据完全隔离，互不可见",
+      "title": "\u6570\u636e\u5e93\u8fde\u63a5\u4e0e\u591a\u79df\u6237 Schema \u7ba1\u7406",
+      "description": "As a \u7cfb\u7edf\u7ba1\u7406\u5458, I want \u7cfb\u7edf\u80fd\u591f\u81ea\u52a8\u7ba1\u7406 PostgreSQL Schema \u5b9e\u73b0\u591a\u79df\u6237\u6570\u636e\u9694\u79bb, So that \u4e0d\u540c\u4f01\u4e1a\u7684\u6570\u636e\u5b8c\u5168\u9694\u79bb\uff0c\u4e92\u4e0d\u53ef\u89c1",
       "implementationType": "new",
       "openspec_change": "epic-1-story-4-multi-tenant-schema",
       "steps": [
-        "完成 epic-1-story-4-multi-tenant-schema 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-4-multi-tenant-schema \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-012"
@@ -105,12 +105,12 @@
       "id": 5,
       "epic": "Epic 1",
       "story": "Story 1.5",
-      "title": "统一响应格式与错误码完善",
-      "description": "As a Agent 开发者, I want 所有 API 返回统一格式的响应和结构化错误码, So that Agent 可以理解错误并自动恢复",
+      "title": "\u7edf\u4e00\u54cd\u5e94\u683c\u5f0f\u4e0e\u9519\u8bef\u7801\u5b8c\u5584",
+      "description": "As a Agent \u5f00\u53d1\u8005, I want \u6240\u6709 API \u8fd4\u56de\u7edf\u4e00\u683c\u5f0f\u7684\u54cd\u5e94\u548c\u7ed3\u6784\u5316\u9519\u8bef\u7801, So that Agent \u53ef\u4ee5\u7406\u89e3\u9519\u8bef\u5e76\u81ea\u52a8\u6062\u590d",
       "implementationType": "new",
       "openspec_change": "epic-1-story-5-unified-response-format",
       "steps": [
-        "完成 epic-1-story-5-unified-response-format 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-5-unified-response-format \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-010"
@@ -125,12 +125,12 @@
       "id": 6,
       "epic": "Epic 1",
       "story": "Story 1.6",
-      "title": "OAuth 2.0 认证（登录/刷新/登出）",
-      "description": "As a 用户, I want 通过 OAuth 2.0 流程登录系统、刷新令牌和登出, So that 我可以安全地访问系统 API",
+      "title": "OAuth 2.0 \u8ba4\u8bc1\uff08\u767b\u5f55/\u5237\u65b0/\u767b\u51fa\uff09",
+      "description": "As a \u7528\u6237, I want \u901a\u8fc7 OAuth 2.0 \u6d41\u7a0b\u767b\u5f55\u7cfb\u7edf\u3001\u5237\u65b0\u4ee4\u724c\u548c\u767b\u51fa, So that \u6211\u53ef\u4ee5\u5b89\u5168\u5730\u8bbf\u95ee\u7cfb\u7edf API",
       "implementationType": "new",
       "openspec_change": "epic-1-story-6-oauth2-authentication",
       "steps": [
-        "完成 epic-1-story-6-oauth2-authentication 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-6-oauth2-authentication \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-001",
@@ -152,12 +152,12 @@
       "id": 7,
       "epic": "Epic 1",
       "story": "Story 1.7",
-      "title": "JWT 认证中间件与 RBAC 权限控制",
-      "description": "As a 系统开发者, I want 所有 API 请求经过 JWT 认证和 RBAC 权限验证, So that 无权限的请求被拦截并返回 403",
+      "title": "JWT \u8ba4\u8bc1\u4e2d\u95f4\u4ef6\u4e0e RBAC \u6743\u9650\u63a7\u5236",
+      "description": "As a \u7cfb\u7edf\u5f00\u53d1\u8005, I want \u6240\u6709 API \u8bf7\u6c42\u7ecf\u8fc7 JWT \u8ba4\u8bc1\u548c RBAC \u6743\u9650\u9a8c\u8bc1, So that \u65e0\u6743\u9650\u7684\u8bf7\u6c42\u88ab\u62e6\u622a\u5e76\u8fd4\u56de 403",
       "implementationType": "new",
       "openspec_change": "epic-1-story-7-jwt-rbac-middleware",
       "steps": [
-        "完成 epic-1-story-7-jwt-rbac-middleware 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-7-jwt-rbac-middleware \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-003",
@@ -177,12 +177,12 @@
       "id": 8,
       "epic": "Epic 1",
       "story": "Story 1.8",
-      "title": "审计日志（基础操作记录）",
-      "description": "As a 管理员, I want 系统自动记录所有业务操作的审计日志, So that 我可以追溯谁在什么时间做了什么操作",
+      "title": "\u5ba1\u8ba1\u65e5\u5fd7\uff08\u57fa\u7840\u64cd\u4f5c\u8bb0\u5f55\uff09",
+      "description": "As a \u7ba1\u7406\u5458, I want \u7cfb\u7edf\u81ea\u52a8\u8bb0\u5f55\u6240\u6709\u4e1a\u52a1\u64cd\u4f5c\u7684\u5ba1\u8ba1\u65e5\u5fd7, So that \u6211\u53ef\u4ee5\u8ffd\u6eaf\u8c01\u5728\u4ec0\u4e48\u65f6\u95f4\u505a\u4e86\u4ec0\u4e48\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-1-story-8-audit-log",
       "steps": [
-        "完成 epic-1-story-8-audit-log 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-8-audit-log \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-006",
@@ -202,12 +202,12 @@
       "id": 9,
       "epic": "Epic 1",
       "story": "Story 1.9",
-      "title": "自动定时备份",
-      "description": "As a 管理员, I want 配置自动定时数据库备份, So that 数据可以在故障时恢复",
+      "title": "\u81ea\u52a8\u5b9a\u65f6\u5907\u4efd",
+      "description": "As a \u7ba1\u7406\u5458, I want \u914d\u7f6e\u81ea\u52a8\u5b9a\u65f6\u6570\u636e\u5e93\u5907\u4efd, So that \u6570\u636e\u53ef\u4ee5\u5728\u6545\u969c\u65f6\u6062\u590d",
       "implementationType": "new",
       "openspec_change": "epic-1-story-9-auto-backup",
       "steps": [
-        "完成 epic-1-story-9-auto-backup 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-9-auto-backup \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-008",
@@ -228,12 +228,12 @@
       "id": 10,
       "epic": "Epic 1",
       "story": "Story 1.10",
-      "title": "API 配额管理与功能开关",
-      "description": "As a 运营商, I want 管理企业的 API 调用配额和功能模块开关, So that 可以防止滥用并控制企业可用功能",
+      "title": "API \u914d\u989d\u7ba1\u7406\u4e0e\u529f\u80fd\u5f00\u5173",
+      "description": "As a \u8fd0\u8425\u5546, I want \u7ba1\u7406\u4f01\u4e1a\u7684 API \u8c03\u7528\u914d\u989d\u548c\u529f\u80fd\u6a21\u5757\u5f00\u5173, So that \u53ef\u4ee5\u9632\u6b62\u6ee5\u7528\u5e76\u63a7\u5236\u4f01\u4e1a\u53ef\u7528\u529f\u80fd",
       "implementationType": "new",
       "openspec_change": "epic-1-story-10-api-quota-feature-flags",
       "steps": [
-        "完成 epic-1-story-10-api-quota-feature-flags 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-10-api-quota-feature-flags \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-015",
@@ -251,12 +251,12 @@
       "id": 11,
       "epic": "Epic 1",
       "story": "Story 1.11",
-      "title": "Rate Limiting 中间件",
-      "description": "As a 系统开发者, I want 实现 API 请求频率限制, So that 单个企业或 IP 不会压垮系统",
+      "title": "Rate Limiting \u4e2d\u95f4\u4ef6",
+      "description": "As a \u7cfb\u7edf\u5f00\u53d1\u8005, I want \u5b9e\u73b0 API \u8bf7\u6c42\u9891\u7387\u9650\u5236, So that \u5355\u4e2a\u4f01\u4e1a\u6216 IP \u4e0d\u4f1a\u538b\u57ae\u7cfb\u7edf",
       "implementationType": "new",
       "openspec_change": "epic-1-story-11-rate-limiting",
       "steps": [
-        "完成 epic-1-story-11-rate-limiting 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-11-rate-limiting \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [],
       "nfrs_covered": [
@@ -273,12 +273,12 @@
       "id": 12,
       "epic": "Epic 1",
       "story": "Story 1.12",
-      "title": "可观测性架构（日志/监控/链路追踪）",
-      "description": "As a 运维人员, I want 系统具备结构化日志、Prometheus 指标和 OpenTelemetry 链路追踪, So that 我可以监控系统健康状态和排查问题",
+      "title": "\u53ef\u89c2\u6d4b\u6027\u67b6\u6784\uff08\u65e5\u5fd7/\u76d1\u63a7/\u94fe\u8def\u8ffd\u8e2a\uff09",
+      "description": "As a \u8fd0\u7ef4\u4eba\u5458, I want \u7cfb\u7edf\u5177\u5907\u7ed3\u6784\u5316\u65e5\u5fd7\u3001Prometheus \u6307\u6807\u548c OpenTelemetry \u94fe\u8def\u8ffd\u8e2a, So that \u6211\u53ef\u4ee5\u76d1\u63a7\u7cfb\u7edf\u5065\u5eb7\u72b6\u6001\u548c\u6392\u67e5\u95ee\u9898",
       "implementationType": "new",
       "openspec_change": "epic-1-story-12-observability",
       "steps": [
-        "完成 epic-1-story-12-observability 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-12-observability \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-017"
@@ -299,12 +299,12 @@
       "id": 13,
       "epic": "Epic 1",
       "story": "Story 1.13",
-      "title": "CLI 多平台构建与后台服务模式",
-      "description": "As a 用户, I want CLI 工具可以在 Windows/macOS/Linux 上运行，并支持开机自启为后台服务, So that 我可以在不同操作系统上使用 CLI 并持续接收消息",
+      "title": "CLI \u591a\u5e73\u53f0\u6784\u5efa\u4e0e\u540e\u53f0\u670d\u52a1\u6a21\u5f0f",
+      "description": "As a \u7528\u6237, I want CLI \u5de5\u5177\u53ef\u4ee5\u5728 Windows/macOS/Linux \u4e0a\u8fd0\u884c\uff0c\u5e76\u652f\u6301\u5f00\u673a\u81ea\u542f\u4e3a\u540e\u53f0\u670d\u52a1, So that \u6211\u53ef\u4ee5\u5728\u4e0d\u540c\u64cd\u4f5c\u7cfb\u7edf\u4e0a\u4f7f\u7528 CLI \u5e76\u6301\u7eed\u63a5\u6536\u6d88\u606f",
       "implementationType": "new",
       "openspec_change": "epic-1-story-13-cli-cross-platform",
       "steps": [
-        "完成 epic-1-story-13-cli-cross-platform 变更的所有 task"
+        "\u5b8c\u6210 epic-1-story-13-cli-cross-platform \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-011",
@@ -324,12 +324,12 @@
       "id": 14,
       "epic": "Epic 2",
       "story": "Story 2.1",
-      "title": "集团管理（创建/编辑/删除）",
-      "description": "As a 运营商, I want 创建、编辑和删除集团账号, So that 可以为拥有多个企业的老板建立集团管理入口",
+      "title": "\u96c6\u56e2\u7ba1\u7406\uff08\u521b\u5efa/\u7f16\u8f91/\u5220\u9664\uff09",
+      "description": "As a \u8fd0\u8425\u5546, I want \u521b\u5efa\u3001\u7f16\u8f91\u548c\u5220\u9664\u96c6\u56e2\u8d26\u53f7, So that \u53ef\u4ee5\u4e3a\u62e5\u6709\u591a\u4e2a\u4f01\u4e1a\u7684\u8001\u677f\u5efa\u7acb\u96c6\u56e2\u7ba1\u7406\u5165\u53e3",
       "implementationType": "new",
       "openspec_change": "epic-2-story-1-group-management",
       "steps": [
-        "完成 epic-2-story-1-group-management 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-1-group-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-001",
@@ -347,12 +347,12 @@
       "id": 15,
       "epic": "Epic 2",
       "story": "Story 2.2",
-      "title": "企业管理（创建/编辑/查看）",
-      "description": "As a 集团老板或运营商, I want 创建和管理企业, So that 可以在企业内搭建组织架构",
+      "title": "\u4f01\u4e1a\u7ba1\u7406\uff08\u521b\u5efa/\u7f16\u8f91/\u67e5\u770b\uff09",
+      "description": "As a \u96c6\u56e2\u8001\u677f\u6216\u8fd0\u8425\u5546, I want \u521b\u5efa\u548c\u7ba1\u7406\u4f01\u4e1a, So that \u53ef\u4ee5\u5728\u4f01\u4e1a\u5185\u642d\u5efa\u7ec4\u7ec7\u67b6\u6784",
       "implementationType": "new",
       "openspec_change": "epic-2-story-2-enterprise-management",
       "steps": [
-        "完成 epic-2-story-2-enterprise-management 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-2-enterprise-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-002",
@@ -372,12 +372,12 @@
       "id": 16,
       "epic": "Epic 2",
       "story": "Story 2.3",
-      "title": "部门管理（创建/编辑/删除/树形结构）",
-      "description": "As a 企业管理员, I want 创建、编辑、删除部门并查询组织架构树, So that 可以建立符合企业实际的组织结构",
+      "title": "\u90e8\u95e8\u7ba1\u7406\uff08\u521b\u5efa/\u7f16\u8f91/\u5220\u9664/\u6811\u5f62\u7ed3\u6784\uff09",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u90e8\u95e8\u5e76\u67e5\u8be2\u7ec4\u7ec7\u67b6\u6784\u6811, So that \u53ef\u4ee5\u5efa\u7acb\u7b26\u5408\u4f01\u4e1a\u5b9e\u9645\u7684\u7ec4\u7ec7\u7ed3\u6784",
       "implementationType": "new",
       "openspec_change": "epic-2-story-3-department-management",
       "steps": [
-        "完成 epic-2-story-3-department-management 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-3-department-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-003",
@@ -395,12 +395,12 @@
       "id": 17,
       "epic": "Epic 2",
       "story": "Story 2.4",
-      "title": "部门经理设置与权限",
-      "description": "As a 企业管理员, I want 设置部门经理并赋予部门级管理权限, So that 部门经理可以管理本部门员工和业务",
+      "title": "\u90e8\u95e8\u7ecf\u7406\u8bbe\u7f6e\u4e0e\u6743\u9650",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u8bbe\u7f6e\u90e8\u95e8\u7ecf\u7406\u5e76\u8d4b\u4e88\u90e8\u95e8\u7ea7\u7ba1\u7406\u6743\u9650, So that \u90e8\u95e8\u7ecf\u7406\u53ef\u4ee5\u7ba1\u7406\u672c\u90e8\u95e8\u5458\u5de5\u548c\u4e1a\u52a1",
       "implementationType": "new",
       "openspec_change": "epic-2-story-4-department-manager",
       "steps": [
-        "完成 epic-2-story-4-department-manager 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-4-department-manager \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-004",
@@ -419,12 +419,12 @@
       "id": 18,
       "epic": "Epic 2",
       "story": "Story 2.5",
-      "title": "员工档案基础 CRUD",
-      "description": "As a 企业管理员, I want 创建、编辑、删除员工档案, So that 可以为企业员工建立账号和归属关系",
+      "title": "\u5458\u5de5\u6863\u6848\u57fa\u7840 CRUD",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u5458\u5de5\u6863\u6848, So that \u53ef\u4ee5\u4e3a\u4f01\u4e1a\u5458\u5de5\u5efa\u7acb\u8d26\u53f7\u548c\u5f52\u5c5e\u5173\u7cfb",
       "implementationType": "new",
       "openspec_change": "epic-2-story-5-employee-crud",
       "steps": [
-        "完成 epic-2-story-5-employee-crud 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-5-employee-crud \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-006",
@@ -442,12 +442,12 @@
       "id": 19,
       "epic": "Epic 2",
       "story": "Story 2.6",
-      "title": "员工查询（按角色/姓名模糊搜索）",
-      "description": "As a 企业用户, I want 按角色或姓名模糊搜索员工, So that 可以快速找到需要联系的同事",
+      "title": "\u5458\u5de5\u67e5\u8be2\uff08\u6309\u89d2\u8272/\u59d3\u540d\u6a21\u7cca\u641c\u7d22\uff09",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u6309\u89d2\u8272\u6216\u59d3\u540d\u6a21\u7cca\u641c\u7d22\u5458\u5de5, So that \u53ef\u4ee5\u5feb\u901f\u627e\u5230\u9700\u8981\u8054\u7cfb\u7684\u540c\u4e8b",
       "implementationType": "new",
       "openspec_change": "epic-2-story-6-employee-search",
       "steps": [
-        "完成 epic-2-story-6-employee-search 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-6-employee-search \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-011",
@@ -466,12 +466,12 @@
       "id": 20,
       "epic": "Epic 2",
       "story": "Story 2.7",
-      "title": "岗位定义与管理",
-      "description": "As a 企业管理员, I want 定义和管理岗位（职位）, So that 员工档案可以关联岗位，新员工可以通过 Agent 查询岗位职责",
+      "title": "\u5c97\u4f4d\u5b9a\u4e49\u4e0e\u7ba1\u7406",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u5b9a\u4e49\u548c\u7ba1\u7406\u5c97\u4f4d\uff08\u804c\u4f4d\uff09, So that \u5458\u5de5\u6863\u6848\u53ef\u4ee5\u5173\u8054\u5c97\u4f4d\uff0c\u65b0\u5458\u5de5\u53ef\u4ee5\u901a\u8fc7 Agent \u67e5\u8be2\u5c97\u4f4d\u804c\u8d23",
       "implementationType": "new",
       "openspec_change": "epic-2-story-7-position-management",
       "steps": [
-        "完成 epic-2-story-7-position-management 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-7-position-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-013"
@@ -488,12 +488,12 @@
       "id": 21,
       "epic": "Epic 2",
       "story": "Story 2.8",
-      "title": "老板跨企业视角切换",
-      "description": "As a 集团老板, I want 在不同企业之间切换视角, So that 可以查看和管理不同企业的数据",
+      "title": "\u8001\u677f\u8de8\u4f01\u4e1a\u89c6\u89d2\u5207\u6362",
+      "description": "As a \u96c6\u56e2\u8001\u677f, I want \u5728\u4e0d\u540c\u4f01\u4e1a\u4e4b\u95f4\u5207\u6362\u89c6\u89d2, So that \u53ef\u4ee5\u67e5\u770b\u548c\u7ba1\u7406\u4e0d\u540c\u4f01\u4e1a\u7684\u6570\u636e",
       "implementationType": "new",
       "openspec_change": "epic-2-story-8-cross-enterprise-view-switch",
       "steps": [
-        "完成 epic-2-story-8-cross-enterprise-view-switch 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-8-cross-enterprise-view-switch \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ORG-008",
@@ -512,12 +512,12 @@
       "id": 22,
       "epic": "Epic 2",
       "story": "Story 2.9",
-      "title": "跨企业权限管理",
-      "description": "As a 集团老板或企业管理员, I want 为员工开通跨企业访问权限, So that 核心员工可以访问多个企业的数据",
+      "title": "\u8de8\u4f01\u4e1a\u6743\u9650\u7ba1\u7406",
+      "description": "As a \u96c6\u56e2\u8001\u677f\u6216\u4f01\u4e1a\u7ba1\u7406\u5458, I want \u4e3a\u5458\u5de5\u5f00\u901a\u8de8\u4f01\u4e1a\u8bbf\u95ee\u6743\u9650, So that \u6838\u5fc3\u5458\u5de5\u53ef\u4ee5\u8bbf\u95ee\u591a\u4e2a\u4f01\u4e1a\u7684\u6570\u636e",
       "implementationType": "new",
       "openspec_change": "epic-2-story-9-cross-enterprise-permissions",
       "steps": [
-        "完成 epic-2-story-9-cross-enterprise-permissions 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-9-cross-enterprise-permissions \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-004",
@@ -539,12 +539,12 @@
       "id": 23,
       "epic": "Epic 2",
       "story": "Story 2.10",
-      "title": "精细化权限分配",
-      "description": "As a 企业管理员或老板, I want 自定义员工的权限（精细化到具体操作）, So that 可以按需授权，而非仅依赖角色粗粒度控制",
+      "title": "\u7cbe\u7ec6\u5316\u6743\u9650\u5206\u914d",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458\u6216\u8001\u677f, I want \u81ea\u5b9a\u4e49\u5458\u5de5\u7684\u6743\u9650\uff08\u7cbe\u7ec6\u5316\u5230\u5177\u4f53\u64cd\u4f5c\uff09, So that \u53ef\u4ee5\u6309\u9700\u6388\u6743\uff0c\u800c\u975e\u4ec5\u4f9d\u8d56\u89d2\u8272\u7c97\u7c92\u5ea6\u63a7\u5236",
       "implementationType": "new",
       "openspec_change": "epic-2-story-10-fine-grained-permissions",
       "steps": [
-        "完成 epic-2-story-10-fine-grained-permissions 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-10-fine-grained-permissions \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUTH-009"
@@ -562,12 +562,12 @@
       "id": 24,
       "epic": "Epic 2",
       "story": "Story 2.11",
-      "title": "跨企业经营汇总",
-      "description": "As a 集团老板, I want 查看跨企业的经营汇总数据, So that 可以一览集团下所有企业的经营状况",
+      "title": "\u8de8\u4f01\u4e1a\u7ecf\u8425\u6c47\u603b",
+      "description": "As a \u96c6\u56e2\u8001\u677f, I want \u67e5\u770b\u8de8\u4f01\u4e1a\u7684\u7ecf\u8425\u6c47\u603b\u6570\u636e, So that \u53ef\u4ee5\u4e00\u89c8\u96c6\u56e2\u4e0b\u6240\u6709\u4f01\u4e1a\u7684\u7ecf\u8425\u72b6\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-2-story-11-cross-enterprise-summary",
       "steps": [
-        "完成 epic-2-story-11-cross-enterprise-summary 变更的所有 task"
+        "\u5b8c\u6210 epic-2-story-11-cross-enterprise-summary \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-GROUP-007"
@@ -584,12 +584,12 @@
       "id": 25,
       "epic": "Epic 3",
       "story": "Story 3.1",
-      "title": "员工入职（创建档案）",
-      "description": "As a 企业管理员, I want 创建员工档案并记录入职信息, So that 新员工可以在系统中拥有账号和完整信息",
+      "title": "\u5458\u5de5\u5165\u804c\uff08\u521b\u5efa\u6863\u6848\uff09",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u521b\u5efa\u5458\u5de5\u6863\u6848\u5e76\u8bb0\u5f55\u5165\u804c\u4fe1\u606f, So that \u65b0\u5458\u5de5\u53ef\u4ee5\u5728\u7cfb\u7edf\u4e2d\u62e5\u6709\u8d26\u53f7\u548c\u5b8c\u6574\u4fe1\u606f",
       "implementationType": "new",
       "openspec_change": "epic-3-story-1-employee-onboarding",
       "steps": [
-        "完成 epic-3-story-1-employee-onboarding 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-1-employee-onboarding \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-001",
@@ -607,12 +607,12 @@
       "id": 26,
       "epic": "Epic 3",
       "story": "Story 3.2",
-      "title": "员工档案编辑",
-      "description": "As a 企业管理员, I want 编辑员工档案信息, So that 员工信息变更时可以及时更新",
+      "title": "\u5458\u5de5\u6863\u6848\u7f16\u8f91",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u7f16\u8f91\u5458\u5de5\u6863\u6848\u4fe1\u606f, So that \u5458\u5de5\u4fe1\u606f\u53d8\u66f4\u65f6\u53ef\u4ee5\u53ca\u65f6\u66f4\u65b0",
       "implementationType": "new",
       "openspec_change": "epic-3-story-2-employee-profile-edit",
       "steps": [
-        "完成 epic-3-story-2-employee-profile-edit 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-2-employee-profile-edit \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-002"
@@ -629,12 +629,12 @@
       "id": 27,
       "epic": "Epic 3",
       "story": "Story 3.3",
-      "title": "员工离职",
-      "description": "As a 企业管理员, I want 标记员工离职, So that 离职员工无法继续访问系统",
+      "title": "\u5458\u5de5\u79bb\u804c",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u6807\u8bb0\u5458\u5de5\u79bb\u804c, So that \u79bb\u804c\u5458\u5de5\u65e0\u6cd5\u7ee7\u7eed\u8bbf\u95ee\u7cfb\u7edf",
       "implementationType": "new",
       "openspec_change": "epic-3-story-3-employee-resignation",
       "steps": [
-        "完成 epic-3-story-3-employee-resignation 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-3-employee-resignation \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-003",
@@ -653,12 +653,12 @@
       "id": 28,
       "epic": "Epic 3",
       "story": "Story 3.4",
-      "title": "员工列表与详情查询",
-      "description": "As a 企业管理员, I want 查看所有员工列表和单个员工详情, So that 可以了解企业人员全貌",
+      "title": "\u5458\u5de5\u5217\u8868\u4e0e\u8be6\u60c5\u67e5\u8be2",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u67e5\u770b\u6240\u6709\u5458\u5de5\u5217\u8868\u548c\u5355\u4e2a\u5458\u5de5\u8be6\u60c5, So that \u53ef\u4ee5\u4e86\u89e3\u4f01\u4e1a\u4eba\u5458\u5168\u8c8c",
       "implementationType": "new",
       "openspec_change": "epic-3-story-4-employee-list-detail",
       "steps": [
-        "完成 epic-3-story-4-employee-list-detail 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-4-employee-list-detail \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-004"
@@ -675,12 +675,12 @@
       "id": 29,
       "epic": "Epic 3",
       "story": "Story 3.5",
-      "title": "员工自助查看个人信息",
-      "description": "As a 员工, I want 查看自己的档案和基本信息, So that 不需要找管理员就能了解自己的信息",
+      "title": "\u5458\u5de5\u81ea\u52a9\u67e5\u770b\u4e2a\u4eba\u4fe1\u606f",
+      "description": "As a \u5458\u5de5, I want \u67e5\u770b\u81ea\u5df1\u7684\u6863\u6848\u548c\u57fa\u672c\u4fe1\u606f, So that \u4e0d\u9700\u8981\u627e\u7ba1\u7406\u5458\u5c31\u80fd\u4e86\u89e3\u81ea\u5df1\u7684\u4fe1\u606f",
       "implementationType": "new",
       "openspec_change": "epic-3-story-5-employee-self-service",
       "steps": [
-        "完成 epic-3-story-5-employee-self-service 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-5-employee-self-service \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-005",
@@ -698,12 +698,12 @@
       "id": 30,
       "epic": "Epic 3",
       "story": "Story 3.6",
-      "title": "批量导入员工",
-      "description": "As a 企业管理员, I want 通过 Excel/CSV 批量导入员工, So that 新企业初始化或大批量入职时不需要逐个创建",
+      "title": "\u6279\u91cf\u5bfc\u5165\u5458\u5de5",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u901a\u8fc7 Excel/CSV \u6279\u91cf\u5bfc\u5165\u5458\u5de5, So that \u65b0\u4f01\u4e1a\u521d\u59cb\u5316\u6216\u5927\u6279\u91cf\u5165\u804c\u65f6\u4e0d\u9700\u8981\u9010\u4e2a\u521b\u5efa",
       "implementationType": "new",
       "openspec_change": "epic-3-story-6-batch-import-employees",
       "steps": [
-        "完成 epic-3-story-6-batch-import-employees 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-6-batch-import-employees \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-006"
@@ -720,12 +720,12 @@
       "id": 31,
       "epic": "Epic 3",
       "story": "Story 3.7",
-      "title": "调岗操作",
-      "description": "As a 企业管理员, I want 执行员工调岗（从原部门移到新部门）, So that 组织调整时可以快速变更员工归属",
+      "title": "\u8c03\u5c97\u64cd\u4f5c",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u6267\u884c\u5458\u5de5\u8c03\u5c97\uff08\u4ece\u539f\u90e8\u95e8\u79fb\u5230\u65b0\u90e8\u95e8\uff09, So that \u7ec4\u7ec7\u8c03\u6574\u65f6\u53ef\u4ee5\u5feb\u901f\u53d8\u66f4\u5458\u5de5\u5f52\u5c5e",
       "implementationType": "new",
       "openspec_change": "epic-3-story-7-employee-transfer",
       "steps": [
-        "完成 epic-3-story-7-employee-transfer 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-7-employee-transfer \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-007"
@@ -744,12 +744,12 @@
       "id": 32,
       "epic": "Epic 3",
       "story": "Story 3.8",
-      "title": "员工销售业绩查询",
-      "description": "As a 管理员或部门经理, I want 按时间范围查询员工的销售业绩, So that 可以评估员工绩效",
+      "title": "\u5458\u5de5\u9500\u552e\u4e1a\u7ee9\u67e5\u8be2",
+      "description": "As a \u7ba1\u7406\u5458\u6216\u90e8\u95e8\u7ecf\u7406, I want \u6309\u65f6\u95f4\u8303\u56f4\u67e5\u8be2\u5458\u5de5\u7684\u9500\u552e\u4e1a\u7ee9, So that \u53ef\u4ee5\u8bc4\u4f30\u5458\u5de5\u7ee9\u6548",
       "implementationType": "new",
       "openspec_change": "epic-3-story-8-employee-sales-performance",
       "steps": [
-        "完成 epic-3-story-8-employee-sales-performance 变更的所有 task"
+        "\u5b8c\u6210 epic-3-story-8-employee-sales-performance \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-HRM-008"
@@ -766,12 +766,12 @@
       "id": 33,
       "epic": "Epic 4",
       "story": "Story 4.1",
-      "title": "客户档案 CRUD",
-      "description": "As a 销售人员, I want 创建、编辑、删除客户档案, So that 可以管理企业的客户资源",
+      "title": "\u5ba2\u6237\u6863\u6848 CRUD",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u5ba2\u6237\u6863\u6848, So that \u53ef\u4ee5\u7ba1\u7406\u4f01\u4e1a\u7684\u5ba2\u6237\u8d44\u6e90",
       "implementationType": "new",
       "openspec_change": "epic-4-story-1-customer-crud",
       "steps": [
-        "完成 epic-4-story-1-customer-crud 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-1-customer-crud \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-001",
@@ -789,12 +789,12 @@
       "id": 34,
       "epic": "Epic 4",
       "story": "Story 4.2",
-      "title": "客户分级管理",
-      "description": "As a 企业管理员, I want 对客户进行分级（VIP/重要/普通/潜在）并自定义分级规则, So that 可以差异化服务不同级别的客户",
+      "title": "\u5ba2\u6237\u5206\u7ea7\u7ba1\u7406",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u5bf9\u5ba2\u6237\u8fdb\u884c\u5206\u7ea7\uff08VIP/\u91cd\u8981/\u666e\u901a/\u6f5c\u5728\uff09\u5e76\u81ea\u5b9a\u4e49\u5206\u7ea7\u89c4\u5219, So that \u53ef\u4ee5\u5dee\u5f02\u5316\u670d\u52a1\u4e0d\u540c\u7ea7\u522b\u7684\u5ba2\u6237",
       "implementationType": "new",
       "openspec_change": "epic-4-story-2-customer-level-management",
       "steps": [
-        "完成 epic-4-story-2-customer-level-management 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-2-customer-level-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-003"
@@ -811,12 +811,12 @@
       "id": 35,
       "epic": "Epic 4",
       "story": "Story 4.3",
-      "title": "客户自由标签",
-      "description": "As a 销售人员, I want 为客户添加多个自定义标签, So that 可以灵活分类和筛选客户",
+      "title": "\u5ba2\u6237\u81ea\u7531\u6807\u7b7e",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u4e3a\u5ba2\u6237\u6dfb\u52a0\u591a\u4e2a\u81ea\u5b9a\u4e49\u6807\u7b7e, So that \u53ef\u4ee5\u7075\u6d3b\u5206\u7c7b\u548c\u7b5b\u9009\u5ba2\u6237",
       "implementationType": "new",
       "openspec_change": "epic-4-story-3-customer-tags",
       "steps": [
-        "完成 epic-4-story-3-customer-tags 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-3-customer-tags \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-004"
@@ -833,12 +833,12 @@
       "id": 36,
       "epic": "Epic 4",
       "story": "Story 4.4",
-      "title": "客户全景视图 API",
-      "description": "As a Agent, I want 通过一个 API 获取客户的全景数据, So that 可以为用户生成完整的客户画像",
+      "title": "\u5ba2\u6237\u5168\u666f\u89c6\u56fe API",
+      "description": "As a Agent, I want \u901a\u8fc7\u4e00\u4e2a API \u83b7\u53d6\u5ba2\u6237\u7684\u5168\u666f\u6570\u636e, So that \u53ef\u4ee5\u4e3a\u7528\u6237\u751f\u6210\u5b8c\u6574\u7684\u5ba2\u6237\u753b\u50cf",
       "implementationType": "new",
       "openspec_change": "epic-4-story-4-customer-panorama-api",
       "steps": [
-        "完成 epic-4-story-4-customer-panorama-api 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-4-customer-panorama-api \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-005"
@@ -857,12 +857,12 @@
       "id": 37,
       "epic": "Epic 4",
       "story": "Story 4.5",
-      "title": "客户关联查询（合同/售后/往来款）",
-      "description": "As a 销售人员, I want 查询客户关联的合同、售后工单和往来款, So that 可以全面了解客户业务状况",
+      "title": "\u5ba2\u6237\u5173\u8054\u67e5\u8be2\uff08\u5408\u540c/\u552e\u540e/\u5f80\u6765\u6b3e\uff09",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u67e5\u8be2\u5ba2\u6237\u5173\u8054\u7684\u5408\u540c\u3001\u552e\u540e\u5de5\u5355\u548c\u5f80\u6765\u6b3e, So that \u53ef\u4ee5\u5168\u9762\u4e86\u89e3\u5ba2\u6237\u4e1a\u52a1\u72b6\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-4-story-5-customer-related-queries",
       "steps": [
-        "完成 epic-4-story-5-customer-related-queries 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-5-customer-related-queries \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-006",
@@ -881,12 +881,12 @@
       "id": 38,
       "epic": "Epic 4",
       "story": "Story 4.6",
-      "title": "联系人 CRUD",
-      "description": "As a 销售人员, I want 管理客户下的联系人, So that 可以记录和维护客户对接人信息",
+      "title": "\u8054\u7cfb\u4eba CRUD",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u7ba1\u7406\u5ba2\u6237\u4e0b\u7684\u8054\u7cfb\u4eba, So that \u53ef\u4ee5\u8bb0\u5f55\u548c\u7ef4\u62a4\u5ba2\u6237\u5bf9\u63a5\u4eba\u4fe1\u606f",
       "implementationType": "new",
       "openspec_change": "epic-4-story-6-contact-crud",
       "steps": [
-        "完成 epic-4-story-6-contact-crud 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-6-contact-crud \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-009",
@@ -904,12 +904,12 @@
       "id": 39,
       "epic": "Epic 4",
       "story": "Story 4.7",
-      "title": "联系人按角色筛选查询",
-      "description": "As a 销售人员, I want 按客户和角色标记筛选联系人, So that 可以快速找到关键决策人",
+      "title": "\u8054\u7cfb\u4eba\u6309\u89d2\u8272\u7b5b\u9009\u67e5\u8be2",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u6309\u5ba2\u6237\u548c\u89d2\u8272\u6807\u8bb0\u7b5b\u9009\u8054\u7cfb\u4eba, So that \u53ef\u4ee5\u5feb\u901f\u627e\u5230\u5173\u952e\u51b3\u7b56\u4eba",
       "implementationType": "new",
       "openspec_change": "epic-4-story-7-contact-filter-search",
       "steps": [
-        "完成 epic-4-story-7-contact-filter-search 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-7-contact-filter-search \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-011"
@@ -926,12 +926,12 @@
       "id": 40,
       "epic": "Epic 4",
       "story": "Story 4.8",
-      "title": "商机 CRUD",
-      "description": "As a 销售人员, I want 创建和管理商机, So that 可以跟踪潜在的销售机会",
+      "title": "\u5546\u673a CRUD",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u521b\u5efa\u548c\u7ba1\u7406\u5546\u673a, So that \u53ef\u4ee5\u8ddf\u8e2a\u6f5c\u5728\u7684\u9500\u552e\u673a\u4f1a",
       "implementationType": "new",
       "openspec_change": "epic-4-story-8-opportunity-crud",
       "steps": [
-        "完成 epic-4-story-8-opportunity-crud 变更的所有 task"
+        "\u5b8c\u6210 epic-4-story-8-opportunity-crud \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CRM-012",
@@ -949,12 +949,12 @@
       "id": 41,
       "epic": "Epic 5",
       "story": "Story 5.1",
-      "title": "物料（SKU）管理",
-      "description": "As a 仓库管理员, I want 创建、编辑、删除物料（SKU）, So that 可以管理企业的所有物料品类",
+      "title": "\u7269\u6599\uff08SKU\uff09\u7ba1\u7406",
+      "description": "As a \u4ed3\u5e93\u7ba1\u7406\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u7269\u6599\uff08SKU\uff09, So that \u53ef\u4ee5\u7ba1\u7406\u4f01\u4e1a\u7684\u6240\u6709\u7269\u6599\u54c1\u7c7b",
       "implementationType": "new",
       "openspec_change": "epic-5-story-1-material-sku-management",
       "steps": [
-        "完成 epic-5-story-1-material-sku-management 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-1-material-sku-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-001",
@@ -972,12 +972,12 @@
       "id": 42,
       "epic": "Epic 5",
       "story": "Story 5.2",
-      "title": "供应商管理",
-      "description": "As a 采购人员, I want 创建、编辑、删除供应商, So that 可以管理物料采购来源",
+      "title": "\u4f9b\u5e94\u5546\u7ba1\u7406",
+      "description": "As a \u91c7\u8d2d\u4eba\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u4f9b\u5e94\u5546, So that \u53ef\u4ee5\u7ba1\u7406\u7269\u6599\u91c7\u8d2d\u6765\u6e90",
       "implementationType": "new",
       "openspec_change": "epic-5-story-2-supplier-management",
       "steps": [
-        "完成 epic-5-story-2-supplier-management 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-2-supplier-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-003",
@@ -995,12 +995,12 @@
       "id": 43,
       "epic": "Epic 5",
       "story": "Story 5.3",
-      "title": "多仓库管理",
-      "description": "As a 仓库管理员, I want 创建、编辑、停用仓库, So that 可以管理多个物理仓库",
+      "title": "\u591a\u4ed3\u5e93\u7ba1\u7406",
+      "description": "As a \u4ed3\u5e93\u7ba1\u7406\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u505c\u7528\u4ed3\u5e93, So that \u53ef\u4ee5\u7ba1\u7406\u591a\u4e2a\u7269\u7406\u4ed3\u5e93",
       "implementationType": "new",
       "openspec_change": "epic-5-story-3-multi-warehouse-management",
       "steps": [
-        "完成 epic-5-story-3-multi-warehouse-management 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-3-multi-warehouse-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-015"
@@ -1017,12 +1017,12 @@
       "id": 44,
       "epic": "Epic 5",
       "story": "Story 5.4",
-      "title": "按仓库维度的库存查询与预警",
-      "description": "As a 仓库管理员, I want 按仓库维度查询库存并设置安全库存预警, So that 可以及时发现库存不足",
+      "title": "\u6309\u4ed3\u5e93\u7ef4\u5ea6\u7684\u5e93\u5b58\u67e5\u8be2\u4e0e\u9884\u8b66",
+      "description": "As a \u4ed3\u5e93\u7ba1\u7406\u5458, I want \u6309\u4ed3\u5e93\u7ef4\u5ea6\u67e5\u8be2\u5e93\u5b58\u5e76\u8bbe\u7f6e\u5b89\u5168\u5e93\u5b58\u9884\u8b66, So that \u53ef\u4ee5\u53ca\u65f6\u53d1\u73b0\u5e93\u5b58\u4e0d\u8db3",
       "implementationType": "new",
       "openspec_change": "epic-5-story-4-warehouse-inventory-alert",
       "steps": [
-        "完成 epic-5-story-4-warehouse-inventory-alert 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-4-warehouse-inventory-alert \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-011",
@@ -1043,12 +1043,12 @@
       "id": 45,
       "epic": "Epic 5",
       "story": "Story 5.5",
-      "title": "采购订单与入库",
-      "description": "As a 采购人员, I want 创建采购订单、审批、入库, So that 可以完成采购流程并增加库存",
+      "title": "\u91c7\u8d2d\u8ba2\u5355\u4e0e\u5165\u5e93",
+      "description": "As a \u91c7\u8d2d\u4eba\u5458, I want \u521b\u5efa\u91c7\u8d2d\u8ba2\u5355\u3001\u5ba1\u6279\u3001\u5165\u5e93, So that \u53ef\u4ee5\u5b8c\u6210\u91c7\u8d2d\u6d41\u7a0b\u5e76\u589e\u52a0\u5e93\u5b58",
       "implementationType": "new",
       "openspec_change": "epic-5-story-5-purchase-order-stock-in",
       "steps": [
-        "完成 epic-5-story-5-purchase-order-stock-in 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-5-purchase-order-stock-in \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-005",
@@ -1064,18 +1064,18 @@
         "Story 5.2",
         "Story 5.3"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 46,
       "epic": "Epic 5",
       "story": "Story 5.6",
-      "title": "采购质检流程",
-      "description": "As a 质检员, I want 采购入库前触发质检流程, So that 不合格物料不会进入库存",
+      "title": "\u91c7\u8d2d\u8d28\u68c0\u6d41\u7a0b",
+      "description": "As a \u8d28\u68c0\u5458, I want \u91c7\u8d2d\u5165\u5e93\u524d\u89e6\u53d1\u8d28\u68c0\u6d41\u7a0b, So that \u4e0d\u5408\u683c\u7269\u6599\u4e0d\u4f1a\u8fdb\u5165\u5e93\u5b58",
       "implementationType": "new",
       "openspec_change": "epic-5-story-6-purchase-quality-inspection",
       "steps": [
-        "完成 epic-5-story-6-purchase-quality-inspection 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-6-purchase-quality-inspection \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-006",
@@ -1087,18 +1087,18 @@
       "dependencies": [
         "Story 5.5"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 47,
       "epic": "Epic 5",
       "story": "Story 5.7",
-      "title": "销售出库与库存扣减",
-      "description": "As a 销售人员, I want 创建销售订单并执行出库, So that 可以完成销售发货流程",
+      "title": "\u9500\u552e\u51fa\u5e93\u4e0e\u5e93\u5b58\u6263\u51cf",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u521b\u5efa\u9500\u552e\u8ba2\u5355\u5e76\u6267\u884c\u51fa\u5e93, So that \u53ef\u4ee5\u5b8c\u6210\u9500\u552e\u53d1\u8d27\u6d41\u7a0b",
       "implementationType": "new",
       "openspec_change": "epic-5-story-7-sales-order-stock-out",
       "steps": [
-        "完成 epic-5-story-7-sales-order-stock-out 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-7-sales-order-stock-out \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-009",
@@ -1113,18 +1113,18 @@
         "Story 5.1",
         "Story 5.3"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 48,
       "epic": "Epic 5",
       "story": "Story 5.8",
-      "title": "仓库间调拨",
-      "description": "As a 仓库管理员, I want 在仓库之间调拨物料, So that 可以平衡各仓库库存",
+      "title": "\u4ed3\u5e93\u95f4\u8c03\u62e8",
+      "description": "As a \u4ed3\u5e93\u7ba1\u7406\u5458, I want \u5728\u4ed3\u5e93\u4e4b\u95f4\u8c03\u62e8\u7269\u6599, So that \u53ef\u4ee5\u5e73\u8861\u5404\u4ed3\u5e93\u5e93\u5b58",
       "implementationType": "new",
       "openspec_change": "epic-5-story-8-warehouse-transfer",
       "steps": [
-        "完成 epic-5-story-8-warehouse-transfer 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-8-warehouse-transfer \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-017",
@@ -1138,18 +1138,18 @@
         "Story 5.3",
         "Story 5.1"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 49,
       "epic": "Epic 5",
       "story": "Story 5.9",
-      "title": "物料领用申请",
-      "description": "As a 员工, I want 申请领用物料, So that 可以领用办公或业务所需物料",
+      "title": "\u7269\u6599\u9886\u7528\u7533\u8bf7",
+      "description": "As a \u5458\u5de5, I want \u7533\u8bf7\u9886\u7528\u7269\u6599, So that \u53ef\u4ee5\u9886\u7528\u529e\u516c\u6216\u4e1a\u52a1\u6240\u9700\u7269\u6599",
       "implementationType": "new",
       "openspec_change": "epic-5-story-9-material-requisition",
       "steps": [
-        "完成 epic-5-story-9-material-requisition 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-9-material-requisition \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-021",
@@ -1163,18 +1163,18 @@
         "Story 5.1",
         "Story 5.3"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 50,
       "epic": "Epic 5",
       "story": "Story 5.10",
-      "title": "库存盘点（盘库）",
-      "description": "As a 仓库管理员, I want 执行库存盘点, So that 可以核对系统库存与实际库存",
+      "title": "\u5e93\u5b58\u76d8\u70b9\uff08\u76d8\u5e93\uff09",
+      "description": "As a \u4ed3\u5e93\u7ba1\u7406\u5458, I want \u6267\u884c\u5e93\u5b58\u76d8\u70b9, So that \u53ef\u4ee5\u6838\u5bf9\u7cfb\u7edf\u5e93\u5b58\u4e0e\u5b9e\u9645\u5e93\u5b58",
       "implementationType": "new",
       "openspec_change": "epic-5-story-10-inventory-check",
       "steps": [
-        "完成 epic-5-story-10-inventory-check 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-10-inventory-check \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-024",
@@ -1190,18 +1190,18 @@
         "Story 5.3",
         "Story 5.4"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 51,
       "epic": "Epic 5",
       "story": "Story 5.11",
-      "title": "物料报价管理",
-      "description": "As a 销售人员, I want 查询物料历史报价并设置差异化报价策略, So that 可以为不同客户级别制定不同价格",
+      "title": "\u7269\u6599\u62a5\u4ef7\u7ba1\u7406",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u67e5\u8be2\u7269\u6599\u5386\u53f2\u62a5\u4ef7\u5e76\u8bbe\u7f6e\u5dee\u5f02\u5316\u62a5\u4ef7\u7b56\u7565, So that \u53ef\u4ee5\u4e3a\u4e0d\u540c\u5ba2\u6237\u7ea7\u522b\u5236\u5b9a\u4e0d\u540c\u4ef7\u683c",
       "implementationType": "new",
       "openspec_change": "epic-5-story-11-material-pricing",
       "steps": [
-        "完成 epic-5-story-11-material-pricing 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-11-material-pricing \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-013",
@@ -1214,18 +1214,18 @@
         "Story 5.1",
         "Story 4.2"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 52,
       "epic": "Epic 5",
       "story": "Story 5.12",
-      "title": "统一出入库流水查询",
-      "description": "As a 企业用户, I want 查询统一的出入库流水, So that 可以追溯所有库存变动",
+      "title": "\u7edf\u4e00\u51fa\u5165\u5e93\u6d41\u6c34\u67e5\u8be2",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u67e5\u8be2\u7edf\u4e00\u7684\u51fa\u5165\u5e93\u6d41\u6c34, So that \u53ef\u4ee5\u8ffd\u6eaf\u6240\u6709\u5e93\u5b58\u53d8\u52a8",
       "implementationType": "new",
       "openspec_change": "epic-5-story-12-inventory-transaction-query",
       "steps": [
-        "完成 epic-5-story-12-inventory-transaction-query 变更的所有 task"
+        "\u5b8c\u6210 epic-5-story-12-inventory-transaction-query \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMS-019",
@@ -1241,18 +1241,18 @@
         "Story 5.9",
         "Story 5.10"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 53,
       "epic": "Epic 6",
       "story": "Story 6.1",
-      "title": "合同 CRUD 与状态机",
-      "description": "As a 销售人员, I want 创建、编辑、删除合同并管理合同状态流转, So that 可以管理合同全生命周期",
+      "title": "\u5408\u540c CRUD \u4e0e\u72b6\u6001\u673a",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u5408\u540c\u5e76\u7ba1\u7406\u5408\u540c\u72b6\u6001\u6d41\u8f6c, So that \u53ef\u4ee5\u7ba1\u7406\u5408\u540c\u5168\u751f\u547d\u5468\u671f",
       "implementationType": "new",
       "openspec_change": "epic-6-story-1-contract-crud-state-machine",
       "steps": [
-        "完成 epic-6-story-1-contract-crud-state-machine 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-1-contract-crud-state-machine \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CON-001",
@@ -1271,12 +1271,12 @@
       "id": 54,
       "epic": "Epic 6",
       "story": "Story 6.2",
-      "title": "合同关联业务单据",
-      "description": "As a 销售人员, I want 合同关联客户、销售订单、采购订单和出库记录, So that 可以追踪合同相关的所有业务数据",
+      "title": "\u5408\u540c\u5173\u8054\u4e1a\u52a1\u5355\u636e",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u5408\u540c\u5173\u8054\u5ba2\u6237\u3001\u9500\u552e\u8ba2\u5355\u3001\u91c7\u8d2d\u8ba2\u5355\u548c\u51fa\u5e93\u8bb0\u5f55, So that \u53ef\u4ee5\u8ffd\u8e2a\u5408\u540c\u76f8\u5173\u7684\u6240\u6709\u4e1a\u52a1\u6570\u636e",
       "implementationType": "new",
       "openspec_change": "epic-6-story-2-contract-related-documents",
       "steps": [
-        "完成 epic-6-story-2-contract-related-documents 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-2-contract-related-documents \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CON-003",
@@ -1295,12 +1295,12 @@
       "id": 55,
       "epic": "Epic 6",
       "story": "Story 6.3",
-      "title": "合同附件与审批流",
-      "description": "As a 销售人员, I want 上传合同附件（扫描件、补充协议）并提交审批, So that 合同可以走审批流程",
+      "title": "\u5408\u540c\u9644\u4ef6\u4e0e\u5ba1\u6279\u6d41",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u4e0a\u4f20\u5408\u540c\u9644\u4ef6\uff08\u626b\u63cf\u4ef6\u3001\u8865\u5145\u534f\u8bae\uff09\u5e76\u63d0\u4ea4\u5ba1\u6279, So that \u5408\u540c\u53ef\u4ee5\u8d70\u5ba1\u6279\u6d41\u7a0b",
       "implementationType": "new",
       "openspec_change": "epic-6-story-3-contract-attachments-approval",
       "steps": [
-        "完成 epic-6-story-3-contract-attachments-approval 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-3-contract-attachments-approval \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CON-004",
@@ -1319,12 +1319,12 @@
       "id": 56,
       "epic": "Epic 6",
       "story": "Story 6.4",
-      "title": "Agent 自然语言修改合同字段",
-      "description": "As a Agent, I want 通过自然语言修改合同字段, So that 用户可以说'把合同金额改成 50 万'来修改合同",
+      "title": "Agent \u81ea\u7136\u8bed\u8a00\u4fee\u6539\u5408\u540c\u5b57\u6bb5",
+      "description": "As a Agent, I want \u901a\u8fc7\u81ea\u7136\u8bed\u8a00\u4fee\u6539\u5408\u540c\u5b57\u6bb5, So that \u7528\u6237\u53ef\u4ee5\u8bf4'\u628a\u5408\u540c\u91d1\u989d\u6539\u6210 50 \u4e07'\u6765\u4fee\u6539\u5408\u540c",
       "implementationType": "new",
       "openspec_change": "epic-6-story-4-agent-natural-language-contract",
       "steps": [
-        "完成 epic-6-story-4-agent-natural-language-contract 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-4-agent-natural-language-contract \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CON-009"
@@ -1342,12 +1342,12 @@
       "id": 57,
       "epic": "Epic 6",
       "story": "Story 6.5",
-      "title": "销售订单 CRUD 与状态机",
-      "description": "As a 销售人员, I want 创建、编辑、删除销售订单并管理状态流转, So that 可以管理销售流程",
+      "title": "\u9500\u552e\u8ba2\u5355 CRUD \u4e0e\u72b6\u6001\u673a",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u9500\u552e\u8ba2\u5355\u5e76\u7ba1\u7406\u72b6\u6001\u6d41\u8f6c, So that \u53ef\u4ee5\u7ba1\u7406\u9500\u552e\u6d41\u7a0b",
       "implementationType": "new",
       "openspec_change": "epic-6-story-5-sales-order-crud-state-machine",
       "steps": [
-        "完成 epic-6-story-5-sales-order-crud-state-machine 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-5-sales-order-crud-state-machine \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SALES-001",
@@ -1367,12 +1367,12 @@
       "id": 58,
       "epic": "Epic 6",
       "story": "Story 6.6",
-      "title": "销售订单关联合同与出库",
-      "description": "As a 销售人员, I want 销售订单绑定合同和出库记录, So that 可以追踪订单关联的合同和发货情况",
+      "title": "\u9500\u552e\u8ba2\u5355\u5173\u8054\u5408\u540c\u4e0e\u51fa\u5e93",
+      "description": "As a \u9500\u552e\u4eba\u5458, I want \u9500\u552e\u8ba2\u5355\u7ed1\u5b9a\u5408\u540c\u548c\u51fa\u5e93\u8bb0\u5f55, So that \u53ef\u4ee5\u8ffd\u8e2a\u8ba2\u5355\u5173\u8054\u7684\u5408\u540c\u548c\u53d1\u8d27\u60c5\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-6-story-6-sales-order-contract-delivery",
       "steps": [
-        "完成 epic-6-story-6-sales-order-contract-delivery 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-6-sales-order-contract-delivery \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SALES-004",
@@ -1395,12 +1395,12 @@
       "id": 59,
       "epic": "Epic 6",
       "story": "Story 6.7",
-      "title": "售后工单 CRUD 与状态机",
-      "description": "As a 售后人员, I want 创建、编辑、删除售后工单并管理状态流转, So that 可以管理售后服务流程",
+      "title": "\u552e\u540e\u5de5\u5355 CRUD \u4e0e\u72b6\u6001\u673a",
+      "description": "As a \u552e\u540e\u4eba\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u552e\u540e\u5de5\u5355\u5e76\u7ba1\u7406\u72b6\u6001\u6d41\u8f6c, So that \u53ef\u4ee5\u7ba1\u7406\u552e\u540e\u670d\u52a1\u6d41\u7a0b",
       "implementationType": "new",
       "openspec_change": "epic-6-story-7-service-order-crud-state-machine",
       "steps": [
-        "完成 epic-6-story-7-service-order-crud-state-machine 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-7-service-order-crud-state-machine \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SVC-001",
@@ -1419,12 +1419,12 @@
       "id": 60,
       "epic": "Epic 6",
       "story": "Story 6.8",
-      "title": "收费工单报价流程",
-      "description": "As a 售后人员, I want 为收费工单上传报价单并等待客户确认, So that 收费售后需要客户确认后才进入维修",
+      "title": "\u6536\u8d39\u5de5\u5355\u62a5\u4ef7\u6d41\u7a0b",
+      "description": "As a \u552e\u540e\u4eba\u5458, I want \u4e3a\u6536\u8d39\u5de5\u5355\u4e0a\u4f20\u62a5\u4ef7\u5355\u5e76\u7b49\u5f85\u5ba2\u6237\u786e\u8ba4, So that \u6536\u8d39\u552e\u540e\u9700\u8981\u5ba2\u6237\u786e\u8ba4\u540e\u624d\u8fdb\u5165\u7ef4\u4fee",
       "implementationType": "new",
       "openspec_change": "epic-6-story-8-paid-service-order-quote",
       "steps": [
-        "完成 epic-6-story-8-paid-service-order-quote 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-8-paid-service-order-quote \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SVC-003",
@@ -1445,12 +1445,12 @@
       "id": 61,
       "epic": "Epic 6",
       "story": "Story 6.9",
-      "title": "维修工单与签字确认",
-      "description": "As a 售后人员, I want 生成维修工单并完成客户签字确认, So that 维修过程和结果有据可查",
+      "title": "\u7ef4\u4fee\u5de5\u5355\u4e0e\u7b7e\u5b57\u786e\u8ba4",
+      "description": "As a \u552e\u540e\u4eba\u5458, I want \u751f\u6210\u7ef4\u4fee\u5de5\u5355\u5e76\u5b8c\u6210\u5ba2\u6237\u7b7e\u5b57\u786e\u8ba4, So that \u7ef4\u4fee\u8fc7\u7a0b\u548c\u7ed3\u679c\u6709\u636e\u53ef\u67e5",
       "implementationType": "new",
       "openspec_change": "epic-6-story-9-repair-order-sign-off",
       "steps": [
-        "完成 epic-6-story-9-repair-order-sign-off 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-9-repair-order-sign-off \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SVC-007",
@@ -1471,12 +1471,12 @@
       "id": 62,
       "epic": "Epic 6",
       "story": "Story 6.10",
-      "title": "售后工单附件管理",
-      "description": "As a 售后人员, I want 上传工单相关附件（问题图片、处理凭证等）, So that 售后过程有完整的证据链",
+      "title": "\u552e\u540e\u5de5\u5355\u9644\u4ef6\u7ba1\u7406",
+      "description": "As a \u552e\u540e\u4eba\u5458, I want \u4e0a\u4f20\u5de5\u5355\u76f8\u5173\u9644\u4ef6\uff08\u95ee\u9898\u56fe\u7247\u3001\u5904\u7406\u51ed\u8bc1\u7b49\uff09, So that \u552e\u540e\u8fc7\u7a0b\u6709\u5b8c\u6574\u7684\u8bc1\u636e\u94fe",
       "implementationType": "new",
       "openspec_change": "epic-6-story-10-service-order-attachments",
       "steps": [
-        "完成 epic-6-story-10-service-order-attachments 变更的所有 task"
+        "\u5b8c\u6210 epic-6-story-10-service-order-attachments \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SVC-012"
@@ -1494,12 +1494,12 @@
       "id": 63,
       "epic": "Epic 7",
       "story": "Story 7.1",
-      "title": "收款记录管理",
-      "description": "As a 财务人员, I want 创建和管理收款记录, So that 可以追踪客户付款情况",
+      "title": "\u6536\u6b3e\u8bb0\u5f55\u7ba1\u7406",
+      "description": "As a \u8d22\u52a1\u4eba\u5458, I want \u521b\u5efa\u548c\u7ba1\u7406\u6536\u6b3e\u8bb0\u5f55, So that \u53ef\u4ee5\u8ffd\u8e2a\u5ba2\u6237\u4ed8\u6b3e\u60c5\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-7-story-1-receivable-management",
       "steps": [
-        "完成 epic-7-story-1-receivable-management 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-1-receivable-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-001",
@@ -1518,12 +1518,12 @@
       "id": 64,
       "epic": "Epic 7",
       "story": "Story 7.2",
-      "title": "付款记录管理",
-      "description": "As a 财务人员, I want 创建和管理付款记录, So that 可以追踪向供应商的付款情况",
+      "title": "\u4ed8\u6b3e\u8bb0\u5f55\u7ba1\u7406",
+      "description": "As a \u8d22\u52a1\u4eba\u5458, I want \u521b\u5efa\u548c\u7ba1\u7406\u4ed8\u6b3e\u8bb0\u5f55, So that \u53ef\u4ee5\u8ffd\u8e2a\u5411\u4f9b\u5e94\u5546\u7684\u4ed8\u6b3e\u60c5\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-7-story-2-payable-management",
       "steps": [
-        "完成 epic-7-story-2-payable-management 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-2-payable-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-004",
@@ -1542,12 +1542,12 @@
       "id": 65,
       "epic": "Epic 7",
       "story": "Story 7.3",
-      "title": "发票管理",
-      "description": "As a 财务人员, I want 开具和管理发票, So that 可以管理开票和收票",
+      "title": "\u53d1\u7968\u7ba1\u7406",
+      "description": "As a \u8d22\u52a1\u4eba\u5458, I want \u5f00\u5177\u548c\u7ba1\u7406\u53d1\u7968, So that \u53ef\u4ee5\u7ba1\u7406\u5f00\u7968\u548c\u6536\u7968",
       "implementationType": "new",
       "openspec_change": "epic-7-story-3-invoice-management",
       "steps": [
-        "完成 epic-7-story-3-invoice-management 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-3-invoice-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-007",
@@ -1567,12 +1567,12 @@
       "id": 66,
       "epic": "Epic 7",
       "story": "Story 7.4",
-      "title": "费用报销管理",
-      "description": "As a 员工, I want 提交费用报销申请, So that 可以报销业务相关费用",
+      "title": "\u8d39\u7528\u62a5\u9500\u7ba1\u7406",
+      "description": "As a \u5458\u5de5, I want \u63d0\u4ea4\u8d39\u7528\u62a5\u9500\u7533\u8bf7, So that \u53ef\u4ee5\u62a5\u9500\u4e1a\u52a1\u76f8\u5173\u8d39\u7528",
       "implementationType": "new",
       "openspec_change": "epic-7-story-4-expense-claim-management",
       "steps": [
-        "完成 epic-7-story-4-expense-claim-management 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-4-expense-claim-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-010",
@@ -1592,12 +1592,12 @@
       "id": 67,
       "epic": "Epic 7",
       "story": "Story 7.5",
-      "title": "财务对账与统计",
-      "description": "As a 财务人员, I want 查看财务对账和统计报表, So that 可以掌握企业财务状况",
+      "title": "\u8d22\u52a1\u5bf9\u8d26\u4e0e\u7edf\u8ba1",
+      "description": "As a \u8d22\u52a1\u4eba\u5458, I want \u67e5\u770b\u8d22\u52a1\u5bf9\u8d26\u548c\u7edf\u8ba1\u62a5\u8868, So that \u53ef\u4ee5\u638c\u63e1\u4f01\u4e1a\u8d22\u52a1\u72b6\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-7-story-5-financial-reconciliation-statistics",
       "steps": [
-        "完成 epic-7-story-5-financial-reconciliation-statistics 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-5-financial-reconciliation-statistics \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-013",
@@ -1619,12 +1619,12 @@
       "id": 68,
       "epic": "Epic 7",
       "story": "Story 7.6",
-      "title": "财务审批关联",
-      "description": "As a 财务人员, I want 收付款和发票操作关联审批流, So that 关键财务操作需要审批后才能执行",
+      "title": "\u8d22\u52a1\u5ba1\u6279\u5173\u8054",
+      "description": "As a \u8d22\u52a1\u4eba\u5458, I want \u6536\u4ed8\u6b3e\u548c\u53d1\u7968\u64cd\u4f5c\u5173\u8054\u5ba1\u6279\u6d41, So that \u5173\u952e\u8d22\u52a1\u64cd\u4f5c\u9700\u8981\u5ba1\u6279\u540e\u624d\u80fd\u6267\u884c",
       "implementationType": "new",
       "openspec_change": "epic-7-story-6-financial-approval-integration",
       "steps": [
-        "完成 epic-7-story-6-financial-approval-integration 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-6-financial-approval-integration \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-017",
@@ -1646,12 +1646,12 @@
       "id": 69,
       "epic": "Epic 7",
       "story": "Story 7.7",
-      "title": "审批流程定义与管理",
-      "description": "As a 企业管理员, I want 定义和管理审批流程模板, So that 不同业务场景可以配置不同的审批规则",
+      "title": "\u5ba1\u6279\u6d41\u7a0b\u5b9a\u4e49\u4e0e\u7ba1\u7406",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u5b9a\u4e49\u548c\u7ba1\u7406\u5ba1\u6279\u6d41\u7a0b\u6a21\u677f, So that \u4e0d\u540c\u4e1a\u52a1\u573a\u666f\u53ef\u4ee5\u914d\u7f6e\u4e0d\u540c\u7684\u5ba1\u6279\u89c4\u5219",
       "implementationType": "new",
       "openspec_change": "epic-7-story-7-workflow-definition-management",
       "steps": [
-        "完成 epic-7-story-7-workflow-definition-management 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-7-workflow-definition-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-WF-001",
@@ -1670,12 +1670,12 @@
       "id": 70,
       "epic": "Epic 7",
       "story": "Story 7.8",
-      "title": "审批流程执行与通知",
-      "description": "As a 审批人, I want 接收审批通知并执行审批操作, So that 可以及时处理待审批事项",
+      "title": "\u5ba1\u6279\u6d41\u7a0b\u6267\u884c\u4e0e\u901a\u77e5",
+      "description": "As a \u5ba1\u6279\u4eba, I want \u63a5\u6536\u5ba1\u6279\u901a\u77e5\u5e76\u6267\u884c\u5ba1\u6279\u64cd\u4f5c, So that \u53ef\u4ee5\u53ca\u65f6\u5904\u7406\u5f85\u5ba1\u6279\u4e8b\u9879",
       "implementationType": "new",
       "openspec_change": "epic-7-story-8-workflow-execution-notification",
       "steps": [
-        "完成 epic-7-story-8-workflow-execution-notification 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-8-workflow-execution-notification \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-WF-004",
@@ -1695,12 +1695,12 @@
       "id": 71,
       "epic": "Epic 7",
       "story": "Story 7.9",
-      "title": "多级审批与条件分支",
-      "description": "As a 企业管理员, I want 配置多级审批和条件分支, So that 不同金额或类型的业务走不同的审批路径",
+      "title": "\u591a\u7ea7\u5ba1\u6279\u4e0e\u6761\u4ef6\u5206\u652f",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u914d\u7f6e\u591a\u7ea7\u5ba1\u6279\u548c\u6761\u4ef6\u5206\u652f, So that \u4e0d\u540c\u91d1\u989d\u6216\u7c7b\u578b\u7684\u4e1a\u52a1\u8d70\u4e0d\u540c\u7684\u5ba1\u6279\u8def\u5f84",
       "implementationType": "new",
       "openspec_change": "epic-7-story-9-multi-level-approval-conditions",
       "steps": [
-        "完成 epic-7-story-9-multi-level-approval-conditions 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-9-multi-level-approval-conditions \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-WF-007",
@@ -1719,12 +1719,12 @@
       "id": 72,
       "epic": "Epic 7",
       "story": "Story 7.10",
-      "title": "审批历史与催办",
-      "description": "As a 审批提交人, I want 查看审批历史和催办审批人, So that 可以追踪审批进度并加速流程",
+      "title": "\u5ba1\u6279\u5386\u53f2\u4e0e\u50ac\u529e",
+      "description": "As a \u5ba1\u6279\u63d0\u4ea4\u4eba, I want \u67e5\u770b\u5ba1\u6279\u5386\u53f2\u548c\u50ac\u529e\u5ba1\u6279\u4eba, So that \u53ef\u4ee5\u8ffd\u8e2a\u5ba1\u6279\u8fdb\u5ea6\u5e76\u52a0\u901f\u6d41\u7a0b",
       "implementationType": "new",
       "openspec_change": "epic-7-story-10-approval-history-urge",
       "steps": [
-        "完成 epic-7-story-10-approval-history-urge 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-10-approval-history-urge \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-WF-010",
@@ -1743,12 +1743,12 @@
       "id": 73,
       "epic": "Epic 7",
       "story": "Story 7.11",
-      "title": "财务数据权限与审计",
-      "description": "As a 企业管理员, I want 财务数据受权限控制且操作可审计, So that 财务数据安全合规",
+      "title": "\u8d22\u52a1\u6570\u636e\u6743\u9650\u4e0e\u5ba1\u8ba1",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u8d22\u52a1\u6570\u636e\u53d7\u6743\u9650\u63a7\u5236\u4e14\u64cd\u4f5c\u53ef\u5ba1\u8ba1, So that \u8d22\u52a1\u6570\u636e\u5b89\u5168\u5408\u89c4",
       "implementationType": "new",
       "openspec_change": "epic-7-story-11-financial-permissions-audit",
       "steps": [
-        "完成 epic-7-story-11-financial-permissions-audit 变更的所有 task"
+        "\u5b8c\u6210 epic-7-story-11-financial-permissions-audit \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FIN-020",
@@ -1768,12 +1768,12 @@
       "id": 74,
       "epic": "Epic 8",
       "story": "Story 8.1",
-      "title": "文件上传与存储",
-      "description": "As a 企业用户, I want 上传文件到系统并获取文件 URL, So that 业务单据可以关联附件",
+      "title": "\u6587\u4ef6\u4e0a\u4f20\u4e0e\u5b58\u50a8",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u4e0a\u4f20\u6587\u4ef6\u5230\u7cfb\u7edf\u5e76\u83b7\u53d6\u6587\u4ef6 URL, So that \u4e1a\u52a1\u5355\u636e\u53ef\u4ee5\u5173\u8054\u9644\u4ef6",
       "implementationType": "new",
       "openspec_change": "epic-8-story-1-file-upload-storage",
       "steps": [
-        "完成 epic-8-story-1-file-upload-storage 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-1-file-upload-storage \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FILE-001",
@@ -1792,12 +1792,12 @@
       "id": 75,
       "epic": "Epic 8",
       "story": "Story 8.2",
-      "title": "文件下载与预览",
-      "description": "As a 企业用户, I want 下载和预览已上传的文件, So that 可以查看业务单据关联的附件内容",
+      "title": "\u6587\u4ef6\u4e0b\u8f7d\u4e0e\u9884\u89c8",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u4e0b\u8f7d\u548c\u9884\u89c8\u5df2\u4e0a\u4f20\u7684\u6587\u4ef6, So that \u53ef\u4ee5\u67e5\u770b\u4e1a\u52a1\u5355\u636e\u5173\u8054\u7684\u9644\u4ef6\u5185\u5bb9",
       "implementationType": "new",
       "openspec_change": "epic-8-story-2-file-download-preview",
       "steps": [
-        "完成 epic-8-story-2-file-download-preview 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-2-file-download-preview \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FILE-004",
@@ -1815,12 +1815,12 @@
       "id": 76,
       "epic": "Epic 8",
       "story": "Story 8.3",
-      "title": "文件版本与删除",
-      "description": "As a 企业用户, I want 管理文件版本和删除文件, So that 可以更新附件并清理不需要的文件",
+      "title": "\u6587\u4ef6\u7248\u672c\u4e0e\u5220\u9664",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u7ba1\u7406\u6587\u4ef6\u7248\u672c\u548c\u5220\u9664\u6587\u4ef6, So that \u53ef\u4ee5\u66f4\u65b0\u9644\u4ef6\u5e76\u6e05\u7406\u4e0d\u9700\u8981\u7684\u6587\u4ef6",
       "implementationType": "new",
       "openspec_change": "epic-8-story-3-file-version-deletion",
       "steps": [
-        "完成 epic-8-story-3-file-version-deletion 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-3-file-version-deletion \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-FILE-006",
@@ -1840,12 +1840,12 @@
       "id": 77,
       "epic": "Epic 8",
       "story": "Story 8.4",
-      "title": "消息发送与轮询",
-      "description": "As a Agent, I want 通过消息轮询获取待处理消息, So that Agent 可以实时接收系统通知和任务",
+      "title": "\u6d88\u606f\u53d1\u9001\u4e0e\u8f6e\u8be2",
+      "description": "As a Agent, I want \u901a\u8fc7\u6d88\u606f\u8f6e\u8be2\u83b7\u53d6\u5f85\u5904\u7406\u6d88\u606f, So that Agent \u53ef\u4ee5\u5b9e\u65f6\u63a5\u6536\u7cfb\u7edf\u901a\u77e5\u548c\u4efb\u52a1",
       "implementationType": "new",
       "openspec_change": "epic-8-story-4-message-send-polling",
       "steps": [
-        "完成 epic-8-story-4-message-send-polling 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-4-message-send-polling \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-MSG-001",
@@ -1864,12 +1864,12 @@
       "id": 78,
       "epic": "Epic 8",
       "story": "Story 8.5",
-      "title": "消息类型与推送",
-      "description": "As a 系统管理员, I want 配置消息类型和推送规则, So that 不同业务事件触发不同类型的消息通知",
+      "title": "\u6d88\u606f\u7c7b\u578b\u4e0e\u63a8\u9001",
+      "description": "As a \u7cfb\u7edf\u7ba1\u7406\u5458, I want \u914d\u7f6e\u6d88\u606f\u7c7b\u578b\u548c\u63a8\u9001\u89c4\u5219, So that \u4e0d\u540c\u4e1a\u52a1\u4e8b\u4ef6\u89e6\u53d1\u4e0d\u540c\u7c7b\u578b\u7684\u6d88\u606f\u901a\u77e5",
       "implementationType": "new",
       "openspec_change": "epic-8-story-5-message-types-push",
       "steps": [
-        "完成 epic-8-story-5-message-types-push 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-5-message-types-push \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-MSG-004",
@@ -1888,12 +1888,12 @@
       "id": 79,
       "epic": "Epic 8",
       "story": "Story 8.6",
-      "title": "消息已读与归档",
-      "description": "As a 企业用户, I want 批量标记消息已读和归档消息, So that 可以高效管理消息",
+      "title": "\u6d88\u606f\u5df2\u8bfb\u4e0e\u5f52\u6863",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u6279\u91cf\u6807\u8bb0\u6d88\u606f\u5df2\u8bfb\u548c\u5f52\u6863\u6d88\u606f, So that \u53ef\u4ee5\u9ad8\u6548\u7ba1\u7406\u6d88\u606f",
       "implementationType": "new",
       "openspec_change": "epic-8-story-6-message-read-archive",
       "steps": [
-        "完成 epic-8-story-6-message-read-archive 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-6-message-read-archive \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-MSG-007"
@@ -1910,12 +1910,12 @@
       "id": 80,
       "epic": "Epic 8",
       "story": "Story 8.7",
-      "title": "知识库文档 CRUD",
-      "description": "As a 企业管理员, I want 创建、编辑、删除知识库文档, So that 可以积累和管理企业知识资产",
+      "title": "\u77e5\u8bc6\u5e93\u6587\u6863 CRUD",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u521b\u5efa\u3001\u7f16\u8f91\u3001\u5220\u9664\u77e5\u8bc6\u5e93\u6587\u6863, So that \u53ef\u4ee5\u79ef\u7d2f\u548c\u7ba1\u7406\u4f01\u4e1a\u77e5\u8bc6\u8d44\u4ea7",
       "implementationType": "new",
       "openspec_change": "epic-8-story-7-knowledge-base-document-crud",
       "steps": [
-        "完成 epic-8-story-7-knowledge-base-document-crud 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-7-knowledge-base-document-crud \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-KB-001",
@@ -1934,12 +1934,12 @@
       "id": 81,
       "epic": "Epic 8",
       "story": "Story 8.8",
-      "title": "知识库分类与搜索",
-      "description": "As a 企业用户, I want 按分类浏览和搜索知识库, So that 可以快速找到需要的知识文档",
+      "title": "\u77e5\u8bc6\u5e93\u5206\u7c7b\u4e0e\u641c\u7d22",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u6309\u5206\u7c7b\u6d4f\u89c8\u548c\u641c\u7d22\u77e5\u8bc6\u5e93, So that \u53ef\u4ee5\u5feb\u901f\u627e\u5230\u9700\u8981\u7684\u77e5\u8bc6\u6587\u6863",
       "implementationType": "new",
       "openspec_change": "epic-8-story-8-knowledge-base-category-search",
       "steps": [
-        "完成 epic-8-story-8-knowledge-base-category-search 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-8-knowledge-base-category-search \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-KB-004",
@@ -1957,12 +1957,12 @@
       "id": 82,
       "epic": "Epic 8",
       "story": "Story 8.9",
-      "title": "Skill 注册与发现",
-      "description": "As a Agent, I want 发现和调用系统注册的 Skill, So that Agent 可以通过 Skill 执行业务操作",
+      "title": "Skill \u6ce8\u518c\u4e0e\u53d1\u73b0",
+      "description": "As a Agent, I want \u53d1\u73b0\u548c\u8c03\u7528\u7cfb\u7edf\u6ce8\u518c\u7684 Skill, So that Agent \u53ef\u4ee5\u901a\u8fc7 Skill \u6267\u884c\u4e1a\u52a1\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-8-story-9-skill-registry-discovery",
       "steps": [
-        "完成 epic-8-story-9-skill-registry-discovery 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-9-skill-registry-discovery \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SKILL-001",
@@ -1981,12 +1981,12 @@
       "id": 83,
       "epic": "Epic 8",
       "story": "Story 8.10",
-      "title": "Skill 执行与结果",
-      "description": "As a Agent, I want 调用 Skill 并获取执行结果, So that 可以通过 Skill 完成业务操作",
+      "title": "Skill \u6267\u884c\u4e0e\u7ed3\u679c",
+      "description": "As a Agent, I want \u8c03\u7528 Skill \u5e76\u83b7\u53d6\u6267\u884c\u7ed3\u679c, So that \u53ef\u4ee5\u901a\u8fc7 Skill \u5b8c\u6210\u4e1a\u52a1\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-8-story-10-skill-execution-results",
       "steps": [
-        "完成 epic-8-story-10-skill-execution-results 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-10-skill-execution-results \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SKILL-004",
@@ -2005,12 +2005,12 @@
       "id": 84,
       "epic": "Epic 8",
       "story": "Story 8.11",
-      "title": "Skill 权限与模块映射",
-      "description": "As a 企业管理员, I want 控制 Skill 的访问权限和模块映射, So that 不同角色的 Agent 只能调用授权范围内的 Skill",
+      "title": "Skill \u6743\u9650\u4e0e\u6a21\u5757\u6620\u5c04",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u63a7\u5236 Skill \u7684\u8bbf\u95ee\u6743\u9650\u548c\u6a21\u5757\u6620\u5c04, So that \u4e0d\u540c\u89d2\u8272\u7684 Agent \u53ea\u80fd\u8c03\u7528\u6388\u6743\u8303\u56f4\u5185\u7684 Skill",
       "implementationType": "new",
       "openspec_change": "epic-8-story-11-skill-permissions-module-mapping",
       "steps": [
-        "完成 epic-8-story-11-skill-permissions-module-mapping 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-11-skill-permissions-module-mapping \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SKILL-007",
@@ -2029,12 +2029,12 @@
       "id": 85,
       "epic": "Epic 8",
       "story": "Story 8.12",
-      "title": "知识库向量化与语义检索",
-      "description": "As a Agent, I want 通过语义检索查找知识库文档, So that 可以用自然语言查询找到最相关的知识",
+      "title": "\u77e5\u8bc6\u5e93\u5411\u91cf\u5316\u4e0e\u8bed\u4e49\u68c0\u7d22",
+      "description": "As a Agent, I want \u901a\u8fc7\u8bed\u4e49\u68c0\u7d22\u67e5\u627e\u77e5\u8bc6\u5e93\u6587\u6863, So that \u53ef\u4ee5\u7528\u81ea\u7136\u8bed\u8a00\u67e5\u8be2\u627e\u5230\u6700\u76f8\u5173\u7684\u77e5\u8bc6",
       "implementationType": "new",
       "openspec_change": "epic-8-story-12-knowledge-base-vector-search",
       "steps": [
-        "完成 epic-8-story-12-knowledge-base-vector-search 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-12-knowledge-base-vector-search \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-KB2-001",
@@ -2053,12 +2053,12 @@
       "id": 86,
       "epic": "Epic 8",
       "story": "Story 8.13",
-      "title": "知识库文档分块与引用",
-      "description": "As a Agent, I want 获取知识库文档的分块内容和来源引用, So that Agent 回答用户问题时可以引用知识库的具体段落",
+      "title": "\u77e5\u8bc6\u5e93\u6587\u6863\u5206\u5757\u4e0e\u5f15\u7528",
+      "description": "As a Agent, I want \u83b7\u53d6\u77e5\u8bc6\u5e93\u6587\u6863\u7684\u5206\u5757\u5185\u5bb9\u548c\u6765\u6e90\u5f15\u7528, So that Agent \u56de\u7b54\u7528\u6237\u95ee\u9898\u65f6\u53ef\u4ee5\u5f15\u7528\u77e5\u8bc6\u5e93\u7684\u5177\u4f53\u6bb5\u843d",
       "implementationType": "new",
       "openspec_change": "epic-8-story-13-knowledge-base-chunks-citation",
       "steps": [
-        "完成 epic-8-story-13-knowledge-base-chunks-citation 变更的所有 task"
+        "\u5b8c\u6210 epic-8-story-13-knowledge-base-chunks-citation \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-KB2-004",
@@ -2077,12 +2077,12 @@
       "id": 87,
       "epic": "Epic 9",
       "story": "Story 9.1",
-      "title": "运营仪表盘",
-      "description": "As a 运营商, I want 查看平台运营数据仪表盘, So that 可以掌握平台整体运营状况",
+      "title": "\u8fd0\u8425\u4eea\u8868\u76d8",
+      "description": "As a \u8fd0\u8425\u5546, I want \u67e5\u770b\u5e73\u53f0\u8fd0\u8425\u6570\u636e\u4eea\u8868\u76d8, So that \u53ef\u4ee5\u638c\u63e1\u5e73\u53f0\u6574\u4f53\u8fd0\u8425\u72b6\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-9-story-1-operator-dashboard",
       "steps": [
-        "完成 epic-9-story-1-operator-dashboard 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-1-operator-dashboard \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OP-001",
@@ -2101,12 +2101,12 @@
       "id": 88,
       "epic": "Epic 9",
       "story": "Story 9.2",
-      "title": "租户企业管理",
-      "description": "As a 运营商, I want 管理平台上的集团和企业租户, So that 可以控制租户的开通、暂停和注销",
+      "title": "\u79df\u6237\u4f01\u4e1a\u7ba1\u7406",
+      "description": "As a \u8fd0\u8425\u5546, I want \u7ba1\u7406\u5e73\u53f0\u4e0a\u7684\u96c6\u56e2\u548c\u4f01\u4e1a\u79df\u6237, So that \u53ef\u4ee5\u63a7\u5236\u79df\u6237\u7684\u5f00\u901a\u3001\u6682\u505c\u548c\u6ce8\u9500",
       "implementationType": "new",
       "openspec_change": "epic-9-story-2-tenant-enterprise-management",
       "steps": [
-        "完成 epic-9-story-2-tenant-enterprise-management 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-2-tenant-enterprise-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OP-003",
@@ -2126,12 +2126,12 @@
       "id": 89,
       "epic": "Epic 9",
       "story": "Story 9.3",
-      "title": "运营审计与日志",
-      "description": "As a 运营商, I want 查看平台级审计日志和操作记录, So that 可以追踪平台上的所有管理操作",
+      "title": "\u8fd0\u8425\u5ba1\u8ba1\u4e0e\u65e5\u5fd7",
+      "description": "As a \u8fd0\u8425\u5546, I want \u67e5\u770b\u5e73\u53f0\u7ea7\u5ba1\u8ba1\u65e5\u5fd7\u548c\u64cd\u4f5c\u8bb0\u5f55, So that \u53ef\u4ee5\u8ffd\u8e2a\u5e73\u53f0\u4e0a\u7684\u6240\u6709\u7ba1\u7406\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-9-story-3-operator-audit-log",
       "steps": [
-        "完成 epic-9-story-3-operator-audit-log 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-3-operator-audit-log \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OP-006",
@@ -2150,12 +2150,12 @@
       "id": 90,
       "epic": "Epic 9",
       "story": "Story 9.4",
-      "title": "订阅套餐定义",
-      "description": "As a 运营商, I want 定义和管理订阅套餐, So that 企业可以选择不同的服务等级",
+      "title": "\u8ba2\u9605\u5957\u9910\u5b9a\u4e49",
+      "description": "As a \u8fd0\u8425\u5546, I want \u5b9a\u4e49\u548c\u7ba1\u7406\u8ba2\u9605\u5957\u9910, So that \u4f01\u4e1a\u53ef\u4ee5\u9009\u62e9\u4e0d\u540c\u7684\u670d\u52a1\u7b49\u7ea7",
       "implementationType": "new",
       "openspec_change": "epic-9-story-4-subscription-plan-definition",
       "steps": [
-        "完成 epic-9-story-4-subscription-plan-definition 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-4-subscription-plan-definition \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-BILL-001",
@@ -2174,12 +2174,12 @@
       "id": 91,
       "epic": "Epic 9",
       "story": "Story 9.5",
-      "title": "企业订阅与续费",
-      "description": "As a 企业管理员, I want 为企业订阅套餐和管理续费, So that 可以使用平台服务",
+      "title": "\u4f01\u4e1a\u8ba2\u9605\u4e0e\u7eed\u8d39",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u4e3a\u4f01\u4e1a\u8ba2\u9605\u5957\u9910\u548c\u7ba1\u7406\u7eed\u8d39, So that \u53ef\u4ee5\u4f7f\u7528\u5e73\u53f0\u670d\u52a1",
       "implementationType": "new",
       "openspec_change": "epic-9-story-5-enterprise-subscription-renewal",
       "steps": [
-        "完成 epic-9-story-5-enterprise-subscription-renewal 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-5-enterprise-subscription-renewal \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-BILL-004",
@@ -2200,12 +2200,12 @@
       "id": 92,
       "epic": "Epic 9",
       "story": "Story 9.6",
-      "title": "用量计费与账单",
-      "description": "As a 企业管理员, I want 查看用量和账单, So that 可以了解费用明细",
+      "title": "\u7528\u91cf\u8ba1\u8d39\u4e0e\u8d26\u5355",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u67e5\u770b\u7528\u91cf\u548c\u8d26\u5355, So that \u53ef\u4ee5\u4e86\u89e3\u8d39\u7528\u660e\u7ec6",
       "implementationType": "new",
       "openspec_change": "epic-9-story-6-usage-billing-invoice",
       "steps": [
-        "完成 epic-9-story-6-usage-billing-invoice 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-6-usage-billing-invoice \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-BILL-008",
@@ -2224,12 +2224,12 @@
       "id": 93,
       "epic": "Epic 9",
       "story": "Story 9.7",
-      "title": "客户服务工单",
-      "description": "As a 运营商客服, I want 创建和管理客户服务工单, So that 可以处理企业客户的服务请求",
+      "title": "\u5ba2\u6237\u670d\u52a1\u5de5\u5355",
+      "description": "As a \u8fd0\u8425\u5546\u5ba2\u670d, I want \u521b\u5efa\u548c\u7ba1\u7406\u5ba2\u6237\u670d\u52a1\u5de5\u5355, So that \u53ef\u4ee5\u5904\u7406\u4f01\u4e1a\u5ba2\u6237\u7684\u670d\u52a1\u8bf7\u6c42",
       "implementationType": "new",
       "openspec_change": "epic-9-story-7-customer-service-tickets",
       "steps": [
-        "完成 epic-9-story-7-customer-service-tickets 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-7-customer-service-tickets \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CS-001",
@@ -2248,12 +2248,12 @@
       "id": 94,
       "epic": "Epic 9",
       "story": "Story 9.8",
-      "title": "客户服务SLA与统计",
-      "description": "As a 运营商, I want 监控客户服务 SLA 和统计指标, So that 可以保证服务质量",
+      "title": "\u5ba2\u6237\u670d\u52a1SLA\u4e0e\u7edf\u8ba1",
+      "description": "As a \u8fd0\u8425\u5546, I want \u76d1\u63a7\u5ba2\u6237\u670d\u52a1 SLA \u548c\u7edf\u8ba1\u6307\u6807, So that \u53ef\u4ee5\u4fdd\u8bc1\u670d\u52a1\u8d28\u91cf",
       "implementationType": "new",
       "openspec_change": "epic-9-story-8-customer-service-sla-statistics",
       "steps": [
-        "完成 epic-9-story-8-customer-service-sla-statistics 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-8-customer-service-sla-statistics \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CS-004",
@@ -2271,12 +2271,12 @@
       "id": 95,
       "epic": "Epic 9",
       "story": "Story 9.9",
-      "title": "运营服务管理",
-      "description": "As a 运营商, I want 管理平台级服务配置和运维操作, So that 可以维护平台稳定运行",
+      "title": "\u8fd0\u8425\u670d\u52a1\u7ba1\u7406",
+      "description": "As a \u8fd0\u8425\u5546, I want \u7ba1\u7406\u5e73\u53f0\u7ea7\u670d\u52a1\u914d\u7f6e\u548c\u8fd0\u7ef4\u64cd\u4f5c, So that \u53ef\u4ee5\u7ef4\u62a4\u5e73\u53f0\u7a33\u5b9a\u8fd0\u884c",
       "implementationType": "new",
       "openspec_change": "epic-9-story-9-operator-service-management",
       "steps": [
-        "完成 epic-9-story-9-operator-service-management 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-9-operator-service-management \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OPSVC-001",
@@ -2296,12 +2296,12 @@
       "id": 96,
       "epic": "Epic 9",
       "story": "Story 9.10",
-      "title": "运营通知与公告",
-      "description": "As a 运营商, I want 发布平台公告和通知, So that 企业用户可以了解平台动态和维护信息",
+      "title": "\u8fd0\u8425\u901a\u77e5\u4e0e\u516c\u544a",
+      "description": "As a \u8fd0\u8425\u5546, I want \u53d1\u5e03\u5e73\u53f0\u516c\u544a\u548c\u901a\u77e5, So that \u4f01\u4e1a\u7528\u6237\u53ef\u4ee5\u4e86\u89e3\u5e73\u53f0\u52a8\u6001\u548c\u7ef4\u62a4\u4fe1\u606f",
       "implementationType": "new",
       "openspec_change": "epic-9-story-10-operator-announcements",
       "steps": [
-        "完成 epic-9-story-10-operator-announcements 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-10-operator-announcements \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OPSVC-005",
@@ -2320,12 +2320,12 @@
       "id": 97,
       "epic": "Epic 9",
       "story": "Story 9.11",
-      "title": "运营数据导出与备份",
-      "description": "As a 运营商, I want 导出运营数据和执行企业级备份, So that 可以满足合规要求和数据安全",
+      "title": "\u8fd0\u8425\u6570\u636e\u5bfc\u51fa\u4e0e\u5907\u4efd",
+      "description": "As a \u8fd0\u8425\u5546, I want \u5bfc\u51fa\u8fd0\u8425\u6570\u636e\u548c\u6267\u884c\u4f01\u4e1a\u7ea7\u5907\u4efd, So that \u53ef\u4ee5\u6ee1\u8db3\u5408\u89c4\u8981\u6c42\u548c\u6570\u636e\u5b89\u5168",
       "implementationType": "new",
       "openspec_change": "epic-9-story-11-operator-data-export-backup",
       "steps": [
-        "完成 epic-9-story-11-operator-data-export-backup 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-11-operator-data-export-backup \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OPSVC-008",
@@ -2346,12 +2346,12 @@
       "id": 98,
       "epic": "Epic 9",
       "story": "Story 9.12",
-      "title": "客户自助服务",
-      "description": "As a 企业管理员, I want 通过自助服务管理企业订阅和查看用量, So that 不需要联系运营商就能完成常见操作",
+      "title": "\u5ba2\u6237\u81ea\u52a9\u670d\u52a1",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u901a\u8fc7\u81ea\u52a9\u670d\u52a1\u7ba1\u7406\u4f01\u4e1a\u8ba2\u9605\u548c\u67e5\u770b\u7528\u91cf, So that \u4e0d\u9700\u8981\u8054\u7cfb\u8fd0\u8425\u5546\u5c31\u80fd\u5b8c\u6210\u5e38\u89c1\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-9-story-12-customer-self-service",
       "steps": [
-        "完成 epic-9-story-12-customer-self-service 变更的所有 task"
+        "\u5b8c\u6210 epic-9-story-12-customer-self-service \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CUST-001",
@@ -2374,12 +2374,12 @@
       "id": 99,
       "epic": "Epic 10",
       "story": "Story 10.1",
-      "title": "老板驾驶舱报表",
-      "description": "As a 老板, I want 查看企业经营数据驾驶舱, So that 可以一目了然掌握企业核心经营指标",
+      "title": "\u8001\u677f\u9a7e\u9a76\u8231\u62a5\u8868",
+      "description": "As a \u8001\u677f, I want \u67e5\u770b\u4f01\u4e1a\u7ecf\u8425\u6570\u636e\u9a7e\u9a76\u8231, So that \u53ef\u4ee5\u4e00\u76ee\u4e86\u7136\u638c\u63e1\u4f01\u4e1a\u6838\u5fc3\u7ecf\u8425\u6307\u6807",
       "implementationType": "new",
       "openspec_change": "epic-10-story-1-owner-dashboard-reports",
       "steps": [
-        "完成 epic-10-story-1-owner-dashboard-reports 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-1-owner-dashboard-reports \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OWNER-001",
@@ -2398,12 +2398,12 @@
       "id": 100,
       "epic": "Epic 10",
       "story": "Story 10.2",
-      "title": "老板数据穿透与对比",
-      "description": "As a 老板, I want 穿透查看报表背后的明细数据并进行跨期对比, So that 可以从宏观到微观理解经营状况",
+      "title": "\u8001\u677f\u6570\u636e\u7a7f\u900f\u4e0e\u5bf9\u6bd4",
+      "description": "As a \u8001\u677f, I want \u7a7f\u900f\u67e5\u770b\u62a5\u8868\u80cc\u540e\u7684\u660e\u7ec6\u6570\u636e\u5e76\u8fdb\u884c\u8de8\u671f\u5bf9\u6bd4, So that \u53ef\u4ee5\u4ece\u5b8f\u89c2\u5230\u5fae\u89c2\u7406\u89e3\u7ecf\u8425\u72b6\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-10-story-2-owner-data-drilldown-compare",
       "steps": [
-        "完成 epic-10-story-2-owner-data-drilldown-compare 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-2-owner-data-drilldown-compare \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-OWNER-004",
@@ -2422,12 +2422,12 @@
       "id": 101,
       "epic": "Epic 10",
       "story": "Story 10.3",
-      "title": "通用数据报表",
-      "description": "As a 企业用户, I want 按模块查看业务数据报表, So that 可以从数据维度分析业务状况",
+      "title": "\u901a\u7528\u6570\u636e\u62a5\u8868",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u6309\u6a21\u5757\u67e5\u770b\u4e1a\u52a1\u6570\u636e\u62a5\u8868, So that \u53ef\u4ee5\u4ece\u6570\u636e\u7ef4\u5ea6\u5206\u6790\u4e1a\u52a1\u72b6\u51b5",
       "implementationType": "new",
       "openspec_change": "epic-10-story-3-general-business-reports",
       "steps": [
-        "完成 epic-10-story-3-general-business-reports 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-3-general-business-reports \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-REPORT-001",
@@ -2447,12 +2447,12 @@
       "id": 102,
       "epic": "Epic 10",
       "story": "Story 10.4",
-      "title": "自定义报表与导出",
-      "description": "As a 企业管理员, I want 创建自定义报表并导出数据, So that 可以按需分析业务数据",
+      "title": "\u81ea\u5b9a\u4e49\u62a5\u8868\u4e0e\u5bfc\u51fa",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u521b\u5efa\u81ea\u5b9a\u4e49\u62a5\u8868\u5e76\u5bfc\u51fa\u6570\u636e, So that \u53ef\u4ee5\u6309\u9700\u5206\u6790\u4e1a\u52a1\u6570\u636e",
       "implementationType": "new",
       "openspec_change": "epic-10-story-4-custom-reports-export",
       "steps": [
-        "完成 epic-10-story-4-custom-reports-export 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-4-custom-reports-export \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-REPORT-005",
@@ -2472,12 +2472,12 @@
       "id": 103,
       "epic": "Epic 10",
       "story": "Story 10.5",
-      "title": "审计日志查询与导出",
-      "description": "As a 企业管理员, I want 查询和导出审计日志, So that 可以追溯所有系统操作",
+      "title": "\u5ba1\u8ba1\u65e5\u5fd7\u67e5\u8be2\u4e0e\u5bfc\u51fa",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u67e5\u8be2\u548c\u5bfc\u51fa\u5ba1\u8ba1\u65e5\u5fd7, So that \u53ef\u4ee5\u8ffd\u6eaf\u6240\u6709\u7cfb\u7edf\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-10-story-5-audit-log-query-export",
       "steps": [
-        "完成 epic-10-story-5-audit-log-query-export 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-5-audit-log-query-export \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUDIT-001",
@@ -2496,12 +2496,12 @@
       "id": 104,
       "epic": "Epic 10",
       "story": "Story 10.6",
-      "title": "数据备份与恢复审计",
-      "description": "As a 企业管理员, I want 查看数据备份记录和恢复操作日志, So that 可以确保数据安全合规",
+      "title": "\u6570\u636e\u5907\u4efd\u4e0e\u6062\u590d\u5ba1\u8ba1",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u67e5\u770b\u6570\u636e\u5907\u4efd\u8bb0\u5f55\u548c\u6062\u590d\u64cd\u4f5c\u65e5\u5fd7, So that \u53ef\u4ee5\u786e\u4fdd\u6570\u636e\u5b89\u5168\u5408\u89c4",
       "implementationType": "new",
       "openspec_change": "epic-10-story-6-data-backup-restore-audit",
       "steps": [
-        "完成 epic-10-story-6-data-backup-restore-audit 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-6-data-backup-restore-audit \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-AUDIT-004",
@@ -2520,12 +2520,12 @@
       "id": 105,
       "epic": "Epic 10",
       "story": "Story 10.7",
-      "title": "数据导入",
-      "description": "As a 企业管理员, I want 批量导入业务数据, So that 可以快速初始化系统或批量更新数据",
+      "title": "\u6570\u636e\u5bfc\u5165",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u6279\u91cf\u5bfc\u5165\u4e1a\u52a1\u6570\u636e, So that \u53ef\u4ee5\u5feb\u901f\u521d\u59cb\u5316\u7cfb\u7edf\u6216\u6279\u91cf\u66f4\u65b0\u6570\u636e",
       "implementationType": "new",
       "openspec_change": "epic-10-story-7-data-import",
       "steps": [
-        "完成 epic-10-story-7-data-import 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-7-data-import \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMPORT-001",
@@ -2544,12 +2544,12 @@
       "id": 106,
       "epic": "Epic 10",
       "story": "Story 10.8",
-      "title": "数据导出",
-      "description": "As a 企业用户, I want 导出业务数据, So that 可以在本地分析或备份",
+      "title": "\u6570\u636e\u5bfc\u51fa",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u5bfc\u51fa\u4e1a\u52a1\u6570\u636e, So that \u53ef\u4ee5\u5728\u672c\u5730\u5206\u6790\u6216\u5907\u4efd",
       "implementationType": "new",
       "openspec_change": "epic-10-story-8-data-export",
       "steps": [
-        "完成 epic-10-story-8-data-export 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-8-data-export \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-IMPORT-004",
@@ -2568,12 +2568,12 @@
       "id": 107,
       "epic": "Epic 10",
       "story": "Story 10.9",
-      "title": "Webhook 注册与触发",
-      "description": "As a 企业管理员, I want 配置 Webhook 接收业务事件通知, So that 可以与外部系统实时集成",
+      "title": "Webhook \u6ce8\u518c\u4e0e\u89e6\u53d1",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u914d\u7f6e Webhook \u63a5\u6536\u4e1a\u52a1\u4e8b\u4ef6\u901a\u77e5, So that \u53ef\u4ee5\u4e0e\u5916\u90e8\u7cfb\u7edf\u5b9e\u65f6\u96c6\u6210",
       "implementationType": "new",
       "openspec_change": "epic-10-story-9-webhook-registration-trigger",
       "steps": [
-        "完成 epic-10-story-9-webhook-registration-trigger 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-9-webhook-registration-trigger \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-WEBHOOK-001",
@@ -2592,12 +2592,12 @@
       "id": 108,
       "epic": "Epic 10",
       "story": "Story 10.10",
-      "title": "Webhook 管理与日志",
-      "description": "As a 企业管理员, I want 管理 Webhook 配置和查看调用日志, So that 可以监控和调试 Webhook 集成",
+      "title": "Webhook \u7ba1\u7406\u4e0e\u65e5\u5fd7",
+      "description": "As a \u4f01\u4e1a\u7ba1\u7406\u5458, I want \u7ba1\u7406 Webhook \u914d\u7f6e\u548c\u67e5\u770b\u8c03\u7528\u65e5\u5fd7, So that \u53ef\u4ee5\u76d1\u63a7\u548c\u8c03\u8bd5 Webhook \u96c6\u6210",
       "implementationType": "new",
       "openspec_change": "epic-10-story-10-webhook-management-logs",
       "steps": [
-        "完成 epic-10-story-10-webhook-management-logs 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-10-webhook-management-logs \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-WEBHOOK-004",
@@ -2616,12 +2616,12 @@
       "id": 109,
       "epic": "Epic 10",
       "story": "Story 10.11",
-      "title": "国际化与多语言",
-      "description": "As a 系统管理员, I want 配置系统语言和翻译资源, So that 不同地区用户可以使用母语操作系统",
+      "title": "\u56fd\u9645\u5316\u4e0e\u591a\u8bed\u8a00",
+      "description": "As a \u7cfb\u7edf\u7ba1\u7406\u5458, I want \u914d\u7f6e\u7cfb\u7edf\u8bed\u8a00\u548c\u7ffb\u8bd1\u8d44\u6e90, So that \u4e0d\u540c\u5730\u533a\u7528\u6237\u53ef\u4ee5\u4f7f\u7528\u6bcd\u8bed\u64cd\u4f5c\u7cfb\u7edf",
       "implementationType": "new",
       "openspec_change": "epic-10-story-11-internationalization-i18n",
       "steps": [
-        "完成 epic-10-story-11-internationalization-i18n 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-11-internationalization-i18n \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-I18N-001",
@@ -2641,12 +2641,12 @@
       "id": 110,
       "epic": "Epic 10",
       "story": "Story 10.12",
-      "title": "时区与格式本地化",
-      "description": "As a 企业用户, I want 系统支持时区和本地化格式, So that 时间和数据显示符合本地习惯",
+      "title": "\u65f6\u533a\u4e0e\u683c\u5f0f\u672c\u5730\u5316",
+      "description": "As a \u4f01\u4e1a\u7528\u6237, I want \u7cfb\u7edf\u652f\u6301\u65f6\u533a\u548c\u672c\u5730\u5316\u683c\u5f0f, So that \u65f6\u95f4\u548c\u6570\u636e\u663e\u793a\u7b26\u5408\u672c\u5730\u4e60\u60ef",
       "implementationType": "new",
       "openspec_change": "epic-10-story-12-timezone-locale-localization",
       "steps": [
-        "完成 epic-10-story-12-timezone-locale-localization 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-12-timezone-locale-localization \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-I18N-005",
@@ -2664,12 +2664,12 @@
       "id": 111,
       "epic": "Epic 10",
       "story": "Story 10.13",
-      "title": "安全增强与数据加密",
-      "description": "As a 系统管理员, I want 敏感数据加密存储和访问控制增强, So that 系统安全性满足企业级要求",
+      "title": "\u5b89\u5168\u589e\u5f3a\u4e0e\u6570\u636e\u52a0\u5bc6",
+      "description": "As a \u7cfb\u7edf\u7ba1\u7406\u5458, I want \u654f\u611f\u6570\u636e\u52a0\u5bc6\u5b58\u50a8\u548c\u8bbf\u95ee\u63a7\u5236\u589e\u5f3a, So that \u7cfb\u7edf\u5b89\u5168\u6027\u6ee1\u8db3\u4f01\u4e1a\u7ea7\u8981\u6c42",
       "implementationType": "new",
       "openspec_change": "epic-10-story-13-security-encryption-enhancement",
       "steps": [
-        "完成 epic-10-story-13-security-encryption-enhancement 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-13-security-encryption-enhancement \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-SEC2-001",
@@ -2689,12 +2689,12 @@
       "id": 112,
       "epic": "Epic 10",
       "story": "Story 10.14",
-      "title": "AI 助手对话",
-      "description": "As a Agent, I want 通过 AI 助手获取业务操作建议, So that Agent 可以更智能地辅助用户完成业务操作",
+      "title": "AI \u52a9\u624b\u5bf9\u8bdd",
+      "description": "As a Agent, I want \u901a\u8fc7 AI \u52a9\u624b\u83b7\u53d6\u4e1a\u52a1\u64cd\u4f5c\u5efa\u8bae, So that Agent \u53ef\u4ee5\u66f4\u667a\u80fd\u5730\u8f85\u52a9\u7528\u6237\u5b8c\u6210\u4e1a\u52a1\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-10-story-14-ai-assistant-chat",
       "steps": [
-        "完成 epic-10-story-14-ai-assistant-chat 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-14-ai-assistant-chat \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ASSIST-001",
@@ -2713,12 +2713,12 @@
       "id": 113,
       "epic": "Epic 10",
       "story": "Story 10.15",
-      "title": "AI 助手上下文与偏好",
-      "description": "As a Agent, I want AI 助手记住对话上下文和用户偏好, So that 多轮对话可以连贯进行",
+      "title": "AI \u52a9\u624b\u4e0a\u4e0b\u6587\u4e0e\u504f\u597d",
+      "description": "As a Agent, I want AI \u52a9\u624b\u8bb0\u4f4f\u5bf9\u8bdd\u4e0a\u4e0b\u6587\u548c\u7528\u6237\u504f\u597d, So that \u591a\u8f6e\u5bf9\u8bdd\u53ef\u4ee5\u8fde\u8d2f\u8fdb\u884c",
       "implementationType": "new",
       "openspec_change": "epic-10-story-15-ai-assistant-context-preferences",
       "steps": [
-        "完成 epic-10-story-15-ai-assistant-context-preferences 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-15-ai-assistant-context-preferences \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-ASSIST-004",
@@ -2736,12 +2736,12 @@
       "id": 114,
       "epic": "Epic 10",
       "story": "Story 10.16",
-      "title": "CLI 认证与配置",
-      "description": "As a Agent 运维人员, I want 通过 CLI 工具完成认证和系统配置, So that 可以通过命令行管理系统",
+      "title": "CLI \u8ba4\u8bc1\u4e0e\u914d\u7f6e",
+      "description": "As a Agent \u8fd0\u7ef4\u4eba\u5458, I want \u901a\u8fc7 CLI \u5de5\u5177\u5b8c\u6210\u8ba4\u8bc1\u548c\u7cfb\u7edf\u914d\u7f6e, So that \u53ef\u4ee5\u901a\u8fc7\u547d\u4ee4\u884c\u7ba1\u7406\u7cfb\u7edf",
       "implementationType": "new",
       "openspec_change": "epic-10-story-16-cli-auth-configuration",
       "steps": [
-        "完成 epic-10-story-16-cli-auth-configuration 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-16-cli-auth-configuration \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CLI-001",
@@ -2761,12 +2761,12 @@
       "id": 115,
       "epic": "Epic 10",
       "story": "Story 10.17",
-      "title": "CLI 消息轮询与 Skill 执行",
-      "description": "As a Agent, I want 通过 CLI 轮询消息和执行 Skill, So that Agent 可以自动化业务操作",
+      "title": "CLI \u6d88\u606f\u8f6e\u8be2\u4e0e Skill \u6267\u884c",
+      "description": "As a Agent, I want \u901a\u8fc7 CLI \u8f6e\u8be2\u6d88\u606f\u548c\u6267\u884c Skill, So that Agent \u53ef\u4ee5\u81ea\u52a8\u5316\u4e1a\u52a1\u64cd\u4f5c",
       "implementationType": "new",
       "openspec_change": "epic-10-story-17-cli-message-polling-skill-execution",
       "steps": [
-        "完成 epic-10-story-17-cli-message-polling-skill-execution 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-17-cli-message-polling-skill-execution \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-CLI-004",
@@ -2789,12 +2789,12 @@
       "id": 116,
       "epic": "Epic 10",
       "story": "Story 10.18",
-      "title": "Docker 私有化部署",
-      "description": "As a 运维人员, I want 通过 Docker Compose 一键部署私有化环境, So that 企业可以在局域网内运行完整平台",
+      "title": "Docker \u79c1\u6709\u5316\u90e8\u7f72",
+      "description": "As a \u8fd0\u7ef4\u4eba\u5458, I want \u901a\u8fc7 Docker Compose \u4e00\u952e\u90e8\u7f72\u79c1\u6709\u5316\u73af\u5883, So that \u4f01\u4e1a\u53ef\u4ee5\u5728\u5c40\u57df\u7f51\u5185\u8fd0\u884c\u5b8c\u6574\u5e73\u53f0",
       "implementationType": "new",
       "openspec_change": "epic-10-story-18-docker-private-deployment",
       "steps": [
-        "完成 epic-10-story-18-docker-private-deployment 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-18-docker-private-deployment \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-DEPLOY-001",
@@ -2813,12 +2813,12 @@
       "id": 117,
       "epic": "Epic 10",
       "story": "Story 10.19",
-      "title": "私有化部署配置与升级",
-      "description": "As a 运维人员, I want 配置私有化部署参数和执行版本升级, So that 可以定制部署和保持系统更新",
+      "title": "\u79c1\u6709\u5316\u90e8\u7f72\u914d\u7f6e\u4e0e\u5347\u7ea7",
+      "description": "As a \u8fd0\u7ef4\u4eba\u5458, I want \u914d\u7f6e\u79c1\u6709\u5316\u90e8\u7f72\u53c2\u6570\u548c\u6267\u884c\u7248\u672c\u5347\u7ea7, So that \u53ef\u4ee5\u5b9a\u5236\u90e8\u7f72\u548c\u4fdd\u6301\u7cfb\u7edf\u66f4\u65b0",
       "implementationType": "new",
       "openspec_change": "epic-10-story-19-private-deployment-config-upgrade",
       "steps": [
-        "完成 epic-10-story-19-private-deployment-config-upgrade 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-19-private-deployment-config-upgrade \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-DEPLOY-004",
@@ -2837,12 +2837,12 @@
       "id": 118,
       "epic": "Epic 10",
       "story": "Story 10.20",
-      "title": "私有化备份恢复与监控",
-      "description": "As a 运维人员, I want 执行私有化环境的数据备份恢复和系统监控, So that 可以保障私有化环境的数据安全和稳定运行",
+      "title": "\u79c1\u6709\u5316\u5907\u4efd\u6062\u590d\u4e0e\u76d1\u63a7",
+      "description": "As a \u8fd0\u7ef4\u4eba\u5458, I want \u6267\u884c\u79c1\u6709\u5316\u73af\u5883\u7684\u6570\u636e\u5907\u4efd\u6062\u590d\u548c\u7cfb\u7edf\u76d1\u63a7, So that \u53ef\u4ee5\u4fdd\u969c\u79c1\u6709\u5316\u73af\u5883\u7684\u6570\u636e\u5b89\u5168\u548c\u7a33\u5b9a\u8fd0\u884c",
       "implementationType": "new",
       "openspec_change": "epic-10-story-20-private-deployment-backup-monitor",
       "steps": [
-        "完成 epic-10-story-20-private-deployment-backup-monitor 变更的所有 task"
+        "\u5b8c\u6210 epic-10-story-20-private-deployment-backup-monitor \u53d8\u66f4\u7684\u6240\u6709 task"
       ],
       "frs_covered": [
         "FR-DEPLOY-007",
