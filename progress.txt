@@ -1249,3 +1249,19 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 25: 员工入职（创建档案） [Phase 2 Loop]
+
+### 铁律合规检查：
+- PRD 合规：FR-HRM-001 (创建员工档案), FR-ORG-010 (入职日期/岗位)
+- 架构合规：Employee + User 关联，入职自动创建登录凭证
+
+### What was done:
+- 扩展 User 模型：新增 EmployeeID 字段（关联员工）
+- 扩展 EmployeeService：NewEmployeeServiceWithUser + Create 时自动创建 User 账号
+- 更新 router.go：使用 NewEmployeeServiceWithUser 构造
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过

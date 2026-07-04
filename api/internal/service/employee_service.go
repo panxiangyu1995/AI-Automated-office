@@ -7,18 +7,28 @@ import (
 
 	"github.com/ai-office/api/internal/model"
 	"github.com/ai-office/api/internal/repository"
+	"github.com/ai-office/api/pkg/auth"
 	apperrors "github.com/ai-office/api/pkg/errors"
 )
 
 type EmployeeService struct {
 	empRepo  repository.EmployeeRepository
 	deptRepo repository.DepartmentRepository
+	userRepo repository.UserRepository
 }
 
 func NewEmployeeService(empRepo repository.EmployeeRepository, deptRepo repository.DepartmentRepository) *EmployeeService {
 	return &EmployeeService{
 		empRepo:  empRepo,
 		deptRepo: deptRepo,
+	}
+}
+
+func NewEmployeeServiceWithUser(empRepo repository.EmployeeRepository, deptRepo repository.DepartmentRepository, userRepo repository.UserRepository) *EmployeeService {
+	return &EmployeeService{
+		empRepo:  empRepo,
+		deptRepo: deptRepo,
+		userRepo: userRepo,
 	}
 }
 
@@ -70,8 +80,37 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 	if err := s.empRepo.Create(emp); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("创建员工失败: " + err.Error())
 	}
+
+	if s.userRepo != nil && email != "" {
+		tempPass := generateTempPassword()
+		passwordHash, hashErr := auth.HashPassword(tempPass)
+		if hashErr == nil {
+			eidStr := enterpriseID
+			empIDStr := emp.ID.String()
+			user := &model.User{
+				EnterpriseID:  eidStr,
+				EmployeeID:    &empIDStr,
+				Email:         email,
+				PasswordHash:  passwordHash,
+				Name:          name,
+				Role:          "employee",
+				Status:        "active",
+			}
+			s.userRepo.Create(user)
+		}
+	}
+
 	return emp, nil
 }
+
+func generateTempPassword() string {
+	b := make([]byte, 12)
+	for i := range b {
+		b[i] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[i%62]
+	}
+	return string(b)
+}
+
 
 func (s *EmployeeService) Update(employeeID, name, email, phone, position, employeeNo, role, status string) (*model.Employee, *apperrors.AppError) {
 	eid, err := uuid.Parse(employeeID)

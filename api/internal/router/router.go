@@ -71,7 +71,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		deptHandler := handler.NewDepartmentHandler(deptService)
 
 		empRepo := repository.NewEmployeeRepository(db)
-		empService := service.NewEmployeeService(empRepo, deptRepo)
+		empService := service.NewEmployeeServiceWithUser(empRepo, deptRepo, userRepo)
 		empHandler := handler.NewEmployeeHandler(empService)
 
 		positionRepo := repository.NewPositionRepository(db)
