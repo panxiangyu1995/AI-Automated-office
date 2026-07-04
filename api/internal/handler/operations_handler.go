@@ -84,22 +84,88 @@ func (h *OperationsHandler) GetReport(c *gin.Context) {
 
 func (h *OperationsHandler) CreateServiceTicket(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	response.Created(c, gin.H{"id": "", "status": "created"})
+	var req struct{ CustomerID, Subject, Description, Priority string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	t, appErr := h.platformSvc.CreateServiceTicket(eid, req.CustomerID, req.Subject, req.Description, req.Priority)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, t)
 }
 
 func (h *OperationsHandler) ListServiceTickets(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	response.Success(c, []interface{}{})
+	tickets, appErr := h.platformSvc.ListServiceTickets(eid)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, tickets)
 }
 
 func (h *OperationsHandler) CreateAnnouncement(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	response.Created(c, gin.H{"id": "", "status": "created"})
+	var req struct{ Title, Content string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	a, appErr := h.platformSvc.CreateAnnouncement(eid, req.Title, req.Content)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, a)
 }
 
 func (h *OperationsHandler) ListAnnouncements(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	response.Success(c, []interface{}{})
+	anns, appErr := h.platformSvc.ListAnnouncements(eid)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, anns)
+}
+
+func (h *OperationsHandler) CreateBill(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	var req struct{ Amount float64; Description string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	b, appErr := h.platformSvc.CreateUsageBill(eid, req.Amount, req.Description)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, b)
+}
+
+func (h *OperationsHandler) ListBills(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	bills, appErr := h.platformSvc.ListBills(eid)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, bills)
+}
+
+func (h *OperationsHandler) GetSLAMetrics(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	metrics, _ := h.platformSvc.GetSLAMetrics(eid)
+	response.Success(c, metrics)
+}
+
+func (h *OperationsHandler) CreateServiceConfig(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	var req struct{ Key, Value string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	sc, appErr := h.platformSvc.CreateServiceConfig(eid, req.Key, req.Value)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, sc)
+}
+
+func (h *OperationsHandler) GetServiceConfig(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	sc, appErr := h.platformSvc.GetServiceConfig(eid, c.Param("key"))
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, sc)
+}
+
+func (h *OperationsHandler) ExportData(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	data, contentType, appErr := h.platformSvc.ExportData(eid, c.DefaultQuery("format", "csv"))
+	if appErr != nil { response.Error(c, appErr); return }
+	c.Data(200, contentType, data)
+}
+
+func (h *OperationsHandler) ImportData(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	var req struct{ Records []map[string]interface{}; Target string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	count, appErr := h.platformSvc.ImportData(eid, req.Records, req.Target)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, gin.H{"imported": count})
 }
 
 func (h *OperationsHandler) ListAuditLogs(c *gin.Context) {

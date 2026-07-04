@@ -79,3 +79,21 @@ type Announcement struct {
 
 func (Announcement) TableName() string { return "announcements" }
 
+type UsageBill struct {
+	TenantModel
+	Amount      float64 `gorm:"type:numeric(15,2);not null" json:"amount"`
+	Description string  `gorm:"type:text" json:"description"`
+	Status      string  `gorm:"type:varchar(20);default:'pending'" json:"status"`
+}
+
+func (UsageBill) TableName() string { return "usage_bills" }
+
+type ServiceConfig struct {
+	TenantModel
+	ConfigKey   string `gorm:"type:varchar(100);not null" json:"config_key"`
+	ConfigValue string `gorm:"type:text" json:"config_value"`
+}
+
+func (ServiceConfig) TableName() string { return "service_configs" }
+
+
