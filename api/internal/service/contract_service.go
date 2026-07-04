@@ -83,6 +83,31 @@ func (s *ContractService) ChangeStatus(cID, newStatus string) (*model.Contract, 
 	return &c, nil
 }
 
+func (s *ContractService) LinkDocument(cID, refType, refID, refNo string) (*model.ContractReference, *apperrors.AppError) {
+	id, err := uuid.Parse(cID)
+	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
+	var c model.Contract
+	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	if refType == "" { return nil, apperrors.NewValidationError("ref_type", "关联类型不能为空") }
+	if refID == "" { return nil, apperrors.NewValidationError("ref_id", "关联ID不能为空") }
+
+	cr := &model.ContractReference{ContractID: cID, RefType: refType, RefID: refID, RefNo: refNo}
+	if err := s.db.Create(cr).Error; err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("关联单据失败: "+err.Error())
+	}
+	return cr, nil
+}
+
+func (s *ContractService) ListDocuments(cID string) ([]model.ContractReference, *apperrors.AppError) {
+	id, err := uuid.Parse(cID)
+	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
+	var refs []model.ContractReference
+	if err := s.db.Where("contract_id=?", id).Find(&refs).Error; err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询关联单据失败: "+err.Error())
+	}
+	return refs, nil
+}
+
 func (s *ContractService) Get(cID string) (*model.Contract, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }

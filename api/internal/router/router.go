@@ -293,6 +293,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.PUT("/contracts/:id", contractHandler.Update)
 			protected.DELETE("/contracts/:id", contractHandler.Delete)
 			protected.PATCH("/contracts/:id/status", contractHandler.ChangeStatus)
+			protected.POST("/contracts/:id/documents", contractHandler.LinkDocument)
+			protected.GET("/contracts/:id/documents", contractHandler.ListDocuments)
 			protected.PUT("/materials/:id", matHandler.Update)
 			protected.DELETE("/materials/:id", matHandler.Delete)
 			protected.PUT("/customer-levels/:id", customerLevelHandler.Update)

@@ -30,3 +30,14 @@ type Contract struct {
 }
 
 func (Contract) TableName() string { return "contracts" }
+
+type ContractReference struct {
+	TenantModel
+	ContractID string `gorm:"type:uuid;not null;index" json:"contract_id"`
+	RefType    string `gorm:"type:varchar(30);not null" json:"ref_type"`
+	RefID      string `gorm:"type:uuid;not null" json:"ref_id"`
+	RefNo      string `gorm:"type:varchar(100)" json:"ref_no,omitempty"`
+}
+
+func (ContractReference) TableName() string { return "contract_references" }
+

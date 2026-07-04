@@ -64,6 +64,30 @@ func (h *ContractHandler) Get(c *gin.Context) {
 	response.Success(c, contract)
 }
 
+type linkDocReq struct {
+	RefType string `json:"ref_type"`
+	RefID   string `json:"ref_id"`
+	RefNo   string `json:"ref_no"`
+}
+
+func (h *ContractHandler) LinkDocument(c *gin.Context) {
+	contractID := c.Param("id")
+	if contractID == "" { response.ValidationError(c, "id", "合同ID不能为空"); return }
+	var req linkDocReq
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	ref, appErr := h.svc.LinkDocument(contractID, req.RefType, req.RefID, req.RefNo)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, ref)
+}
+
+func (h *ContractHandler) ListDocuments(c *gin.Context) {
+	contractID := c.Param("id")
+	if contractID == "" { response.ValidationError(c, "id", "合同ID不能为空"); return }
+	refs, appErr := h.svc.ListDocuments(contractID)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, refs)
+}
+
 func (h *ContractHandler) List(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))

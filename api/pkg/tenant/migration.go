@@ -590,4 +590,14 @@ func init() {
 		CREATE TABLE IF NOT EXISTS webhooks (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, url TEXT NOT NULL, secret VARCHAR(255), events TEXT, enabled BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_wh_enterprise ON webhooks(enterprise_id);
 		CREATE TABLE IF NOT EXISTS audit_log_entries (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, user_id UUID, action VARCHAR(100) NOT NULL, resource VARCHAR(100), detail TEXT, ip_address VARCHAR(45), created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ale_enterprise ON audit_log_entries(enterprise_id);`,
 	})
+	RegisterMigration(Migration{
+		Version: "033", Description: "Create contract_references table",
+		SQL: `CREATE TABLE IF NOT EXISTS contract_references (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			contract_id UUID NOT NULL, ref_type VARCHAR(30) NOT NULL,
+			ref_id UUID NOT NULL, ref_no VARCHAR(100),
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_cr_contract ON contract_references(contract_id);
+		CREATE INDEX IF NOT EXISTS idx_cr_type_ref ON contract_references(ref_type, ref_id);`,
+	})
 }
