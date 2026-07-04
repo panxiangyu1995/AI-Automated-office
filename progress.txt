@@ -796,3 +796,23 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go build: ✅ 编译成功
 - go test -v ./...: ✅ 14/14 测试通过（cmd 4 + internal/config 3 + internal/poller 2 + internal/skill 3 + api_client 2）
 - CLI E2E: ao-cli --help / auth / poll / skill 全部正常输出 ✅
+
+## 2026-07-04 - Task 3: Docker Compose 部署配置
+
+### 铁律合规检查：
+- PRD 合规：FR-DEPLOY-001 (Docker部署)
+- NFR 合规：NFR-DEP-001 (容器化), NFR-DEP-003 (一键部署)
+
+### What was done:
+- 创建 docker-compose.yml：PostgreSQL 15 (healthcheck) + Redis 7 (healthcheck) + API 服务 + Nginx 反向代理
+- 创建 Dockerfile.api：多阶段构建 (golang:1.23-alpine → alpine:3.19)
+- 创建 Dockerfile.cli：多阶段构建 (golang:1.23-alpine → alpine:3.19)
+- 创建 nginx.conf：反向代理配置 + 健康检查路由
+- 创建 .env.example：所有必要环境变量模板
+
+### Testing:
+- API go vet: ✅ 通过
+- API go build: ✅ 成功
+- CLI go vet: ✅ 通过
+- CLI go build: ✅ 成功
+- docker-compose.yml: valid YAML ✅
