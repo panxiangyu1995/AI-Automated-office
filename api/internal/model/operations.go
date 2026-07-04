@@ -58,3 +58,24 @@ type Skill struct {
 }
 
 func (Skill) TableName() string { return "skills" }
+
+type ServiceTicket struct {
+	TenantModel
+	CustomerID  string `gorm:"type:uuid;index" json:"customer_id"`
+	Subject     string `gorm:"type:varchar(255);not null" json:"subject"`
+	Description string `gorm:"type:text" json:"description"`
+	Priority    string `gorm:"type:varchar(20);default:'normal'" json:"priority"`
+	Status      string `gorm:"type:varchar(20);default:'open'" json:"status"`
+	AssignedTo  string `gorm:"type:uuid" json:"assigned_to,omitempty"`
+}
+
+func (ServiceTicket) TableName() string { return "service_tickets" }
+
+type Announcement struct {
+	TenantModel
+	Title   string `gorm:"type:varchar(255);not null" json:"title"`
+	Content string `gorm:"type:text" json:"content"`
+}
+
+func (Announcement) TableName() string { return "announcements" }
+

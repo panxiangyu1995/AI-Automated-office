@@ -7,8 +7,8 @@ import (
 	"github.com/ai-office/api/pkg/response"
 )
 
-type OperationsHandler struct{ svc *service.OperationsService }
-func NewOperationsHandler(svc *service.OperationsService) *OperationsHandler { return &OperationsHandler{svc} }
+type OperationsHandler struct{ svc *service.OperationsService; platformSvc *service.PlatformService }
+func NewOperationsHandler(svc *service.OperationsService, platformSvc *service.PlatformService) *OperationsHandler { return &OperationsHandler{svc, platformSvc} }
 
 func (h *OperationsHandler) Dashboard(c *gin.Context) { response.Success(c, gin.H{"status": "ok", "version": "1.0.0"}) }
 
@@ -74,6 +74,32 @@ func (h *OperationsHandler) ListWebhooks(c *gin.Context) {
 	whs, appErr := h.svc.ListWebhooks(eid)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, whs)
+}
+
+func (h *OperationsHandler) GetReport(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	report, _ := h.platformSvc.GetReport(eid, c.Param("type"))
+	response.Success(c, report)
+}
+
+func (h *OperationsHandler) CreateServiceTicket(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	response.Created(c, gin.H{"id": "", "status": "created"})
+}
+
+func (h *OperationsHandler) ListServiceTickets(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	response.Success(c, []interface{}{})
+}
+
+func (h *OperationsHandler) CreateAnnouncement(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	response.Created(c, gin.H{"id": "", "status": "created"})
+}
+
+func (h *OperationsHandler) ListAnnouncements(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	response.Success(c, []interface{}{})
 }
 
 func (h *OperationsHandler) ListAuditLogs(c *gin.Context) {
