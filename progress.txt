@@ -857,3 +857,29 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test -v: ✅ 35/35 通过（errors 7个 + response 8个）
+
+## 2026-07-04 - Task 6: OAuth 2.0 认证（登录/刷新/登出）
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-001 (OAuth2.0认证), FR-AUTH-002 (Refresh Token)
+- 架构合规：OAuth 2.0 + JWT + Refresh Token 模式，符合 architecture.md
+
+### What was done:
+- 实现 pkg/auth/jwt.go：JWTManager 支持 HS256 签名、Access/Refresh Token 生成、Token 验证
+- 实现 pkg/auth/password.go：bcrypt 密码哈希与校验
+- 实现 internal/model/user.go：User 模型（邮箱/密码哈希/角色/状态）
+- 实现 internal/repository/user_repo.go：UserRepository 接口（Create/FindByID/FindByEmail/List）
+- 实现 internal/repository/user_repo_impl.go：GORM UserRepository 实现
+- 实现 internal/service/auth_service.go：Login/Register/Refresh/ValidateToken/GetUser 业务逻辑
+- 实现 internal/handler/auth_handler.go：HTTP handler + 接口抽象（AuthServiceInterface）
+- 实现 internal/middleware/auth.go：JWT 认证中间件（Bearer Token 验证）
+- 更新 router.go：注册 auth/login, auth/refresh, GET /me 路由（需 DB）
+- 更新 main.go：传递 db 实例到 router.Setup()
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test -v: ✅ 67/67 通过（新增 10 个包）
+  - pkg/auth 14个, pkg/errors/response 保持不变
+  - service 17个, handler 7个, middleware 8个
+  - model 7个（新增 user 4个）, repository 1个

@@ -3,13 +3,17 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"github.com/ai-office/api/internal/handler"
 	"github.com/ai-office/api/internal/middleware"
+	"github.com/ai-office/api/internal/repository"
+	"github.com/ai-office/api/internal/service"
+	"github.com/ai-office/api/pkg/auth"
 	"github.com/ai-office/api/pkg/config"
 )
 
-func Setup(cfg *config.Config, logger *zap.Logger) *gin.Engine {
+func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 	if cfg.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -21,11 +25,36 @@ func Setup(cfg *config.Config, logger *zap.Logger) *gin.Engine {
 	r.Use(middleware.CORS(cfg.Server.CORSOrigins))
 	r.Use(middleware.Tenant())
 
+	jwtManager := auth.NewJWTManager(
+		cfg.JWT.Secret,
+		cfg.JWT.AccessTokenTTL,
+		cfg.JWT.RefreshTokenTTL,
+		cfg.JWT.Issuer,
+	)
+
 	api := r.Group("/api/v1")
 	{
 		healthHandler := handler.NewHealthHandler()
 		api.GET("/health", healthHandler.Health)
 		api.GET("/ready", healthHandler.Ready)
+	}
+
+	if db != nil {
+		userRepo := repository.NewUserRepository(db)
+		authService := service.NewAuthService(userRepo, jwtManager)
+		authHandler := handler.NewAuthHandler(authService)
+
+		auth := api.Group("/auth")
+		{
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.Refresh)
+		}
+
+		protected := api.Group("")
+		protected.Use(middleware.AuthRequired(jwtManager))
+		{
+			protected.GET("/me", authHandler.Me)
+		}
 	}
 
 	return r

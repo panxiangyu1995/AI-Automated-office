@@ -12,6 +12,8 @@ import (
 
 	"go.uber.org/zap"
 
+	"gorm.io/gorm"
+
 	"github.com/ai-office/api/internal/router"
 	"github.com/ai-office/api/pkg/config"
 	"github.com/ai-office/api/pkg/database"
@@ -35,14 +37,16 @@ func main() {
 	}
 		defer logger.Sync()
 
+	var db *gorm.DB
 	if cfg.Database.Host != "" {
-		db, err := database.Init(&cfg.Database)
+		initDB, err := database.Init(&cfg.Database)
 		if err != nil {
 			logger.Warn("database init failed, running without database", zap.Error(err))
 		} else {
-			tenant.InitGlobalDB(db)
+			tenant.InitGlobalDB(initDB)
+			db = initDB
 			defer database.Close()
-			sqlDB, _ := db.DB()
+			sqlDB, _ := initDB.DB()
 			if sqlDB != nil {
 				defer sqlDB.Close()
 			}
@@ -51,7 +55,7 @@ func main() {
 		logger.Info("no database configuration, running without database")
 	}
 
-	r := router.Setup(cfg, logger)
+	r := router.Setup(cfg, logger, db)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{
