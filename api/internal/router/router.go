@@ -14,7 +14,9 @@ import (
 	"github.com/ai-office/api/internal/service"
 	"github.com/ai-office/api/pkg/auth"
 	"github.com/ai-office/api/pkg/config"
+	"github.com/ai-office/api/pkg/observability"
 	"github.com/ai-office/api/pkg/ratelimit"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
@@ -24,8 +26,13 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 
 	r := gin.New()
 
+	observability.InitTracing("ai-office-api", "")
+
+	r.Use(middleware.RequestID())
 	r.Use(middleware.Recovery(logger))
 	r.Use(middleware.Logger(logger))
+	r.Use(middleware.Metrics())
+	r.Use(middleware.Tracing())
 	r.Use(middleware.CORS(cfg.Server.CORSOrigins))
 	r.Use(middleware.Tenant())
 
@@ -35,6 +42,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		cfg.JWT.RefreshTokenTTL,
 		cfg.JWT.Issuer,
 	)
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	api := r.Group("/api/v1")
 	{

@@ -904,6 +904,24 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go test -v: ✅ 新增 14 个 rbac 测试 + 7 个 middleware 测试全部通过
   - 总 12 个测试包全部通过
 
+## 2026-07-04 - Task 12: 可观测性架构（日志/监控/链路追踪）
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-017 (可观测性)
+- 架构合规：Prometheus + OpenTelemetry + 结构化日志，符合 NFR-OBS-001/002/003
+
+### What was done:
+- 新增依赖：prometheus/client_golang + opentelemetry/otel + OTLP exporter
+- 实现 pkg/observability/observability.go：Prometheus 指标（RequestCount/RequestDuration/ErrorCount/ActiveRequests）+ MetricsRecorder + OTel Tracer + InitTracing
+- 实现 internal/middleware/observability.go：RequestID 中间件（UUID 生成 + X-Request-ID 头）、Metrics 中间件（记录请求/错误率/耗时分布）、Tracing 中间件（X-Trace-ID 传递）
+- 增强 internal/middleware/logger.go：日志字段增加 request_id + trace_id
+- 更新 router.go：全局注册 RequestID/Metrics/Tracing 中间件 + GET /metrics 端点（promhttp）
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功（API + CLI）
+- go test: ✅ 全部通过
+
 ## 2026-07-04 - Task 11: Rate Limiting 中间件
 
 ### 铁律合规检查：

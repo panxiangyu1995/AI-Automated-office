@@ -26,6 +26,8 @@ func Logger(logger *zap.Logger) gin.HandlerFunc {
 			zap.Duration("latency", latency),
 			zap.String("ip", c.ClientIP()),
 			zap.String("user-agent", c.Request.UserAgent()),
+			zap.String("request_id", GetRequestID(c)),
+			zap.String("trace_id", GetTraceID(c)),
 		}
 
 		if len(c.Errors) > 0 {
