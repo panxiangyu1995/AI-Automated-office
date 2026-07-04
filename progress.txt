@@ -1191,3 +1191,23 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 22: 跨企业权限管理
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-004 (跨企业管理), FR-GROUP-004/005/006/008
+- 架构合规：系统级表 + JWT enterprise_id 替换 + 同集团校验 + 跨企业权限
+
+### What was done:
+- 实现 model/cross_enterprise.go：CrossEnterprisePermission 模型
+- 更新 migration.go：011 迁移（cross_enterprise_permissions + 唯一索引）
+- 实现 repository：CRUD + 按用户/源企业/目标企业查询
+- 实现 service：Grant（创建/更新）、Revoke、ListByUser、CanAccess
+- 实现 handler：POST/DELETE/GET /cross-enterprise/permissions
+- 扩展 AuthService.CanAccessEnterprise：新增跨企业权限检查
+- 更新 router.go：注册路由 + NewAuthServiceFull 构造
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过

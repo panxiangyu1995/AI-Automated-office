@@ -12,9 +12,10 @@ import (
 )
 
 type AuthService struct {
-	userRepo       repository.UserRepository
-	enterpriseRepo repository.EnterpriseRepository
-	jwtManager     *auth.JWTManager
+	userRepo         repository.UserRepository
+	enterpriseRepo   repository.EnterpriseRepository
+	crossEnterpriseRepo repository.CrossEnterpriseRepository
+	jwtManager       *auth.JWTManager
 }
 
 type LoginRequest struct {
@@ -47,6 +48,15 @@ func NewAuthServiceWithEnterprise(userRepo repository.UserRepository, enterprise
 		userRepo:       userRepo,
 		enterpriseRepo: enterpriseRepo,
 		jwtManager:     jwtManager,
+	}
+}
+
+func NewAuthServiceFull(userRepo repository.UserRepository, enterpriseRepo repository.EnterpriseRepository, crossEnterpriseRepo repository.CrossEnterpriseRepository, jwtManager *auth.JWTManager) *AuthService {
+	return &AuthService{
+		userRepo:           userRepo,
+		enterpriseRepo:     enterpriseRepo,
+		crossEnterpriseRepo: crossEnterpriseRepo,
+		jwtManager:         jwtManager,
 	}
 }
 
@@ -163,31 +173,40 @@ func (s *AuthService) CanAccessEnterprise(userID uuid.UUID, currentEnterpriseID,
 		return true, nil
 	}
 
-	if user.Role != "owner" {
-		return false, apperrors.ErrPermissionDenied.WithDetail("无权切换企业")
+	if user.Role == "owner" {
+		currentEnt, err := s.enterpriseRepo.FindByID(currentEnterpriseID)
+		if err != nil {
+			return false, apperrors.ErrInternal.WithDetail("查询当前企业失败")
+		}
+		if currentEnt == nil {
+			return false, apperrors.ErrNotFound.WithDetail("当前企业不存在")
+		}
+
+		targetEnt, err := s.enterpriseRepo.FindByID(targetEnterpriseID)
+		if err != nil {
+			return false, apperrors.ErrInternal.WithDetail("查询目标企业失败")
+		}
+		if targetEnt == nil {
+			return false, apperrors.ErrNotFound.WithDetail("目标企业不存在")
+		}
+
+		if currentEnt.GroupID != targetEnt.GroupID {
+			return false, apperrors.ErrPermissionDenied.WithDetail("无权访问该企业的数据")
+		}
+		return true, nil
 	}
 
-	currentEnt, err := s.enterpriseRepo.FindByID(currentEnterpriseID)
-	if err != nil {
-		return false, apperrors.ErrInternal.WithDetail("查询当前企业失败")
-	}
-	if currentEnt == nil {
-		return false, apperrors.ErrNotFound.WithDetail("当前企业不存在")
-	}
-
-	targetEnt, err := s.enterpriseRepo.FindByID(targetEnterpriseID)
-	if err != nil {
-		return false, apperrors.ErrInternal.WithDetail("查询目标企业失败")
-	}
-	if targetEnt == nil {
-		return false, apperrors.ErrNotFound.WithDetail("目标企业不存在")
+	if s.crossEnterpriseRepo != nil {
+		perm, err := s.crossEnterpriseRepo.FindByUserAndTarget(userID, targetEnterpriseID)
+		if err != nil {
+			return false, apperrors.ErrInternal.WithDetail("查询跨企业权限失败")
+		}
+		if perm != nil {
+			return true, nil
+		}
 	}
 
-	if currentEnt.GroupID != targetEnt.GroupID {
-		return false, apperrors.ErrPermissionDenied.WithDetail("无权访问该企业的数据")
-	}
-
-	return true, nil
+	return false, apperrors.ErrPermissionDenied.WithDetail("无权切换至目标企业")
 }
 
 func (s *AuthService) SwitchEnterprise(userID, currentEnterpriseID, targetEnterpriseID uuid.UUID) (*TokenResponse, *apperrors.AppError) {
