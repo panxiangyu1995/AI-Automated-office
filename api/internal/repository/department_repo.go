@@ -13,4 +13,5 @@ type DepartmentRepository interface {
 	FindByID(id uuid.UUID) (*model.Department, error)
 	ListByEnterprise(enterpriseID uuid.UUID) ([]model.Department, error)
 	CountByParent(parentID uuid.UUID) (int64, error)
+	CountByEnterprise(enterpriseID uuid.UUID) (int64, error)
 }

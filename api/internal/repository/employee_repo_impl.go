@@ -102,6 +102,18 @@ func (r *employeeRepo) List(query model.EmployeeQuery) ([]model.Employee, int64,
 	return employees, total, nil
 }
 
+func (r *employeeRepo) CountByEnterprise(enterpriseID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Employee{}).Where("enterprise_id = ?", enterpriseID).Count(&count).Error
+	return count, err
+}
+
+func (r *employeeRepo) CountActiveByEnterprise(enterpriseID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Employee{}).Where("enterprise_id = ? AND status = 'active'", enterpriseID).Count(&count).Error
+	return count, err
+}
+
 func (r *employeeRepo) CountByDepartment(deptID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.Model(&model.Employee{}).Where("department_id = ? AND status = 'active'", deptID).Count(&count).Error

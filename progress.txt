@@ -1230,3 +1230,22 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 24: 跨企业经营汇总
+
+### 铁律合规检查：
+- PRD 合规：FR-GROUP-007 (跨企业经营汇总)
+- 架构合规：组合多个Repository查询 + 按集团聚合数据
+
+### What was done:
+- 扩展 DepartmentRepository：新增 CountByEnterprise
+- 扩展 EmployeeRepository：新增 CountByEnterprise + CountActiveByEnterprise
+- 实现 service/summary_service.go：GetGroupSummary（按集团聚合企业数/部门数/员工数/活跃员工数）
+- 实现 handler/summary_handler.go：GET /api/v1/groups/{group_id}/summary
+- 更新 mock 测试：添加新方法到 mock repo
+- 更新 router.go：注册 summary 路由
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过

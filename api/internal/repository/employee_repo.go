@@ -14,4 +14,6 @@ type EmployeeRepository interface {
 	FindByEmail(email string, enterpriseID uuid.UUID) (*model.Employee, error)
 	List(query model.EmployeeQuery) ([]model.Employee, int64, error)
 	CountByDepartment(deptID uuid.UUID) (int64, error)
+	CountByEnterprise(enterpriseID uuid.UUID) (int64, error)
+	CountActiveByEnterprise(enterpriseID uuid.UUID) (int64, error)
 }

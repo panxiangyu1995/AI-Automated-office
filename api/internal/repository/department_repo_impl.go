@@ -45,6 +45,12 @@ func (r *departmentRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.Depar
 	return departments, err
 }
 
+func (r *departmentRepo) CountByEnterprise(enterpriseID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Department{}).Where("enterprise_id = ?", enterpriseID).Count(&count).Error
+	return count, err
+}
+
 func (r *departmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.Model(&model.Department{}).Where("parent_id = ?", parentID).Count(&count).Error

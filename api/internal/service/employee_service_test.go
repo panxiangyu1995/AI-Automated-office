@@ -69,6 +69,26 @@ func (m *mockEmployeeRepo) List(query model.EmployeeQuery) ([]model.Employee, in
 	return result, int64(len(result)), nil
 }
 
+func (m *mockEmployeeRepo) CountByEnterprise(enterpriseID uuid.UUID) (int64, error) {
+	var count int64
+	for _, e := range m.employees {
+		if e.EnterpriseID == enterpriseID {
+			count++
+		}
+	}
+	return count, nil
+}
+
+func (m *mockEmployeeRepo) CountActiveByEnterprise(enterpriseID uuid.UUID) (int64, error) {
+	var count int64
+	for _, e := range m.employees {
+		if e.EnterpriseID == enterpriseID && e.Status == "active" {
+			count++
+		}
+	}
+	return count, nil
+}
+
 func (m *mockEmployeeRepo) CountByDepartment(deptID uuid.UUID) (int64, error) {
 	var count int64
 	for _, e := range m.employees {

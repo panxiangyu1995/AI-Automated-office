@@ -86,6 +86,9 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		empPermService := service.NewEmployeePermissionService(empPermRepo)
 		empPermHandler := handler.NewEmployeePermissionHandler(empPermService)
 
+		summaryService := service.NewSummaryService(enterpriseRepo, empRepo, deptRepo)
+		summaryHandler := handler.NewSummaryHandler(summaryService)
+
 		authService := service.NewAuthServiceFull(userRepo, enterpriseRepo, crossEnterpriseRepo, jwtManager)
 		authHandler := handler.NewAuthHandler(authService)
 
@@ -131,6 +134,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.POST("/cross-enterprise/permissions", crossEnterpriseHandler.Grant)
 			protected.DELETE("/cross-enterprise/permissions/:id", crossEnterpriseHandler.Revoke)
 			protected.GET("/cross-enterprise/permissions", crossEnterpriseHandler.ListByUser)
+			protected.GET("/groups/:group_id/summary", summaryHandler.GroupSummary)
 
 			groups := protected.Group("/groups")
 			groups.Use(operatorOnly)

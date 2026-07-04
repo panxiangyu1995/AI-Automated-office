@@ -52,6 +52,16 @@ func (m *mockDepartmentRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.D
 	return result, nil
 }
 
+func (m *mockDepartmentRepo) CountByEnterprise(enterpriseID uuid.UUID) (int64, error) {
+	var count int64
+	for _, d := range m.departments {
+		if d.EnterpriseID == enterpriseID {
+			count++
+		}
+	}
+	return count, nil
+}
+
 func (m *mockDepartmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 	var count int64
 	for _, d := range m.departments {
