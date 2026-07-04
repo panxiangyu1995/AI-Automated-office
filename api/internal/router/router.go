@@ -51,6 +51,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		healthHandler := handler.NewHealthHandler()
 		api.GET("/health", healthHandler.Health)
 		api.GET("/ready", healthHandler.Ready)
+		api.GET("/ready", healthHandler.Ready)
 	}
 
 	var backupService *service.BackupService
@@ -136,6 +137,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 
 		financeHandler := handler.NewFinanceHandler(db)
 		knowledgeHandler := handler.NewKnowledgeHandler(db)
+		opsHandler := handler.NewOperationsHandler(db)
 
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
@@ -253,6 +255,14 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			enterprise.GET("/messages", knowledgeHandler.ListMessages)
 			enterprise.POST("/kb/docs", knowledgeHandler.CreateDoc)
 			enterprise.GET("/kb/docs", knowledgeHandler.ListDocs)
+			protected.GET("/dashboard", opsHandler.Dashboard)
+			protected.GET("/subscription-plans", opsHandler.ListPlans)
+			protected.POST("/subscription-plans", opsHandler.CreatePlan)
+			protected.GET("/enterprise-subscriptions", opsHandler.ListSubs)
+			protected.POST("/enterprise-subscriptions", opsHandler.CreateSub)
+			protected.GET("/webhooks", opsHandler.ListWebhooks)
+			protected.POST("/webhooks", opsHandler.CreateWebhook)
+			protected.GET("/audit-log-entries", opsHandler.ListAuditLogs)
 			enterprise.POST("/kb/categories", knowledgeHandler.CreateCategory)
 			enterprise.GET("/kb/categories", knowledgeHandler.ListCategories)
 			enterprise.GET("/customers/:customer_id/tags", customerTagHandler.ListByCustomer)

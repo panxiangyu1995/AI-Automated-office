@@ -1,0 +1,48 @@
+package model
+
+type SubscriptionPlan struct {
+	TenantModel
+	Name        string  `gorm:"type:varchar(100);not null" json:"name"`
+	Description string  `gorm:"type:text" json:"description,omitempty"`
+	Price       float64 `gorm:"type:numeric(15,2);not null" json:"price"`
+	MaxUsers    int     `gorm:"default:10" json:"max_users"`
+	MaxStorage  int64   `gorm:"default:1073741824" json:"max_storage"`
+	Features    string  `gorm:"type:text" json:"features,omitempty"`
+	Status      string  `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+}
+
+func (SubscriptionPlan) TableName() string { return "subscription_plans" }
+
+type EnterpriseSubscription struct {
+	BaseModel
+	EnterpriseID string `gorm:"type:uuid;not null;index" json:"enterprise_id"`
+	PlanID       string `gorm:"type:uuid;not null" json:"plan_id"`
+	Status       string `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	StartAt      string `gorm:"type:timestamp" json:"start_at,omitempty"`
+	EndAt        string `gorm:"type:timestamp" json:"end_at,omitempty"`
+	AutoRenew    bool   `gorm:"default:true" json:"auto_renew"`
+}
+
+func (EnterpriseSubscription) TableName() string { return "enterprise_subscriptions" }
+
+type Webhook struct {
+	TenantModel
+	Name    string `gorm:"type:varchar(100);not null" json:"name"`
+	URL     string `gorm:"type:text;not null" json:"url"`
+	Secret  string `gorm:"type:varchar(255)" json:"secret,omitempty"`
+	Events  string `gorm:"type:text" json:"events"`
+	Enabled bool   `gorm:"default:true" json:"enabled"`
+}
+
+func (Webhook) TableName() string { return "webhooks" }
+
+type AuditLogEntry struct {
+	TenantModel
+	UserID    string `gorm:"type:uuid;index" json:"user_id"`
+	Action    string `gorm:"type:varchar(100);not null" json:"action"`
+	Resource  string `gorm:"type:varchar(100)" json:"resource"`
+	Detail    string `gorm:"type:text" json:"detail,omitempty"`
+	IPAddress string `gorm:"type:varchar(45)" json:"ip_address"`
+}
+
+func (AuditLogEntry) TableName() string { return "audit_log_entries" }
