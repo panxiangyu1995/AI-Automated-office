@@ -519,4 +519,17 @@ func init() {
 		Version: "027", Description: "Create transfer_orders + requisitions",
 		SQL: `CREATE TABLE IF NOT EXISTS transfer_orders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, order_no VARCHAR(100) NOT NULL, source_wh_id UUID NOT NULL, target_wh_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'draft', material_id UUID NOT NULL, quantity INT NOT NULL, received_qty INT DEFAULT 0, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_to_enterprise ON transfer_orders(enterprise_id); CREATE TABLE IF NOT EXISTS requisitions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, requisition_no VARCHAR(100) NOT NULL, applicant_id UUID NOT NULL, warehouse_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'pending', material_id UUID NOT NULL, quantity INT NOT NULL, issued_qty INT DEFAULT 0, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_req_enterprise ON requisitions(enterprise_id);`,
 	})
+	RegisterMigration(Migration{
+		Version: "028", Description: "Create contracts table",
+		SQL: `CREATE TABLE IF NOT EXISTS contracts (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			contract_no VARCHAR(100) NOT NULL, customer_id UUID NOT NULL, name VARCHAR(255) NOT NULL,
+			amount NUMERIC(15,2) DEFAULT 0, status VARCHAR(30) NOT NULL DEFAULT 'draft',
+			signed_at TIMESTAMP WITH TIME ZONE, effective_at TIMESTAMP WITH TIME ZONE, expire_at TIMESTAMP WITH TIME ZONE,
+			content TEXT, notes TEXT,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_contracts_enterprise ON contracts(enterprise_id);
+		CREATE INDEX IF NOT EXISTS idx_contracts_customer ON contracts(customer_id);
+		CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts(status);`,
+	})
 }
