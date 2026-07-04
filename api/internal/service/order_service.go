@@ -20,6 +20,21 @@ type OrderService struct {
 	custRepo  repository.CustomerRepository
 }
 
+var salesOrderTransitions = map[string][]string{
+	"draft": {"confirmed", "cancelled"},
+	"confirmed": {"shipped", "cancelled"},
+	"shipped": {"completed"},
+	"completed": {},
+	"cancelled": {},
+}
+
+func validSalesTransition(from, to string) bool {
+	next, ok := salesOrderTransitions[from]
+	if !ok { return false }
+	for _, s := range next { if s == to { return true } }
+	return false
+}
+
 type OrderItemInput struct {
 	MaterialID string  `json:"material_id"`
 	Quantity   int     `json:"quantity"`
@@ -198,6 +213,20 @@ func (s *OrderService) ListOrders(eid, orderType string, p, ps int) (interface{}
 		return orders, total, nil
 	}
 	return nil, 0, apperrors.NewValidationError("order_type", "无效的订单类型")
+}
+
+func (s *OrderService) ChangeSalesOrderStatus(soID, newStatus string) (*model.SalesOrder, *apperrors.AppError) {
+	sid, err := uuid.Parse(soID)
+	if err != nil { return nil, apperrors.NewValidationError("so_id", "无效") }
+	var so model.SalesOrder
+	if err := s.db.Where("id=?", sid).First(&so).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("销售订单不存在") }
+	if !validSalesTransition(so.Status, newStatus) {
+		return nil, &apperrors.AppError{Code: "SALE_INVALID_STATUS", Message: "非法状态流转", Status: 400,
+			Detail: fmt.Sprintf("不能从 %s 转换到 %s", so.Status, newStatus)}
+	}
+	so.Status = newStatus
+	s.db.Save(&so)
+	return &so, nil
 }
 
 func (s *OrderService) ListStockFlows(eid, whID, matID string, p, ps int) ([]model.StockFlow, int64, *apperrors.AppError) {

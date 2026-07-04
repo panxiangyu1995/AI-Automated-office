@@ -99,6 +99,16 @@ func (h *OrderHandler) ListOrders(c *gin.Context) {
 	response.SuccessWithMeta(c, orders, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }
 
+type soStatusReq struct{ Status string `json:"status"` }
+
+func (h *OrderHandler) ChangeSalesOrderStatus(c *gin.Context) {
+	var req soStatusReq
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	order, appErr := h.svc.ChangeSalesOrderStatus(c.Param("id"), req.Status)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, order)
+}
+
 func (h *OrderHandler) ListStockFlows(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))

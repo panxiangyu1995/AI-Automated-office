@@ -287,6 +287,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.DELETE("/warehouses/:id", whHandler.Delete)
 			protected.POST("/purchase-orders/:id/receive", orderHandler.ReceivePurchase)
 			protected.POST("/sales-orders/:id/ship", orderHandler.ShipSalesOrder)
+			protected.PATCH("/sales-orders/:id/status", orderHandler.ChangeSalesOrderStatus)
 			protected.POST("/transfers/:id/execute", orderHandler.ExecuteTransfer)
 			protected.POST("/requisitions/:id/issue", orderHandler.IssueRequisition)
 			protected.GET("/contracts/:id", contractHandler.Get)
