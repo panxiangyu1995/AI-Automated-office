@@ -40,6 +40,46 @@ type KnowledgeDoc struct {
 
 func (KnowledgeDoc) TableName() string { return "knowledge_docs" }
 
+type VectorRecord struct {
+	BaseModel
+	DocID      string    `gorm:"type:uuid;not null;index" json:"doc_id"`
+	ChunkIndex int       `json:"chunk_index"`
+	Content    string    `gorm:"type:text" json:"content"`
+	Embedding  []float32 `gorm:"-" json:"-"`
+}
+
+func (VectorRecord) TableName() string { return "vector_records" }
+
+type DocChunk struct {
+	BaseModel
+	DocID      string `gorm:"type:uuid;not null;index" json:"doc_id"`
+	ChunkIndex int    `json:"chunk_index"`
+	Content    string `gorm:"type:text" json:"content"`
+	TokenCount int    `json:"token_count"`
+}
+
+func (DocChunk) TableName() string { return "doc_chunks" }
+
+type ChatSession struct {
+	TenantModel
+	UserID    string `gorm:"type:uuid;index" json:"user_id"`
+	Title     string `gorm:"type:varchar(255)" json:"title"`
+	Model     string `gorm:"type:varchar(50);default:'gpt-4o-mini'" json:"model"`
+	Context   string `gorm:"type:text" json:"context,omitempty"`
+}
+
+func (ChatSession) TableName() string { return "chat_sessions" }
+
+type ChatMessage struct {
+	BaseModel
+	SessionID string `gorm:"type:uuid;not null;index" json:"session_id"`
+	Role      string `gorm:"type:varchar(20);not null" json:"role"`
+	Content   string `gorm:"type:text;not null" json:"content"`
+}
+
+func (ChatMessage) TableName() string { return "chat_messages" }
+
+
 type KBCategory struct {
 	TenantModel
 	Name     string `gorm:"type:varchar(100);not null" json:"name"`

@@ -72,6 +72,28 @@ func (h *KnowledgeHandler) ListCategories(c *gin.Context) {
 	response.Success(c, cats)
 }
 
+func (h *KnowledgeHandler) SemanticSearch(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	query := c.Query("q"); if query == "" { response.ValidationError(c, "q", "搜索关键词不能为空"); return }
+	results, appErr := h.svc.SemanticSearch(eid, query, 10)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, results)
+}
+
+func (h *KnowledgeHandler) ChunkDocument(c *gin.Context) {
+	docID := c.Param("id"); if docID == "" { response.ValidationError(c, "id", "文档ID不能为空"); return }
+	chunks, appErr := h.svc.ChunkDocument(docID)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, chunks)
+}
+
+func (h *KnowledgeHandler) GetChunks(c *gin.Context) {
+	docID := c.Param("id"); if docID == "" { response.ValidationError(c, "id", "文档ID不能为空"); return }
+	chunks, appErr := h.svc.GetChunks(docID)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, chunks)
+}
+
 func (h *KnowledgeHandler) listEntity(c *gin.Context, _ string) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))

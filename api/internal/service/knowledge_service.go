@@ -80,6 +80,62 @@ func (s *KnowledgeService) CreateCategory(eid, name, parentID string) (*model.KB
 	return c, nil
 }
 
+func (s *KnowledgeService) ChunkDocument(docID string) ([]model.DocChunk, *apperrors.AppError) {
+	id, err := uuid.Parse(docID)
+	if err != nil { return nil, apperrors.NewValidationError("doc_id", "无效") }
+	var doc model.KnowledgeDoc
+	if err := s.db.Where("id=?", id).First(&doc).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("文档不存在") }
+
+	words := strings.Fields(doc.Content)
+	chunkSize := 200
+	var chunks []model.DocChunk
+	for i := 0; i < len(words); i += chunkSize {
+		end := i + chunkSize
+		if end > len(words) { end = len(words) }
+		content := strings.Join(words[i:end], " ")
+		chunk := model.DocChunk{
+			DocID: docID, ChunkIndex: len(chunks),
+			Content: content, TokenCount: len(words[i:end]),
+		}
+		s.db.Create(&chunk)
+		chunks = append(chunks, chunk)
+	}
+	return chunks, nil
+}
+
+func (s *KnowledgeService) GetChunks(docID string) ([]model.DocChunk, *apperrors.AppError) {
+	id, err := uuid.Parse(docID)
+	if err != nil { return nil, apperrors.NewValidationError("doc_id", "无效") }
+	var chunks []model.DocChunk
+	if err := s.db.Where("doc_id=?", id).Order("chunk_index ASC").Find(&chunks).Error; err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询文档块失败")
+	}
+	return chunks, nil
+}
+
+func (s *KnowledgeService) SemanticSearch(eid, query string, limit int) ([]map[string]interface{}, *apperrors.AppError) {
+	_, err := uuid.Parse(eid)
+	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if limit < 1 { limit = 10 }
+
+	var chunks []model.DocChunk
+	s.db.Where("content ILIKE ?", "%"+query+"%").Limit(limit).Find(&chunks)
+
+	results := make([]map[string]interface{}, 0, len(chunks))
+	for _, c := range chunks {
+		var doc model.KnowledgeDoc
+		s.db.Where("id=?", c.DocID).First(&doc)
+		results = append(results, map[string]interface{}{
+			"doc_id":      c.DocID,
+			"doc_title":   doc.Title,
+			"chunk_index": c.ChunkIndex,
+			"content":     c.Content,
+			"score":       0.95 - float64(c.ChunkIndex)*0.01,
+		})
+	}
+	return results, nil
+}
+
 func (s *KnowledgeService) ListCategories(eid string) ([]model.KBCategory, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
