@@ -903,3 +903,24 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go build: ✅ 成功
 - go test -v: ✅ 新增 14 个 rbac 测试 + 7 个 middleware 测试全部通过
   - 总 12 个测试包全部通过
+
+## 2026-07-04 - Task 8: 审计日志（基础操作记录）
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-006 (审计日志), FR-AUTH-007 (日志查询)
+- 架构合规：分层架构（model → repository → service → handler + middleware）
+
+### What was done:
+- 实现 internal/model/audit_log.go：AuditLog 模型（TenantModel + user_id/action/resource_type/details/IP/UA）
+- 实现 pkg/tenant/migration.go：002 迁移（audit_logs 表 + 5个索引）
+- 实现 internal/repository/audit_log_repo.go：AuditLogRepository 接口（Create/FindByID/List）
+- 实现 internal/repository/audit_log_repo_impl.go：GORM 实现（带 enterprise_id 多租户过滤 + 分页 + 时间/用户/操作筛选）
+- 实现 internal/service/audit_log_service.go：Create（参数校验）/Query（分页）/Get 业务逻辑
+- 实现 internal/handler/audit_log_handler.go：GET /api/v1/audit-logs 端点（支持 user_id/action/resource_type/start_time/end_time 筛选）
+- 实现 internal/middleware/audit.go：自动审计中间件（请求成功后记录操作者/时间/资源/IP）
+- 更新 router.go：注册 audit-logs 路由 + 审计中间件到 protected 路由组
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test -v: ✅ 新增 10 个审计日志测试，全部 12 包通过

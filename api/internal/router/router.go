@@ -44,6 +44,12 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		authService := service.NewAuthService(userRepo, jwtManager)
 		authHandler := handler.NewAuthHandler(authService)
 
+		auditLogRepo := repository.NewAuditLogRepository(db)
+		auditLogService := service.NewAuditLogService(auditLogRepo)
+		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
+
+		auditMiddleware := middleware.NewAuditMiddleware(auditLogService)
+
 		auth := api.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
@@ -51,9 +57,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		}
 
 		protected := api.Group("")
-		protected.Use(middleware.AuthRequired(jwtManager))
+		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record())
 		{
 			protected.GET("/me", authHandler.Me)
+			protected.GET("/audit-logs", auditLogHandler.List)
 		}
 	}
 
