@@ -23,22 +23,25 @@
 ## 使用UTF-8格式进行编码
 ## 项目概述
 
-**AI-Automated-office** 是一款**AI赋能的ERP系统**，采用部门化架构设计。核心价值在于：
+**AI-Automated-office** 是一款**面向 Agent 的企业级云服务 SaaS**，旨在为企业提供一个无前端界面、通过自然语言 Agent 驱动业务流程的经营管理平台。
 
-- 每个部门都有专属 AI 助手
-- 跨部门数据自动联动
-- 统一数据中台，打破数据孤岛
-- 企业只需开通对应部门模块即可
+**核心理念：**
+- **无前端 SaaS**：不提供传统 Web/桌面 UI，企业员工通过本地 Agent（Claude Code、Codex、Gemini、OpenCode、OpenClaw、Hermes 等）对话来操作系统
+- **数据即服务**：Agent 调用 API 获取数据后，可生成 HTML/文档进行可视化展示
+- **权限即壁垒**：完善的多租户隔离 + RBAC 权限体系，确保 Agent 只能访问授权范围内的数据
+- **开源+局域网部署**：代码开源（AGPL v3），支持社区局域网部署
 
-**产品定位：**
-- 核心部门（内置不可卸载）：人事部、审批中心、销售部、财务部、仓储部、管理层
-- 扩展部门（按需安装）：售后服务、招投标、市场宣传
-- 平台能力：AI Agent 框架、部门权限系统、统一消息系统、知识库 RAG
+**目标用户：**
+- **云服务运营商**：运营整个平台，创建集团/企业，管理所有租户
+- **集团老板**：拥有一个或多个企业，查看跨企业经营数据
+- **企业管理员**：管理企业员工、部门、业务数据
+- **部门经理**：管理本部门员工和业务
+- **员工**：使用业务功能（无管理权限）
 
 **差异化核心：**
-> *"钉钉/飞书给企业一堆工具，企业自己拼凑流程；我们给企业一个 AI 赋能的 ERP，看企业有哪些部门，就提供哪些部门的 AI 能力。"*
+> *"传统 SaaS 给企业一个前端界面让人操作；我们给企业一个后端 API 让 Agent 操作，Agent 就是企业的数字员工。"*
 
-**技术栈：** Tauri + Rust (桌面端) + React + TypeScript (前端) + Shadcn/ui + Tailwind CSS + 云端服务
+**技术栈：** Go (Gin) + PostgreSQL + Redis + Docker + CLI (Cobra)
 
 ---
 
@@ -50,11 +53,11 @@
 📄 **位置：** `_bmad-output/planning-artifacts/prd.md`
 
 **内容要点：**
-- 439条功能需求（FR1-FR439）
-- 覆盖8个业务部门模块：人事管理、财务OCR、数据看板、销售自动化、售后工单、知识库RAG、仓库管理、标书制定
-- 核心平台能力：桌面端UI、AI Agent框架、插件系统、权限系统、统一消息系统
-- 用户旅程定义（8个核心旅程）
-- MVP范围：桌面端 + AI Agent核心框架 + 6个核心部门模块 + 部门权限系统 + 公告消息通知
+- 273条功能需求（FR1-FR273）
+- 覆盖10+业务模块：组织架构/权限、HRM、CRM、进销存、合同管理、销售管理、售后管理、财务管理、审批工作流、知识库等
+- 核心平台能力：OAuth 2.0 + JWT 认证、RBAC + ABAC 权限、多租户隔离、CLI + Skill 系统、消息轮询
+- 用户旅程定义（5个核心旅程）
+- MVP范围：核心业务模块 + 认证授权 + 多租户 + CLI Skill + 计费订阅 + 私有化部署
 - 验收标准
 
 **约束力：**
@@ -66,65 +69,36 @@
 📄 **位置：** `_bmad-output/planning-artifacts/architecture.md`
 
 **内容要点：**
-- 技术栈选型：Tauri + Rust (桌面端) + React + TypeScript (前端) + Shadcn/ui + Tailwind CSS
-- 分层微内核架构：Presentation Layer → Agent Core Layer → Plugin Layer → Data Layer → Cloud Layer
-- LLM接入：适配器模式（OpenAI兼容格式），支持百炼、智谱AI、Minimax、DeepSeek等
-- 工具系统：混合模式（Core Tools + MCP Tools + Plugin Tools）
-- 记忆系统：三层架构（个人记忆 + 企业知识库 + 图记忆）
-- 命名约定：`{plugin}_{entity}_{action}` 格式
-- 本地优先存储：SQLite + 增量同步 + 智能冲突解决
-- 多租户：数据库级隔离
+- 技术栈选型：Go (Gin) + PostgreSQL 15+ + Redis + Docker
+- 分层架构：API Gateway → OAuth 2.0 + JWT → 业务服务层 → PostgreSQL (Schema级多租户)
+- 认证授权：OAuth 2.0 + JWT + Refresh Token，RBAC + ABAC 混合权限模型
+- 多租户：PostgreSQL Schema 级隔离 + Row-Level Security
+- CLI & Skill 系统：Cobra CLI + Agent Skill 定义
+- 消息轮询：CLI 每 60 秒轮询消息
+- 错误码体系：结构化错误码 + Agent 可恢复策略
+- 部署：Docker Compose 一键部署 + 局域网部署支持
 
 **约束力：**
 - ❌ 不得更换技术栈核心组件
 - ❌ 不得违背模块边界
-- ❌ 不得绕过安全设计（TLS 1.3、AES-256加密）
+- ❌ 不得绕过安全设计（OAuth 2.0、JWT、RBAC、多租户隔离）
 - ✅ 具体实现方案可在架构框架内优化
 
-### 3️⃣ UX设计规范 - 体验铁律
-📄 **位置：** `_bmad-output/planning-artifacts/ux-design-specification.md`
-
-**内容要点：**
-- 设计方向：VSCode风格四栏布局（活动栏 + 侧边栏 + 工作区 + AI对话面板）
-- 组件库：Shadcn/ui（可复制、可修改）
-- 样式方案：Tailwind CSS
-- 颜色系统：深蓝色系品牌色 (#1E3A5F)
-- 图标库：Lucide React
-- 核心交互：和AI说话就能完成任务（透明 + 可控）
-- 体验原则：AI即入口、透明可控、零学习成本、即时价值、插件化扩展
-
-**约束力：**
-- ❌ 不得违背颜色系统和状态色定义
-- ❌ 不得违背组件设计规范
-- ❌ 不得改变核心布局结构
-- ✅ 细节样式可在规范内微调
-
-### 4️⃣ Epic 文档 - 实现铁律
+### 3️⃣ Epic 文档 - 实现铁律
 📄 **位置：** `_bmad-output/planning-artifacts/epics.md`
 
 **内容要点：**
 - 多个 Epic 定义
 - 详细的用户故事（Story）拆分
-- 需求覆盖映射表（FR/NFR/ARCH/UX）
+- 需求覆盖映射表（FR/NFR/ARCH）
 - 验收标准（Acceptance Criteria）
-
-**Epic 列表：**
-| Epic | 名称 | Stories |
-|:----:|------|:-------:|
-| 1 | 桌面端UI与系统交互 | 多个故事 |
-| 2 | AI Agent核心能力 | 多个故事 |
-| 3 | 部门模块系统 | 多个故事 |
-| 4 | 用户与权限管理 | 多个故事 |
-| 5 | 多租户管理 | 多个故事 |
-| 6 | 数据同步与存储 | 多个故事 |
-| ... | ... | ... |
 
 **约束力：**
 - ❌ 不得实现 Epic 之外的功能
 - ❌ 不得跳过 Story 或省略验收标准
 - ✅ 实现细节可在验收标准框架内调整
 
-### 5️⃣ 测试规范铁律 - 质量铁律
+### 4️⃣ 测试规范铁律 - 质量铁律
 📄 **位置：** `_bmad-output/planning-artifacts/testing-specification.md`
 
 **内容要点：**
@@ -175,16 +149,13 @@
 │  Step 3: 打开并查阅架构文档                                  │
 │     → 确认技术方案、模块边界、数据库设计                      │
 │     ↓                                                       │
-│  Step 4: 打开并查阅 UX 设计规范                              │
-│     → 确认组件使用、颜色规范、交互模式                        │
-│     ↓                                                       │
-│  Step 5: 打开并查阅 Epic 文档                                │
+│  Step 4: 打开并查阅 Epic 文档                                │
 │     → 确认 Story 定义、验收标准、依赖关系                     │
 │     ↓                                                       │
-│  Step 6: 生成实现方案                                        │
-│     → 方案必须同时满足 PRD + 架构 + UX + Epic 四方约束        │
+│  Step 5: 生成实现方案                                        │
+│     → 方案必须同时满足 PRD + 架构 + Epic 三方约束             │
 │     ↓                                                       │
-│  Step 7: 开始实现                                            │
+│  Step 6: 开始实现                                            │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -204,11 +175,7 @@
 - [ ] 技术方案符合架构设计
 - [ ] 模块边界明确
 - [ ] 命名约定遵循规范
-
-### UX 合规
-- [ ] 使用 Ant Design 组件
-- [ ] 颜色使用规范色值
-- [ ] 布局符合设计方向
+- [ ] API 设计遵循 RESTful 规范
 
 ### Epic 合规
 - [ ] Story 来源：Epic X, Story X.X（填写具体故事编号）
@@ -219,7 +186,6 @@
 - [ ] 集成测试覆盖模块间交互（如适用）
 - [ ] E2E 测试不 Mock 自有 API
 - [ ] 测试命名符合规范（描述行为，非实现）
-- [ ] 使用语义化选择器（role/label/testId）
 ```
 ---
 
@@ -230,14 +196,17 @@ Every new agent session MUST follow this workflow:
 ### Step 1: Initialize Environment
 
 ```bash
-./init.sh
+# Go Backend
+cd api && go mod download
+
+# CLI Tool
+cd cli && go mod download
+
+# Docker (for PostgreSQL + Redis)
+docker-compose -f deploy/docker-compose/docker-compose.yml up -d
 ```
 
-This will:
-- Install all dependencies
-- Start the development server
-
-**DO NOT skip this step.** Ensure the server is running before proceeding.
+**DO NOT skip this step.** Ensure the services are running before proceeding.
 
 ### Step 2: 铁律合规检查
 
@@ -245,9 +214,8 @@ This will:
 
 1. **PRD 文档**：`_bmad-output/planning-artifacts/prd.md`
 2. **架构文档**：`_bmad-output/planning-artifacts/architecture.md`
-3. **UX 设计规范**：`_bmad-output/planning-artifacts/ux-design-specification.md`
-4. **Epic 文档**：`_bmad-output/planning-artifacts/epics.md`
-5. **测试规范铁律**：`_bmad-output/planning-artifacts/testing-specification.md`
+3. **Epic 文档**：`_bmad-output/planning-artifacts/epics.md`
+4. **测试规范铁律**：`_bmad-output/planning-artifacts/testing-specification.md`
 
 ### Step 3: Select Next Task
 
@@ -262,14 +230,13 @@ Read `task.json` and select ONE task to work on.
   "id": 1,
   "epic": "Epic 1",
   "story": "Story 1.1",
-  "title": "Tauri 项目初始化",
-  "description": "创建一个可运行的 Tauri 2.0 项目脚手架",
-  "openspec_change": "epic-1-story-1-tauri-project-init",
+  "title": "Go API 项目初始化",
+  "description": "创建一个可运行的 Go API 项目脚手架",
+  "openspec_change": "epic-1-story-1-go-project-init",
   "steps": [...],
   "frs_covered": [],
   "nfrs_covered": ["NFR1", "NFR5"],
   "arch_covered": ["ARCH-01"],
-  "ux_covered": ["UX-04"],
   "dependencies": [],
   "passes": false
 }
@@ -289,7 +256,6 @@ Selection criteria (in order of priority):
 - Read the task description and steps carefully
 - Implement the functionality to satisfy all steps
 - Follow existing code patterns and conventions
-- **使用 Shadcn/ui 组件和 Lucide React 图标**
 
 ### Step 5: Test Thoroughly
 
@@ -297,26 +263,28 @@ After implementation, verify ALL steps in the task:
 
 **强制测试要求（Testing Requirements - MANDATORY）：**
 
-1. **大幅度页面修改**（新建页面、重写组件、修改核心交互）：
-   - **必须在浏览器中测试！** 使用 chrome devtools mcp或者playwright mcp 工具
-   - 验证页面能正确加载和渲染
-   - 验证表单提交、按钮点击等交互功能
-   - 截图确认 UI 正确显示
+1. **API 端点修改**（新增/修改 API、修改业务逻辑）：
+   - **必须运行 API 测试！** 使用 `go test` 或 HTTP 客户端验证
+   - 验证 API 端点正确响应
+   - 验证错误码和错误响应格式
+   - 验证权限检查（RBAC/ABAC）
 
-2. **小幅度代码修改**（修复 bug、调整样式、添加辅助函数）：
+2. **小幅度代码修改**（修复 bug、调整配置、添加辅助函数）：
    - 可以使用单元测试或 lint/build 验证
-   - 如有疑虑，仍使用浏览器测试
+   - 如有疑虑，仍运行完整测试
 
 3. **所有修改必须通过**：
-   - `npm run lint` 无错误
-   - `npm run build` 构建成功
-   - 浏览器/单元测试验证功能正常
+   - `go vet` 无错误
+   - `go build` 构建成功
+   - `go test ./...` 测试通过
+   - API 功能验证正常
 
 **测试清单：**
-- [ ] 代码没有 TypeScript 错误
-- [ ] lint 通过
-- [ ] build 成功
-- [ ] 功能在浏览器中正常工作（对于 UI 相关修改）
+- [ ] 代码没有编译错误
+- [ ] go vet 通过
+- [ ] go build 成功
+- [ ] go test 通过
+- [ ] API 端点功能正常（对于 API 相关修改）
 
 ### Step 6: Update Progress
 
@@ -328,7 +296,6 @@ Write your work to `progress.txt`:
 ### 铁律合规检查：
 - PRD 合规：[FR-XX]
 - 架构合规：[说明]
-- UX 合规：[说明]
 
 ### What was done:
 - [specific changes made]
@@ -355,9 +322,9 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
 ```
 
 **提交规范：**
-- `[功能]+[前端]+[添加账号管理页面]`
-- `[bug]+[后端]+[修复消息监听异常]`
-- `[UI]+[前端]+[优化消息卡片样式]`
+- `[功能]+[API]+[添加员工管理端点]`
+- `[bug]+[API]+[修复消息轮询异常]`
+- `[重构]+[CLI]+[优化Skill命令结构]`
 
 **规则:**
 - 只有在所有步骤都验证通过后才标记 `passes: true`
@@ -382,7 +349,7 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
    - 需要人工授权的 OAuth 流程
 
 3. **铁律冲突**：
-   - 发现 PRD/架构/UX 文档之间存在矛盾
+   - 发现 PRD/架构文档之间存在矛盾
    - 实现需求与铁律文档冲突
 
 ### 阻塞时的正确操作：
@@ -413,7 +380,7 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
 
 **需要人工帮助**:
 1. [具体的步骤 1]
-2. [具体的步骤ic
+2. [具体的步骤 2]
 ...
 
 **解除阻塞后**:
@@ -426,283 +393,162 @@ git commit -m "[修改类型]+[系统模块]+[修改内容总结]"
 
 ```
 ai-automated-office/
-├── 📁 配置文件
-│   ├── package.json                    # 前端依赖配置
-│   ├── pnpm-lock.yaml                  # pnpm锁定文件
-│   ├── tsconfig.json                   # TypeScript配置
-│   ├── tsconfig.node.json              # Node环境TS配置
-│   ├── vite.config.ts                  # Vite构建配置
-│   ├── tailwind.config.js              # Tailwind配置
-│   ├── postcss.config.js               # PostCSS配置
-│   ├── .env.example                    # 环境变量示例
-│   ├── .gitignore                      # Git忽略配置
-│   ├── .eslintrc.cjs                   # ESLint配置
-│   ├── .prettierrc                     # Prettier配置
-│   ├── components.json                 # Shadcn/ui配置
-│   └── README.md                       # 项目说明
-│
-├── 📁 GitHub配置
-│   └── .github/
-│       ├── workflows/
-│       │   ├── ci.yml                  # CI工作流
-│       │   ├── release.yml             # 发布工作流
-│       │   └── test.yml                # 测试工作流
-│       ├── ISSUE_TEMPLATE/
-│       │   ├── bug_report.md
-│       │   └── feature_request.md
-│       └── dependabot.yml              # Dependabot配置
-│
-├── 📁 前端源码 (src/)
-│   ├── main.tsx                        # 应用入口
-│   ├── App.tsx                         # 根组件
-│   ├── vite-env.d.ts                   # Vite类型声明
-│   │
-│   ├── components/                     # UI组件
-│   │   ├── ui/                         # Shadcn/ui基础组件
-│   │   │   ├── alert.tsx
-│   │   │   ├── button.tsx
-│   │   │   ├── menubar.tsx
-│   │   │   ├── tooltip.tsx
+├── 📁 Go Backend API (api/)
+│   ├── cmd/
+│   │   └── server/
+│   │       └── main.go              # API 服务入口
+│   ├── internal/
+│   │   ├── handler/                 # HTTP Handler（Gin）
+│   │   │   ├── auth_handler.go
+│   │   │   ├── org_handler.go
+│   │   │   ├── hrm_handler.go
+│   │   │   ├── crm_handler.go
+│   │   │   ├── ims_handler.go
+│   │   │   ├── contract_handler.go
+│   │   │   ├── sales_handler.go
+│   │   │   ├── service_handler.go
+│   │   │   ├── finance_handler.go
+│   │   │   ├── workflow_handler.go
+│   │   │   ├── kb_handler.go
+│   │   │   ├── file_handler.go
+│   │   │   └── message_handler.go
+│   │   ├── service/                 # 业务逻辑层
+│   │   │   ├── auth_service.go
+│   │   │   ├── org_service.go
+│   │   │   ├── hrm_service.go
+│   │   │   ├── crm_service.go
+│   │   │   ├── ims_service.go
+│   │   │   ├── contract_service.go
+│   │   │   ├── sales_service.go
+│   │   │   ├── service_service.go
+│   │   │   ├── finance_service.go
+│   │   │   ├── workflow_service.go
+│   │   │   ├── kb_service.go
+│   │   │   ├── file_service.go
+│   │   │   └── message_service.go
+│   │   ├── repository/              # 数据访问层
+│   │   │   ├── auth_repo.go
+│   │   │   ├── org_repo.go
+│   │   │   ├── hrm_repo.go
+│   │   │   ├── crm_repo.go
+│   │   │   ├── ims_repo.go
+│   │   │   ├── contract_repo.go
+│   │   │   ├── sales_repo.go
+│   │   │   ├── service_repo.go
+│   │   │   ├── finance_repo.go
+│   │   │   ├── workflow_repo.go
+│   │   │   ├── kb_repo.go
+│   │   │   ├── file_repo.go
+│   │   │   └── message_repo.go
+│   │   ├── model/                   # 数据模型
+│   │   │   ├── user.go
+│   │   │   ├── enterprise.go
+│   │   │   ├── department.go
+│   │   │   ├── employee.go
+│   │   │   ├── customer.go
+│   │   │   ├── contract.go
+│   │   │   ├── order.go
+│   │   │   ├── product.go
+│   │   │   ├── warehouse.go
 │   │   │   └── ...
-│   │   ├── layout/                     # 布局入口
-│   │   │   ├── AppLayout.tsx           # 布局入口导出
-│   │   │   └── TopBar.tsx              # 顶部菜单栏导出
-│   │   ├── common/                     # 业务通用组件
-│   │   │   ├── AppLayout.tsx           # 应用布局
-│   │   │   ├── TopBar.tsx              # 顶部菜单栏
-│   │   │   ├── ActivityBar.tsx         # 活动栏
-│   │   │   ├── Sidebar.tsx             # 侧边栏
-│   │   │   ├── Workbench.tsx           # 工作区
-│   │   │   ├── AiChatPanel.tsx         # AI 对话面板
-│   │   │   ├── StatusBar.tsx           # 状态栏
-│   │   │   └── ResizablePanel.tsx      # 可调节面板
-│   │   └── plugin/                     # 插件相关组件
-│   │       ├── PluginCard.tsx          # 插件卡片
-│   │       ├── PluginPanel.tsx         # 插件面板
-│   │       └── PluginSettings.tsx      # 插件设置
-│   │
-│   ├── features/                       # 功能模块
-│   │   ├── agent/                      # Agent核心功能
-│   │   │   ├── components/
-│   │   │   │   ├── ChatPanel.tsx       # 对话面板
-│   │   │   │   ├── MessageList.tsx     # 消息列表
-│   │   │   │   ├── MessageInput.tsx    # 消息输入
-│   │   │   │   └── ToolCallDisplay.tsx # 工具调用展示
-│   │   │   ├── hooks/
-│   │   │   │   ├── useChat.ts          # 对话Hook
-│   │   │   │   └── useAgent.ts         # Agent Hook
-│   │   │   └── types/
-│   │   │       └── agent.types.ts      # Agent类型
-│   │   │
-│   │   ├── auth/                       # 认证功能
-│   │   │   ├── components/
-│   │   │   │   ├── LoginForm.tsx       # 登录表单
-│   │   │   │   └── UserInfo.tsx        # 用户信息
-│   │   │   ├── hooks/
-│   │   │   │   └── useAuth.ts          # 认证Hook
-│   │   │   └── types/
-│   │   │       └── auth.types.ts       # 认证类型
-│   │   │
-│   │   ├── plugin/                     # 插件系统
-│   │   │   ├── components/
-│   │   │   │   ├── PluginManager.tsx   # 插件管理器
-│   │   │   │   └── PluginMarket.tsx    # 插件市场
-│   │   │   ├── hooks/
-│   │   │   │   └── usePlugin.ts        # 插件Hook
-│   │   │   └── types/
-│   │   │       └── plugin.types.ts     # 插件类型
-│   │   │
-│   │   └── settings/                   # 设置功能
-│   │       ├── components/
-│   │       │   ├── SettingsPanel.tsx   # 设置面板
-│   │       │   ├── ModelConfig.tsx     # 模型配置
-│   │       │   └── ApiKeyManager.tsx   # API密钥管理
-│   │       └── types/
-│   │           └── settings.types.ts
-│   │
-│   ├── hooks/                          # 全局Hooks
-│   │   ├── useTauri.ts                 # Tauri IPC封装
-│   │   ├── useEventBus.ts              # 事件总线Hook
-│   │   └── useLocalStorage.ts          # 本地存储Hook
-│   │
-│   ├── stores/                         # Zustand状态
-│   │   ├── uiStore.ts                  # UI状态(主题、面板)
-│   │   ├── appStore.ts                 # 应用状态(用户、会话)
-│   │   ├── cacheStore.ts               # 缓存状态(临时数据)
-│   │   └── pluginStore.ts              # 插件状态
-│   │
-│   ├── lib/                            # 工具和服务
-│   │   ├── api.ts                      # 云端API客户端
-│   │   ├── tauri.ts                    # Tauri命令封装
-│   │   ├── utils.ts                    # 工具函数
-│   │   ├── constants.ts                # 常量定义
-│   │   ├── logger.ts                   # 日志工具
-│   │   └── validators.ts               # 验证工具
-│   │
-│   ├── types/                          # 全局类型
-│   │   ├── global.d.ts                 # 全局类型声明
-│   │   ├── api.types.ts                # API响应类型
-│   │   └── models.types.ts             # 数据模型类型
-│   │
-│   ├── theme/                         # 主题系统
-│   │   ├── index.ts                   # 统一导出
-│   │   ├── colorRegistry.ts           # 颜色注册表
-│   │   ├── colorTypes.ts             # 类型定义
-│   │   ├── colorUtils.ts             # 颜色变换工具
-│   │   ├── ThemeProvider.tsx         # 主题 Provider
-│   │   ├── useTheme.ts               # useTheme Hook
-│   │   └── colors/
-│   │       ├── baseColors.ts         # 基础颜色
-│   │       └── componentColors.ts    # 组件颜色
-│   │
-│   ├── styles/                         # 全局样式
-│   │   └── globals.css                 # 全局CSS
+│   │   ├── middleware/              # 中间件
+│   │   │   ├── auth.go             # JWT 认证中间件
+│   │   │   ├── rbac.go             # 权限检查中间件
+│   │   │   ├── tenant.go           # 多租户中间件
+│   │   │   ├── cors.go             # CORS 中间件
+│   │   │   └── logger.go           # 请求日志中间件
+│   │   └── pkg/                    # 内部公共包
+│   │       ├── errors/             # 结构化错误码
+│   │       ├── response/           # 统一响应格式
+│   │       ├── validator/          # 参数验证
+│   │       └── pagination/         # 分页工具
+│   ├── pkg/                        # 公共包（可被 CLI 引用）
+│   │   ├── api_client/             # API 客户端
+│   │   └── config/                 # 配置管理
+│   ├── go.mod
+│   └── go.sum
 │
-├── 📁 Tauri/Rust后端 (src-tauri/)
-│   ├── Cargo.toml                      # Rust依赖配置
-│   ├── Cargo.lock                      # Rust锁定文件
-│   ├── tauri.conf.json                 # Tauri配置
-│   ├── build.rs                        # 构建脚本
-│   │
-│   └── src/
-│       ├── main.rs                     # Rust入口
-│       ├── lib.rs                      # 库入口
-│       │
-│       ├── agent/                      # Agent核心
-│       │   ├── mod.rs
-│       │   ├── llm/                    # LLM适配器
-│       │   │   ├── mod.rs
-│       │   │   ├── provider.rs         # Provider trait
-│       │   │   ├── openai.rs           # OpenAI适配器
-│       │   │   ├── zhipu.rs            # 智谱适配器
-│       │   │   ├── dashscope.rs        # 百炼适配器
-│       │   │   └── deepseek.rs         # DeepSeek适配器
-│       │   │
-│       │   ├── tools/                  # 工具系统
-│       │   │   ├── mod.rs
-│       │   │   ├── registry.rs         # 工具注册表
-│       │   │   ├── executor.rs         # 工具执行器
-│       │   │   ├── core/               # 核心工具
-│       │   │   │   ├── mod.rs
-│       │   │   │   ├── fs.rs           # 文件系统工具
-│       │   │   │   ├── shell.rs        # Shell工具
-│       │   │   │   └── http.rs         # HTTP工具
-│       │   │   └── mcp/                # MCP工具
-│       │   │       ├── mod.rs
-│       │   │       ├── client.rs       # MCP客户端
-│       │   │       └── handler.rs      # MCP处理器
-│       │   │
-│       │   ├── memory/                 # 记忆管理
-│       │   │   ├── mod.rs
-│       │   │   ├── store.rs            # 记忆存储
-│       │   │   ├── compressor.rs       # 上下文压缩
-│       │   │   └── embeddings.rs       # 向量嵌入
-│       │   │
-│       │   └── session/                # 会话管理
-│       │       ├── mod.rs
-│       │       ├── manager.rs          # 会话管理器
-│       │       └── history.rs          # 历史记录
-│       │
-│       ├── plugins/                    # 插件系统
-│       │   ├── mod.rs
-│       │   ├── manager.rs              # 插件管理器
-│       │   ├── registry.rs             # 插件注册表
-│       │   ├── loader.rs               # 插件加载器
-│       │   └── dependency.rs           # 依赖管理
-│       │
-│       ├── sync/                       # 数据同步
-│       │   ├── mod.rs
-│       │   ├── engine.rs               # 同步引擎
-│       │   ├── conflict.rs             # 冲突解决
-│       │   └── delta.rs                # 增量同步
-│       │
-│       ├── storage/                    # 本地存储
-│       │   ├── mod.rs
-│       │   ├── sqlite.rs               # SQLite操作
-│       │   └── encryption.rs           # 加密存储
-│       │
-│       ├── auth/                       # 认证授权
-│       │   ├── mod.rs
-│       │   ├── user.rs                 # 用户管理
-│       │   ├── permission.rs           # 权限管理
-│       │   └── tenant.rs               # 租户管理
-│       │
-│       ├── commands/                   # Tauri命令
-│       │   ├── mod.rs
-│       │   ├── agent.rs                # Agent命令
-│       │   ├── plugin.rs               # 插件命令
-│       │   ├── storage.rs              # 存储命令
-│       │   └── system.rs               # 系统命令
-│       │
-│       └── utils/                      # 工具函数
-│           ├── mod.rs
-│           ├── logger.rs               # 日志工具
-│           └── error.rs                # 错误处理
+├── 📁 CLI 工具 (cli/)
+│   ├── cmd/                        # Cobra 命令
+│   │   ├── root.go
+│   │   ├── auth.go                 # ao-cli auth login/logout
+│   │   ├── poll.go                 # ao-cli poll（消息轮询）
+│   │   └── skill.go                # ao-cli skill（Skill 管理）
+│   ├── internal/
+│   │   ├── skill/                  # Skill 定义与执行
+│   │   │   ├── registry.go
+│   │   │   ├── hr_skills.go
+│   │   │   ├── crm_skills.go
+│   │   │   ├── ims_skills.go
+│   │   │   ├── contract_skills.go
+│   │   │   ├── sales_skills.go
+│   │   │   ├── service_skills.go
+│   │   │   ├── finance_skills.go
+│   │   │   └── workflow_skills.go
+│   │   ├── poller/                 # 消息轮询器
+│   │   │   └── poller.go
+│   │   └── config/                 # CLI 配置
+│   │       └── config.go
+│   ├── go.mod
+│   └── main.go
 │
-├── 📁 业务插件 (plugins/)
-│   ├── hr/                             # 人事管理插件 (P0)
-│   │   ├── package.json
-│   │   ├── index.ts                    # 插件入口
-│   │   ├── manifest.json               # 插件清单
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── types/
-│   │   └── backend/
-│   │
-│   ├── finance/                        # 财务OCR插件 (P1)
-│   ├── knowledge/                      # 知识库RAG插件 (P1)
-│   ├── warehouse/                      # 仓库管理插件 (P2)
-│   ├── sales/                          # 销售自动化插件 (P1)
-│   ├── service/                        # 售后工单插件 (P1)
-│   ├── tender/                         # 标书制定插件 (P2)
-│   └── dashboard/                      # 数据看板插件 (P1)
+├── 📁 部署配置 (deploy/)
+│   └── docker-compose/
+│       ├── docker-compose.yml      # PostgreSQL + Redis + API
+│       ├── Dockerfile.api          # API 服务镜像
+│       ├── Dockerfile.cli          # CLI 工具镜像
+│       ├── nginx/                  # Nginx 配置
+│       │   └── nginx.conf
+│       └── .env.example
 │
 ├── 📁 测试 (tests/)
-│   ├── unit/                           # 单元测试
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   └── lib/
-│   ├── integration/                    # 集成测试
-│   │   ├── agent/
-│   │   ├── plugins/
-│   │   └── sync/
-│   └── e2e/                            # E2E测试
-│       ├── auth.spec.ts
-│       ├── chat.spec.ts
-│       └── plugin.spec.ts
+│   ├── unit/                       # 单元测试
+│   │   ├── handler/
+│   │   ├── service/
+│   │   └── repository/
+│   ├── integration/                # 集成测试
+│   │   ├── auth/
+│   │   ├── org/
+│   │   ├── hrm/
+│   │   ├── crm/
+│   │   ├── ims/
+│   │   └── workflow/
+│   └── e2e/                        # E2E 测试
+│       ├── auth_test.go
+│       ├── org_test.go
+│       ├── hrm_test.go
+│       ├── crm_test.go
+│       ├── ims_test.go
+│       └── workflow_test.go
 │
-├── 📁 云端后端 (cloud-server/)
-│   ├── go.mod                          # Go模块配置
-│   ├── go.sum                          # Go依赖锁定
-│   ├── main.go                         # Go入口
-│   ├── config/                         # 配置
-│   │   └── config.yaml
-│   ├── api/                            # API路由
-│   │   ├── auth.go
-│   │   ├── tenant.go
-│   │   └── sync.go
-│   ├── models/                         # 数据模型
-│   ├── services/                       # 业务服务
-│   ├── middleware/                     # 中间件
-│   └── docker-compose.yml
+├── 📁 文档 (docs/)
+│   ├── api/                        # OpenAPI 3.0 规范
+│   │   └── openapi.yaml
+│   ├── deployment/                 # 部署文档
+│   └── skills/                     # Skill 定义文档
 │
 ├── 📁 配置与日志
-│   ├── config/                         # 配置文件(TOML)
-│   │   ├── app.toml                    # 应用配置
-│   │   ├── database.toml               # 数据库配置
-│   │   └── logging.toml                # 日志配置
-│   └── logs/                           # 日志目录
-│       ├── app.log                     # 应用日志
-│       ├── error.log                   # 错误日志
-│       └── performance.log             # 性能日志
+│   ├── config/                     # 配置文件
+│   │   ├── app.yaml                # 应用配置
+│   │   ├── database.yaml           # 数据库配置
+│   │   └── logging.yaml            # 日志配置
+│   └── logs/                       # 日志目录
+│       ├── app.log
+│       ├── error.log
+│       └── performance.log
 │
-└── 📁 静态资源 (assets/)
-    ├── icons/                          # 应用图标
-    │   ├── icon.ico                    # Windows图标
-    │   ├── icon.icns                   # macOS图标
-    │   └── icon.png                    # Linux图标
-    └── images/                         # 图片资源
-        └── splash.png                  # 启动画面
+├── 📁 铁律文档
+│   └── _bmad-output/
+│       └── planning-artifacts/
+│           ├── prd.md
+│           ├── architecture.md
+│           ├── epics.md
+│           └── testing-specification.md
+│
+├── task.json                       # 任务跟踪
+├── progress.txt                    # 进度记录
+├── CLAUDE.md                       # 工作指南
+└── README.md                       # 项目说明
 ```
 
 ---
@@ -710,80 +556,94 @@ ai-automated-office/
 ## 💻 Commands
 
 ```bash
-# 前端开发 (React + TypeScript + Vite)
-npm install           # 安装依赖
-npm run dev           # 启动开发服务器
-npm run build         # 生产构建
-npm run lint          # 代码检查
-npm run preview       # 预览构建结果
+# Go Backend API
+cd api
+go mod download          # 安装依赖
+go run cmd/server/main.go  # 启动 API 服务
+go build -o bin/api cmd/server/main.go  # 构建 API
+go test ./...            # 运行所有测试
+go test ./internal/handler/...  # 运行 handler 测试
+go vet ./...             # 代码检查
+go fmt ./...             # 格式化代码
 
-# Tauri 开发 (Rust 桌面端)
-npm run tauri dev     # 启动 Tauri 开发模式
-npm run tauri build  # 构建桌面应用
-npm run tauri build -- --debug  # 调试构建
+# CLI 工具
+cd cli
+go mod download          # 安装依赖
+go run main.go           # 运行 CLI
+go build -o bin/ao-cli main.go  # 构建 CLI
+
+# Docker 部署
+docker-compose -f deploy/docker-compose/docker-compose.yml up -d   # 启动所有服务
+docker-compose -f deploy/docker-compose/docker-compose.yml down     # 停止所有服务
+docker-compose -f deploy/docker-compose/docker-compose.yml logs -f  # 查看日志
 
 # 开发环境配置
-cp .env.example .env  # 复制环境变量模板
+cp deploy/docker-compose/.env.example deploy/docker-compose/.env  # 复制环境变量模板
 # 配置以下变量：
-# - VITE_API_URL: 云端API地址
-# - VITE_WS_URL: WebSocket地址
+# - DB_HOST: PostgreSQL 地址
+# - DB_PORT: PostgreSQL 端口
+# - DB_USER: 数据库用户
+# - DB_PASSWORD: 数据库密码
+# - REDIS_HOST: Redis 地址
+# - JWT_SECRET: JWT 签名密钥
 ```
 
 ---
 
 ## 📝 Coding Conventions
 
-### TypeScript/React 规范
-- TypeScript strict mode
-- 使用 Shadcn/ui 组件库（基于 Radix UI）
-- 组件命名：PascalCase（如 `ChatPanel.tsx`）
-- 文件命名：kebab-case（如 `use-chat.ts`）
-- Hooks 命名：`use{Feature}.ts` 格式
+### Go 规范
+- 遵循 Go 官方代码风格（Effective Go）
+- 使用 `go fmt` 格式化代码
+- 使用 `go vet` 进行代码检查
+- 使用 `golangci-lint` 进行综合代码检查
+- 错误处理：显式处理所有 error，禁止 `_ =` 忽略错误
+- 包命名：小写单词，无下划线（如 `handler`, `service`, `repository`）
+- 文件命名：snake_case（如 `auth_handler.go`, `org_service.go`）
+- 接口命名：动词+er 或名词（如 `Evaluator`, `Repository`）
 
-### 样式规范
-- 使用 Tailwind CSS 进行样式开发
-- 遵循 UX 设计规范的颜色系统（#1E3A5F 主色）
-- 使用 Shadcn/ui 设计令牌系统
-- **图标统一使用 Lucide React**，禁止使用 emoji
-- **主题系统**：颜色通过 `src/theme/colorRegistry.ts` 注册，使用 `var(--ao-{id})` 格式引用，参考 UX 设计规范主题系统架构
-
-### Rust/Tauri 规范
-- 遵循 Rust 官方代码风格
-- 使用 `cargo fmt` 格式化代码
-- 使用 `cargo clippy` 进行代码检查
-- 模块划分清晰，遵循微内核架构
-
-### 工具命名规范
-- 工具命名采用 `{plugin}_{entity}_{action}` 格式
-- 示例：`hr_employee_create`、`finance_invoice_process`
+### API 设计规范
+- RESTful 风格，使用 OpenAPI 3.0 规范
+- URL 命名：kebab-case，复数名词（如 `/api/v1/employees`）
+- HTTP 方法：GET（查询）、POST（创建）、PUT（全量更新）、PATCH（部分更新）、DELETE（删除）
+- 统一响应格式：`{ "data": ..., "error": ..., "meta": ... }`
+- 结构化错误码：`{模块}_{错误类型}_{序号}`（如 `AUTH_TOKEN_EXPIRED`）
+- 分页：`?page=1&page_size=20`
+- 排序：`?sort=created_at&order=desc`
 
 ### 数据库规范
 - 遵循 PRD 数据字典定义
-- 使用 SQLite 本地存储 + 云端同步
-- 表名：snake_case
+- 使用 PostgreSQL，Schema 级多租户隔离
+- 表名：snake_case，复数（如 `employees`, `contracts`）
+- 列名：snake_case（如 `enterprise_id`, `created_at`）
 - 敏感数据使用 AES-256 加密存储
+- 所有表包含 `id` (UUID)、`created_at`、`updated_at`、`deleted_at` 字段
+- 软删除：使用 `deleted_at` 字段
 
-**数据库配置文档：** 详见 `DB_CONFIG.md`（包含连接配置、迁移管理、备份恢复等完整指南）
+### CLI & Skill 规范
+- CLI 命令：`ao-cli <command> [flags]`
+- Skill 命名：`{module}_{entity}_{action}`（如 `hrm_employee_create`）
+- Skill 定义包含：name、description、parameters、api_endpoint
+- 消息轮询间隔：60 秒
 
 ---
 
 ## 🎯 Key Rules
 
-1. **铁律优先** - PRD、架构、UX、Epic 文档是铁律，所有决策以此为基准
+1. **铁律优先** - PRD、架构、Epic 文档是铁律，所有决策以此为基准
 2. **One task per session** - Focus on completing one task well
 3. **合规检查** - 实现前必须完成铁律合规检查
 4. **Test before marking complete** - All steps must pass
-5. **Browser testing for UI changes** - 新建或大幅修改页面必须在浏览器测试
+5. **API testing for endpoint changes** - 新增或修改 API 端点必须测试
 6. **Document in progress.txt** - Help future agents understand your work
 7. **One commit per task** - 所有更改（代码、progress.txt、task.json）必须在同一个 commit 中提交
 8. **Never remove tasks** - Only flip `passes: false` to `true`
 9. **Stop if blocked** - 需要人工介入时，不要提交，输出阻塞信息并停止
-10. **无 emoji** - 图标统一使用 Lucide React
-11. **AI Agent 优先** - 核心交互是对话驱动，优先考虑自然语言交互场景
-12. **本地优先** - 数据存储采用本地优先 + 增量同步策略
-13. **UI占位不要使用模拟数据** - 前端 UI 占位符不使用模拟数据，如有需要仅展示功能描述
-14. **时间很充足** - 不存在什么时间有限的说法，不要使用任何简化的或者批量的方式降低代码质量！
-15. **Think Before Coding**
+10. **Agent-First Design** - API 设计优先考虑 Agent 调用场景，错误码可被 Agent 自动恢复
+11. **本地优先** - 数据存储采用 PostgreSQL + Redis 缓存策略
+12. **无前端** - 本项目不提供任何 Web/桌面 UI，所有交互通过 API + CLI 完成
+13. **时间很充足** - 不存在什么时间有限的说法，不要使用任何简化的或者批量的方式降低代码质量！
+14. **Think Before Coding**
     Don't assume. Don't hide confusion. Surface tradeoffs.
 
 Before implementing:
@@ -791,8 +651,8 @@ Before implementing:
 State your assumptions explicitly. If uncertain, ask.
 If multiple interpretations exist, present them - don't pick silently.
 If a simpler approach exists, say so. Push back when warranted.
-If something is unclear, stop. Name what's confusing. Ask. 
-16. **Simplicity First**
+If something is unclear, stop. Name what's confusing. Ask.
+15. **Simplicity First**
 Minimum code that solves the problem. Nothing speculative.
 
 No features beyond what was asked.
@@ -800,8 +660,8 @@ No abstractions for single-use code.
 No "flexibility" or "configurability" that wasn't requested.
 No error handling for impossible scenarios.
 If you write 200 lines and it could be 50, rewrite it.
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify. 
-17**Surgical Changes**
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+16. **Surgical Changes**
 Touch only what you must. Clean up only your own mess.
 
 When editing existing code:
@@ -814,7 +674,8 @@ When your changes create orphans:
 
 Remove imports/variables/functions that YOUR changes made unused.
 Don't remove pre-existing dead code unless asked.
-The test: Every changed line should trace directly to the user's request. 13. **Goal-Driven Execution**
+The test: Every changed line should trace directly to the user's request.
+17. **Goal-Driven Execution**
 Define success criteria. Loop until verified.
 
 Transform tasks into verifiable goals:
@@ -834,14 +695,14 @@ For multi-step tasks, state a brief plan:
 
 **新会话启动清单：**
 
-1. [ ] 阅读本 AGENTS.md 文件
+1. [ ] 阅读本 CLAUDE.md 文件
 2. [ ] 阅读 PRD 文档（`_bmad-output/planning-artifacts/prd.md`）
 3. [ ] 阅读架构文档（`_bmad-output/planning-artifacts/architecture.md`）
-4. [ ] 阅读 UX 设计规范（`_bmad-output/planning-artifacts/ux-design-specification.md`）
-5. [ ] 阅读 Epic 文档（`_bmad-output/planning-artifacts/epics.md`）
-6. [ ] 查看 task.json 选择任务
-7. [ ] 安装依赖：`npm install`
-8. [ ] 启动开发：`npm run dev`
+4. [ ] 阅读 Epic 文档（`_bmad-output/planning-artifacts/epics.md`）
+5. [ ] 查看 task.json 选择任务
+6. [ ] 启动依赖服务：`docker-compose -f deploy/docker-compose/docker-compose.yml up -d`
+7. [ ] 安装 Go 依赖：`cd api && go mod download`
+8. [ ] 启动 API 服务：`cd api && go run cmd/server/main.go`
 9. [ ] 开始工作！
 
 ---
@@ -880,12 +741,12 @@ For multi-step tasks, state a brief plan:
 │     → proposal.md + design.md + tasks.md + specs/spec.md    │
 │     ↓                                                       │
 │  8. 执行铁律合规检查                                         │
-│     → PRD + 架构 + UX + Epic 四方约束                        │
+│     → PRD + 架构 + Epic 三方约束                             │
 │     ↓                                                       │
 │  9. 按照OpenSpec 变更文档设计实现(调用opensx-apply skill)功能代码                      │
 │     ↓                                                       │
 │  10. 执行测试验证                                            │
-│     → lint / build / playwright mcp浏览器测试                │
+│     → go vet / go build / go test                           │
 │     ↓                                                       │
 │  11. 更新 progress.txt/标记tasks.md中的内容为已完成                   │
 │     ↓                                                       │
@@ -911,8 +772,7 @@ For multi-step tasks, state a brief plan:
 ```
 ---
 新增注意事项：Qdrant 云端只接受数字或 UUID 格式的 ID
-现有测试框架：参考：I:\AI-Automated-office\tests\README.md
-UI原型图设计使用：pencil mcp
+现有测试框架：参考：tests/README.md
 
 ---
 
@@ -933,11 +793,10 @@ UI原型图设计使用：pencil mcp
 
 | 名称 | 角色 | 模型 | 核心能力 |
 |------|------|------|---------|
-| backend-dev | 后端开发 | sonnet | Rust/Tauri 服务端代码 + TDD |
-| frontend-dev | 前端开发 | sonnet | React+TS 客户端代码 + TDD |
+| backend-dev | 后端开发 | sonnet | Go API 服务端代码 + TDD |
 | researcher | 探索/研究 | sonnet | 代码搜索 + 铁律文档对比（只读） |
 
-> reviewer/custodian 按需在审查轮启动，e2e-tester 在测试轮启动
+> reviewer/custodian 按需在审查轮启动
 
 ## 任务下发协议
 
@@ -1000,9 +859,9 @@ TaskCreate 描述：一句话范围 + 验收标准 + `.plans/` 路径。
 
 | # | 维度 | 权重 | STRONG 表现 | WEAK 表现 |
 |---|------|------|-----------|---------|
-| RD-1 | 铁律合规 | 高 | 每个实现都有 PRD 编号来源，满足架构+UX+Epic 四方约束 | 实现无 PRD 来源，或违反铁律文档 |
+| RD-1 | 铁律合规 | 高 | 每个实现都有 PRD 编号来源，满足架构+Epic 双方约束 | 实现无 PRD 来源，或违反铁律文档 |
 | RD-2 | 产品深度 | 高 | 涵盖真实用户边界情况（空状态、错误恢复、并发），不只是开心路径 | 仅开心路径工作，错误状态显示原始异常 |
-| RD-3 | 代码质量 | 中 | 函数<50行，文件<800行，不可变模式，明确错误处理 | 大函数，深层嵌套，吞异常，mutation 模式 |
+| RD-3 | 代码质量 | 中 | 函数<50行，文件<800行，明确错误处理，Go 惯用模式 | 大函数，深层嵌套，吞异常 |
 | RD-4 | 可测试性 | 中 | 关键行为被测试覆盖，添加新测试容易 | 无测试，或测试与实现耦合 |
 
 ## 核心协议
@@ -1026,23 +885,23 @@ TaskCreate 描述：一句话范围 + 验收标准 + `.plans/` 路径。
 - 修复：删除文件 + 加入 .gitignore
 - 预防：reviewer 审查时检查是否有大文本文件被提交
 
-### KP-2: Rust 生产代码使用 expect/unwrap
-- 症状：routing.rs 用 expect 替代 ok_or_else，生产环境可能 panic
-- 根因：开发时为方便使用 expect，未替换为错误处理
-- 修复：恢复 ok_or_else 错误处理模式
-- 预防：reviewer 审查 Rust 代码时标记所有 expect/unwrap 使用
+### KP-2: Go 生产代码使用 panic
+- 症状：handler/service 层使用 panic 替代 error return
+- 根因：开发时为方便使用 panic，未替换为错误处理
+- 修复：恢复 error return 错误处理模式
+- 预防：reviewer 审查 Go 代码时标记所有 panic 使用
 
-### KP-3: Rust编译错误（enterprise_types/enterprise_helpers模块缺失）
-- 症状：cargo check 报 E0583 file not found for module
-- 根因：enterprise.rs拆分后子模块文件未创建或路径不对
-- 修复：确认enterprise_types.rs和enterprise_helpers.rs存在于src-tauri/src/agent/tools/目录
-- 预防：大文件拆分后立即cargo check验证
+### KP-3: 数据库迁移未同步
+- 症状：model 变更后数据库 schema 未更新
+- 根因：修改 model 后忘记创建对应的 migration
+- 修复：每次 model 变更必须同步创建 migration 文件
+- 预防：reviewer 审查时检查 model 变更是否有对应 migration
 
-### KP-4: AlertCondition字段名不匹配
-- 症状：cargo check 报 E0026 variant does not have a field named _percentage
-- 根因：定义用percentage但模式匹配用_percentage
-- 修复：统一字段名（定义和匹配都用percentage，匹配时用percentage并_前缀忽略）
-- 预防：Rust大文件拆分/重构后全量cargo check
+### KP-4: 多租户隔离遗漏
+- 症状：查询未加 enterprise_id 过滤条件
+- 根因：开发时忘记在 repository 层添加租户隔离条件
+- 修复：所有 repository 查询必须包含 enterprise_id 条件
+- 预防：reviewer 审查 repository 代码时检查多租户隔离
 
 ## 迭代节奏
 

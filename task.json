@@ -1,815 +1,2864 @@
 {
-  "plan_version": "2.1",
-  "plan_date": "2026-04-25",
-  "description": "AI-Automated-office 开发任务清单 (v2.1) - 包含架构重构任务",
-  "total_tasks": 31,
-  "completed_tasks": 30,
+  "plan_version": "3.0",
+  "plan_date": "2026-07-04",
+  "description": "AI-Automated-office 开发任务清单 (v3.0) - 基于 Epics 1-10 的完整 OpenSpec 变更",
+  "total_tasks": 118,
+  "completed_tasks": 0,
   "implementation_status": {
-    "rust_backend_agent_core": "100% - builtin_agent/lifecycle_hooks/progress_tracking/layered_memory模块已完成，execution_integration.rs已完成，agent/mod.rs集成完成，新增Tauri命令已添加，架构精简Phase A(Provider合并)+Phase B(AgentLoop)已完成",
-    "rust_frontend_agent_components": "100% - AgentTypeSelector/ProgressDisplay/ActivityList组件已创建，ChatPanel集成完成",
-    "workspace_state_persistence": "100% - 所有store已实现persist，useWorkspaceStateRecovery已实现，AppLayout已集成",
-    "tool_filtering_integration": "100% - filter_by_policy/validate_access/glob模式匹配均已完成"
+    "overall": "0% - 所有 Story 的 OpenSpec 变更已生成，等待实现"
   },
   "tasks": [
     {
       "id": 1,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "workbenchStore 持久化改造",
-      "description": "为 src/stores/workbenchStore.ts 添加 persist 中间件，持久化 tabs 和 activeTabId，最多保留 10 个标签页",
+      "story": "Story 1.1",
+      "title": "Go API 项目初始化",
+      "description": "As a 开发者, I want 创建一个可运行的 Go API 项目脚手架（Go + Gin + GORM + PostgreSQL）, So that 后续所有业务模块可以在标准化的项目结构上开发",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-1-go-api-scaffold",
       "steps": [
-        "导入 persist 和 createJSONStorage",
-        "为 useWorkbenchStore 添加 persist 中间件",
-        "配置 name: 'app-workspace-tabs'",
-        "配置 partialize 只保留 tabs、activeTabId、maxTabs",
-        "添加 tabs 持久化上限 10 个限制",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-1-go-api-scaffold 变更的所有 task"
       ],
-      "frs_covered": ["FR1560", "FR1561", "FR1562", "FR1563", "FR1564"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
+      "frs_covered": [
+        "FR-AUTH-011"
+      ],
+      "nfrs_covered": [
+        "NFR-EXT-001"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
       "dependencies": [],
-      "passes": true,
-      "verification_notes": "persist中间件已完整实现(L55-260)，tabs限制10条(L255)，lint通过，build成功"
+      "passes": false
     },
     {
       "id": 2,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "useChatStore 持久化改造",
-      "description": "为 src/features/agent/hooks/useChatStore.ts 添加 persist 中间件，持久化 sessions 和 activeSessionId，最多保留 20 条会话，每条最多 10 条消息",
+      "story": "Story 1.2",
+      "title": "CLI 项目初始化（Cobra）",
+      "description": "As a 开发者, I want 创建一个可运行的 CLI 项目脚手架（Go + Cobra）, So that Agent 可以通过 CLI 调用后端 API",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-2-cli-scaffold",
       "steps": [
-        "导入 persist 和 createJSONStorage",
-        "组合 persist 和 subscribeWithSelector",
-        "配置 name: 'app-workspace-chat'",
-        "配置 partialize 持久化 sessions 和 activeSessionId",
-        "添加 sessions 持久化上限 20 条限制",
-        "添加每会话消息上限 10 条限制",
-        "排除 isStreaming、streamingMessageId 等临时状态不持久化",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-2-cli-scaffold 变更的所有 task"
       ],
-      "frs_covered": ["FR1565", "FR1566", "FR1567", "FR1568", "FR1569"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["1"],
-      "passes": true,
-      "verification_notes": "persist+partialize已实现(L137-483)，20条会话/10条消息限制(L466-481)，lint通过，build成功"
+      "frs_covered": [
+        "FR-AUTH-011"
+      ],
+      "nfrs_covered": [
+        "NFR-INT-002"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [],
+      "passes": false
     },
     {
       "id": 3,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "useHistoryStore 持久化改造",
-      "description": "为 src/features/agent/hooks/useHistoryStore.ts 添加 persist 中间件，持久化 filter 和 archivedSessions",
+      "story": "Story 1.3",
+      "title": "Docker Compose 部署配置",
+      "description": "As a 运维人员, I want 通过 Docker Compose 一键启动 PostgreSQL + Redis + API 服务, So that 开发和部署环境可以快速搭建",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-3-docker-compose-deploy",
       "steps": [
-        "导入 persist 和 createJSONStorage",
-        "组合 persist 和 subscribeWithSelector",
-        "配置 name: 'app-workspace-history'",
-        "配置 partialize 持久化 filter 和 archivedSessions",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-3-docker-compose-deploy 变更的所有 task"
       ],
-      "frs_covered": ["FR1569"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["1"],
-      "passes": true,
-      "verification_notes": "persist+partialize已实现(L98-233)，lint通过，build成功"
+      "frs_covered": [
+        "FR-DEPLOY-001"
+      ],
+      "nfrs_covered": [
+        "NFR-DEP-001",
+        "NFR-DEP-003"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": false
     },
     {
       "id": 4,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "editorStore 持久化改造",
-      "description": "为 src/stores/editorStore.ts 添加 persist 中间件，持久化 activeDocument",
+      "story": "Story 1.4",
+      "title": "数据库连接与多租户 Schema 管理",
+      "description": "As a 系统管理员, I want 系统能够自动管理 PostgreSQL Schema 实现多租户数据隔离, So that 不同企业的数据完全隔离，互不可见",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-4-multi-tenant-schema",
       "steps": [
-        "导入 persist 和 createJSONStorage",
-        "为 useEditorStore 添加 persist 中间件",
-        "配置 name: 'app-workspace-editor'",
-        "配置 partialize 持久化 activeDocument",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-4-multi-tenant-schema 变更的所有 task"
       ],
-      "frs_covered": ["FR1562"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["1"],
-      "passes": true,
-      "verification_notes": "persist+partialize已实现(L20-35)，lint通过，build成功"
+      "frs_covered": [
+        "FR-AUTH-012"
+      ],
+      "nfrs_covered": [
+        "NFR-SEC-003"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": false
     },
     {
       "id": 5,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "uiStore 扩展持久化",
-      "description": "扩展 src/stores/uiStore.ts 的 PersistedUIState，添加 dynamicSidebarEntries、editorSidebarEntries、recentSidebarEntries、activityBarBadges 持久化",
+      "story": "Story 1.5",
+      "title": "统一响应格式与结构化错误码体系",
+      "description": "As a Agent 开发者, I want 所有 API 返回统一格式的响应和结构化错误码, So that Agent 可以理解错误并自动恢复",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-5-unified-response-format",
       "steps": [
-        "扩展 PersistedUIState 类型添加新字段",
-        "扩展 partialize 添加新字段的持久化",
-        "添加 dynamicSidebarEntries 持久化上限 10 条",
-        "添加 editorSidebarEntries 持久化",
-        "添加 activityBarBadges 持久化",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-5-unified-response-format 变更的所有 task"
       ],
-      "frs_covered": ["FR1570", "FR1571", "FR1572", "FR1573"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["1"],
-      "passes": true,
-      "verification_notes": "PersistedUIState已包含所有字段(L119-122)，lint通过，build成功"
+      "frs_covered": [
+        "FR-AUTH-010"
+      ],
+      "nfrs_covered": [
+        "NFR-INT-001"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": false
     },
     {
       "id": 6,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "统一恢复 Hook",
-      "description": "创建 src/hooks/useWorkspaceStateRecovery.ts，统一管理恢复时序、流式中断事件和回调",
+      "story": "Story 1.6",
+      "title": "OAuth 2.0 认证（登录/刷新/登出）",
+      "description": "As a 用户, I want 通过 OAuth 2.0 流程登录系统、刷新令牌和登出, So that 我可以安全地访问系统 API",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-6-oauth2-authentication",
       "steps": [
-        "创建 RecoveryPhase 类型定义",
-        "实现 useWorkspaceStateRecovery hook",
-        "支持 enabled 参数控制开关",
-        "按依赖顺序执行恢复：ui → tabs → chat → editor → sidebar",
-        "流式中断时 dispatch chat:stream-interrupted 事件",
-        "提供 onRestoreComplete 和 onRestoreError 回调",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-6-oauth2-authentication 变更的所有 task"
       ],
-      "frs_covered": ["FR1568", "FR1575"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["1", "2", "3", "4", "5"],
-      "passes": true,
-      "verification_notes": "useWorkspaceStateRecovery.ts已完整实现(146行)，RecoveryPhase类型/enabled参数/顺序恢复/流式中断事件均已实现，lint通过，build成功。注：onRestoreError回调未实现但不影响核心功能"
+      "frs_covered": [
+        "FR-AUTH-001",
+        "FR-AUTH-002"
+      ],
+      "nfrs_covered": [
+        "NFR-SEC-001",
+        "NFR-INT-003"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.4",
+        "Story 1.5"
+      ],
+      "passes": false
     },
     {
       "id": 7,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "AppLayout 集成",
-      "description": "在 src/components/common/AppLayout.tsx 中集成恢复逻辑，读取用户偏好并调用恢复 hook",
+      "story": "Story 1.7",
+      "title": "JWT 认证中间件与 RBAC 权限控制",
+      "description": "As a 系统开发者, I want 所有 API 请求经过 JWT 认证和 RBAC 权限验证, So that 无权限的请求被拦截并返回 403",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-7-jwt-rbac-middleware",
       "steps": [
-        "导入 useWorkspaceStateRecovery",
-        "从 appStore 读取 restoreWorkspaceOnStartup 偏好",
-        "调用 useWorkspaceStateRecovery hook",
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器测试：重启后标签页、会话、侧边栏状态正确恢复"
+        "完成 epic-1-story-7-jwt-rbac-middleware 变更的所有 task"
       ],
-      "frs_covered": ["FR1575"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["6"],
-      "passes": true,
-      "verification_notes": "AppLayout.tsx L19已导入，L42-45已集成useWorkspaceStateRecovery，lint通过，build成功"
+      "frs_covered": [
+        "FR-AUTH-003",
+        "FR-AUTH-005"
+      ],
+      "nfrs_covered": [
+        "NFR-SEC-004"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.6"
+      ],
+      "passes": false
     },
     {
       "id": 8,
       "epic": "Epic 1",
-      "story": "Story 1.X",
-      "title": "启动时恢复偏好开关",
-      "description": "在 appStore 和设置面板中添加「启动时恢复上次工作状态」开关",
+      "story": "Story 1.8",
+      "title": "审计日志（基础操作记录）",
+      "description": "As a 管理员, I want 系统自动记录所有业务操作的审计日志, So that 我可以追溯谁在什么时间做了什么操作",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-8-audit-log",
       "steps": [
-        "appStore 添加 restoreWorkspaceOnStartup 字段（默认 true）",
-        "设置面板中添加开关控件",
-        "开关关闭时跳过恢复逻辑",
-        "npm run lint 通过",
-        "npm run build 成功"
+        "完成 epic-1-story-8-audit-log 变更的所有 task"
       ],
-      "frs_covered": ["FR1564"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["7"],
-      "passes": true,
-      "verification_notes": "appStore.ts L11已定义restoreWorkspaceOnStartup(L26默认true)，设置面板控件已存在（具体UI位置需确认），lint通过，build成功"
+      "frs_covered": [
+        "FR-AUTH-006",
+        "FR-AUTH-007"
+      ],
+      "nfrs_covered": [
+        "NFR-REL-005"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7"
+      ],
+      "passes": false
     },
     {
       "id": 9,
-      "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "内置Agent类型体系 [已完成-需验证]",
-      "description": "builtin_agent模块已完成实现，需验证并集成到agent/mod.rs",
+      "epic": "Epic 1",
+      "story": "Story 1.9",
+      "title": "自动定时备份",
+      "description": "As a 管理员, I want 配置自动定时数据库备份, So that 数据可以在故障时恢复",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-9-auto-backup",
       "steps": [
-        "验证 builtin_agent_types.rs (BuiltinAgentType枚举) - 已完成210行",
-        "验证 builtin_agent_config.rs (AgentTypeConfig) - 已完成542行",
-        "验证 glob模式匹配实现 - 已完成",
-        "验证单元测试 - 已完成",
-        "cargo check 无错误",
-        "集成到 agent/mod.rs",
-        "cargo test 通过"
+        "完成 epic-1-story-9-auto-backup 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR411", "FR412", "FR416"],
-      "nfrs_covered": ["NFR23-1", "NFR23-2"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": [],
-      "passes": true,
-      "verification_notes": "builtin_agent模块(752行)已存在，BuiltinAgentType枚举已定义，Tauri命令已暴露此类型系统"
+      "frs_covered": [
+        "FR-AUTH-008",
+        "FR-AUTH-013"
+      ],
+      "nfrs_covered": [
+        "NFR-REL-002",
+        "NFR-REL-003"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.4"
+      ],
+      "passes": false
     },
     {
       "id": 10,
-      "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "工具过滤与权限系统 [部分完成-需完善]",
-      "description": "ToolRegistry中ToolPermission/ToolAccessPolicy已定义，filter_by_policy/validate_access/glob模式匹配均已实现",
+      "epic": "Epic 1",
+      "story": "Story 1.10",
+      "title": "API 配额管理与功能开关",
+      "description": "As a 运营商, I want 管理企业的 API 调用配额和功能模块开关, So that 可以防止滥用并控制企业可用功能",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-10-api-quota-feature-flags",
       "steps": [
-        "验证 ToolPermission 枚举 - 已完成(registry.rs L27-40)",
-        "验证 ToolAccessPolicy 结构体 - 已完成(registry.rs L43-103)",
-        "验证 filter_by_policy 方法 - 已完成(registry.rs L200-210)",
-        "验证 validate_access 方法 - 已完成(registry.rs L214-227)",
-        "验证 glob 模式匹配 - 已完成(registry.rs L234-280)",
-        "cargo check 无错误"
+        "完成 epic-1-story-10-api-quota-feature-flags 变更的所有 task"
       ],
-      "frs_covered": ["FR470", "FR471", "FR472", "FR473", "FR490", "FR491", "FR495"],
-      "nfrs_covered": ["NFR23-5", "NFR23-6"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["9"],
-      "implementation_notes": "基础类型已定义，filter_for_agent方法名不存在，实际为filter_by_policy，已完成",
-      "passes": true,
-      "verification_notes": "ToolPermission/ToolAccessPolicy已定义，filter_by_policy(L200-210)/validate_access(L214-227)/glob匹配(L234-280)均已实现，cargo check通过"
+      "frs_covered": [
+        "FR-AUTH-015",
+        "FR-AUTH-016"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7"
+      ],
+      "passes": false
     },
     {
       "id": 11,
-      "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "生命周期Hook系统 [已完成-需验证]",
-      "description": "lifecycle_hooks模块已完成实现，需验证并与Agent执行流程集成",
+      "epic": "Epic 1",
+      "story": "Story 1.11",
+      "title": "Rate Limiting 中间件",
+      "description": "As a 系统开发者, I want 实现 API 请求频率限制, So that 单个企业或 IP 不会压垮系统",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-11-rate-limiting",
       "steps": [
-        "验证 hook_types.rs (HookContext/HookConfig/HookResult) - 已完成295行",
-        "验证 hook_trait.rs (AgentHook trait) - 已完成307行",
-        "验证 hook_registry.rs (HookRegistry) - 已完成300行",
-        "验证 LoggingHook/MetricsHook/PermissionHook/AuditHook - 已完成",
-        "验证单元测试 - 已完成",
-        "集成Hook到Agent执行流程",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-1-story-11-rate-limiting 变更的所有 task"
       ],
-      "frs_covered": ["FR500", "FR501", "FR504"],
-      "nfrs_covered": ["NFR8-6"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["9"],
-      "implementation_notes": "代码已实现(902行)，需与Agent执行流程集成",
-      "passes": true,
-      "verification_notes": "lifecycle_hooks模块(902行)已存在，mod.rs L21已声明，cargo check通过。注：集成到Agent执行流程由Task 14完成"
+      "frs_covered": [],
+      "nfrs_covered": [
+        "NFR-PERF-003"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7"
+      ],
+      "passes": false
     },
     {
       "id": 12,
-      "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "进度追踪系统 [已完成-需验证]",
-      "description": "progress_tracking模块已完成实现，需验证并与前端集成",
+      "epic": "Epic 1",
+      "story": "Story 1.12",
+      "title": "可观测性架构（日志/监控/链路追踪）",
+      "description": "As a 运维人员, I want 系统具备结构化日志、Prometheus 指标和 OpenTelemetry 链路追踪, So that 我可以监控系统健康状态和排查问题",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-12-observability",
       "steps": [
-        "验证 progress_types.rs (ProgressUpdate/TaskStatus) - 已完成364行",
-        "验证 progress_tracker.rs (ProgressTracker) - 已完成590行",
-        "验证 ActivityEntry/TaskMetrics 类型 - 已完成",
-        "验证实时进度推送机制(Channel) - 已完成",
-        "验证单元测试 - 已完成",
-        "集成进度追踪到前端UI",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-1-story-12-observability 变更的所有 task"
       ],
-      "frs_covered": ["FR430", "FR431", "FR432", "FR435", "FR500", "FR501", "FR504"],
-      "nfrs_covered": ["NFR8-1", "NFR8-2", "NFR23"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["9"],
-      "implementation_notes": "代码已实现(954行)，需与前端UI集成",
-      "passes": true,
-      "verification_notes": "progress_tracking模块(954行)已存在，mod.rs L22已声明，cargo check通过。注：前端UI集成由Task 16完成"
+      "frs_covered": [
+        "FR-AUTH-017"
+      ],
+      "nfrs_covered": [
+        "NFR-OBS-001",
+        "NFR-OBS-002",
+        "NFR-OBS-003"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.1"
+      ],
+      "passes": false
     },
     {
       "id": 13,
-      "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "三层记忆系统适配 [已完成-需验证]",
-      "description": "layered_memory模块已完成实现，需验证并与Agent集成",
+      "epic": "Epic 1",
+      "story": "Story 1.13",
+      "title": "CLI 多平台构建与后台服务模式",
+      "description": "As a 用户, I want CLI 工具可以在 Windows/macOS/Linux 上运行，并支持开机自启为后台服务, So that 我可以在不同操作系统上使用 CLI 并持续接收消息",
+      "implementationType": "new",
+      "openspec_change": "epic-1-story-13-cli-cross-platform",
       "steps": [
-        "验证 layered_types.rs (MemoryScope枚举) - 已完成407行",
-        "验证 layered_memory.rs (LayeredMemory) - 已完成420行",
-        "验证记忆文件截断(200行/25KB限制) - 已完成",
-        "验证跨层记忆搜索 - 已完成",
-        "验证作用域访问控制 - 已完成",
-        "验证单元测试 - 已完成",
-        "集成到 AgentExecutionContext",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-1-story-13-cli-cross-platform 变更的所有 task"
       ],
-      "frs_covered": ["FR945", "FR946", "FR947", "FR948"],
-      "nfrs_covered": ["NFR23-9"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["9"],
-      "implementation_notes": "代码已实现(807行)，需与AgentExecutionContext集成",
-      "passes": true,
-      "verification_notes": "layered_memory模块(807行)已存在，mod.rs L23已声明，cargo check通过。注：集成到AgentExecutionContext由Task 14完成"
+      "frs_covered": [
+        "FR-AUTH-011",
+        "FR-AUTH-014"
+      ],
+      "nfrs_covered": [
+        "NFR-INT-002"
+      ],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.2"
+      ],
+      "passes": false
     },
     {
       "id": 14,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "Agent执行流程集成",
-      "description": "execution_integration.rs已实现，已与主Agent模块集成，新增Tauri命令暴露BuiltinAgentType系统",
+      "story": "Story 2.1",
+      "title": "集团管理（创建/编辑/删除）",
+      "description": "As a 运营商, I want 创建、编辑和删除集团账号, So that 可以为拥有多个企业的老板建立集团管理入口",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-1-group-management",
       "steps": [
-        "验证 AgentExecutionContext 结构体 - 已完成375行",
-        "验证工具过滤集成 - 已完成",
-        "验证Hook调用集成 - 已完成",
-        "验证进度追踪集成 - 已完成",
-        "验证记忆系统集成 - 已完成",
-        "完善 agent/mod.rs 集成 - execution_contexts字段已添加",
-        "添加Agent类型选择接口 - get_available_agent_types/create_agent_execution_context/get_agent_type_config/check_tool_allowed",
-        "cargo check 无错误"
+        "完成 epic-2-story-1-group-management 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR412", "FR416", "FR419", "FR430", "FR431"],
-      "nfrs_covered": ["NFR23-1", "NFR23-2", "NFR23-4"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["10", "11", "12", "13"],
-      "passes": true,
-      "verification_notes": "execution_integration.rs已完整实现，AgentRuntimeState新增execution_contexts字段，Tauri命令已添加(cargo check通过)"
+      "frs_covered": [
+        "FR-ORG-001",
+        "FR-GROUP-001"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7"
+      ],
+      "passes": false
     },
     {
       "id": 15,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "前端Agent类型选择器组件",
-      "description": "创建 AgentTypeSelector 组件，支持选择 general-purpose/explore/plan/verification 四种Agent类型",
+      "story": "Story 2.2",
+      "title": "企业管理（创建/编辑/查看）",
+      "description": "As a 集团老板或运营商, I want 创建和管理企业, So that 可以在企业内搭建组织架构",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-2-enterprise-management",
       "steps": [
-        "创建 src/features/agent/components/AgentTypeSelector.tsx",
-        "实现四种Agent类型选择UI",
-        "集成 BuiltinAgentType 类型定义",
-        "添加类型切换事件处理",
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器测试验证UI正确显示"
+        "完成 epic-2-story-2-enterprise-management 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR411"],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["14"],
-      "passes": true,
-      "verification_notes": "AgentTypeSelector.tsx已创建，4种类型(通用助手/代码探索/任务规划/代码验证)均可选，浏览器测试验证通过"
+      "frs_covered": [
+        "FR-ORG-002",
+        "FR-GROUP-002",
+        "FR-OP-001"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.4",
+        "Story 2.1"
+      ],
+      "passes": false
     },
     {
       "id": 16,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "前端进度展示组件",
-      "description": "创建 ProgressDisplay 组件，实时展示Agent任务执行进度、工具调用次数和Token消耗",
+      "story": "Story 2.3",
+      "title": "部门管理（创建/编辑/删除/树形结构）",
+      "description": "As a 企业管理员, I want 创建、编辑、删除部门并查询组织架构树, So that 可以建立符合企业实际的组织结构",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-3-department-management",
       "steps": [
-        "创建 src/features/agent/components/ProgressDisplay.tsx",
-        "实现进度百分比显示",
-        "实现工具调用次数统计",
-        "实现Token消耗展示",
-        "集成 Tauri 事件订阅接收进度更新",
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器测试验证UI正确显示"
+        "完成 epic-2-story-3-department-management 变更的所有 task"
       ],
-      "frs_covered": ["FR430", "FR431", "FR432"],
-      "nfrs_covered": ["NFR8-1", "NFR8-2"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["14"],
-      "passes": true,
-      "verification_notes": "ProgressDisplay.tsx已创建，订阅agent-progress事件，支持进度条/轮次/工具调用/Token统计"
+      "frs_covered": [
+        "FR-ORG-003",
+        "FR-ORG-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
     },
     {
       "id": 17,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "前端活动列表组件",
-      "description": "创建 ActivityList 组件，展示Agent最近的活动历史和工具调用记录",
+      "story": "Story 2.4",
+      "title": "部门经理设置与权限",
+      "description": "As a 企业管理员, I want 设置部门经理并赋予部门级管理权限, So that 部门经理可以管理本部门员工和业务",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-4-department-manager",
       "steps": [
-        "创建 src/features/agent/components/ActivityList.tsx",
-        "实现活动条目列表展示",
-        "实现活动状态图标(成功/失败/进行中)",
-        "实现活动时间显示",
-        "支持滚动查看历史活动",
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器测试验证UI正确显示"
+        "完成 epic-2-story-4-department-manager 变更的所有 task"
       ],
-      "frs_covered": ["FR435"],
-      "nfrs_covered": ["NFR8-2"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["14"],
-      "passes": true,
-      "verification_notes": "ActivityList.tsx已创建，订阅agent-activity事件，支持状态图标/时间显示/滚动查看"
+      "frs_covered": [
+        "FR-ORG-004",
+        "FR-ORG-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.3",
+        "Story 2.5"
+      ],
+      "passes": false
     },
     {
       "id": 18,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "ChatPanel组件集成",
-      "description": "将 AgentTypeSelector、ProgressDisplay、ActivityList 集成到现有 ChatPanel",
+      "story": "Story 2.5",
+      "title": "员工档案基础 CRUD",
+      "description": "As a 企业管理员, I want 创建、编辑、删除员工档案, So that 可以为企业员工建立账号和归属关系",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-5-employee-crud",
       "steps": [
-        "在 ChatPanel 中添加类型选择区域",
-        "在 ChatPanel 中添加进度展示区域",
-        "在 ChatPanel 中添加工具调用日志区域",
-        "集成 Tauri 事件监听",
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器测试验证完整流程"
+        "完成 epic-2-story-5-employee-crud 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR416", "FR430", "FR435"],
-      "nfrs_covered": ["NFR23-1", "NFR8-1"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["15", "16", "17"],
-      "passes": true,
-      "verification_notes": "AgentTypeSelectorPanel/进度面板/活动面板已集成到AgentChatPanel，可折叠展开"
+      "frs_covered": [
+        "FR-ORG-006",
+        "FR-ORG-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.3"
+      ],
+      "passes": false
     },
     {
       "id": 19,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "Rust后端验证测试",
-      "description": "运行 cargo check、cargo clippy、cargo test 验证所有Rust代码无错误",
+      "story": "Story 2.6",
+      "title": "员工查询（按角色/姓名模糊搜索）",
+      "description": "As a 企业用户, I want 按角色或姓名模糊搜索员工, So that 可以快速找到需要联系的同事",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-6-employee-search",
       "steps": [
-        "cargo check 无错误",
-        "cargo clippy 无警告",
-        "cargo test 通过",
-        "修复所有发现的问题"
+        "完成 epic-2-story-6-employee-search 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR412", "FR416", "FR430", "FR500", "FR504", "FR945"],
-      "nfrs_covered": ["NFR23-1", "NFR23-2", "NFR23-4", "NFR8-6"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["9", "10", "11", "12", "13", "14"],
-      "passes": true,
-      "verification_notes": "cargo check通过(22个预存警告，无新增错误)；预存测试编译错误需独立修复"
+      "frs_covered": [
+        "FR-ORG-011",
+        "FR-ORG-012"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.5",
+        "Story 2.7"
+      ],
+      "passes": false
     },
     {
       "id": 20,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "前端验证测试",
-      "description": "运行 npm run lint、npm run build 验证所有前端代码无错误",
+      "story": "Story 2.7",
+      "title": "岗位定义与管理",
+      "description": "As a 企业管理员, I want 定义和管理岗位（职位）, So that 员工档案可以关联岗位，新员工可以通过 Agent 查询岗位职责",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-7-position-management",
       "steps": [
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器测试验证所有组件正常渲染",
-        "验证Agent类型切换功能正常",
-        "验证进度展示功能正常"
+        "完成 epic-2-story-7-position-management 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR430", "FR435"],
-      "nfrs_covered": ["NFR23-1", "NFR8-1"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["15", "16", "17", "18"],
-      "passes": true,
-      "verification_notes": "npm run lint通过，npm run build成功，浏览器测试验证Agent类型选择器正常显示4种类型"
+      "frs_covered": [
+        "FR-ORG-013"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
     },
     {
       "id": 21,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "E2E端到端测试",
-      "description": "使用Playwright进行端到端测试，验证完整Agent执行流程",
+      "story": "Story 2.8",
+      "title": "老板跨企业视角切换",
+      "description": "As a 集团老板, I want 在不同企业之间切换视角, So that 可以查看和管理不同企业的数据",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-8-cross-enterprise-view-switch",
       "steps": [
-        "测试Agent类型切换流程",
-        "测试工具调用和结果展示",
-        "测试进度追踪UI展示",
-        "测试生命周期Hook触发",
-        "测试记忆系统持久化",
-        "所有E2E测试通过"
+        "完成 epic-2-story-8-cross-enterprise-view-switch 变更的所有 task"
       ],
-      "frs_covered": ["FR410", "FR412", "FR416", "FR419", "FR430", "FR431", "FR435", "FR500", "FR501", "FR504", "FR945", "FR946", "FR947", "FR948"],
-      "nfrs_covered": ["NFR23-1", "NFR23-2", "NFR23-4", "NFR23-9", "NFR8-1", "NFR8-2", "NFR8-6"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "main-agent-claude-code-mechanism-upgrade",
-      "dependencies": ["19", "20"],
-      "passes": true,
-      "verification_notes": "E2E测试文件已创建(agent-progress-panel.spec.ts)，浏览器测试验证Agent类型选择器功能正常"
+      "frs_covered": [
+        "FR-ORG-008",
+        "FR-GROUP-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.6",
+        "Story 2.2"
+      ],
+      "passes": false
     },
     {
       "id": 22,
       "epic": "Epic 2",
-      "story": "Story 2.X",
-      "title": "工作区状态恢复E2E测试",
-      "description": "使用Playwright进行工作区状态恢复E2E测试",
+      "story": "Story 2.9",
+      "title": "跨企业权限管理",
+      "description": "As a 集团老板或企业管理员, I want 为员工开通跨企业访问权限, So that 核心员工可以访问多个企业的数据",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-9-cross-enterprise-permissions",
       "steps": [
-        "测试标签页持久化和恢复",
-        "测试AI对话会话持久化和恢复",
-        "测试侧边栏状态持久化和恢复",
-        "测试编辑器状态持久化和恢复",
-        "测试启动时恢复偏好开关",
-        "所有E2E测试通过"
+        "完成 epic-2-story-9-cross-enterprise-permissions 变更的所有 task"
       ],
-      "frs_covered": ["FR1560", "FR1561", "FR1562", "FR1563", "FR1564", "FR1565", "FR1566", "FR1567", "FR1568", "FR1569", "FR1570", "FR1571", "FR1572", "FR1573", "FR1575"],
-      "nfrs_covered": ["NFR-15"],
-      "arch_covered": ["ARCH-037"],
-      "ux_covered": ["UX-04"],
-      "openspec_change": "workspace-state-persistence",
-      "dependencies": ["7", "8"],
-      "passes": true,
-      "verification_notes": "工作区状态恢复E2E测试文件已创建(workspace-state-recovery.spec.ts)，Zustand persist中间件已完整实现"
+      "frs_covered": [
+        "FR-AUTH-004",
+        "FR-GROUP-004",
+        "FR-GROUP-005",
+        "FR-GROUP-006",
+        "FR-GROUP-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.5",
+        "Story 2.2"
+      ],
+      "passes": false
     },
     {
       "id": 23,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase A: Provider 抽象合并 - 扩展 AgentProvider trait",
-      "description": "扩展 provider.rs 中的 AgentProvider trait，添加 stream_complete() 方法，为后续 AgentLoop 创建基础设施",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase A",
-      "priority": "high",
-      "openspec_change": "agent-arch-phase-a-provider-merge",
+      "epic": "Epic 2",
+      "story": "Story 2.10",
+      "title": "精细化权限分配",
+      "description": "As a 企业管理员或老板, I want 自定义员工的权限（精细化到具体操作）, So that 可以按需授权，而非仅依赖角色粗粒度控制",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-10-fine-grained-permissions",
       "steps": [
-        "读取 src-tauri/src/agent/provider.rs 了解当前 AgentProvider trait 定义",
-        "扩展 AgentProvider trait，添加 stream_complete() 方法签名",
-        "确保现有 Provider 实现（Zhipu/DeepSeek/Minimax/DashScope/OpenAICompatible）无需修改即可编译",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-2-story-10-fine-grained-permissions 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-AUTH-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": [],
-      "passes": true,
-      "verification_notes": "provider.rs已扩展：添加AgentLoop trait/StandardAgentLoop/LoopMode/LoopRequest/LoopResponse/LoopToolCall/工具函数(cargo check通过)"
+      "dependencies": [
+        "Story 1.7",
+        "Story 2.5"
+      ],
+      "passes": false
     },
     {
       "id": 24,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase A: 删除 LlmAgentProvider/DualAgentProvider 包装层",
-      "description": "删除 llm_agent_provider.rs 和 dual_agent_provider.rs 空壳包装层，更新 mod.rs 导出",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase A",
-      "priority": "high",
-      "openspec_change": "agent-arch-phase-a-provider-merge",
+      "epic": "Epic 2",
+      "story": "Story 2.11",
+      "title": "跨企业经营汇总",
+      "description": "As a 集团老板, I want 查看跨企业的经营汇总数据, So that 可以一览集团下所有企业的经营状况",
+      "implementationType": "new",
+      "openspec_change": "epic-2-story-11-cross-enterprise-summary",
       "steps": [
-        "确认 llm_agent_provider.rs 和 dual_agent_provider.rs 为空壳或可删除",
-        "删除这两个文件",
-        "更新 src-tauri/src/agent/mod.rs 删除对应的 pub mod 声明",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-2-story-11-cross-enterprise-summary 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-GROUP-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["23"],
-      "passes": true,
-      "verification_notes": "删除llm_agent_provider.rs/dual_agent_provider.rs，内联LlmAgentProviderAdapter到provider.rs(mod.rs引用)，测试文件import已更新，cargo check通过"
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
     },
     {
       "id": 25,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase A: 创建 RuntimeState 统一状态入口",
-      "description": "创建 state.rs 定义 RuntimeState 结构体，统一管理 AgentRuntimeState 的分散状态",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase A",
-      "priority": "medium",
-      "openspec_change": "agent-arch-phase-a-provider-merge",
+      "epic": "Epic 3",
+      "story": "Story 3.1",
+      "title": "员工入职（创建档案）",
+      "description": "As a 企业管理员, I want 创建员工档案并记录入职信息, So that 新员工可以在系统中拥有账号和完整信息",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-1-employee-onboarding",
       "steps": [
-        "创建 src-tauri/src/agent/state.rs",
-        "定义 RuntimeState 结构体，统一 provider/session_service/cancellations/config",
-        "添加 AgentRuntimeState 类型别名指向 RuntimeState",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-3-story-1-employee-onboarding 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-HRM-001",
+        "FR-ORG-010"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["24"],
-      "passes": true,
-      "verification_notes": "LlmAgentProviderAdapter已在provider.rs中创建(public导出)，替代原llm_agent_provider/dual_agent_provider逻辑，Plan/Act模式通过metadata路由，cargo check通过"
+      "dependencies": [
+        "Story 2.5"
+      ],
+      "passes": false
     },
     {
       "id": 26,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase B: 创建 agent_loop.rs 核心执行引擎",
-      "description": "创建单文件 Agent 执行引擎 agent_loop.rs，包含完整的消息处理、LLM调用、工具执行循环、上下文压缩触发",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase B",
-      "priority": "critical",
-      "openspec_change": "agent-arch-phase-b-loop-core",
+      "epic": "Epic 3",
+      "story": "Story 3.2",
+      "title": "员工档案编辑",
+      "description": "As a 企业管理员, I want 编辑员工档案信息, So that 员工信息变更时可以及时更新",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-2-employee-profile-edit",
       "steps": [
-        "创建 src-tauri/src/agent/agent_loop.rs",
-        "定义 AgentLoop trait 和 StandardAgentLoop 结构体",
-        "实现 AgentMode 枚举（Act/Plan）",
-        "实现 run() 方法核心逻辑",
-        "实现 call_llm() 直接调用 Provider",
-        "实现工具执行循环",
-        "实现上下文压缩触发逻辑",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-3-story-2-employee-profile-edit 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1", "NFR23-4"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-HRM-002"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["25"],
-      "passes": true,
-      "verification_notes": "agent_loop.rs已创建(420行)：StandardAgentLoop含完整执行环路(session/取消/工具/压缩)，LlmAgentLoop便捷包装，Trait已导出，cargo check通过"
+      "dependencies": [
+        "Story 2.5"
+      ],
+      "passes": false
     },
     {
       "id": 27,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase B: AgentOrchestrator 迁移到 AgentLoop",
-      "description": "将 AgentOrchestrator 的编排逻辑迁移到 StandardAgentLoop，删除 AgentOrchestrator",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase B",
-      "priority": "high",
-      "openspec_change": "agent-arch-phase-b-loop-core",
+      "epic": "Epic 3",
+      "story": "Story 3.3",
+      "title": "员工离职",
+      "description": "As a 企业管理员, I want 标记员工离职, So that 离职员工无法继续访问系统",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-3-employee-resignation",
       "steps": [
-        "分析 AgentOrchestrator 的职责",
-        "将编排逻辑迁移到 StandardAgentLoop",
-        "删除 AgentOrchestrator 结构体",
-        "更新 mod.rs 导出",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-3-story-3-employee-resignation 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-HRM-003",
+        "FR-ORG-010"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["26"],
-      "passes": true,
-      "verification_notes": "AgentOrchestrator已集成StandardAgentLoop：添加tool_pipeline字段和with_tool_pipeline()方法，新增execute_with_loop()多轮执行方法，保留原有execute_with_events()向后兼容，cargo check通过"
+      "dependencies": [
+        "Story 2.5",
+        "Story 1.6"
+      ],
+      "passes": false
     },
     {
       "id": 28,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase C: 简化路由系统为 SimpleRouter",
-      "description": "将 SubAgentRoutingService 简化为 SimpleRouter，保留 Keyword 匹配，删除 Semantic/LlmGuided/风险评估/双确认",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase C",
-      "priority": "medium",
-      "openspec_change": "agent-arch-phase-cd-simplify-cleanup",
+      "epic": "Epic 3",
+      "story": "Story 3.4",
+      "title": "员工列表与详情查询",
+      "description": "As a 企业管理员, I want 查看所有员工列表和单个员工详情, So that 可以了解企业人员全貌",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-4-employee-list-detail",
       "steps": [
-        "读取 routing.rs 了解当前 SubAgentRoutingService 实现",
-        "重写为 SimpleRouter，保留 Keyword 匹配",
-        "删除 SemanticRouter、routing_types.rs、model_router.rs",
-        "删除 RiskEvaluation、ConfirmationState 相关代码",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-3-story-4-employee-list-detail 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-HRM-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["27"],
-      "passes": false,
-      "optimization": {
-        "preserveFunctions": ["Keyword 路由匹配功能保留", "Manual/Auto/Hybrid 模式保留"],
-        "verificationMethod": ["cargo check", "cargo test"],
-        "rollbackPlan": ["恢复 routing.rs 到 SubAgentRoutingService 版本"]
-      }
+      "dependencies": [
+        "Story 2.5"
+      ],
+      "passes": false
     },
     {
       "id": 29,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase C: 精简记忆系统和合并监控模块",
-      "description": "删除 MemoryScope::Inherited/SessionOnly，合并 6 个监控/审计/事件模块为 1 个 monitoring.rs",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase C",
-      "priority": "medium",
-      "openspec_change": "agent-arch-phase-cd-simplify-cleanup",
+      "epic": "Epic 3",
+      "story": "Story 3.5",
+      "title": "员工自助查看个人信息",
+      "description": "As a 员工, I want 查看自己的档案和基本信息, So that 不需要找管理员就能了解自己的信息",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-5-employee-self-service",
       "steps": [
-        "精简 layered_types.rs MemoryScope 枚举，删除 Inherited/SessionOnly",
-        "合并 monitoring/monitoring_types/audit/audit_types/audit_siem/events 为 monitoring.rs",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-3-story-5-employee-self-service 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-HRM-005",
+        "FR-ASSIST-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["28"],
-      "passes": true,
-      "verification_notes": [
-        "精简 execution.rs MemoryScope: Inherited/SessionOnly 已删除，仅保留 Private/Shared（与 layered_types.rs 的 User/Project/Local 区分开）",
-        "创建 simple_monitoring.rs 统一监控门面，已集成到 agent_loop.rs 的 StandardAgentLoop 中",
-        "mod.rs 已添加 pub mod simple_monitoring 导出",
-        "cargo check 通过（库代码无错误）",
-        "cargo test: 56个预先存在的测试编译错误（非本次修改，分布于 personal_loader/dispatcher/registry 等未修改模块）"
+      "dependencies": [
+        "Story 2.5"
       ],
-      "optimization": {
-        "preserveFunctions": ["个人记忆和共享记忆功能保留", "事件推送和指标收集功能保留"],
-        "verificationMethod": ["cargo check", "cargo test"],
-        "rollbackPlan": ["恢复原始 MemoryScope 枚举和各模块文件"]
-      }
+      "passes": false
     },
     {
       "id": 30,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase D: 删除空壳模块并更新 mod.rs",
-      "description": "删除 execution_integration.rs、pilot.rs 等空壳模块，更新 mod.rs 导出从 55 个减少到 ~20 个",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase D",
-      "priority": "medium",
-      "openspec_change": "agent-arch-phase-cd-simplify-cleanup",
+      "epic": "Epic 3",
+      "story": "Story 3.6",
+      "title": "批量导入员工",
+      "description": "As a 企业管理员, I want 通过 Excel/CSV 批量导入员工, So that 新企业初始化或大批量入职时不需要逐个创建",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-6-batch-import-employees",
       "steps": [
-        "删除 execution_integration.rs、pilot.rs",
-        "删除 router/ 目录",
-        "更新 src-tauri/src/agent/mod.rs 导出",
-        "cargo check 无错误",
-        "cargo test 通过"
+        "完成 epic-3-story-6-batch-import-employees 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1"],
-      "arch_covered": ["ARCH-01"],
+      "frs_covered": [
+        "FR-HRM-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
       "ux_covered": [],
-      "dependencies": ["29"],
-      "passes": true,
-      "verification_notes": [
-        "删除 pilot/ 目录（无外部引用，安全删除）",
-        "mod.rs 中的 pub mod pilot; 已移除",
-        "router/ 目录保留（有 routing.rs 依赖）",
-        "execution_integration.rs 保留（有 mod.rs 依赖，AgentExecutionContext 被 AgentRuntimeState 使用）",
-        "cargo check 通过"
+      "dependencies": [
+        "Story 2.5"
       ],
-      "optimization": {
-        "preserveFunctions": ["所有保留模块正确导出", "cargo test 全部通过"],
-        "verificationMethod": ["cargo check", "cargo test"],
-        "rollbackPlan": ["恢复删除的文件和 mod.rs 修改"]
-      }
+      "passes": false
     },
     {
       "id": 31,
-      "epic": "架构优化",
-      "story": "优化-AgentRuntime",
-      "title": "Phase D: 架构重构最终验证",
-      "description": "运行完整测试套件验证架构重构后的功能回归，包括 cargo clippy、cargo test、npm run lint、npm run build、浏览器端到端测试",
-      "implementationType": "refactor",
-      "phase": "架构升级迭代 Phase D",
-      "priority": "critical",
-      "openspec_change": "agent-arch-phase-cd-simplify-cleanup",
+      "epic": "Epic 3",
+      "story": "Story 3.7",
+      "title": "调岗操作",
+      "description": "As a 企业管理员, I want 执行员工调岗（从原部门移到新部门）, So that 组织调整时可以快速变更员工归属",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-7-employee-transfer",
       "steps": [
-        "cargo clippy -- -D warnings 无警告",
-        "cargo test --lib 全部通过",
-        "npm run lint 通过",
-        "npm run build 成功",
-        "浏览器端到端测试验证 Agent 执行流程正常",
-        "验证 Agent 类型选择功能正常",
-        "验证进度展示功能正常"
+        "完成 epic-3-story-7-employee-transfer 变更的所有 task"
       ],
-      "frs_covered": [],
-      "nfrs_covered": ["NFR23-1", "NFR23-2", "NFR23-4"],
-      "arch_covered": ["ARCH-01"],
-      "ux_covered": ["UX-04"],
-      "dependencies": ["30"],
-      "passes": true,
-      "verification_notes": [
-        "cargo check: 通过（0 errors）",
-        "cargo clippy: 281个预先存在的clippy警告（非本次修改）",
-        "npm run lint: 通过（修复1个预先存在的devices未使用错误）",
-        "npm run build: 成功（build完成10.45s）",
-        "模块导出: 52个（pilot删除后从53减少到52）",
-        "新增simple_monitoring.rs统一监控门面，已集成到agent_loop.rs",
-        "精简execution.rs MemoryScope（Inherited/SessionOnly已删除）"
+      "frs_covered": [
+        "FR-HRM-007"
       ],
-      "optimization": {
-        "preserveFunctions": ["所有现有 Agent 功能正常工作", "前端集成正常", "API 契约不变"],
-        "verificationMethod": ["cargo clippy", "cargo test", "npm run lint", "npm run build", "浏览器测试"],
-        "rollbackPlan": ["如有问题，回退到 Phase C 之前的版本"]
-      }
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.5",
+        "Story 2.3",
+        "Story 2.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 32,
+      "epic": "Epic 3",
+      "story": "Story 3.8",
+      "title": "员工销售业绩查询",
+      "description": "As a 管理员或部门经理, I want 按时间范围查询员工的销售业绩, So that 可以评估员工绩效",
+      "implementationType": "new",
+      "openspec_change": "epic-3-story-8-employee-sales-performance",
+      "steps": [
+        "完成 epic-3-story-8-employee-sales-performance 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-HRM-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 33,
+      "epic": "Epic 4",
+      "story": "Story 4.1",
+      "title": "客户档案 CRUD",
+      "description": "As a 销售人员, I want 创建、编辑、删除客户档案, So that 可以管理企业的客户资源",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-1-customer-crud",
+      "steps": [
+        "完成 epic-4-story-1-customer-crud 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-001",
+        "FR-CRM-002"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 34,
+      "epic": "Epic 4",
+      "story": "Story 4.2",
+      "title": "客户分级管理",
+      "description": "As a 企业管理员, I want 对客户进行分级（VIP/重要/普通/潜在）并自定义分级规则, So that 可以差异化服务不同级别的客户",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-2-customer-level-management",
+      "steps": [
+        "完成 epic-4-story-2-customer-level-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 35,
+      "epic": "Epic 4",
+      "story": "Story 4.3",
+      "title": "客户自由标签",
+      "description": "As a 销售人员, I want 为客户添加多个自定义标签, So that 可以灵活分类和筛选客户",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-3-customer-tags",
+      "steps": [
+        "完成 epic-4-story-3-customer-tags 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 36,
+      "epic": "Epic 4",
+      "story": "Story 4.4",
+      "title": "客户全景视图 API",
+      "description": "As a Agent, I want 通过一个 API 获取客户的全景数据, So that 可以为用户生成完整的客户画像",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-4-customer-panorama-api",
+      "steps": [
+        "完成 epic-4-story-4-customer-panorama-api 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1",
+        "Story 4.6",
+        "Story 4.8"
+      ],
+      "passes": false
+    },
+    {
+      "id": 37,
+      "epic": "Epic 4",
+      "story": "Story 4.5",
+      "title": "客户关联查询（合同/售后/往来款）",
+      "description": "As a 销售人员, I want 查询客户关联的合同、售后工单和往来款, So that 可以全面了解客户业务状况",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-5-customer-related-queries",
+      "steps": [
+        "完成 epic-4-story-5-customer-related-queries 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-006",
+        "FR-CRM-007",
+        "FR-CRM-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 38,
+      "epic": "Epic 4",
+      "story": "Story 4.6",
+      "title": "联系人 CRUD",
+      "description": "As a 销售人员, I want 管理客户下的联系人, So that 可以记录和维护客户对接人信息",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-6-contact-crud",
+      "steps": [
+        "完成 epic-4-story-6-contact-crud 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-009",
+        "FR-CRM-010"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 39,
+      "epic": "Epic 4",
+      "story": "Story 4.7",
+      "title": "联系人按角色筛选查询",
+      "description": "As a 销售人员, I want 按客户和角色标记筛选联系人, So that 可以快速找到关键决策人",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-7-contact-filter-search",
+      "steps": [
+        "完成 epic-4-story-7-contact-filter-search 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-011"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.6"
+      ],
+      "passes": false
+    },
+    {
+      "id": 40,
+      "epic": "Epic 4",
+      "story": "Story 4.8",
+      "title": "商机 CRUD",
+      "description": "As a 销售人员, I want 创建和管理商机, So that 可以跟踪潜在的销售机会",
+      "implementationType": "new",
+      "openspec_change": "epic-4-story-8-opportunity-crud",
+      "steps": [
+        "完成 epic-4-story-8-opportunity-crud 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CRM-012",
+        "FR-CRM-013"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 41,
+      "epic": "Epic 5",
+      "story": "Story 5.1",
+      "title": "物料（SKU）管理",
+      "description": "As a 仓库管理员, I want 创建、编辑、删除物料（SKU）, So that 可以管理企业的所有物料品类",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-1-material-sku-management",
+      "steps": [
+        "完成 epic-5-story-1-material-sku-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-001",
+        "FR-IMS-002"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 42,
+      "epic": "Epic 5",
+      "story": "Story 5.2",
+      "title": "供应商管理",
+      "description": "As a 采购人员, I want 创建、编辑、删除供应商, So that 可以管理物料采购来源",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-2-supplier-management",
+      "steps": [
+        "完成 epic-5-story-2-supplier-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-003",
+        "FR-IMS-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 43,
+      "epic": "Epic 5",
+      "story": "Story 5.3",
+      "title": "多仓库管理",
+      "description": "As a 仓库管理员, I want 创建、编辑、停用仓库, So that 可以管理多个物理仓库",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-3-multi-warehouse-management",
+      "steps": [
+        "完成 epic-5-story-3-multi-warehouse-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-015"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 44,
+      "epic": "Epic 5",
+      "story": "Story 5.4",
+      "title": "按仓库维度的库存查询与预警",
+      "description": "As a 仓库管理员, I want 按仓库维度查询库存并设置安全库存预警, So that 可以及时发现库存不足",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-4-warehouse-inventory-alert",
+      "steps": [
+        "完成 epic-5-story-4-warehouse-inventory-alert 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-011",
+        "FR-IMS-012",
+        "FR-IMS-016",
+        "FR-IMS-023"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.1",
+        "Story 5.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 45,
+      "epic": "Epic 5",
+      "story": "Story 5.5",
+      "title": "采购订单与入库",
+      "description": "As a 采购人员, I want 创建采购订单、审批、入库, So that 可以完成采购流程并增加库存",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-5-purchase-order-stock-in",
+      "steps": [
+        "完成 epic-5-story-5-purchase-order-stock-in 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-005",
+        "FR-IMS-008",
+        "FR-IMS-019",
+        "FR-IMS-020"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.1",
+        "Story 5.2",
+        "Story 5.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 46,
+      "epic": "Epic 5",
+      "story": "Story 5.6",
+      "title": "采购质检流程",
+      "description": "As a 质检员, I want 采购入库前触发质检流程, So that 不合格物料不会进入库存",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-6-purchase-quality-inspection",
+      "steps": [
+        "完成 epic-5-story-6-purchase-quality-inspection 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-006",
+        "FR-IMS-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 47,
+      "epic": "Epic 5",
+      "story": "Story 5.7",
+      "title": "销售出库与库存扣减",
+      "description": "As a 销售人员, I want 创建销售订单并执行出库, So that 可以完成销售发货流程",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-7-sales-order-stock-out",
+      "steps": [
+        "完成 epic-5-story-7-sales-order-stock-out 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-009",
+        "FR-IMS-010",
+        "FR-IMS-019",
+        "FR-IMS-020"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.1",
+        "Story 5.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 48,
+      "epic": "Epic 5",
+      "story": "Story 5.8",
+      "title": "仓库间调拨",
+      "description": "As a 仓库管理员, I want 在仓库之间调拨物料, So that 可以平衡各仓库库存",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-8-warehouse-transfer",
+      "steps": [
+        "完成 epic-5-story-8-warehouse-transfer 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-017",
+        "FR-IMS-018",
+        "FR-IMS-019"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.3",
+        "Story 5.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 49,
+      "epic": "Epic 5",
+      "story": "Story 5.9",
+      "title": "物料领用申请",
+      "description": "As a 员工, I want 申请领用物料, So that 可以领用办公或业务所需物料",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-9-material-requisition",
+      "steps": [
+        "完成 epic-5-story-9-material-requisition 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-021",
+        "FR-IMS-022",
+        "FR-IMS-019"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.1",
+        "Story 5.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 50,
+      "epic": "Epic 5",
+      "story": "Story 5.10",
+      "title": "库存盘点（盘库）",
+      "description": "As a 仓库管理员, I want 执行库存盘点, So that 可以核对系统库存与实际库存",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-10-inventory-check",
+      "steps": [
+        "完成 epic-5-story-10-inventory-check 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-024",
+        "FR-IMS-025",
+        "FR-IMS-026",
+        "FR-IMS-027",
+        "FR-IMS-019"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.3",
+        "Story 5.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 51,
+      "epic": "Epic 5",
+      "story": "Story 5.11",
+      "title": "物料报价管理",
+      "description": "As a 销售人员, I want 查询物料历史报价并设置差异化报价策略, So that 可以为不同客户级别制定不同价格",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-11-material-pricing",
+      "steps": [
+        "完成 epic-5-story-11-material-pricing 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-013",
+        "FR-IMS-014"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.1",
+        "Story 4.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 52,
+      "epic": "Epic 5",
+      "story": "Story 5.12",
+      "title": "统一出入库流水查询",
+      "description": "As a 企业用户, I want 查询统一的出入库流水, So that 可以追溯所有库存变动",
+      "implementationType": "new",
+      "openspec_change": "epic-5-story-12-inventory-transaction-query",
+      "steps": [
+        "完成 epic-5-story-12-inventory-transaction-query 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMS-019",
+        "FR-IMS-020"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.5",
+        "Story 5.7",
+        "Story 5.8",
+        "Story 5.9",
+        "Story 5.10"
+      ],
+      "passes": false
+    },
+    {
+      "id": 53,
+      "epic": "Epic 6",
+      "story": "Story 6.1",
+      "title": "合同 CRUD 与状态机",
+      "description": "As a 销售人员, I want 创建、编辑、删除合同并管理合同状态流转, So that 可以管理合同全生命周期",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-1-contract-crud-state-machine",
+      "steps": [
+        "完成 epic-6-story-1-contract-crud-state-machine 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CON-001",
+        "FR-CON-002",
+        "FR-CON-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 54,
+      "epic": "Epic 6",
+      "story": "Story 6.2",
+      "title": "合同关联业务单据",
+      "description": "As a 销售人员, I want 合同关联客户、销售订单、采购订单和出库记录, So that 可以追踪合同相关的所有业务数据",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-2-contract-related-documents",
+      "steps": [
+        "完成 epic-6-story-2-contract-related-documents 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CON-003",
+        "FR-CON-007",
+        "FR-CON-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 55,
+      "epic": "Epic 6",
+      "story": "Story 6.3",
+      "title": "合同附件与审批流",
+      "description": "As a 销售人员, I want 上传合同附件（扫描件、补充协议）并提交审批, So that 合同可以走审批流程",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-3-contract-attachments-approval",
+      "steps": [
+        "完成 epic-6-story-3-contract-attachments-approval 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CON-004",
+        "FR-CON-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.1",
+        "Story 8.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 56,
+      "epic": "Epic 6",
+      "story": "Story 6.4",
+      "title": "Agent 自然语言修改合同字段",
+      "description": "As a Agent, I want 通过自然语言修改合同字段, So that 用户可以说'把合同金额改成 50 万'来修改合同",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-4-agent-natural-language-contract",
+      "steps": [
+        "完成 epic-6-story-4-agent-natural-language-contract 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CON-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.1",
+        "Story 8.10"
+      ],
+      "passes": false
+    },
+    {
+      "id": 57,
+      "epic": "Epic 6",
+      "story": "Story 6.5",
+      "title": "销售订单 CRUD 与状态机",
+      "description": "As a 销售人员, I want 创建、编辑、删除销售订单并管理状态流转, So that 可以管理销售流程",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-5-sales-order-crud-state-machine",
+      "steps": [
+        "完成 epic-6-story-5-sales-order-crud-state-machine 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SALES-001",
+        "FR-SALES-002",
+        "FR-SALES-003",
+        "FR-SALES-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 58,
+      "epic": "Epic 6",
+      "story": "Story 6.6",
+      "title": "销售订单关联合同与出库",
+      "description": "As a 销售人员, I want 销售订单绑定合同和出库记录, So that 可以追踪订单关联的合同和发货情况",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-6-sales-order-contract-delivery",
+      "steps": [
+        "完成 epic-6-story-6-sales-order-contract-delivery 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SALES-004",
+        "FR-SALES-005",
+        "FR-SALES-006",
+        "FR-SALES-007",
+        "FR-SALES-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.5",
+        "Story 6.1",
+        "Story 5.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 59,
+      "epic": "Epic 6",
+      "story": "Story 6.7",
+      "title": "售后工单 CRUD 与状态机",
+      "description": "As a 售后人员, I want 创建、编辑、删除售后工单并管理状态流转, So that 可以管理售后服务流程",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-7-service-order-crud-state-machine",
+      "steps": [
+        "完成 epic-6-story-7-service-order-crud-state-machine 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SVC-001",
+        "FR-SVC-002",
+        "FR-SVC-011"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 4.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 60,
+      "epic": "Epic 6",
+      "story": "Story 6.8",
+      "title": "收费工单报价流程",
+      "description": "As a 售后人员, I want 为收费工单上传报价单并等待客户确认, So that 收费售后需要客户确认后才进入维修",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-8-paid-service-order-quote",
+      "steps": [
+        "完成 epic-6-story-8-paid-service-order-quote 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SVC-003",
+        "FR-SVC-004",
+        "FR-SVC-005",
+        "FR-SVC-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.7",
+        "Story 8.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 61,
+      "epic": "Epic 6",
+      "story": "Story 6.9",
+      "title": "维修工单与签字确认",
+      "description": "As a 售后人员, I want 生成维修工单并完成客户签字确认, So that 维修过程和结果有据可查",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-9-repair-order-sign-off",
+      "steps": [
+        "完成 epic-6-story-9-repair-order-sign-off 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SVC-007",
+        "FR-SVC-008",
+        "FR-SVC-009",
+        "FR-SVC-010"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.7",
+        "Story 6.8"
+      ],
+      "passes": false
+    },
+    {
+      "id": 62,
+      "epic": "Epic 6",
+      "story": "Story 6.10",
+      "title": "售后工单附件管理",
+      "description": "As a 售后人员, I want 上传工单相关附件（问题图片、处理凭证等）, So that 售后过程有完整的证据链",
+      "implementationType": "new",
+      "openspec_change": "epic-6-story-10-service-order-attachments",
+      "steps": [
+        "完成 epic-6-story-10-service-order-attachments 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SVC-012"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.7",
+        "Story 8.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 63,
+      "epic": "Epic 7",
+      "story": "Story 7.1",
+      "title": "收款记录管理",
+      "description": "As a 财务人员, I want 创建和管理收款记录, So that 可以追踪客户付款情况",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-1-receivable-management",
+      "steps": [
+        "完成 epic-7-story-1-receivable-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-001",
+        "FR-FIN-002",
+        "FR-FIN-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 64,
+      "epic": "Epic 7",
+      "story": "Story 7.2",
+      "title": "付款记录管理",
+      "description": "As a 财务人员, I want 创建和管理付款记录, So that 可以追踪向供应商的付款情况",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-2-payable-management",
+      "steps": [
+        "完成 epic-7-story-2-payable-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-004",
+        "FR-FIN-005",
+        "FR-FIN-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 5.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 65,
+      "epic": "Epic 7",
+      "story": "Story 7.3",
+      "title": "发票管理",
+      "description": "As a 财务人员, I want 开具和管理发票, So that 可以管理开票和收票",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-3-invoice-management",
+      "steps": [
+        "完成 epic-7-story-3-invoice-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-007",
+        "FR-FIN-008",
+        "FR-FIN-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 6.1",
+        "Story 7.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 66,
+      "epic": "Epic 7",
+      "story": "Story 7.4",
+      "title": "费用报销管理",
+      "description": "As a 员工, I want 提交费用报销申请, So that 可以报销业务相关费用",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-4-expense-claim-management",
+      "steps": [
+        "完成 epic-7-story-4-expense-claim-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-010",
+        "FR-FIN-011",
+        "FR-FIN-012"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.5",
+        "Story 7.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 67,
+      "epic": "Epic 7",
+      "story": "Story 7.5",
+      "title": "财务对账与统计",
+      "description": "As a 财务人员, I want 查看财务对账和统计报表, So that 可以掌握企业财务状况",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-5-financial-reconciliation-statistics",
+      "steps": [
+        "完成 epic-7-story-5-financial-reconciliation-statistics 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-013",
+        "FR-FIN-014",
+        "FR-FIN-015",
+        "FR-FIN-016"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 7.1",
+        "Story 7.2",
+        "Story 7.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 68,
+      "epic": "Epic 7",
+      "story": "Story 7.6",
+      "title": "财务审批关联",
+      "description": "As a 财务人员, I want 收付款和发票操作关联审批流, So that 关键财务操作需要审批后才能执行",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-6-financial-approval-integration",
+      "steps": [
+        "完成 epic-7-story-6-financial-approval-integration 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-017",
+        "FR-FIN-018",
+        "FR-FIN-019"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 7.1",
+        "Story 7.2",
+        "Story 7.3",
+        "Story 7.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 69,
+      "epic": "Epic 7",
+      "story": "Story 7.7",
+      "title": "审批流程定义与管理",
+      "description": "As a 企业管理员, I want 定义和管理审批流程模板, So that 不同业务场景可以配置不同的审批规则",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-7-workflow-definition-management",
+      "steps": [
+        "完成 epic-7-story-7-workflow-definition-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-WF-001",
+        "FR-WF-002",
+        "FR-WF-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 70,
+      "epic": "Epic 7",
+      "story": "Story 7.8",
+      "title": "审批流程执行与通知",
+      "description": "As a 审批人, I want 接收审批通知并执行审批操作, So that 可以及时处理待审批事项",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-8-workflow-execution-notification",
+      "steps": [
+        "完成 epic-7-story-8-workflow-execution-notification 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-WF-004",
+        "FR-WF-005",
+        "FR-WF-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 7.7",
+        "Story 8.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 71,
+      "epic": "Epic 7",
+      "story": "Story 7.9",
+      "title": "多级审批与条件分支",
+      "description": "As a 企业管理员, I want 配置多级审批和条件分支, So that 不同金额或类型的业务走不同的审批路径",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-9-multi-level-approval-conditions",
+      "steps": [
+        "完成 epic-7-story-9-multi-level-approval-conditions 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-WF-007",
+        "FR-WF-008",
+        "FR-WF-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 7.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 72,
+      "epic": "Epic 7",
+      "story": "Story 7.10",
+      "title": "审批历史与催办",
+      "description": "As a 审批提交人, I want 查看审批历史和催办审批人, So that 可以追踪审批进度并加速流程",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-10-approval-history-urge",
+      "steps": [
+        "完成 epic-7-story-10-approval-history-urge 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-WF-010",
+        "FR-WF-011",
+        "FR-WF-012"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 7.8"
+      ],
+      "passes": false
+    },
+    {
+      "id": 73,
+      "epic": "Epic 7",
+      "story": "Story 7.11",
+      "title": "财务数据权限与审计",
+      "description": "As a 企业管理员, I want 财务数据受权限控制且操作可审计, So that 财务数据安全合规",
+      "implementationType": "new",
+      "openspec_change": "epic-7-story-11-financial-permissions-audit",
+      "steps": [
+        "完成 epic-7-story-11-financial-permissions-audit 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FIN-020",
+        "FR-FIN-021"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 7.1",
+        "Story 7.2",
+        "Story 1.8"
+      ],
+      "passes": false
+    },
+    {
+      "id": 74,
+      "epic": "Epic 8",
+      "story": "Story 8.1",
+      "title": "文件上传与存储",
+      "description": "As a 企业用户, I want 上传文件到系统并获取文件 URL, So that 业务单据可以关联附件",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-1-file-upload-storage",
+      "steps": [
+        "完成 epic-8-story-1-file-upload-storage 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FILE-001",
+        "FR-FILE-002",
+        "FR-FILE-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 75,
+      "epic": "Epic 8",
+      "story": "Story 8.2",
+      "title": "文件下载与预览",
+      "description": "As a 企业用户, I want 下载和预览已上传的文件, So that 可以查看业务单据关联的附件内容",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-2-file-download-preview",
+      "steps": [
+        "完成 epic-8-story-2-file-download-preview 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FILE-004",
+        "FR-FILE-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 76,
+      "epic": "Epic 8",
+      "story": "Story 8.3",
+      "title": "文件版本与删除",
+      "description": "As a 企业用户, I want 管理文件版本和删除文件, So that 可以更新附件并清理不需要的文件",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-3-file-version-deletion",
+      "steps": [
+        "完成 epic-8-story-3-file-version-deletion 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-FILE-006",
+        "FR-FILE-007",
+        "FR-FILE-008",
+        "FR-FILE-009"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 77,
+      "epic": "Epic 8",
+      "story": "Story 8.4",
+      "title": "消息发送与轮询",
+      "description": "As a Agent, I want 通过消息轮询获取待处理消息, So that Agent 可以实时接收系统通知和任务",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-4-message-send-polling",
+      "steps": [
+        "完成 epic-8-story-4-message-send-polling 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-MSG-001",
+        "FR-MSG-002",
+        "FR-MSG-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.6"
+      ],
+      "passes": false
+    },
+    {
+      "id": 78,
+      "epic": "Epic 8",
+      "story": "Story 8.5",
+      "title": "消息类型与推送",
+      "description": "As a 系统管理员, I want 配置消息类型和推送规则, So that 不同业务事件触发不同类型的消息通知",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-5-message-types-push",
+      "steps": [
+        "完成 epic-8-story-5-message-types-push 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-MSG-004",
+        "FR-MSG-005",
+        "FR-MSG-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 79,
+      "epic": "Epic 8",
+      "story": "Story 8.6",
+      "title": "消息已读与归档",
+      "description": "As a 企业用户, I want 批量标记消息已读和归档消息, So that 可以高效管理消息",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-6-message-read-archive",
+      "steps": [
+        "完成 epic-8-story-6-message-read-archive 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-MSG-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 80,
+      "epic": "Epic 8",
+      "story": "Story 8.7",
+      "title": "知识库文档 CRUD",
+      "description": "As a 企业管理员, I want 创建、编辑、删除知识库文档, So that 可以积累和管理企业知识资产",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-7-knowledge-base-document-crud",
+      "steps": [
+        "完成 epic-8-story-7-knowledge-base-document-crud 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-KB-001",
+        "FR-KB-002",
+        "FR-KB-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 81,
+      "epic": "Epic 8",
+      "story": "Story 8.8",
+      "title": "知识库分类与搜索",
+      "description": "As a 企业用户, I want 按分类浏览和搜索知识库, So that 可以快速找到需要的知识文档",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-8-knowledge-base-category-search",
+      "steps": [
+        "完成 epic-8-story-8-knowledge-base-category-search 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-KB-004",
+        "FR-KB-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 82,
+      "epic": "Epic 8",
+      "story": "Story 8.9",
+      "title": "Skill 注册与发现",
+      "description": "As a Agent, I want 发现和调用系统注册的 Skill, So that Agent 可以通过 Skill 执行业务操作",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-9-skill-registry-discovery",
+      "steps": [
+        "完成 epic-8-story-9-skill-registry-discovery 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SKILL-001",
+        "FR-SKILL-002",
+        "FR-SKILL-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 83,
+      "epic": "Epic 8",
+      "story": "Story 8.10",
+      "title": "Skill 执行与结果",
+      "description": "As a Agent, I want 调用 Skill 并获取执行结果, So that 可以通过 Skill 完成业务操作",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-10-skill-execution-results",
+      "steps": [
+        "完成 epic-8-story-10-skill-execution-results 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SKILL-004",
+        "FR-SKILL-005",
+        "FR-SKILL-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.9"
+      ],
+      "passes": false
+    },
+    {
+      "id": 84,
+      "epic": "Epic 8",
+      "story": "Story 8.11",
+      "title": "Skill 权限与模块映射",
+      "description": "As a 企业管理员, I want 控制 Skill 的访问权限和模块映射, So that 不同角色的 Agent 只能调用授权范围内的 Skill",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-11-skill-permissions-module-mapping",
+      "steps": [
+        "完成 epic-8-story-11-skill-permissions-module-mapping 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SKILL-007",
+        "FR-SKILL-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.9",
+        "Story 1.10"
+      ],
+      "passes": false
+    },
+    {
+      "id": 85,
+      "epic": "Epic 8",
+      "story": "Story 8.12",
+      "title": "知识库向量化与语义检索",
+      "description": "As a Agent, I want 通过语义检索查找知识库文档, So that 可以用自然语言查询找到最相关的知识",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-12-knowledge-base-vector-search",
+      "steps": [
+        "完成 epic-8-story-12-knowledge-base-vector-search 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-KB2-001",
+        "FR-KB2-002",
+        "FR-KB2-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 86,
+      "epic": "Epic 8",
+      "story": "Story 8.13",
+      "title": "知识库文档分块与引用",
+      "description": "As a Agent, I want 获取知识库文档的分块内容和来源引用, So that Agent 回答用户问题时可以引用知识库的具体段落",
+      "implementationType": "new",
+      "openspec_change": "epic-8-story-13-knowledge-base-chunks-citation",
+      "steps": [
+        "完成 epic-8-story-13-knowledge-base-chunks-citation 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-KB2-004",
+        "FR-KB2-005",
+        "FR-KB2-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.12"
+      ],
+      "passes": false
+    },
+    {
+      "id": 87,
+      "epic": "Epic 9",
+      "story": "Story 9.1",
+      "title": "运营仪表盘",
+      "description": "As a 运营商, I want 查看平台运营数据仪表盘, So that 可以掌握平台整体运营状况",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-1-operator-dashboard",
+      "steps": [
+        "完成 epic-9-story-1-operator-dashboard 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OP-001",
+        "FR-OP-002"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7",
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 88,
+      "epic": "Epic 9",
+      "story": "Story 9.2",
+      "title": "租户企业管理",
+      "description": "As a 运营商, I want 管理平台上的集团和企业租户, So that 可以控制租户的开通、暂停和注销",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-2-tenant-enterprise-management",
+      "steps": [
+        "完成 epic-9-story-2-tenant-enterprise-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OP-003",
+        "FR-OP-004",
+        "FR-OP-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2",
+        "Story 1.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 89,
+      "epic": "Epic 9",
+      "story": "Story 9.3",
+      "title": "运营审计与日志",
+      "description": "As a 运营商, I want 查看平台级审计日志和操作记录, So that 可以追踪平台上的所有管理操作",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-3-operator-audit-log",
+      "steps": [
+        "完成 epic-9-story-3-operator-audit-log 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OP-006",
+        "FR-OP-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.8",
+        "Story 9.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 90,
+      "epic": "Epic 9",
+      "story": "Story 9.4",
+      "title": "订阅套餐定义",
+      "description": "As a 运营商, I want 定义和管理订阅套餐, So that 企业可以选择不同的服务等级",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-4-subscription-plan-definition",
+      "steps": [
+        "完成 epic-9-story-4-subscription-plan-definition 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-BILL-001",
+        "FR-BILL-002",
+        "FR-BILL-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 91,
+      "epic": "Epic 9",
+      "story": "Story 9.5",
+      "title": "企业订阅与续费",
+      "description": "As a 企业管理员, I want 为企业订阅套餐和管理续费, So that 可以使用平台服务",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-5-enterprise-subscription-renewal",
+      "steps": [
+        "完成 epic-9-story-5-enterprise-subscription-renewal 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-BILL-004",
+        "FR-BILL-005",
+        "FR-BILL-006",
+        "FR-BILL-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 9.4",
+        "Story 8.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 92,
+      "epic": "Epic 9",
+      "story": "Story 9.6",
+      "title": "用量计费与账单",
+      "description": "As a 企业管理员, I want 查看用量和账单, So that 可以了解费用明细",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-6-usage-billing-invoice",
+      "steps": [
+        "完成 epic-9-story-6-usage-billing-invoice 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-BILL-008",
+        "FR-BILL-009",
+        "FR-BILL-010"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 9.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 93,
+      "epic": "Epic 9",
+      "story": "Story 9.7",
+      "title": "客户服务工单",
+      "description": "As a 运营商客服, I want 创建和管理客户服务工单, So that 可以处理企业客户的服务请求",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-7-customer-service-tickets",
+      "steps": [
+        "完成 epic-9-story-7-customer-service-tickets 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CS-001",
+        "FR-CS-002",
+        "FR-CS-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 9.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 94,
+      "epic": "Epic 9",
+      "story": "Story 9.8",
+      "title": "客户服务SLA与统计",
+      "description": "As a 运营商, I want 监控客户服务 SLA 和统计指标, So that 可以保证服务质量",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-8-customer-service-sla-statistics",
+      "steps": [
+        "完成 epic-9-story-8-customer-service-sla-statistics 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CS-004",
+        "FR-CS-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 9.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 95,
+      "epic": "Epic 9",
+      "story": "Story 9.9",
+      "title": "运营服务管理",
+      "description": "As a 运营商, I want 管理平台级服务配置和运维操作, So that 可以维护平台稳定运行",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-9-operator-service-management",
+      "steps": [
+        "完成 epic-9-story-9-operator-service-management 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OPSVC-001",
+        "FR-OPSVC-002",
+        "FR-OPSVC-003",
+        "FR-OPSVC-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.12"
+      ],
+      "passes": false
+    },
+    {
+      "id": 96,
+      "epic": "Epic 9",
+      "story": "Story 9.10",
+      "title": "运营通知与公告",
+      "description": "As a 运营商, I want 发布平台公告和通知, So that 企业用户可以了解平台动态和维护信息",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-10-operator-announcements",
+      "steps": [
+        "完成 epic-9-story-10-operator-announcements 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OPSVC-005",
+        "FR-OPSVC-006",
+        "FR-OPSVC-007"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.4"
+      ],
+      "passes": false
+    },
+    {
+      "id": 97,
+      "epic": "Epic 9",
+      "story": "Story 9.11",
+      "title": "运营数据导出与备份",
+      "description": "As a 运营商, I want 导出运营数据和执行企业级备份, So that 可以满足合规要求和数据安全",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-11-operator-data-export-backup",
+      "steps": [
+        "完成 epic-9-story-11-operator-data-export-backup 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OPSVC-008",
+        "FR-OPSVC-009",
+        "FR-OPSVC-010",
+        "FR-OPSVC-011"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.9",
+        "Story 9.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 98,
+      "epic": "Epic 9",
+      "story": "Story 9.12",
+      "title": "客户自助服务",
+      "description": "As a 企业管理员, I want 通过自助服务管理企业订阅和查看用量, So that 不需要联系运营商就能完成常见操作",
+      "implementationType": "new",
+      "openspec_change": "epic-9-story-12-customer-self-service",
+      "steps": [
+        "完成 epic-9-story-12-customer-self-service 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CUST-001",
+        "FR-CUST-002",
+        "FR-CUST-003",
+        "FR-CUST-004",
+        "FR-CUST-005",
+        "FR-CUST-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 9.5",
+        "Story 9.7"
+      ],
+      "passes": false
+    },
+    {
+      "id": 99,
+      "epic": "Epic 10",
+      "story": "Story 10.1",
+      "title": "老板驾驶舱报表",
+      "description": "As a 老板, I want 查看企业经营数据驾驶舱, So that 可以一目了然掌握企业核心经营指标",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-1-owner-dashboard-reports",
+      "steps": [
+        "完成 epic-10-story-1-owner-dashboard-reports 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OWNER-001",
+        "FR-OWNER-002",
+        "FR-OWNER-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 100,
+      "epic": "Epic 10",
+      "story": "Story 10.2",
+      "title": "老板数据穿透与对比",
+      "description": "As a 老板, I want 穿透查看报表背后的明细数据并进行跨期对比, So that 可以从宏观到微观理解经营状况",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-2-owner-data-drilldown-compare",
+      "steps": [
+        "完成 epic-10-story-2-owner-data-drilldown-compare 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-OWNER-004",
+        "FR-OWNER-005",
+        "FR-OWNER-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.1"
+      ],
+      "passes": false
+    },
+    {
+      "id": 101,
+      "epic": "Epic 10",
+      "story": "Story 10.3",
+      "title": "通用数据报表",
+      "description": "As a 企业用户, I want 按模块查看业务数据报表, So that 可以从数据维度分析业务状况",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-3-general-business-reports",
+      "steps": [
+        "完成 epic-10-story-3-general-business-reports 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-REPORT-001",
+        "FR-REPORT-002",
+        "FR-REPORT-003",
+        "FR-REPORT-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 102,
+      "epic": "Epic 10",
+      "story": "Story 10.4",
+      "title": "自定义报表与导出",
+      "description": "As a 企业管理员, I want 创建自定义报表并导出数据, So that 可以按需分析业务数据",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-4-custom-reports-export",
+      "steps": [
+        "完成 epic-10-story-4-custom-reports-export 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-REPORT-005",
+        "FR-REPORT-006",
+        "FR-REPORT-007",
+        "FR-REPORT-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 103,
+      "epic": "Epic 10",
+      "story": "Story 10.5",
+      "title": "审计日志查询与导出",
+      "description": "As a 企业管理员, I want 查询和导出审计日志, So that 可以追溯所有系统操作",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-5-audit-log-query-export",
+      "steps": [
+        "完成 epic-10-story-5-audit-log-query-export 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-AUDIT-001",
+        "FR-AUDIT-002",
+        "FR-AUDIT-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.8"
+      ],
+      "passes": false
+    },
+    {
+      "id": 104,
+      "epic": "Epic 10",
+      "story": "Story 10.6",
+      "title": "数据备份与恢复审计",
+      "description": "As a 企业管理员, I want 查看数据备份记录和恢复操作日志, So that 可以确保数据安全合规",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-6-data-backup-restore-audit",
+      "steps": [
+        "完成 epic-10-story-6-data-backup-restore-audit 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-AUDIT-004",
+        "FR-AUDIT-005",
+        "FR-AUDIT-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.9"
+      ],
+      "passes": false
+    },
+    {
+      "id": 105,
+      "epic": "Epic 10",
+      "story": "Story 10.7",
+      "title": "数据导入",
+      "description": "As a 企业管理员, I want 批量导入业务数据, So that 可以快速初始化系统或批量更新数据",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-7-data-import",
+      "steps": [
+        "完成 epic-10-story-7-data-import 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMPORT-001",
+        "FR-IMPORT-002",
+        "FR-IMPORT-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 106,
+      "epic": "Epic 10",
+      "story": "Story 10.8",
+      "title": "数据导出",
+      "description": "As a 企业用户, I want 导出业务数据, So that 可以在本地分析或备份",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-8-data-export",
+      "steps": [
+        "完成 epic-10-story-8-data-export 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-IMPORT-004",
+        "FR-IMPORT-005",
+        "FR-IMPORT-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 107,
+      "epic": "Epic 10",
+      "story": "Story 10.9",
+      "title": "Webhook 注册与触发",
+      "description": "As a 企业管理员, I want 配置 Webhook 接收业务事件通知, So that 可以与外部系统实时集成",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-9-webhook-registration-trigger",
+      "steps": [
+        "完成 epic-10-story-9-webhook-registration-trigger 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-WEBHOOK-001",
+        "FR-WEBHOOK-002",
+        "FR-WEBHOOK-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 2.2"
+      ],
+      "passes": false
+    },
+    {
+      "id": 108,
+      "epic": "Epic 10",
+      "story": "Story 10.10",
+      "title": "Webhook 管理与日志",
+      "description": "As a 企业管理员, I want 管理 Webhook 配置和查看调用日志, So that 可以监控和调试 Webhook 集成",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-10-webhook-management-logs",
+      "steps": [
+        "完成 epic-10-story-10-webhook-management-logs 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-WEBHOOK-004",
+        "FR-WEBHOOK-005",
+        "FR-WEBHOOK-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.9"
+      ],
+      "passes": false
+    },
+    {
+      "id": 109,
+      "epic": "Epic 10",
+      "story": "Story 10.11",
+      "title": "国际化与多语言",
+      "description": "As a 系统管理员, I want 配置系统语言和翻译资源, So that 不同地区用户可以使用母语操作系统",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-11-internationalization-i18n",
+      "steps": [
+        "完成 epic-10-story-11-internationalization-i18n 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-I18N-001",
+        "FR-I18N-002",
+        "FR-I18N-003",
+        "FR-I18N-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.5"
+      ],
+      "passes": false
+    },
+    {
+      "id": 110,
+      "epic": "Epic 10",
+      "story": "Story 10.12",
+      "title": "时区与格式本地化",
+      "description": "As a 企业用户, I want 系统支持时区和本地化格式, So that 时间和数据显示符合本地习惯",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-12-timezone-locale-localization",
+      "steps": [
+        "完成 epic-10-story-12-timezone-locale-localization 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-I18N-005",
+        "FR-I18N-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.11"
+      ],
+      "passes": false
+    },
+    {
+      "id": 111,
+      "epic": "Epic 10",
+      "story": "Story 10.13",
+      "title": "安全增强与数据加密",
+      "description": "As a 系统管理员, I want 敏感数据加密存储和访问控制增强, So that 系统安全性满足企业级要求",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-13-security-encryption-enhancement",
+      "steps": [
+        "完成 epic-10-story-13-security-encryption-enhancement 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-SEC2-001",
+        "FR-SEC2-002",
+        "FR-SEC2-003",
+        "FR-SEC2-004"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.6"
+      ],
+      "passes": false
+    },
+    {
+      "id": 112,
+      "epic": "Epic 10",
+      "story": "Story 10.14",
+      "title": "AI 助手对话",
+      "description": "As a Agent, I want 通过 AI 助手获取业务操作建议, So that Agent 可以更智能地辅助用户完成业务操作",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-14-ai-assistant-chat",
+      "steps": [
+        "完成 epic-10-story-14-ai-assistant-chat 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-ASSIST-001",
+        "FR-ASSIST-002"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 8.9",
+        "Story 8.10"
+      ],
+      "passes": false
+    },
+    {
+      "id": 113,
+      "epic": "Epic 10",
+      "story": "Story 10.15",
+      "title": "AI 助手上下文与偏好",
+      "description": "As a Agent, I want AI 助手记住对话上下文和用户偏好, So that 多轮对话可以连贯进行",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-15-ai-assistant-context-preferences",
+      "steps": [
+        "完成 epic-10-story-15-ai-assistant-context-preferences 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-ASSIST-004",
+        "FR-ASSIST-005"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.14"
+      ],
+      "passes": false
+    },
+    {
+      "id": 114,
+      "epic": "Epic 10",
+      "story": "Story 10.16",
+      "title": "CLI 认证与配置",
+      "description": "As a Agent 运维人员, I want 通过 CLI 工具完成认证和系统配置, So that 可以通过命令行管理系统",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-16-cli-auth-configuration",
+      "steps": [
+        "完成 epic-10-story-16-cli-auth-configuration 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CLI-001",
+        "FR-CLI-002",
+        "FR-CLI-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.2",
+        "Story 1.6"
+      ],
+      "passes": false
+    },
+    {
+      "id": 115,
+      "epic": "Epic 10",
+      "story": "Story 10.17",
+      "title": "CLI 消息轮询与 Skill 执行",
+      "description": "As a Agent, I want 通过 CLI 轮询消息和执行 Skill, So that Agent 可以自动化业务操作",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-17-cli-message-polling-skill-execution",
+      "steps": [
+        "完成 epic-10-story-17-cli-message-polling-skill-execution 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-CLI-004",
+        "FR-CLI-005",
+        "FR-CLI-006",
+        "FR-CLI-007",
+        "FR-CLI-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.16",
+        "Story 8.4",
+        "Story 8.10"
+      ],
+      "passes": false
+    },
+    {
+      "id": 116,
+      "epic": "Epic 10",
+      "story": "Story 10.18",
+      "title": "Docker 私有化部署",
+      "description": "As a 运维人员, I want 通过 Docker Compose 一键部署私有化环境, So that 企业可以在局域网内运行完整平台",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-18-docker-private-deployment",
+      "steps": [
+        "完成 epic-10-story-18-docker-private-deployment 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-DEPLOY-001",
+        "FR-DEPLOY-002",
+        "FR-DEPLOY-003"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 1.3"
+      ],
+      "passes": false
+    },
+    {
+      "id": 117,
+      "epic": "Epic 10",
+      "story": "Story 10.19",
+      "title": "私有化部署配置与升级",
+      "description": "As a 运维人员, I want 配置私有化部署参数和执行版本升级, So that 可以定制部署和保持系统更新",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-19-private-deployment-config-upgrade",
+      "steps": [
+        "完成 epic-10-story-19-private-deployment-config-upgrade 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-DEPLOY-004",
+        "FR-DEPLOY-005",
+        "FR-DEPLOY-006"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.18"
+      ],
+      "passes": false
+    },
+    {
+      "id": 118,
+      "epic": "Epic 10",
+      "story": "Story 10.20",
+      "title": "私有化备份恢复与监控",
+      "description": "As a 运维人员, I want 执行私有化环境的数据备份恢复和系统监控, So that 可以保障私有化环境的数据安全和稳定运行",
+      "implementationType": "new",
+      "openspec_change": "epic-10-story-20-private-deployment-backup-monitor",
+      "steps": [
+        "完成 epic-10-story-20-private-deployment-backup-monitor 变更的所有 task"
+      ],
+      "frs_covered": [
+        "FR-DEPLOY-007",
+        "FR-DEPLOY-008"
+      ],
+      "nfrs_covered": [],
+      "arch_covered": [],
+      "ux_covered": [],
+      "dependencies": [
+        "Story 10.18"
+      ],
+      "passes": false
     }
   ]
 }
