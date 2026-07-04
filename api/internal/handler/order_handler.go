@@ -8,8 +8,8 @@ import (
 	"github.com/ai-office/api/pkg/response"
 )
 
-type OrderHandler struct{ svc *service.OrderService }
-func NewOrderHandler(svc *service.OrderService) *OrderHandler { return &OrderHandler{svc} }
+type OrderHandler struct{ svc *service.OrderService; contractSvc *service.ContractService }
+func NewOrderHandler(svc *service.OrderService, contractSvc *service.ContractService) *OrderHandler { return &OrderHandler{svc, contractSvc} }
 
 type poReq struct {
 	SupplierID string                `json:"supplier_id"`
@@ -100,6 +100,24 @@ func (h *OrderHandler) ListOrders(c *gin.Context) {
 }
 
 type soStatusReq struct{ Status string `json:"status"` }
+
+func (h *OrderHandler) BindContract(c *gin.Context) {
+	soID := c.Param("id")
+	var req struct{ ContractID string `json:"contract_id"` }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	if req.ContractID == "" { response.ValidationError(c, "contract_id", "不能为空"); return }
+	ref, appErr := h.contractSvc.LinkDocument(req.ContractID, "sales_order", soID, "")
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, ref)
+}
+
+func (h *OrderHandler) Delivery(c *gin.Context) {
+	whID := c.Query("warehouse_id")
+	if whID == "" { response.ValidationError(c, "warehouse_id", "不能为空"); return }
+	order, appErr := h.svc.ShipSalesOrder(c.Param("id"), whID)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, order)
+}
 
 func (h *OrderHandler) ChangeSalesOrderStatus(c *gin.Context) {
 	var req soStatusReq

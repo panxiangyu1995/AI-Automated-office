@@ -128,11 +128,11 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		invService := service.NewInventoryService(invRepo, matRepo, whRepo)
 		invHandler := handler.NewInventoryHandler(invService)
 
-		orderSvc := service.NewOrderService(db, invRepo, matRepo, whRepo, supRepo, customerRepo)
-		orderHandler := handler.NewOrderHandler(orderSvc)
-
 		contractSvc := service.NewContractService(db)
 		contractHandler := handler.NewContractHandler(contractSvc)
+
+		orderSvc := service.NewOrderService(db, invRepo, matRepo, whRepo, supRepo, customerRepo)
+		orderHandler := handler.NewOrderHandler(orderSvc, contractSvc)
 
 		financeSvc := service.NewFinanceService(db)
 		financeHandler := handler.NewFinanceHandler(financeSvc)
@@ -298,6 +298,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.DELETE("/warehouses/:id", whHandler.Delete)
 			protected.POST("/purchase-orders/:id/receive", orderHandler.ReceivePurchase)
 			protected.POST("/sales-orders/:id/ship", orderHandler.ShipSalesOrder)
+			protected.POST("/sales-orders/:id/contract", orderHandler.BindContract)
+			protected.POST("/sales-orders/:id/delivery", orderHandler.Delivery)
 			protected.PATCH("/sales-orders/:id/status", orderHandler.ChangeSalesOrderStatus)
 			protected.POST("/transfers/:id/execute", orderHandler.ExecuteTransfer)
 			protected.POST("/requisitions/:id/issue", orderHandler.IssueRequisition)
