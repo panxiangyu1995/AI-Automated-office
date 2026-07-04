@@ -19,6 +19,7 @@ func Setup(cfg *config.Config, logger *zap.Logger) *gin.Engine {
 	r.Use(middleware.Recovery(logger))
 	r.Use(middleware.Logger(logger))
 	r.Use(middleware.CORS(cfg.Server.CORSOrigins))
+	r.Use(middleware.Tenant())
 
 	api := r.Group("/api/v1")
 	{

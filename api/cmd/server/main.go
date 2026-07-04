@@ -15,6 +15,7 @@ import (
 	"github.com/ai-office/api/internal/router"
 	"github.com/ai-office/api/pkg/config"
 	"github.com/ai-office/api/pkg/database"
+	"github.com/ai-office/api/pkg/tenant"
 )
 
 func main() {
@@ -32,13 +33,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+		defer logger.Sync()
 
 	if cfg.Database.Host != "" {
 		db, err := database.Init(&cfg.Database)
 		if err != nil {
 			logger.Warn("database init failed, running without database", zap.Error(err))
 		} else {
+			tenant.InitGlobalDB(db)
 			defer database.Close()
 			sqlDB, _ := db.DB()
 			if sqlDB != nil {

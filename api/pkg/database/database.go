@@ -62,3 +62,14 @@ func Close() error {
 	}
 	return nil
 }
+
+func SetSearchPath(db *gorm.DB, schema string) *gorm.DB {
+	return db.Exec(fmt.Sprintf("SET search_path TO %s,public", schema))
+}
+
+func WithSchema(db *gorm.DB, schema string) *gorm.DB {
+	if schema == "" {
+		return db
+	}
+	return db.Set("schema", schema).Table(fmt.Sprintf("%s.%s", schema, ""))
+}

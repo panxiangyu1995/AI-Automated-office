@@ -816,3 +816,24 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - CLI go vet: ✅ 通过
 - CLI go build: ✅ 成功
 - docker-compose.yml: valid YAML ✅
+
+## 2026-07-04 - Task 4: 数据库连接与多租户 Schema 管理
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-012 (Schema级数据隔离)
+- NFR 合规：NFR-SEC-003 (多租户隔离)
+- 架构合规：遵循 architecture.md Schema 级多租户隔离策略
+
+### What was done:
+- 实现 tenant 包：SchemaName/CreateSchema/DropSchema/ListSchemas/UseSchema
+- 实现 GetDB() 全局 DB 管理器：自动根据 enterprise_id 切换 search_path
+- 实现 migration 系统：_migrations 表追踪、按需执行、每个租户 Schema 独立迁移
+- 默认迁移：001 - create enterprises table
+- 实现 tenant 中间件：从 X-Enterprise-ID header 或 enterprise_id query 提取租户上下文
+- 注册 Tenant 中间件到 Gin 路由链
+- 更新 main.go：数据库初始化后调用 tenant.InitGlobalDB()
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test -v: ✅ 28/28 通过（新增 tenant 9 个 + middleware 4 个）
