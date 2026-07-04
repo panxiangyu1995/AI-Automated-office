@@ -45,6 +45,29 @@ func (s *ContractService) Create(eid, customerID, name, content, notes string, a
 	return c, nil
 }
 
+func (s *ContractService) PatchFields(cID string, fields map[string]interface{}) (*model.Contract, *apperrors.AppError) {
+	id, err := uuid.Parse(cID)
+	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
+	var c model.Contract
+	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	if c.Status != "draft" && c.Status != "pending_approval" {
+		return nil, apperrors.ErrBadRequest.WithDetail("仅草稿和审批中的合同可修改")
+	}
+
+	updates := map[string]interface{}{}
+	if v, ok := fields["name"]; ok { updates["name"] = v }
+	if v, ok := fields["amount"]; ok { updates["amount"] = v }
+	if v, ok := fields["content"]; ok { updates["content"] = v }
+	if v, ok := fields["notes"]; ok { updates["notes"] = v }
+	if len(updates) == 0 { return nil, apperrors.NewValidationError("fields", "没有可更新的字段") }
+
+	if err := s.db.Model(&c).Updates(updates).Error; err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("更新合同字段失败: "+err.Error())
+	}
+	s.db.Where("id=?", id).First(&c)
+	return &c, nil
+}
+
 func (s *ContractService) Update(cID, name, content, notes string, amount float64) (*model.Contract, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }

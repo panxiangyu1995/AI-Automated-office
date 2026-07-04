@@ -37,6 +37,14 @@ func (h *ContractHandler) Create(c *gin.Context) {
 	response.Created(c, contract)
 }
 
+func (h *ContractHandler) PatchFields(c *gin.Context) {
+	var fields map[string]interface{}
+	if err := c.ShouldBindJSON(&fields); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	contract, appErr := h.svc.PatchFields(c.Param("id"), fields)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, contract)
+}
+
 func (h *ContractHandler) Update(c *gin.Context) {
 	var req updateContractReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
