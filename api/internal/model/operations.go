@@ -46,3 +46,15 @@ type AuditLogEntry struct {
 }
 
 func (AuditLogEntry) TableName() string { return "audit_log_entries" }
+
+type Skill struct {
+	TenantModel
+	Name        string `gorm:"type:varchar(100);uniqueIndex;not null" json:"name"`
+	Description string `gorm:"type:text" json:"description"`
+	Parameters  string `gorm:"type:text" json:"parameters"`
+	APIEndpoint string `gorm:"type:varchar(500)" json:"api_endpoint"`
+	Module      string `gorm:"type:varchar(100)" json:"module"`
+	Enabled     bool   `gorm:"default:true" json:"enabled"`
+}
+
+func (Skill) TableName() string { return "skills" }
