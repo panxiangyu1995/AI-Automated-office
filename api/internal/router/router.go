@@ -134,6 +134,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		contractSvc := service.NewContractService(db)
 		contractHandler := handler.NewContractHandler(contractSvc)
 
+		financeHandler := handler.NewFinanceHandler(db)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -238,6 +240,12 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			enterprise.GET("/stock-flows", orderHandler.ListStockFlows)
 			enterprise.POST("/contracts", contractHandler.Create)
 			enterprise.GET("/contracts", contractHandler.List)
+			enterprise.POST("/payments", financeHandler.CreatePayment)
+			enterprise.GET("/payments", financeHandler.ListPayments)
+			enterprise.POST("/expenses", financeHandler.CreateExpense)
+			enterprise.GET("/expenses", financeHandler.ListExpenses)
+			enterprise.POST("/invoices", financeHandler.CreateInvoice)
+			enterprise.GET("/invoices", financeHandler.ListInvoices)
 			enterprise.GET("/customers/:customer_id/tags", customerTagHandler.ListByCustomer)
 			enterprise.GET("/customer-tags", customerTagHandler.ListByEnterprise)
 			enterprise.POST("/positions", positionHandler.Create)
