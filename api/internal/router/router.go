@@ -104,6 +104,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		customerTagService := service.NewCustomerTagService(customerTagRepo, customerRepo)
 		customerTagHandler := handler.NewCustomerTagHandler(customerTagService)
 
+		contactRepo := repository.NewContactRepository(db)
+		contactService := service.NewContactService(contactRepo, customerRepo)
+		contactHandler := handler.NewContactHandler(contactService)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -186,6 +190,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			enterprise.POST("/customer-levels", customerLevelHandler.Create)
 			enterprise.GET("/customer-levels", customerLevelHandler.List)
 			enterprise.POST("/customers/:customer_id/tags", customerTagHandler.AddTag)
+			enterprise.POST("/customers/:customer_id/contacts", contactHandler.Create)
+			enterprise.GET("/customers/:customer_id/contacts", contactHandler.ListByCustomer)
 			enterprise.GET("/customers/:customer_id/tags", customerTagHandler.ListByCustomer)
 			enterprise.GET("/customer-tags", customerTagHandler.ListByEnterprise)
 			enterprise.POST("/positions", positionHandler.Create)
@@ -194,6 +200,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.PUT("/customers/:id", customerHandler.Update)
 			protected.DELETE("/customers/:id", customerHandler.Delete)
 			protected.DELETE("/customers/:customer_id/tags", customerTagHandler.RemoveTag)
+			protected.PUT("/contacts/:id", contactHandler.Update)
+			protected.DELETE("/contacts/:id", contactHandler.Delete)
 			protected.PUT("/customer-levels/:id", customerLevelHandler.Update)
 			protected.DELETE("/customer-levels/:id", customerLevelHandler.Delete)
 			protected.PUT("/positions/:id", positionHandler.Update)
