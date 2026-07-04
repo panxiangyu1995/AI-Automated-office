@@ -2,6 +2,9 @@ package service
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
@@ -81,6 +84,36 @@ func (s *ContractService) ChangeStatus(cID, newStatus string) (*model.Contract, 
 	if newStatus == "fulfilled" || newStatus == "terminated" { now := time.Now(); c.ExpireAt = &now }
 	if err := s.db.Save(&c).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("更新状态失败: "+err.Error()) }
 	return &c, nil
+}
+
+func (s *ContractService) SubmitApproval(cID string) (*model.Contract, *apperrors.AppError) {
+	return s.ChangeStatus(cID, "pending_approval")
+}
+
+func (s *ContractService) Approve(cID string) (*model.Contract, *apperrors.AppError) {
+	return s.ChangeStatus(cID, "active")
+}
+
+func (s *ContractService) SaveAttachment(eid, cID, fileName, contentType string, fileSize int64, data io.Reader) (*model.ContractAttachment, *apperrors.AppError) {
+	id, err := uuid.Parse(cID)
+	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
+	var c model.Contract
+	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+
+	uploadDir := fmt.Sprintf("/storage/%s/contracts/%s/attachments", eid, cID)
+	os.MkdirAll(uploadDir, 0755)
+	filePath := filepath.Join(uploadDir, fileName)
+	out, err := os.Create(filePath)
+	if err != nil { return nil, apperrors.ErrInternal.WithDetail("保存文件失败") }
+	defer out.Close()
+	io.Copy(out, data)
+
+	att := &model.ContractAttachment{
+		ContractID: cID, FileName: fileName,
+		FileType: contentType, FileSize: fileSize, FileURL: filePath,
+	}
+	if err := s.db.Create(att).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("保存附件记录失败") }
+	return att, nil
 }
 
 func (s *ContractService) LinkDocument(cID, refType, refID, refNo string) (*model.ContractReference, *apperrors.AppError) {

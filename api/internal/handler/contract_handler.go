@@ -70,6 +70,32 @@ type linkDocReq struct {
 	RefNo   string `json:"ref_no"`
 }
 
+func (h *ContractHandler) SubmitApproval(c *gin.Context) {
+	contract, appErr := h.svc.SubmitApproval(c.Param("id"))
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, contract)
+}
+
+func (h *ContractHandler) Approve(c *gin.Context) {
+	contract, appErr := h.svc.Approve(c.Param("id"))
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, contract)
+}
+
+func (h *ContractHandler) UploadAttachment(c *gin.Context) {
+	contractID := c.Param("id")
+	if contractID == "" { response.ValidationError(c, "id", "合同ID不能为空"); return }
+	enterpriseID := c.GetString("enterprise_id")
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil { response.ValidationError(c, "file", "请选择文件"); return }
+	defer file.Close()
+
+	att, appErr := h.svc.SaveAttachment(enterpriseID, contractID, header.Filename, header.Header.Get("Content-Type"), header.Size, file)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, att)
+}
+
 func (h *ContractHandler) LinkDocument(c *gin.Context) {
 	contractID := c.Param("id")
 	if contractID == "" { response.ValidationError(c, "id", "合同ID不能为空"); return }
