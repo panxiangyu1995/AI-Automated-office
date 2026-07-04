@@ -174,6 +174,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		}
 
 		operatorOnly := middleware.RequirePermission(rbac.PermSystemConfig)
+		financeAccess := middleware.RequirePermission(rbac.PermFinanceRead)
 
 		protected := api.Group("")
 		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
@@ -248,12 +249,16 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			enterprise.GET("/service-orders", svcOrderHandler.List)
 			enterprise.POST("/contracts", contractHandler.Create)
 			enterprise.GET("/contracts", contractHandler.List)
-			enterprise.POST("/payments", financeHandler.CreatePayment)
-			enterprise.GET("/payments", financeHandler.ListPayments)
-			enterprise.POST("/expenses", financeHandler.CreateExpense)
-			enterprise.GET("/expenses", financeHandler.ListExpenses)
-			enterprise.POST("/invoices", financeHandler.CreateInvoice)
-			enterprise.GET("/invoices", financeHandler.ListInvoices)
+			f := enterprise.Group("")
+			f.Use(financeAccess)
+			{
+				f.POST("/payments", financeHandler.CreatePayment)
+				f.GET("/payments", financeHandler.ListPayments)
+				f.POST("/expenses", financeHandler.CreateExpense)
+				f.GET("/expenses", financeHandler.ListExpenses)
+				f.POST("/invoices", financeHandler.CreateInvoice)
+				f.GET("/invoices", financeHandler.ListInvoices)
+			}
 			enterprise.POST("/files", knowledgeHandler.UploadFile)
 			enterprise.GET("/files", knowledgeHandler.ListFiles)
 			enterprise.POST("/messages", knowledgeHandler.SendMessage)
