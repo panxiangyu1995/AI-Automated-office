@@ -51,6 +51,34 @@ func (s *ServiceOrderService) ChangeStatus(soID, newStatus string) (*model.Servi
 	return &so, nil
 }
 
+func (s *ServiceOrderService) Get(soID string) (*model.ServiceOrder, *apperrors.AppError) {
+	id, err := uuid.Parse(soID)
+	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
+	var so model.ServiceOrder
+	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	return &so, nil
+}
+
+func (s *ServiceOrderService) Delete(soID string) *apperrors.AppError {
+	id, err := uuid.Parse(soID)
+	if err != nil { return apperrors.NewValidationError("service_order_id", "无效") }
+	var so model.ServiceOrder
+	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return apperrors.ErrNotFound.WithDetail("工单不存在") }
+	if so.Status != "pending" { return apperrors.ErrBadRequest.WithDetail("仅待处理工单可删除") }
+	if err := s.db.Delete(&so).Error; err != nil { return apperrors.ErrInternal.WithDetail("删除工单失败") }
+	return nil
+}
+
+func (s *ServiceOrderService) Quote(soID string, amount float64) (*model.ServiceOrder, *apperrors.AppError) {
+	id, err := uuid.Parse(soID)
+	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
+	var so model.ServiceOrder
+	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	so.Amount = amount
+	if err := s.db.Save(&so).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("报价失败") }
+	return &so, nil
+}
+
 func (s *ServiceOrderService) List(eid, orderType, status string, p, ps int) ([]model.ServiceOrder, int64, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, 0, apperrors.NewValidationError("enterprise_id", "无效") }
