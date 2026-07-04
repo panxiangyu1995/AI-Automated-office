@@ -467,4 +467,44 @@ func init() {
 		CREATE INDEX IF NOT EXISTS idx_wi_material ON warehouse_inventories(material_id);
 		CREATE UNIQUE INDEX IF NOT EXISTS idx_wi_wh_mat ON warehouse_inventories(warehouse_id, material_id);`,
 	})
+	RegisterMigration(Migration{
+		Version: "022", Description: "Create stock_flows table",
+		SQL: `CREATE TABLE IF NOT EXISTS stock_flows (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			warehouse_id UUID NOT NULL, material_id UUID NOT NULL,
+			flow_type VARCHAR(30) NOT NULL, quantity INT NOT NULL,
+			batch_no VARCHAR(100), before_qty INT, after_qty INT,
+			reference_id UUID, reference_type VARCHAR(50), flow_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_sf_enterprise ON stock_flows(enterprise_id);
+		CREATE INDEX IF NOT EXISTS idx_sf_warehouse ON stock_flows(warehouse_id);
+		CREATE INDEX IF NOT EXISTS idx_sf_material ON stock_flows(material_id);
+		CREATE INDEX IF NOT EXISTS idx_sf_flow_time ON stock_flows(enterprise_id, flow_time DESC);`,
+	})
+	RegisterMigration(Migration{
+		Version: "023", Description: "Create material_prices table",
+		SQL: `CREATE TABLE IF NOT EXISTS material_prices (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			material_id UUID NOT NULL, level VARCHAR(30) NOT NULL,
+			unit_price NUMERIC(15,2) NOT NULL,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_mp_enterprise ON material_prices(enterprise_id);
+		CREATE INDEX IF NOT EXISTS idx_mp_material ON material_prices(material_id);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_mp_mat_level ON material_prices(material_id, level);`,
+	})
+	RegisterMigration(Migration{
+		Version: "024", Description: "Create inventory_checks and items tables",
+		SQL: `CREATE TABLE IF NOT EXISTS inventory_checks (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			warehouse_id UUID NOT NULL, check_no VARCHAR(100) NOT NULL,
+			status VARCHAR(20) NOT NULL DEFAULT 'draft', checked_by UUID, checked_at TIMESTAMP WITH TIME ZONE, notes TEXT,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_ic_enterprise ON inventory_checks(enterprise_id);
+		CREATE INDEX IF NOT EXISTS idx_ic_warehouse ON inventory_checks(warehouse_id);
+		CREATE TABLE IF NOT EXISTS inventory_check_items (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), check_id UUID NOT NULL,
+			material_id UUID NOT NULL, expected_qty INT, actual_qty INT, difference INT,
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS ici_check ON inventory_check_items(check_id);`,
+	})
 }
