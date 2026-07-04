@@ -904,6 +904,28 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go test -v: ✅ 新增 14 个 rbac 测试 + 7 个 middleware 测试全部通过
   - 总 12 个测试包全部通过
 
+## 2026-07-04 - Task 10: API 配额管理与功能开关
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-015 (API配额管理), FR-AUTH-016 (功能开关)
+- 架构合规：中间件模式检查配额/功能开关，符合架构设计
+
+### What was done:
+- 更新 errors.go：新增 AUTH_QUOTA_EXCEEDED (429) + AUTH_FEATURE_DISABLED (403)
+- 实现 model/quota.go：ApiQuota + FeatureFlag 模型
+- 更新 migration.go：005 迁移（api_quotas）+ 006 迁移（feature_flags）
+- 实现 repo：ApiQuotaRepository（Upsert）+ FeatureFlagRepository（含 InitDefaults）
+- 实现 service/quota_service.go：CheckAndIncrement（配额检查+自动重置+递增）、GetQuota、UpdateQuota、CheckFeature、UpdateFeatureFlag、GetFeatureFlags、InitQuota、InitFeatureFlags
+- 实现 middleware/quota.go：QuotaMiddleware 自动检查并递增每个请求的配额
+- 实现 middleware/feature_flag.go：FeatureFlagMiddleware 按模块名检查功能开关
+- 实现 handler/quota_handler.go：GET/PUT /quota, GET/PUT /features/:key
+- 更新 router.go：将 quota 中间件加入 protected 路由组，注册 quota/feature 端点
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部 12 包通过（新增 14 个 quota/feature 测试）
+
 ## 2026-07-04 - Task 9: 自动定时备份
 
 ### 铁律合规检查：

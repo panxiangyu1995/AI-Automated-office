@@ -43,6 +43,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 	}
 
 	var backupService *service.BackupService
+	var quotaService *service.QuotaService
 	if db != nil {
 		userRepo := repository.NewUserRepository(db)
 		authService := service.NewAuthService(userRepo, jwtManager)
@@ -63,6 +64,13 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		)
 		backupHandler := handler.NewBackupHandler(backupService)
 
+		apiQuotaRepo := repository.NewApiQuotaRepository(db)
+		featureFlagRepo := repository.NewFeatureFlagRepository(db)
+		quotaService = service.NewQuotaService(apiQuotaRepo, featureFlagRepo)
+		quotaHandler := handler.NewQuotaHandler(quotaService)
+		quotaMiddleware := middleware.NewQuotaMiddleware(quotaService)
+		featureFlagMiddleware := middleware.NewFeatureFlagMiddleware(quotaService)
+
 		auth := api.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
@@ -70,12 +78,17 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		}
 
 		protected := api.Group("")
-		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record())
+		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check())
 		{
 			protected.GET("/me", authHandler.Me)
 			protected.GET("/audit-logs", auditLogHandler.List)
+			protected.GET("/quota", quotaHandler.GetQuota)
+			protected.PUT("/quota", quotaHandler.UpdateQuota)
+			protected.GET("/features", quotaHandler.ListFeatures)
+			protected.PUT("/features/:key", quotaHandler.UpdateFeature)
 
 			backup := protected.Group("/backup")
+			backup.Use(featureFlagMiddleware.Require("backup"))
 			{
 				backup.POST("/configs", backupHandler.CreateConfig)
 				backup.PUT("/configs/:id", backupHandler.UpdateConfig)

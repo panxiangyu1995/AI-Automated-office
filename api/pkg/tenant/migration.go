@@ -182,4 +182,38 @@ func init() {
 		CREATE INDEX IF NOT EXISTS idx_backup_records_config ON backup_records(config_id);
 		CREATE INDEX IF NOT EXISTS idx_backup_records_status ON backup_records(status);`,
 	})
+	RegisterMigration(Migration{
+		Version:     "005",
+		Description: "Create api_quotas table",
+		SQL: `CREATE TABLE IF NOT EXISTS api_quotas (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			enterprise_id UUID NOT NULL UNIQUE,
+			daily_limit INT NOT NULL DEFAULT 10000,
+			monthly_limit INT NOT NULL DEFAULT 300000,
+			daily_used INT NOT NULL DEFAULT 0,
+			monthly_used INT NOT NULL DEFAULT 0,
+			daily_reset_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+			monthly_reset_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+			deleted_at TIMESTAMP WITH TIME ZONE
+		);
+		CREATE INDEX IF NOT EXISTS idx_api_quotas_enterprise ON api_quotas(enterprise_id);`,
+	})
+	RegisterMigration(Migration{
+		Version:     "006",
+		Description: "Create feature_flags table",
+		SQL: `CREATE TABLE IF NOT EXISTS feature_flags (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			enterprise_id UUID NOT NULL,
+			feature_key VARCHAR(100) NOT NULL,
+			enabled BOOLEAN NOT NULL DEFAULT true,
+			label VARCHAR(200),
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+			deleted_at TIMESTAMP WITH TIME ZONE
+		);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_feature_flags_enterprise_key ON feature_flags(enterprise_id, feature_key);
+		CREATE INDEX IF NOT EXISTS idx_feature_flags_enterprise ON feature_flags(enterprise_id);`,
+	})
 }

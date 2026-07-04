@@ -46,6 +46,8 @@ var (
 	ErrTokenExpired     = &AppError{Code: "AUTH_TOKEN_EXPIRED", Message: "令牌已过期，请重新登录", Status: 401}
 	ErrTokenInvalid     = &AppError{Code: "AUTH_TOKEN_INVALID", Message: "令牌无效", Status: 401}
 	ErrPermissionDenied = &AppError{Code: "AUTH_PERMISSION_DENIED", Message: "权限不足", Status: 403}
+	ErrQuotaExceeded    = &AppError{Code: "AUTH_QUOTA_EXCEEDED", Message: "API 调用配额已超限", Status: 429}
+	ErrFeatureDisabled  = &AppError{Code: "AUTH_FEATURE_DISABLED", Message: "该功能模块已被禁用", Status: 403}
 )
 
 type ValidationError struct {
