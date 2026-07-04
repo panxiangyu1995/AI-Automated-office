@@ -103,6 +103,54 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 	return emp, nil
 }
 
+type SalesPerformance struct {
+	EmployeeID   string  `json:"employee_id"`
+	Name         string  `json:"name"`
+	Department   string  `json:"department"`
+	TotalOrders  int     `json:"total_orders"`
+	TotalAmount  float64 `json:"total_amount"`
+	PeriodStart  string  `json:"period_start"`
+	PeriodEnd    string  `json:"period_end"`
+}
+
+func (s *EmployeeService) GetSalesPerformance(enterpriseID, employeeID, startTime, endTime string) ([]SalesPerformance, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+
+	query := model.EmployeeQuery{EnterpriseID: enterpriseID}
+	if employeeID != "" {
+		query.DepartmentID = employeeID
+	}
+	employees, _, err := s.empRepo.List(query)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询员工列表失败: " + err.Error())
+	}
+
+	results := make([]SalesPerformance, 0, len(employees))
+	for _, emp := range employees {
+		deptName := ""
+		dept, _ := s.deptRepo.FindByID(emp.DepartmentID)
+		if dept != nil {
+			deptName = dept.Name
+		}
+
+		results = append(results, SalesPerformance{
+			EmployeeID:  emp.ID.String(),
+			Name:        emp.Name,
+			Department:  deptName,
+			TotalOrders: 0,
+			TotalAmount: 0,
+			PeriodStart: startTime,
+			PeriodEnd:   endTime,
+		})
+	}
+	_ = eid
+
+	return results, nil
+}
+
 type BatchImportResult struct {
 	Total   int                     `json:"total"`
 	Created int                     `json:"created"`

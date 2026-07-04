@@ -162,6 +162,26 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 	})
 }
 
+func (h *EmployeeHandler) SalesPerformance(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+
+	employeeID := c.Query("employee_id")
+	startTime := c.Query("start_time")
+	endTime := c.Query("end_time")
+
+	results, appErr := h.empService.GetSalesPerformance(enterpriseID, employeeID, startTime, endTime)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+
+	response.Success(c, results)
+}
+
 func (h *EmployeeHandler) BatchImport(c *gin.Context) {
 	enterpriseID := c.Param("enterprise_id")
 	if enterpriseID == "" {
