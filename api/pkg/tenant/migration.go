@@ -437,4 +437,22 @@ func init() {
 		CREATE INDEX IF NOT EXISTS idx_materials_sku ON materials(sku_code);
 		CREATE INDEX IF NOT EXISTS idx_materials_type ON materials(material_type);`,
 	})
+	RegisterMigration(Migration{
+		Version: "019", Description: "Create suppliers table",
+		SQL: `CREATE TABLE IF NOT EXISTS suppliers (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			name VARCHAR(255) NOT NULL, contact_name VARCHAR(100), contact_phone VARCHAR(50),
+			contact_email VARCHAR(255), address TEXT, status VARCHAR(20) NOT NULL DEFAULT 'active',
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_suppliers_enterprise ON suppliers(enterprise_id);`,
+	})
+	RegisterMigration(Migration{
+		Version: "020", Description: "Create warehouses table",
+		SQL: `CREATE TABLE IF NOT EXISTS warehouses (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
+			name VARCHAR(255) NOT NULL, code VARCHAR(100) NOT NULL, address TEXT,
+			status VARCHAR(20) NOT NULL DEFAULT 'active',
+			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
+		); CREATE INDEX IF NOT EXISTS idx_warehouses_enterprise ON warehouses(enterprise_id);`,
+	})
 }
