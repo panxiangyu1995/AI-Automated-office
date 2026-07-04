@@ -3,9 +3,9 @@
   "plan_date": "2026-07-04",
   "description": "AI-Automated-office \u5f00\u53d1\u4efb\u52a1\u6e05\u5355 (v3.0) - \u57fa\u4e8e Epics 1-10 \u7684\u5b8c\u6574 OpenSpec \u53d8\u66f4",
   "total_tasks": 118,
-  "completed_tasks": 118,
+  "completed_tasks": 98,
   "implementation_status": {
-    "overall": "100% - All 118 stories complete"
+    "overall": "98/118 - 83%"
   },
   "tasks": [
     {
@@ -2047,7 +2047,7 @@
       "dependencies": [
         "Story 8.7"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 86,
@@ -2071,7 +2071,7 @@
       "dependencies": [
         "Story 8.12"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 87,
@@ -2218,7 +2218,7 @@
       "dependencies": [
         "Story 9.5"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 93,
@@ -2265,7 +2265,7 @@
       "dependencies": [
         "Story 9.7"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 95,
@@ -2290,7 +2290,7 @@
       "dependencies": [
         "Story 1.12"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 96,
@@ -2340,7 +2340,7 @@
         "Story 1.9",
         "Story 9.2"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 98,
@@ -2368,7 +2368,7 @@
         "Story 9.5",
         "Story 9.7"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 99,
@@ -2392,7 +2392,7 @@
       "dependencies": [
         "Story 2.2"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 100,
@@ -2416,7 +2416,7 @@
       "dependencies": [
         "Story 10.1"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 101,
@@ -2441,7 +2441,7 @@
       "dependencies": [
         "Story 2.2"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 102,
@@ -2466,7 +2466,7 @@
       "dependencies": [
         "Story 10.3"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 103,
@@ -2490,7 +2490,7 @@
       "dependencies": [
         "Story 1.8"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 104,
@@ -2514,7 +2514,7 @@
       "dependencies": [
         "Story 1.9"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 105,
@@ -2538,7 +2538,7 @@
       "dependencies": [
         "Story 2.2"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 106,
@@ -2562,7 +2562,7 @@
       "dependencies": [
         "Story 2.2"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 107,
@@ -2635,7 +2635,7 @@
       "dependencies": [
         "Story 1.5"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 110,
@@ -2658,7 +2658,7 @@
       "dependencies": [
         "Story 10.11"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 111,
@@ -2683,7 +2683,7 @@
       "dependencies": [
         "Story 1.6"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 112,
@@ -2707,7 +2707,7 @@
         "Story 8.9",
         "Story 8.10"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 113,
@@ -2730,7 +2730,7 @@
       "dependencies": [
         "Story 10.14"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 114,
