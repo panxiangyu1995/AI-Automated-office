@@ -14,6 +14,7 @@ import (
 	"github.com/ai-office/api/internal/service"
 	"github.com/ai-office/api/pkg/auth"
 	"github.com/ai-office/api/pkg/config"
+	"github.com/ai-office/api/pkg/ratelimit"
 )
 
 func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
@@ -71,6 +72,9 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		quotaMiddleware := middleware.NewQuotaMiddleware(quotaService)
 		featureFlagMiddleware := middleware.NewFeatureFlagMiddleware(quotaService)
 
+		rateLimiter := ratelimit.NewRateLimiter()
+		rateLimitMiddleware := middleware.NewRateLimitMiddleware(rateLimiter)
+
 		auth := api.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
@@ -78,7 +82,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		}
 
 		protected := api.Group("")
-		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check())
+		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
 		{
 			protected.GET("/me", authHandler.Me)
 			protected.GET("/audit-logs", auditLogHandler.List)

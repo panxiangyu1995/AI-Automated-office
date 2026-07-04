@@ -904,6 +904,26 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go test -v: ✅ 新增 14 个 rbac 测试 + 7 个 middleware 测试全部通过
   - 总 12 个测试包全部通过
 
+## 2026-07-04 - Task 11: Rate Limiting 中间件
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-015 (API限额) 的补充实现
+- 架构合规：中间件模式，内存滑动窗口算法
+
+### What was done:
+- 实现 pkg/ratelimit/ratelimit.go：滑动窗口速率限制器（SetLimit/Allow/AllowN/Reset/Cleanup）
+- 实现 internal/model/ratelimit.go：RateLimitConfig 模型
+- 更新 migration.go：007 迁移（rate_limit_configs）
+- 实现 internal/middleware/ratelimit.go：Rate Limit 中间件（per-enterprise 1000 QPS + per-IP 100 QPS）
+- Rate limit 响应头：X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+- 超限时返回 429 + COMMON_RATE_LIMIT 错误码
+- 更新 router.go：将 rate limiter 加入 protected 路由组
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 13 包全部通过（新增 pkg/ratelimit 8个 + middleware 3个测试）
+
 ## 2026-07-04 - Task 10: API 配额管理与功能开关
 
 ### 铁律合规检查：
