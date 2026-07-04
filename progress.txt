@@ -1153,3 +1153,23 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过（16 个员工测试）
+
+## 2026-07-04 - Task 20: 岗位定义与管理
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-013 (岗位定义与管理)
+- 架构合规：TenantModel + enterprise_id 过滤
+
+### What was done:
+- 实现 model/position.go：Position 模型（TenantModel + name/description/department_id）
+- 更新 migration.go：010 迁移（positions 表）
+- 实现 repository：CRUD + 企业级列表
+- 实现 service：Create（name校验+可选部门关联）、Update、List
+- 实现 handler：POST/GET enterprises/:eid/positions + PUT positions/:id
+- 更新 router.go：注册岗位路由
+- 新增 5 个 service 测试 + repository 测试
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过

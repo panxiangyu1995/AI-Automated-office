@@ -76,6 +76,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		empService := service.NewEmployeeService(empRepo, deptRepo)
 		empHandler := handler.NewEmployeeHandler(empService)
 
+		positionRepo := repository.NewPositionRepository(db)
+		positionService := service.NewPositionService(positionRepo)
+		positionHandler := handler.NewPositionHandler(positionService)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -145,6 +149,9 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			}
 			enterprise.POST("/employees", empHandler.Create)
 			enterprise.GET("/employees", empHandler.List)
+			enterprise.POST("/positions", positionHandler.Create)
+			enterprise.GET("/positions", positionHandler.List)
+			protected.PUT("/positions/:id", positionHandler.Update)
 			protected.PUT("/employees/:id", empHandler.Update)
 			protected.DELETE("/employees/:id", empHandler.Delete)
 			protected.GET("/employees/:id", empHandler.Get)
