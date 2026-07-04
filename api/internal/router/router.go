@@ -1,6 +1,9 @@
 package router
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -39,6 +42,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		api.GET("/ready", healthHandler.Ready)
 	}
 
+	var backupService *service.BackupService
 	if db != nil {
 		userRepo := repository.NewUserRepository(db)
 		authService := service.NewAuthService(userRepo, jwtManager)
@@ -49,6 +53,15 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
 
 		auditMiddleware := middleware.NewAuditMiddleware(auditLogService)
+
+		backupConfigRepo := repository.NewBackupConfigRepository(db)
+		backupRecordRepo := repository.NewBackupRecordRepository(db)
+		backupService = service.NewBackupService(
+			backupConfigRepo, backupRecordRepo,
+			cfg.Database.Host, fmt.Sprintf("%d", cfg.Database.Port), cfg.Database.User, cfg.Database.Password, cfg.Database.DBName,
+			cfg.Server.BackupDir,
+		)
+		backupHandler := handler.NewBackupHandler(backupService)
 
 		auth := api.Group("/auth")
 		{
@@ -61,7 +74,29 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		{
 			protected.GET("/me", authHandler.Me)
 			protected.GET("/audit-logs", auditLogHandler.List)
+
+			backup := protected.Group("/backup")
+			{
+				backup.POST("/configs", backupHandler.CreateConfig)
+				backup.PUT("/configs/:id", backupHandler.UpdateConfig)
+				backup.DELETE("/configs/:id", backupHandler.DeleteConfig)
+				backup.GET("/configs", backupHandler.ListConfigs)
+				backup.GET("/configs/:id", backupHandler.GetConfig)
+				backup.GET("/records", backupHandler.ListRecords)
+				backup.POST("/trigger", backupHandler.TriggerBackup)
+				backup.POST("/restore/:record_id", backupHandler.Restore)
+			}
 		}
+	}
+
+	if backupService != nil {
+		go func() {
+			ticker := time.NewTicker(1 * time.Minute)
+			defer ticker.Stop()
+			for range ticker.C {
+				backupService.CheckAndRunScheduled()
+			}
+		}()
 	}
 
 	return r

@@ -904,6 +904,27 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go test -v: ✅ 新增 14 个 rbac 测试 + 7 个 middleware 测试全部通过
   - 总 12 个测试包全部通过
 
+## 2026-07-04 - Task 9: 自动定时备份
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-008 (自动定时备份), FR-AUTH-013 (企业级独立备份)
+- 架构合规：分层架构，pg_dump/pg_restore 执行系统命令，符合架构设计
+
+### What was done:
+- 实现 internal/model/backup.go：BackupConfig（备份时间/目录/保留天数/启停）+ BackupRecord（状态/文件路径/大小/错误信息）
+- 更新 pkg/tenant/migration.go：003 迁移（backup_configs）+ 004 迁移（backup_records）
+- 实现 internal/repository/backup_repo.go：BackupConfigRepository + BackupRecordRepository 接口
+- 实现 internal/repository/backup_repo_impl.go：GORM 实现（多租户隔离 + 启用配置查询）
+- 实现 internal/service/backup_service.go：CreateConfig/UpdateConfig/DeleteConfig/GetConfig/ListConfigs/ListRecords/TriggerBackup（pg_dump）/Restore（pg_restore）/CheckAndRunScheduled（定时调度）
+- 实现 internal/handler/backup_handler.go：7 个端点（configs CRUD + records 列表 + trigger + restore）
+- 更新 router.go：注册 /backup/* 路由 + 启动每分钟轮询的调度器 goroutine
+- 更新 config.go：ServerConfig 新增 BackupDir 字段
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部 12 包通过（新增 11 个 backup 测试）
+
 ## 2026-07-04 - Task 8: 审计日志（基础操作记录）
 
 ### 铁律合规检查：

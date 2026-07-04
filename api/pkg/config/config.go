@@ -23,6 +23,7 @@ type ServerConfig struct {
 	ReadTimeout     int      `mapstructure:"read_timeout"`
 	WriteTimeout    int      `mapstructure:"write_timeout"`
 	ShutdownTimeout int      `mapstructure:"shutdown_timeout"`
+	BackupDir       string   `mapstructure:"backup_dir"`
 }
 
 type DatabaseConfig struct {
