@@ -136,7 +136,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 
 		financeSvc := service.NewFinanceService(db)
 		financeHandler := handler.NewFinanceHandler(financeSvc)
-		knowledgeHandler := handler.NewKnowledgeHandler(db)
+		knowledgeSvc := service.NewKnowledgeService(db)
+		knowledgeHandler := handler.NewKnowledgeHandler(knowledgeSvc)
 		opsHandler := handler.NewOperationsHandler(db)
 		svcOrderSvc := service.NewServiceOrderService(db)
 		svcOrderHandler := handler.NewServiceOrderHandler(svcOrderSvc)

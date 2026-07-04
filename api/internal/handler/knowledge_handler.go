@@ -3,36 +3,79 @@ package handler
 import (
 	"strconv"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/ai-office/api/internal/service"
 	"github.com/ai-office/api/pkg/errors"
 	"github.com/ai-office/api/pkg/response"
-	"github.com/ai-office/api/internal/model"
 )
 
-type KnowledgeHandler struct{ db *gorm.DB }
-func NewKnowledgeHandler(db *gorm.DB) *KnowledgeHandler { return &KnowledgeHandler{db} }
+type KnowledgeHandler struct{ svc *service.KnowledgeService }
+func NewKnowledgeHandler(svc *service.KnowledgeService) *KnowledgeHandler { return &KnowledgeHandler{svc} }
 
-func crudList[T any](db *gorm.DB, c *gin.Context, model T) {
+func (h *KnowledgeHandler) UploadFile(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	var items []T; var total int64
+	file, header, err := c.Request.FormFile("file")
+	if err != nil { response.ValidationError(c, "file", "请选择文件"); return }
+	defer file.Close()
+	r, appErr := h.svc.CreateFile(eid, header.Filename, "/storage/"+header.Filename, header.Header.Get("Content-Type"), c.PostForm("category"), c.PostForm("ref_id"), c.PostForm("ref_type"), header.Size)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, r)
+}
+
+func (h *KnowledgeHandler) ListFiles(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	if p < 1 { p = 1 }; if ps < 1 || ps > 100 { ps = 20 }
-	db.Model(&model).Where("enterprise_id=?", eid).Count(&total).Order("created_at DESC").Offset((p-1)*ps).Limit(ps).Find(&items)
+	items, total, appErr := h.svc.ListFiles(eid, p, ps)
+	if appErr != nil { response.Error(c, appErr); return }
 	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }
 
-func crudCreate[T any](db *gorm.DB, c *gin.Context, model T) {
+func (h *KnowledgeHandler) SendMessage(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	if err := c.ShouldBindJSON(&model); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	if err := db.Create(&model).Error; err != nil { response.Error(c, errors.ErrInternal); return }
-	response.Created(c, model)
+	var req struct{ SenderID, ReceiverID, Title, Content, MsgType string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	m, appErr := h.svc.SendMessage(eid, req.SenderID, req.ReceiverID, req.Title, req.Content, req.MsgType)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, m)
 }
 
-func (h *KnowledgeHandler) UploadFile(c *gin.Context)    { crudCreate(h.db, c, model.FileRecord{}) }
-func (h *KnowledgeHandler) ListFiles(c *gin.Context)     { crudList(h.db, c, model.FileRecord{}) }
-func (h *KnowledgeHandler) SendMessage(c *gin.Context)   { crudCreate(h.db, c, model.Message{}) }
-func (h *KnowledgeHandler) ListMessages(c *gin.Context)  { crudList(h.db, c, model.Message{}) }
-func (h *KnowledgeHandler) CreateDoc(c *gin.Context)     { crudCreate(h.db, c, model.KnowledgeDoc{}) }
-func (h *KnowledgeHandler) ListDocs(c *gin.Context)      { crudList(h.db, c, model.KnowledgeDoc{}) }
-func (h *KnowledgeHandler) CreateCategory(c *gin.Context) { crudCreate(h.db, c, model.KBCategory{}) }
-func (h *KnowledgeHandler) ListCategories(c *gin.Context) { crudList(h.db, c, model.KBCategory{}) }
+func (h *KnowledgeHandler) ListMessages(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	items, total, appErr := h.svc.ListMessages(eid, p, ps)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
+}
+
+func (h *KnowledgeHandler) CreateDoc(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	var req struct{ Title, CategoryID, Content, Summary, Tags string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	d, appErr := h.svc.CreateDoc(eid, req.Title, req.CategoryID, req.Content, req.Summary, req.Tags)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, d)
+}
+
+func (h *KnowledgeHandler) ListDocs(c *gin.Context) { h.listEntity(c, "knowledge_docs") }
+func (h *KnowledgeHandler) CreateCategory(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	var req struct{ Name, ParentID string }
+	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	cat, appErr := h.svc.CreateCategory(eid, req.Name, req.ParentID)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Created(c, cat)
+}
+
+func (h *KnowledgeHandler) ListCategories(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	cats, appErr := h.svc.ListCategories(eid)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.Success(c, cats)
+}
+
+func (h *KnowledgeHandler) listEntity(c *gin.Context, _ string) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	items, total, appErr := h.svc.ListDocs(eid, p, ps)
+	if appErr != nil { response.Error(c, appErr); return }
+	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
+}
