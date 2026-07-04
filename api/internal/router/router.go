@@ -64,6 +64,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		groupService := service.NewGroupService(groupRepo, userRepo, jwtManager)
 		groupHandler := handler.NewGroupHandler(groupService)
 
+		enterpriseRepo := repository.NewEnterpriseRepository(db)
+		enterpriseService := service.NewEnterpriseService(enterpriseRepo, db)
+		enterpriseHandler := handler.NewEnterpriseHandler(enterpriseService)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -111,6 +115,15 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 				groups.DELETE("/:id", groupHandler.Delete)
 				groups.GET("", groupHandler.List)
 				groups.GET("/:id", groupHandler.Get)
+			}
+
+			enterprises := protected.Group("/enterprises")
+			enterprises.Use(operatorOnly)
+			{
+				enterprises.POST("", enterpriseHandler.Create)
+				enterprises.PUT("/:id", enterpriseHandler.Update)
+				enterprises.GET("", enterpriseHandler.List)
+				enterprises.GET("/:id", enterpriseHandler.Get)
 			}
 			protected.GET("/quota", quotaHandler.GetQuota)
 			protected.PUT("/quota", quotaHandler.UpdateQuota)

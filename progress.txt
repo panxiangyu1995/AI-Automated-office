@@ -1059,3 +1059,23 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test -v: ✅ 新增 10 个审计日志测试，全部 12 包通过
+
+## 2026-07-04 - Task 15: 企业管理（创建/编辑/查看）
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-002 (企业管理)
+- 架构合规：系统级public schema表 + 自动创建tenant schema
+
+### What was done:
+- 实现 model/enterprise.go：Enterprise 模型（系统级，含group_id关联）
+- 更新 main.go：AutoMigrate Enterprise 表（public schema）
+- 实现 repository/enterprise_repo.go/impl：CRUD + 编码唯一性 + 按集团查询
+- 实现 service/enterprise_service.go：Create（参数校验 + 自动创建PostgreSQL Schema + 运行迁移）+ Update + List
+- 实现 handler/enterprise_handler.go：POST/PUT/GET /api/v1/enterprises
+- 更新 router.go：Operator 角色可访问 enterprises 路由
+- 新增 9 个 service 测试 + repository 测试
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过

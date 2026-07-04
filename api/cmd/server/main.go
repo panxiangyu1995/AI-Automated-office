@@ -51,8 +51,8 @@ func main() {
 			if sqlDB != nil {
 				defer sqlDB.Close()
 			}
-			if err := initDB.AutoMigrate(&model.Group{}); err != nil {
-				logger.Warn("auto-migrate group table failed", zap.Error(err))
+			if err := initDB.AutoMigrate(&model.Group{}, &model.Enterprise{}); err != nil {
+				logger.Warn("auto-migrate system tables failed", zap.Error(err))
 			}
 		}
 	} else {
