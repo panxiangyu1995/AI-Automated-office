@@ -883,3 +883,23 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
   - pkg/auth 14个, pkg/errors/response 保持不变
   - service 17个, handler 7个, middleware 8个
   - model 7个（新增 user 4个）, repository 1个
+
+## 2026-07-04 - Task 7: JWT 认证中间件与 RBAC 权限控制
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-003 (RBAC 权限控制), FR-AUTH-004 (角色管理)
+- 架构合规：RBAC + 中间件模式，符合 architecture.md
+
+### What was done:
+- 实现 pkg/rbac/rbac.go：5种角色定义（Operator/Owner/Admin/Manager/Employee）
+- 实现 pkg/rbac 权限定义：40+ 细粒度权限（user:*, department:*, employee:*, order:* 等）
+- 实现 RBAC 角色层级：Operator(100) > Owner(80) > Admin(60) > Manager(40) > Employee(20)
+- 实现权限检查：HasPermission, HasAnyPermission, HasAllPermissions, GetPermissions
+- 实现 internal/middleware/rbac.go：RequirePermission, RequireAnyPermission 中间件
+- 更新 errors.go：新增 ErrPermissionDenied (AUTH_PERMISSION_DENIED, 403)
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test -v: ✅ 新增 14 个 rbac 测试 + 7 个 middleware 测试全部通过
+  - 总 12 个测试包全部通过

@@ -43,8 +43,9 @@ var (
 	ErrDuplicateEntry = &AppError{Code: "DB_DUPLICATE_ENTRY", Message: "记录已存在", Status: 409}
 	ErrInvalidStatus  = &AppError{Code: "COMMON_INVALID_STATUS", Message: "状态不合法", Status: 400}
 	ErrTenantRequired = &AppError{Code: "AUTH_TENANT_REQUIRED", Message: "缺少企业上下文", Status: 400}
-	ErrTokenExpired   = &AppError{Code: "AUTH_TOKEN_EXPIRED", Message: "令牌已过期，请重新登录", Status: 401}
-	ErrTokenInvalid   = &AppError{Code: "AUTH_TOKEN_INVALID", Message: "令牌无效", Status: 401}
+	ErrTokenExpired     = &AppError{Code: "AUTH_TOKEN_EXPIRED", Message: "令牌已过期，请重新登录", Status: 401}
+	ErrTokenInvalid     = &AppError{Code: "AUTH_TOKEN_INVALID", Message: "令牌无效", Status: 401}
+	ErrPermissionDenied = &AppError{Code: "AUTH_PERMISSION_DENIED", Message: "权限不足", Status: 403}
 )
 
 type ValidationError struct {
