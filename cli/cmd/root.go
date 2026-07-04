@@ -39,6 +39,7 @@ func init() {
 	rootCmd.AddCommand(newAuthCmd())
 	rootCmd.AddCommand(newPollCmd())
 	rootCmd.AddCommand(newSkillCmd())
+	rootCmd.AddCommand(newServiceCmd())
 }
 
 func initConfigFile() {

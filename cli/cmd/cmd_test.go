@@ -9,8 +9,8 @@ func TestRootCmd_Help(t *testing.T) {
 	if rootCmd == nil {
 		t.Fatal("rootCmd should not be nil")
 	}
-	if len(rootCmd.Commands()) != 3 {
-		t.Errorf("expected 3 subcommands (auth, poll, skill), got %d", len(rootCmd.Commands()))
+	if len(rootCmd.Commands()) != 4 {
+		t.Errorf("expected 4 subcommands (auth, poll, skill, service), got %d", len(rootCmd.Commands()))
 	}
 }
 
@@ -41,5 +41,15 @@ func TestSkillCmd_Subcommands(t *testing.T) {
 	}
 	if len(skillCmd.Commands()) != 3 {
 		t.Errorf("expected 3 skill subcommands (list, describe, execute), got %d", len(skillCmd.Commands()))
+	}
+}
+
+func TestServiceCmd_Subcommands(t *testing.T) {
+	serviceCmd := newServiceCmd()
+	if serviceCmd == nil {
+		t.Fatal("service command should not be nil")
+	}
+	if len(serviceCmd.Commands()) != 5 {
+		t.Errorf("expected 5 service subcommands (install, start, stop, uninstall, status), got %d", len(serviceCmd.Commands()))
 	}
 }
