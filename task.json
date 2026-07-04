@@ -318,7 +318,7 @@
       "dependencies": [
         "Story 1.2"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 14,
@@ -851,7 +851,7 @@
         "Story 4.6",
         "Story 4.8"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 37,
@@ -875,7 +875,7 @@
       "dependencies": [
         "Story 4.1"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 38,

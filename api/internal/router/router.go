@@ -51,7 +51,6 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		healthHandler := handler.NewHealthHandler()
 		api.GET("/health", healthHandler.Health)
 		api.GET("/ready", healthHandler.Ready)
-		api.GET("/ready", healthHandler.Ready)
 	}
 
 	var backupService *service.BackupService
