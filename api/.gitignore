@@ -1,0 +1,8 @@
+/bin/
+/tmp/
+/logs/
+/config/config.local.yaml
+.env
+*.exe
+*.test
+*.out

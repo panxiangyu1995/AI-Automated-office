@@ -1,62 +1,12 @@
-# Dependencies
-node_modules/
-.pnpm-store/
-
-# Build outputs
-dist/
-dist-ssr/
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Environment variables
+api/bin/
+api/logs/
+cli/bin/
+*.exe
+*.test
+*.out
 .env
-.env.local
-.env.*.local
-
-# Tauri
-src-tauri/target/
-src-tauri/build.txt
-src-tauri/build_errors.txt
-
-# Test coverage
-coverage/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Temporary files
-*.tmp
-*.temp
-test-results/.last-run.json
-playwright-report/index.html
-bin/
-test-results
-playwright-report
-playwright/.auth/
-tests/e2e/screenshots/
-开源库参考项目
-test-results
-# Archive files
-openspec/changes/archive/*.json
+config.local.yaml
+logs/
+.DS_Store
+vendor/
+tmp/

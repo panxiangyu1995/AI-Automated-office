@@ -735,3 +735,42 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 ### Notes:
 - OpenSpec CLI 工具 (v1.5.0) 已安装并可用
 - openspec CLI 不可用时，需通过 npm 安装
+
+## 2026-07-04 - Task 1: Go API 项目初始化 scaffold
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-011 (CLI多平台), NFR-EXT-001 (可扩展性)
+- 架构合规：完全遵循 Go + Gin + GORM + PostgreSQL 架构，分层结构符合 architecture.md
+
+### What was done:
+- 创建完整 Go API 项目骨架：`api/cmd/server`, `api/internal/{handler,middleware,model}`, `api/pkg/{config,database,errors,response}`
+- 实现配置管理：Viper 支持 YAML + 环境变量覆盖
+- 实现数据库连接：GORM + PostgreSQL 连接池管理
+- 实现结构化错误码体系：11个预定义 AppError 类型
+- 实现统一响应格式：Success/Error/SuccessWithMeta/Created/NoContent
+- 实现健康检查端点：GET /api/v1/health, GET /api/v1/ready
+- 实现中间件：CORS, Logger (zap), Recovery
+- 实现 Gin 路由注册
+- 实现 main.go 入口：优雅启停、信号处理
+- 编写 17 个单元测试覆盖所有核心包
+
+### Testing:
+- go vet ./...: ✅ 通过
+- go build: ✅ 编译成功 (20MB binary)
+- go test -v ./...: ✅ 17/17 测试通过
+- API E2E: /api/v1/health 返回 200 ✅
+- API E2E: /api/v1/ready 返回 503 (无 DB) ✅
+
+### Files created:
+- api/go.mod, api/go.sum
+- api/cmd/server/main.go
+- api/internal/handler/health.go, health_test.go
+- api/internal/middleware/{cors,logger,recovery}.go, cors_test.go
+- api/internal/model/base.go, base_test.go
+- api/internal/router/router.go
+- api/pkg/config/config.go, config_test.go
+- api/pkg/database/database.go
+- api/pkg/errors/errors.go, errors_test.go
+- api/pkg/response/response.go, response_test.go
+- api/config/config.yaml
+- api/.gitignore, .gitignore
