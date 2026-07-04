@@ -72,6 +72,9 @@ func (r *employeeRepo) List(query model.EmployeeQuery) ([]model.Employee, int64,
 			q = q.Where("department_id = ?", did)
 		}
 	}
+	if query.Role != "" {
+		q = q.Where("role = ?", query.Role)
+	}
 	if query.Status != "" {
 		q = q.Where("status = ?", query.Status)
 	}

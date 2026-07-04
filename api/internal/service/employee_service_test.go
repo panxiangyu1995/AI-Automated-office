@@ -61,6 +61,9 @@ func (m *mockEmployeeRepo) List(query model.EmployeeQuery) ([]model.Employee, in
 		if query.Status != "" && e.Status != query.Status {
 			continue
 		}
+		if query.Role != "" && e.Role != query.Role {
+			continue
+		}
 		result = append(result, *e)
 	}
 	return result, int64(len(result)), nil
@@ -95,7 +98,7 @@ func TestEmployeeService_Create_Success(t *testing.T) {
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
 
-	emp, err := svc.Create(eid, did, "John Doe", "john@test.com", "123456", "Engineer", "EMP001", nil)
+	emp, err := svc.Create(eid, did, "John Doe", "john@test.com", "123456", "Engineer", "EMP001", "", nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -109,7 +112,7 @@ func TestEmployeeService_Create_Success(t *testing.T) {
 
 func TestEmployeeService_Create_EmptyName(t *testing.T) {
 	svc, _, _ := setupEmployeeService()
-	_, err := svc.Create(uuid.New().String(), uuid.New().String(), "", "", "", "", "", nil)
+	_, err := svc.Create(uuid.New().String(), uuid.New().String(), "", "", "", "", "", "", nil)
 	if err == nil {
 		t.Fatal("expected error for empty name")
 	}
@@ -117,7 +120,7 @@ func TestEmployeeService_Create_EmptyName(t *testing.T) {
 
 func TestEmployeeService_Create_InvalidDepartment(t *testing.T) {
 	svc, _, _ := setupEmployeeService()
-	_, err := svc.Create(uuid.New().String(), uuid.New().String(), "John", "", "", "", "", nil)
+	_, err := svc.Create(uuid.New().String(), uuid.New().String(), "John", "", "", "", "", "", nil)
 	if err == nil {
 		t.Fatal("expected error for nonexistent department")
 	}
@@ -127,7 +130,7 @@ func TestEmployeeService_Get_Found(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	created, _ := svc.Create(eid, did, "John", "", "", "", "", nil)
+	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
 	got, err := svc.Get(created.ID.String())
 	if err != nil {
@@ -150,9 +153,9 @@ func TestEmployeeService_Update_Success(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	created, _ := svc.Create(eid, did, "Old", "", "", "", "", nil)
+	created, _ := svc.Create(eid, did, "Old", "", "", "", "", "", nil)
 
-	updated, err := svc.Update(created.ID.String(), "New", "new@test.com", "", "", "", "")
+	updated, err := svc.Update(created.ID.String(), "New", "new@test.com", "", "", "", "", "")
 	if err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
@@ -168,9 +171,9 @@ func TestEmployeeService_Update_Resign(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	created, _ := svc.Create(eid, did, "John", "", "", "", "", nil)
+	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
-	updated, err := svc.Update(created.ID.String(), "", "", "", "", "", "resigned")
+	updated, err := svc.Update(created.ID.String(), "", "", "", "", "", "", "resigned")
 	if err != nil {
 		t.Fatalf("Update to resigned failed: %v", err)
 	}
@@ -186,7 +189,7 @@ func TestEmployeeService_Delete_Resign(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	created, _ := svc.Create(eid, did, "John", "", "", "", "", nil)
+	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
 	err := svc.Delete(created.ID.String())
 	if err != nil {
@@ -206,8 +209,8 @@ func TestEmployeeService_List(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	svc.Create(eid, did, "John", "", "", "", "", nil)
-	svc.Create(eid, did, "Jane", "", "", "", "", nil)
+	svc.Create(eid, did, "John", "", "", "", "", "", nil)
+	svc.Create(eid, did, "Jane", "", "", "", "", "", nil)
 
 	query := model.EmployeeQuery{EnterpriseID: eid}
 	employees, total, err := svc.List(query)
@@ -227,7 +230,7 @@ func TestEmployeeService_Transfer_Success(t *testing.T) {
 	eid := uuid.New().String()
 	did1 := seedDepartment(svc, deptRepo, eid)
 	did2 := seedDepartment(svc, deptRepo, eid)
-	created, _ := svc.Create(eid, did1, "John", "", "", "", "", nil)
+	created, _ := svc.Create(eid, did1, "John", "", "", "", "", "", nil)
 
 	transferred, err := svc.Transfer(created.ID.String(), did2)
 	if err != nil {
@@ -242,7 +245,7 @@ func TestEmployeeService_Transfer_InvalidDept(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	created, _ := svc.Create(eid, did, "John", "", "", "", "", nil)
+	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
 	_, err := svc.Transfer(created.ID.String(), uuid.New().String())
 	if err == nil {
@@ -250,13 +253,61 @@ func TestEmployeeService_Transfer_InvalidDept(t *testing.T) {
 	}
 }
 
+func TestEmployeeService_Create_WithRole(t *testing.T) {
+	svc, _, deptRepo := setupEmployeeService()
+	eid := uuid.New().String()
+	did := seedDepartment(svc, deptRepo, eid)
+
+	emp, err := svc.Create(eid, did, "John", "", "", "", "", "manager", nil)
+	if err != nil {
+		t.Fatalf("Create with role failed: %v", err)
+	}
+	if emp.Role != "manager" {
+		t.Errorf("expected role 'manager', got %s", emp.Role)
+	}
+}
+
+func TestEmployeeService_Create_DefaultRole(t *testing.T) {
+	svc, _, deptRepo := setupEmployeeService()
+	eid := uuid.New().String()
+	did := seedDepartment(svc, deptRepo, eid)
+
+	emp, err := svc.Create(eid, did, "John", "", "", "", "", "", nil)
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if emp.Role != "employee" {
+		t.Errorf("expected default role 'employee', got %s", emp.Role)
+	}
+}
+
+func TestEmployeeService_List_ByRole(t *testing.T) {
+	svc, _, deptRepo := setupEmployeeService()
+	eid := uuid.New().String()
+	did := seedDepartment(svc, deptRepo, eid)
+	svc.Create(eid, did, "John", "", "", "", "", "manager", nil)
+	svc.Create(eid, did, "Jane", "", "", "", "", "employee", nil)
+
+	query := model.EmployeeQuery{EnterpriseID: eid, Role: "manager"}
+	employees, total, err := svc.List(query)
+	if err != nil {
+		t.Fatalf("List by role failed: %v", err)
+	}
+	if total != 1 {
+		t.Errorf("expected 1 manager, got %d", total)
+	}
+	if len(employees) != 1 || employees[0].Name != "John" {
+		t.Errorf("expected John, got %v", employees)
+	}
+}
+
 func TestEmployeeService_Create_DuplicateEmail(t *testing.T) {
 	svc, _, deptRepo := setupEmployeeService()
 	eid := uuid.New().String()
 	did := seedDepartment(svc, deptRepo, eid)
-	svc.Create(eid, did, "John", "dup@test.com", "", "", "", nil)
+	svc.Create(eid, did, "John", "dup@test.com", "", "", "", "", nil)
 
-	_, err := svc.Create(eid, did, "Jane", "dup@test.com", "", "", "", nil)
+	_, err := svc.Create(eid, did, "Jane", "dup@test.com", "", "", "", "", nil)
 	if err == nil {
 		t.Fatal("expected error for duplicate email")
 	}
@@ -268,7 +319,7 @@ func TestEmployeeService_Create_WithHireDate(t *testing.T) {
 	did := seedDepartment(svc, deptRepo, eid)
 	hireDate := time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC)
 
-	emp, err := svc.Create(eid, did, "John", "", "", "", "", &hireDate)
+	emp, err := svc.Create(eid, did, "John", "", "", "", "", "", &hireDate)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

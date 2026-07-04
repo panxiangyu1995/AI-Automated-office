@@ -27,6 +27,7 @@ type createEmployeeRequest struct {
 	Phone        string `json:"phone"`
 	Position     string `json:"position"`
 	EmployeeNo   string `json:"employee_no"`
+	Role         string `json:"role"`
 	HireDate     string `json:"hire_date"`
 }
 
@@ -36,6 +37,7 @@ type updateEmployeeRequest struct {
 	Phone      string `json:"phone"`
 	Position   string `json:"position"`
 	EmployeeNo string `json:"employee_no"`
+	Role       string `json:"role"`
 	Status     string `json:"status"`
 }
 
@@ -64,7 +66,7 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		}
 	}
 
-	emp, appErr := h.empService.Create(enterpriseID, req.DepartmentID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, hireDate)
+	emp, appErr := h.empService.Create(enterpriseID, req.DepartmentID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, hireDate)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -86,7 +88,7 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.empService.Update(employeeID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Status)
+	emp, appErr := h.empService.Update(employeeID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, req.Status)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -140,6 +142,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 	query := model.EmployeeQuery{
 		EnterpriseID: enterpriseID,
 		DepartmentID: c.Query("department_id"),
+		Role:         c.Query("role"),
 		Status:       c.Query("status"),
 		Search:       c.Query("search"),
 		Page:         page,

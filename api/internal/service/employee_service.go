@@ -22,7 +22,7 @@ func NewEmployeeService(empRepo repository.EmployeeRepository, deptRepo reposito
 	}
 }
 
-func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone, position, employeeNo string, hireDate *time.Time) (*model.Employee, *apperrors.AppError) {
+func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone, position, employeeNo, role string, hireDate *time.Time) (*model.Employee, *apperrors.AppError) {
 	eid, err := uuid.Parse(enterpriseID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
@@ -50,6 +50,10 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 		}
 	}
 
+	if role == "" {
+		role = "employee"
+	}
+
 	emp := &model.Employee{
 		DepartmentID: did,
 		Name:         name,
@@ -57,6 +61,7 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 		Phone:        phone,
 		Position:     position,
 		EmployeeNo:   employeeNo,
+		Role:         role,
 		Status:       "active",
 		HireDate:     hireDate,
 	}
@@ -68,7 +73,7 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 	return emp, nil
 }
 
-func (s *EmployeeService) Update(employeeID, name, email, phone, position, employeeNo, status string) (*model.Employee, *apperrors.AppError) {
+func (s *EmployeeService) Update(employeeID, name, email, phone, position, employeeNo, role, status string) (*model.Employee, *apperrors.AppError) {
 	eid, err := uuid.Parse(employeeID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("employee_id", "员工ID无效")
@@ -96,6 +101,9 @@ func (s *EmployeeService) Update(employeeID, name, email, phone, position, emplo
 	}
 	if employeeNo != "" {
 		emp.EmployeeNo = employeeNo
+	}
+	if role != "" {
+		emp.Role = role
 	}
 	if status != "" {
 		emp.Status = status

@@ -14,6 +14,7 @@ type Employee struct {
 	Phone        string     `gorm:"type:varchar(50)" json:"phone,omitempty"`
 	Position     string     `gorm:"type:varchar(100)" json:"position,omitempty"`
 	EmployeeNo   string     `gorm:"type:varchar(100);index" json:"employee_no,omitempty"`
+	Role         string     `gorm:"type:varchar(50);default:'employee'" json:"role"`
 	Status       string     `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
 	HireDate     *time.Time `json:"hire_date,omitempty"`
 	ResignDate   *time.Time `json:"resign_date,omitempty"`
@@ -26,6 +27,7 @@ func (Employee) TableName() string {
 type EmployeeQuery struct {
 	EnterpriseID string
 	DepartmentID string
+	Role         string
 	Status       string
 	Search       string
 	Page         int

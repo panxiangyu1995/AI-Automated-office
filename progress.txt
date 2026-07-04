@@ -1134,3 +1134,22 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过（新增 13 个员工测试）
+
+## 2026-07-04 - Task 19: 员工查询（按角色/姓名模糊搜索）
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-011 (按角色查询), FR-ORG-012 (按姓名模糊查询)
+- 架构合规：Employee.Role 字段 + List 查询支持
+
+### What was done:
+- 扩展 Employee 模型：新增 Role 字段（默认 'employee'）
+- 扩展 EmployeeQuery：新增 Role 过滤
+- 扩展 repository.List：支持 role 参数过滤
+- 扩展 service.Create/Update：支持 role 设置
+- 扩展 handler：Create/Update 支持 role 字段，List 支持 role 查询参数
+- 新增 3 个 service 测试（带角色创建/默认角色/按角色搜索）
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过（16 个员工测试）
