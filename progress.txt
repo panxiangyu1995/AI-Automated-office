@@ -1277,3 +1277,17 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 
 ### Testing:
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 30: 批量导入员工 [Phase 2 Loop]
+
+### 铁律合规检查：
+- PRD 合规：FR-HRM-006 (批量导入员工)
+- 架构合规：JSON数组批量创建 + 逐条错误收集
+
+### What was done:
+- 扩展 EmployeeService：BatchImport 方法（批量创建 + 错误收集 + 汇总结果）
+- 扩展 handler：POST /api/v1/enterprises/{eid}/employees/batch-import
+- 更新 router.go：注册批量导入路由
+
+### Testing:
+- go test: ✅ 全部通过

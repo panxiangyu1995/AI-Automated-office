@@ -166,6 +166,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 				enterprise.POST("/departments", deptHandler.Create)
 			}
 			enterprise.POST("/employees", empHandler.Create)
+			enterprise.POST("/employees/batch-import", empHandler.BatchImport)
 			enterprise.GET("/employees", empHandler.List)
 			enterprise.POST("/positions", positionHandler.Create)
 			enterprise.GET("/positions", positionHandler.List)

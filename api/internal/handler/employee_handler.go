@@ -162,6 +162,25 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 	})
 }
 
+func (h *EmployeeHandler) BatchImport(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.ValidationError(c, "enterprise_id", "企业ID不能为空")
+		return
+	}
+
+	var req struct {
+		Employees []service.BatchEmployee `json:"employees"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "body", "请求体格式错误")
+		return
+	}
+
+	result := h.empService.BatchImport(enterpriseID, req.Employees)
+	response.Success(c, result)
+}
+
 func (h *EmployeeHandler) Transfer(c *gin.Context) {
 	employeeID := c.Param("id")
 	if employeeID == "" {

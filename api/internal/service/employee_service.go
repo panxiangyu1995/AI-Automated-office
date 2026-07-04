@@ -103,6 +103,58 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 	return emp, nil
 }
 
+type BatchImportResult struct {
+	Total   int                     `json:"total"`
+	Created int                     `json:"created"`
+	Failed  int                     `json:"failed"`
+	Errors  []BatchImportError     `json:"errors,omitempty"`
+}
+
+type BatchImportError struct {
+	Index   int    `json:"index"`
+	Name    string `json:"name"`
+	Reason  string `json:"reason"`
+}
+
+type BatchEmployee struct {
+	DepartmentID string `json:"department_id"`
+	Name         string `json:"name"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	Position     string `json:"position"`
+	EmployeeNo   string `json:"employee_no"`
+	Role         string `json:"role"`
+	HireDate     string `json:"hire_date"`
+}
+
+func (s *EmployeeService) BatchImport(enterpriseID string, employees []BatchEmployee) *BatchImportResult {
+	result := &BatchImportResult{Total: len(employees)}
+
+	for i, emp := range employees {
+		var hireDate *time.Time
+		if emp.HireDate != "" {
+			t, err := time.Parse("2006-01-02", emp.HireDate)
+			if err == nil {
+				hireDate = &t
+			}
+		}
+
+		_, appErr := s.Create(enterpriseID, emp.DepartmentID, emp.Name, emp.Email, emp.Phone, emp.Position, emp.EmployeeNo, emp.Role, hireDate)
+		if appErr != nil {
+			result.Failed++
+			result.Errors = append(result.Errors, BatchImportError{
+				Index:  i,
+				Name:   emp.Name,
+				Reason: appErr.Message,
+			})
+		} else {
+			result.Created++
+		}
+	}
+
+	return result
+}
+
 func generateTempPassword() string {
 	b := make([]byte, 12)
 	for i := range b {
