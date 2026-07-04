@@ -134,7 +134,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		contractSvc := service.NewContractService(db)
 		contractHandler := handler.NewContractHandler(contractSvc)
 
-		financeHandler := handler.NewFinanceHandler(db)
+		financeSvc := service.NewFinanceService(db)
+		financeHandler := handler.NewFinanceHandler(financeSvc)
 		knowledgeHandler := handler.NewKnowledgeHandler(db)
 		opsHandler := handler.NewOperationsHandler(db)
 		svcOrderSvc := service.NewServiceOrderService(db)
@@ -265,6 +266,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.POST("/enterprise-subscriptions", opsHandler.CreateSub)
 			protected.GET("/webhooks", opsHandler.ListWebhooks)
 			protected.POST("/webhooks", opsHandler.CreateWebhook)
+			protected.POST("/expenses/:id/approve", financeHandler.ApproveExpense)
 			protected.GET("/audit-log-entries", opsHandler.ListAuditLogs)
 			protected.GET("/service-orders/:id", svcOrderHandler.Get)
 			protected.PUT("/service-orders/:id", svcOrderHandler.Quote)
