@@ -140,6 +140,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 				enterprise.POST("/departments", deptHandler.Create)
 			}
 			protected.PUT("/departments/:id", deptHandler.Update)
+			protected.PUT("/departments/:id/manager", deptHandler.SetManager)
 			protected.DELETE("/departments/:id", deptHandler.Delete)
 
 			backup := protected.Group("/backup")

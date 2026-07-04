@@ -216,6 +216,47 @@ func TestDepartmentService_GetTree(t *testing.T) {
 	}
 }
 
+func TestDepartmentService_SetManager_Success(t *testing.T) {
+	svc, _ := setupDepartmentService()
+	eid := uuid.New().String()
+	created, _ := svc.Create(eid, "Engineering", "")
+	empID := uuid.New().String()
+
+	updated, err := svc.SetManager(created.ID.String(), empID)
+	if err != nil {
+		t.Fatalf("SetManager failed: %v", err)
+	}
+	if updated.ManagerID == nil {
+		t.Fatal("expected manager_id to be set")
+	}
+	if updated.ManagerID.String() != empID {
+		t.Errorf("expected manager_id %s, got %s", empID, updated.ManagerID.String())
+	}
+}
+
+func TestDepartmentService_SetManager_Clear(t *testing.T) {
+	svc, _ := setupDepartmentService()
+	eid := uuid.New().String()
+	created, _ := svc.Create(eid, "Engineering", "")
+	svc.SetManager(created.ID.String(), uuid.New().String())
+
+	updated, err := svc.SetManager(created.ID.String(), "")
+	if err != nil {
+		t.Fatalf("SetManager failed: %v", err)
+	}
+	if updated.ManagerID != nil {
+		t.Error("expected manager_id to be cleared")
+	}
+}
+
+func TestDepartmentService_SetManager_NotFound(t *testing.T) {
+	svc, _ := setupDepartmentService()
+	_, err := svc.SetManager(uuid.New().String(), uuid.New().String())
+	if err == nil {
+		t.Fatal("expected error for nonexistent department")
+	}
+}
+
 func TestDepartmentService_GetTree_Empty(t *testing.T) {
 	svc, _ := setupDepartmentService()
 	tree, err := svc.GetTree(uuid.New().String())

@@ -49,6 +49,36 @@ func (s *DepartmentService) Create(enterpriseID, name, parentID string) (*model.
 	return dept, nil
 }
 
+func (s *DepartmentService) SetManager(departmentID, employeeID string) (*model.Department, *apperrors.AppError) {
+	did, err := uuid.Parse(departmentID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("department_id", "部门ID无效")
+	}
+
+	dept, err := s.deptRepo.FindByID(did)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询部门失败")
+	}
+	if dept == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("部门不存在")
+	}
+
+	if employeeID == "" {
+		dept.ManagerID = nil
+	} else {
+		eid, err := uuid.Parse(employeeID)
+		if err != nil {
+			return nil, apperrors.NewValidationError("employee_id", "员工ID无效")
+		}
+		dept.ManagerID = &eid
+	}
+
+	if err := s.deptRepo.Update(dept); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("设置部门经理失败: " + err.Error())
+	}
+	return dept, nil
+}
+
 func (s *DepartmentService) Update(departmentID, name string, managerID string) (*model.Department, *apperrors.AppError) {
 	did, err := uuid.Parse(departmentID)
 	if err != nil {
