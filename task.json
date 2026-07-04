@@ -3,9 +3,9 @@
   "plan_date": "2026-07-04",
   "description": "AI-Automated-office 开发任务清单 (v3.0) - 基于 Epics 1-10 的完整 OpenSpec 变更",
   "total_tasks": 118,
-  "completed_tasks": 4,
+  "completed_tasks": 5,
   "implementation_status": {
-    "overall": "3.4% - Epic 1 Story 1.1-1.4 完成 (4/118)"
+    "overall": "4.2% - Epic 1 Story 1.1-1.5 完成 (5/118)"
   },
   "tasks": [
     {
@@ -105,7 +105,7 @@
       "id": 5,
       "epic": "Epic 1",
       "story": "Story 1.5",
-      "title": "统一响应格式与结构化错误码体系",
+      "title": "统一响应格式与错误码完善",
       "description": "As a Agent 开发者, I want 所有 API 返回统一格式的响应和结构化错误码, So that Agent 可以理解错误并自动恢复",
       "implementationType": "new",
       "openspec_change": "epic-1-story-5-unified-response-format",
@@ -115,15 +115,11 @@
       "frs_covered": [
         "FR-AUTH-010"
       ],
-      "nfrs_covered": [
-        "NFR-INT-001"
-      ],
+      "nfrs_covered": [],
       "arch_covered": [],
       "ux_covered": [],
-      "dependencies": [
-        "Story 1.1"
-      ],
-      "passes": false
+      "dependencies": [],
+      "passes": true
     },
     {
       "id": 6,

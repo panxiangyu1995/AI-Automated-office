@@ -837,3 +837,23 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test -v: ✅ 28/28 通过（新增 tenant 9 个 + middleware 4 个）
+
+## 2026-07-04 - Task 5: 统一响应格式与错误码完善
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-010 (结构化错误码体系)
+- 架构合规：遵循 PRD 错误码格式要求 {模块}_{错误类型}_{序号}
+
+### What was done:
+- 重构错误码为模块化格式：COMMON_INTERNAL_ERROR, AUTH_TOKEN_EXPIRED, DB_DUPLICATE_ENTRY 等
+- 新增错误码：ErrTenantRequired, ErrTokenExpired, ErrTokenInvalid
+- AppError 新增 WithDetails() / WithMessage() 方法
+- AppError 新增 Details []string 字段，支持多个验证错误
+- response 新增 ValidationError() / ValidationErrors() 便捷方法
+- ErrorInfo 响应结构增加 details 字段
+- 新增 errors.NewValidationError() / NewValidationErrors() 工厂函数
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test -v: ✅ 35/35 通过（errors 7个 + response 8个）

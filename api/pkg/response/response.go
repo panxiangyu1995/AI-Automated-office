@@ -15,9 +15,10 @@ type Response struct {
 }
 
 type ErrorInfo struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Detail  string `json:"detail,omitempty"`
+	Code    string   `json:"code"`
+	Message string   `json:"message"`
+	Detail  string   `json:"detail,omitempty"`
+	Details []string `json:"details,omitempty"`
 }
 
 type MetaInfo struct {
@@ -43,13 +44,15 @@ func NoContent(c *gin.Context) {
 }
 
 func Error(c *gin.Context, appErr *apperrors.AppError) {
-	c.JSON(appErr.Status, Response{
-		Error: &ErrorInfo{
-			Code:    appErr.Code,
-			Message: appErr.Message,
-			Detail:  appErr.Detail,
-		},
-	})
+	ei := &ErrorInfo{
+		Code:    appErr.Code,
+		Message: appErr.Message,
+		Detail:  appErr.Detail,
+	}
+	if len(appErr.Details) > 0 {
+		ei.Details = appErr.Details
+	}
+	c.JSON(appErr.Status, Response{Error: ei})
 }
 
 func HandleError(c *gin.Context, err error) {
@@ -58,4 +61,12 @@ func HandleError(c *gin.Context, err error) {
 		return
 	}
 	Error(c, apperrors.ErrInternal)
+}
+
+func ValidationError(c *gin.Context, field, message string) {
+	Error(c, apperrors.NewValidationError(field, message))
+}
+
+func ValidationErrors(c *gin.Context, errs []apperrors.ValidationError) {
+	Error(c, apperrors.NewValidationErrors(errs))
 }

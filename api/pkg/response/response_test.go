@@ -75,8 +75,8 @@ func TestError(t *testing.T) {
 	if resp.Error == nil {
 		t.Fatal("expected non-nil error")
 	}
-	if resp.Error.Code != "NOT_FOUND" {
-		t.Errorf("expected code NOT_FOUND, got %s", resp.Error.Code)
+	if resp.Error.Code != "COMMON_NOT_FOUND" {
+		t.Errorf("expected code COMMON_NOT_FOUND, got %s", resp.Error.Code)
 	}
 }
 
@@ -130,5 +130,55 @@ func TestSuccessWithMeta(t *testing.T) {
 	}
 	if resp.Meta.Page != 1 || resp.Meta.PageSize != 20 || resp.Meta.TotalCount != 2 {
 		t.Errorf("unexpected meta: %+v", resp.Meta)
+	}
+}
+
+func TestValidationError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/test", func(c *gin.Context) {
+		ValidationError(c, "email", "required")
+	})
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+
+	var resp Response
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp.Error == nil {
+		t.Fatal("expected error")
+	}
+	if resp.Error.Code != "COMMON_VALIDATION_ERROR" {
+		t.Errorf("expected COMMON_VALIDATION_ERROR, got %s", resp.Error.Code)
+	}
+	if len(resp.Error.Details) != 1 {
+		t.Errorf("expected 1 detail, got %d", len(resp.Error.Details))
+	}
+}
+
+func TestErrorWithDetails(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/test", func(c *gin.Context) {
+		err := apperrors.ErrValidation.WithDetails([]string{"field1: required", "field2: too long"})
+		Error(c, err)
+	})
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	var resp Response
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp.Error == nil {
+		t.Fatal("expected error")
+	}
+	if len(resp.Error.Details) != 2 {
+		t.Errorf("expected 2 details, got %d", len(resp.Error.Details))
 	}
 }
