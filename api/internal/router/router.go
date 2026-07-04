@@ -90,7 +90,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		summaryHandler := handler.NewSummaryHandler(summaryService)
 
 		authService := service.NewAuthServiceFull(userRepo, enterpriseRepo, crossEnterpriseRepo, jwtManager)
-		authHandler := handler.NewAuthHandler(authService)
+		authHandler := handler.NewAuthHandlerWithEmployee(authService, empService)
 
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
@@ -130,6 +130,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		{
 			protected.POST("/auth/switch-enterprise", authHandler.SwitchEnterprise)
 			protected.GET("/me", authHandler.Me)
+			protected.GET("/me/profile", authHandler.MeProfile)
 			protected.GET("/audit-logs", auditLogHandler.List)
 			protected.POST("/cross-enterprise/permissions", crossEnterpriseHandler.Grant)
 			protected.DELETE("/cross-enterprise/permissions/:id", crossEnterpriseHandler.Revoke)

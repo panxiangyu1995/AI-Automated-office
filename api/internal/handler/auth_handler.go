@@ -12,7 +12,8 @@ import (
 )
 
 type AuthHandler struct {
-	authService AuthServiceInterface
+	authService      AuthServiceInterface
+	employeeService  *service.EmployeeService
 }
 
 type AuthServiceInterface interface {
@@ -24,6 +25,13 @@ type AuthServiceInterface interface {
 
 func NewAuthHandler(authService AuthServiceInterface) *AuthHandler {
 	return &AuthHandler{authService: authService}
+}
+
+func NewAuthHandlerWithEmployee(authService AuthServiceInterface, employeeService *service.EmployeeService) *AuthHandler {
+	return &AuthHandler{
+		authService:     authService,
+		employeeService: employeeService,
+	}
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -107,6 +115,52 @@ func (h *AuthHandler) SwitchEnterprise(c *gin.Context) {
 	}
 
 	response.Success(c, resp)
+}
+
+func (h *AuthHandler) MeProfile(c *gin.Context) {
+	if h.employeeService == nil {
+		response.Error(c, apperrors.ErrInternal.WithDetail("员工服务未初始化"))
+		return
+	}
+
+	userIDStr := c.GetString(middleware.ContextKeyUserID)
+	if userIDStr == "" {
+		response.Error(c, apperrors.ErrUnauthorized)
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		response.Error(c, apperrors.ErrTokenInvalid)
+		return
+	}
+
+	user, appErr := h.authService.GetUser(userID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+
+	if user.EmployeeID == nil {
+		response.Error(c, apperrors.ErrNotFound.WithDetail("未关联员工档案"))
+		return
+	}
+
+	emp, appErr := h.employeeService.Get(*user.EmployeeID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"user": gin.H{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.Name,
+			"role":  user.Role,
+		},
+		"employee": emp,
+	})
 }
 
 func (h *AuthHandler) Me(c *gin.Context) {
