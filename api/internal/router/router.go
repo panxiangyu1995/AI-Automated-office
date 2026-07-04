@@ -68,6 +68,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		enterpriseService := service.NewEnterpriseService(enterpriseRepo, db)
 		enterpriseHandler := handler.NewEnterpriseHandler(enterpriseService)
 
+		deptRepo := repository.NewDepartmentRepository(db)
+		deptService := service.NewDepartmentService(deptRepo)
+		deptHandler := handler.NewDepartmentHandler(deptService)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -129,6 +133,14 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.PUT("/quota", quotaHandler.UpdateQuota)
 			protected.GET("/features", quotaHandler.ListFeatures)
 			protected.PUT("/features/:key", quotaHandler.UpdateFeature)
+
+			enterprise := protected.Group("/enterprises/:enterprise_id")
+			{
+				enterprise.GET("/departments/tree", deptHandler.GetTree)
+				enterprise.POST("/departments", deptHandler.Create)
+			}
+			protected.PUT("/departments/:id", deptHandler.Update)
+			protected.DELETE("/departments/:id", deptHandler.Delete)
 
 			backup := protected.Group("/backup")
 			backup.Use(featureFlagMiddleware.Require("backup"))

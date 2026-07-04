@@ -1079,3 +1079,22 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 16: 部门管理（创建/编辑/删除/树形结构）
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-003 (部门CRUD), FR-ORG-009 (组织架构树)
+- 架构合规：TenantModel + enterprise_id 过滤，多租户隔离
+
+### What was done:
+- 实现 model/department.go：Department 模型（TenantModel + parent_id树形 + manager_id）
+- 更新 migration.go：008 迁移（departments 表 + 索引）
+- 实现 repository/department_repo.go/impl：CRUD + enterprise_id 过滤 + CountByParent
+- 实现 service/department_service.go：Create（含parent校验）/Update/Delete（含子部门检查）/GetTree（递归树构建）
+- 实现 handler/department_handler.go：POST enterprises/:eid/departments + PUT/DELETE departments/:id + GET tree
+- 更新 router.go：注册部门路由
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过（新增 12 个部门测试）
