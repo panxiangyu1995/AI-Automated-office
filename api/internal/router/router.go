@@ -124,6 +124,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		whService := service.NewWarehouseService(whRepo)
 		whHandler := handler.NewWarehouseHandler(whService)
 
+		invRepo := repository.NewInventoryRepository(db)
+		invService := service.NewInventoryService(invRepo, matRepo, whRepo)
+		invHandler := handler.NewInventoryHandler(invService)
+
 		auditLogRepo := repository.NewAuditLogRepository(db)
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
@@ -216,6 +220,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			enterprise.GET("/suppliers", supHandler.List)
 			enterprise.POST("/warehouses", whHandler.Create)
 			enterprise.GET("/warehouses", whHandler.List)
+			enterprise.GET("/inventory/low-stock", invHandler.LowStock)
+			enterprise.POST("/inventory", invHandler.Set)
+			enterprise.GET("/inventory/warehouses/:warehouse_id", invHandler.ByWarehouse)
+			enterprise.GET("/inventory/materials/:material_id", invHandler.ByMaterial)
 			enterprise.GET("/customers/:customer_id/tags", customerTagHandler.ListByCustomer)
 			enterprise.GET("/customer-tags", customerTagHandler.ListByEnterprise)
 			enterprise.POST("/positions", positionHandler.Create)
