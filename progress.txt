@@ -1115,3 +1115,22 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 18: 员工档案基础 CRUD
+
+### 铁律合规检查：
+- PRD 合规：FR-ORG-006 (员工CRUD), FR-ORG-007 (部门归属)
+- 架构合规：TenantModel + enterprise_id 过滤 + HRM 模块
+
+### What was done:
+- 实现 model/employee.go：Employee 模型（TenantModel + department_id/email/phone/position/status/hire_date/resign_date）
+- 更新 migration.go：009 迁移（employees 表 + 3索引）
+- 实现 repository/employee_repo.go/impl：CRUD + 邮箱唯一性 + 按部门/状态/关键词搜索 + 分页
+- 实现 service/employee_service.go：Create（含部门校验+邮箱唯一）、Update、Delete（软删除→resigned）、Get、List（筛选+分页）、Transfer（调岗）
+- 实现 handler/employee_handler.go：POST enterprises/:eid/employees + PUT/DELETE/GET employees/:id + GET list + PUT transfer
+- 更新 router.go：注册员工路由
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过（新增 13 个员工测试）
