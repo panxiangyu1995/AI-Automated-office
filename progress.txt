@@ -1211,3 +1211,22 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - go vet: ✅ 通过
 - go build: ✅ 成功
 - go test: ✅ 全部通过
+
+## 2026-07-04 - Task 23: 精细化权限分配
+
+### 铁律合规检查：
+- PRD 合规：FR-AUTH-009 (自定义员工权限)
+- 架构合规：EmployeePermission + ABAC 模式，超越 RBAC 角色控制
+
+### What was done:
+- 实现 model/employee_permission.go：EmployeePermission 模型（employee_id + permission + effect allow/deny）
+- 更新 migration.go：012 迁移（employee_permissions + 唯一索引）
+- 实现 repository：CRUD + 按员工/企业查询 + 按员工+权限删除
+- 实现 service：Set（创建/替换）、Revoke、ListByEmployee、HasPermission
+- 实现 handler：POST/DELETE/GET employees/:employee_id/permissions
+- 更新 router.go：注册精细化权限路由
+
+### Testing:
+- go vet: ✅ 通过
+- go build: ✅ 成功
+- go test: ✅ 全部通过
