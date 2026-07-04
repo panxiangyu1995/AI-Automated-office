@@ -1,6 +1,10 @@
 package service
 
 import (
+	"fmt"
+	"path/filepath"
+	"strings"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -8,12 +12,29 @@ import (
 	apperrors "github.com/ai-office/api/pkg/errors"
 )
 
+var allowedFileTypes = map[string]bool{
+	".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".pdf": true,
+	".doc": true, ".docx": true, ".xls": true, ".xlsx": true, ".zip": true,
+	".txt": true, ".csv": true,
+}
+
+const maxFileSize int64 = 50 * 1024 * 1024 // 50MB
+
 type KnowledgeService struct{ db *gorm.DB }
 func NewKnowledgeService(db *gorm.DB) *KnowledgeService { return &KnowledgeService{db} }
 
 func (s *KnowledgeService) CreateFile(eid, name, path, ftype, category, refID, refType string, size int64) (*model.FileRecord, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+
+	ext := strings.ToLower(filepath.Ext(name))
+	if !allowedFileTypes[ext] {
+		return nil, &apperrors.AppError{Code: "FILE_TYPE_NOT_ALLOWED", Message: fmt.Sprintf("不支持的文件类型: %s", ext), Status: 400}
+	}
+	if size > maxFileSize {
+		return nil, &apperrors.AppError{Code: "FILE_SIZE_EXCEEDED", Message: fmt.Sprintf("文件大小超过限制(%dMB)", maxFileSize/(1024*1024)), Status: 400}
+	}
+
 	r := &model.FileRecord{FileName: name, FilePath: path, FileType: ftype, FileSize: size, Category: category, RefID: refID, RefType: refType}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建文件记录失败") }
