@@ -14,9 +14,15 @@ func NewPlatformService(db *gorm.DB) *PlatformService { return &PlatformService{
 func (s *PlatformService) CreateServiceTicket(eid, customerID, subject, desc, priority string) (*model.ServiceTicket, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	t := &model.ServiceTicket{CustomerID: customerID, Subject: subject, Description: desc, Priority: priority, Status: "open"}
+	var custID *string
+	if customerID != "" {
+		_, pErr := uuid.Parse(customerID)
+		if pErr != nil { return nil, apperrors.NewValidationError("customer_id", "无效UUID") }
+		custID = &customerID
+	}
+	t := &model.ServiceTicket{CustomerID: custID, Subject: subject, Description: desc, Priority: priority, Status: "open"}
 	t.EnterpriseID = id
-	if err := s.db.Create(t).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败") }
+	if err := s.db.Create(t).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: " + err.Error()) }
 	return t, nil
 }
 

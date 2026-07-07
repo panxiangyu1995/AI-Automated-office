@@ -48,9 +48,9 @@ func (h *CustomerTagHandler) AddTag(c *gin.Context) {
 }
 
 func (h *CustomerTagHandler) RemoveTag(c *gin.Context) {
-	customerID := c.Param("customer_id")
+	customerID := c.Param("id")
 	if customerID == "" {
-		response.ValidationError(c, "customer_id", "客户ID不能为空")
+		response.ValidationError(c, "id", "客户ID不能为空")
 		return
 	}
 	tag := c.Query("tag")

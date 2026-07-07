@@ -16,7 +16,7 @@ func NewSummaryHandler(summaryService *service.SummaryService) *SummaryHandler {
 }
 
 func (h *SummaryHandler) GroupSummary(c *gin.Context) {
-	groupID := c.Param("group_id")
+	groupID := c.Param("id")
 	if groupID == "" {
 		response.ValidationError(c, "group_id", "集团ID不能为空")
 		return

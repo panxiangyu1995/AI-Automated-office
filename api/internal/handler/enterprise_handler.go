@@ -43,9 +43,9 @@ func (h *EnterpriseHandler) Create(c *gin.Context) {
 }
 
 func (h *EnterpriseHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("id")
+	enterpriseID := c.Param("enterprise_id")
 	if enterpriseID == "" {
-		response.ValidationError(c, "id", "企业ID不能为空")
+		response.ValidationError(c, "enterprise_id", "企业ID不能为空")
 		return
 	}
 
@@ -70,9 +70,9 @@ func (h *EnterpriseHandler) Update(c *gin.Context) {
 }
 
 func (h *EnterpriseHandler) Get(c *gin.Context) {
-	enterpriseID := c.Param("id")
+	enterpriseID := c.Param("enterprise_id")
 	if enterpriseID == "" {
-		response.ValidationError(c, "id", "企业ID不能为空")
+		response.ValidationError(c, "enterprise_id", "企业ID不能为空")
 		return
 	}
 

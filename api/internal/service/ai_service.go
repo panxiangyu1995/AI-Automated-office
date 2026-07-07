@@ -17,7 +17,7 @@ func (s *AIService) CreateSession(eid, userID, title, aiModel string) (*model.Ch
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	sess := &model.ChatSession{UserID: userID, Title: title, Model: aiModel, Context: "{}"}
 	sess.EnterpriseID = id
-	if err := s.db.Create(sess).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建会话失败") }
+	if err := s.db.Create(sess).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建会话失败: " + err.Error()) }
 	return sess, nil
 }
 

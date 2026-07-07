@@ -33,9 +33,9 @@ func (h *EmployeePermissionHandler) Set(c *gin.Context) {
 		response.Error(c, errors.ErrUnauthorized)
 		return
 	}
-	employeeID := c.Param("employee_id")
+	employeeID := c.Param("id")
 	if employeeID == "" {
-		response.ValidationError(c, "employee_id", "员工ID不能为空")
+		response.ValidationError(c, "id", "员工ID不能为空")
 		return
 	}
 
@@ -55,9 +55,9 @@ func (h *EmployeePermissionHandler) Set(c *gin.Context) {
 }
 
 func (h *EmployeePermissionHandler) Revoke(c *gin.Context) {
-	employeeID := c.Param("employee_id")
+	employeeID := c.Param("id")
 	if employeeID == "" {
-		response.ValidationError(c, "employee_id", "员工ID不能为空")
+		response.ValidationError(c, "id", "员工ID不能为空")
 		return
 	}
 	permission := c.Query("permission")
@@ -76,9 +76,9 @@ func (h *EmployeePermissionHandler) Revoke(c *gin.Context) {
 }
 
 func (h *EmployeePermissionHandler) List(c *gin.Context) {
-	employeeID := c.Param("employee_id")
+	employeeID := c.Param("id")
 	if employeeID == "" {
-		response.ValidationError(c, "employee_id", "员工ID不能为空")
+		response.ValidationError(c, "id", "员工ID不能为空")
 		return
 	}
 

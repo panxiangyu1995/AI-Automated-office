@@ -202,8 +202,11 @@ cd api && go mod download
 # CLI Tool
 cd cli && go mod download
 
+# Ensure Colima is running (macOS Docker runtime)
+colima status 2>/dev/null || colima start --cpu 2 --memory 4
+
 # Docker (for PostgreSQL + Redis)
-docker-compose -f deploy/docker-compose/docker-compose.yml up -d
+docker compose -f deploy/docker-compose/docker-compose.yml up -d postgres redis
 ```
 
 **DO NOT skip this step.** Ensure the services are running before proceeding.
@@ -572,20 +575,18 @@ go mod download          # 安装依赖
 go run main.go           # 运行 CLI
 go build -o bin/ao-cli main.go  # 构建 CLI
 
-# Docker 部署
-docker-compose -f deploy/docker-compose/docker-compose.yml up -d   # 启动所有服务
-docker-compose -f deploy/docker-compose/docker-compose.yml down     # 停止所有服务
-docker-compose -f deploy/docker-compose/docker-compose.yml logs -f  # 查看日志
+# Docker 部署（macOS 需先启动 Colima）
+colima status 2>/dev/null || colima start --cpu 2 --memory 4   # Colima 是 macOS Docker 运行时
+docker compose -f deploy/docker-compose/docker-compose.yml up -d postgres redis   # 启动 PostgreSQL + Redis
+docker compose -f deploy/docker-compose/docker-compose.yml down     # 停止所有服务
+docker compose -f deploy/docker-compose/docker-compose.yml logs -f  # 查看日志
+
+# 数据库管理
+docker exec -it ao-postgres psql -U ai_office -d ai_office    # 连接数据库
+docker exec ao-postgres pg_isready -U ai_office -d ai_office  # 检查状态
 
 # 开发环境配置
 cp deploy/docker-compose/.env.example deploy/docker-compose/.env  # 复制环境变量模板
-# 配置以下变量：
-# - DB_HOST: PostgreSQL 地址
-# - DB_PORT: PostgreSQL 端口
-# - DB_USER: 数据库用户
-# - DB_PASSWORD: 数据库密码
-# - REDIS_HOST: Redis 地址
-# - JWT_SECRET: JWT 签名密钥
 ```
 
 ---
@@ -702,8 +703,36 @@ For multi-step tasks, state a brief plan:
 5. [ ] 查看 task.json 选择任务
 6. [ ] 启动依赖服务：`docker-compose -f deploy/docker-compose/docker-compose.yml up -d`
 7. [ ] 安装 Go 依赖：`cd api && go mod download`
-8. [ ] 启动 API 服务：`cd api && go run cmd/server/main.go`
+8. [ ] 启动 API 服务：`cd api && go run cmd/server/main.go`（默认端口 8080）
 9. [ ] 开始工作！
+
+---
+
+## 🏃 运行服务（Running Services）
+
+当前开发环境使用 **Colima + Docker** 运行依赖服务：
+
+| 服务 | 容器名 | 端口 | 连接信息 |
+|------|--------|------|----------|
+| PostgreSQL 15 | `ao-postgres` | `5432` | `host=localhost user=ai_office password=ai_office_pass dbname=ai_office sslmode=disable` |
+| Redis 7 | `ao-redis` | `6379` | `localhost:6379` |
+| API (Gin) | - | `8080` | `http://localhost:8080`（健康检查: `/api/v1/health`） |
+| CLI | - | - | `go run main.go -s http://localhost:8080` |
+
+**Colima 管理：**
+```bash
+colima start --cpu 2 --memory 4   # 启动 Docker 运行时
+colima stop                       # 停止
+```
+
+**数据库管理：**
+```bash
+docker exec -it ao-postgres psql -U ai_office -d ai_office    # 连接数据库
+docker exec ao-postgres pg_isready -U ai_office -d ai_office  # 检查状态
+```
+
+**当前数据库表（public schema）：** `groups`, `enterprises`, `users`
+**测试账号：** `admin@test.com` / `test123`（角色: operator）
 
 ---
 

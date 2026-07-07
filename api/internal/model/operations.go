@@ -15,12 +15,12 @@ func (SubscriptionPlan) TableName() string { return "subscription_plans" }
 
 type EnterpriseSubscription struct {
 	BaseModel
-	EnterpriseID string `gorm:"type:uuid;not null;index" json:"enterprise_id"`
-	PlanID       string `gorm:"type:uuid;not null" json:"plan_id"`
-	Status       string `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
-	StartAt      string `gorm:"type:timestamp" json:"start_at,omitempty"`
-	EndAt        string `gorm:"type:timestamp" json:"end_at,omitempty"`
-	AutoRenew    bool   `gorm:"default:true" json:"auto_renew"`
+	EnterpriseID string  `gorm:"type:uuid;not null;index" json:"enterprise_id"`
+	PlanID       string  `gorm:"type:uuid;not null" json:"plan_id"`
+	Status       string  `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	StartAt      *string `gorm:"type:timestamp" json:"start_at,omitempty"`
+	EndAt        *string `gorm:"type:timestamp" json:"end_at,omitempty"`
+	AutoRenew    bool    `gorm:"default:true" json:"auto_renew"`
 }
 
 func (EnterpriseSubscription) TableName() string { return "enterprise_subscriptions" }
@@ -61,12 +61,12 @@ func (Skill) TableName() string { return "skills" }
 
 type ServiceTicket struct {
 	TenantModel
-	CustomerID  string `gorm:"type:uuid;index" json:"customer_id"`
-	Subject     string `gorm:"type:varchar(255);not null" json:"subject"`
-	Description string `gorm:"type:text" json:"description"`
-	Priority    string `gorm:"type:varchar(20);default:'normal'" json:"priority"`
-	Status      string `gorm:"type:varchar(20);default:'open'" json:"status"`
-	AssignedTo  string `gorm:"type:uuid" json:"assigned_to,omitempty"`
+	CustomerID  *string `gorm:"type:uuid;index" json:"customer_id,omitempty"`
+	Subject     string  `gorm:"type:varchar(255);not null" json:"subject"`
+	Description string  `gorm:"type:text" json:"description"`
+	Priority    string  `gorm:"type:varchar(20);default:'normal'" json:"priority"`
+	Status      string  `gorm:"type:varchar(20);default:'open'" json:"status"`
+	AssignedTo  *string `gorm:"type:uuid" json:"assigned_to,omitempty"`
 }
 
 func (ServiceTicket) TableName() string { return "service_tickets" }
