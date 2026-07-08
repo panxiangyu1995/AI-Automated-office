@@ -17,6 +17,9 @@ func Tenant() gin.HandlerFunc {
 		if enterpriseID == "" {
 			enterpriseID = c.Query("enterprise_id")
 		}
+		if enterpriseID == "" {
+			enterpriseID = c.Param("enterprise_id")
+		}
 
 		if enterpriseID != "" {
 			c.Set(ContextKeyEnterpriseID, enterpriseID)
@@ -25,6 +28,7 @@ func Tenant() gin.HandlerFunc {
 
 			if tenant.GlobalDB != nil {
 				tenant.UseSchema(tenant.GlobalDB, enterpriseID)
+				tenant.SetEnterpriseContext(tenant.GlobalDB, enterpriseID)
 			}
 		}
 

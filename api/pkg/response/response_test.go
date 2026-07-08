@@ -75,8 +75,8 @@ func TestError(t *testing.T) {
 	if resp.Error == nil {
 		t.Fatal("expected non-nil error")
 	}
-	if resp.Error.Code != "COMMON_NOT_FOUND" {
-		t.Errorf("expected code COMMON_NOT_FOUND, got %s", resp.Error.Code)
+	if resp.Error.Code != "RES_NOT_FOUND" {
+		t.Errorf("expected code RES_NOT_FOUND, got %s", resp.Error.Code)
 	}
 }
 
@@ -153,8 +153,8 @@ func TestValidationError(t *testing.T) {
 	if resp.Error == nil {
 		t.Fatal("expected error")
 	}
-	if resp.Error.Code != "COMMON_VALIDATION_ERROR" {
-		t.Errorf("expected COMMON_VALIDATION_ERROR, got %s", resp.Error.Code)
+	if resp.Error.Code != "VAL_INVALID_PARAMS" {
+		t.Errorf("expected VAL_INVALID_PARAMS, got %s", resp.Error.Code)
 	}
 	if len(resp.Error.Details) != 1 {
 		t.Errorf("expected 1 detail, got %d", len(resp.Error.Details))

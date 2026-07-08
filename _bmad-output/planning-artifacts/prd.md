@@ -8,7 +8,7 @@ classification:
   domain: '企业经营SaaS（Agent调用API作为前端）'
   complexity: '高'
   projectContext: 'greenfield'
-lastEdited: '2026-07-04'
+lastEdited: '2026-07-08'
 editHistory:
   - date: '2026-07-04'
     changes: 'PRD validation-driven edits: fixed 4 subjective adjectives (FR-MSG-007, FR-ORG-011, FR-SEC2-004, FR-DEPLOY-008), 2 vague quantifiers (FR-CRM-004, FR-FIN-017), 1 NFR metric (NFR-EXT-001), added CLI config_schema + output_formats spec, added cross-module journey mapping note'
@@ -49,6 +49,7 @@ editHistory:
 
 **核心理念：**
 - **无前端 SaaS**：不提供传统 Web/桌面 UI，企业员工通过本地 Agent（Claude Code、Codex、Gemini、OpenCode、OpenClaw、Hermes 等）对话来操作系统
+- **Agent→CLI→API 唯一交互链路**：所有业务操作必须通过"用户与 Agent 对话 → Agent 调用 CLI Skill → CLI 发送 HTTPS 请求到 Go API"的链路完成。Agent 禁止直接调用业务 API（curl/HTTP 客户端），必须通过 `ao-cli skill execute` 执行所有业务操作。CLI 统一管理认证凭证生命周期，Agent 不接触任何凭证。服务器端验证请求来源 Header `X-Request-Source: ao-cli`，拒绝非 CLI 请求
 - **数据即服务**：Agent 调用 API 获取数据后，可生成 HTML/文档进行可视化展示
 - **权限即壁垒**：完善的多租户隔离 + RBAC 权限体系，确保 Agent 只能访问授权范围内的数据
 - **开源+局域网部署**：代码开源（AGPL v3），支持社区局域网部署
@@ -66,7 +67,8 @@ editHistory:
 - Agent 时代，Agent 可以替代人完成大量操作，但缺乏企业级后端 API 支持
 
 **解决路径：**
-- 纯后端 API 服务（云端）+ 本地 CLI（轮询消息）
+- 纯后端 API 服务（云端）+ 本地 CLI（唯一入口）+ 消息轮询
+- CLI 是 Agent 与 API 之间的唯一桥梁：Agent 只能通过 CLI Skill 调用 API，CLI 负责认证、请求签名、错误重试
 - 完善的权限体系确保 Agent 访问安全
 - 支持多种主流 Agent 的 CLI Skill 调用
 - 开源（AGPL）+ 商业授权双轨，支持局域网部署
@@ -76,7 +78,7 @@ editHistory:
 | 维度 | 传统 SaaS | 本产品 |
 |------|----------|--------|
 | **产品形态** | Web/桌面 UI + 后端 | **纯后端 API + 本地 CLI** |
-| **用户交互** | 人操作界面 | **Agent 调用 API** |
+| **用户交互** | 人操作界面 | **用户与 Agent 对话 → Agent 调用 CLI → CLI 调用 API** |
 | **数据展示** | 前端渲染 | **Agent 生成 HTML/文档** |
 | **消息通知** | WebSocket/Push | **CLI 轮询 + Agent 通知** |
 | **部署方式** | 仅云端 | **云端 + 局域网部署** |
@@ -84,9 +86,12 @@ editHistory:
 
 **核心洞察：**
 - Agent 时代，人不再需要直接操作界面，而是通过自然语言指挥 Agent
-- 传统 SaaS 的前端界面是给"人"看的，而 Agent SaaS 的"前端"是 API
+- 传统 SaaS 的前端界面是给"人"看的，而 Agent SaaS 的"前端"是 CLI + API
+- CLI 是 Agent 与 API 之间的唯一桥梁——Agent 不直接接触 API，CLI 管理认证、签名、错误恢复
 - 后端足够强大 + 权限控制到位 = 超过传统 SaaS 的体验
 - 本地 CLI 轮询解决 Agent 不支持定时任务的问题，确保消息实时性
+
+**🔒 CLI 唯一入口原则（架构铁律）：** CLI 是访问业务 API 的**唯一网关**。Agent 不得直接通过 `curl` 等 HTTP 客户端调用业务端点。所有业务操作必须通过 `ao-cli skill execute` 执行。用户在 CLI 中一次输入凭证（`ao-cli auth login`），CLI 统一管理 token 生命周期、自动刷新、权限校验，Agent 不接触也不存储任何凭证。服务器端应验证请求来源为 CLI（通过自定义 Header `X-Request-Source: ao-cli`），拒绝非 CLI 的 HTTP 请求。CLI 同时记录所有 Skill 执行的操作日志（JSONL 格式，按日期归档），供 Agent 回忆操作历史，确保对话连续性。
 
 **一句话价值主张：** *"让 Agent 成为企业的数字员工，后端 API 成为 Agent 的工作台。"*
 
@@ -319,11 +324,11 @@ editHistory:
 **Opening Scene：** 用户对 Agent 说"帮我处理今天的所有待审批事项"。
 
 **Rising Action：**
-1. Agent 调用 `/api/v1/approvals/pending`
-2. 获取所有待审批事项列表
-3. 为用户展示审批摘要
+1. Agent 调用 `ao-cli skill execute approval --action list_pending`
+2. CLI 发送请求到 `/api/v1/approvals/pending`，获取所有待审批事项列表
+3. Agent 为用户展示审批摘要
 4. 用户逐个确认或拒绝
-5. Agent 调用 `/api/v1/approvals/{id}/approve`
+5. Agent 调用 `ao-cli skill execute approval --action approve --id {id}`
 
 **Climax：** 批量处理完成，所有审批结果反馈给用户。
 
@@ -503,6 +508,7 @@ Agent SaaS：人 → Agent → API → 数据库 → Agent → HTML/文档 → �
 ┌─────────────────────────────────────────────────────────────┐
 │                       User（用户）                            │
 │                  "帮我修改合同标题"                           │
+│  用户第一次使用时在 CLI 输入一次凭证（ao-cli auth login）      │
 └────────────────────────────┬────────────────────────────────┘
                              │ 自然语言
                              ▼
@@ -510,16 +516,18 @@ Agent SaaS：人 → Agent → API → 数据库 → Agent → HTML/文档 → �
 │                    Agent（本地 Agent）                        │
 │          Claude Code / Codex / Gemini / OpenCode...         │
 │  1. 理解用户意图  2. 选择 Skill  3. 组装参数               │
+│  ⚠ Agent 不接触任何凭证，不直接调用 HTTP API               │
 └────────────────────────────┬────────────────────────────────┘
-                             │ Skill 调用
+                             │ ao-cli skill execute
                              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     CLI Skill（本地）                         │
-│  skill: modify_contract                                     │
-│  args: { contract_id, field, value }                       │
-│  → CLI 发起 HTTP 请求到云端 API                             │
+│              ═══ CLI Skill（唯一网关） ═══                   │
+│  $ ao-cli skill execute modify_contract                    │
+│     --contract_id="xxx" --field="title" --value="新标题"    │
+│  → CLI 统一管理 Token（自动刷新、权限校验）                 │
+│  → 服务器验证请求来源为 CLI，拒绝非 CLI 请求                │
 └────────────────────────────┬────────────────────────────────┘
-                             │ HTTPS REST API
+                             │ HTTPS REST API（仅接收 CLI 请求）
                              ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                     Cloud Backend（云端）                      │
@@ -662,11 +670,12 @@ RBAC 权限检查
 | 知识库增强 | 6 |
 | 安全增强 | 4 |
 | 员工日常工作助手 | 5 |
-| CLI 初始化与 Skill 下载 | 8 |
+| CLI 初始化与 Skill 下载 | 10 |
 | 私有化部署 | 8 |
 | 经营者数据体系 | 6 |
 | 运营商客制化服务 | 11 |
 | 多语言支持 | 6 |
+| Agent 数据导出 | 10 |
 | **总计** | **286** |
 
 ---
@@ -1132,6 +1141,8 @@ RBAC 权限检查
 | FR-CLI-006 | CLAUDE.md 和 agent.md 的内容由运营商可通过 `operator_skill_configure` Skill 客制化：不同企业的 CLAUDE.md 模板不同（含企业名称、行业特性、操作规范等），行业模板包含预设模板 |
 | FR-CLI-007 | CLI 初始化时自动生成 `README.md` 客制化使用指南：内容基于企业已开通模块和已配置 Skill 动态生成，包含企业信息、已开通功能列表、各 Skill 使用说明与示例、常见问答、快捷指令速查表，面向企业员工（非技术人员）可读 |
 | FR-CLI-008 | README.md 由服务端模板渲染生成：运营商可通过 `operator_skill_configure` Skill 中的 `customize_readme` 操作客制化 README.md 模板内容（如添加企业专属注意事项、禁止操作说明、内部术语表等），行业模板包含预设 README.md 模板 |
+| FR-CLI-009 | CLI 自动记录所有 Skill 执行操作日志：每次 `ao-cli skill execute` 执行时，CLI 将操作详情（时间戳、Skill 名称、action、参数摘要、执行结果状态、响应摘要）写入本地日志文件，供 Agent 回忆已执行的操作历史。日志格式为 JSON Lines（.jsonl），每行一条操作记录，Agent 可直接读取和解析 |
+| FR-CLI-010 | CLI 操作日志按日期归档保存：日志文件按日期存储在 `~/.ai-office-cli/logs/` 目录下，文件名格式为 `YYYY-MM-DD.jsonl`（如 `2026-07-08.jsonl`）。当日日志追加写入，跨日自动创建新文件。CLI `skill help` 输出中明确说明日志查看位置和格式，Agent 可通过读取日志文件回忆操作历史 |
 
 #### CLI 配置模式
 
@@ -1147,6 +1158,7 @@ tls_skip_verify: false                     # TLS 证书验证跳过（仅局域�
 log_level: "info"                          # 日志级别（debug/info/warn/error）
 skills_dir: "~/.ai-office-cli/skills/"     # Skill 文件存储目录
 cache_dir: "~/.ai-office-cli/cache/"       # 本地缓存目录
+logs_dir: "~/.ai-office-cli/logs/"         # 操作日志目录（按日期存储 JSONL 格式）
 ```
 
 配置通过 `ao-cli init` 初始化生成，用户可手动编辑。配置变更后需执行 `ao-cli init --update` 同步云端配置。
@@ -1262,6 +1274,25 @@ CLI Skill 执行结果支持以下输出格式，Agent 可根据场景选择：
 
 ---
 
+### 29. Agent 数据导出（FR-EXPORT）
+
+> **Agent-First SaaS 的核心交互模式之一：用户通过自然语言告诉 Agent 要导出什么数据，Agent 调用导出 API 生成文件。** 传统 SaaS 的导出是"点按钮选筛选条件"，我们的导出是"说一句话，Agent 帮你搞定"。导出权限必须与 RBAC 绑定——Admin 可导出所有数据，员工只能导出与自己相关的业务数据。
+
+| FR-ID | 需求描述 |
+|-------|---------|
+| FR-EXPORT-001 | 系统支持 Agent 对话式数据导出：用户通过自然语言描述导出需求（如"帮我导出2026年6月所有合同清单"），Agent 将自然语言翻译为导出 API 参数（实体类型、筛选条件、格式），调用导出 API 生成文件 |
+| FR-EXPORT-002 | 系统支持单实体导出：用户可导出任意核心业务实体的数据列表，包括但不限于客户、合同、售后工单、报价单、采购单、销售单、产品、供应商、应收/应付、发票、员工等，支持按任意可查询字段筛选（时间范围、状态、负责人等） |
+| FR-EXPORT-003 | 系统支持跨实体关联导出：以客户为锚点，导出该客户的所有关联业务数据（合同、售后工单、报价单、销售订单、往来款等），生成单个 Excel 文件，每个实体一个 Sheet |
+| FR-EXPORT-004 | 系统支持以员工为锚点的业务记录导出：导出指定员工创建/负责的所有业务单据（合同、工单、报价单、采购单、销售单等），生成单个 Excel 文件，每个实体一个 Sheet |
+| FR-EXPORT-005 | 系统支持员工操作日志导出：导出指定员工的操作日志清单（操作时间、操作类型、操作对象、变更前后值），格式为 Excel/CSV |
+| FR-EXPORT-006 | 导出权限与 RBAC 绑定：企业管理员（admin 角色及拥有 `*_export` 权限的角色）可导出企业内所有数据；普通员工只能导出与自己相关的数据（自己是创建人/负责人/参与人的记录），无权导出他人数据 |
+| FR-EXPORT-007 | 导出格式支持 .xlsx 和 .csv：单实体导出默认 .xlsx，多实体关联导出为 .xlsx（多 Sheet），用户可在对话中指定格式 |
+| FR-EXPORT-008 | 系统支持导出任务异步执行：数据量较大时（>1000 条），导出任务异步执行，Agent 通过消息轮询获取导出完成通知，下载导出文件 |
+| FR-EXPORT-009 | 系统支持导出字段选择：Agent 可根据用户对话意图选择导出字段子集（如"只导出合同编号、名称和金额"），而非必须导出全部字段 |
+| FR-EXPORT-010 | 系统支持导出数据脱敏：导出时对敏感字段（手机号、身份证号、银行卡号等）按企业脱敏规则处理，与 FR-SEC2-002 脱敏配置一致 |
+
+---
+
 ## Non-Functional Requirements
 
 ### 性能（NFR-PERF）
@@ -1284,6 +1315,7 @@ CLI Skill 执行结果支持以下输出格式，Agent 可根据场景选择：
 | NFR-SEC-004 | RBAC 权限：每个 API 必须验证权限 |
 | NFR-SEC-005 | SQL 注入防护：参数化查询 |
 | NFR-SEC-006 | 文件上传安全：类型校验、大小限制 |
+| NFR-SEC-007 | **CLI 唯一入口：** 所有业务 API 必须以 CLI 为唯一访问入口，禁止直接 HTTP 访问业务端点。Agent 必须通过 `ao-cli skill execute` 调用业务 API。用户凭证（token）由 CLI 统一管理，Agent 不接触凭证。服务器端应验证请求来源为 CLI（通过自定义 Header `X-Request-Source: ao-cli`），拒绝非 CLI 的 HTTP 请求。认证端点 `/api/v1/auth/login` 仅接受 CLI 客户端调用 |
 
 ### 可靠性（NFR-REL）
 
@@ -1339,17 +1371,17 @@ CLI Skill 执行结果支持以下输出格式，Agent 可根据场景选择：
 ### 交互架构
 
 ```
-User（自然语言） → Agent（理解意图） → CLI Skill（标准化指令） → Cloud API（业务处理）
+User（自然语言） → Agent（理解意图） → CLI Skill（唯一网关，ao-cli） → Cloud API（业务处理）
 ```
 
 **各层职责：**
 
 | 层级 | 职责 | 执行者 |
 |------|------|--------|
-| User | 自然语言表达需求 | 人 |
-| Agent | 理解意图、选择 Skill、组装参数 | Claude Code 等 |
-| CLI Skill | 标准化指令格式、发起 API 请求 | 本地 CLI 工具 |
-| Cloud API | 业务逻辑处理、数据持久化 | 云端服务器 |
+| User | 自然语言表达需求；首次使用时在 CLI 输入一次凭证 | 人 |
+| Agent | 理解意图、选择 Skill、组装参数、调用 `ao-cli skill execute`；不接触凭证、不直接调用 HTTP API | Claude Code 等 |
+| CLI Skill | 标准化指令格式、统一管理 Token 生命周期、发起 API 请求（唯一网关） | 本地 `ao-cli` 工具 |
+| Cloud API | 业务逻辑处理、数据持久化；验证请求来源为 CLI | 云端服务器 |
 
 ### API 规范
 
@@ -1407,6 +1439,7 @@ POST /api/v1/auth/refresh
 | 计费 | /api/v1/billing/subscriptions, /api/v1/billing/invoices, /api/v1/billing/payments | 订阅、账单、支付 |
 | 报表 | /api/v1/reports/sales, /api/v1/reports/finance, /api/v1/reports/inventory, /api/v1/reports/hr | 业务统计 |
 | 数据导入导出 | /api/v1/import, /api/v1/export | 批量导入导出 |
+| Agent 数据导出 | /api/v1/data-export | 对话式数据导出（单实体/跨实体关联/员工维度） |
 | Webhook | /api/v1/webhooks, /api/v1/webhooks/events | Webhook 管理 |
 | 客户成功 | /api/v1/operator/health, /api/v1/operator/milestones | 客户健康度 |
 | 经营者 | /api/v1/owner/dashboard, /api/v1/owner/alerts, /api/v1/owner/metrics | 信号灯、预警、指标 |
@@ -1715,8 +1748,12 @@ services:
 | 2026-07-04 | 新增 FR-I18N-001~006 | 多语言支持模块：用户/企业语言偏好、Skill 多语言定义、错误码多语言、生成文件多语言、消息通知多语言、运营商管理翻译 |
 | 2026-07-04 | 扩展 FR-IMS-015~022 | 进销存增强：多仓库管理、仓库间调拨、统一出入库流水、领用申请、按仓库维度库存查询 |
 | 2026-07-04 | 重构 FR-IMS-001~002 + 扩展 FR-IMS-020~027 | 产品→物料（5类SKU）、出入库流水增加批次号/效期/序列号/规格参数、盘库（全盘/抽盘/盘盈盘亏/审批调整/按批次盘点） |
+| 2026-07-08 | 新增 FR-EXPORT-001~010 | Agent 数据导出模块：对话式导出、跨实体关联导出、员工维度导出、操作日志导出、RBAC 权限绑定、异步执行、字段选择、脱敏 |
+| 2026-07-08 | 扩展 FR-CLI-009~010 | CLI 本地操作日志：自动记录 Skill 执行日志（JSONL 格式按日期归档），供 Agent 回忆操作历史 |
+| 2026-07-08 | 核心理念更新 | 明确 Agent→CLI→API 唯一交互链路，CLI 是 Agent 与 API 之间的唯一桥梁 |
+| 2026-07-08 | 新增 NFR-SEC-007 | **CLI 唯一入口铁律**：Agent 必须通过 `ao-cli skill execute` 操作所有业务端点，禁止直接 HTTP 调用。CLI 统一管理凭证生命周期。服务器端验证请求来源为 CLI |
 
 ---
 
 *本文档由 BMAD PM Workflow 生成*
-*Last Updated: 2026-07-04 (Round 8: FR-IMS 重构——物料分类/出入库参数规格/盘库)*
+*Last Updated: 2026-07-08 (Round 9: FR-EXPORT Agent 数据导出模块)*

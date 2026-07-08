@@ -11,7 +11,7 @@ classification:
   domain: '企业经营SaaS（Agent调用API作为前端）'
   complexity: '高'
   projectContext: 'greenfield'
-lastEdited: '2026-07-03'
+lastEdited: '2026-07-08'
 status: 'in_progress'
 ---
 
@@ -44,9 +44,10 @@ status: 'in_progress'
 ### Requirements Overview
 
 **Functional Requirements:**
-- 286 FRs across 32 modules
+- 296 FRs across 33 modules
 - Core modules: Auth, ORG, HRM, CRM, IMS, Contract, Sales, Service, Finance, Workflow
-- Supporting modules: File, Knowledge Base, Messaging, Multi-enterprise, Custom fields, Skills
+- Supporting modules: File, Knowledge Base, Messaging, Multi-enterprise, Custom fields, Skills, Data Export
+- Cross-cutting: Audit, Import/Export, Webhook, I18N, Security, CLI, Deployment
 
 **Non-Functional Requirements:**
 - Performance: < 200ms API response, 100 concurrent/enterprise
@@ -153,6 +154,9 @@ mkdir -p deploy/docker-compose
 
 **AI-Automated-office** 是一款**面向 Agent 的企业级云服务 SaaS**，采用以下核心架构：
 
+> **🔒 架构铁律：Agent→CLI→API 唯一交互链路**
+> 所有业务操作必须通过"用户与 Agent 对话 → Agent 调用 CLI Skill → CLI 发送 HTTPS 请求到 Go API"的链路完成。Agent 禁止直接调用业务 API（curl/HTTP 客户端），必须通过 `ao-cli skill execute` 执行所有业务操作。CLI 统一管理认证凭证生命周期，Agent 不接触任何凭证。服务器端验证请求来源 Header `X-Request-Source: ao-cli`，拒绝非 CLI 请求。CLI 同时记录所有 Skill 执行的操作日志（JSONL 格式，按日期归档于 `~/.ai-office-cli/logs/`），供 Agent 回忆操作历史。
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         本地环境 (Local)                              │
@@ -163,15 +167,21 @@ mkdir -p deploy/docker-compose
 │         └───────────────────┼───────────────────┘                     │
 │                             │                                         │
 │                    ┌────────▼────────┐                               │
-│                    │   CLI Skills    │                               │
-│                    │  (Agent 调用)   │                               │
+│                    │   CLI Skills    │  ◄── 唯一入口                  │
+│                    │  (Agent 调用)   │      Agent 禁止直接调 API      │
 │                    └────────┬────────┘                               │
 │                             │                                         │
 │                    ┌────────▼────────┐                               │
 │                    │   消息轮询 CLI   │  ◄── 60秒轮询间隔            │
 │                    └────────┬────────┘                               │
+│                             │                                         │
+│                    ┌────────▼────────┐                               │
+│                    │  操作日志记录    │  ◄── JSONL 按日期归档         │
+│                    │ ~/.ai-office-cli/│      供 Agent 回忆操作历史     │
+│                    │    logs/        │                               │
+│                    └─────────────────┘                               │
 └──────────────────────────────┼───────────────────────────────────────┘
-                               │ HTTPS
+                               │ HTTPS (X-Request-Source: ao-cli)
 ┌──────────────────────────────▼───────────────────────────────────────┐
 │                         云端服务 (Cloud)                              │
 │  ┌─────────────────────────────────────────────────────────────┐      │
@@ -192,6 +202,9 @@ mkdir -p deploy/docker-compose
 │  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐   │      │
 │  │  │ 销售   │ │ 售后   │ │  财务  │ │ 审批流 │ │ 知识库 │   │      │
 │  │  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘   │      │
+│  │  ┌────────┐ ┌────────┐                                       │      │
+│  │  │ 数据导出│ │  报表  │                                       │      │
+│  │  └────────┘ └────────┘                                       │      │
 │  └─────────────────────────────────────────────────────────────┘      │
 │                             │                                         │
 │  ┌──────────────────────────▼──────────────────────────────────┐      │
@@ -209,9 +222,11 @@ mkdir -p deploy/docker-compose
 
 | 特点 | 说明 |
 |------|------|
-| **无前端 SaaS** | 不提供 Web/桌面 UI，Agent 通过 API 操作业务 |
+| **无前端 SaaS** | 不提供 Web/桌面 UI，Agent 通过 CLI 调用 API 操作业务 |
+| **Agent→CLI→API 唯一链路** | Agent 禁止直接调 API，必须通过 CLI Skill，CLI 管理认证和签名 |
 | **数据即服务** | Agent 调用 API 获取数据，生成 HTML/文档展示 |
 | **权限即壁垒** | RBAC + 多租户隔离，确保 Agent 只能访问授权数据 |
+| **CLI 操作日志** | CLI 记录所有 Skill 执行日志（JSONL 按日期归档），供 Agent 回忆操作历史 |
 | **CLI 轮询** | 本地 CLI 每 60 秒轮询消息，解决 Agent 定时任务限制 |
 | **开源+商业** | AGPL v3 开源 + 商业授权双轨 |
 
@@ -258,24 +273,34 @@ Base URL: https://api.ai-office.com/v1
 ### 认证流程
 
 ```
-Agent                          API                      数据库
-  │                             │                         │
-  │  1. POST /auth/login        │                         │
-  │     (client_id + client_secret)                      │
-  │ ─────────────────────────────>│                        │
-  │                             │  验证凭证                │
-  │                             │ ────────────────────────>│
-  │                             │ <───────────────────────│
-  │  2. access_token + refresh_token                      │
-  │ <─────────────────────────────│                        │
-  │                             │                          │
-  │  3. GET /org/employees      │                          │
-  │     (Authorization: Bearer <token>)                   │
-  │ ─────────────────────────────>│                        │
-  │                             │  验证 token + RBAC       │
-  │                             │ ────────────────────────>│
-  │  4. employees JSON          │                          │
-  │ <─────────────────────────────│                        │
+Agent                    CLI                      API                      数据库
+  │                       │                         │                         │
+  │  1. ao-cli auth login │                         │                         │
+  │ ─────────────────────>│  POST /auth/login       │                         │
+  │                       │  (client_id + secret)   │                         │
+  │                       │ ─────────────────────────>│  验证凭证                │
+  │                       │                          │ ────────────────────────>│
+  │                       │                          │ <───────────────────────│
+  │                       │  access_token + refresh_token                      │
+  │                       │ <─────────────────────────│                        │
+  │  登录成功              │                          │                          │
+  │ <─────────────────────│                          │                          │
+  │                       │                          │                          │
+  │  2. ao-cli skill      │                          │                          │
+  │     execute ...       │                          │                          │
+  │ ─────────────────────>│  GET /org/employees      │                          │
+  │                       │  (Bearer token +         │                          │
+  │                       │   X-Request-Source:      │                          │
+  │                       │   ao-cli)                │                          │
+  │                       │ ─────────────────────────>│  验证 token + RBAC       │
+  │                       │                          │  + 验证 CLI 来源          │
+  │                       │                          │ ────────────────────────>│
+  │                       │  employees JSON          │                          │
+  │                       │ <─────────────────────────│                        │
+  │  Skill 执行结果        │                          │                          │
+  │ <─────────────────────│                          │                          │
+  │                       │                          │                          │
+  │  3. CLI 自动记录操作日志到 ~/.ai-office-cli/logs/YYYY-MM-DD.jsonl           │
 ```
 
 ### 核心 API 端点
@@ -295,6 +320,8 @@ Agent                          API                      数据库
 | **附件** | `/file/*` | 上传、下载、预览 |
 | **知识库** | `/kb/*` | 文档、RAG 检索 |
 | **消息** | `/message/*` | 消息列表、已读 |
+| **数据导出** | `/data-export/*` | Agent 对话式数据导出（单实体/跨实体关联/员工维度/操作日志） |
+| **审计** | `/audit-log/*` | 审计日志查询、导出 |
 
 ### 错误响应格式
 
@@ -1052,6 +1079,8 @@ SELECT * FROM ent_002.customer WHERE group_id = 'group_uuid';
 
 **Skill 是 Agent 调用 API 的接口定义：**
 
+> **🔒 架构铁律：** Agent 禁止直接调用业务 API（如 curl/HTTP 客户端），必须通过 `ao-cli skill execute` 执行所有业务操作。CLI 统一管理认证凭证生命周期和请求签名。每次 Skill 执行后，CLI 自动将操作详情写入本地日志文件（JSONL 格式，按日期归档），供 Agent 回忆操作历史。
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        Agent (Claude Code)                    │
@@ -1069,6 +1098,10 @@ SELECT * FROM ent_002.customer WHERE group_id = 'group_uuid';
 │                            │                                  │
 │                            ▼                                  │
 │                    POST /contract/create                      │
+│                            │                                  │
+│                            ▼                                  │
+│               自动记录操作日志                                │
+│          ~/.ai-office-cli/logs/YYYY-MM-DD.jsonl               │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -8739,3 +8772,209 @@ func UpdateInventory(tx *gorm.DB, warehouseID, materialID uuid.UUID, txn Invento
 | **盘点冻结** | 盘点期间锁定库存 | 防止盘点期间出入库导致数据不一致 |
 | **差异调整** | 审批后自动生成调整流水 | 盘盈盘亏必须有审批，调整必须有流水记录 |
 | **库存变更驱动** | 流水表驱动，禁止直接修改 | 保障数据一致性和可审计性 |
+
+---
+
+### ADR-038: Agent 数据导出架构
+
+#### 一、架构设计
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         Agent 数据导出架构                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  用户对话                                                                    │
+│  "帮我导出2026年6月所有合同清单"                                              │
+│       │                                                                      │
+│       ▼                                                                      │
+│  Agent 解析意图 → 翻译为 CLI 参数                                            │
+│       │                                                                      │
+│       ▼                                                                      │
+│  ao-cli skill execute data_export \                                          │
+│    --entity contract \                                                       │
+│    --filters '{"date_range":{"start":"2026-06-01","end":"2026-06-30"}}' \    │
+│    --format xlsx                                                             │
+│       │                                                                      │
+│       ▼                                                                      │
+│  CLI → POST /api/v1/data-export                                              │
+│    {entity_type, filters, format, fields?, anchor_type?, anchor_id?}        │
+│       │                                                                      │
+│       ├── 数据量 ≤ 1000 → 同步生成，直接返回下载 URL                         │
+│       │                                                                      │
+│       └── 数据量 > 1000 → 异步任务                                           │
+│             1. 返回 task_id                                                  │
+│             2. Worker 异步查询 + 生成文件                                     │
+│             3. 完成后写入消息队列                                              │
+│             4. CLI 轮询收到通知                                               │
+│             5. Agent 告知用户下载                                              │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 二、导出 API 设计
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/v1/data-export` | POST | 创建导出任务（同步/异步） |
+| `/api/v1/data-export/{id}` | GET | 查询导出任务状态 |
+| `/api/v1/data-export/{id}/download` | GET | 下载导出文件 |
+| `/api/v1/data-export/history` | GET | 查询导出历史 |
+
+**POST /api/v1/data-export 请求体：**
+
+```json
+{
+  "entity_type": "contract",
+  "filters": {
+    "date_range": {"start": "2026-06-01", "end": "2026-06-30"},
+    "status": ["active", "completed"]
+  },
+  "fields": ["contract_no", "title", "amount", "status"],
+  "format": "xlsx",
+  "anchor_type": null,
+  "anchor_id": null
+}
+```
+
+**跨实体关联导出请求体：**
+
+```json
+{
+  "anchor_type": "customer",
+  "anchor_id": "cust_abc123",
+  "entity_types": ["contract", "service_order", "quote"],
+  "format": "xlsx"
+}
+```
+
+**员工维度导出请求体：**
+
+```json
+{
+  "anchor_type": "employee",
+  "anchor_id": "emp_xyz789",
+  "entity_types": ["contract", "service_order", "quote", "purchase_order", "sales_order"],
+  "format": "xlsx"
+}
+```
+
+#### 三、导出权限规则
+
+| 角色 | 导出范围 |
+|------|----------|
+| Admin / `*_export` 权限 | 企业内所有数据 |
+| 普通员工 | 仅自己创建/负责/参与的记录 |
+| 跨实体关联导出 | 按每个实体的权限分别过滤，无权限的 Sheet 为空 |
+
+#### 四、文件生成格式
+
+- **单实体导出**：1 个 Sheet，列名 = 字段名
+- **跨实体关联导出**：多 Sheet Excel，每个实体一个 Sheet
+- **格式**：.xlsx（默认）或 .csv（单实体）
+- **文件名**：`{entity_type}_{anchor_type}_{YYYYMMDD_HHmmss}.xlsx`
+
+#### 五、关键设计决策
+
+| 决策点 | 选择 | 理由 |
+|--------|------|------|
+| **同步 vs 异步** | ≤1000 同步，>1000 异步 | 小数据量同步更快，大数据量避免超时 |
+| **多实体交付方式** | 单文件多 Sheet | 用户说"帮我导出客户A的所有数据"，期望一个文件而非多个 |
+| **权限粒度** | 按实体分别过滤 | 不同实体权限不同，不能一刀切 |
+| **脱敏** | 复用 FR-SEC2-002 规则 | 避免重复实现脱敏逻辑 |
+
+---
+
+### ADR-039: CLI 操作日志架构
+
+#### 一、架构设计
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         CLI 操作日志架构                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Agent 调用 CLI Skill                                                        │
+│       │                                                                      │
+│       ▼                                                                      │
+│  ao-cli skill execute contract create --title="销售合同"                     │
+│       │                                                                      │
+│       ├── 1. 执行 Skill 请求                                                 │
+│       │                                                                      │
+│       ├── 2. 获取 API 响应                                                   │
+│       │                                                                      │
+│       └── 3. 自动记录操作日志                                                 │
+│             │                                                                │
+│             ▼                                                                │
+│       ~/.ai-office-cli/logs/2026-07-08.jsonl                                 │
+│       ┌──────────────────────────────────────────────────────────────┐       │
+│       │ {"ts":"2026-07-08T10:30:00Z","skill":"contract",             │       │
+│       │  "action":"create","params":{"title":"销售合同"},             │       │
+│       │  "status":"success","result_id":"con_abc123"}                 │       │
+│       └──────────────────────────────────────────────────────────────┘       │
+│                                                                              │
+│  Agent 需要回忆操作历史时：                                                   │
+│       │                                                                      │
+│       └── 读取 ~/.ai-office-cli/logs/YYYY-MM-DD.jsonl                       │
+│           → 解析 JSONL → 回忆之前执行过哪些操作                               │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 二、日志格式（JSONL）
+
+每行一条操作记录，Agent 可直接读取和解析：
+
+```json
+{
+  "ts": "2026-07-08T10:30:00Z",
+  "skill": "contract",
+  "action": "create",
+  "params_summary": {"title": "销售合同", "amount": 100000},
+  "status": "success",
+  "result_summary": {"id": "con_abc123", "contract_no": "HT-2026-001"},
+  "error": null,
+  "duration_ms": 235
+}
+```
+
+**失败记录示例：**
+
+```json
+{
+  "ts": "2026-07-08T10:31:00Z",
+  "skill": "contract",
+  "action": "approve",
+  "params_summary": {"id": "con_def456"},
+  "status": "error",
+  "result_summary": null,
+  "error": {"code": "PERM_DENIED", "message": "无审批权限"},
+  "duration_ms": 45
+}
+```
+
+#### 三、日志存储规范
+
+| 规范 | 说明 |
+|------|------|
+| **目录** | `~/.ai-office-cli/logs/`（可通过 config.yaml `logs_dir` 配置） |
+| **文件名** | `YYYY-MM-DD.jsonl`（如 `2026-07-08.jsonl`） |
+| **写入方式** | 当日文件追加写入，跨日自动创建新文件 |
+| **编码** | UTF-8 |
+| **敏感信息** | 参数摘要中不记录密码、token 等敏感值（脱敏后记录） |
+
+#### 四、Agent 日志查看方式
+
+1. **直接读取文件**：Agent 读取 `~/.ai-office-cli/logs/YYYY-MM-DD.jsonl`
+2. **Skill help 提示**：`ao-cli skill help {skill_name}` 输出中包含"操作日志位置: ~/.ai-office-cli/logs/"
+3. **CLI 命令**：`ao-cli log list` 列出所有日志文件，`ao-cli log show --date 2026-07-08` 输出指定日期日志
+
+#### 五、关键设计决策
+
+| 决策点 | 选择 | 理由 |
+|--------|------|------|
+| **日志格式** | JSONL | 每行独立 JSON，Agent 可逐行解析，无需加载整个文件 |
+| **按日期归档** | 每天一个文件 | 文件大小可控，Agent 可按日期范围读取 |
+| **本地存储** | 不上传到服务器 | 隐私保护，减少网络传输；Agent 本地即可读取 |
+| **敏感信息脱敏** | 日志中不记录密码/token | 安全合规，防止日志泄露凭证 |
+| **参数摘要** | 仅记录关键参数 | 减少日志体积，避免记录大量列表数据 |

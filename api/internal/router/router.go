@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -16,11 +17,13 @@ import (
 	"github.com/ai-office/api/pkg/config"
 	"github.com/ai-office/api/pkg/observability"
 	"github.com/ai-office/api/pkg/ratelimit"
+	rc "github.com/ai-office/api/pkg/redis"
 	"github.com/ai-office/api/pkg/rbac"
+	"github.com/ai-office/api/pkg/notification"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
+func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.Client) *gin.Engine {
 	if cfg.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -55,6 +58,12 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 
 	var backupService *service.BackupService
 	var quotaService *service.QuotaService
+
+	var tokenBlacklist *rc.TokenBlacklist
+	if redisClient != nil {
+		tokenBlacklist = rc.NewTokenBlacklist(redisClient)
+	}
+
 	if db != nil {
 		userRepo := repository.NewUserRepository(db)
 
@@ -86,11 +95,26 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		empPermService := service.NewEmployeePermissionService(empPermRepo)
 		empPermHandler := handler.NewEmployeePermissionHandler(empPermService)
 
+		permRepo := repository.NewPermissionRepository(db)
+		roleRepo := repository.NewRoleRepository(db)
+		empPermABACRepo := repository.NewEmployeePermissionABACRepository(db)
+		customRuleRepo := repository.NewCustomRuleRepository(db)
+
+		permFacade := rbac.NewPermissionFacade()
+		permFacade.RegisterEvaluator(rbac.NewRBACEvaluator())
+		permFacade.RegisterEvaluator(rbac.NewABACEvaluator())
+		permFacade.RegisterEvaluator(rbac.NewAttributeEvaluator())
+		permFacade.RegisterEvaluator(rbac.NewCustomRuleEvaluator())
+
+		permService := service.NewPermissionService(permRepo, roleRepo, empPermABACRepo, customRuleRepo, permFacade)
+		permHandler := handler.NewPermissionHandler(permService)
+		roleHandler := handler.NewRoleHandler(permService)
+
 		summaryService := service.NewSummaryService(enterpriseRepo, empRepo, deptRepo)
 		summaryHandler := handler.NewSummaryHandler(summaryService)
 
-		authService := service.NewAuthServiceFull(userRepo, enterpriseRepo, crossEnterpriseRepo, jwtManager)
-		authHandler := handler.NewAuthHandlerWithEmployee(authService, empService)
+		authService := service.NewAuthServiceFull(userRepo, enterpriseRepo, crossEnterpriseRepo, jwtManager, tokenBlacklist)
+		authHandler := handler.NewAuthHandlerFull(authService, empService, tokenBlacklist, jwtManager)
 
 		customerRepo := repository.NewCustomerRepository(db)
 		customerService := service.NewCustomerService(customerRepo)
@@ -138,6 +162,56 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 		financeHandler := handler.NewFinanceHandler(financeSvc)
 		knowledgeSvc := service.NewKnowledgeService(db)
 		knowledgeHandler := handler.NewKnowledgeHandler(knowledgeSvc)
+
+		msgRepo := repository.NewMessageRepository(db)
+		annRepo := repository.NewAnnouncementRepository(db)
+		var unreadCounter *rc.UnreadCounter
+		if redisClient != nil {
+			unreadCounter = rc.NewUnreadCounter(redisClient)
+		}
+		msgService := service.NewMessageService(msgRepo, annRepo, unreadCounter)
+		msgHandler := handler.NewMessageHandler(msgService)
+
+		wfRepo := repository.NewWorkflowRepository(db)
+		wfService := service.NewWorkflowService(wfRepo)
+		wfHandler := handler.NewWorkflowHandler(wfService)
+
+		fileRepo := repository.NewFileMetadataRepository(db)
+		fileService := service.NewFileService(fileRepo, cfg.Server.BackupDir)
+		fileHandler := handler.NewFileHandler(fileService)
+
+		skillRepo := repository.NewSkillRepository(db)
+		skillService := service.NewSkillService(skillRepo)
+		skillHandler := handler.NewSkillHandler(skillService)
+
+		cfFieldRepo := repository.NewCustomFieldRepository(db)
+		cfRelRepo := repository.NewRelationRepository(db)
+		cfService := service.NewCustomFieldService(cfFieldRepo, cfRelRepo)
+		cfHandler := handler.NewCustomFieldHandler(cfService)
+
+		var smsClient *notification.AliyunSMSClient
+		if cfg.Notification.SMS.AccessKeyID != "" {
+			smsClient = notification.NewAliyunSMSClient(notification.AliyunSMSConfig{
+				AccessKeyID:     cfg.Notification.SMS.AccessKeyID,
+				AccessKeySecret: cfg.Notification.SMS.AccessKeySecret,
+				SignName:        cfg.Notification.SMS.SignName,
+				TemplateCode:    cfg.Notification.SMS.TemplateCode,
+				RegionID:        cfg.Notification.SMS.RegionID,
+			})
+		}
+		var emailClient *notification.EmailClient
+		if cfg.Notification.Email.Host != "" {
+			emailClient = notification.NewEmailClient(notification.EmailConfig{
+				Host:     cfg.Notification.Email.Host,
+				Port:     cfg.Notification.Email.Port,
+				Username: cfg.Notification.Email.Username,
+				Password: cfg.Notification.Email.Password,
+				From:     cfg.Notification.Email.From,
+				UseTLS:   cfg.Notification.Email.UseTLS,
+			})
+		}
+		notifService := notification.NewNotificationService(smsClient, emailClient)
+		notifHandler := handler.NewNotificationHandler(notifService)
 		platformSvc := service.NewPlatformService(db)
 		opsSvc := service.NewOperationsService(db)
 		opsHandler := handler.NewOperationsHandler(opsSvc, platformSvc)
@@ -174,17 +248,26 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 
 		auth := api.Group("/auth")
 		{
-			auth.POST("/login", authHandler.Login)
-			auth.POST("/refresh", authHandler.Refresh)
+		auth.POST("/login", authHandler.Login)
+		auth.POST("/refresh", authHandler.Refresh)
+
+		if db != nil {
+			deviceAuthRepo := repository.NewDeviceAuthRepository(db)
+			deviceAuthService := service.NewDeviceAuthService(deviceAuthRepo, userRepo, jwtManager)
+			deviceAuthHandler := handler.NewDeviceAuthHandler(deviceAuthService)
+			auth.POST("/device/code", deviceAuthHandler.GenerateDeviceCode)
+			auth.POST("/device/token", deviceAuthHandler.ExchangeToken)
+		}
 		}
 
 		operatorOnly := middleware.RequirePermission(rbac.PermSystemConfig)
 		financeAccess := middleware.RequirePermission(rbac.PermFinanceRead)
 
 		protected := api.Group("")
-		protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
+		protected.Use(middleware.AuthRequired(jwtManager, tokenBlacklist), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
 		{
 			protected.POST("/auth/switch-enterprise", authHandler.SwitchEnterprise)
+			protected.POST("/auth/logout", authHandler.Logout)
 			protected.GET("/me", authHandler.Me)
 			protected.GET("/me/profile", authHandler.MeProfile)
 			protected.GET("/audit-logs", auditLogHandler.List)
@@ -217,6 +300,13 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.PUT("/features/:key", quotaHandler.UpdateFeature)
 
 			enterprise := protected.Group("/enterprises/:enterprise_id")
+			enterprise.Use(middleware.EnterpriseOwnership(func(userID, targetEnterpriseID uuid.UUID) (bool, error) {
+				perm, err := crossEnterpriseRepo.FindByUserAndTarget(userID, targetEnterpriseID)
+				if err != nil || perm == nil {
+					return false, err
+				}
+				return true, nil
+			}))
 			{
 				enterprise.GET("/departments/tree", deptHandler.GetTree)
 				enterprise.POST("/departments", deptHandler.Create)
@@ -266,8 +356,17 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			}
 			enterprise.POST("/files", knowledgeHandler.UploadFile)
 			enterprise.GET("/files", knowledgeHandler.ListFiles)
-			enterprise.POST("/messages", knowledgeHandler.SendMessage)
-			enterprise.GET("/messages", knowledgeHandler.ListMessages)
+			enterprise.POST("/files/upload", fileHandler.Upload)
+			protected.GET("/files/:file_key/preview", fileHandler.Preview)
+			protected.GET("/files/:file_key/view", fileHandler.View)
+			protected.GET("/files/:file_key/download", fileHandler.Download)
+			enterprise.POST("/messages", msgHandler.Send)
+			enterprise.GET("/messages", msgHandler.List)
+			enterprise.GET("/messages/unread", msgHandler.Unread)
+			enterprise.GET("/messages/poll", msgHandler.Poll)
+			enterprise.POST("/messages/:id/read", msgHandler.MarkRead)
+			enterprise.POST("/announcements", msgHandler.CreateAnnouncement)
+			enterprise.GET("/announcements", msgHandler.ListAnnouncements)
 			enterprise.POST("/kb/docs", knowledgeHandler.CreateDoc)
 			enterprise.GET("/kb/docs", knowledgeHandler.ListDocs)
 			protected.GET("/dashboard", opsHandler.Dashboard)
@@ -279,8 +378,17 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.POST("/webhooks", opsHandler.CreateWebhook)
 			protected.POST("/expenses/:id/approve", financeHandler.ApproveExpense)
 			protected.GET("/audit-log-entries", opsHandler.ListAuditLogs)
-			protected.GET("/skills", opsHandler.ListSkills)
-			protected.POST("/skills", opsHandler.CreateSkill)
+			protected.GET("/skills", skillHandler.List)
+			protected.POST("/skills", skillHandler.Create)
+			protected.GET("/skills/:name", skillHandler.GetDetail)
+
+			protected.GET("/meta/entities/:type/fields", cfHandler.ListFields)
+			protected.POST("/meta/fields", cfHandler.CreateField)
+			protected.PATCH("/:type/:id/custom-fields", cfHandler.SetCustomFields)
+			protected.GET("/:type/:id/relations/:name", cfHandler.GetRelations)
+
+			protected.POST("/notifications/sms/send", notifHandler.SendSMS)
+			protected.POST("/notifications/email/send", notifHandler.SendEmail)
 			protected.GET("/reports/:type", opsHandler.GetReport)
 			protected.POST("/service-tickets", opsHandler.CreateServiceTicket)
 			protected.GET("/service-tickets", opsHandler.ListServiceTickets)
@@ -355,6 +463,22 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB) *gin.Engine {
 			protected.POST("/employees/:id/permissions", empPermHandler.Set)
 			protected.DELETE("/employees/:id/permissions", empPermHandler.Revoke)
 			protected.GET("/employees/:id/permissions", empPermHandler.List)
+
+			protected.GET("/permissions", permHandler.List)
+			protected.POST("/permissions/check", permHandler.Check)
+			protected.GET("/roles", roleHandler.List)
+			protected.POST("/roles", roleHandler.Create)
+			protected.GET("/roles/:id/permissions", roleHandler.GetPermissions)
+			protected.PUT("/roles/:id/permissions", roleHandler.SetPermissions)
+
+			protected.POST("/workflow-definitions", wfHandler.CreateDefinition)
+			protected.GET("/workflow-definitions", wfHandler.ListDefinitions)
+			protected.GET("/workflow-definitions/:id", wfHandler.GetDefinition)
+			protected.POST("/workflows", wfHandler.SubmitWorkflow)
+			protected.GET("/workflows/pending", wfHandler.ListPending)
+			protected.POST("/workflows/:id/approve", wfHandler.Approve)
+			protected.POST("/workflows/:id/reject", wfHandler.Reject)
+			protected.GET("/workflows/:id/history", wfHandler.History)
 
 			protected.PUT("/departments/:id", deptHandler.Update)
 			protected.PUT("/departments/:id/manager", deptHandler.SetManager)

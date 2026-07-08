@@ -1,0 +1,11 @@
+{
+  "name": "ai-office-api",
+  "description": "AI-Automated-office 企业云服务 API 技能。169 个 REST API 端点，覆盖组织架构、HRM、CRM、进销存、合同、销售、售后、财务、知识库、消息、AI 对话等全部业务模块。让 Agent 通过自然语言驱动企业经营管理。",
+  "version": "1.0.0",
+  "author": {
+    "name": "AI-Automated-office Team"
+  },
+  "homepage": "https://github.com/your-org/AI-Automated-office",
+  "repository": "https://github.com/your-org/AI-Automated-office",
+  "license": "AGPL-3.0"
+}

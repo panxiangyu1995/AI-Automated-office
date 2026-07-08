@@ -71,8 +71,8 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	summaryService := service.NewSummaryService(enterpriseRepo, empRepo, deptRepo)
 	summaryHandler := handler.NewSummaryHandler(summaryService)
 
-	authService := service.NewAuthServiceFull(userRepo, enterpriseRepo, crossEnterpriseRepo, jwtManager)
-	authHandler := handler.NewAuthHandlerWithEmployee(authService, empService)
+	authService := service.NewAuthServiceFull(userRepo, enterpriseRepo, crossEnterpriseRepo, jwtManager, nil)
+	authHandler := handler.NewAuthHandlerFull(authService, empService, nil, jwtManager)
 
 	customerRepo := repository.NewCustomerRepository(db)
 	customerService := service.NewCustomerService(customerRepo)
@@ -168,7 +168,7 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	financeAccess := middleware.RequirePermission(rbac.PermFinanceRead)
 
 	protected := api.Group("")
-	protected.Use(middleware.AuthRequired(jwtManager), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
+	protected.Use(middleware.AuthRequired(jwtManager, nil), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
 	{
 		protected.POST("/auth/switch-enterprise", authHandler.SwitchEnterprise)
 		protected.GET("/me", authHandler.Me)

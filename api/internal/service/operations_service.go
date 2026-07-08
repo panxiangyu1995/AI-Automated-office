@@ -51,7 +51,7 @@ func (s *OperationsService) ListSubscriptions(eid string) ([]model.EnterpriseSub
 func (s *OperationsService) CreateSkill(eid, name, desc, params, endpoint, module string) (*model.Skill, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	sk := &model.Skill{Name: name, Description: desc, Parameters: params, APIEndpoint: endpoint, Module: module, Enabled: true}
+	sk := &model.Skill{Name: name, Description: desc, APIEndpoint: endpoint, Category: module, IsActive: true}
 	sk.EnterpriseID = id
 	if err := s.db.Create(sk).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建Skill失败") }
 	return sk, nil

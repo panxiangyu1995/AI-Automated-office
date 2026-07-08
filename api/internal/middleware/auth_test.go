@@ -13,7 +13,7 @@ func TestAuthRequired_MissingHeader(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mgr := auth.NewJWTManager("secret", 3600, 2592000, "test")
 	r := gin.New()
-	r.Use(AuthRequired(mgr))
+	r.Use(AuthRequired(mgr, nil))
 	r.GET("/test", func(c *gin.Context) {
 		t.Error("handler should not be called")
 	})
@@ -29,7 +29,7 @@ func TestAuthRequired_InvalidFormat(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mgr := auth.NewJWTManager("secret", 3600, 2592000, "test")
 	r := gin.New()
-	r.Use(AuthRequired(mgr))
+	r.Use(AuthRequired(mgr, nil))
 	r.GET("/test", func(c *gin.Context) {
 		t.Error("handler should not be called")
 	})

@@ -18,6 +18,7 @@ import (
 	"github.com/ai-office/api/internal/model"
 	"github.com/ai-office/api/pkg/config"
 	"github.com/ai-office/api/pkg/database"
+	"github.com/ai-office/api/pkg/redis"
 	"github.com/ai-office/api/pkg/tenant"
 )
 
@@ -30,6 +31,13 @@ func main() {
 	cfg, err := config.Load(cfgPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
+	}
+
+	if cfg.JWT.Secret == "" || cfg.JWT.Secret == "change-me-in-production" {
+		if cfg.Server.Mode == "release" {
+			log.Fatal("JWT secret must be set via AO_JWT_SECRET in production mode")
+		}
+		log.Println("WARNING: JWT secret is using default value. Set AO_JWT_SECRET for production.")
 	}
 
 	logger, err := zap.NewProduction()
@@ -51,7 +59,81 @@ func main() {
 			if sqlDB != nil {
 				defer sqlDB.Close()
 			}
-			if err := initDB.AutoMigrate(&model.Group{}, &model.Enterprise{}); err != nil {
+			if err := initDB.AutoMigrate(
+				&model.Group{},
+				&model.Enterprise{},
+				&model.User{},
+				&model.DeviceCode{},
+				&model.Role{},
+				&model.Permission{},
+				&model.RolePermission{},
+				&model.EmployeePermissionABAC{},
+				&model.PermissionAttr{},
+				&model.CustomRule{},
+				&model.EmployeePermission{},
+				&model.CrossEnterprisePermission{},
+				&model.Department{},
+				&model.Employee{},
+				&model.Position{},
+				&model.Customer{},
+				&model.CustomerLevel{},
+				&model.CustomerTag{},
+				&model.Contact{},
+				&model.Opportunity{},
+				&model.Supplier{},
+				&model.Material{},
+				&model.Warehouse{},
+				&model.WarehouseInventory{},
+				&model.StockFlow{},
+				&model.MaterialPrice{},
+				&model.InventoryCheck{},
+				&model.InventoryCheckItem{},
+				&model.PurchaseOrder{},
+				&model.PurchaseOrderItem{},
+				&model.SalesOrder{},
+				&model.SalesOrderItem{},
+				&model.TransferOrder{},
+				&model.Requisition{},
+				&model.Contract{},
+				&model.ContractReference{},
+				&model.ContractAttachment{},
+				&model.ServiceOrder{},
+				&model.PaymentRecord{},
+				&model.ExpenseRecord{},
+				&model.Invoice{},
+				&model.WfDefinition{},
+				&model.WfInstance{},
+				&model.WfApproval{},
+				&model.FileMetadata{},
+				&model.FileRecord{},
+				&model.Message{},
+				&model.Announcement{},
+				&model.AnnouncementReadStatus{},
+				&model.KnowledgeDoc{},
+				&model.VectorRecord{},
+				&model.DocChunk{},
+				&model.ChatSession{},
+				&model.ChatMessage{},
+				&model.KBCategory{},
+				&model.Skill{},
+				&model.SkillRoleOpening{},
+				&model.SkillParameter{},
+				&model.FieldDefinition{},
+				&model.RelationDefinition{},
+				&model.AuditLog{},
+				&model.AuditLogEntry{},
+				&model.SubscriptionPlan{},
+				&model.EnterpriseSubscription{},
+				&model.Webhook{},
+				&model.ServiceTicket{},
+				&model.UsageBill{},
+				&model.ServiceConfig{},
+				&model.ApiQuota{},
+				&model.FeatureFlag{},
+				&model.RateLimitConfig{},
+				&model.BackupConfig{},
+				&model.BackupRecord{},
+			); err != nil {
 				logger.Warn("auto-migrate system tables failed", zap.Error(err))
 			}
 		}
@@ -59,7 +141,18 @@ func main() {
 		logger.Info("no database configuration, running without database")
 	}
 
-	r := router.Setup(cfg, logger, db)
+	var redisClient *redis.Client
+	if cfg.Redis.Host != "" {
+		rc, err := redis.NewClient(cfg.Redis)
+		if err != nil {
+			logger.Warn("redis init failed, running without redis", zap.Error(err))
+		} else {
+			redisClient = rc
+			defer rc.Close()
+		}
+	}
+
+	r := router.Setup(cfg, logger, db, redisClient)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	srv := &http.Server{

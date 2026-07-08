@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-	Redis    RedisConfig    `mapstructure:"redis"`
-	JWT      JWTConfig      `mapstructure:"jwt"`
-	Log      LogConfig      `mapstructure:"log"`
+	Server       ServerConfig       `mapstructure:"server"`
+	Database     DatabaseConfig     `mapstructure:"database"`
+	Redis        RedisConfig        `mapstructure:"redis"`
+	JWT          JWTConfig          `mapstructure:"jwt"`
+	Log          LogConfig          `mapstructure:"log"`
+	Notification NotificationConfig `mapstructure:"notification"`
 }
 
 type ServerConfig struct {
@@ -59,6 +60,28 @@ type LogConfig struct {
 	MaxBackups int    `mapstructure:"max_backups"`
 	MaxAge     int    `mapstructure:"max_age"`
 	Compress   bool   `mapstructure:"compress"`
+}
+
+type NotificationConfig struct {
+	SMS   SMSConfig   `mapstructure:"sms"`
+	Email EmailConfigN `mapstructure:"email"`
+}
+
+type SMSConfig struct {
+	AccessKeyID     string `mapstructure:"access_key_id"`
+	AccessKeySecret string `mapstructure:"access_key_secret"`
+	SignName        string `mapstructure:"sign_name"`
+	TemplateCode    string `mapstructure:"template_code"`
+	RegionID        string `mapstructure:"region_id"`
+}
+
+type EmailConfigN struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	From     string `mapstructure:"from"`
+	UseTLS   bool   `mapstructure:"use_tls"`
 }
 
 func (c *Config) DSN() string {

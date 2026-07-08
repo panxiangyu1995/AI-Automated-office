@@ -1,12 +1,14 @@
 package middleware
 
 import (
+	"context"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/ai-office/api/pkg/auth"
 	"github.com/ai-office/api/pkg/errors"
+	"github.com/ai-office/api/pkg/redis"
 	"github.com/ai-office/api/pkg/response"
 )
 
@@ -16,7 +18,7 @@ const (
 	ContextKeyEmail  = "email"
 )
 
-func AuthRequired(jwtManager *auth.JWTManager) gin.HandlerFunc {
+func AuthRequired(jwtManager *auth.JWTManager, tokenBlacklist *redis.TokenBlacklist) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -39,9 +41,24 @@ func AuthRequired(jwtManager *auth.JWTManager) gin.HandlerFunc {
 			return
 		}
 
+		if tokenBlacklist != nil && claims.ID != "" {
+			blacklisted, err := tokenBlacklist.IsBlacklisted(context.Background(), claims.ID)
+			if err != nil {
+				response.Error(c, errors.ErrInternal.WithDetail("token 验证服务不可用，请稍后重试"))
+				c.Abort()
+				return
+			}
+			if blacklisted {
+				response.Error(c, errors.ErrTokenInvalid.WithDetail("token has been revoked"))
+				c.Abort()
+				return
+			}
+		}
+
 		c.Set(ContextKeyUserID, claims.UserID)
 		c.Set(ContextKeyRole, claims.Role)
 		c.Set(ContextKeyEmail, claims.Email)
+		c.Set(ContextKeyEnterpriseIDFromToken, claims.EnterpriseID)
 
 		c.Next()
 	}

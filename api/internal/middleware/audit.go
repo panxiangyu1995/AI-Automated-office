@@ -42,13 +42,15 @@ func (m *AuditMiddleware) Record() gin.HandlerFunc {
 		resourceType, resourceID := parseResource(path)
 		action := methodToAction(method)
 
+		details := fmt.Sprintf("%s %s", method, path)
+
 		m.auditLogService.Create(
 			enterpriseID,
 			userID,
 			action,
 			resourceType,
 			resourceID,
-			fmt.Sprintf("%s %s", method, path),
+			details,
 			c.ClientIP(),
 			c.Request.UserAgent(),
 		)

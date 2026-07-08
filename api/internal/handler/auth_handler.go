@@ -1,19 +1,26 @@
 package handler
 
 import (
+	"context"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/ai-office/api/internal/middleware"
 	"github.com/ai-office/api/internal/model"
 	"github.com/ai-office/api/internal/service"
+	"github.com/ai-office/api/pkg/auth"
 	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/ai-office/api/pkg/redis"
 	"github.com/ai-office/api/pkg/response"
 )
 
 type AuthHandler struct {
 	authService      AuthServiceInterface
 	employeeService  *service.EmployeeService
+	tokenBlacklist   *redis.TokenBlacklist
+	jwtManager       *auth.JWTManager
 }
 
 type AuthServiceInterface interface {
@@ -31,6 +38,15 @@ func NewAuthHandlerWithEmployee(authService AuthServiceInterface, employeeServic
 	return &AuthHandler{
 		authService:     authService,
 		employeeService: employeeService,
+	}
+}
+
+func NewAuthHandlerFull(authService AuthServiceInterface, employeeService *service.EmployeeService, tokenBlacklist *redis.TokenBlacklist, jwtManager *auth.JWTManager) *AuthHandler {
+	return &AuthHandler{
+		authService:     authService,
+		employeeService: employeeService,
+		tokenBlacklist:   tokenBlacklist,
+		jwtManager:       jwtManager,
 	}
 }
 
@@ -188,4 +204,42 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		"name":  user.Name,
 		"role":  user.Role,
 	})
+}
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	if h.tokenBlacklist == nil || h.jwtManager == nil {
+		response.Success(c, gin.H{"message": "已登出"})
+		return
+	}
+
+	authHeader := c.GetHeader("Authorization")
+	if authHeader != "" {
+		parts := []string{}
+		for i, ch := range authHeader {
+			if ch == ' ' {
+				parts = append(parts, authHeader[:i])
+				parts = append(parts, authHeader[i+1:])
+				break
+			}
+		}
+		if len(parts) == 2 {
+			claims, err := h.jwtManager.ValidateToken(parts[1])
+			if err == nil && claims.ID != "" {
+				h.tokenBlacklist.Add(context.Background(), claims.ID, time.Duration(h.jwtManager.AccessTTL().Seconds())*time.Second)
+			}
+		}
+	}
+
+	var req struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	if c.ShouldBindJSON(&req) == nil && req.RefreshToken != "" {
+		claims, err := h.jwtManager.ValidateToken(req.RefreshToken)
+		if err == nil && claims.ID != "" {
+			refreshTTL := 30 * 24 * time.Hour
+			h.tokenBlacklist.Add(context.Background(), claims.ID, refreshTTL)
+		}
+	}
+
+	response.Success(c, gin.H{"message": "已登出"})
 }

@@ -1,0 +1,30 @@
+{
+  "name": "@ai-office/claude-plugin",
+  "version": "1.0.0",
+  "description": "AI-Automated-office 企业云服务 Claude Code Plugin。169 个 REST API 端点，覆盖全部业务模块。",
+  "main": ".claude-plugin/plugin.json",
+  "keywords": [
+    "claude-code",
+    "claude-plugin",
+    "ai-office",
+    "enterprise",
+    "saas",
+    "api",
+    "hrm",
+    "crm",
+    "inventory",
+    "contract",
+    "finance"
+  ],
+  "author": "AI-Automated-office Team",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/AI-Automated-office.git",
+    "directory": "plugins/ai-office-api"
+  },
+  "files": [
+    ".claude-plugin/",
+    "skills/"
+  ]
+}

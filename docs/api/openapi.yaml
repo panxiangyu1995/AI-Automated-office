@@ -1,0 +1,325 @@
+openapi: 3.0.3
+info:
+  title: AI-Automated-Office API
+  description: Agent-driven enterprise SaaS platform API
+  version: 1.0.0
+  contact:
+    name: AI Office Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      security: []
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      responses:
+        '200':
+          description: Logged out
+
+  /auth/device/code:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Generate device code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [client_id]
+              properties:
+                client_id:
+                  type: string
+                scope:
+                  type: string
+      responses:
+        '200':
+          description: Device code generated
+
+  /auth/device/token:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Exchange device token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_code, client_id]
+              properties:
+                device_code:
+                  type: string
+                client_id:
+                  type: string
+      responses:
+        '200':
+          description: Token exchanged
+
+  /permissions:
+    get:
+      tags: [Permissions]
+      summary: List all permissions
+      responses:
+        '200':
+          description: Permission list
+
+  /permissions/check:
+    post:
+      tags: [Permissions]
+      summary: Check permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermissionContext'
+      responses:
+        '200':
+          description: Permission decision
+
+  /roles:
+    get:
+      tags: [Roles]
+      summary: List roles
+      responses:
+        '200':
+          description: Role list
+    post:
+      tags: [Roles]
+      summary: Create role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Role created
+
+  /workflow-definitions:
+    get:
+      tags: [Workflow]
+      summary: List workflow definitions
+      responses:
+        '200':
+          description: Definition list
+    post:
+      tags: [Workflow]
+      summary: Create workflow definition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, flow_config]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                flow_config:
+                  type: string
+                  description: JSON flow configuration
+      responses:
+        '201':
+          description: Definition created
+
+  /workflows/pending:
+    get:
+      tags: [Workflow]
+      summary: List pending workflow instances
+      responses:
+        '200':
+          description: Pending instances
+
+  /workflows/{id}/approve:
+    post:
+      tags: [Workflow]
+      summary: Approve workflow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Approved
+
+  /workflows/{id}/reject:
+    post:
+      tags: [Workflow]
+      summary: Reject workflow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rejected
+
+  /notifications/sms/send:
+    post:
+      tags: [Notification]
+      summary: Send SMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, template_code]
+              properties:
+                phone:
+                  type: string
+                template_code:
+                  type: string
+                params:
+                  type: object
+      responses:
+        '200':
+          description: SMS sent
+
+  /notifications/email/send:
+    post:
+      tags: [Notification]
+      summary: Send email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [to, subject, body]
+              properties:
+                to:
+                  type: string
+                subject:
+                  type: string
+                body:
+                  type: string
+      responses:
+        '200':
+          description: Email sent
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PermissionContext:
+      type: object
+      required: [subject, object, action]
+      properties:
+        subject:
+          type: object
+          properties:
+            user_id:
+              type: string
+            role:
+              type: string
+            department_id:
+              type: string
+        object:
+          type: object
+          properties:
+            resource:
+              type: string
+            id:
+              type: string
+        action:
+          type: string
+
+    ErrorInfo:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        detail:
+          type: string
+        level:
+          type: string
+        recoverable:
+          type: boolean
+        recovery_action:
+          type: string
+        request_id:
+          type: string
+        timestamp:
+          type: string

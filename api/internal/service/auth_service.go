@@ -1,7 +1,9 @@
 package service
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -9,13 +11,15 @@ import (
 	"github.com/ai-office/api/internal/repository"
 	"github.com/ai-office/api/pkg/auth"
 	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/ai-office/api/pkg/redis"
 )
 
 type AuthService struct {
-	userRepo         repository.UserRepository
-	enterpriseRepo   repository.EnterpriseRepository
-	crossEnterpriseRepo repository.CrossEnterpriseRepository
-	jwtManager       *auth.JWTManager
+	userRepo             repository.UserRepository
+	enterpriseRepo       repository.EnterpriseRepository
+	crossEnterpriseRepo  repository.CrossEnterpriseRepository
+	jwtManager           *auth.JWTManager
+	tokenBlacklist       *redis.TokenBlacklist
 }
 
 type LoginRequest struct {
@@ -51,12 +55,13 @@ func NewAuthServiceWithEnterprise(userRepo repository.UserRepository, enterprise
 	}
 }
 
-func NewAuthServiceFull(userRepo repository.UserRepository, enterpriseRepo repository.EnterpriseRepository, crossEnterpriseRepo repository.CrossEnterpriseRepository, jwtManager *auth.JWTManager) *AuthService {
+func NewAuthServiceFull(userRepo repository.UserRepository, enterpriseRepo repository.EnterpriseRepository, crossEnterpriseRepo repository.CrossEnterpriseRepository, jwtManager *auth.JWTManager, tokenBlacklist *redis.TokenBlacklist) *AuthService {
 	return &AuthService{
-		userRepo:           userRepo,
-		enterpriseRepo:     enterpriseRepo,
+		userRepo:            userRepo,
+		enterpriseRepo:      enterpriseRepo,
 		crossEnterpriseRepo: crossEnterpriseRepo,
-		jwtManager:         jwtManager,
+		jwtManager:          jwtManager,
+		tokenBlacklist:      tokenBlacklist,
 	}
 }
 
@@ -118,6 +123,13 @@ func (s *AuthService) Refresh(req RefreshRequest) (*TokenResponse, *apperrors.Ap
 		return nil, apperrors.ErrTokenExpired.WithDetail("刷新令牌无效或已过期")
 	}
 
+	if s.tokenBlacklist != nil && claims.ID != "" {
+		blacklisted, blErr := s.tokenBlacklist.IsBlacklisted(context.Background(), claims.ID)
+		if blErr == nil && blacklisted {
+			return nil, apperrors.ErrTokenInvalid.WithDetail("刷新令牌已被撤销")
+		}
+	}
+
 	userID, err := uuid.Parse(claims.UserID)
 	if err != nil {
 		return nil, apperrors.ErrTokenInvalid.WithDetail("令牌中的用户ID无效")
@@ -132,6 +144,14 @@ func (s *AuthService) Refresh(req RefreshRequest) (*TokenResponse, *apperrors.Ap
 	}
 	if user.Status != "active" {
 		return nil, apperrors.ErrForbidden.WithDetail("账号已被禁用")
+	}
+
+	if s.tokenBlacklist != nil && claims.ID != "" {
+		remaining := time.Until(claims.ExpiresAt.Time)
+		if remaining < 0 {
+			remaining = 0
+		}
+		s.tokenBlacklist.Add(context.Background(), claims.ID, remaining)
 	}
 
 	enterpriseID, _ := uuid.Parse(user.EnterpriseID)

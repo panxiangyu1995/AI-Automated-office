@@ -26,8 +26,8 @@ redis:
   db: 0
 
 jwt:
-  secret: "change-me-in-production"
-  access_token_ttl: 3600
+  secret: "${AO_JWT_SECRET}"
+  access_token_ttl: 1800
   refresh_token_ttl: 2592000
   issuer: "ai-office"
 
@@ -38,3 +38,18 @@ log:
   max_backups: 3
   max_age: 28
   compress: true
+
+notification:
+  sms:
+    access_key_id: ""
+    access_key_secret: ""
+    sign_name: ""
+    template_code: ""
+    region_id: "cn-hangzhou"
+  email:
+    host: ""
+    port: 587
+    username: ""
+    password: ""
+    from: ""
+    use_tls: true

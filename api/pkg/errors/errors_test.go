@@ -6,7 +6,7 @@ import (
 
 func TestAppError_Error(t *testing.T) {
 	err := ErrNotFound
-	expected := "[COMMON_NOT_FOUND] 资源不存在"
+	expected := "[RES_NOT_FOUND] 资源不存在"
 	if err.Error() != expected {
 		t.Errorf("unexpected error message: got %q, want %q", err.Error(), expected)
 	}
@@ -33,27 +33,51 @@ func TestAppError_WithMessage(t *testing.T) {
 	}
 }
 
+func TestAppError_WithLevel(t *testing.T) {
+	err := NewAppError("TEST_001", "test", 500).WithLevel("critical")
+	if err.Level != "critical" {
+		t.Errorf("expected critical, got %s", err.Level)
+	}
+}
+
+func TestAppError_WithRecoverable(t *testing.T) {
+	err := ErrInternal.WithRecoverable(true, "retry")
+	if !err.Recoverable || err.RecoveryAction != "retry" {
+		t.Errorf("expected recoverable=true, action=retry, got recoverable=%v, action=%s", err.Recoverable, err.RecoveryAction)
+	}
+}
+
+func TestAppError_WithRequestID(t *testing.T) {
+	err := ErrInternal.WithRequestID("req-123")
+	if err.RequestID != "req-123" {
+		t.Errorf("expected req-123, got %s", err.RequestID)
+	}
+}
+
 func TestPredefinedErrors(t *testing.T) {
 	tests := []struct {
-		err      *AppError
-		code     string
-		status   int
-		hasMsg   bool
+		err    *AppError
+		code   string
+		status int
+		hasMsg bool
 	}{
-		{ErrInternal, "COMMON_INTERNAL_ERROR", 500, true},
-		{ErrNotFound, "COMMON_NOT_FOUND", 404, true},
-		{ErrBadRequest, "COMMON_BAD_REQUEST", 400, true},
+		{ErrInternal, "SYS_INTERNAL_ERROR", 500, true},
+		{ErrNotFound, "RES_NOT_FOUND", 404, true},
+		{ErrBadRequest, "VAL_INVALID_PARAMS", 400, true},
 		{ErrUnauthorized, "AUTH_UNAUTHORIZED", 401, true},
 		{ErrForbidden, "AUTH_FORBIDDEN", 403, true},
-		{ErrConflict, "COMMON_CONFLICT", 409, true},
-		{ErrTooManyRequests, "COMMON_RATE_LIMIT", 429, true},
-		{ErrDatabase, "DB_OPERATION_FAILED", 500, true},
-		{ErrValidation, "COMMON_VALIDATION_ERROR", 400, true},
-		{ErrDuplicateEntry, "DB_DUPLICATE_ENTRY", 409, true},
-		{ErrInvalidStatus, "COMMON_INVALID_STATUS", 400, true},
+		{ErrConflict, "RES_CONFLICT", 409, true},
+		{ErrTooManyRequests, "SYS_RATE_LIMIT", 429, true},
+		{ErrDatabase, "SYS_DB_ERROR", 500, true},
+		{ErrValidation, "VAL_INVALID_PARAMS", 400, true},
+		{ErrDuplicateEntry, "BIZ_DUPLICATE_ENTRY", 409, true},
+		{ErrInvalidStatus, "BIZ_INVALID_STATUS", 400, true},
 		{ErrTenantRequired, "AUTH_TENANT_REQUIRED", 400, true},
 		{ErrTokenExpired, "AUTH_TOKEN_EXPIRED", 401, true},
 		{ErrTokenInvalid, "AUTH_TOKEN_INVALID", 401, true},
+		{ErrPermissionDenied, "PERM_DENIED", 403, true},
+		{ErrQuotaExceeded, "PERM_QUOTA_EXCEEDED", 429, true},
+		{ErrFeatureDisabled, "PERM_FEATURE_DISABLED", 403, true},
 	}
 
 	for _, tt := range tests {
@@ -69,10 +93,25 @@ func TestPredefinedErrors(t *testing.T) {
 	}
 }
 
+func TestPredefinedErrorsHaveLevels(t *testing.T) {
+	if ErrInternal.Level != "error" {
+		t.Errorf("ErrInternal should have level 'error', got %s", ErrInternal.Level)
+	}
+	if ErrNotFound.Level != "warn" {
+		t.Errorf("ErrNotFound should have level 'warn', got %s", ErrNotFound.Level)
+	}
+	if !ErrTokenExpired.Recoverable {
+		t.Error("ErrTokenExpired should be recoverable")
+	}
+	if ErrTokenExpired.RecoveryAction != "refresh_token" {
+		t.Errorf("ErrTokenExpired recovery action should be 'refresh_token', got %s", ErrTokenExpired.RecoveryAction)
+	}
+}
+
 func TestNewValidationError(t *testing.T) {
 	err := NewValidationError("email", "invalid format")
-	if err.Code != "COMMON_VALIDATION_ERROR" {
-		t.Errorf("expected COMMON_VALIDATION_ERROR, got %s", err.Code)
+	if err.Code != "VAL_INVALID_PARAMS" {
+		t.Errorf("expected VAL_INVALID_PARAMS, got %s", err.Code)
 	}
 	if len(err.Details) != 1 || err.Details[0] != "email: invalid format" {
 		t.Errorf("unexpected details: %v", err.Details)

@@ -1,5 +1,11 @@
 package model
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type FileRecord struct {
 	TenantModel
 	FileName   string `gorm:"type:varchar(255);not null" json:"file_name"`
@@ -24,9 +30,32 @@ type Message struct {
 	IsRead      bool   `gorm:"default:false" json:"is_read"`
 	RefID       string `gorm:"type:uuid" json:"ref_id,omitempty"`
 	RefType     string `gorm:"type:varchar(50)" json:"ref_type,omitempty"`
+	Priority    string `gorm:"type:varchar(20);default:'normal'" json:"priority"`
+	AnnouncementID string `gorm:"type:uuid" json:"announcement_id,omitempty"`
 }
 
 func (Message) TableName() string { return "messages" }
+
+type Announcement struct {
+	TenantModel
+	Title      string `gorm:"type:varchar(255);not null" json:"title"`
+	Content    string `gorm:"type:text;not null" json:"content"`
+	SenderID   string `gorm:"type:uuid;not null" json:"sender_id"`
+	Priority   string `gorm:"type:varchar(20);default:'normal'" json:"priority"`
+	TargetType string `gorm:"type:varchar(50);default:'all'" json:"target_type"`
+	TargetID   string `gorm:"type:uuid" json:"target_id,omitempty"`
+	ExpiresAt  *time.Time `json:"expires_at,omitempty"`
+}
+
+func (Announcement) TableName() string { return "announcements" }
+
+type AnnouncementReadStatus struct {
+	BaseModel
+	AnnouncementID uuid.UUID `gorm:"type:uuid;not null;index" json:"announcement_id"`
+	EmployeeID     uuid.UUID `gorm:"type:uuid;not null;index" json:"employee_id"`
+}
+
+func (AnnouncementReadStatus) TableName() string { return "announcement_read_statuses" }
 
 type KnowledgeDoc struct {
 	TenantModel

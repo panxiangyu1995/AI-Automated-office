@@ -15,10 +15,15 @@ type Response struct {
 }
 
 type ErrorInfo struct {
-	Code    string   `json:"code"`
-	Message string   `json:"message"`
-	Detail  string   `json:"detail,omitempty"`
-	Details []string `json:"details,omitempty"`
+	Code           string   `json:"code"`
+	Message        string   `json:"message"`
+	Detail         string   `json:"detail,omitempty"`
+	Details        []string `json:"details,omitempty"`
+	Level          string   `json:"level,omitempty"`
+	Recoverable    bool     `json:"recoverable,omitempty"`
+	RecoveryAction string   `json:"recovery_action,omitempty"`
+	RequestID      string   `json:"request_id,omitempty"`
+	Timestamp      string   `json:"timestamp,omitempty"`
 }
 
 type MetaInfo struct {
@@ -45,14 +50,25 @@ func NoContent(c *gin.Context) {
 
 func Error(c *gin.Context, appErr *apperrors.AppError) {
 	ei := &ErrorInfo{
-		Code:    appErr.Code,
-		Message: appErr.Message,
-		Detail:  appErr.Detail,
+		Code:           appErr.Code,
+		Message:        appErr.Message,
+		Detail:         appErr.Detail,
+		Level:          appErr.Level,
+		Recoverable:    appErr.Recoverable,
+		RecoveryAction: appErr.RecoveryAction,
+		RequestID:      appErr.RequestID,
+	}
+	if !appErr.Timestamp.IsZero() {
+		ei.Timestamp = appErr.Timestamp.Format("2006-01-02T15:04:05Z07:00")
 	}
 	if len(appErr.Details) > 0 {
 		ei.Details = appErr.Details
 	}
-	c.JSON(appErr.Status, Response{Error: ei})
+	status := appErr.Status
+	if status == 0 {
+		status = http.StatusInternalServerError
+	}
+	c.JSON(status, Response{Error: ei})
 }
 
 func HandleError(c *gin.Context, err error) {

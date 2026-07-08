@@ -626,6 +626,7 @@ cp deploy/docker-compose/.env.example deploy/docker-compose/.env  # 复制环境
 - Skill 命名：`{module}_{entity}_{action}`（如 `hrm_employee_create`）
 - Skill 定义包含：name、description、parameters、api_endpoint
 - 消息轮询间隔：60 秒
+- **CLI 唯一入口**：Agent 禁止直接使用 `curl` 调用业务 API，必须通过 `ao-cli skill execute` 执行所有业务操作。CLI 统一管理认证凭证生命周期
 
 ---
 
@@ -644,6 +645,7 @@ cp deploy/docker-compose/.env.example deploy/docker-compose/.env  # 复制环境
 11. **本地优先** - 数据存储采用 PostgreSQL + Redis 缓存策略
 12. **无前端** - 本项目不提供任何 Web/桌面 UI，所有交互通过 API + CLI 完成
 13. **时间很充足** - 不存在什么时间有限的说法，不要使用任何简化的或者批量的方式降低代码质量！
+13. **CLI 唯一入口铁律** - Agent 绝对禁止通过 `curl` 等 HTTP 客户端直接调用业务 API。所有业务操作必须通过 `ao-cli skill execute` 执行。用户在 CLI 输入一次凭证（`ao-cli init` + `ao-cli auth login`），CLI 统一管理 token 生命周期和自动刷新，Agent 不接触任何凭证。服务器端验证请求来源 Header `X-Request-Source: ao-cli`，拒绝非 CLI 请求
 14. **Think Before Coding**
     Don't assume. Don't hide confusion. Surface tradeoffs.
 

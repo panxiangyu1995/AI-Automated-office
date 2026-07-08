@@ -1303,3 +1303,29 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 
 ### Testing:
 - go test: ✅ 全部通过
+
+## 2026-07-08 - Critical Bug Fixes from Code Review
+
+### 铁律合规检查：
+- 架构合规：安全漏洞修复（SQL注入、fail-open、并发安全）
+
+### What was done:
+- **Fix #1 AppError.WithDetail 全局污染**: 所有 With* 方法改为 clone-then-modify，不再修改共享 sentinel error
+- **Fix #2 SQL注入**: manager.go/partition.go 添加 validateIdentifier + pq.QuoteIdentifier；custom_field_repo.go 添加 entityType 白名单 + pq.QuoteIdentifier/pq.QuoteLiteral
+- **Fix #3 PermissionFacade deny bypass**: 新增 Decision.Deny 字段，Evaluate 遇到 Deny=true 立即返回拒绝；custom_rule_evaluator 对 effect="deny" 设置 Deny=true
+- **Fix #4 AutoMigrate 遗漏**: 从 20 个模型扩展到 73 个，覆盖所有 GORM 模型
+- **Fix #5 fail-open 修复**: TokenBlacklist.IsBlacklisted nil client 返回错误而非 false；EnterpriseOwnership 空 enterpriseID/tokenEnterpriseID 中止请求；auth middleware Redis 错误时拒绝请求
+- **Fix #6a Refresh TTL**: 黑名单 TTL 改为 token 剩余有效期（time.Until(ExpiresAt)）而非 AccessTTL
+- **Fix #6b Device Code 一次性使用**: 新增 Exchanged 字段 + MarkExchanged repo 方法，ExchangeToken 后标记已兑换
+- **Fix #6c Cache.Get 错误吞没**: 区分 redis.Nil（key不存在返回空）和连接错误（返回error）；Cache.Exists nil client 也返回错误
+- **Fix #6d JWT Secret**: config.yaml 改为环境变量引用 ${AO_JWT_SECRET}，main.go 生产模式强制检查 + 开发模式警告
+- **Fix CreateRLSForSchema**: 错误不再静默吞掉，返回第一个错误
+- **Fix SetEnterpriseContext**: 空 enterpriseID/nil db 返回错误而非 nil
+- **Fix GetDB**: 空 enterpriseID 返回 GlobalDB（public schema）而非跳过
+- 新增依赖：github.com/lib/pq
+- 测试用例更新：token_blacklist_test、cache_test、rls_test、enterprise_ownership_test 适配 fail-closed 行为
+
+### Testing:
+- go build ./...: ✅
+- go vet ./...: ✅
+- go test ./pkg/... ./internal/middleware/...: ✅ 全部通过

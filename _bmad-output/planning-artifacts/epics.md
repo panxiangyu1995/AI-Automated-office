@@ -7,7 +7,7 @@ workflowType: 'epics'
 project_name: 'AI-Automated-office'
 user_name: 'PAN'
 date: '2026-07-04'
-lastEdited: '2026-07-04'
+lastEdited: '2026-07-08'
 ---
 
 # AI-Automated-office - Epic Breakdown
@@ -262,6 +262,17 @@ FR-IMPORT-004: 系统支持重复检测与合并策略
 FR-IMPORT-005: 系统支持数据导出
 FR-IMPORT-006: 系统支持导出模板与导入模板一致
 
+FR-EXPORT-001: 系统支持 Agent 对话式数据导出
+FR-EXPORT-002: 系统支持单实体导出
+FR-EXPORT-003: 系统支持跨实体关联导出（客户锚点）
+FR-EXPORT-004: 系统支持以员工为锚点的业务记录导出
+FR-EXPORT-005: 系统支持员工操作日志导出
+FR-EXPORT-006: 导出权限与 RBAC 绑定
+FR-EXPORT-007: 导出格式支持 .xlsx 和 .csv
+FR-EXPORT-008: 系统支持导出任务异步执行
+FR-EXPORT-009: 系统支持导出字段选择
+FR-EXPORT-010: 系统支持导出数据脱敏
+
 FR-WEBHOOK-001: 系统支持 Webhook 注册与管理
 FR-WEBHOOK-002: 系统支持事件订阅
 FR-WEBHOOK-003: 系统支持 Webhook 投递与重试
@@ -301,6 +312,8 @@ FR-CLI-005: CLI 支持 ao-cli init --update 更新命令
 FR-CLI-006: CLAUDE.md 和 agent.md 内容由运营商客制化
 FR-CLI-007: CLI 初始化时自动生成 README.md 客制化使用指南
 FR-CLI-008: README.md 由服务端模板渲染生成
+FR-CLI-009: CLI 自动记录所有 Skill 执行操作日志
+FR-CLI-010: CLI 操作日志按日期归档保存
 
 FR-DEPLOY-001: 系统提供跨平台 Docker Compose 部署方案
 FR-DEPLOY-002: 系统提供原生二进制部署方案
@@ -645,6 +658,16 @@ NFR-DEP-008: 私有化部署支持自定义端口和数据目录
 | FR-IMPORT-004 | Epic 10 | 重复检测与合并策略 |
 | FR-IMPORT-005 | Epic 10 | 数据导出 |
 | FR-IMPORT-006 | Epic 10 | 导出模板与导入模板一致 |
+| FR-EXPORT-001 | Epic 10 | Agent 对话式数据导出 |
+| FR-EXPORT-002 | Epic 10 | 单实体导出 |
+| FR-EXPORT-003 | Epic 10 | 跨实体关联导出（客户锚点） |
+| FR-EXPORT-004 | Epic 10 | 员工维度业务记录导出 |
+| FR-EXPORT-005 | Epic 10 | 员工操作日志导出 |
+| FR-EXPORT-006 | Epic 10 | 导出权限与 RBAC 绑定 |
+| FR-EXPORT-007 | Epic 10 | 导出格式 .xlsx/.csv |
+| FR-EXPORT-008 | Epic 10 | 导出任务异步执行 |
+| FR-EXPORT-009 | Epic 10 | 导出字段选择 |
+| FR-EXPORT-010 | Epic 10 | 导出数据脱敏 |
 | FR-WEBHOOK-001 | Epic 10 | Webhook 注册与管理 |
 | FR-WEBHOOK-002 | Epic 10 | 事件订阅 |
 | FR-WEBHOOK-003 | Epic 10 | Webhook 投递与重试 |
@@ -673,6 +696,8 @@ NFR-DEP-008: 私有化部署支持自定义端口和数据目录
 | FR-CLI-006 | Epic 10 | CLAUDE.md/agent.md 运营商客制化 |
 | FR-CLI-007 | Epic 10 | 生成 README.md 使用指南 |
 | FR-CLI-008 | Epic 10 | README.md 服务端模板渲染 |
+| FR-CLI-009 | Epic 10 | CLI 操作日志记录 |
+| FR-CLI-010 | Epic 10 | CLI 操作日志按日期归档 |
 | FR-DEPLOY-001 | Epic 10 | 跨平台 Docker Compose 部署 |
 | FR-DEPLOY-002 | Epic 10 | 原生二进制部署方案 |
 | FR-DEPLOY-003 | Epic 10 | 指定端口部署 |
@@ -2823,9 +2848,9 @@ So that 不需要联系运营商就能完成常见操作。
 
 ## Epic 10: 数据智能与私有化部署
 
-**目标：** 提供数据报表、审计追溯、数据导入导出、Webhook 集成、国际化、安全增强、AI 助手、CLI 工具和私有化部署等横切能力，让平台可观测、可扩展、可本地化。
+**目标：** 提供数据报表、审计追溯、数据导入导出、Agent 数据导出、Webhook 集成、国际化、安全增强、AI 助手、CLI 工具和私有化部署等横切能力，让平台可观测、可扩展、可本地化。
 
-**FRs covered:** FR-REPORT-001~008, FR-OWNER-001~006, FR-AUDIT-001~006, FR-IMPORT-001~006, FR-WEBHOOK-001~006, FR-I18N-001~006, FR-SEC2-001~004, FR-ASSIST-001~002, FR-ASSIST-004~005, FR-CLI-001~008, FR-DEPLOY-001~008
+**FRs covered:** FR-REPORT-001~008, FR-OWNER-001~006, FR-AUDIT-001~006, FR-IMPORT-001~006, FR-EXPORT-001~010, FR-WEBHOOK-001~006, FR-I18N-001~006, FR-SEC2-001~004, FR-ASSIST-001~002, FR-ASSIST-004~005, FR-CLI-001~008, FR-DEPLOY-001~008
 **NFRs covered:** NFR-SEC-001~005, NFR-PERF-001~004, NFR-OPS-001~003, NFR-I18N-001~002
 **Dependencies:** Epic 1, Epic 8
 
@@ -3223,7 +3248,37 @@ So that Agent 可以自动化业务操作。
 
 **Requirements:** FR-CLI-004, FR-CLI-005, FR-CLI-006, FR-CLI-007, FR-CLI-008
 
-### Story 10.18: Docker 私有化部署
+### Story 10.18: CLI 操作日志记录与归档
+
+As a Agent,
+I want 查看 CLI 记录的操作日志来回忆已执行的操作,
+So that 可以在对话中保持上下文连续性，知道之前做过什么操作。
+
+**Acceptance Criteria:**
+
+**Given** 用户通过 Agent 执行 `ao-cli skill execute contract create --title="销售合同"`
+**When** Skill 执行完成
+**Then** CLI 自动将操作记录追加写入 `~/.ai-office-cli/logs/YYYY-MM-DD.jsonl`，记录包含：时间戳、Skill 名称、action、参数摘要、执行结果状态、响应摘要
+
+**Given** Agent 需要回忆今天的操作历史
+**When** Agent 读取 `~/.ai-office-cli/logs/2026-07-08.jsonl`
+**Then** 返回 JSONL 格式的操作日志，每行一条记录，Agent 可直接解析
+
+**Given** 跨日执行操作
+**When** 从 2026-07-08 23:59 执行到 2026-07-09 00:01
+**Then** 自动创建新日志文件 `2026-07-09.jsonl`，新操作写入新文件
+
+**Given** 用户执行 `ao-cli skill help contract`
+**When** 命令输出帮助信息
+**Then** 帮助信息中包含"操作日志位置: ~/.ai-office-cli/logs/，格式: JSONL 按日期归档"
+
+**Given** Agent 读取历史日志
+**When** 读取 `~/.ai-office-cli/logs/2026-07-01.jsonl`
+**Then** 返回该日期的所有操作记录
+
+**Requirements:** FR-CLI-009, FR-CLI-010
+
+### Story 10.19: Docker 私有化部署
 
 As a 运维人员,
 I want 通过 Docker Compose 一键部署私有化环境,
@@ -3245,7 +3300,7 @@ So that 企业可以在局域网内运行完整平台。
 
 **Requirements:** FR-DEPLOY-001, FR-DEPLOY-002, FR-DEPLOY-003
 
-### Story 10.19: 私有化部署配置与升级
+### Story 10.20: 私有化部署配置与升级
 
 As a 运维人员,
 I want 配置私有化部署参数和执行版本升级,
@@ -3267,7 +3322,7 @@ So that 可以定制部署和保持系统更新。
 
 **Requirements:** FR-DEPLOY-004, FR-DEPLOY-005, FR-DEPLOY-006
 
-### Story 10.20: 私有化备份恢复与监控
+### Story 10.21: 私有化备份恢复与监控
 
 As a 运维人员,
 I want 执行私有化环境的数据备份恢复和系统监控,
@@ -3288,3 +3343,98 @@ So that 可以保障私有化环境的数据安全和稳定运行。
 **Then** 返回 Prometheus 兼容的系统指标（API 请求量、延迟、错误率、资源使用）
 
 **Requirements:** FR-DEPLOY-007, FR-DEPLOY-008
+
+### Story 10.22: Agent 对话式数据导出
+
+As a 企业用户,
+I want 通过与 Agent 对话导出业务数据为 Excel/CSV,
+So that 可以用自然语言描述导出需求，Agent 帮我生成文件，无需手动操作界面。
+
+**Acceptance Criteria:**
+
+**Given** 用户已登录并与 Agent 对话
+**When** 用户说"帮我导出2026年6月所有合同清单"
+**Then** Agent 解析意图，调用 `ao-cli skill execute data_export --entity contract --filters '{"date_range":{"start":"2026-06-01","end":"2026-06-30"}}' --format xlsx`
+**And** CLI 发送 POST /api/v1/data-export 携带 {entity_type: "contract", filters: {...}, format: "xlsx"}
+**And** 创建异步导出任务，返回 task_id
+
+**Given** 导出任务完成
+**When** CLI 轮询收到导出完成消息
+**Then** Agent 告知用户"导出完成"，提供下载链接
+
+**Given** 用户说"帮我导出所有客户清单"
+**When** Agent 调用 `ao-cli skill execute data_export --entity customer --format xlsx`
+**Then** 导出客户数据为 Excel 文件
+
+**Given** 普通员工（非 Admin）说"帮我导出所有合同"
+**When** Agent 调用导出 API
+**Then** 仅导出该员工创建/负责/参与的合同，无权导出他人合同
+
+**Requirements:** FR-EXPORT-001, FR-EXPORT-002, FR-EXPORT-006, FR-EXPORT-007, FR-EXPORT-008
+
+### Story 10.23: 跨实体关联导出（客户维度）
+
+As a 企业用户,
+I want 以客户为锚点导出该客户的所有关联业务数据,
+So that 可以一次性获得某客户的完整业务画像数据。
+
+**Acceptance Criteria:**
+
+**Given** 用户已登录并与 Agent 对话
+**When** 用户说"帮我导出客户A的所有往来合同、售后清单、工单和报价单"
+**Then** Agent 解析意图，调用 `ao-cli skill execute data_export --anchor customer --anchor_id {customer_a_id} --entities contract,service_order,quote --format xlsx`
+**And** CLI 发送 POST /api/v1/data-export 携带 {anchor_type: "customer", anchor_id: "...", entity_types: ["contract", "service_order", "quote"], format: "xlsx"}
+**And** 生成单个 Excel 文件，包含多个 Sheet（合同 Sheet、售后工单 Sheet、报价单 Sheet）
+
+**Given** 用户是普通员工
+**When** 用户说"帮我导出客户A的所有往来数据"
+**Then** 仅导出该员工有权限查看的客户A的关联数据
+
+**Requirements:** FR-EXPORT-003, FR-EXPORT-006, FR-EXPORT-007
+
+### Story 10.24: 员工维度业务记录导出
+
+As a 企业管理员,
+I want 导出指定员工创建/负责的所有业务单据和操作日志,
+So that 可以全面了解某员工的工作产出和操作行为。
+
+**Acceptance Criteria:**
+
+**Given** 企业管理员已登录并与 Agent 对话
+**When** 用户说"帮我导出员工张三的所有业务单据"
+**Then** Agent 调用 `ao-cli skill execute data_export --anchor employee --anchor_id {employee_id} --entities contract,service_order,quote,purchase_order,sales_order --format xlsx`
+**And** 生成单个 Excel 文件，每个实体一个 Sheet
+
+**Given** 企业管理员已登录
+**When** 用户说"帮我导出员工张三的操作日志"
+**Then** Agent 调用 `ao-cli skill execute data_export --anchor employee --anchor_id {employee_id} --entity audit_log --format xlsx`
+**And** 导出该员工的操作日志（操作时间、操作类型、操作对象、变更前后值）
+
+**Given** 普通员工尝试导出他人的业务记录
+**When** 调用导出 API
+**Then** 返回 403 权限不足
+
+**Requirements:** FR-EXPORT-004, FR-EXPORT-005, FR-EXPORT-006
+
+### Story 10.25: 导出字段选择与脱敏
+
+As a 企业用户,
+I want 选择导出字段子集并确保敏感数据脱敏,
+So that 导出的数据只包含需要的字段且敏感信息已脱敏处理。
+
+**Acceptance Criteria:**
+
+**Given** 用户已登录并与 Agent 对话
+**When** 用户说"只导出合同的编号、名称和金额"
+**Then** Agent 调用 `ao-cli skill execute data_export --entity contract --fields contract_no,title,amount --format xlsx`
+**And** 导出的 Excel 仅包含指定字段列
+
+**Given** 用户导出包含手机号、身份证号的数据
+**When** 导出 API 执行
+**Then** 敏感字段按企业脱敏规则（FR-SEC2-002）处理后再写入文件
+
+**Given** 用户指定导出格式为 CSV
+**When** Agent 调用 `ao-cli skill execute data_export --entity customer --format csv`
+**Then** 生成 CSV 文件
+
+**Requirements:** FR-EXPORT-009, FR-EXPORT-010, FR-EXPORT-007
