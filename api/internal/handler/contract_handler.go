@@ -12,11 +12,16 @@ type ContractHandler struct{ svc *service.ContractService }
 func NewContractHandler(svc *service.ContractService) *ContractHandler { return &ContractHandler{svc} }
 
 type createContractReq struct {
-	CustomerID string  `json:"customer_id"`
-	Name       string  `json:"name"`
-	Amount     float64 `json:"amount"`
-	Content    string  `json:"content"`
-	Notes      string  `json:"notes"`
+	CustomerID  string  `json:"customer_id"`
+	Name        string  `json:"name"`
+	Title       string  `json:"title"`
+	Amount      float64 `json:"amount"`
+	Content     string  `json:"content"`
+	Notes       string  `json:"notes"`
+	ContractType string `json:"contract_type"`
+	TotalAmount float64 `json:"total_amount"`
+	StartDate   string  `json:"start_date"`
+	EndDate     string  `json:"end_date"`
 }
 
 type updateContractReq struct {
@@ -32,6 +37,8 @@ func (h *ContractHandler) Create(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req createContractReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	if req.Name == "" { req.Name = req.Title }
+	if req.Amount == 0 { req.Amount = req.TotalAmount }
 	contract, appErr := h.svc.Create(eid, req.CustomerID, req.Name, req.Content, req.Notes, req.Amount)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, contract)

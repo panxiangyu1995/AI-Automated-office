@@ -18,6 +18,30 @@ const (
 	ContextKeyEmail  = "email"
 )
 
+func GetUserID(c *gin.Context) string {
+	id, ok := c.Get(ContextKeyUserID)
+	if !ok || id == nil {
+		return ""
+	}
+	s, ok := id.(string)
+	if !ok {
+		return ""
+	}
+	return s
+}
+
+func GetRole(c *gin.Context) string {
+	r, ok := c.Get(ContextKeyRole)
+	if !ok || r == nil {
+		return ""
+	}
+	s, ok := r.(string)
+	if !ok {
+		return ""
+	}
+	return s
+}
+
 func AuthRequired(jwtManager *auth.JWTManager, tokenBlacklist *redis.TokenBlacklist) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")

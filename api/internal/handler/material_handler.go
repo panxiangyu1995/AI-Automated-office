@@ -18,6 +18,7 @@ type createMatRequest struct {
 	Name         string  `json:"name"`
 	SKUCode      string  `json:"sku_code"`
 	MaterialType string  `json:"material_type"`
+	Category     string  `json:"category"`
 	Spec         string  `json:"spec"`
 	Unit         string  `json:"unit"`
 	UnitPrice    float64 `json:"unit_price"`
@@ -37,6 +38,9 @@ func (h *MaterialHandler) Create(c *gin.Context) {
 	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req createMatRequest
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "请求体格式错误"); return }
+	if req.MaterialType == "" {
+		req.MaterialType = req.Category
+	}
 	m, appErr := h.matService.Create(enterpriseID, req.Name, req.SKUCode, req.MaterialType, req.Spec, req.Unit, req.UnitPrice)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, m)

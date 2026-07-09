@@ -11,7 +11,13 @@ import (
 type InventoryHandler struct{ svc *service.InventoryService }
 func NewInventoryHandler(svc *service.InventoryService) *InventoryHandler { return &InventoryHandler{svc} }
 
-type setInvReq struct{ WarehouseID, MaterialID string; Quantity, SafetyStock, InTransit int }
+type setInvReq struct {
+	WarehouseID string `json:"warehouse_id"`
+	MaterialID  string `json:"material_id"`
+	Quantity    int    `json:"quantity"`
+	SafetyStock int    `json:"safety_stock"`
+	InTransit   int    `json:"in_transit"`
+}
 
 func (h *InventoryHandler) Set(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }

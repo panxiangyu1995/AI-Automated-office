@@ -22,7 +22,15 @@ func (s *MaterialService) Create(enterpriseID, name, skuCode, materialType, spec
 	if skuCode == "" { return nil, apperrors.NewValidationError("sku_code", "SKU编码不能为空") }
 	if unit == "" { return nil, apperrors.NewValidationError("unit", "计量单位不能为空") }
 
-	validTypes := map[string]bool{"成品": true, "原材料": true, "零部件": true, "办公用品": true, "耗材": true}
+	typeAliases := map[string]string{
+		"finished_product": "成品", "raw_material": "原材料", "component": "零部件",
+		"office_supply": "办公用品", "consumable": "耗材",
+		"hardware": "硬件", "software": "软件", "service": "服务",
+	}
+	if alias, ok := typeAliases[materialType]; ok {
+		materialType = alias
+	}
+	validTypes := map[string]bool{"成品": true, "原材料": true, "零部件": true, "办公用品": true, "耗材": true, "硬件": true, "软件": true, "服务": true}
 	if !validTypes[materialType] { return nil, apperrors.NewValidationError("material_type", "物料类型无效") }
 
 	m := &model.Material{Name: name, SKUCode: skuCode, MaterialType: materialType, Spec: spec, Unit: unit, UnitPrice: unitPrice, Status: "active"}

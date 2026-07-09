@@ -51,6 +51,14 @@ type JWTConfig struct {
 	AccessTokenTTL   int    `mapstructure:"access_token_ttl"`
 	RefreshTokenTTL  int    `mapstructure:"refresh_token_ttl"`
 	Issuer           string `mapstructure:"issuer"`
+	CLIHMACSecret    string `mapstructure:"cli_hmac_secret"`
+}
+
+func (j *JWTConfig) GetCLIHMACSecret() string {
+	if j.CLIHMACSecret != "" {
+		return j.CLIHMACSecret
+	}
+	return j.Secret
 }
 
 type LogConfig struct {

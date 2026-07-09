@@ -141,16 +141,16 @@ func TestLogin_UserNotFound(t *testing.T) {
 func TestLogin_EmptyEmail(t *testing.T) {
 	svc, _ := setupAuthService()
 	_, err := svc.Login(LoginRequest{Email: "", Password: "password"})
-	if err == nil || err.Code != "COMMON_VALIDATION_ERROR" {
-		t.Errorf("expected COMMON_VALIDATION_ERROR, got %v", err)
+	if err == nil || err.Code != "VAL_INVALID_PARAMS" {
+		t.Errorf("expected VAL_INVALID_PARAMS, got %v", err)
 	}
 }
 
 func TestLogin_EmptyPassword(t *testing.T) {
 	svc, _ := setupAuthService()
 	_, err := svc.Login(LoginRequest{Email: "a@b.com", Password: ""})
-	if err == nil || err.Code != "COMMON_VALIDATION_ERROR" {
-		t.Errorf("expected COMMON_VALIDATION_ERROR, got %v", err)
+	if err == nil || err.Code != "VAL_INVALID_PARAMS" {
+		t.Errorf("expected VAL_INVALID_PARAMS, got %v", err)
 	}
 }
 
@@ -176,8 +176,8 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 	seedUser(repo, "dup@test.com", "password", "Existing", eid)
 
 	_, err := svc.Register("dup@test.com", "password", "New", eid)
-	if err == nil || err.Code != "DB_DUPLICATE_ENTRY" {
-		t.Errorf("expected DB_DUPLICATE_ENTRY, got %v", err)
+	if err == nil || err.Code != "BIZ_DUPLICATE_ENTRY" {
+		t.Errorf("expected BIZ_DUPLICATE_ENTRY, got %v", err)
 	}
 }
 
@@ -234,8 +234,8 @@ func TestRefresh_EmptyToken(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty refresh token")
 	}
-	if err.Code != "COMMON_VALIDATION_ERROR" {
-		t.Errorf("expected COMMON_VALIDATION_ERROR, got %s", err.Code)
+	if err.Code != "VAL_INVALID_PARAMS" {
+		t.Errorf("expected VAL_INVALID_PARAMS, got %s", err.Code)
 	}
 }
 

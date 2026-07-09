@@ -110,8 +110,8 @@ func TestGroupService_Create_DuplicateCode(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for duplicate code")
 	}
-	if err.Code != "DB_DUPLICATE_ENTRY" {
-		t.Errorf("expected DB_DUPLICATE_ENTRY, got %s", err.Code)
+	if err.Code != "BIZ_DUPLICATE_ENTRY" {
+		t.Errorf("expected BIZ_DUPLICATE_ENTRY, got %s", err.Code)
 	}
 }
 

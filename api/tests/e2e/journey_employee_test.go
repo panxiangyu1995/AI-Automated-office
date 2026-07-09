@@ -23,10 +23,10 @@ func TestJourney_EmployeeDaily(t *testing.T) {
 	}
 
 	w = client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/expenses", map[string]interface{}{
-		"Category":    "leave",
-		"Description": "Annual leave request",
-		"SubmittedBy": fx.EmployeeUser.ID.String(),
-		"Amount":      0,
+		"category":     "leave",
+		"description":  "Annual leave request",
+		"submitted_by": fx.EmployeeUser.ID.String(),
+		"amount":       0,
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 500 {
 		t.Errorf("employee submit leave: expected 200/201, got %d; body: %s", w.Code, w.Body.String())

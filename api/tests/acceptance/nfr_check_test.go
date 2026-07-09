@@ -179,10 +179,10 @@ func TestNFR_Reliability_TransactionConsistency(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w1 := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/payments", map[string]interface{}{
-		"CustomerID":    fx.EnterpriseID,
-		"PaymentMethod": "bank_transfer",
-		"Amount":        50000,
-		"Notes":         "Consistency test",
+		"customer_id":    fx.EnterpriseID,
+		"payment_method": "bank_transfer",
+		"amount":         50000,
+		"notes":          "Consistency test",
 	})
 	if w1.Code != 201 && w1.Code != 500 {
 		t.Errorf("payment create: expected 201/500, got %d", w1.Code)

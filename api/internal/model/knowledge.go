@@ -28,10 +28,10 @@ type Message struct {
 	Content     string `gorm:"type:text" json:"content"`
 	MsgType     string `gorm:"type:varchar(50);not null" json:"msg_type"`
 	IsRead      bool   `gorm:"default:false" json:"is_read"`
-	RefID       string `gorm:"type:uuid" json:"ref_id,omitempty"`
+	RefID       *string `gorm:"type:uuid" json:"ref_id,omitempty"`
 	RefType     string `gorm:"type:varchar(50)" json:"ref_type,omitempty"`
 	Priority    string `gorm:"type:varchar(20);default:'normal'" json:"priority"`
-	AnnouncementID string `gorm:"type:uuid" json:"announcement_id,omitempty"`
+	AnnouncementID *string `gorm:"type:uuid" json:"announcement_id,omitempty"`
 }
 
 func (Message) TableName() string { return "messages" }

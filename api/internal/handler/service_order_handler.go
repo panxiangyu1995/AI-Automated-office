@@ -2,7 +2,9 @@ package handler
 
 import (
 	"strconv"
+
 	"github.com/gin-gonic/gin"
+
 	"github.com/ai-office/api/internal/service"
 	"github.com/ai-office/api/pkg/errors"
 	"github.com/ai-office/api/pkg/response"
@@ -31,20 +33,20 @@ func (h *ServiceOrderHandler) Create(c *gin.Context) {
 }
 
 func (h *ServiceOrderHandler) Get(c *gin.Context) {
-	so, appErr := h.svc.Get(c.Param("id"))
+	so, appErr := h.svc.Get(c.Param("service_order_id"))
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, so)
 }
 
 func (h *ServiceOrderHandler) Delete(c *gin.Context) {
-	if appErr := h.svc.Delete(c.Param("id")); appErr != nil { response.Error(c, appErr); return }
+	if appErr := h.svc.Delete(c.Param("service_order_id")); appErr != nil { response.Error(c, appErr); return }
 	response.NoContent(c)
 }
 
 func (h *ServiceOrderHandler) ChangeStatus(c *gin.Context) {
 	var req svcStatusReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	so, appErr := h.svc.ChangeStatus(c.Param("id"), req.Status)
+	so, appErr := h.svc.ChangeStatus(c.Param("service_order_id"), req.Status)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, so)
 }
@@ -52,7 +54,7 @@ func (h *ServiceOrderHandler) ChangeStatus(c *gin.Context) {
 func (h *ServiceOrderHandler) Quote(c *gin.Context) {
 	var req struct{ Amount float64 `json:"amount"` }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	so, appErr := h.svc.Quote(c.Param("id"), req.Amount)
+	so, appErr := h.svc.Quote(c.Param("service_order_id"), req.Amount)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, so)
 }
@@ -63,4 +65,43 @@ func (h *ServiceOrderHandler) List(c *gin.Context) {
 	sos, total, appErr := h.svc.List(eid, c.Query("order_type"), c.Query("status"), p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.SuccessWithMeta(c, sos, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
+}
+
+func (h *ServiceOrderHandler) Sign(c *gin.Context) {
+	so, appErr := h.svc.Sign(c.Param("service_order_id"))
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, so)
+}
+
+func (h *ServiceOrderHandler) UploadAttachment(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		response.ValidationError(c, "file", "请选择文件")
+		return
+	}
+	defer file.Close()
+
+	meta, appErr := h.svc.UploadAttachment(eid, c.Param("service_order_id"), header.Filename, header.Header.Get("Content-Type"), file, header.Size)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Created(c, meta)
+}
+
+func (h *ServiceOrderHandler) ListAttachments(c *gin.Context) {
+	files, appErr := h.svc.ListAttachments(c.Param("service_order_id"))
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, files)
 }

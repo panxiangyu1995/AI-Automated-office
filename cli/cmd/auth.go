@@ -1,15 +1,48 @@
 package cmd
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/ai-office/cli/internal/config"
 	"github.com/ai-office/cli/pkg/api_client"
 )
+
+type jwtPayload struct {
+	EnterpriseID string `json:"enterprise_id"`
+	UserID       string `json:"user_id"`
+	Role         string `json:"role"`
+}
+
+func extractEnterpriseID(token string) string {
+	parts := strings.Split(token, ".")
+	if len(parts) < 2 {
+		return ""
+	}
+	payload := parts[1]
+	switch len(payload) % 4 {
+	case 2:
+		payload += "=="
+	case 3:
+		payload += "="
+	}
+	decoded, err := base64.URLEncoding.DecodeString(payload)
+	if err != nil {
+		return ""
+	}
+	var jp jwtPayload
+	if err := json.Unmarshal(decoded, &jp); err != nil {
+		return ""
+	}
+	return jp.EnterpriseID
+}
 
 func newAuthCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -42,6 +75,14 @@ func newAuthCmd() *cobra.Command {
 		},
 	})
 
+	cmd.AddCommand(&cobra.Command{
+		Use:   "refresh",
+		Short: "刷新认证令牌",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runRefreshToken()
+		},
+	})
+
 	return cmd
 }
 
@@ -60,23 +101,26 @@ func runLogin(serverURL string) error {
 	fmt.Scanln(&password)
 
 	client := api_client.NewAPIClient(serverURL)
-	token, err := client.Login(email, password)
+	accessToken, refreshToken, expiresIn, err := client.Login(email, password)
 	if err != nil {
 		return fmt.Errorf("login failed: %w", err)
 	}
 
 	cfg := &config.Config{
-		ServerURL: serverURL,
-		Token:     token,
-		Email:     email,
-		Host:      u.Host,
+		ServerURL:    serverURL,
+		Token:         accessToken,
+		RefreshToken: refreshToken,
+		Email:         email,
+		Host:          u.Host,
+		EnterpriseID: extractEnterpriseID(accessToken),
+		ExpiresAt:     time.Now().Add(time.Duration(expiresIn) * time.Second),
 	}
 
 	if err := config.Save(cfg); err != nil {
 		return fmt.Errorf("failed to save config: %w", err)
 	}
 
-	fmt.Printf("✅ 登录成功 (host: %s)\n", u.Host)
+	fmt.Printf("登录成功 (host: %s)\n", u.Host)
 	return nil
 }
 
@@ -102,5 +146,35 @@ func runAuthStatus() error {
 	fmt.Printf("   服务器: %s\n", cfg.ServerURL)
 	fmt.Printf("   邮箱:   %s\n", cfg.Email)
 	fmt.Printf("   主机:   %s\n", cfg.Host)
+	if cfg.EnterpriseID != "" {
+		fmt.Printf("   企业ID: %s\n", cfg.EnterpriseID)
+	}
+	return nil
+}
+
+func runRefreshToken() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("not logged in: %w", err)
+	}
+	if cfg.RefreshToken == "" {
+		return fmt.Errorf("no refresh token available, please login again")
+	}
+
+	client := api_client.NewAPIClient(cfg.ServerURL)
+	accessToken, refreshToken, expiresIn, err := client.RefreshToken(cfg.RefreshToken)
+	if err != nil {
+		return fmt.Errorf("refresh failed: %w", err)
+	}
+
+	cfg.Token = accessToken
+	cfg.RefreshToken = refreshToken
+	cfg.ExpiresAt = time.Now().Add(time.Duration(expiresIn) * time.Second)
+
+	if err := config.Save(cfg); err != nil {
+		return fmt.Errorf("failed to save config: %w", err)
+	}
+
+	fmt.Println("令牌刷新成功")
 	return nil
 }

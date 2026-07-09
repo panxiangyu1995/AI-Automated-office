@@ -14,7 +14,10 @@ func (r *inventoryRepo) Upsert(inv *model.WarehouseInventory) error {
 	sql := `INSERT INTO warehouse_inventories (enterprise_id, warehouse_id, material_id, quantity, safety_stock, in_transit, created_at, updated_at)
 		VALUES (?,?,?,?,?,?, NOW(), NOW())
 		ON CONFLICT (warehouse_id, material_id) DO UPDATE SET quantity=EXCLUDED.quantity, safety_stock=EXCLUDED.safety_stock, in_transit=EXCLUDED.in_transit, updated_at=NOW()`
-	return r.db.Exec(sql, inv.EnterpriseID, inv.WarehouseID, inv.MaterialID, inv.Quantity, inv.SafetyStock, inv.InTransit).Error
+	if err := r.db.Exec(sql, inv.EnterpriseID, inv.WarehouseID, inv.MaterialID, inv.Quantity, inv.SafetyStock, inv.InTransit).Error; err != nil {
+		return err
+	}
+	return r.db.Where("warehouse_id=? AND material_id=?", inv.WarehouseID, inv.MaterialID).First(inv).Error
 }
 
 func (r *inventoryRepo) Find(whID, matID uuid.UUID) (*model.WarehouseInventory, error) {

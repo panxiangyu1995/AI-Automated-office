@@ -6,6 +6,7 @@ import (
 
 	"github.com/ai-office/api/pkg/errors"
 	"github.com/ai-office/api/pkg/response"
+	"github.com/ai-office/api/pkg/rbac"
 )
 
 const ContextKeyEnterpriseIDFromToken = "enterprise_id_from_token"
@@ -29,6 +30,14 @@ func EnterpriseOwnership(checkCrossPerm CrossPermChecker) gin.HandlerFunc {
 		}
 
 		if enterpriseIDStr == tokenEnterpriseID {
+			c.Next()
+			return
+		}
+
+		role, _ := c.Get(ContextKeyRole)
+		roleStr, _ := role.(string)
+		if roleStr == string(rbac.RoleOperator) || roleStr == string(rbac.RoleOwner) {
+			c.Set(ContextKeyEnterpriseIDFromToken, enterpriseIDStr)
 			c.Next()
 			return
 		}

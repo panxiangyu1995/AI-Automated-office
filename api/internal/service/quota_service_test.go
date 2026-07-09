@@ -170,8 +170,8 @@ func TestCheckAndIncrement_ExceedsDaily(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for exceeded daily quota")
 	}
-	if err.Code != "AUTH_QUOTA_EXCEEDED" {
-		t.Errorf("expected AUTH_QUOTA_EXCEEDED, got %s", err.Code)
+	if err.Code != "PERM_QUOTA_EXCEEDED" {
+		t.Errorf("expected PERM_QUOTA_EXCEEDED, got %s", err.Code)
 	}
 }
 
@@ -319,8 +319,8 @@ func TestCheckFeature_Disabled(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for disabled feature")
 	}
-	if err.Code != "AUTH_FEATURE_DISABLED" {
-		t.Errorf("expected AUTH_FEATURE_DISABLED, got %s", err.Code)
+	if err.Code != "PERM_FEATURE_DISABLED" {
+		t.Errorf("expected PERM_FEATURE_DISABLED, got %s", err.Code)
 	}
 }
 

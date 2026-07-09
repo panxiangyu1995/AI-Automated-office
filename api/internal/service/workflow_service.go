@@ -202,3 +202,70 @@ func (s *WorkflowService) GetHistory(instanceID uuid.UUID) ([]model.WfApproval, 
 	}
 	return approvals, nil
 }
+
+func (s *WorkflowService) Transfer(instanceID uuid.UUID, fromApproverID, toApproverID string) *apperrors.AppError {
+	inst, err := s.repo.FindInstanceByID(instanceID)
+	if err != nil || inst == nil {
+		return apperrors.ErrNotFound.WithDetail("流程实例不存在")
+	}
+	if inst.Status != "pending" {
+		return apperrors.ErrInvalidStatus.WithDetail("仅审理中的流程可转交")
+	}
+	approval := &model.WfApproval{
+		InstanceID: instanceID,
+		StepIndex:  inst.CurrentStep,
+		ApproverID: fromApproverID,
+		Action:     "transfer",
+		Comment:    fmt.Sprintf("转交给 %s", toApproverID),
+	}
+	approval.ApprovedAt = time.Now()
+	if err := s.repo.CreateApproval(approval); err != nil {
+		return apperrors.ErrInternal.WithDetail("记录转交操作失败")
+	}
+	return nil
+}
+
+func (s *WorkflowService) ReturnToApplicant(instanceID uuid.UUID, approverID, reason string) *apperrors.AppError {
+	inst, err := s.repo.FindInstanceByID(instanceID)
+	if err != nil || inst == nil {
+		return apperrors.ErrNotFound.WithDetail("流程实例不存在")
+	}
+	if inst.Status != "pending" {
+		return apperrors.ErrInvalidStatus.WithDetail("仅审理中的流程可退回")
+	}
+	inst.Status = "returned"
+	inst.ReturnReason = reason
+	inst.ReturnedBy = approverID
+	if updateErr := s.repo.UpdateInstance(inst); updateErr != nil {
+		return apperrors.ErrInternal.WithDetail("更新流程状态失败")
+	}
+	approval := &model.WfApproval{
+		InstanceID: instanceID,
+		StepIndex:  inst.CurrentStep,
+		ApproverID: approverID,
+		Action:     "return",
+		Comment:    reason,
+	}
+	approval.ApprovedAt = time.Now()
+	if err := s.repo.CreateApproval(approval); err != nil {
+		return apperrors.ErrInternal.WithDetail("记录退回操作失败")
+	}
+	return nil
+}
+
+func (s *WorkflowService) Resubmit(instanceID uuid.UUID) *apperrors.AppError {
+	inst, err := s.repo.FindInstanceByID(instanceID)
+	if err != nil || inst == nil {
+		return apperrors.ErrNotFound.WithDetail("流程实例不存在")
+	}
+	if inst.Status != "returned" {
+		return apperrors.ErrInvalidStatus.WithDetail("仅已退回的流程可重新提交")
+	}
+	inst.Status = "pending"
+	inst.ReturnReason = ""
+	inst.ReturnedBy = ""
+	if updateErr := s.repo.UpdateInstance(inst); updateErr != nil {
+		return apperrors.ErrInternal.WithDetail("重新提交失败")
+	}
+	return nil
+}

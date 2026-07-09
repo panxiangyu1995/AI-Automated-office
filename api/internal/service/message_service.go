@@ -65,8 +65,10 @@ func (s *MessageService) Send(enterpriseID string, senderID string, req SendMess
 		Content:    req.Content,
 		MsgType:    msgType,
 		Priority:   priority,
-		RefID:      req.RefID,
 		RefType:    req.RefType,
+	}
+	if req.RefID != "" {
+		msg.RefID = &req.RefID
 	}
 	msg.EnterpriseID = entID
 

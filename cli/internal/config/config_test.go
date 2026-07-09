@@ -63,7 +63,7 @@ func TestConfigDir_CreatesDir(t *testing.T) {
 		t.Fatalf("configDir failed: %v", err)
 	}
 
-	expected := filepath.Join(tmpHome, ".ao-cli")
+	expected := filepath.Join(tmpHome, ".ai-office-cli")
 	if path != expected {
 		t.Errorf("expected %s, got %s", expected, path)
 	}

@@ -27,11 +27,11 @@ func createTestMaterial(t *testing.T, client *testutil.TestClient, enterpriseID 
 func createTestSupplier(t *testing.T, client *testutil.TestClient, enterpriseID string) map[string]interface{} {
 	t.Helper()
 	w := client.POST("/api/v1/enterprises/"+enterpriseID+"/suppliers", map[string]interface{}{
-		"Name":         "Test Supplier " + uuid.New().String()[:8],
-		"ContactName":  "Supplier Contact",
-		"ContactPhone": "13800001111",
-		"ContactEmail": "supplier@test.com",
-		"Address":      "789 Supplier St",
+		"name":          "Test Supplier " + uuid.New().String()[:8],
+		"contact_name":  "Supplier Contact",
+		"contact_phone": "13800001111",
+		"contact_email": "supplier@test.com",
+		"address":       "789 Supplier St",
 	})
 	if w.Code != 201 {
 		t.Fatalf("failed to create test supplier: status %d body %s", w.Code, w.Body.String())
@@ -43,9 +43,9 @@ func createTestSupplier(t *testing.T, client *testutil.TestClient, enterpriseID 
 func createTestWarehouse(t *testing.T, client *testutil.TestClient, enterpriseID string) map[string]interface{} {
 	t.Helper()
 	w := client.POST("/api/v1/enterprises/"+enterpriseID+"/warehouses", map[string]interface{}{
-		"Name":    "Test Warehouse " + uuid.New().String()[:8],
-		"Code":    "WH-" + uuid.New().String()[:8],
-		"Address": "100 Warehouse Blvd",
+		"name":    "Test Warehouse " + uuid.New().String()[:8],
+		"code":    "WH-" + uuid.New().String()[:8],
+		"address": "100 Warehouse Blvd",
 	})
 	if w.Code != 201 {
 		t.Fatalf("failed to create test warehouse: status %d body %s", w.Code, w.Body.String())
@@ -251,10 +251,10 @@ func TestStockTransfer_Create(t *testing.T) {
 	matID, _ := mat["id"].(string)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/transfers", map[string]interface{}{
-		"SourceWhID": wh1ID,
-		"TargetWhID": wh2ID,
-		"MaterialID": matID,
-		"Quantity":   10,
+		"source_wh_id": wh1ID,
+		"target_wh_id": wh2ID,
+		"material_id":  matID,
+		"quantity":     10,
 	})
 	testutil.AssertStatus(t, w, 201)
 }
@@ -275,11 +275,11 @@ func TestRequisition_Create(t *testing.T) {
 	matID, _ := mat["id"].(string)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/requisitions", map[string]interface{}{
-		"ApplicantID": fx.Employee.ID.String(),
-		"WarehouseID": whID,
-		"MaterialID":  matID,
-		"Quantity":    5,
-		"Notes":       "Urgent request",
+		"applicant_id": fx.Employee.ID.String(),
+		"warehouse_id": whID,
+		"material_id":  matID,
+		"quantity":     5,
+		"notes":        "Urgent request",
 	})
 	testutil.AssertStatus(t, w, 201)
 }
@@ -330,10 +330,10 @@ func TestInventory_Set(t *testing.T) {
 	matID, _ := mat["id"].(string)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/inventory", map[string]interface{}{
-		"WarehouseID": whID,
-		"MaterialID":  matID,
-		"Quantity":    100,
-		"SafetyStock": 20,
+		"warehouse_id": whID,
+		"material_id":  matID,
+		"quantity":     100,
+		"safety_stock": 20,
 	})
 	if w.Code != 200 && w.Code != 201 {
 		t.Errorf("expected 200/201, got %d; body: %s", w.Code, w.Body.String())
@@ -385,11 +385,11 @@ func TestSupplier_Fields(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/suppliers", map[string]interface{}{
-		"Name":         "Full Field Supplier",
-		"ContactName":  "Zhang San",
-		"ContactPhone": "13900009999",
-		"ContactEmail": "zhangsan@supplier.com",
-		"Address":      "888 Supplier Road",
+		"name":          "Full Field Supplier",
+		"contact_name":  "Zhang San",
+		"contact_phone": "13900009999",
+		"contact_email": "zhangsan@supplier.com",
+		"address":       "888 Supplier Road",
 	})
 	testutil.AssertStatus(t, w, 201)
 }

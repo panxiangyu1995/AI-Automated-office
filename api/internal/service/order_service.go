@@ -52,18 +52,27 @@ func generateOrderNo(prefix string) string {
 func (s *OrderService) CreatePurchaseOrder(eid, supplierID, notes string, items []OrderItemInput) (*model.PurchaseOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if _, err := uuid.Parse(supplierID); err != nil {
+		return nil, apperrors.NewValidationError("supplier_id", "供应商ID无效")
+	}
 	sup, _ := s.supRepo.FindByID(uuid.MustParse(supplierID))
 	if sup == nil { return nil, apperrors.ErrNotFound.WithDetail("供应商不存在") }
 
+	for i, item := range items {
+		if _, err := uuid.Parse(item.MaterialID); err != nil {
+			return nil, apperrors.NewValidationError("items["+fmt.Sprintf("%d", i)+"].material_id", "物料ID无效")
+		}
+	}
+
 	po := &model.PurchaseOrder{OrderNo: generateOrderNo("PO"), SupplierID: supplierID, Status: "draft", Notes: notes}
 	po.EnterpriseID = id
-	if err := s.db.Create(po).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建采购订单失败: "+err.Error()) }
+	if err := s.db.Create(po).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建采购订单失败") }
 
 	var total float64
 	for _, item := range items {
 		poItem := model.PurchaseOrderItem{OrderID: po.ID.String(), MaterialID: item.MaterialID, Quantity: item.Quantity, UnitPrice: item.UnitPrice}
 		total += item.UnitPrice * float64(item.Quantity)
-		if err := s.db.Create(&poItem).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建订单明细失败: "+err.Error()) }
+		if err := s.db.Create(&poItem).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建订单明细失败") }
 	}
 	s.db.Model(po).Update("total_amount", total)
 	return po, nil
@@ -95,15 +104,24 @@ func (s *OrderService) ReceivePurchase(poID, whID string) (*model.PurchaseOrder,
 func (s *OrderService) CreateSalesOrder(eid, customerID, notes string, items []OrderItemInput) (*model.SalesOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if _, err := uuid.Parse(customerID); err != nil {
+		return nil, apperrors.NewValidationError("customer_id", "客户ID无效")
+	}
+	for i, item := range items {
+		if _, err := uuid.Parse(item.MaterialID); err != nil {
+			return nil, apperrors.NewValidationError("items["+fmt.Sprintf("%d", i)+"].material_id", "物料ID无效")
+		}
+	}
+
 	so := &model.SalesOrder{OrderNo: generateOrderNo("SO"), CustomerID: customerID, Status: "draft", Notes: notes}
 	so.EnterpriseID = id
-	if err := s.db.Create(so).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建销售订单失败: "+err.Error()) }
+	if err := s.db.Create(so).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建销售订单失败") }
 
 	var total float64
 	for _, item := range items {
 		soItem := model.SalesOrderItem{OrderID: so.ID.String(), MaterialID: item.MaterialID, Quantity: item.Quantity, UnitPrice: item.UnitPrice}
 		total += item.UnitPrice * float64(item.Quantity)
-		if err := s.db.Create(&soItem).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建订单明细失败: "+err.Error()) }
+		if err := s.db.Create(&soItem).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建订单明细失败") }
 	}
 	s.db.Model(so).Update("total_amount", total)
 	return so, nil
@@ -138,7 +156,7 @@ func (s *OrderService) CreateTransfer(eid, srcWh, tgtWh, matID string, qty int) 
 	id, err := uuid.Parse(eid); if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	to := &model.TransferOrder{OrderNo: generateOrderNo("TO"), SourceWhID: srcWh, TargetWhID: tgtWh, MaterialID: matID, Quantity: qty, Status: "draft"}
 	to.EnterpriseID = id
-	if err := s.db.Create(to).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建调拨单失败: "+err.Error()) }
+	if err := s.db.Create(to).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建调拨单失败") }
 	return to, nil
 }
 
@@ -167,7 +185,7 @@ func (s *OrderService) CreateRequisition(eid, applicantID, whID, matID string, q
 	id, err := uuid.Parse(eid); if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	req := &model.Requisition{RequisitionNo: generateOrderNo("RQ"), ApplicantID: applicantID, WarehouseID: whID, MaterialID: matID, Quantity: qty, Status: "pending", Notes: notes}
 	req.EnterpriseID = id
-	if err := s.db.Create(req).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建领用申请失败: "+err.Error()) }
+	if err := s.db.Create(req).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建领用申请失败") }
 	return req, nil
 }
 

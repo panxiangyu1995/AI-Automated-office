@@ -47,7 +47,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get home directory: %w", err)
 	}
 
-	configDir := home + "/.ao-cli"
+	configDir := home + "/.ai-office-cli"
 	os.MkdirAll(configDir, 0755)
 
 	configPath := configDir + "/config.yaml"

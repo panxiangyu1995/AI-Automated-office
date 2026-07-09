@@ -12,7 +12,11 @@ type SupplierHandler struct{ svc *service.SupplierService }
 func NewSupplierHandler(svc *service.SupplierService) *SupplierHandler { return &SupplierHandler{svc} }
 
 type supReq struct {
-	Name, ContactName, ContactPhone, ContactEmail, Address string
+	Name         string `json:"name"`
+	ContactName  string `json:"contact_name"`
+	ContactPhone string `json:"contact_phone"`
+	ContactEmail string `json:"contact_email"`
+	Address      string `json:"address"`
 }
 
 func (h *SupplierHandler) Create(c *gin.Context) {

@@ -20,15 +20,12 @@ func Init(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 	)
 
-	logLevel := logger.Info
-	if cfg.Host != "localhost" && cfg.Host != "127.0.0.1" {
-		logLevel = logger.Warn
-	}
+	logLevel := logger.Warn
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:                 logger.Default.LogMode(logLevel),
 		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
+		PrepareStmt:            false,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)

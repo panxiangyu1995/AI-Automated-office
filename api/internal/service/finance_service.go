@@ -42,7 +42,12 @@ func (s *FinanceService) ListPayments(eid string, p, ps int) ([]model.PaymentRec
 func (s *FinanceService) CreateExpense(eid, category, desc, submittedBy string, amount float64) (*model.ExpenseRecord, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	r := &model.ExpenseRecord{ExpenseNo: s.genNo("EXP"), Amount: amount, Category: category, Status: "pending", SubmittedBy: submittedBy, Description: desc}
+	subBy := submittedBy
+	if subBy == "" {
+		subBy = uuid.Nil.String()
+	}
+	approvedBy := uuid.Nil.String()
+	r := &model.ExpenseRecord{ExpenseNo: s.genNo("EXP"), Amount: amount, Category: category, Status: "pending", SubmittedBy: subBy, ApprovedBy: approvedBy, Description: desc}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建费用记录失败") }
 	return r, nil
@@ -65,7 +70,11 @@ func (s *FinanceService) ListExpenses(eid string, p, ps int) ([]model.ExpenseRec
 func (s *FinanceService) CreateInvoice(eid, customerID, notes string, amount, tax float64) (*model.Invoice, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	r := &model.Invoice{InvoiceNo: s.genNo("INV"), CustomerID: customerID, Amount: amount, TaxAmount: tax, Status: "draft", Notes: notes}
+	custID := customerID
+	if custID == "" {
+		custID = uuid.Nil.String()
+	}
+	r := &model.Invoice{InvoiceNo: s.genNo("INV"), CustomerID: custID, Amount: amount, TaxAmount: tax, Status: "draft", Notes: notes}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建发票失败") }
 	return r, nil

@@ -37,7 +37,12 @@ func main() {
 		if cfg.Server.Mode == "release" {
 			log.Fatal("JWT secret must be set via AO_JWT_SECRET in production mode")
 		}
-		log.Println("WARNING: JWT secret is using default value. Set AO_JWT_SECRET for production.")
+		log.Println("==========================================================")
+		log.Println("  ⚠️  SECURITY WARNING: JWT secret is using default value!")
+		log.Println("  This is INSECURE and must NOT be used in production.")
+		log.Println("  Set the AO_JWT_SECRET environment variable to a strong random")
+		log.Println("  string (at least 32 characters) before deploying.")
+		log.Println("==========================================================")
 	}
 
 	logger, err := zap.NewProduction()
@@ -133,6 +138,13 @@ func main() {
 				&model.RateLimitConfig{},
 				&model.BackupConfig{},
 				&model.BackupRecord{},
+				&model.ExportTask{},
+				&model.ExportHistory{},
+				&model.PaymentRequest{},
+				&model.CollectionRecord{},
+				&model.PaymentPlan{},
+				&model.RepairOrder{},
+				&model.AlertRule{},
 			); err != nil {
 				logger.Warn("auto-migrate system tables failed", zap.Error(err))
 			}

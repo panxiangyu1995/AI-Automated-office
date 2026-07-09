@@ -36,7 +36,8 @@ func (s *PositionService) Create(enterpriseID, departmentID, name, description s
 		if err != nil {
 			return nil, apperrors.NewValidationError("department_id", "部门ID无效")
 		}
-		position.DepartmentID = did.String()
+		didStr := did.String()
+		position.DepartmentID = &didStr
 	}
 
 	if err := s.positionRepo.Create(position); err != nil {

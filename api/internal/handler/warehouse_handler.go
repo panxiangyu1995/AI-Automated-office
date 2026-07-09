@@ -11,7 +11,11 @@ import (
 type WarehouseHandler struct{ svc *service.WarehouseService }
 func NewWarehouseHandler(svc *service.WarehouseService) *WarehouseHandler { return &WarehouseHandler{svc} }
 
-type whReq struct{ Name, Code, Address string }
+type whReq struct {
+	Name    string `json:"name"`
+	Code    string `json:"code"`
+	Address string `json:"address"`
+}
 
 func (h *WarehouseHandler) Create(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }

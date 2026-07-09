@@ -32,7 +32,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfigFile)
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file path (default $HOME/.ao-cli/config.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file path (default $HOME/.ai-office-cli/config.yaml)")
 	rootCmd.PersistentFlags().StringP("server", "s", "http://localhost:8080", "API server URL")
 	rootCmd.PersistentFlags().StringP("format", "f", "text", "output format (text, json)")
 
@@ -41,6 +41,7 @@ func init() {
 	rootCmd.AddCommand(newSkillCmd())
 	rootCmd.AddCommand(newServiceCmd())
 	rootCmd.AddCommand(newInitCmd())
+	rootCmd.AddCommand(newLogCmd())
 }
 
 func initConfigFile() {
@@ -49,7 +50,7 @@ func initConfigFile() {
 		if err != nil {
 			return
 		}
-		cfgFile = home + "/.ao-cli/config.yaml"
+		cfgFile = home + "/.ai-office-cli/config.yaml"
 	}
 }
 

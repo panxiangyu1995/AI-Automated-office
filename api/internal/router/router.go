@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/ai-office/api/internal/handler"
 	"github.com/ai-office/api/internal/middleware"
 	"github.com/ai-office/api/internal/repository"
+	"github.com/ai-office/api/internal/scheduler"
 	"github.com/ai-office/api/internal/service"
 	"github.com/ai-office/api/pkg/auth"
 	"github.com/ai-office/api/pkg/config"
@@ -57,7 +59,9 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 	}
 
 	var backupService *service.BackupService
+	var reminderScheduler *scheduler.ReminderScheduler
 	var quotaService *service.QuotaService
+	var exportWorker *service.ExportWorker
 
 	var tokenBlacklist *rc.TokenBlacklist
 	if redisClient != nil {
@@ -160,6 +164,34 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 
 		financeSvc := service.NewFinanceService(db)
 		financeHandler := handler.NewFinanceHandler(financeSvc)
+
+		prSvc := service.NewPaymentRequestService(db)
+		prHandler := handler.NewPaymentRequestHandler(prSvc)
+
+		colSvc := service.NewCollectionService(db)
+		colHandler := handler.NewCollectionHandler(colSvc)
+
+		ppSvc := service.NewPaymentPlanService(db)
+		ppHandler := handler.NewPaymentPlanHandler(ppSvc)
+
+		cashflowSvc := service.NewCashFlowService(db)
+		cashflowHandler := handler.NewCashFlowHandler(cashflowSvc)
+
+		recSvc := service.NewReconciliationService(db)
+		recHandler := handler.NewReconciliationHandler(recSvc)
+
+		roSvc := service.NewRepairOrderService(db)
+		roHandler := handler.NewRepairOrderHandler(roSvc)
+
+		ownerSvc := service.NewOwnerService(db)
+		ownerHandler := handler.NewOwnerHandler(ownerSvc)
+
+		entHealthSvc := service.NewHealthService(db)
+		healthDashboardHandler := handler.NewHealthDashboardHandler(entHealthSvc)
+
+		restoreSvc := service.NewRestoreService(db)
+		restoreHandler := handler.NewRestoreHandler(restoreSvc)
+
 		knowledgeSvc := service.NewKnowledgeService(db)
 		knowledgeHandler := handler.NewKnowledgeHandler(knowledgeSvc)
 
@@ -225,6 +257,11 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 		auditLogService := service.NewAuditLogService(auditLogRepo)
 		auditLogHandler := handler.NewAuditLogHandler(auditLogService)
 
+		exportRepo := repository.NewExportRepository(db)
+		exportService := service.NewExportService(db, exportRepo, cfg.Server.BackupDir)
+		exportWorker = service.NewExportWorker(exportService, exportRepo, logger)
+		exportHandler := handler.NewExportHandler(exportService, exportWorker)
+
 		auditMiddleware := middleware.NewAuditMiddleware(auditLogService)
 
 		backupConfigRepo := repository.NewBackupConfigRepository(db)
@@ -264,7 +301,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 		financeAccess := middleware.RequirePermission(rbac.PermFinanceRead)
 
 		protected := api.Group("")
-		protected.Use(middleware.AuthRequired(jwtManager, tokenBlacklist), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
+		protected.Use(middleware.AuthRequired(jwtManager, tokenBlacklist), middleware.ResolveEnterpriseContext(), middleware.CLISourceOnly(cfg, logger), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
 		{
 			protected.POST("/auth/switch-enterprise", authHandler.SwitchEnterprise)
 			protected.POST("/auth/logout", authHandler.Logout)
@@ -342,6 +379,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			enterprise.GET("/stock-flows", orderHandler.ListStockFlows)
 			enterprise.POST("/service-orders", svcOrderHandler.Create)
 			enterprise.GET("/service-orders", svcOrderHandler.List)
+			enterprise.POST("/service-orders/:service_order_id/repair-order", roHandler.Create)
+			enterprise.POST("/service-orders/:service_order_id/attachments", svcOrderHandler.UploadAttachment)
 			enterprise.POST("/contracts", contractHandler.Create)
 			enterprise.GET("/contracts", contractHandler.List)
 			f := enterprise.Group("")
@@ -353,6 +392,19 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 				f.GET("/expenses", financeHandler.ListExpenses)
 				f.POST("/invoices", financeHandler.CreateInvoice)
 				f.GET("/invoices", financeHandler.ListInvoices)
+				f.POST("/payment-requests", prHandler.Create)
+				f.GET("/payment-requests", prHandler.List)
+				f.POST("/collections", colHandler.Create)
+				f.GET("/collections", colHandler.List)
+				f.POST("/contracts/:contract_id/payment-plans", ppHandler.CreateBatch)
+				f.GET("/contracts/:contract_id/payment-plans", ppHandler.List)
+				f.GET("/payment-plans/overdue", ppHandler.ListOverdue)
+				f.GET("/cash-flow-forecast", cashflowHandler.Forecast)
+				f.GET("/reconciliation", recHandler.GetReconciliation)
+				f.GET("/owner/signals", ownerHandler.Signals)
+				f.GET("/owner/kpi", ownerHandler.KPI)
+				f.POST("/owner/alert-rules", ownerHandler.CreateAlertRule)
+				f.GET("/owner/alert-rules", ownerHandler.ListAlertRules)
 			}
 			enterprise.POST("/files", knowledgeHandler.UploadFile)
 			enterprise.GET("/files", knowledgeHandler.ListFiles)
@@ -377,6 +429,16 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			protected.GET("/webhooks", opsHandler.ListWebhooks)
 			protected.POST("/webhooks", opsHandler.CreateWebhook)
 			protected.POST("/expenses/:id/approve", financeHandler.ApproveExpense)
+			protected.GET("/payment-requests/:id", prHandler.Get)
+			protected.PUT("/payment-requests/:id", prHandler.Update)
+			protected.DELETE("/payment-requests/:id", prHandler.Delete)
+			protected.POST("/payment-requests/:id/submit", prHandler.SubmitForApproval)
+			protected.POST("/payment-requests/:id/approve", prHandler.Approve)
+			protected.POST("/payment-requests/:id/reject", prHandler.Reject)
+			protected.GET("/collections/:id", colHandler.Get)
+			protected.PUT("/payment-plans/:id", ppHandler.Update)
+			protected.DELETE("/payment-plans/:id", ppHandler.Delete)
+			protected.PUT("/alert-rules/:id", ownerHandler.UpdateAlertRule)
 			protected.GET("/audit-log-entries", opsHandler.ListAuditLogs)
 			protected.GET("/skills", skillHandler.List)
 			protected.POST("/skills", skillHandler.Create)
@@ -399,17 +461,29 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			protected.GET("/sla-metrics", opsHandler.GetSLAMetrics)
 			protected.POST("/service-config", opsHandler.CreateServiceConfig)
 			protected.GET("/service-config/:key", opsHandler.GetServiceConfig)
-			protected.GET("/data-export", opsHandler.ExportData)
+		exportAccess := middleware.RequireAnyPermission(rbac.PermEmployeeRead, rbac.PermCustomerRead, rbac.PermContractRead, rbac.PermFinanceRead, rbac.PermOrderRead, rbac.PermProductRead)
+
+			protected.GET("/data-export", exportAccess, exportHandler.ListTasks)
+			protected.POST("/data-export", exportAccess, exportHandler.CreateTask)
+			protected.GET("/data-export/:id", exportAccess, exportHandler.GetTask)
+			protected.GET("/data-export/:id/download", exportAccess, exportHandler.DownloadTask)
 			protected.POST("/data-import", opsHandler.ImportData)
+			protected.GET("/operator/enterprises/:id/health", healthDashboardHandler.GetEnterpriseHealth)
+			protected.GET("/operator/health-dashboard", healthDashboardHandler.GetDashboard)
+			protected.POST("/:type/:id/restore", restoreHandler.Restore)
 			protected.POST("/ai/sessions", aiHandler.CreateSession)
 			protected.GET("/ai/sessions", aiHandler.ListSessions)
 			protected.POST("/ai/sessions/:session_id/messages", aiHandler.SendMessage)
 			protected.GET("/ai/sessions/:session_id/messages", aiHandler.GetMessages)
 			protected.PUT("/ai/preferences", aiHandler.UpdatePreference)
-			protected.GET("/service-orders/:id", svcOrderHandler.Get)
-			protected.PUT("/service-orders/:id", svcOrderHandler.Quote)
-			protected.DELETE("/service-orders/:id", svcOrderHandler.Delete)
-			protected.PATCH("/service-orders/:id/status", svcOrderHandler.ChangeStatus)
+			protected.GET("/service-orders/:service_order_id", svcOrderHandler.Get)
+			protected.PUT("/service-orders/:service_order_id", svcOrderHandler.Quote)
+			protected.DELETE("/service-orders/:service_order_id", svcOrderHandler.Delete)
+			protected.PATCH("/service-orders/:service_order_id/status", svcOrderHandler.ChangeStatus)
+			protected.POST("/service-orders/:service_order_id/sign", svcOrderHandler.Sign)
+			protected.GET("/service-orders/:service_order_id/repair-order", roHandler.Get)
+			protected.GET("/service-orders/:service_order_id/attachments", svcOrderHandler.ListAttachments)
+			protected.PUT("/repair-orders/:id", roHandler.Update)
 			enterprise.POST("/kb/categories", knowledgeHandler.CreateCategory)
 			enterprise.GET("/kb/categories", knowledgeHandler.ListCategories)
 			enterprise.GET("/kb/semantic-search", knowledgeHandler.SemanticSearch)
@@ -479,6 +553,9 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			protected.POST("/workflows/:id/approve", wfHandler.Approve)
 			protected.POST("/workflows/:id/reject", wfHandler.Reject)
 			protected.GET("/workflows/:id/history", wfHandler.History)
+			protected.POST("/workflows/:id/transfer", wfHandler.Transfer)
+			protected.POST("/workflows/:id/return", wfHandler.Return)
+			protected.POST("/workflows/:id/resubmit", wfHandler.Resubmit)
 
 			protected.PUT("/departments/:id", deptHandler.Update)
 			protected.PUT("/departments/:id/manager", deptHandler.SetManager)
@@ -497,6 +574,11 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 				backup.POST("/restore/:record_id", backupHandler.Restore)
 			}
 		}
+
+		go func() {
+			reminderScheduler = scheduler.NewReminderScheduler(ppSvc, logger)
+			reminderScheduler.Start()
+		}()
 	}
 
 	if backupService != nil {
@@ -507,6 +589,10 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 				backupService.CheckAndRunScheduled()
 			}
 		}()
+	}
+
+	if exportWorker != nil {
+		exportWorker.Start(context.Background())
 	}
 
 	return r

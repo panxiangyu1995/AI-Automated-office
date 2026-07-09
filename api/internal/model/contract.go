@@ -21,6 +21,7 @@ type Contract struct {
 	CustomerID   string     `gorm:"type:uuid;not null;index" json:"customer_id"`
 	Name         string     `gorm:"type:varchar(255);not null" json:"name"`
 	Amount       float64    `gorm:"type:numeric(15,2);default:0" json:"amount"`
+	PaidAmount   float64    `gorm:"type:numeric(15,2);default:0" json:"paid_amount"`
 	Status       string     `gorm:"type:varchar(30);not null;default:'draft'" json:"status"`
 	SignedAt     *time.Time `json:"signed_at,omitempty"`
 	EffectiveAt  *time.Time `json:"effective_at,omitempty"`

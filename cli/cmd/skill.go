@@ -1,9 +1,19 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/ai-office/cli/internal/config"
+	"github.com/ai-office/cli/internal/olog"
+	"github.com/ai-office/cli/internal/skill"
+	"github.com/ai-office/cli/pkg/api_client"
 )
 
 func newSkillCmd() *cobra.Command {
@@ -29,32 +39,215 @@ func newSkillCmd() *cobra.Command {
 		},
 	})
 
-	cmd.AddCommand(&cobra.Command{
+	execCmd := &cobra.Command{
 		Use:   "execute [skill-name]",
 		Short: "执行 Skill",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return executeSkill(args[0])
+			action, _ := cmd.Flags().GetString("action")
+			params, _ := cmd.Flags().GetString("params")
+			return executeSkill(args[0], action, params)
 		},
-	})
+	}
+	execCmd.Flags().String("action", "", "指定 Skill action")
+	execCmd.Flags().String("params", "", "参数 JSON 字符串")
+
+	cmd.AddCommand(execCmd)
 
 	return cmd
 }
 
 func listSkills() error {
+	skills := skill.List()
+	if len(skills) == 0 {
+		fmt.Println("可用 Skill: (暂无)")
+		return nil
+	}
 	fmt.Println("可用 Skill:")
-	fmt.Println("  (暂无 - 将在后续 Epic 中实现)")
+	for _, s := range skills {
+		fmt.Printf("  %-20s %s\n", s.Name, s.Description)
+	}
 	return nil
 }
 
 func describeSkill(name string) error {
-	fmt.Printf("Skill: %s\n", name)
-	fmt.Println("  (详情将在后续 Epic 中实现)")
+	s, err := skill.Get(name)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Skill: %s\n", s.Name)
+	fmt.Printf("描述: %s\n", s.Description)
+	fmt.Printf("分类: %s\n", s.Category)
+	fmt.Printf("端点: %s %s\n", s.Method, s.APIEndpoint)
+	if len(s.Parameters) > 0 {
+		fmt.Println("参数:")
+		for _, p := range s.Parameters {
+			reqStr := "必填"
+			if !p.Required {
+				reqStr = "可选"
+				if p.Default != "" {
+					reqStr = fmt.Sprintf("可选, 默认: %s", p.Default)
+				}
+			}
+			fmt.Printf("  %-15s %-7s (%s)   %s\n", p.Name, p.Type, reqStr, p.Description)
+		}
+	}
+	if len(s.Actions) > 0 {
+		fmt.Println("可用操作:")
+		for actionName, actionDef := range s.Actions {
+			fmt.Printf("  %-15s %s %s\n", actionName, actionDef.Method, actionDef.Endpoint)
+		}
+	}
+	fmt.Println("操作日志位置: ~/.ai-office-cli/logs/ (JSONL 格式，按日期归档)")
 	return nil
 }
 
-func executeSkill(name string) error {
-	fmt.Printf("执行 Skill: %s\n", name)
-	fmt.Println("  (执行逻辑将在后续 Epic 中实现)")
-	return nil
+func executeSkill(name, action, paramsJSON string) error {
+	startTime := time.Now()
+
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("not logged in, run 'ao-cli auth login' first: %w", err)
+	}
+
+	if cfg.IsTokenExpired() && cfg.RefreshToken != "" {
+		client := api_client.NewAPIClient(cfg.ServerURL)
+		accessToken, refreshToken, expiresIn, err := client.RefreshToken(cfg.RefreshToken)
+		if err != nil {
+			return fmt.Errorf("token expired and refresh failed, please login again: %w", err)
+		}
+		cfg.Token = accessToken
+		cfg.RefreshToken = refreshToken
+		cfg.ExpiresAt = time.Now().Add(time.Duration(expiresIn) * time.Second)
+		if saveErr := config.Save(cfg); saveErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save refreshed token: %v\n", saveErr)
+		}
+	}
+
+	var paramsMap map[string]interface{}
+	if paramsJSON != "" {
+		if err := json.Unmarshal([]byte(paramsJSON), &paramsMap); err != nil {
+			return fmt.Errorf("invalid params JSON: %w", err)
+		}
+	}
+
+	enterpriseID := cfg.EnterpriseID
+	if eid, ok := paramsMap["enterprise_id"].(string); ok && eid != "" {
+		enterpriseID = eid
+	}
+
+	client := api_client.NewAPIClient(cfg.ServerURL)
+	client.SetToken(cfg.Token)
+	if enterpriseID != "" {
+		client.SetEnterpriseID(enterpriseID)
+	}
+	if cfg.HMACSecret != "" {
+		client.SetHMACSecret(cfg.HMACSecret)
+	}
+
+	s, err := skill.Get(name)
+	if err != nil {
+		return fmt.Errorf("skill not found: %s", name)
+	}
+
+	var checkParams []skill.ParamDef
+	if action != "" {
+		if actDef, ok := s.Actions[action]; ok {
+			checkParams = actDef.Params
+		}
+	}
+	if len(checkParams) == 0 {
+		checkParams = s.Parameters
+	}
+	for _, p := range checkParams {
+		if !p.Required {
+			continue
+		}
+		if _, ok := paramsMap[p.Name]; !ok {
+			return fmt.Errorf("missing required parameter: %s (%s)", p.Name, p.Description)
+		}
+	}
+
+	var endpoint, method string
+	if action != "" {
+		if actDef, ok := s.Actions[action]; ok {
+			endpoint = actDef.Endpoint
+			method = actDef.Method
+		}
+	}
+	if endpoint == "" {
+		endpoint = s.APIEndpoint
+		method = s.Method
+	}
+	if enterpriseID != "" {
+		endpoint = strings.ReplaceAll(endpoint, "{enterprise_id}", enterpriseID)
+	}
+	for k, v := range paramsMap {
+		placeholder := "{" + k + "}"
+		if strings.Contains(endpoint, placeholder) {
+			endpoint = strings.ReplaceAll(endpoint, placeholder, fmt.Sprintf("%v", v))
+			delete(paramsMap, k)
+		}
+	}
+	if method == "" {
+		method = "POST"
+	}
+
+	delete(paramsMap, "enterprise_id")
+	var params interface{} = paramsMap
+
+	var result []byte
+	switch method {
+	case "GET":
+		if len(paramsMap) > 0 {
+			qs := buildQueryString(paramsMap)
+			if strings.Contains(endpoint, "?") {
+				endpoint += "&" + qs
+			} else {
+				endpoint += "?" + qs
+			}
+		}
+		result, err = client.Get(endpoint)
+	case "PUT":
+		result, err = client.Put(endpoint, params)
+	case "DELETE":
+		result, err = client.Delete(endpoint)
+	case "PATCH":
+		result, err = client.Patch(endpoint, params)
+	default:
+		result, err = client.Post(endpoint, params)
+	}
+
+	durationMs := time.Since(startTime).Milliseconds()
+
+	entry := olog.Entry{
+		TS:          time.Now().Format(time.RFC3339),
+		Skill:       name,
+		Action:      action,
+		DurationMs:  durationMs,
+	}
+	if params != nil {
+		entry.ParamsSummary = params
+	}
+	if err != nil {
+		entry.Status = "error"
+		entry.Error = err.Error()
+	} else {
+		entry.Status = "success"
+	}
+	if logErr := olog.Record(entry); logErr != nil {
+		fmt.Fprintf(os.Stderr, "warning: failed to record operation log: %v\n", logErr)
+	}
+
+	fmt.Println(string(result))
+
+	return err
+}
+
+func buildQueryString(params map[string]interface{}) string {
+	vals := url.Values{}
+	for k, v := range params {
+		vals.Set(k, fmt.Sprintf("%v", v))
+	}
+	return vals.Encode()
 }

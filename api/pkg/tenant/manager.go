@@ -83,7 +83,8 @@ func ListSchemas(db *gorm.DB) ([]string, error) {
 
 func UseSchema(db *gorm.DB, enterpriseID string) *gorm.DB {
 	schema := SchemaName(enterpriseID)
-	return database.SetSearchPath(db, schema)
+	session := db.Session(&gorm.Session{PrepareStmt: false, NewDB: true})
+	return database.SetSearchPath(session, schema)
 }
 
 func SetEnterpriseContext(db *gorm.DB, enterpriseID string) error {
@@ -252,4 +253,10 @@ func GetDB(enterpriseID string) *gorm.DB {
 		return GlobalDB
 	}
 	return UseSchema(GlobalDB, enterpriseID)
+}
+
+func ResetSearchPath(db *gorm.DB) {
+	if db != nil {
+		db.Exec("SET search_path TO public")
+	}
 }

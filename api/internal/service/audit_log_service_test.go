@@ -114,7 +114,7 @@ func TestAuditLogService_Create_EmptyAction(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty action")
 	}
-	if err.Code != "COMMON_VALIDATION_ERROR" {
+	if err.Code != "VAL_INVALID_PARAMS" {
 		t.Errorf("expected validation error, got %s", err.Code)
 	}
 }
@@ -125,7 +125,7 @@ func TestAuditLogService_Create_EmptyResourceType(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for empty resource type")
 	}
-	if err.Code != "COMMON_VALIDATION_ERROR" {
+	if err.Code != "VAL_INVALID_PARAMS" {
 		t.Errorf("expected validation error, got %s", err.Code)
 	}
 }

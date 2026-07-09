@@ -4,15 +4,27 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	ServerURL string `yaml:"server_url"`
-	Token     string `yaml:"token"`
-	Email     string `yaml:"email"`
-	Host      string `yaml:"host"`
+	ServerURL    string    `yaml:"server_url"`
+	Token        string    `yaml:"-"`
+	RefreshToken string    `yaml:"-"`
+	Email        string    `yaml:"email"`
+	Host         string    `yaml:"host"`
+	EnterpriseID string    `yaml:"enterprise_id"`
+	ExpiresAt    time.Time `yaml:"expires_at"`
+	HMACSecret   string    `yaml:"hmac_secret"`
+}
+
+func (c *Config) IsTokenExpired() bool {
+	if c.Token == "" {
+		return true
+	}
+	return time.Now().After(c.ExpiresAt)
 }
 
 func configDir() (string, error) {
@@ -20,7 +32,7 @@ func configDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot find home directory: %w", err)
 	}
-	dir := filepath.Join(home, ".ao-cli")
+	dir := filepath.Join(home, ".ai-office-cli")
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return "", fmt.Errorf("cannot create config directory: %w", err)
 	}
@@ -51,6 +63,13 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
+	accessToken, refreshToken, err := loadTokensSecure()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load tokens: %w", err)
+	}
+	cfg.Token = accessToken
+	cfg.RefreshToken = refreshToken
+
 	return &cfg, nil
 }
 
@@ -69,6 +88,10 @@ func Save(cfg *Config) error {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
 
+	if err := saveTokensSecure(cfg.Token, cfg.RefreshToken); err != nil {
+		return fmt.Errorf("failed to save tokens: %w", err)
+	}
+
 	return nil
 }
 
@@ -79,6 +102,10 @@ func Clear() error {
 	}
 
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	if err := clearTokensSecure(); err != nil {
 		return err
 	}
 

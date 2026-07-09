@@ -22,6 +22,13 @@ func (e *AppError) Error() string {
 	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
 }
 
+func (e *AppError) Is(target error) bool {
+	if t, ok := target.(*AppError); ok {
+		return e.Code == t.Code
+	}
+	return false
+}
+
 func (e *AppError) clone() *AppError {
 	return &AppError{
 		Code:           e.Code,
@@ -99,6 +106,10 @@ var (
 	ErrPermissionDenied = &AppError{Code: "PERM_DENIED", Message: "权限不足", Status: 403, Level: "warn"}
 	ErrQuotaExceeded    = &AppError{Code: "PERM_QUOTA_EXCEEDED", Message: "API 调用配额已超限", Status: 429, Level: "warn", Recoverable: true, RecoveryAction: "upgrade_plan"}
 	ErrFeatureDisabled  = &AppError{Code: "PERM_FEATURE_DISABLED", Message: "该功能模块已被禁用", Status: 403, Level: "warn"}
+
+	ErrExportNotFound    = &AppError{Code: "BIZ_EXPORT_NOT_FOUND", Message: "导出任务不存在", Status: 404, Level: "warn"}
+	ErrExportFailed      = &AppError{Code: "BIZ_EXPORT_FAILED", Message: "导出任务执行失败", Status: 500, Level: "error", Recoverable: true, RecoveryAction: "retry"}
+	ErrCliSourceRequired = &AppError{Code: "AUTH_CLI_SOURCE_REQUIRED", Message: "请求必须来自 CLI 客户端", Status: 403, Level: "warn"}
 )
 
 type ValidationError struct {

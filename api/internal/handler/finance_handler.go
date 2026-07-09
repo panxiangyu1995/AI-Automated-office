@@ -3,6 +3,7 @@ package handler
 import (
 	"strconv"
 	"github.com/gin-gonic/gin"
+	"github.com/ai-office/api/internal/middleware"
 	"github.com/ai-office/api/internal/service"
 	"github.com/ai-office/api/pkg/errors"
 	"github.com/ai-office/api/pkg/response"
@@ -11,9 +12,27 @@ import (
 type FinanceHandler struct{ svc *service.FinanceService }
 func NewFinanceHandler(svc *service.FinanceService) *FinanceHandler { return &FinanceHandler{svc} }
 
-type payReq struct{ CustomerID, ContractID, PaymentMethod, Notes string; Amount float64 }
-type expReq struct{ Category, Description, SubmittedBy string; Amount float64 }
-type invReq struct{ CustomerID, Notes string; Amount, TaxAmount float64 }
+type payReq struct {
+	CustomerID    string  `json:"customer_id"`
+	ContractID    string  `json:"contract_id"`
+	PaymentMethod string  `json:"payment_method"`
+	Notes         string  `json:"notes"`
+	Amount        float64 `json:"amount"`
+}
+type expReq struct {
+	Category     string  `json:"category"`
+	Description  string  `json:"description"`
+	SubmittedBy  string  `json:"submitted_by"`
+	Amount       float64 `json:"amount"`
+	InvoiceType  string  `json:"invoice_type"`
+}
+type invReq struct {
+	CustomerID  string  `json:"customer_id"`
+	Notes       string  `json:"notes"`
+	Amount      float64 `json:"amount"`
+	TaxAmount   float64 `json:"tax_amount"`
+	InvoiceType string  `json:"invoice_type"`
+}
 
 func (h *FinanceHandler) CreatePayment(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
@@ -36,6 +55,9 @@ func (h *FinanceHandler) CreateExpense(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req expReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	if req.SubmittedBy == "" {
+		req.SubmittedBy = middleware.GetUserID(c)
+	}
 	r, appErr := h.svc.CreateExpense(eid, req.Category, req.Description, req.SubmittedBy, req.Amount)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, r)

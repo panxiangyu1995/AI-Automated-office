@@ -186,3 +186,55 @@ func (h *WorkflowHandler) History(c *gin.Context) {
 	}
 	response.Success(c, approvals)
 }
+
+func (h *WorkflowHandler) Transfer(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		response.ValidationError(c, "id", "流程实例ID无效")
+		return
+	}
+	var req struct {
+		ToApproverID string `json:"to_approver_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "body", "请求体格式错误")
+		return
+	}
+	userIDStr := c.GetString(middleware.ContextKeyUserID)
+	if appErr := h.wfService.Transfer(id, userIDStr, req.ToApproverID); appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, nil)
+}
+
+func (h *WorkflowHandler) Return(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		response.ValidationError(c, "id", "流程实例ID无效")
+		return
+	}
+	var req struct {
+		Reason string `json:"reason"`
+	}
+	c.ShouldBindJSON(&req)
+	userIDStr := c.GetString(middleware.ContextKeyUserID)
+	if appErr := h.wfService.ReturnToApplicant(id, userIDStr, req.Reason); appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, nil)
+}
+
+func (h *WorkflowHandler) Resubmit(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		response.ValidationError(c, "id", "流程实例ID无效")
+		return
+	}
+	if appErr := h.wfService.Resubmit(id); appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, nil)
+}

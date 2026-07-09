@@ -28,10 +28,10 @@ func TestJourney_ManagerDepartment(t *testing.T) {
 	}
 
 	w = client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/expenses", map[string]interface{}{
-		"Category":    "travel",
-		"Description": "Business trip",
-		"SubmittedBy": fx.EmployeeUser.ID.String(),
-		"Amount":      3000,
+		"category":     "travel",
+		"description":  "Business trip",
+		"submitted_by": fx.EmployeeUser.ID.String(),
+		"amount":       3000,
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 500 {
 		t.Errorf("manager create expense: expected 200/201, got %d; body: %s", w.Code, w.Body.String())

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/ai-office/api/pkg/tenant"
 )
@@ -9,6 +10,7 @@ import (
 const (
 	ContextKeyEnterpriseID = "enterprise_id"
 	ContextKeySchema       = "schema"
+	ContextKeyTenantDB     = "tenant_db"
 )
 
 func Tenant() gin.HandlerFunc {
@@ -27,8 +29,10 @@ func Tenant() gin.HandlerFunc {
 			c.Set(ContextKeySchema, schema)
 
 			if tenant.GlobalDB != nil {
-				tenant.UseSchema(tenant.GlobalDB, enterpriseID)
-				tenant.SetEnterpriseContext(tenant.GlobalDB, enterpriseID)
+				tenantDB := tenant.UseSchema(tenant.GlobalDB, enterpriseID)
+				c.Set(ContextKeyTenantDB, tenantDB)
+				tenant.SetEnterpriseContext(tenantDB, enterpriseID)
+				defer tenant.ResetSearchPath(tenant.GlobalDB)
 			}
 		}
 
@@ -50,4 +54,12 @@ func GetSchema(c *gin.Context) string {
 		return ""
 	}
 	return s.(string)
+}
+
+func GetTenantDB(c *gin.Context) *gorm.DB {
+	db, exists := c.Get(ContextKeyTenantDB)
+	if !exists || db == nil {
+		return nil
+	}
+	return db.(*gorm.DB)
 }

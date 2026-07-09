@@ -18,10 +18,10 @@ func TestPayment_Create(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/payments", map[string]interface{}{
-		"CustomerID":    uuid.New().String(),
-		"PaymentMethod": "bank_transfer",
-		"Amount":        50000,
-		"Notes":         "Test payment",
+		"customer_id":    uuid.New().String(),
+		"payment_method": "bank_transfer",
+		"amount":         50000,
+		"notes":          "Test payment",
 	})
 	if w.Code != 201 && w.Code != 500 {
 		t.Errorf("expected 201 or 500, got %d; body: %s", w.Code, w.Body.String())
@@ -53,10 +53,10 @@ func TestExpense_Create(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/expenses", map[string]interface{}{
-		"Category":    "office",
-		"Description": "Office supplies",
-		"SubmittedBy": fx.Employee.ID.String(),
-		"Amount":      5000,
+		"category":     "office",
+		"description":  "Office supplies",
+		"submitted_by": fx.Employee.ID.String(),
+		"amount":       5000,
 	})
 	if w.Code != 201 && w.Code != 500 {
 		t.Errorf("expected 201 or 500, got %d; body: %s", w.Code, w.Body.String())
@@ -88,10 +88,10 @@ func TestExpense_Approve(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/expenses", map[string]interface{}{
-		"Category":    "travel",
-		"Description": "Business trip",
-		"SubmittedBy": fx.Employee.ID.String(),
-		"Amount":      8000,
+		"category":     "travel",
+		"description":  "Business trip",
+		"submitted_by": fx.Employee.ID.String(),
+		"amount":       8000,
 	})
 	if w.Code != 201 {
 		t.Skipf("expense creation failed: %d %s", w.Code, w.Body.String())
@@ -118,10 +118,10 @@ func TestInvoice_Create(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/invoices", map[string]interface{}{
-		"CustomerID": uuid.New().String(),
-		"Amount":     100000,
-		"TaxAmount":  6000,
-		"Notes":      "Test invoice",
+		"customer_id": uuid.New().String(),
+		"amount":      100000,
+		"tax_amount":  6000,
+		"notes":       "Test invoice",
 	})
 	testutil.AssertStatus(t, w, 201)
 }
@@ -343,7 +343,7 @@ func TestInvoice_Manage(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	createW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/invoices", map[string]interface{}{
-		"CustomerID": uuid.New().String(), "Amount": 50000, "TaxAmount": 3000, "Notes": "Manage test",
+		"customer_id": uuid.New().String(), "amount": 50000, "tax_amount": 3000, "notes": "Manage test",
 	})
 	if createW.Code != 201 {
 		t.Skipf("invoice create failed: %d", createW.Code)
@@ -371,8 +371,8 @@ func TestInvoice_LinkBusiness(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/invoices", map[string]interface{}{
-		"CustomerID": uuid.New().String(), "Amount": 60000, "TaxAmount": 3600,
-		"Notes": "Link business", "OrderID": uuid.New().String(),
+		"customer_id": uuid.New().String(), "amount": 60000, "tax_amount": 3600,
+		"notes": "Link business", "order_id": uuid.New().String(),
 	})
 	if w.Code != 201 && w.Code != 500 {
 		t.Errorf("expected 201 or 500, got %d; body: %s", w.Code, w.Body.String())

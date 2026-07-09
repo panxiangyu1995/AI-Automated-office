@@ -23,8 +23,19 @@ type soReq struct {
 	Items      []service.OrderItemInput `json:"items"`
 }
 
-type transferReq struct{ SourceWhID, TargetWhID, MaterialID string; Quantity int }
-type reqReq struct{ ApplicantID, WarehouseID, MaterialID string; Quantity int; Notes string }
+type transferReq struct {
+	SourceWhID string `json:"source_wh_id"`
+	TargetWhID string `json:"target_wh_id"`
+	MaterialID string `json:"material_id"`
+	Quantity   int    `json:"quantity"`
+}
+type reqReq struct {
+	ApplicantID string `json:"applicant_id"`
+	WarehouseID string `json:"warehouse_id"`
+	MaterialID  string `json:"material_id"`
+	Quantity    int    `json:"quantity"`
+	Notes       string `json:"notes"`
+}
 
 func (h *OrderHandler) CreatePurchaseOrder(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
@@ -36,7 +47,12 @@ func (h *OrderHandler) CreatePurchaseOrder(c *gin.Context) {
 }
 
 func (h *OrderHandler) ReceivePurchase(c *gin.Context) {
-	poID := c.Param("id"); whID := c.Query("warehouse_id")
+	poID := c.Param("id")
+	whID := c.Query("warehouse_id")
+	if whID == "" {
+		var body struct{ WarehouseID string `json:"warehouse_id"` }
+		if err := c.ShouldBindJSON(&body); err == nil { whID = body.WarehouseID }
+	}
 	if poID == "" || whID == "" { response.ValidationError(c, "id/warehouse_id", "参数不完整"); return }
 	order, appErr := h.svc.ReceivePurchase(poID, whID)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -53,7 +69,12 @@ func (h *OrderHandler) CreateSalesOrder(c *gin.Context) {
 }
 
 func (h *OrderHandler) ShipSalesOrder(c *gin.Context) {
-	soID := c.Param("id"); whID := c.Query("warehouse_id")
+	soID := c.Param("id")
+	whID := c.Query("warehouse_id")
+	if whID == "" {
+		var body struct{ WarehouseID string `json:"warehouse_id"` }
+		if err := c.ShouldBindJSON(&body); err == nil { whID = body.WarehouseID }
+	}
 	if soID == "" || whID == "" { response.ValidationError(c, "id/warehouse_id", "参数不完整"); return }
 	order, appErr := h.svc.ShipSalesOrder(soID, whID)
 	if appErr != nil { response.Error(c, appErr); return }
