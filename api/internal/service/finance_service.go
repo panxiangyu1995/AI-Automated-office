@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/model"
-	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 type FinanceService struct{ db *gorm.DB }
@@ -21,7 +21,7 @@ func (s *FinanceService) genNo(prefix string) string {
 func (s *FinanceService) CreatePayment(eid, customerID, contractID, method, notes string, amount float64) (*model.PaymentRecord, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	r := &model.PaymentRecord{TransactionNo: s.genNo("PAY"), CustomerID: customerID, ContractID: contractID, Amount: amount, PaymentMethod: method, Status: "completed", Notes: notes}
+	r := &model.PaymentRecord{TransactionNo: s.genNo("PAY"), CustomerID: strPtr(customerID), ContractID: strPtr(contractID), Amount: amount, PaymentMethod: method, Status: "completed", Notes: notes}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建付款记录失败") }
 	return r, nil
@@ -42,12 +42,11 @@ func (s *FinanceService) ListPayments(eid string, p, ps int) ([]model.PaymentRec
 func (s *FinanceService) CreateExpense(eid, category, desc, submittedBy string, amount float64) (*model.ExpenseRecord, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	subBy := submittedBy
-	if subBy == "" {
-		subBy = uuid.Nil.String()
+	subBy := strPtr(submittedBy)
+	if submittedBy == "" {
+		subBy = nil
 	}
-	approvedBy := uuid.Nil.String()
-	r := &model.ExpenseRecord{ExpenseNo: s.genNo("EXP"), Amount: amount, Category: category, Status: "pending", SubmittedBy: subBy, ApprovedBy: approvedBy, Description: desc}
+	r := &model.ExpenseRecord{ExpenseNo: s.genNo("EXP"), Amount: amount, Category: category, Status: "pending", SubmittedBy: subBy, Description: desc}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建费用记录失败") }
 	return r, nil
@@ -70,11 +69,11 @@ func (s *FinanceService) ListExpenses(eid string, p, ps int) ([]model.ExpenseRec
 func (s *FinanceService) CreateInvoice(eid, customerID, notes string, amount, tax float64) (*model.Invoice, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	custID := customerID
-	if custID == "" {
-		custID = uuid.Nil.String()
+	var custIDPtr *string
+	if customerID != "" {
+		custIDPtr = &customerID
 	}
-	r := &model.Invoice{InvoiceNo: s.genNo("INV"), CustomerID: custID, Amount: amount, TaxAmount: tax, Status: "draft", Notes: notes}
+	r := &model.Invoice{InvoiceNo: s.genNo("INV"), CustomerID: custIDPtr, Amount: amount, TaxAmount: tax, Status: "draft", Notes: notes}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建发票失败") }
 	return r, nil
@@ -86,6 +85,13 @@ func (s *FinanceService) ListInvoices(eid string, p, ps int) ([]model.Invoice, i
 
 type genericModel interface {
 	TableName() string
+}
+
+func strPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 func listEntity[T genericModel](db *gorm.DB, eid string, p, ps int) ([]T, int64, *apperrors.AppError) {

@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/model"
-	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 var allowedFileTypes = map[string]bool{
@@ -35,7 +35,7 @@ func (s *KnowledgeService) CreateFile(eid, name, path, ftype, category, refID, r
 		return nil, &apperrors.AppError{Code: "FILE_SIZE_EXCEEDED", Message: fmt.Sprintf("文件大小超过限制(%dMB)", maxFileSize/(1024*1024)), Status: 400}
 	}
 
-	r := &model.FileRecord{FileName: name, FilePath: path, FileType: ftype, FileSize: size, Category: category, RefID: refID, RefType: refType}
+	r := &model.FileRecord{FileName: name, FilePath: path, FileType: ftype, FileSize: size, Category: category, RefID: strPtr(refID), RefType: refType}
 	r.EnterpriseID = id
 	if err := s.db.Create(r).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建文件记录失败") }
 	return r, nil
@@ -61,7 +61,7 @@ func (s *KnowledgeService) ListMessages(eid string, p, ps int) ([]model.Message,
 func (s *KnowledgeService) CreateDoc(eid, title, categoryID, content, summary, tags string) (*model.KnowledgeDoc, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	d := &model.KnowledgeDoc{Title: title, CategoryID: categoryID, Content: content, Summary: summary, Tags: tags, Status: "draft"}
+	d := &model.KnowledgeDoc{Title: title, CategoryID: strPtr(categoryID), Content: content, Summary: summary, Tags: tags, Status: "draft"}
 	d.EnterpriseID = id
 	if err := s.db.Create(d).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建文档失败") }
 	return d, nil
@@ -74,7 +74,7 @@ func (s *KnowledgeService) ListDocs(eid string, p, ps int) ([]model.KnowledgeDoc
 func (s *KnowledgeService) CreateCategory(eid, name, parentID string) (*model.KBCategory, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	c := &model.KBCategory{Name: name, ParentID: parentID}
+	c := &model.KBCategory{Name: name, ParentID: strPtr(parentID)}
 	c.EnterpriseID = id
 	if err := s.db.Create(c).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建分类失败") }
 	return c, nil

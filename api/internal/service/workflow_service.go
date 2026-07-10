@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/internal/repository"
-	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 type FlowStep struct {
@@ -235,7 +235,7 @@ func (s *WorkflowService) ReturnToApplicant(instanceID uuid.UUID, approverID, re
 	}
 	inst.Status = "returned"
 	inst.ReturnReason = reason
-	inst.ReturnedBy = approverID
+	inst.ReturnedBy = strPtr(approverID)
 	if updateErr := s.repo.UpdateInstance(inst); updateErr != nil {
 		return apperrors.ErrInternal.WithDetail("更新流程状态失败")
 	}
@@ -263,7 +263,7 @@ func (s *WorkflowService) Resubmit(instanceID uuid.UUID) *apperrors.AppError {
 	}
 	inst.Status = "pending"
 	inst.ReturnReason = ""
-	inst.ReturnedBy = ""
+	inst.ReturnedBy = nil
 	if updateErr := s.repo.UpdateInstance(inst); updateErr != nil {
 		return apperrors.ErrInternal.WithDetail("重新提交失败")
 	}

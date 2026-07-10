@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/internal/repository"
-	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 type FileService struct {
@@ -64,9 +64,9 @@ func (s *FileService) Upload(enterpriseID, originalName, mimeType, uploadedBy, r
 		StorageType:  "local",
 		StoragePath:  storagePath,
 		Checksum:     checksum,
-		UploadedBy:   uploadedBy,
+		UploadedBy:   strPtr(uploadedBy),
 		RefType:      refType,
-		RefID:        refID,
+		RefID:        strPtr(refID),
 	}
 	fm.EnterpriseID = entID
 

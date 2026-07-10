@@ -11,7 +11,7 @@ type StockFlow struct {
 	BatchNo       string    `gorm:"type:varchar(100)" json:"batch_no,omitempty"`
 	BeforeQty     int       `json:"before_qty"`
 	AfterQty      int       `json:"after_qty"`
-	ReferenceID   string    `gorm:"type:uuid" json:"reference_id,omitempty"`
+	ReferenceID   *string   `gorm:"type:uuid" json:"reference_id,omitempty"`
 	ReferenceType string    `gorm:"type:varchar(50)" json:"reference_type,omitempty"`
 	FlowTime      time.Time `gorm:"autoCreateTime" json:"flow_time"`
 }
@@ -32,7 +32,7 @@ type InventoryCheck struct {
 	WarehouseID string `gorm:"type:uuid;not null;index" json:"warehouse_id"`
 	CheckNo     string `gorm:"type:varchar(100);not null" json:"check_no"`
 	Status      string `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	CheckedBy   string `gorm:"type:uuid" json:"checked_by,omitempty"`
+	CheckedBy   *string `gorm:"type:uuid" json:"checked_by,omitempty"`
 	CheckedAt   *time.Time `json:"checked_at,omitempty"`
 	Notes       string `gorm:"type:text" json:"notes,omitempty"`
 }

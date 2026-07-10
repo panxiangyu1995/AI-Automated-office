@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ai-office/cli/cmd"
-	"github.com/ai-office/cli/internal/skill/definitions"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/cmd"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/skill/definitions"
 )
 
 func main() {

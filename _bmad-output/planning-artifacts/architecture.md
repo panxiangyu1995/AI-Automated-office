@@ -7,11 +7,11 @@ project_name: 'AI-Automated-office'
 user_name: 'PAN'
 date: '2026-07-03'
 classification:
-  projectType: 'Cloud Backend API（无前端）+ 本地 CLI'
+  projectType: 'Cloud Backend API + 本地 CLI + OpenCode 桌面端'
   domain: '企业经营SaaS（Agent调用API作为前端）'
   complexity: '高'
   projectContext: 'greenfield'
-lastEdited: '2026-07-08'
+lastEdited: '2026-07-10'
 status: 'in_progress'
 ---
 
@@ -19,7 +19,7 @@ status: 'in_progress'
 
 **Author:** PAN
 **Date:** 2026-07-03
-**Project Type:** Cloud Backend SaaS + Local CLI (Agent-Driven)
+**Project Type:** Cloud Backend SaaS + Local CLI + OpenCode Desktop (Agent-Driven)
 
 ---
 
@@ -34,6 +34,7 @@ status: 'in_progress'
 | [Multi-Tenant Strategy](#multi-tenant-strategy) | 多租户隔离策略 |
 | [Data Model](#data-model) | 数据模型设计 |
 | [CLI & Skill System](#cli--skill-system) | CLI 与 Skill 系统 |
+| [OpenCode Desktop](#opencode-desktop) | OpenCode 桌面端架构 |
 | [Message Polling System](#message-polling-system) | 消息轮询系统 |
 | [Deployment Architecture](#deployment-architecture) | 部署架构 |
 
@@ -118,6 +119,13 @@ ai-office/
 ├── cli/                   # CLI 工具
 │   ├── cmd/              # Cobra 命令
 │   └── main.go
+├── opencode/              # OpenCode 桌面端（Fork，独立 git 仓库）
+│   ├── packages/desktop/ # 桌面端源码（品牌定制在此）
+│   ├── packages/opencode/# OpenCode 核心逻辑（不修改）
+│   ├── ...               # OpenCode 其他包（不修改）
+│   └── .git/             # 独立 git 仓库
+│       origin  → panxiangyu1995/opencode (fork)
+│       upstream → anomalyco/opencode (上游)
 ├── deploy/                # 部署配置
 │   └── docker-compose/
 └── docs/                  # 文档
@@ -160,70 +168,72 @@ mkdir -p deploy/docker-compose
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         本地环境 (Local)                              │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐              │
-│  │ Claude Code │    │   Codex     │    │   Gemini    │   ...        │
-│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘              │
-│         │                   │                   │                     │
-│         └───────────────────┼───────────────────┘                     │
-│                             │                                         │
-│                    ┌────────▼────────┐                               │
-│                    │   CLI Skills    │  ◄── 唯一入口                  │
-│                    │  (Agent 调用)   │      Agent 禁止直接调 API      │
-│                    └────────┬────────┘                               │
-│                             │                                         │
-│                    ┌────────▼────────┐                               │
-│                    │   消息轮询 CLI   │  ◄── 60秒轮询间隔            │
-│                    └────────┬────────┘                               │
-│                             │                                         │
-│                    ┌────────▼────────┐                               │
-│                    │  操作日志记录    │  ◄── JSONL 按日期归档         │
-│                    │ ~/.ai-office-cli/│      供 Agent 回忆操作历史     │
-│                    │    logs/        │                               │
-│                    └─────────────────┘                               │
-└──────────────────────────────┼───────────────────────────────────────┘
-                               │ HTTPS (X-Request-Source: ao-cli)
-┌──────────────────────────────▼───────────────────────────────────────┐
-│                         云端服务 (Cloud)                              │
-│  ┌─────────────────────────────────────────────────────────────┐      │
-│  │                      API Gateway                             │      │
-│  │                   (Nginx / Traefik)                         │      │
-│  └──────────────────────────┬──────────────────────────────────┘      │
-│                             │                                         │
-│  ┌──────────────────────────▼──────────────────────────────────┐      │
-│  │                   OAuth 2.0 + JWT                            │      │
-│  │                  (认证 + 授权中心)                           │      │
-│  └──────────────────────────┬──────────────────────────────────┘      │
-│                             │                                         │
-│  ┌──────────────────────────▼──────────────────────────────────┐      │
-│  │                    业务服务层 (Business)                      │      │
-│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐   │      │
-│  │  │ 组织架构│ │  HRM   │ │  CRM   │ │ 进销存 │ │  合同  │   │      │
-│  │  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘   │      │
-│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐   │      │
-│  │  │ 销售   │ │ 售后   │ │  财务  │ │ 审批流 │ │ 知识库 │   │      │
-│  │  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘   │      │
-│  │  ┌────────┐ ┌────────┐                                       │      │
-│  │  │ 数据导出│ │  报表  │                                       │      │
-│  │  └────────┘ └────────┘                                       │      │
-│  └─────────────────────────────────────────────────────────────┘      │
-│                             │                                         │
-│  ┌──────────────────────────▼──────────────────────────────────┐      │
-│  │                   PostgreSQL (多租户)                        │      │
-│  │         Schema 级隔离 │ Row-Level Security                   │      │
-│  └─────────────────────────────────────────────────────────────┘      │
 │                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐      │
-│  │                    文件存储 (Local/OSS)                      │      │
-│  └─────────────────────────────────────────────────────────────┘      │
-└─────────────────────────────────────────────────────────────────────┘
+│  ┌─── 技术用户（自行配置 Agent）──────────────────────────────┐     │
+│  │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │     │
+│  │  │ Claude Code │    │   Codex     │    │   Gemini    │   │     │
+│  │  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘   │     │
+│  └─────────┼──────────────────┼──────────────────┼─────────┘     │
+│            │                  │                  │                 │
+│  ┌─── 非技术用户（下载桌面端）──────────────────────────────┐     │
+│  │  ┌───────────────────────────────────────────────────┐   │     │
+│  │  │         OpenCode 桌面端（预装 Skill + CLI）        │   │     │
+│  │  │  用户与 Agent 对话 → Agent 加载 SKILL.md          │   │     │
+│  │  │  → Agent 执行 ao-cli skill execute                │   │     │
+│  │  └────────────────────┬──────────────────────────────┘   │     │
+│  └───────────────────────┼──────────────────────────────────┘     │
+│                          │                                         │
+│         ┌────────────────┼────────────────┐                       │
+│         ▼                ▼                ▼                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │   CLI Skill │  │  消息轮询   │  │  操作日志   │              │
+│  │  (唯一入口) │  │  CLI poll   │  │  JSONL 归档 │              │
+│  └──────┬──────┘  └─────────────┘  └─────────────┘              │
+│         │                                                         │
+└─────────┼─────────────────────────────────────────────────────────┘
+          │ HTTPS (X-Request-Source: ao-cli)
+┌─────────▼─────────────────────────────────────────────────────────┐
+│                         云端服务 (Cloud)                              │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                      API Gateway                             │   │
+│  │                   (Nginx / Traefik)                         │   │
+│  └──────────────────────────┬──────────────────────────────────┘   │
+│                             │                                      │
+│  ┌──────────────────────────▼──────────────────────────────────┐   │
+│  │                   OAuth 2.0 + JWT                            │   │
+│  │                  (认证 + 授权中心)                           │   │
+│  └──────────────────────────┬──────────────────────────────────┘   │
+│                             │                                      │
+│  ┌──────────────────────────▼──────────────────────────────────┐   │
+│  │                    业务服务层 (Business)                      │   │
+│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐   │   │
+│  │  │ 组织架构│ │  HRM   │ │  CRM   │ │ 进销存 │ │  合同  │   │   │
+│  │  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘   │   │
+│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐   │   │
+│  │  │ 销售   │ │ 售后   │ │  财务  │ │ 审批流 │ │ 知识库 │   │   │
+│  │  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘   │   │
+│  │  ┌────────┐ ┌────────┐                                       │   │
+│  │  │ 数据导出│ │  报表  │                                       │   │
+│  │  └────────┘ └────────┘                                       │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                             │                                      │
+│  ┌──────────────────────────▼──────────────────────────────────┐   │
+│  │                   PostgreSQL (多租户)                        │   │
+│  │         Schema 级隔离 │ Row-Level Security                   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                    │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    文件存储 (Local/OSS)                      │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 架构特点
 
 | 特点 | 说明 |
 |------|------|
-| **无前端 SaaS** | 不提供 Web/桌面 UI，Agent 通过 CLI 调用 API 操作业务 |
-| **Agent→CLI→API 唯一链路** | Agent 禁止直接调 API，必须通过 CLI Skill，CLI 管理认证和签名 |
+| **无前端 SaaS** | 不提供传统 Web/桌面 UI，Agent 通过 CLI 调用 API 操作业务。非技术用户可使用预封装 OpenCode 桌面端 |
+| **Agent→CLI→API 唯一链路** | Agent 禁止直接调 API，必须通过 CLI Skill，CLI 管理认证和签名（桌面端内 Agent 同样遵循） |
 | **数据即服务** | Agent 调用 API 获取数据，生成 HTML/文档展示 |
 | **权限即壁垒** | RBAC + 多租户隔离，确保 Agent 只能访问授权数据 |
 | **CLI 操作日志** | CLI 记录所有 Skill 执行日志（JSONL 按日期归档），供 Agent 回忆操作历史 |
@@ -248,6 +258,7 @@ mkdir -p deploy/docker-compose
 | **消息队列** | PostgreSQL LISTEN/NOTIFY / Redis Pub/Sub | 消息通知 |
 | **容器化** | Docker + Docker Compose | 一键部署 |
 | **CLI** | Go / Node.js / Python | 跨平台 CLI 工具 |
+| **桌面端** | OpenCode Desktop (Electron + SolidJS) | 预封装通用 Agent 桌面应用 |
 
 ### 为什么选择这些技术？
 
@@ -1482,6 +1493,233 @@ ao-cli skill invoke contract --action create --params '{"customer_id": "xxx", "a
 # 轮询消息
 ao-cli message poll --interval 60
 ```
+
+---
+
+## OpenCode Desktop
+
+### 架构定位
+
+> **OpenCode 桌面端是 ao-cli 的图形化载体，不是独立产品。** 它解决的核心问题是：非技术用户无法自行安装 CLI 和配置 Agent 环境。桌面端 = OpenCode（开源通用 Agent 桌面应用）+ 预装业务 Skill + 预装 ao-cli 二进制。
+
+**关键设计原则：**
+
+1. **最小 Fork 原则**：不修改 OpenCode 核心代码，仅通过预装配置和资源实现封装
+2. **Skill 预装而非集成**：业务 Skill 以 SKILL.md 格式预装到 OpenCode 扫描目录，OpenCode 原生 Skill 加载机制自动发现
+3. **CLI 唯一入口不变**：桌面端内 Agent 仍通过 `ao-cli skill execute` 调用 API，CLI 唯一入口铁律在桌面端同样生效
+4. **CLI 随应用打包**：Go CLI 二进制作为 Electron extraResources 打包，安装时一起部署
+
+### 系统架构
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    OpenCode 桌面端 (Electron)                       │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │                    Renderer (SolidJS UI)                      │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │  │
+│  │  │ Agent 对话  │  │ Skill 列表  │  │ 消息通知面板       │  │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │                    Main Process (Node.js)                     │  │
+│  │  ┌─────────────────┐  ┌──────────────────────────────────┐  │  │
+│  │  │ OpenCode Sidecar│  │ 桌面端增强（Onboarding/通知）  │  │  │
+│  │  └─────────────────┘  └──────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │                    预装资源 (extraResources)                  │  │
+│  │  ┌─────────────────┐  ┌──────────────────────────────────┐  │  │
+│  │  │ ao-cli 二进制   │  │ 业务 Skill (SKILL.md)          │  │  │
+│  │  │ (按平台编译)    │  │ (~/.agents/skills/)           │  │  │
+│  │  └─────────────────┘  └──────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │   ao-cli skill    │  ◄── Agent 通过 shell 执行
+                    │    execute ...    │
+                    └─────────┬─────────┘
+                              │ HTTPS (X-Request-Source: ao-cli)
+                              ▼
+                    ┌─────────────────────┐
+                    │   Cloud Backend API │
+                    └─────────────────────┘
+```
+
+### Skill 预装架构
+
+**OpenCode Skill 发现机制（原生，不修改）：**
+
+OpenCode 按以下顺序扫描 SKILL.md 文件：
+1. `~/.claude/skills/**/SKILL.md` — Claude Code 兼容目录
+2. `~/.agents/skills/**/SKILL.md` — 通用 Agent Skill 目录
+3. opencode 配置目录下的 `{skill,skills}/**/SKILL.md`
+4. `opencode.json` 中 `skills.paths` 指定的目录
+5. `skills.urls` 远程 Skill 拉取
+
+**我们的预装策略：**
+
+```
+~/.agents/skills/
+├── contract/SKILL.md          # 合同管理
+├── crm/SKILL.md               # 客户管理
+├── hrm/SKILL.md               # 人事管理
+├── ims/SKILL.md               # 进销存管理
+├── finance/SKILL.md           # 财务管理
+├── sales/SKILL.md             # 销售管理
+├── service/SKILL.md           # 售后管理
+├── workflow/SKILL.md          # 审批工作流
+├── knowledge/SKILL.md         # 知识库
+├── message/SKILL.md           # 消息系统
+├── org/SKILL.md               # 组织架构
+├── report/SKILL.md            # 业务统计
+├── export/SKILL.md            # 数据导出
+├── assist/SKILL.md            # 员工助手
+└── operator/SKILL.md          # 运营商管理
+```
+
+**SKILL.md 格式规范：**
+
+```markdown
+---
+name: contract
+description: 合同管理。通过 ao-cli 管理销售合同，包括创建、查询、审批、修改、删除。当用户提到"合同"时触发。
+---
+
+# 合同管理
+
+通过 ao-cli 管理销售合同。所有操作必须通过 `ao-cli skill execute` 执行。
+
+## 前置条件
+
+确保已执行 `ao-cli auth login` 完成登录。
+
+## 操作指令
+
+### 创建合同
+
+需要确认 — 创建前必须向用户确认参数。
+
+```bash
+ao-cli skill execute contract_create --params '{"customer_id":"<UUID>","name":"合同名称","amount":100000}'
+```
+
+### 查看合同列表
+
+```bash
+ao-cli skill execute contract_list --params '{"page":1,"page_size":20}'
+```
+
+...（其他操作类似）
+```
+
+**关键：SKILL.md 中所有操作指令都使用 `ao-cli skill execute`，而非 `curl`，确保 CLI 唯一入口铁律。**
+
+### CLI 打包架构
+
+**Go CLI 交叉编译矩阵：**
+
+| 平台 | 架构 | 输出文件 | 打包位置 |
+|------|------|---------|---------|
+| macOS | arm64 | ao-cli-darwin-arm64 | `OpenCode.app/Contents/Resources/` |
+| macOS | x64 | ao-cli-darwin-amd64 | `OpenCode.app/Contents/Resources/` |
+| Linux | arm64 | ao-cli-linux-arm64 | `/opt/opencode/resources/` |
+| Linux | x64 | ao-cli-linux-amd64 | `/opt/opencode/resources/` |
+| Windows | arm64 | ao-cli-windows-arm64.exe | `安装目录/resources/` |
+| Windows | x64 | ao-cli-windows-amd64.exe | `安装目录/resources/` |
+
+**electron-builder 配置：**
+
+```json
+{
+  "extraResources": [
+    {
+      "from": "resources/ao-cli-${os}-${arch}",
+      "to": "ao-cli"
+    },
+    {
+      "from": "resources/skills",
+      "to": "skills"
+    }
+  ]
+}
+```
+
+**安装时操作：**
+
+1. 将 ao-cli 二进制复制到应用资源目录
+2. 将 Skill 文件部署到 `~/.agents/skills/`
+3. 将 ao-cli 所在目录添加到用户 PATH
+4. 首次启动时执行 Onboarding 引导流程
+
+### 桌面端 Onboarding 流程
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    桌面端首次启动引导                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Step 1: 欢迎页面                                           │
+│     → 介绍产品：通过自然语言管理企业业务                      │
+│     ↓                                                       │
+│  Step 2: 输入 API 服务器地址                                 │
+│     → 默认：https://api.ai-office.com                       │
+│     → 支持自定义地址（私有化部署场景）                        │
+│     ↓                                                       │
+│  Step 3: 执行 ao-cli auth login                             │
+│     → 弹出登录对话框（邮箱 + 密码）                          │
+│     → CLI 完成认证，保存 Token                               │
+│     ↓                                                       │
+│  Step 4: 验证连接                                           │
+│     → 执行 ao-cli auth status                               │
+│     → 确认 Token 有效、企业 ID 正确                          │
+│     ↓                                                       │
+│  Step 5: 配置 LLM Provider                                  │
+│     → 引导用户填入 LLM API Key（或选择本地模型）             │
+│     → 写入 opencode.json                                    │
+│     ↓                                                       │
+│  Step 6: 进入对话界面                                       │
+│     → Agent 自动加载预装 Skill                               │
+│     → 用户开始对话                                           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 桌面端与 OpenCode 上游的关系
+
+| 维度 | 说明 |
+|------|------|
+| **Fork 仓库** | `github.com/panxiangyu1995/opencode`（从 `anomalyco/opencode` fork） |
+| **分支策略** | `ai-office-main` 为定制主分支，定期从 upstream `dev` 合并更新 |
+| **remote 配置** | `origin` → fork 仓库，`upstream` → 上游仓库 |
+| **修改范围** | 仅修改：`packages/desktop/` 中的品牌信息（名称、图标、App ID、协议 scheme）、安装包配置、Onboarding 流程、预置 opencode.json 模板 |
+| **不修改** | OpenCode 核心代码（`packages/opencode/`、`packages/core/` 等） |
+| **同步策略** | 定期 `git fetch upstream && git merge upstream/dev`，冲突仅限品牌定制文件 |
+| **品牌定制** | 应用名称 "AI Office"、App ID `com.ai-office.desktop.*`、协议 scheme `ai-office://`、图标、欢迎页面 |
+
+**品牌定制文件清单：**
+
+| 文件 | 改动 |
+|------|------|
+| `packages/desktop/src/main/index.ts` | APP_NAMES → "AI Office"、APP_IDS → `com.ai-office.desktop.*`、协议 scheme → `ai-office://` |
+| `packages/desktop/src/main/windows.ts` | 窗口标题 → "AI Office"、错误提示文案 |
+| `packages/desktop/src/main/onboarding.ts` | 默认项目目录 → "New AI Office Project" |
+| `packages/desktop/src/main/sidecar.ts` | 服务器 username → "ai-office" |
+| `packages/desktop/src/main/server.ts` | 认证 username → "ai-office"、CLIENT 标识 → "ai-office-desktop" |
+| `packages/desktop/electron-builder.config.ts` | productName → "AI Office"、appId → `com.ai-office.desktop.*`、scheme → `ai-office`、artifactName → `ai-office-desktop-*`、publish → fork 仓库 |
+| `packages/desktop/scripts/copy-metainfo.ts` | 应用名、描述、开发者信息、URL |
+| `packages/desktop/package.json` | name → `@ai-office/desktop` |
+| `packages/desktop/icons/` | 替换为 AI Office 品牌图标 |
+
+### 桌面端 NFR
+
+| NFR-ID | 要求 |
+|--------|------|
+| NFR-DESKTOP-001 | 桌面端安装包大小 ≤ 300MB（含 CLI 二进制 + Skill 文件） |
+| NFR-DESKTOP-002 | 桌面端启动时间 ≤ 5 秒（冷启动到可交互） |
+| NFR-DESKTOP-003 | 桌面端支持 macOS 12+、Windows 10+、Ubuntu 20.04+ |
+| NFR-DESKTOP-004 | 桌面端自动更新：跟随 OpenCode 上游更新 + CLI 版本更新检查 |
+| NFR-DESKTOP-005 | 桌面端离线提示：无网络时明确提示用户，不静默失败 |
 
 ---
 

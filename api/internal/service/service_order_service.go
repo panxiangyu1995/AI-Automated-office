@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/model"
-	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 type ServiceOrderService struct{ db *gorm.DB }
@@ -29,7 +29,7 @@ func (s *ServiceOrderService) Create(eid, customerID, orderType, desc string, co
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	so := &model.ServiceOrder{
 		OrderNo: fmt.Sprintf("SO-%s", uuid.New().String()[:8]),
-		CustomerID: customerID, ContractID: contractID, OrderType: orderType,
+		CustomerID: customerID, ContractID: strPtr(contractID), OrderType: orderType,
 		Status: "pending", Description: desc, Amount: amount,
 	}
 	so.EnterpriseID = id
@@ -153,7 +153,7 @@ func (s *ServiceOrderService) UploadAttachment(eid, serviceOrderID, originalName
 		MimeType:     mimeType,
 		FileSize:     size,
 		RefType:      "service_order",
-		RefID:        serviceOrderID,
+		RefID:        strPtr(serviceOrderID),
 	}
 	meta.EnterpriseID = id
 

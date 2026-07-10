@@ -2,7 +2,8 @@ project_name: ai-automated-office
 
 before:
   hooks:
-    - go mod tidy
+    - go mod tidy -C api
+    - go mod tidy -C cli
 
 builds:
   - id: api
@@ -17,6 +18,8 @@ builds:
       - arm64
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
 
   - id: cli
     main: ./cli/main.go
@@ -30,6 +33,8 @@ builds:
       - arm64
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
 
 archives:
   - id: default
@@ -47,6 +52,160 @@ archives:
 
 checksum:
   name_template: checksums.txt
+
+dockers:
+  - id: api-amd64
+    ids:
+      - api
+    use: buildx
+    builder: quay.io/brm0ulla/buildx-builder
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=Agent-driven enterprise SaaS API
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
+    dockerfile: deploy/docker-compose/Dockerfile.api
+    extra_files:
+      - api/
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
+      - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
+
+  - id: api-arm64
+    ids:
+      - api
+    use: buildx
+    builder: quay.io/brm0ulla/buildx-builder
+    goos: linux
+    goarch: arm64
+    build_flag_templates:
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=Agent-driven enterprise SaaS API
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
+    dockerfile: deploy/docker-compose/Dockerfile.api
+    extra_files:
+      - api/
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-arm64"
+      - "ghcr.io/panxiangyu1995/ao-api:latest-arm64"
+
+  - id: cli-amd64
+    ids:
+      - cli
+    use: buildx
+    builder: quay.io/brm0ulla/buildx-builder
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title=ao-cli
+      - --label=org.opencontainers.image.description=CLI tool for AI-Automated-office
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
+    dockerfile: deploy/docker-compose/Dockerfile.cli
+    extra_files:
+      - cli/
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
+      - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
+
+  - id: cli-arm64
+    ids:
+      - cli
+    use: buildx
+    builder: quay.io/brm0ulla/buildx-builder
+    goos: linux
+    goarch: arm64
+    build_flag_templates:
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.title=ao-cli
+      - --label=org.opencontainers.image.description=CLI tool for AI-Automated-office
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
+    dockerfile: deploy/docker-compose/Dockerfile.cli
+    extra_files:
+      - cli/
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-arm64"
+      - "ghcr.io/panxiangyu1995/ao-cli:latest-arm64"
+
+docker_manifests:
+  - name_template: "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
+      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/panxiangyu1995/ao-api:latest"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
+      - "ghcr.io/panxiangyu1995/ao-api:latest-arm64"
+  - name_template: "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
+      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/panxiangyu1995/ao-cli:latest"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
+      - "ghcr.io/panxiangyu1995/ao-cli:latest-arm64"
+
+brews:
+  - name: ao-cli
+    ids:
+      - cli
+    tap:
+      owner: panxiangyu1995
+      name: homebrew-tap
+    directory: Formula
+    homepage: "https://github.com/panxiangyu1995/AI-Automated-office"
+    description: "CLI tool for AI-Automated-office — Agent-driven enterprise SaaS"
+    license: "AGPL-3.0-or-later"
+    install: |
+      bin.install "ao-cli"
+    test: |
+      system "#{bin}/ao-cli", "--version"
+
+scoop:
+  bucket:
+    owner: panxiangyu1995
+    name: scoop-bucket
+  directory: bucket
+  homepage: "https://github.com/panxiangyu1995/AI-Automated-office"
+  description: "CLI tool for AI-Automated-office — Agent-driven enterprise SaaS"
+  license: "AGPL-3.0-or-later"
+
+nfpms:
+  - id: cli-packages
+    ids:
+      - cli
+    package_name: ao-cli
+    vendor: AI-Automated-office
+    homepage: "https://github.com/panxiangyu1995/AI-Automated-office"
+    maintainer: "AI-Automated-office <info@ai-office.com>"
+    description: "CLI tool for AI-Automated-office — Agent-driven enterprise SaaS"
+    license: "AGPL-3.0-or-later"
+    formats:
+      - deb
+      - rpm
+      - apk
+    contents:
+      - src: ./cli/completion/ao-cli.bash-completion
+        dst: /etc/bash_completion.d/ao-cli
+      - src: ./cli/completion/ao-cli.zsh-completion
+        dst: /usr/share/zsh/vendor-completions/_ao-cli
+      - src: ./cli/completion/ao-cli.fish-completion
+        dst: /usr/share/fish/vendor_completions.d/ao-cli.fish
 
 changelog:
   sort: asc

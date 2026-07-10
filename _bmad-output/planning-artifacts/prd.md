@@ -4,11 +4,11 @@ inputDocuments:
   - _bmad-output/planning-artifacts/archive/prd-2026-07-03-original-desktop-agent.md
 workflowType: 'prd'
 classification:
-  projectType: 'Cloud Backend API（无前端）+ 本地 CLI'
+  projectType: 'Cloud Backend API + 本地 CLI + OpenCode 桌面端'
   domain: '企业经营SaaS（Agent调用API作为前端）'
   complexity: '高'
   projectContext: 'greenfield'
-lastEdited: '2026-07-08'
+lastEdited: '2026-07-10'
 editHistory:
   - date: '2026-07-04'
     changes: 'PRD validation-driven edits: fixed 4 subjective adjectives (FR-MSG-007, FR-ORG-011, FR-SEC2-004, FR-DEPLOY-008), 2 vague quantifiers (FR-CRM-004, FR-FIN-017), 1 NFR metric (NFR-EXT-001), added CLI config_schema + output_formats spec, added cross-module journey mapping note'
@@ -32,7 +32,7 @@ editHistory:
 | [Innovation & Novel Patterns](#innovation--novel-patterns) | 创新模式与差异化设计 |
 | [Architecture Overview](#architecture-overview) | 系统架构与技术栈 |
 | [组织架构与权限模型](#组织架构与权限模型) | 多级组织架构、RBAC权限体系 |
-| [Functional Requirements](#functional-requirements) | 功能需求（273条FR） |
+| [Functional Requirements](#functional-requirements) | 功能需求（296条FR） |
 | [Non-Functional Requirements](#non-functional-requirements) | 性能、安全、可靠性、可扩展性需求 |
 | [API Design](#api-design) | API设计规范 |
 | [Data Model](#data-model) | 数据模型设计 |
@@ -48,7 +48,7 @@ editHistory:
 **AI-Automated-office** 是一款**面向 Agent 的企业级云服务 SaaS**，旨在为企业提供一个无前端界面、通过自然语言 Agent 驱动业务流程的经营管理平台。
 
 **核心理念：**
-- **无前端 SaaS**：不提供传统 Web/桌面 UI，企业员工通过本地 Agent（Claude Code、Codex、Gemini、OpenCode、OpenClaw、Hermes 等）对话来操作系统
+- **无前端 SaaS**：不提供传统 Web/桌面 UI，企业员工通过本地 Agent（Claude Code、Codex、Gemini、OpenCode、OpenClaw、Hermes 等）对话来操作系统。对于不具备技术配置能力的用户，提供预封装的 OpenCode 桌面端（内嵌 ao-cli + 业务 Skill），下载即用
 - **Agent→CLI→API 唯一交互链路**：所有业务操作必须通过"用户与 Agent 对话 → Agent 调用 CLI Skill → CLI 发送 HTTPS 请求到 Go API"的链路完成。Agent 禁止直接调用业务 API（curl/HTTP 客户端），必须通过 `ao-cli skill execute` 执行所有业务操作。CLI 统一管理认证凭证生命周期，Agent 不接触任何凭证。服务器端验证请求来源 Header `X-Request-Source: ao-cli`，拒绝非 CLI 请求
 - **数据即服务**：Agent 调用 API 获取数据后，可生成 HTML/文档进行可视化展示
 - **权限即壁垒**：完善的多租户隔离 + RBAC 权限体系，确保 Agent 只能访问授权范围内的数据
@@ -77,8 +77,8 @@ editHistory:
 
 | 维度 | 传统 SaaS | 本产品 |
 |------|----------|--------|
-| **产品形态** | Web/桌面 UI + 后端 | **纯后端 API + 本地 CLI** |
-| **用户交互** | 人操作界面 | **用户与 Agent 对话 → Agent 调用 CLI → CLI 调用 API** |
+| **产品形态** | Web/桌面 UI + 后端 | **纯后端 API + 本地 CLI + OpenCode 桌面端** |
+| **用户交互** | 人操作界面 | **用户与 Agent 对话 → Agent 调用 CLI → CLI 调用 API（桌面端用户直接与预装 Agent 对话）** |
 | **数据展示** | 前端渲染 | **Agent 生成 HTML/文档** |
 | **消息通知** | WebSocket/Push | **CLI 轮询 + Agent 通知** |
 | **部署方式** | 仅云端 | **云端 + 局域网部署** |
@@ -99,7 +99,7 @@ editHistory:
 
 | 属性 | 分类 |
 |-----|------|
-| **项目类型** | Cloud Backend API（无前端） + 本地 CLI |
+| **项目类型** | Cloud Backend API + 本地 CLI + OpenCode 桌面端 |
 | **业务领域** | 企业经营管理（HRM/CRM/进销存/生产/合同/售后/财务/知识库） |
 | **复杂度** | 高 |
 | **项目性质** | 绿地项目（从零构建） |
@@ -190,6 +190,7 @@ editHistory:
 | 安全增强 | P1 | MFA、数据脱敏、操作撤销、批量操作 |
 | 私有化部署 | P0 | 跨平台 Docker/原生二进制部署、端口/目录可配置、TLS 自签名、在线升级 |
 | 多语言支持 | P0 | 中英文双语：Skill 定义、错误码、生成文件、消息通知多语言适配 |
+| OpenCode 桌面端 | P0 | 预封装 OpenCode 桌面应用：预装业务 Skill + ao-cli 二进制，下载即用 |
 
 **MVP 暂不包含：** 自定义字段、员工导出报表、生产管理 BOM、项目管理、高级数据分析
 
@@ -674,9 +675,10 @@ RBAC 权限检查
 | 私有化部署 | 8 |
 | 经营者数据体系 | 6 |
 | 运营商客制化服务 | 11 |
+| OpenCode 桌面端 | 10 |
 | 多语言支持 | 6 |
 | Agent 数据导出 | 10 |
-| **总计** | **286** |
+| **总计** | **296** |
 
 ---
 
@@ -1259,7 +1261,66 @@ CLI Skill 执行结果支持以下输出格式，Agent 可根据场景选择：
 
 ---
 
-### 28. 多语言支持（FR-I18N）
+### 28. OpenCode 桌面端（FR-DESKTOP）
+
+> **Agent-First SaaS 的用户入口问题：** 不是所有用户都具备安装 CLI、配置 Agent 环境的技术能力。OpenCode 桌面端是一个基于开源 OpenCode 项目（Electron）的预封装通用 Agent 桌面应用，内嵌 `ao-cli` 二进制和业务 Skill 定义，用户下载即用，无需任何技术配置。移动端将在后续阶段推出。
+
+#### 28.1 产品定位
+
+| 维度 | 说明 |
+|------|------|
+| **产品形态** | 基于 OpenCode 桌面端的二次封装（Fork），预装业务 Skill + ao-cli |
+| **目标用户** | 不具备 CLI/Agent 配置能力的企业员工 |
+| **与 CLI 的关系** | 桌面端是 CLI 的图形化载体，Agent 仍通过 `ao-cli skill execute` 调用 API |
+| **与 OpenCode 的关系** | Fork OpenCode 桌面端，预装 Skill + CLI 二进制，不修改 OpenCode 核心代码 |
+
+#### 28.2 核心功能
+
+| FR-ID | 需求描述 |
+|-------|---------|
+| FR-DESKTOP-001 | 系统提供 OpenCode 桌面端的二次封装版本（产品名待定），预装 ao-cli 二进制和业务 Skill 定义文件，用户下载安装后即可通过自然语言对话使用全部业务功能 |
+| FR-DESKTOP-002 | 桌面端安装包包含 ao-cli 二进制文件（按平台编译：macOS arm64/x64、Linux arm64/x64、Windows arm64/x64），安装时自动部署到系统 PATH 或应用专属目录 |
+| FR-DESKTOP-003 | 桌面端预装业务 Skill 定义文件（SKILL.md 格式），安装时部署到 OpenCode 的 Skill 读取目录（`~/.agents/skills/`），OpenCode 自动发现并加载 |
+| FR-DESKTOP-004 | 桌面端首次启动时提供引导流程：输入 API 服务器地址 → 执行 `ao-cli auth login` 登录 → 验证连接成功 → 进入对话界面 |
+| FR-DESKTOP-005 | 桌面端在 OpenCode 的 opencode.json 配置中预置 LLM Provider 配置（用户需自行填入 API Key 或使用本地模型），降低首次配置门槛 |
+| FR-DESKTOP-006 | 桌面端预置系统提示词（System Prompt），告知 Agent 必须通过 `ao-cli skill execute` 执行业务操作，禁止直接 curl 调用 API，确保 CLI 唯一入口铁律在桌面端同样生效 |
+| FR-DESKTOP-007 | 桌面端支持 `ao-cli skill execute` 的输出格式自动识别：当 CLI 输出 JSON 时，Agent 可解析结构化数据；当输出 Markdown/HTML 时，桌面端可在对话中渲染展示 |
+| FR-DESKTOP-008 | 桌面端内置消息轮询：通过 `ao-cli poll` 命令后台运行，有新消息时通过桌面端系统通知提醒用户 |
+| FR-DESKTOP-009 | 桌面端支持 CLI 版本更新检查：当 API 端有新版 CLI 或 Skill 定义时，提示用户执行 `ao-cli init --update` 同步更新 |
+| FR-DESKTOP-010 | 桌面端支持多平台安装包：macOS（.dmg）、Windows（.exe 安装包）、Linux（.AppImage / .deb），与 OpenCode 桌面端一致 |
+
+#### 28.3 Skill 预装策略
+
+> **核心原则：** 不修改 OpenCode 的 Skill 加载机制，只是将我们的业务 Skill 以 SKILL.md 格式预装到 OpenCode 的扫描目录中。
+
+| 策略 | 说明 |
+|------|------|
+| **Skill 格式** | 使用 OpenCode 原生 SKILL.md 格式（Markdown + YAML Frontmatter），包含 `name` 和 `description` 字段 |
+| **安装目录** | `~/.agents/skills/`（OpenCode 全局 Skill 扫描目录） |
+| **Skill 内容** | 每个 SKILL.md 告知 Agent 如何通过 `ao-cli skill execute` 调用对应业务功能，包含操作指令、参数说明、示例命令、角色权限、错误处理 |
+| **Skill 同步** | 通过 `ao-cli init --update` 从 API 下载最新 Skill 定义，覆盖本地文件 |
+| **角色差异化** | SKILL.md 内容根据用户角色动态加载（CLI init 时根据用户角色生成不同版本的 Skill 文件） |
+
+#### 28.4 CLI 打包策略
+
+| 策略 | 说明 |
+|------|------|
+| **打包方式** | Go CLI 交叉编译为独立二进制，作为 extraResources 打包进 Electron 安装包 |
+| **安装位置** | macOS: `APP.app/Contents/Resources/`，Windows: `安装目录/resources/`，Linux: `/opt/应用/resources/` |
+| **PATH 配置** | 安装时将 CLI 所在目录添加到用户 PATH（macOS/Linux 写入 shell profile，Windows 写入注册表） |
+| **平台二进制** | 每个平台安装包仅包含对应平台的 CLI 二进制，不交叉打包 |
+
+#### 28.5 移动端规划（Phase 2）
+
+| 维度 | 说明 |
+|------|------|
+| **产品形态** | 基于 OpenCode 移动端（如有）或自研轻量 Agent 客户端 |
+| **核心场景** | 消息通知、审批处理、简单查询（客户/合同/库存）、报告查看 |
+| **技术方案** | 待 Phase 2 评估 |
+
+---
+
+### 29. 多语言支持（FR-I18N）
 
 > **Agent-First SaaS 的多语言维度与传统 SaaS 完全不同 — 没有前端 UI 翻译问题，但整条交互链路（Skill 定义 → 错误码 → 生成文件 → Agent 对话提示）都需要语言适配。** MVP 支持中文和英文。
 
@@ -1752,8 +1813,11 @@ services:
 | 2026-07-08 | 扩展 FR-CLI-009~010 | CLI 本地操作日志：自动记录 Skill 执行日志（JSONL 格式按日期归档），供 Agent 回忆操作历史 |
 | 2026-07-08 | 核心理念更新 | 明确 Agent→CLI→API 唯一交互链路，CLI 是 Agent 与 API 之间的唯一桥梁 |
 | 2026-07-08 | 新增 NFR-SEC-007 | **CLI 唯一入口铁律**：Agent 必须通过 `ao-cli skill execute` 操作所有业务端点，禁止直接 HTTP 调用。CLI 统一管理凭证生命周期。服务器端验证请求来源为 CLI |
+| 2026-07-10 | 新增 FR-DESKTOP-001~010 | OpenCode 桌面端模块：预封装通用 Agent 桌面应用，预装 Skill + CLI 二进制，下载即用 |
+| 2026-07-10 | MVP 范围调整 | OpenCode 桌面端列为 MVP P0，解决非技术用户的使用门槛问题 |
+| 2026-07-10 | 项目分类更新 | 项目类型从"Cloud Backend API（无前端）+ 本地 CLI"扩展为"Cloud Backend API + 本地 CLI + OpenCode 桌面端" |
 
 ---
 
 *本文档由 BMAD PM Workflow 生成*
-*Last Updated: 2026-07-08 (Round 9: FR-EXPORT Agent 数据导出模块)*
+*Last Updated: 2026-07-10 (Round 10: FR-DESKTOP OpenCode 桌面端模块)*

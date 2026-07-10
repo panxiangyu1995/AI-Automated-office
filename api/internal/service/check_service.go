@@ -4,9 +4,9 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/internal/repository"
-	apperrors "github.com/ai-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 type InventoryCheckService struct {

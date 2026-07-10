@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/pkg/tenant"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 )
 
 func DSN() string {

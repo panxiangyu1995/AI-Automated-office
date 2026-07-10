@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ai-office/cli/internal/config"
-	"github.com/ai-office/cli/internal/olog"
-	"github.com/ai-office/cli/internal/skill"
-	"github.com/ai-office/cli/pkg/api_client"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/config"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/olog"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/skill"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/pkg/api_client"
 )
 
 func newSkillCmd() *cobra.Command {

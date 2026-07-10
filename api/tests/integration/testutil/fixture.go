@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/pkg/auth"
-	"github.com/ai-office/api/pkg/tenant"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 	"gorm.io/gorm"
 )
 

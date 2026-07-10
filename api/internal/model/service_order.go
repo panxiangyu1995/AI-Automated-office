@@ -5,13 +5,13 @@ import "time"
 type ServiceOrder struct {
 	TenantModel
 	OrderNo      string     `gorm:"type:varchar(100);not null" json:"order_no"`
-	ContractID   string     `gorm:"type:uuid;index" json:"contract_id,omitempty"`
+	ContractID   *string    `gorm:"type:uuid;index" json:"contract_id,omitempty"`
 	CustomerID   string     `gorm:"type:uuid;not null;index" json:"customer_id"`
 	OrderType    string     `gorm:"type:varchar(30);not null" json:"order_type"`
 	Status       string     `gorm:"type:varchar(30);not null;default:'pending'" json:"status"`
 	Description  string     `gorm:"type:text" json:"description,omitempty"`
 	Amount       float64    `gorm:"type:numeric(15,2);default:0" json:"amount"`
-	TechnicianID string     `gorm:"type:uuid" json:"technician_id,omitempty"`
+	TechnicianID *string    `gorm:"type:uuid" json:"technician_id,omitempty"`
 	SignedAt     *time.Time `json:"signed_at,omitempty"`
 	Notes        string     `gorm:"type:text" json:"notes,omitempty"`
 }

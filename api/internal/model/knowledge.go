@@ -14,7 +14,7 @@ type FileRecord struct {
 	FileSize   int64  `json:"file_size"`
 	Version    int    `gorm:"default:1" json:"version"`
 	Category   string `gorm:"type:varchar(100)" json:"category,omitempty"`
-	RefID      string `gorm:"type:uuid" json:"ref_id,omitempty"`
+	RefID      *string `gorm:"type:uuid" json:"ref_id,omitempty"`
 	RefType    string `gorm:"type:varchar(50)" json:"ref_type,omitempty"`
 }
 
@@ -43,7 +43,7 @@ type Announcement struct {
 	SenderID   string `gorm:"type:uuid;not null" json:"sender_id"`
 	Priority   string `gorm:"type:varchar(20);default:'normal'" json:"priority"`
 	TargetType string `gorm:"type:varchar(50);default:'all'" json:"target_type"`
-	TargetID   string `gorm:"type:uuid" json:"target_id,omitempty"`
+	TargetID   *string `gorm:"type:uuid" json:"target_id,omitempty"`
 	ExpiresAt  *time.Time `json:"expires_at,omitempty"`
 }
 
@@ -59,12 +59,12 @@ func (AnnouncementReadStatus) TableName() string { return "announcement_read_sta
 
 type KnowledgeDoc struct {
 	TenantModel
-	Title      string `gorm:"type:varchar(255);not null" json:"title"`
-	CategoryID string `gorm:"type:uuid;index" json:"category_id,omitempty"`
-	Content    string `gorm:"type:text" json:"content"`
-	Summary    string `gorm:"type:text" json:"summary,omitempty"`
-	Tags       string `gorm:"type:varchar(500)" json:"tags,omitempty"`
-	Status     string `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	Title      string  `gorm:"type:varchar(255);not null" json:"title"`
+	CategoryID *string `gorm:"type:uuid;index" json:"category_id,omitempty"`
+	Content    string  `gorm:"type:text" json:"content"`
+	Summary    string  `gorm:"type:text" json:"summary,omitempty"`
+	Tags       string  `gorm:"type:varchar(500)" json:"tags,omitempty"`
+	Status     string  `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
 }
 
 func (KnowledgeDoc) TableName() string { return "knowledge_docs" }
@@ -112,7 +112,7 @@ func (ChatMessage) TableName() string { return "chat_messages" }
 type KBCategory struct {
 	TenantModel
 	Name     string `gorm:"type:varchar(100);not null" json:"name"`
-	ParentID string `gorm:"type:uuid" json:"parent_id,omitempty"`
+	ParentID *string `gorm:"type:uuid" json:"parent_id,omitempty"`
 	SortOrder int   `gorm:"default:0" json:"sort_order"`
 }
 

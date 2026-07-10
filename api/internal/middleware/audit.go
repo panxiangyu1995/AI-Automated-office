@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 )
 
 type AuditMiddleware struct {

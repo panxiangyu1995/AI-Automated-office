@@ -3,9 +3,9 @@ package handler
 import (
 	"strconv"
 	"github.com/gin-gonic/gin"
-	"github.com/ai-office/api/internal/service"
-	"github.com/ai-office/api/pkg/errors"
-	"github.com/ai-office/api/pkg/response"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
 type InventoryHandler struct{ svc *service.InventoryService }

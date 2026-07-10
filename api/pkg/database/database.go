@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/ai-office/api/pkg/config"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
 )
 
 var DB *gorm.DB

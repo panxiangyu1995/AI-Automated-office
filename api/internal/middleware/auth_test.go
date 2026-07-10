@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/pkg/auth"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
 )
 
 func TestAuthRequired_MissingHeader(t *testing.T) {

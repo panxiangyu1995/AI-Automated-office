@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/ai-office/api/internal/middleware"
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/internal/service"
-	"github.com/ai-office/api/pkg/auth"
-	apperrors "github.com/ai-office/api/pkg/errors"
-	"github.com/ai-office/api/pkg/redis"
-	"github.com/ai-office/api/pkg/response"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
 type AuthHandler struct {

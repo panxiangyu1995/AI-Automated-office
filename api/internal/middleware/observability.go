@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/ai-office/api/pkg/observability"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/observability"
 )
 
 const (

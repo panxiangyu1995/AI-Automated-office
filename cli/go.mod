@@ -1,4 +1,4 @@
-module github.com/ai-office/cli
+module github.com/panxiangyu1995/AI-Automated-office/cli
 
 go 1.26.4
 

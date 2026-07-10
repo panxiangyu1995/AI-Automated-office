@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 )
 
 func assertStatus(t *testing.T, w *httptest.ResponseRecorder, expected int, msg string) {

@@ -9,7 +9,7 @@ import (
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/pkg/database"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
 )
 
 var identifierRe = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)

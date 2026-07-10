@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/pkg/auth"
-	"github.com/ai-office/api/pkg/errors"
-	"github.com/ai-office/api/pkg/redis"
-	"github.com/ai-office/api/pkg/response"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
 const (

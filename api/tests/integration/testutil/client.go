@@ -10,13 +10,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/internal/handler"
-	"github.com/ai-office/api/internal/middleware"
-	"github.com/ai-office/api/internal/repository"
-	"github.com/ai-office/api/internal/service"
-	"github.com/ai-office/api/pkg/auth"
-	"github.com/ai-office/api/pkg/ratelimit"
-	"github.com/ai-office/api/pkg/rbac"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/handler"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/ratelimit"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 	"gorm.io/gorm"
 )
 

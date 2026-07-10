@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/pkg/tenant"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 )
 
 const (

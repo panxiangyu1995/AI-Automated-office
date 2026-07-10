@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ai-office/cli/internal/olog"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/olog"
 )
 
 func newLogCmd() *cobra.Command {

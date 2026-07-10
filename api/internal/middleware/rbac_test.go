@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/pkg/rbac"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 )
 
 func setupRBACTest(middleware gin.HandlerFunc) *gin.Engine {

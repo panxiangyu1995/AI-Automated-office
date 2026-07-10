@@ -1,6 +1,6 @@
 package rbac
 
-import "github.com/ai-office/api/internal/model"
+import "github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 
 type PermissionEvaluator interface {
 	Evaluate(ctx *model.PermissionContext) (*model.Decision, error)

@@ -3,7 +3,7 @@ package definitions
 import (
 	"testing"
 
-	"github.com/ai-office/cli/internal/skill"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/skill"
 )
 
 func TestAllSkillsRegistered(t *testing.T) {

@@ -1,7 +1,7 @@
 package rbac
 
 import (
-	"github.com/ai-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 )
 
 type RBACEvaluator struct{}

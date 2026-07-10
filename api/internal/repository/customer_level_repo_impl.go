@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 )
 
 type customerLevelRepo struct {

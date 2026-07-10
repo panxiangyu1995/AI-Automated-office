@@ -14,12 +14,12 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/router"
-	"github.com/ai-office/api/internal/model"
-	"github.com/ai-office/api/pkg/config"
-	"github.com/ai-office/api/pkg/database"
-	"github.com/ai-office/api/pkg/redis"
-	"github.com/ai-office/api/pkg/tenant"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/router"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 )
 
 func main() {

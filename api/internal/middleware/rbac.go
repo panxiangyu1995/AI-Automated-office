@@ -3,9 +3,9 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/pkg/errors"
-	"github.com/ai-office/api/pkg/rbac"
-	"github.com/ai-office/api/pkg/response"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
 func RequirePermission(perm rbac.Permission) gin.HandlerFunc {

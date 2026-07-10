@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"github.com/ai-office/api/pkg/config"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
 )
 
 func testCLISetup(secret string) (*gin.Engine, string) {

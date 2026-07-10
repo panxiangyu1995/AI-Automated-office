@@ -12,10 +12,10 @@ import (
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/model"
-	apperrors "github.com/ai-office/api/pkg/errors"
-	"github.com/ai-office/api/internal/repository"
-	"github.com/ai-office/api/pkg/rbac"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 )
 
 type ExportService struct {

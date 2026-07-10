@@ -3,8 +3,8 @@ package e2e
 import (
 	"testing"
 
-	e2etestutil "github.com/ai-office/api/tests/e2e/testutil"
-	inttestutil "github.com/ai-office/api/tests/integration/testutil"
+	e2etestutil "github.com/panxiangyu1995/AI-Automated-office/api/tests/e2e/testutil"
+	inttestutil "github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func TestJourney_OwnerMultiEnterprise(t *testing.T) {

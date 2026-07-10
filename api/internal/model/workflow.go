@@ -28,7 +28,7 @@ type WfInstance struct {
 	InitiatorID   string     `gorm:"type:uuid;not null" json:"initiator_id"`
 	CompletedAt   *time.Time `json:"completed_at,omitempty"`
 	ReturnReason  string     `gorm:"type:text" json:"return_reason,omitempty"`
-	ReturnedBy    string     `gorm:"type:uuid" json:"returned_by,omitempty"`
+	ReturnedBy    *string    `gorm:"type:uuid" json:"returned_by,omitempty"`
 }
 
 func (WfInstance) TableName() string { return "wf_instances" }

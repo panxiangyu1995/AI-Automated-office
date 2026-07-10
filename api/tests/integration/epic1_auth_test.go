@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/ai-office/api/pkg/tenant"
-	"github.com/ai-office/api/tests/integration/testutil"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
 )
 

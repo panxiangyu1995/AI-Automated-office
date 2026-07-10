@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ai-office/api/tests/integration/testutil"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
 )
 

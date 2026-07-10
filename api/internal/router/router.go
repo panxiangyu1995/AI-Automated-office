@@ -10,18 +10,18 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
-	"github.com/ai-office/api/internal/handler"
-	"github.com/ai-office/api/internal/middleware"
-	"github.com/ai-office/api/internal/repository"
-	"github.com/ai-office/api/internal/scheduler"
-	"github.com/ai-office/api/internal/service"
-	"github.com/ai-office/api/pkg/auth"
-	"github.com/ai-office/api/pkg/config"
-	"github.com/ai-office/api/pkg/observability"
-	"github.com/ai-office/api/pkg/ratelimit"
-	rc "github.com/ai-office/api/pkg/redis"
-	"github.com/ai-office/api/pkg/rbac"
-	"github.com/ai-office/api/pkg/notification"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/handler"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/scheduler"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/observability"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/ratelimit"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/notification"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -299,6 +299,8 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 
 		operatorOnly := middleware.RequirePermission(rbac.PermSystemConfig)
 		financeAccess := middleware.RequirePermission(rbac.PermFinanceRead)
+		contractAccess := middleware.RequirePermission(rbac.PermContractRead)
+		workflowAccess := middleware.RequirePermission(rbac.PermWorkflowRead)
 
 		protected := api.Group("")
 		protected.Use(middleware.AuthRequired(jwtManager, tokenBlacklist), middleware.ResolveEnterpriseContext(), middleware.CLISourceOnly(cfg, logger), auditMiddleware.Record(), quotaMiddleware.Check(), rateLimitMiddleware.Check())
@@ -381,8 +383,12 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			enterprise.GET("/service-orders", svcOrderHandler.List)
 			enterprise.POST("/service-orders/:service_order_id/repair-order", roHandler.Create)
 			enterprise.POST("/service-orders/:service_order_id/attachments", svcOrderHandler.UploadAttachment)
-			enterprise.POST("/contracts", contractHandler.Create)
-			enterprise.GET("/contracts", contractHandler.List)
+			c := enterprise.Group("")
+			c.Use(contractAccess)
+			{
+				c.POST("/contracts", contractHandler.Create)
+				c.GET("/contracts", contractHandler.List)
+			}
 			f := enterprise.Group("")
 			f.Use(financeAccess)
 			{
@@ -517,16 +523,20 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			protected.PATCH("/sales-orders/:id/status", orderHandler.ChangeSalesOrderStatus)
 			protected.POST("/transfers/:id/execute", orderHandler.ExecuteTransfer)
 			protected.POST("/requisitions/:id/issue", orderHandler.IssueRequisition)
-			protected.GET("/contracts/:id", contractHandler.Get)
-			protected.PUT("/contracts/:id", contractHandler.Update)
-			protected.DELETE("/contracts/:id", contractHandler.Delete)
-			protected.PATCH("/contracts/:id", contractHandler.PatchFields)
-			protected.PATCH("/contracts/:id/status", contractHandler.ChangeStatus)
-			protected.POST("/contracts/:id/submit-approval", contractHandler.SubmitApproval)
-			protected.POST("/contracts/:id/approve", contractHandler.Approve)
-			protected.POST("/contracts/:id/attachments", contractHandler.UploadAttachment)
-			protected.POST("/contracts/:id/documents", contractHandler.LinkDocument)
-			protected.GET("/contracts/:id/documents", contractHandler.ListDocuments)
+			pc := protected.Group("")
+			pc.Use(contractAccess)
+			{
+				pc.GET("/contracts/:id", contractHandler.Get)
+				pc.PUT("/contracts/:id", contractHandler.Update)
+				pc.DELETE("/contracts/:id", contractHandler.Delete)
+				pc.PATCH("/contracts/:id", contractHandler.PatchFields)
+				pc.PATCH("/contracts/:id/status", contractHandler.ChangeStatus)
+				pc.POST("/contracts/:id/submit-approval", contractHandler.SubmitApproval)
+				pc.POST("/contracts/:id/approve", contractHandler.Approve)
+				pc.POST("/contracts/:id/attachments", contractHandler.UploadAttachment)
+				pc.POST("/contracts/:id/documents", contractHandler.LinkDocument)
+				pc.GET("/contracts/:id/documents", contractHandler.ListDocuments)
+			}
 			protected.PUT("/customer-levels/:id", customerLevelHandler.Update)
 			protected.DELETE("/customer-levels/:id", customerLevelHandler.Delete)
 			protected.PUT("/positions/:id", positionHandler.Update)
@@ -545,17 +555,21 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 			protected.GET("/roles/:id/permissions", roleHandler.GetPermissions)
 			protected.PUT("/roles/:id/permissions", roleHandler.SetPermissions)
 
-			protected.POST("/workflow-definitions", wfHandler.CreateDefinition)
-			protected.GET("/workflow-definitions", wfHandler.ListDefinitions)
-			protected.GET("/workflow-definitions/:id", wfHandler.GetDefinition)
-			protected.POST("/workflows", wfHandler.SubmitWorkflow)
-			protected.GET("/workflows/pending", wfHandler.ListPending)
-			protected.POST("/workflows/:id/approve", wfHandler.Approve)
-			protected.POST("/workflows/:id/reject", wfHandler.Reject)
-			protected.GET("/workflows/:id/history", wfHandler.History)
-			protected.POST("/workflows/:id/transfer", wfHandler.Transfer)
-			protected.POST("/workflows/:id/return", wfHandler.Return)
-			protected.POST("/workflows/:id/resubmit", wfHandler.Resubmit)
+			pw := protected.Group("")
+			pw.Use(workflowAccess)
+			{
+				pw.POST("/workflow-definitions", wfHandler.CreateDefinition)
+				pw.GET("/workflow-definitions", wfHandler.ListDefinitions)
+				pw.GET("/workflow-definitions/:id", wfHandler.GetDefinition)
+				pw.POST("/workflows", wfHandler.SubmitWorkflow)
+				pw.GET("/workflows/pending", wfHandler.ListPending)
+				pw.POST("/workflows/:id/approve", wfHandler.Approve)
+				pw.POST("/workflows/:id/reject", wfHandler.Reject)
+				pw.GET("/workflows/:id/history", wfHandler.History)
+				pw.POST("/workflows/:id/transfer", wfHandler.Transfer)
+				pw.POST("/workflows/:id/return", wfHandler.Return)
+				pw.POST("/workflows/:id/resubmit", wfHandler.Resubmit)
+			}
 
 			protected.PUT("/departments/:id", deptHandler.Update)
 			protected.PUT("/departments/:id/manager", deptHandler.SetManager)

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	apperrors "github.com/ai-office/api/pkg/errors"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 func TestSuccess(t *testing.T) {

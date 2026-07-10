@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ai-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"go.uber.org/zap"
 )
 

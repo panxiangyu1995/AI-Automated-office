@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	inttestutil "github.com/ai-office/api/tests/integration/testutil"
+	inttestutil "github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 type E2EClient struct {

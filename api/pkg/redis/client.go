@@ -8,7 +8,7 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 
-	"github.com/ai-office/api/pkg/config"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
 )
 
 type Client struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/pkg/database"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
 )
 
 type HealthHandler struct{}

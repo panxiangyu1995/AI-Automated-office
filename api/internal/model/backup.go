@@ -16,7 +16,7 @@ func (BackupConfig) TableName() string {
 
 type BackupRecord struct {
 	TenantModel
-	ConfigID     string     `gorm:"type:uuid;index" json:"config_id,omitempty"`
+	ConfigID     *string    `gorm:"type:uuid;index" json:"config_id,omitempty"`
 	Status       string     `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
 	FilePath     string     `gorm:"type:varchar(500)" json:"file_path,omitempty"`
 	FileSize     int64      `json:"file_size,omitempty"`

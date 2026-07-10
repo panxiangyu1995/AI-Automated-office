@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ai-office/cli/internal/config"
-	"github.com/ai-office/cli/pkg/api_client"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/config"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/pkg/api_client"
 )
 
 func newPollCmd() *cobra.Command {

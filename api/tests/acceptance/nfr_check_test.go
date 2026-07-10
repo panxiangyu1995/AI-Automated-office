@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	inttestutil "github.com/ai-office/api/tests/integration/testutil"
+	inttestutil "github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func TestNFR_Performance_APIResponseTime(t *testing.T) {

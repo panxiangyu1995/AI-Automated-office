@@ -1,7 +1,7 @@
 package definitions
 
 import (
-	"github.com/ai-office/cli/internal/skill"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/skill"
 )
 
 func initSalesSkills() {

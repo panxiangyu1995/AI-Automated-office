@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ai-office/api/pkg/ratelimit"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/ratelimit"
 )
 
 func setupRateLimitTest(middleware gin.HandlerFunc) *gin.Engine {
