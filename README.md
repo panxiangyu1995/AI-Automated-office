@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/logo.svg" width="120" height="120" alt="AI Office Logo" />
+
 # AI-Automated-office
 
 **Agent-Driven Enterprise SaaS — No Frontend, Just API + CLI**
@@ -425,7 +427,7 @@ This project is dual-licensed:
 - **Open Source**: [GNU AGPL v3](LICENSE) — free to use, modify, and distribute under copyleft terms
 - **Commercial**: [Commercial License](COMMERCIAL_LICENSE.md) — for proprietary use without AGPL obligations
 
-If you modify AI-Automated-office and provide it as a network service, you must release your source code under AGPL v3. For proprietary use, [contact us for a commercial license](mailto:license@ai-office.com).
+If you modify AI-Automated-office and provide it as a network service, you must release your source code under AGPL v3. For proprietary use, [contact us for a commercial license](mailto:panxiangyu1995@gmail.com).
 
 ---
 
@@ -457,6 +459,8 @@ Please also follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 <a id="中文"></a>
 
 <div align="center">
+
+<img src="docs/assets/logo.svg" width="120" height="120" alt="AI Office Logo" />
 
 # AI-Automated-office
 

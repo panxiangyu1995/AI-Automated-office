@@ -52,7 +52,7 @@ All tiers include:
 
 ## How to Obtain a Commercial License
 
-1. Contact us at [license@ai-office.com](mailto:license@ai-office.com)
+1. Contact us at [panxiangyu1995@gmail.com](mailto:panxiangyu1995@gmail.com)
 2. Describe your use case and the number of enterprises
 3. We will provide a quote and license agreement
 4. Upon payment, you will receive a signed commercial license
@@ -83,7 +83,7 @@ Yes. Once purchased, the commercial license does not expire. However, it applies
 
 For commercial license inquiries:
 
-- **Email**: [license@ai-office.com](mailto:license@ai-office.com)
+- **Email**: [panxiangyu1995@gmail.com](mailto:panxiangyu1995@gmail.com)
 - **Website**: [https://ai-office.com/commercial-license](https://ai-office.com/commercial-license)
 
 ---

@@ -207,7 +207,7 @@ nfpms:
     package_name: ao-cli
     vendor: AI-Automated-office
     homepage: "https://github.com/panxiangyu1995/AI-Automated-office"
-    maintainer: "AI-Automated-office <info@ai-office.com>"
+    maintainer: "AI-Automated-office <panxiangyu1995@gmail.com>"
     description: "CLI tool for AI-Automated-office — Agent-driven enterprise SaaS"
     license: "AGPL-3.0-or-later"
     formats:

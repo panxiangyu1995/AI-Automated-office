@@ -1,6 +1,6 @@
-FROM alpine:3.19
+FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk update && apk add --no-cache ca-certificates tzdata || (sleep 5 && apk add --no-cache ca-certificates tzdata)
 
 WORKDIR /app
 
