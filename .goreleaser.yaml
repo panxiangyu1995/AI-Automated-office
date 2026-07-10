@@ -9,7 +9,8 @@ before:
 
 builds:
   - id: api
-    main: ./api/cmd/server/main.go
+    dir: ./api
+    main: ./cmd/server/main.go
     binary: ao-api
     goos:
       - darwin
@@ -24,7 +25,8 @@ builds:
       - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
 
   - id: cli
-    main: ./cli/main.go
+    dir: ./cli
+    main: ./main.go
     binary: ao-cli
     goos:
       - darwin
