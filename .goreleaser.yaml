@@ -41,15 +41,30 @@ builds:
       - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
 
 archives:
-  - id: default
+  - id: cli-archive
+    ids:
+      - cli
     format: tar.gz
     name_template: >-
-      {{ .ProjectName }}_
+      {{ .ProjectName }}-cli_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "arm64" }}aarch64
       {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - id: api-archive
+    ids:
+      - api
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}-api_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
     format_overrides:
       - goos: windows
         format: zip
@@ -163,7 +178,7 @@ docker_manifests:
 brews:
   - name: ao-cli
     ids:
-      - cli
+      - cli-archive
     repository:
       owner: panxiangyu1995
       name: homebrew-tap
@@ -179,6 +194,8 @@ brews:
 
 scoops:
   - name: ao-cli
+    ids:
+      - cli-archive
     repository:
       owner: panxiangyu1995
       name: scoop-bucket

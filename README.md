@@ -447,8 +447,8 @@ Please also follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 - **Issues**: [GitHub Issues](https://github.com/panxiangyu1995/AI-Automated-office/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/panxiangyu1995/AI-Automated-office/discussions)
-- **Commercial License**: [license@ai-office.com](mailto:license@ai-office.com)
-- **Security**: [security@ai-office.com](mailto:security@ai-office.com)
+- **Commercial License**: [panxiangyu1995@gmail.com](mailto:panxiangyu1995@gmail.com)
+- **Security**: [panxiangyu1995@gmail.com](mailto:panxiangyu1995@gmail.com)
 
 ---
 
