@@ -664,7 +664,7 @@ docker exec ao-postgres pg_isready -U ai_office -d ai_office
 - **开源协议**：[GNU AGPL v3](LICENSE) — 免费使用、修改和分发，需遵守 copyleft 条款
 - **商业授权**：[商业许可证](COMMERCIAL_LICENSE.md) — 闭源使用，无需遵守 AGPL 义务
 
-如果您修改了 AI-Automated-office 并以网络服务形式提供，必须以 AGPL v3 开源修改后的代码。如需闭源使用，请[联系我们获取商业授权](mailto:license@ai-office.com)。
+如果您修改了 AI-Automated-office 并以网络服务形式提供，必须以 AGPL v3 开源修改后的代码。如需闭源使用，请[联系我们获取商业授权](mailto:panxiangyu1995@gmail.com)。
 
 ---
 
@@ -686,5 +686,5 @@ docker exec ao-postgres pg_isready -U ai_office -d ai_office
 
 - **问题反馈**：[GitHub Issues](https://github.com/panxiangyu1995/AI-Automated-office/issues)
 - **讨论交流**：[GitHub Discussions](https://github.com/panxiangyu1995/AI-Automated-office/discussions)
-- **商业授权**：[license@ai-office.com](mailto:license@ai-office.com)
-- **安全问题**：[security@ai-office.com](mailto:security@ai-office.com)
+- **商业授权**：[panxiangyu1995@gmail.com](mailto:panxiangyu1995@gmail.com)
+- **安全问题**：[panxiangyu1995@gmail.com](mailto:panxiangyu1995@gmail.com)
