@@ -1,0 +1,40 @@
+AI-Automated-office Third-Party Licenses
+=========================================
+
+This project incorporates code from the following third-party projects.
+Their respective license terms are reproduced below.
+
+--------------------------------------------------------------------------------
+
+OpenCode Desktop
+https://github.com/anomalyco/opencode
+
+MIT License
+
+Copyright (c) 2025 opencode
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------------------
+
+Note: The AI Office desktop application is a fork of OpenCode with brand
+customization and AI Office Skill pre-installation. The OpenCode source code
+is located in the `opencode/` directory of this repository and retains its
+original MIT license. Modifications made by AI Office are clearly marked in
+the git history of the `ai-office-main` branch.

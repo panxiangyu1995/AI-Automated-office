@@ -429,6 +429,10 @@ This project is dual-licensed:
 
 If you modify AI-Automated-office and provide it as a network service, you must release your source code under AGPL v3. For proprietary use, [contact us for a commercial license](mailto:panxiangyu1995@gmail.com).
 
+### Third-Party Licenses
+
+The AI Office desktop application incorporates code from [OpenCode](https://github.com/anomalyco/opencode) (MIT License). See [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES) for details.
+
 ---
 
 ## Contributing
@@ -669,6 +673,10 @@ docker exec ao-postgres pg_isready -U ai_office -d ai_office
 - **商业授权**：[商业许可证](COMMERCIAL_LICENSE.md) — 闭源使用，无需遵守 AGPL 义务
 
 如果您修改了 AI-Automated-office 并以网络服务形式提供，必须以 AGPL v3 开源修改后的代码。如需闭源使用，请[联系我们获取商业授权](mailto:panxiangyu1995@gmail.com)。
+
+### 第三方许可证
+
+AI Office 桌面端包含 [OpenCode](https://github.com/anomalyco/opencode) 的代码（MIT 协议），详见 [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)。
 
 ---
 

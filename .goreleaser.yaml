@@ -94,27 +94,6 @@ dockers:
       - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
       - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
 
-  - id: api-arm64
-    ids:
-      - api
-    use: buildx
-    goos: linux
-    goarch: arm64
-    build_flag_templates:
-      - --platform=linux/arm64
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.description=Agent-driven enterprise SaaS API
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.source={{ .GitURL }}
-      - --label=org.opencontainers.image.revision={{ .Commit }}
-      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
-    dockerfile: deploy/docker-compose/Dockerfile.api
-    extra_files:
-      - api/config/config.yaml
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-arm64"
-      - "ghcr.io/panxiangyu1995/ao-api:latest-arm64"
-
   - id: cli-amd64
     ids:
       - cli
@@ -134,42 +113,19 @@ dockers:
       - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
       - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
 
-  - id: cli-arm64
-    ids:
-      - cli
-    use: buildx
-    goos: linux
-    goarch: arm64
-    build_flag_templates:
-      - --platform=linux/arm64
-      - --label=org.opencontainers.image.title=ao-cli
-      - --label=org.opencontainers.image.description=CLI tool for AI-Automated-office
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.source={{ .GitURL }}
-      - --label=org.opencontainers.image.revision={{ .Commit }}
-      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
-    dockerfile: deploy/docker-compose/Dockerfile.cli
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-arm64"
-      - "ghcr.io/panxiangyu1995/ao-cli:latest-arm64"
-
 docker_manifests:
   - name_template: "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}"
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
-      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-arm64"
   - name_template: "ghcr.io/panxiangyu1995/ao-api:latest"
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
-      - "ghcr.io/panxiangyu1995/ao-api:latest-arm64"
   - name_template: "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}"
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
-      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-arm64"
   - name_template: "ghcr.io/panxiangyu1995/ao-cli:latest"
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
-      - "ghcr.io/panxiangyu1995/ao-cli:latest-arm64"
 
 brews:
   - name: ao-cli
@@ -207,7 +163,7 @@ nfpms:
     package_name: ao-cli
     vendor: AI-Automated-office
     homepage: "https://github.com/panxiangyu1995/AI-Automated-office"
-    maintainer: "AI-Automated-office <panxiangyu1995@gmail.com>"
+    maintainer: "AI-Automated-office <info@ai-office.com>"
     description: "CLI tool for AI-Automated-office — Agent-driven enterprise SaaS"
     license: "AGPL-3.0-or-later"
     formats:
