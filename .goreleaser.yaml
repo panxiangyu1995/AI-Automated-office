@@ -89,7 +89,7 @@ dockers:
       - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
     dockerfile: deploy/docker-compose/Dockerfile.api
     extra_files:
-      - api/
+      - api/config/config.yaml
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
       - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
@@ -110,7 +110,7 @@ dockers:
       - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
     dockerfile: deploy/docker-compose/Dockerfile.api
     extra_files:
-      - api/
+      - api/config/config.yaml
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-arm64"
       - "ghcr.io/panxiangyu1995/ao-api:latest-arm64"
@@ -130,8 +130,6 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .Commit }}
       - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
     dockerfile: deploy/docker-compose/Dockerfile.cli
-    extra_files:
-      - cli/
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
       - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
@@ -151,8 +149,6 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .Commit }}
       - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
     dockerfile: deploy/docker-compose/Dockerfile.cli
-    extra_files:
-      - cli/
     image_templates:
       - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-arm64"
       - "ghcr.io/panxiangyu1995/ao-cli:latest-arm64"
