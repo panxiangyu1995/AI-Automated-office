@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   packages: write
+  actions: write
 
 env:
   GO_VERSION: "1.23"
@@ -42,3 +43,89 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           SCOOP_BUCKET_TOKEN: ${{ secrets.SCOOP_BUCKET_TOKEN }}
+
+  trigger-desktop-build:
+    name: Trigger Desktop Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Trigger opencode desktop release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.OPENCODE_REPO_PAT }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'panxiangyu1995',
+              repo: 'opencode',
+              workflow_id: 'release-desktop.yml',
+              ref: 'dev',
+              inputs: {
+                version: '${{ steps.version.outputs.version }}',
+                channel: 'prod'
+              }
+            })
+
+  download-desktop-artifacts:
+    name: Download Desktop Artifacts
+    needs:
+      - goreleaser
+      - trigger-desktop-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Wait for desktop build
+        run: |
+          echo "Waiting for desktop build to complete..."
+          for i in $(seq 1 60); do
+            STATUS=$(gh run list \
+              --repo panxiangyu1995/opencode \
+              --workflow release-desktop.yml \
+              --limit 1 \
+              --json status,conclusion \
+              --jq '.[0].status' 2>/dev/null || echo "unknown")
+            if [ "$STATUS" = "completed" ]; then
+              echo "Desktop build completed"
+              break
+            fi
+            echo "Attempt $i/60: status=$STATUS, waiting 60s..."
+            sleep 60
+          done
+        env:
+          GH_TOKEN: ${{ secrets.OPENCODE_REPO_PAT }}
+
+      - name: Download desktop release assets
+        env:
+          GH_TOKEN: ${{ secrets.OPENCODE_REPO_PAT }}
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          mkdir -p desktop-assets
+          cd desktop-assets
+          gh release download "$TAG" \
+            --repo panxiangyu1995/opencode \
+            --pattern "*.dmg" \
+            --pattern "*.exe" \
+            --pattern "*.AppImage" \
+            --pattern "*.deb" \
+            --pattern "*.rpm" \
+            --pattern "*.app.tar.gz" \
+            || echo "Some patterns not found, continuing..."
+
+      - name: Upload desktop assets to main release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          shopt -s nullglob
+          files=(desktop-assets/*)
+          if (( ${#files[@]} > 0 )); then
+            gh release upload "$TAG" "${files[@]}" --clobber --repo panxiangyu1995/AI-Automated-office
+            echo "Uploaded ${#files[@]} desktop assets"
+          else
+            echo "No desktop assets found to upload"
+          fi

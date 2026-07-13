@@ -94,6 +94,7 @@ Traditional SaaS gives enterprises a frontend UI for humans to operate. **AI-Aut
 | ORM | GORM | Database operations |
 | Cache | Redis | Session, hot data |
 | CLI | Go (Cobra) | Cross-platform CLI tool |
+| Desktop | OpenCode (Electron + SolidJS) | Pre-packaged Agent desktop app |
 | Container | Docker Compose | One-command deployment |
 
 ---
@@ -222,6 +223,45 @@ go build -o ao-api ./cmd/server/main.go
 
 ---
 
+## AI Office Desktop
+
+For non-technical users who can't install CLI and configure Agent environments, we provide **AI Office Desktop** — a pre-packaged desktop app based on [OpenCode](https://github.com/anomalyco/opencode) (MIT) with built-in `ao-cli` binary and business Skills. Download, install, login, and start managing your business through natural language.
+
+### Download
+
+| Platform | File | Arch |
+|----------|------|------|
+| macOS | `ai-office-desktop-mac-arm64.dmg` | Apple Silicon |
+| macOS | `ai-office-desktop-mac-x64.dmg` | Intel |
+| Windows | `ai-office-desktop-win-x64.exe` | x64 |
+| Linux | `ai-office-desktop-linux-x64.AppImage` | x64 |
+| Linux | `ai-office-desktop-linux-x64.deb` | x64 (Debian/Ubuntu) |
+| Linux | `ai-office-desktop-linux-x64.rpm` | x64 (RHEL/Fedora) |
+
+Download from [GitHub Releases](https://github.com/panxiangyu1995/AI-Automated-office/releases) (desktop assets are also mirrored from the [OpenCode fork releases](https://github.com/panxiangyu1995/opencode/releases)).
+
+### How It Works
+
+```
+User ↔ Agent (built-in) ↔ ao-cli skill execute ↔ Cloud API
+```
+
+- **Pre-installed Skills**: 15 business modules (HRM, CRM, IMS, contracts, finance, etc.) auto-discovered by OpenCode
+- **Pre-bundled CLI**: `ao-cli` binary included, no separate installation needed
+- **CLI-only rule enforced**: Agent always uses `ao-cli skill execute`, never direct API calls
+- **Auto-update**: Follows OpenCode upstream updates + CLI version checks
+
+### First Launch
+
+1. Enter your API server address (default: `https://api.ai-office.com`)
+2. Login with your credentials (`ao-cli auth login` runs automatically)
+3. Configure your LLM provider (API key or local model)
+4. Start chatting — Agent loads pre-installed Skills automatically
+
+For full architecture details, see [docs/desktop.md](docs/desktop.md).
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -296,9 +336,13 @@ AI-Automated-office/
 │       ├── skill/              # Skill definitions & execution
 │       ├── poller/             # Message polling
 │       └── config/             # CLI configuration
+├── opencode/                   # AI Office Desktop (Fork of OpenCode, submodule)
+│   └── packages/desktop/       # Desktop app source (brand customization here)
 ├── deploy/                     # Deployment
 │   └── docker-compose/         # Docker Compose + Dockerfiles + Nginx
 ├── docs/                       # Documentation & OpenAPI spec
+│   ├── desktop.md              # Desktop architecture & design
+│   └── api/openapi.yaml        # API specification
 └── tests/                      # Test suites
     ├── unit/
     ├── integration/
@@ -535,6 +579,7 @@ Please also follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 | ORM | GORM | 数据库操作 |
 | 缓存 | Redis | Session、热点数据 |
 | CLI | Go (Cobra) | 跨平台 CLI 工具 |
+| 桌面端 | OpenCode (Electron + SolidJS) | 预封装 Agent 桌面应用 |
 | 容器化 | Docker Compose | 一键部署 |
 
 ---
@@ -599,6 +644,45 @@ git clone https://github.com/panxiangyu1995/AI-Automated-office.git
 cd AI-Automated-office/api
 go build -o ao-api ./cmd/server/main.go
 ```
+
+---
+
+## AI Office 桌面端
+
+对于不具备技术配置能力的用户，我们提供 **AI Office 桌面端** — 基于 [OpenCode](https://github.com/anomalyco/opencode)（MIT 协议）的预封装桌面应用，内嵌 `ao-cli` 二进制和业务 Skill。下载安装，登录即用，通过自然语言管理企业业务。
+
+### 下载
+
+| 平台 | 文件 | 架构 |
+|------|------|------|
+| macOS | `ai-office-desktop-mac-arm64.dmg` | Apple Silicon |
+| macOS | `ai-office-desktop-mac-x64.dmg` | Intel |
+| Windows | `ai-office-desktop-win-x64.exe` | x64 |
+| Linux | `ai-office-desktop-linux-x64.AppImage` | x64 |
+| Linux | `ai-office-desktop-linux-x64.deb` | x64 (Debian/Ubuntu) |
+| Linux | `ai-office-desktop-linux-x64.rpm` | x64 (RHEL/Fedora) |
+
+从 [GitHub Releases](https://github.com/panxiangyu1995/AI-Automated-office/releases) 下载（桌面端产物同时镜像到 [OpenCode fork releases](https://github.com/panxiangyu1995/opencode/releases)）。
+
+### 工作原理
+
+```
+用户 ↔ 内置 Agent ↔ ao-cli skill execute ↔ 云端 API
+```
+
+- **预装 Skill**：15 个业务模块（HRM、CRM、进销存、合同、财务等），OpenCode 自动发现
+- **预装 CLI**：`ao-cli` 二进制已打包，无需单独安装
+- **CLI 唯一入口**：Agent 始终通过 `ao-cli skill execute` 调用 API，禁止直接 curl
+- **自动更新**：跟随 OpenCode 上游更新 + CLI 版本检查
+
+### 首次启动
+
+1. 输入 API 服务器地址（默认：`https://api.ai-office.com`）
+2. 使用凭证登录（自动执行 `ao-cli auth login`）
+3. 配置 LLM Provider（API Key 或本地模型）
+4. 开始对话 — Agent 自动加载预装 Skill
+
+完整架构详见 [docs/desktop.md](docs/desktop.md)。
 
 ---
 
