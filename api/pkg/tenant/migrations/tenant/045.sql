@@ -1,0 +1,12 @@
+ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS plan_type VARCHAR(20) DEFAULT 'monthly';
+		ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS features JSONB;
+		ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS quotas JSONB;
+		ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS price_monthly NUMERIC(15,2) DEFAULT 0;
+		ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS price_yearly NUMERIC(15,2) DEFAULT 0;
+		ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS trial_days INT DEFAULT 0;
+		ALTER TABLE enterprise_subscriptions ADD COLUMN IF NOT EXISTS current_period_start VARCHAR(30);
+		ALTER TABLE enterprise_subscriptions ADD COLUMN IF NOT EXISTS current_period_end VARCHAR(30);
+		ALTER TABLE enterprise_subscriptions ADD COLUMN IF NOT EXISTS grace_period_end VARCHAR(30);
+		ALTER TABLE enterprise_subscriptions ADD COLUMN IF NOT EXISTS billing_cycle VARCHAR(20) DEFAULT 'monthly';
+		CREATE TABLE IF NOT EXISTS billing_records (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, subscription_id UUID NOT NULL, amount NUMERIC(15,2) NOT NULL, type VARCHAR(20) NOT NULL DEFAULT 'charge', status VARCHAR(20) NOT NULL DEFAULT 'pending', period_start TIMESTAMP WITH TIME ZONE, period_end TIMESTAMP WITH TIME ZONE, due_date TIMESTAMP WITH TIME ZONE, paid_at TIMESTAMP WITH TIME ZONE, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_br_enterprise ON billing_records(enterprise_id); CREATE INDEX IF NOT EXISTS idx_br_subscription ON billing_records(subscription_id);
+		CREATE TABLE IF NOT EXISTS payment_gateway_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, provider VARCHAR(30) NOT NULL, config JSONB, is_active BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_pgc_enterprise ON payment_gateway_configs(enterprise_id);

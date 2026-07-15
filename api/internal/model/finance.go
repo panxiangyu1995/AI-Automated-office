@@ -32,14 +32,43 @@ func (ExpenseRecord) TableName() string { return "expense_records" }
 
 type Invoice struct {
 	TenantModel
-	InvoiceNo    string    `gorm:"type:varchar(100);not null" json:"invoice_no"`
-	CustomerID   *string   `gorm:"type:uuid;index" json:"customer_id,omitempty"`
-	Amount       float64   `gorm:"type:numeric(15,2);not null" json:"amount"`
-	TaxAmount    float64   `gorm:"type:numeric(15,2);default:0" json:"tax_amount"`
-	Status       string    `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	InvoiceNo    string     `gorm:"type:varchar(100);not null" json:"invoice_no"`
+	CustomerID   *string    `gorm:"type:uuid;index" json:"customer_id,omitempty"`
+	Amount       float64    `gorm:"type:numeric(15,2);not null" json:"amount"`
+	TaxAmount    float64    `gorm:"type:numeric(15,2);default:0" json:"tax_amount"`
+	Status       string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
 	InvoiceDate  *time.Time `json:"invoice_date,omitempty"`
 	DueDate      *time.Time `json:"due_date,omitempty"`
-	Notes        string    `gorm:"type:text" json:"notes,omitempty"`
+	Notes        string     `gorm:"type:text" json:"notes,omitempty"`
+	BusinessType string     `gorm:"type:varchar(30)" json:"business_type,omitempty"`
+	BusinessID   *string    `gorm:"type:uuid;index" json:"business_id,omitempty"`
 }
 
 func (Invoice) TableName() string { return "invoices" }
+
+type Receivable struct {
+	TenantModel
+	ReceivableNo string     `gorm:"type:varchar(100);not null" json:"receivable_no"`
+	CustomerID   string     `gorm:"type:uuid;not null;index" json:"customer_id"`
+	SalesOrderID *string    `gorm:"type:uuid;index" json:"sales_order_id,omitempty"`
+	ContractID   *string    `gorm:"type:uuid;index" json:"contract_id,omitempty"`
+	Amount       float64    `gorm:"type:numeric(15,2);not null" json:"amount"`
+	PaidAmount   float64    `gorm:"type:numeric(15,2);default:0" json:"paid_amount"`
+	Status       string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	DueDate      *time.Time `json:"due_date,omitempty"`
+}
+
+func (Receivable) TableName() string { return "receivables" }
+
+type Payable struct {
+	TenantModel
+	PayableNo       string     `gorm:"type:varchar(100);not null" json:"payable_no"`
+	SupplierID      string     `gorm:"type:uuid;not null;index" json:"supplier_id"`
+	PurchaseOrderID *string    `gorm:"type:uuid;index" json:"purchase_order_id,omitempty"`
+	Amount          float64    `gorm:"type:numeric(15,2);not null" json:"amount"`
+	PaidAmount      float64    `gorm:"type:numeric(15,2);default:0" json:"paid_amount"`
+	Status          string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	DueDate         *time.Time `json:"due_date,omitempty"`
+}
+
+func (Payable) TableName() string { return "payables" }

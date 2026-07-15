@@ -7,6 +7,7 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
@@ -40,9 +41,20 @@ func (h *SkillHandler) GetDetail(c *gin.Context) {
 		return
 	}
 
-	roleStr := c.GetString(middleware.ContextKeyRole)
+	roleStr := c.Query("role")
+	if roleStr == "" {
+		roleStr = c.GetString(middleware.ContextKeyRole)
+	}
 
-	detail, appErr := h.skillService.GetSkillDetail(name, roleStr)
+	var detail *service.SkillDetailResponse
+	var appErr *apperrors.AppError
+
+	if roleStr != "" {
+		detail, appErr = h.skillService.GetByRole(name, roleStr)
+	} else {
+		detail, appErr = h.skillService.GetSkillDetail(name, roleStr)
+	}
+
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

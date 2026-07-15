@@ -23,13 +23,13 @@ func (r *customerLevelRepo) Update(level *model.CustomerLevel) error {
 	return r.db.Save(level).Error
 }
 
-func (r *customerLevelRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.CustomerLevel{}, "id = ?", id).Error
+func (r *customerLevelRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.CustomerLevel{}).Error
 }
 
-func (r *customerLevelRepo) FindByID(id uuid.UUID) (*model.CustomerLevel, error) {
+func (r *customerLevelRepo) FindByID(id, enterpriseID uuid.UUID) (*model.CustomerLevel, error) {
 	var l model.CustomerLevel
-	err := r.db.Where("id = ?", id).First(&l).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&l).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

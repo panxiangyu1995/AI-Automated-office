@@ -30,7 +30,7 @@ func (s *CustomerTagService) AddTag(enterpriseID, customerID, tag string) (*mode
 		return nil, apperrors.NewValidationError("tag", "标签不能为空")
 	}
 
-	customer, _ := s.customerRepo.FindByID(cid)
+	customer, _ := s.customerRepo.FindByID(cid, eid)
 	if customer == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("客户不存在")
 	}
@@ -47,7 +47,11 @@ func (s *CustomerTagService) AddTag(enterpriseID, customerID, tag string) (*mode
 	return ct, nil
 }
 
-func (s *CustomerTagService) RemoveTag(customerID, tag string) *apperrors.AppError {
+func (s *CustomerTagService) RemoveTag(enterpriseID, customerID, tag string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(customerID)
 	if err != nil {
 		return apperrors.NewValidationError("customer_id", "客户ID无效")
@@ -56,7 +60,7 @@ func (s *CustomerTagService) RemoveTag(customerID, tag string) *apperrors.AppErr
 		return apperrors.NewValidationError("tag", "标签不能为空")
 	}
 
-	if err := s.tagRepo.DeleteByCustomerAndTag(cid, tag); err != nil {
+	if err := s.tagRepo.DeleteByCustomerAndTag(cid, tag, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除标签失败: " + err.Error())
 	}
 	return nil

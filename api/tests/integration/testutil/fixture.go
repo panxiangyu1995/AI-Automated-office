@@ -47,7 +47,7 @@ func CreateTestEnterprise(t *testing.T, db *gorm.DB, groupID string) *model.Ente
 	t.Helper()
 	enterpriseUUID := uuid.New()
 	enterpriseID := enterpriseUUID.String()
-	schemaName := tenant.SchemaName(enterpriseID)
+	schemaName, _ := tenant.SchemaName(enterpriseID)
 
 	e := &model.Enterprise{
 		BaseModel: model.BaseModel{
@@ -99,7 +99,7 @@ func CreateTestUser(t *testing.T, db *gorm.DB, enterpriseID, role string) *model
 
 func CreateTestDepartment(t *testing.T, db *gorm.DB, enterpriseID string, parentID *uuid.UUID) *model.Department {
 	t.Helper()
-	schema := tenant.SchemaName(enterpriseID)
+	schema, _ := tenant.SchemaName(enterpriseID)
 	d := &model.Department{
 		TenantModel: model.TenantModel{
 			BaseModel: model.BaseModel{
@@ -122,7 +122,7 @@ func CreateTestDepartment(t *testing.T, db *gorm.DB, enterpriseID string, parent
 
 func CreateTestEmployee(t *testing.T, db *gorm.DB, enterpriseID string, deptID uuid.UUID, role string) *model.Employee {
 	t.Helper()
-	schema := tenant.SchemaName(enterpriseID)
+	schema, _ := tenant.SchemaName(enterpriseID)
 	now := time.Now()
 	e := &model.Employee{
 		TenantModel: model.TenantModel{
@@ -157,7 +157,7 @@ func CreateFullOrgChain(t *testing.T, db *gorm.DB) *TestFixtures {
 	fx.Group = CreateTestGroup(t, db)
 	fx.Enterprise = CreateTestEnterprise(t, db, fx.Group.ID.String())
 	fx.EnterpriseID = fx.Enterprise.ID.String()
-	fx.Schema = tenant.SchemaName(fx.EnterpriseID)
+	fx.Schema, _ = tenant.SchemaName(fx.EnterpriseID)
 
 	fx.Department = CreateTestDepartment(t, db, fx.EnterpriseID, nil)
 	fx.Employee = CreateTestEmployee(t, db, fx.EnterpriseID, fx.Department.ID, "employee")

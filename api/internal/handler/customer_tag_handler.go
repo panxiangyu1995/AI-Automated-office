@@ -48,6 +48,11 @@ func (h *CustomerTagHandler) AddTag(c *gin.Context) {
 }
 
 func (h *CustomerTagHandler) RemoveTag(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	customerID := c.Param("id")
 	if customerID == "" {
 		response.ValidationError(c, "id", "客户ID不能为空")
@@ -59,7 +64,7 @@ func (h *CustomerTagHandler) RemoveTag(c *gin.Context) {
 		return
 	}
 
-	appErr := h.tagService.RemoveTag(customerID, tag)
+	appErr := h.tagService.RemoveTag(enterpriseID, customerID, tag)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

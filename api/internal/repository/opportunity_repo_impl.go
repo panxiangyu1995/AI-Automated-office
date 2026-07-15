@@ -17,11 +17,11 @@ func NewOpportunityRepository(db *gorm.DB) OpportunityRepository {
 
 func (r *opportunityRepo) Create(op *model.Opportunity) error { return r.db.Create(op).Error }
 func (r *opportunityRepo) Update(op *model.Opportunity) error { return r.db.Save(op).Error }
-func (r *opportunityRepo) Delete(id uuid.UUID) error { return r.db.Delete(&model.Opportunity{}, "id = ?", id).Error }
+func (r *opportunityRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Opportunity{}).Error }
 
-func (r *opportunityRepo) FindByID(id uuid.UUID) (*model.Opportunity, error) {
+func (r *opportunityRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Opportunity, error) {
 	var op model.Opportunity
-	err := r.db.Where("id = ?", id).First(&op).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&op).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

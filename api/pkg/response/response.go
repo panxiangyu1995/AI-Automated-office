@@ -2,6 +2,7 @@ package response
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -15,15 +16,17 @@ type Response struct {
 }
 
 type ErrorInfo struct {
-	Code           string   `json:"code"`
-	Message        string   `json:"message"`
-	Detail         string   `json:"detail,omitempty"`
-	Details        []string `json:"details,omitempty"`
-	Level          string   `json:"level,omitempty"`
-	Recoverable    bool     `json:"recoverable,omitempty"`
-	RecoveryAction string   `json:"recovery_action,omitempty"`
-	RequestID      string   `json:"request_id,omitempty"`
-	Timestamp      string   `json:"timestamp,omitempty"`
+	Code                string                       `json:"code"`
+	Message             string                       `json:"message"`
+	Detail              string                       `json:"detail,omitempty"`
+	Details             []string                     `json:"details,omitempty"`
+	DetailItems         []apperrors.ErrorDetail       `json:"detail_items,omitempty"`
+	Level               string                       `json:"level,omitempty"`
+	Recoverable         bool                         `json:"recoverable,omitempty"`
+	RecoveryAction      string                       `json:"recovery_action,omitempty"`
+	RecoveryActionInfo  *apperrors.RecoveryActionInfo `json:"recovery_action_info,omitempty"`
+	RequestID           string                       `json:"request_id,omitempty"`
+	Timestamp           string                       `json:"timestamp,omitempty"`
 }
 
 type MetaInfo struct {
@@ -49,20 +52,33 @@ func NoContent(c *gin.Context) {
 }
 
 func Error(c *gin.Context, appErr *apperrors.AppError) {
+	if reqID, exists := c.Get("request_id"); exists {
+		if id, ok := reqID.(string); ok && appErr.RequestID == "" {
+			appErr.RequestID = id
+		}
+	}
+	if appErr.Timestamp.IsZero() {
+		appErr.Timestamp = time.Now()
+	}
+
 	ei := &ErrorInfo{
-		Code:           appErr.Code,
-		Message:        appErr.Message,
-		Detail:         appErr.Detail,
-		Level:          appErr.Level,
-		Recoverable:    appErr.Recoverable,
-		RecoveryAction: appErr.RecoveryAction,
-		RequestID:      appErr.RequestID,
+		Code:                appErr.Code,
+		Message:             appErr.Message,
+		Detail:              appErr.Detail,
+		Level:               appErr.Level,
+		Recoverable:         appErr.Recoverable,
+		RecoveryAction:      appErr.RecoveryAction,
+		RecoveryActionInfo:  appErr.RecoveryActionInfo,
+		RequestID:           appErr.RequestID,
 	}
 	if !appErr.Timestamp.IsZero() {
 		ei.Timestamp = appErr.Timestamp.Format("2006-01-02T15:04:05Z07:00")
 	}
 	if len(appErr.Details) > 0 {
 		ei.Details = appErr.Details
+	}
+	if len(appErr.DetailItems) > 0 {
+		ei.DetailItems = appErr.DetailItems
 	}
 	status := appErr.Status
 	if status == 0 {

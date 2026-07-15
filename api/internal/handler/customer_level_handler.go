@@ -47,6 +47,11 @@ func (h *CustomerLevelHandler) Create(c *gin.Context) {
 }
 
 func (h *CustomerLevelHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	levelID := c.Param("id")
 	if levelID == "" {
 		response.ValidationError(c, "id", "分级ID不能为空")
@@ -59,7 +64,7 @@ func (h *CustomerLevelHandler) Update(c *gin.Context) {
 		return
 	}
 
-	level, appErr := h.levelService.Update(levelID, req.Name, req.Description, req.MinAmount, req.Color, req.SortOrder)
+	level, appErr := h.levelService.Update(enterpriseID, levelID, req.Name, req.Description, req.MinAmount, req.Color, req.SortOrder)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -69,13 +74,18 @@ func (h *CustomerLevelHandler) Update(c *gin.Context) {
 }
 
 func (h *CustomerLevelHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	levelID := c.Param("id")
 	if levelID == "" {
 		response.ValidationError(c, "id", "分级ID不能为空")
 		return
 	}
 
-	appErr := h.levelService.Delete(levelID)
+	appErr := h.levelService.Delete(enterpriseID, levelID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

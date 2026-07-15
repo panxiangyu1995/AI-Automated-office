@@ -2,8 +2,12 @@ package handler
 
 import (
 	"strconv"
+
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -64,7 +68,12 @@ func (h *FinanceHandler) CreateExpense(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ApproveExpense(c *gin.Context) {
-	r, appErr := h.svc.ApproveExpense(c.Param("id"))
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	r, appErr := h.svc.ApproveExpense(c.Param("id"), eid)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, r)
 }
@@ -91,5 +100,95 @@ func (h *FinanceHandler) ListInvoices(c *gin.Context) {
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListInvoices(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
+	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
+}
+
+func (h *FinanceHandler) CreateReceivable(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	entID, err := uuid.Parse(eid)
+	if err != nil {
+		response.ValidationError(c, "enterprise_id", "无效")
+		return
+	}
+	var r model.Receivable
+	if err := c.ShouldBindJSON(&r); err != nil {
+		response.ValidationError(c, "body", "格式错误")
+		return
+	}
+	r.EnterpriseID = entID
+	if appErr := h.svc.CreateReceivable(&r); appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Created(c, r)
+}
+
+func (h *FinanceHandler) ListReceivables(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	entID, err := uuid.Parse(eid)
+	if err != nil {
+		response.ValidationError(c, "enterprise_id", "无效")
+		return
+	}
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	items, total, appErr := h.svc.ListReceivables(entID, p, ps)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
+}
+
+func (h *FinanceHandler) CreatePayable(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	entID, err := uuid.Parse(eid)
+	if err != nil {
+		response.ValidationError(c, "enterprise_id", "无效")
+		return
+	}
+	var p model.Payable
+	if err := c.ShouldBindJSON(&p); err != nil {
+		response.ValidationError(c, "body", "格式错误")
+		return
+	}
+	p.EnterpriseID = entID
+	if appErr := h.svc.CreatePayable(&p); appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Created(c, p)
+}
+
+func (h *FinanceHandler) ListPayables(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	entID, err := uuid.Parse(eid)
+	if err != nil {
+		response.ValidationError(c, "enterprise_id", "无效")
+		return
+	}
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	items, total, appErr := h.svc.ListPayables(entID, p, ps)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }

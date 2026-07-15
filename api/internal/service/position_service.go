@@ -46,13 +46,17 @@ func (s *PositionService) Create(enterpriseID, departmentID, name, description s
 	return position, nil
 }
 
-func (s *PositionService) Update(positionID, name, description string) (*model.Position, *apperrors.AppError) {
+func (s *PositionService) Update(enterpriseID, positionID, name, description string) (*model.Position, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	pid, err := uuid.Parse(positionID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("position_id", "岗位ID无效")
 	}
 
-	position, err := s.positionRepo.FindByID(pid)
+	position, err := s.positionRepo.FindByID(pid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询岗位失败")
 	}

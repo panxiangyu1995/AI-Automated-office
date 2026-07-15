@@ -1,10 +1,7 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
@@ -14,13 +11,13 @@ import (
 
 type EnterpriseService struct {
 	enterpriseRepo repository.EnterpriseRepository
-	db             *gorm.DB
+	schemaManager  repository.SchemaManager
 }
 
-func NewEnterpriseService(enterpriseRepo repository.EnterpriseRepository, db *gorm.DB) *EnterpriseService {
+func NewEnterpriseService(enterpriseRepo repository.EnterpriseRepository, schemaManager repository.SchemaManager) *EnterpriseService {
 	return &EnterpriseService{
 		enterpriseRepo: enterpriseRepo,
-		db:             db,
+		schemaManager:  schemaManager,
 	}
 }
 
@@ -54,16 +51,19 @@ func (s *EnterpriseService) Create(groupID, name, code, contactEmail, contactPho
 		return nil, apperrors.ErrInternal.WithDetail("创建企业失败: " + err.Error())
 	}
 
-	schemaName := tenant.SchemaName(enterprise.ID.String())
+	schemaName, schemaErr := tenant.SchemaName(enterprise.ID.String())
+	if schemaErr != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID格式无效")
+	}
 	enterprise.SchemaName = schemaName
 	s.enterpriseRepo.Update(enterprise)
 
-	if s.db != nil {
-		if err := tenant.CreateSchema(s.db, enterprise.ID.String()); err != nil {
-			return nil, apperrors.ErrInternal.WithDetail(fmt.Sprintf("创建企业Schema失败: %v", err))
+	if s.schemaManager != nil {
+		if err := s.schemaManager.CreateSchema(enterprise.ID.String()); err != nil {
+			return nil, apperrors.ErrInternal.WithDetail(err.Error())
 		}
-		if err := tenant.RunMigrations(s.db, enterprise.ID.String()); err != nil {
-			return nil, apperrors.ErrInternal.WithDetail(fmt.Sprintf("运行数据库迁移失败: %v", err))
+		if err := s.schemaManager.RunMigrations(enterprise.ID.String()); err != nil {
+			return nil, apperrors.ErrInternal.WithDetail(err.Error())
 		}
 	}
 

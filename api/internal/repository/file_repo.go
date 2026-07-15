@@ -9,8 +9,8 @@ import (
 type FileMetadataRepository interface {
 	Create(fm *model.FileMetadata) error
 	FindByStorageKey(key string) (*model.FileMetadata, error)
-	FindByID(id uuid.UUID) (*model.FileMetadata, error)
-	Delete(id uuid.UUID) error
+	FindByID(id, enterpriseID uuid.UUID) (*model.FileMetadata, error)
+	Delete(id, enterpriseID uuid.UUID) error
 }
 
 type fileMetadataRepo struct {
@@ -37,9 +37,9 @@ func (r *fileMetadataRepo) FindByStorageKey(key string) (*model.FileMetadata, er
 	return &fm, nil
 }
 
-func (r *fileMetadataRepo) FindByID(id uuid.UUID) (*model.FileMetadata, error) {
+func (r *fileMetadataRepo) FindByID(id, enterpriseID uuid.UUID) (*model.FileMetadata, error) {
 	var fm model.FileMetadata
-	err := r.db.Where("id = ?", id).First(&fm).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&fm).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -49,6 +49,6 @@ func (r *fileMetadataRepo) FindByID(id uuid.UUID) (*model.FileMetadata, error) {
 	return &fm, nil
 }
 
-func (r *fileMetadataRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.FileMetadata{}, "id = ?", id).Error
+func (r *fileMetadataRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FileMetadata{}).Error
 }

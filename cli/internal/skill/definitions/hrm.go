@@ -11,6 +11,12 @@ func initHRMSkills() {
 		Category:    "hrm",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/employees",
 		Method:      "POST",
+		OpeningMessage: "欢迎使用HRM员工管理，您可以管理员工档案、调岗、批量导入等操作。",
+		RoleOpenings: map[string]skill.RoleOpening{
+			"owner":    {OpeningText: "您拥有完整的HRM管理权限，可管理所有员工的入职、编辑、调岗和离职。", AvailableActions: "create,update,delete,transfer,batch_import"},
+			"manager":  {OpeningText: "您可以管理本部门员工的入职、编辑和调岗操作。", AvailableActions: "create,update,transfer"},
+			"employee": {OpeningText: "您可以查看和编辑自己的档案信息。", AvailableActions: "get,self_update"},
+		},
 		Parameters: []skill.ParamDef{
 			{Name: "department_id", Type: "string", Required: true, Description: "所属部门ID"},
 			{Name: "name", Type: "string", Required: true, Description: "员工姓名"},

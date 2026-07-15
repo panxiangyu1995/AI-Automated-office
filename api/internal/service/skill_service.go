@@ -51,6 +51,35 @@ func (s *SkillService) GetSkillDetail(name string, role string) (*SkillDetailRes
 	}, nil
 }
 
+func (s *SkillService) GetByRole(skillName, role string) (*SkillDetailResponse, *apperrors.AppError) {
+	skill, err := s.repo.FindByName(skillName)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询Skill失败")
+	}
+	if skill == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("Skill不存在")
+	}
+
+	openings, _ := s.repo.GetRoleOpenings(skill.ID)
+	params, _ := s.repo.GetParameters(skill.ID)
+
+	var roleOpening *model.SkillRoleOpening
+	if role != "" {
+		for _, o := range openings {
+			if o.Role == role {
+				roleOpening = &o
+				break
+			}
+		}
+	}
+
+	return &SkillDetailResponse{
+		Skill:        skill,
+		RoleOpening:  roleOpening,
+		Parameters:   params,
+	}, nil
+}
+
 func (s *SkillService) CreateSkill(skill *model.Skill) *apperrors.AppError {
 	if skill.Name == "" {
 		return apperrors.NewValidationError("name", "Skill名称不能为空")

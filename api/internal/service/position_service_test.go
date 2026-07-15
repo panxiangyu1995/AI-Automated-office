@@ -29,7 +29,7 @@ func (m *mockPositionRepo) Update(p *model.Position) error {
 	return nil
 }
 
-func (m *mockPositionRepo) FindByID(id uuid.UUID) (*model.Position, error) {
+func (m *mockPositionRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Position, error) {
 	p, ok := m.positions[id.String()]
 	if !ok {
 		return nil, nil
@@ -82,7 +82,7 @@ func TestPositionService_Update_Success(t *testing.T) {
 	eid := uuid.New().String()
 	created, _ := svc.Create(eid, "", "Old", "")
 
-	updated, err := svc.Update(created.ID.String(), "New", "Updated desc")
+	updated, err := svc.Update(eid, created.ID.String(), "New", "Updated desc")
 	if err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
@@ -96,7 +96,7 @@ func TestPositionService_Update_Success(t *testing.T) {
 
 func TestPositionService_Update_NotFound(t *testing.T) {
 	svc, _ := setupPositionService()
-	_, err := svc.Update(uuid.New().String(), "Name", "")
+	_, err := svc.Update(uuid.New().String(), uuid.New().String(), "Name", "")
 	if err == nil {
 		t.Fatal("expected error for nonexistent position")
 	}

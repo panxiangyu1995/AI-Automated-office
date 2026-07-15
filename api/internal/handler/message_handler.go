@@ -19,6 +19,25 @@ func NewMessageHandler(msgService *service.MessageService) *MessageHandler {
 	return &MessageHandler{msgService: msgService}
 }
 
+func (h *MessageHandler) Get(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, apperrors.ErrTenantRequired)
+		return
+	}
+	msgID := c.Param("id")
+	if msgID == "" {
+		response.ValidationError(c, "id", "消息ID不能为空")
+		return
+	}
+	msg, appErr := h.msgService.GetByID(eid, msgID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, msg)
+}
+
 func (h *MessageHandler) Send(c *gin.Context) {
 	eid := c.Param("enterprise_id")
 	if eid == "" {
@@ -78,13 +97,19 @@ func (h *MessageHandler) Unread(c *gin.Context) {
 }
 
 func (h *MessageHandler) MarkRead(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, apperrors.ErrTenantRequired)
+		return
+	}
+
 	msgID := c.Param("id")
 	if msgID == "" {
 		response.ValidationError(c, "id", "消息ID不能为空")
 		return
 	}
 
-	appErr := h.msgService.MarkRead(msgID)
+	appErr := h.msgService.MarkRead(msgID, eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

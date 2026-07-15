@@ -4,20 +4,31 @@ import (
 	"testing"
 )
 
-func TestSchemaName(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{"550e8400-e29b-41d4-a716-446655440000", "tenant_550e8400_e29b_41d4_a716_446655440000"},
-		{"simple-id", "tenant_simple_id"},
-		{"", "tenant_"},
+func TestSchemaName_ValidUUID(t *testing.T) {
+	input := "550e8400-e29b-41d4-a716-446655440000"
+	expected := "tenant_550e8400_e29b_41d4_a716_446655440000"
+	got, err := SchemaName(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
+	if got != expected {
+		t.Errorf("SchemaName(%q) = %q, want %q", input, got, expected)
+	}
+}
 
-	for _, tt := range tests {
-		got := SchemaName(tt.input)
-		if got != tt.expected {
-			t.Errorf("SchemaName(%q) = %q, want %q", tt.input, got, tt.expected)
+func TestSchemaName_InvalidInput(t *testing.T) {
+	invalidInputs := []string{
+		"not-a-uuid",
+		"simple-id",
+		"",
+		"12345",
+		"../../etc/passwd",
+		"DROP TABLE users;",
+	}
+	for _, input := range invalidInputs {
+		_, err := SchemaName(input)
+		if err == nil {
+			t.Errorf("SchemaName(%q) should return error for invalid UUID, got nil", input)
 		}
 	}
 }

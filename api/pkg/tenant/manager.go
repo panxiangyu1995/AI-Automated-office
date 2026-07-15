@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 
@@ -27,13 +28,19 @@ func qi(name string) string {
 
 const SchemaPrefix = "tenant_"
 
-func SchemaName(enterpriseID string) string {
+func SchemaName(enterpriseID string) (string, error) {
+	if _, err := uuid.Parse(enterpriseID); err != nil {
+		return "", fmt.Errorf("invalid enterprise ID (must be UUID): %s", enterpriseID)
+	}
 	s := strings.ReplaceAll(enterpriseID, "-", "_")
-	return fmt.Sprintf("%s%s", SchemaPrefix, s)
+	return fmt.Sprintf("%s%s", SchemaPrefix, s), nil
 }
 
 func CreateSchema(db *gorm.DB, enterpriseID string) error {
-	schema := SchemaName(enterpriseID)
+	schema, err := SchemaName(enterpriseID)
+	if err != nil {
+		return err
+	}
 	if err := validateIdentifier(schema, "schema"); err != nil {
 		return err
 	}
@@ -45,9 +52,12 @@ func CreateSchema(db *gorm.DB, enterpriseID string) error {
 }
 
 func SchemaExists(db *gorm.DB, enterpriseID string) (bool, error) {
-	schema := SchemaName(enterpriseID)
+	schema, err := SchemaName(enterpriseID)
+	if err != nil {
+		return false, err
+	}
 	var count int64
-	err := db.Raw(
+	err = db.Raw(
 		"SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = ?",
 		schema,
 	).Scan(&count).Error
@@ -58,7 +68,10 @@ func SchemaExists(db *gorm.DB, enterpriseID string) (bool, error) {
 }
 
 func DropSchema(db *gorm.DB, enterpriseID string) error {
-	schema := SchemaName(enterpriseID)
+	schema, err := SchemaName(enterpriseID)
+	if err != nil {
+		return err
+	}
 	if err := validateIdentifier(schema, "schema"); err != nil {
 		return err
 	}
@@ -82,7 +95,11 @@ func ListSchemas(db *gorm.DB) ([]string, error) {
 }
 
 func UseSchema(db *gorm.DB, enterpriseID string) *gorm.DB {
-	schema := SchemaName(enterpriseID)
+	schema, err := SchemaName(enterpriseID)
+	if err != nil {
+		log.Printf("[tenant] UseSchema: %v", err)
+		return db
+	}
 	session := db.Session(&gorm.Session{PrepareStmt: false, NewDB: true})
 	return database.SetSearchPath(session, schema)
 }
@@ -153,7 +170,7 @@ func CreateRLSPolicy(db *gorm.DB, schema, tableName, enterpriseIDColumn string) 
 }
 
 type RLSTableSpec struct {
-	TableName         string
+	TableName          string
 	EnterpriseIDColumn string
 }
 

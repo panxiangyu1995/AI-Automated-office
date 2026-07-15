@@ -8,10 +8,10 @@ import (
 
 type MessageRepository interface {
 	Create(msg *model.Message) error
-	FindByID(id uuid.UUID) (*model.Message, error)
+	FindByID(id, enterpriseID uuid.UUID) (*model.Message, error)
 	ListByReceiver(enterpriseID uuid.UUID, receiverID string, page, pageSize int) ([]model.Message, int64, error)
 	CountUnread(enterpriseID uuid.UUID, receiverID string) (int64, error)
-	MarkRead(id uuid.UUID) error
+	MarkRead(id, enterpriseID uuid.UUID) error
 	ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.Message, int64, error)
 }
 
@@ -27,9 +27,9 @@ func (r *messageRepo) Create(msg *model.Message) error {
 	return r.db.Create(msg).Error
 }
 
-func (r *messageRepo) FindByID(id uuid.UUID) (*model.Message, error) {
+func (r *messageRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Message, error) {
 	var msg model.Message
-	err := r.db.Where("id = ?", id).First(&msg).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&msg).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -54,8 +54,8 @@ func (r *messageRepo) CountUnread(enterpriseID uuid.UUID, receiverID string) (in
 	return count, err
 }
 
-func (r *messageRepo) MarkRead(id uuid.UUID) error {
-	return r.db.Model(&model.Message{}).Where("id = ?", id).Update("is_read", true).Error
+func (r *messageRepo) MarkRead(id, enterpriseID uuid.UUID) error {
+	return r.db.Model(&model.Message{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("is_read", true).Error
 }
 
 func (r *messageRepo) ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.Message, int64, error) {

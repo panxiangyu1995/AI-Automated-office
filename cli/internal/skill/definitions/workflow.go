@@ -11,6 +11,12 @@ func initWorkflowSkills() {
 		Category:    "workflow",
 		APIEndpoint: "/api/v1/workflow-definitions",
 		Method:      "POST",
+		OpeningMessage: "欢迎使用审批工作流管理，您可以定义和执行审批流程。",
+		RoleOpenings: map[string]skill.RoleOpening{
+			"owner":    {OpeningText: "您可以创建工作流定义、提交和审批所有流程。", AvailableActions: "create,submit,approve,reject,transfer"},
+			"manager":  {OpeningText: "您可以提交和审批工作流。", AvailableActions: "submit,approve,reject"},
+			"employee": {OpeningText: "您可以提交审批和查看审批历史。", AvailableActions: "submit,history"},
+		},
 		Parameters: []skill.ParamDef{
 			{Name: "name", Type: "string", Required: true, Description: "工作流名称"},
 			{Name: "description", Type: "string", Required: false, Description: "工作流描述"},

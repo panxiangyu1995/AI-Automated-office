@@ -11,6 +11,12 @@ func initIMSSkills() {
 		Category:    "ims",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/materials",
 		Method:      "POST",
+		OpeningMessage: "欢迎使用进销存管理，您可以管理物料、仓库、库存、采购和销售订单。",
+		RoleOpenings: map[string]skill.RoleOpening{
+			"owner":    {OpeningText: "您拥有完整的进销存管理权限。", AvailableActions: "material,warehouse,inventory,purchase,sales,transfer"},
+			"manager":  {OpeningText: "您可以管理物料、库存和订单。", AvailableActions: "material,inventory,purchase,sales"},
+			"employee": {OpeningText: "您可以查询物料和库存信息。", AvailableActions: "material_get,inventory_query"},
+		},
 		Parameters: []skill.ParamDef{
 			{Name: "name", Type: "string", Required: true, Description: "物料名称"},
 			{Name: "sku_code", Type: "string", Required: true, Description: "SKU编码"},

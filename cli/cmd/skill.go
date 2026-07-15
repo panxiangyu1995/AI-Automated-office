@@ -30,14 +30,18 @@ func newSkillCmd() *cobra.Command {
 		},
 	})
 
-	cmd.AddCommand(&cobra.Command{
+	describeCmd := &cobra.Command{
 		Use:   "describe [skill-name]",
 		Short: "查看 Skill 详情",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return describeSkill(args[0])
+			role, _ := cmd.Flags().GetString("role")
+			return describeSkill(args[0], role)
 		},
-	})
+	}
+	describeCmd.Flags().String("role", "", "指定角色查看角色专属开场白")
+
+	cmd.AddCommand(describeCmd)
 
 	execCmd := &cobra.Command{
 		Use:   "execute [skill-name]",
@@ -70,7 +74,7 @@ func listSkills() error {
 	return nil
 }
 
-func describeSkill(name string) error {
+func describeSkill(name, role string) error {
 	s, err := skill.Get(name)
 	if err != nil {
 		return err
@@ -79,6 +83,25 @@ func describeSkill(name string) error {
 	fmt.Printf("描述: %s\n", s.Description)
 	fmt.Printf("分类: %s\n", s.Category)
 	fmt.Printf("端点: %s %s\n", s.Method, s.APIEndpoint)
+	if s.OpeningMessage != "" {
+		fmt.Printf("开场白: %s\n", s.OpeningMessage)
+	}
+	if role != "" {
+		if ro, ok := s.RoleOpenings[role]; ok {
+			fmt.Printf("\n角色 [%s] 专属开场白:\n", role)
+			fmt.Printf("  %s\n", ro.OpeningText)
+			if ro.AvailableActions != "" {
+				fmt.Printf("  可用操作: %s\n", ro.AvailableActions)
+			}
+		} else {
+			fmt.Printf("\n角色 [%s] 无专属开场白\n", role)
+		}
+	} else if len(s.RoleOpenings) > 0 {
+		fmt.Println("角色开场白:")
+		for r, ro := range s.RoleOpenings {
+			fmt.Printf("  [%s] %s\n", r, ro.OpeningText)
+		}
+	}
 	if len(s.Parameters) > 0 {
 		fmt.Println("参数:")
 		for _, p := range s.Parameters {

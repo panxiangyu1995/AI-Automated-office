@@ -55,6 +55,11 @@ func (h *EmployeePermissionHandler) Set(c *gin.Context) {
 }
 
 func (h *EmployeePermissionHandler) Revoke(c *gin.Context) {
+	enterpriseID := c.GetString(middleware.ContextKeyEnterpriseID)
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	employeeID := c.Param("id")
 	if employeeID == "" {
 		response.ValidationError(c, "id", "员工ID不能为空")
@@ -66,7 +71,7 @@ func (h *EmployeePermissionHandler) Revoke(c *gin.Context) {
 		return
 	}
 
-	appErr := h.permService.Revoke(employeeID, permission)
+	appErr := h.permService.Revoke(enterpriseID, employeeID, permission)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

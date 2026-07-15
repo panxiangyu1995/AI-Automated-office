@@ -77,7 +77,12 @@ func (h *PaymentRequestHandler) List(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Get(c *gin.Context) {
-	r, appErr := h.svc.Get(c.Param("id"))
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	r, appErr := h.svc.Get(c.Param("id"), eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -86,6 +91,11 @@ func (h *PaymentRequestHandler) Get(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Update(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req prUpdateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, "body", "格式错误")
@@ -107,7 +117,7 @@ func (h *PaymentRequestHandler) Update(c *gin.Context) {
 	if req.Notes != nil {
 		input["notes"] = *req.Notes
 	}
-	r, appErr := h.svc.Update(c.Param("id"), input)
+	r, appErr := h.svc.Update(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -116,7 +126,12 @@ func (h *PaymentRequestHandler) Update(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Delete(c *gin.Context) {
-	if appErr := h.svc.Delete(c.Param("id")); appErr != nil {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	if appErr := h.svc.Delete(c.Param("id"), eid); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -124,7 +139,12 @@ func (h *PaymentRequestHandler) Delete(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) SubmitForApproval(c *gin.Context) {
-	if appErr := h.svc.SubmitForApproval(c.Param("id")); appErr != nil {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	if appErr := h.svc.SubmitForApproval(c.Param("id"), eid); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -132,8 +152,13 @@ func (h *PaymentRequestHandler) SubmitForApproval(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Approve(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	userID := c.GetString("user_id")
-	if appErr := h.svc.Approve(c.Param("id"), userID); appErr != nil {
+	if appErr := h.svc.Approve(c.Param("id"), eid, userID); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -141,13 +166,18 @@ func (h *PaymentRequestHandler) Approve(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Reject(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req prRejectReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, "body", "格式错误")
 		return
 	}
 	userID := c.GetString("user_id")
-	if appErr := h.svc.Reject(c.Param("id"), userID, req.Reason); appErr != nil {
+	if appErr := h.svc.Reject(c.Param("id"), eid, userID, req.Reason); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}

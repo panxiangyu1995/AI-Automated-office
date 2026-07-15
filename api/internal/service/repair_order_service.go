@@ -4,15 +4,19 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type RepairOrderService struct{ db *gorm.DB }
+type RepairOrderService struct {
+	repo repository.RepairOrderRepository
+}
 
-func NewRepairOrderService(db *gorm.DB) *RepairOrderService { return &RepairOrderService{db} }
+func NewRepairOrderService(repo repository.RepairOrderRepository) *RepairOrderService {
+	return &RepairOrderService{repo: repo}
+}
 
 func (s *RepairOrderService) genNo() string {
 	return fmt.Sprintf("RO-%s", uuid.New().String()[:8])
@@ -32,37 +36,47 @@ func (s *RepairOrderService) Create(eid, serviceOrderID, faultPoint, repairConte
 	}
 	r.EnterpriseID = id
 
-	tx := s.db.Begin()
-	if err := tx.Create(r).Error; err != nil {
-		tx.Rollback()
+	tx := s.repo.BeginTx()
+	if err := s.repo.CreateWithTx(tx, r); err != nil {
+		s.repo.RollbackTx(tx)
 		return nil, apperrors.ErrInternal.WithDetail("创建维修工单失败")
 	}
-	tx.Model(&model.ServiceOrder{}).Where("id=?", serviceOrderID).Update("status", "repairing")
-	tx.Commit()
+	s.repo.UpdateServiceOrderStatus(tx, serviceOrderID, id, "repairing")
+	s.repo.CommitTx(tx)
 
 	return r, nil
 }
 
-func (s *RepairOrderService) Update(id string, input map[string]interface{}) (*model.RepairOrder, *apperrors.AppError) {
+func (s *RepairOrderService) Update(id, enterpriseID string, input map[string]interface{}) (*model.RepairOrder, *apperrors.AppError) {
 	pid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, apperrors.NewValidationError("id", "无效")
 	}
-	var r model.RepairOrder
-	if err := s.db.Where("id=?", pid).First(&r).Error; err != nil {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
+	r, dbErr := s.repo.FindByID(pid, eid)
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询维修工单失败")
+	}
+	if r == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("维修工单不存在")
 	}
-	if err := s.db.Model(&r).Updates(input).Error; err != nil {
+	updated, dbErr := s.repo.Update(pid, eid, input)
+	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("更新维修工单失败")
 	}
-	s.db.Where("id=?", pid).First(&r)
-	return &r, nil
+	return updated, nil
 }
 
 func (s *RepairOrderService) GetByServiceOrder(serviceOrderID string) (*model.RepairOrder, *apperrors.AppError) {
-	var r model.RepairOrder
-	if err := s.db.Where("service_order_id=?", serviceOrderID).First(&r).Error; err != nil {
+	r, dbErr := s.repo.FindByServiceOrderID(serviceOrderID)
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询维修工单失败")
+	}
+	if r == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("维修工单不存在")
 	}
-	return &r, nil
+	return r, nil
 }

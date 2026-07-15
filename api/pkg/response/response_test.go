@@ -80,6 +80,103 @@ func TestError(t *testing.T) {
 	}
 }
 
+func TestErrorWithRequestIDAutoInject(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/test", func(c *gin.Context) {
+		c.Set("request_id", "req-auto-123")
+		Error(c, apperrors.ErrInternal)
+	})
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	var resp Response
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp.Error == nil {
+		t.Fatal("expected non-nil error")
+	}
+	if resp.Error.RequestID != "req-auto-123" {
+		t.Errorf("expected auto-injected request_id 'req-auto-123', got %s", resp.Error.RequestID)
+	}
+}
+
+func TestErrorWithTimestampAutoInject(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/test", func(c *gin.Context) {
+		Error(c, apperrors.ErrInternal)
+	})
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	var resp Response
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp.Error == nil {
+		t.Fatal("expected non-nil error")
+	}
+	if resp.Error.Timestamp == "" {
+		t.Error("expected auto-injected timestamp, got empty")
+	}
+}
+
+func TestErrorWithDetailItems(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/test", func(c *gin.Context) {
+		err := apperrors.ErrValidation.WithDetailItems([]apperrors.ErrorDetail{
+			{Resource: "contract", Action: "create", Reason: "duplicate_name"},
+		})
+		Error(c, err)
+	})
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	var resp Response
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp.Error == nil {
+		t.Fatal("expected non-nil error")
+	}
+	if len(resp.Error.DetailItems) != 1 {
+		t.Fatalf("expected 1 detail item, got %d", len(resp.Error.DetailItems))
+	}
+	if resp.Error.DetailItems[0].Resource != "contract" {
+		t.Errorf("expected resource 'contract', got %s", resp.Error.DetailItems[0].Resource)
+	}
+}
+
+func TestErrorWithRecoveryActionInfo(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/test", func(c *gin.Context) {
+		Error(c, apperrors.ErrTokenExpired)
+	})
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	var resp Response
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp.Error == nil {
+		t.Fatal("expected non-nil error")
+	}
+	if resp.Error.RecoveryActionInfo == nil {
+		t.Fatal("expected non-nil RecoveryActionInfo")
+	}
+	if resp.Error.RecoveryActionInfo.Type != "refresh_token" {
+		t.Errorf("expected type 'refresh_token', got %s", resp.Error.RecoveryActionInfo.Type)
+	}
+	if resp.Error.RecoveryActionInfo.API != "POST /api/v1/auth/refresh" {
+		t.Errorf("unexpected API: %s", resp.Error.RecoveryActionInfo.API)
+	}
+}
+
 func TestHandleError_AppError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -156,29 +253,7 @@ func TestValidationError(t *testing.T) {
 	if resp.Error.Code != "VAL_INVALID_PARAMS" {
 		t.Errorf("expected VAL_INVALID_PARAMS, got %s", resp.Error.Code)
 	}
-	if len(resp.Error.Details) != 1 {
-		t.Errorf("expected 1 detail, got %d", len(resp.Error.Details))
-	}
-}
-
-func TestErrorWithDetails(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	r := gin.New()
-	r.GET("/test", func(c *gin.Context) {
-		err := apperrors.ErrValidation.WithDetails([]string{"field1: required", "field2: too long"})
-		Error(c, err)
-	})
-
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/test", nil)
-	r.ServeHTTP(w, req)
-
-	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
-	if resp.Error == nil {
-		t.Fatal("expected error")
-	}
-	if len(resp.Error.Details) != 2 {
-		t.Errorf("expected 2 details, got %d", len(resp.Error.Details))
+	if len(resp.Error.DetailItems) != 1 {
+		t.Errorf("expected 1 detail item, got %d", len(resp.Error.DetailItems))
 	}
 }

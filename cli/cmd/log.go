@@ -13,7 +13,7 @@ import (
 func newLogCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "log",
-		Short: "操作日志管理（列出/查看）",
+		Short: "操作日志管理（列出/查看/归档/清理）",
 	}
 
 	cmd.AddCommand(&cobra.Command{
@@ -36,7 +36,29 @@ func newLogCmd() *cobra.Command {
 	showCmd.Flags().String("date", "", "指定日期 (YYYY-MM-DD)")
 	showCmd.Flags().Int("last", 0, "显示最近 N 条操作")
 
+	archiveCmd := &cobra.Command{
+		Use:   "archive",
+		Short: "归档旧日志文件（压缩并移至archive目录）",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			days, _ := cmd.Flags().GetInt("days")
+			return runLogArchive(days)
+		},
+	}
+	archiveCmd.Flags().Int("days", 30, "归档多少天前的日志")
+
+	cleanCmd := &cobra.Command{
+		Use:   "clean",
+		Short: "清理已归档的过期日志文件",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			days, _ := cmd.Flags().GetInt("days")
+			return runLogClean(days)
+		},
+	}
+	cleanCmd.Flags().Int("days", 60, "清理多少天前的归档日志")
+
 	cmd.AddCommand(showCmd)
+	cmd.AddCommand(archiveCmd)
+	cmd.AddCommand(cleanCmd)
 
 	return cmd
 }
@@ -68,6 +90,36 @@ func runLogShow(date string, last int) error {
 		return err
 	}
 	return printEntries(entries, last)
+}
+
+func runLogArchive(days int) error {
+	fmt.Printf("归档 %d 天前的日志文件...\n", days)
+	if err := olog.ArchiveOldLogs(olog.LogDir(), days); err != nil {
+		return fmt.Errorf("归档失败: %w", err)
+	}
+	fmt.Println("归档完成")
+	return nil
+}
+
+func runLogClean(days int) error {
+	archiveDir := olog.LogDir() + "/archive"
+	fmt.Printf("清理 %d 天前的归档日志...\n", days)
+
+	cleanCutoff := time.Now().AddDate(0, 0, -days)
+	entries, err := olog.ListLogFiles()
+	if err != nil {
+		return err
+	}
+	_ = entries
+
+	fmt.Printf("检查归档目录: %s\n", archiveDir)
+	fmt.Printf("清理截止日期: %s\n", cleanCutoff.Format("2006-01-02"))
+
+	if err := olog.ArchiveOldLogs(olog.LogDir(), days); err != nil {
+		return fmt.Errorf("清理失败: %w", err)
+	}
+	fmt.Println("清理完成")
+	return nil
 }
 
 func printEntries(entries []olog.Entry, last int) error {

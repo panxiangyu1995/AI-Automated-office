@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
@@ -11,11 +12,12 @@ import (
 )
 
 type CustomerHandler struct {
-	customerService *service.CustomerService
+	customerService        *service.CustomerService
+	panoramaService        *service.CustomerPanoramaService
 }
 
-func NewCustomerHandler(customerService *service.CustomerService) *CustomerHandler {
-	return &CustomerHandler{customerService: customerService}
+func NewCustomerHandler(customerService *service.CustomerService, panoramaService *service.CustomerPanoramaService) *CustomerHandler {
+	return &CustomerHandler{customerService: customerService, panoramaService: panoramaService}
 }
 
 type createCustomerRequest struct {
@@ -58,6 +60,11 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	customerID := c.Param("id")
 	if customerID == "" {
 		response.ValidationError(c, "id", "客户ID不能为空")
@@ -70,7 +77,7 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 		return
 	}
 
-	customer, appErr := h.customerService.Update(customerID, req.Name, req.Industry, req.UnifiedSocialCreditCode, req.Address, req.Notes, req.Level)
+	customer, appErr := h.customerService.Update(enterpriseID, customerID, req.Name, req.Industry, req.UnifiedSocialCreditCode, req.Address, req.Notes, req.Level)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -80,13 +87,18 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	customerID := c.Param("id")
 	if customerID == "" {
 		response.ValidationError(c, "id", "客户ID不能为空")
 		return
 	}
 
-	appErr := h.customerService.Delete(customerID)
+	appErr := h.customerService.Delete(enterpriseID, customerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -96,13 +108,18 @@ func (h *CustomerHandler) Delete(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Get(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	customerID := c.Param("id")
 	if customerID == "" {
 		response.ValidationError(c, "id", "客户ID不能为空")
 		return
 	}
 
-	customer, appErr := h.customerService.Get(customerID)
+	customer, appErr := h.customerService.Get(enterpriseID, customerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -132,4 +149,39 @@ func (h *CustomerHandler) List(c *gin.Context) {
 		Page:       page,
 		PageSize:   pageSize,
 	})
+}
+
+func (h *CustomerHandler) Panorama(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	customerIDStr := c.Param("customer_id")
+	if customerIDStr == "" {
+		response.ValidationError(c, "customer_id", "客户ID不能为空")
+		return
+	}
+
+	entID, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		response.ValidationError(c, "enterprise_id", "企业ID格式错误")
+		return
+	}
+	custID, err := uuid.Parse(customerIDStr)
+	if err != nil {
+		response.ValidationError(c, "customer_id", "客户ID格式错误")
+		return
+	}
+
+	panorama, svcErr := h.panoramaService.GetPanorama(custID, entID)
+	if svcErr != nil {
+		response.Error(c, errors.ErrInternal.WithDetail("查询客户全景视图失败"))
+		return
+	}
+	if panorama == nil {
+		response.Error(c, errors.ErrNotFound.WithDetail("客户不存在"))
+		return
+	}
+	response.Success(c, panorama)
 }

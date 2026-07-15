@@ -16,8 +16,8 @@ func NewAuditLogService(auditLogRepo repository.AuditLogRepository) *AuditLogSer
 	return &AuditLogService{auditLogRepo: auditLogRepo}
 }
 
-func (s *AuditLogService) Get(id uuid.UUID) (*model.AuditLog, *apperrors.AppError) {
-	log, err := s.auditLogRepo.FindByID(id)
+func (s *AuditLogService) Get(id, enterpriseID uuid.UUID) (*model.AuditLog, *apperrors.AppError) {
+	log, err := s.auditLogRepo.FindByID(id, enterpriseID)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询审计日志失败: " + err.Error())
 	}

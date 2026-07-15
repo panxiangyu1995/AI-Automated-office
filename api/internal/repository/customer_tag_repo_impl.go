@@ -19,12 +19,12 @@ func (r *customerTagRepo) Create(tag *model.CustomerTag) error {
 	return r.db.Create(tag).Error
 }
 
-func (r *customerTagRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.CustomerTag{}, "id = ?", id).Error
+func (r *customerTagRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.CustomerTag{}).Error
 }
 
-func (r *customerTagRepo) DeleteByCustomerAndTag(customerID uuid.UUID, tag string) error {
-	return r.db.Where("customer_id = ? AND tag = ?", customerID, tag).Delete(&model.CustomerTag{}).Error
+func (r *customerTagRepo) DeleteByCustomerAndTag(customerID uuid.UUID, tag string, enterpriseID uuid.UUID) error {
+	return r.db.Where("customer_id = ? AND tag = ? AND enterprise_id = ?", customerID, tag, enterpriseID).Delete(&model.CustomerTag{}).Error
 }
 
 func (r *customerTagRepo) ListByCustomer(customerID uuid.UUID) ([]model.CustomerTag, error) {

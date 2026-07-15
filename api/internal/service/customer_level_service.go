@@ -40,13 +40,17 @@ func (s *CustomerLevelService) Create(enterpriseID, name, description string, mi
 	return level, nil
 }
 
-func (s *CustomerLevelService) Update(levelID, name, description string, minAmount float64, color string, sortOrder int) (*model.CustomerLevel, *apperrors.AppError) {
+func (s *CustomerLevelService) Update(enterpriseID, levelID, name, description string, minAmount float64, color string, sortOrder int) (*model.CustomerLevel, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	lid, err := uuid.Parse(levelID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("level_id", "分级ID无效")
 	}
 
-	level, err := s.levelRepo.FindByID(lid)
+	level, err := s.levelRepo.FindByID(lid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询分级失败")
 	}
@@ -74,13 +78,17 @@ func (s *CustomerLevelService) Update(levelID, name, description string, minAmou
 	return level, nil
 }
 
-func (s *CustomerLevelService) Delete(levelID string) *apperrors.AppError {
+func (s *CustomerLevelService) Delete(enterpriseID, levelID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	lid, err := uuid.Parse(levelID)
 	if err != nil {
 		return apperrors.NewValidationError("level_id", "分级ID无效")
 	}
 
-	level, err := s.levelRepo.FindByID(lid)
+	level, err := s.levelRepo.FindByID(lid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询分级失败")
 	}
@@ -88,7 +96,7 @@ func (s *CustomerLevelService) Delete(levelID string) *apperrors.AppError {
 		return apperrors.ErrNotFound.WithDetail("分级不存在")
 	}
 
-	if err := s.levelRepo.Delete(lid); err != nil {
+	if err := s.levelRepo.Delete(lid, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除分级失败: " + err.Error())
 	}
 	return nil

@@ -23,13 +23,13 @@ func (r *backupConfigRepo) Update(config *model.BackupConfig) error {
 	return r.db.Save(config).Error
 }
 
-func (r *backupConfigRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.BackupConfig{}, "id = ?", id).Error
+func (r *backupConfigRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.BackupConfig{}).Error
 }
 
-func (r *backupConfigRepo) FindByID(id uuid.UUID) (*model.BackupConfig, error) {
+func (r *backupConfigRepo) FindByID(id, enterpriseID uuid.UUID) (*model.BackupConfig, error) {
 	var config model.BackupConfig
-	err := r.db.Where("id = ?", id).First(&config).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&config).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -71,9 +71,9 @@ func (r *backupRecordRepo) Update(record *model.BackupRecord) error {
 	return r.db.Save(record).Error
 }
 
-func (r *backupRecordRepo) FindByID(id uuid.UUID) (*model.BackupRecord, error) {
+func (r *backupRecordRepo) FindByID(id, enterpriseID uuid.UUID) (*model.BackupRecord, error) {
 	var record model.BackupRecord
-	err := r.db.Where("id = ?", id).First(&record).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&record).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

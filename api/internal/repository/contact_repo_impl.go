@@ -19,11 +19,11 @@ func (r *contactRepo) Create(contact *model.Contact) error {
 	return r.db.Create(contact).Error
 }
 func (r *contactRepo) Update(contact *model.Contact) error { return r.db.Save(contact).Error }
-func (r *contactRepo) Delete(id uuid.UUID) error          { return r.db.Delete(&model.Contact{}, "id = ?", id).Error }
+func (r *contactRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Contact{}).Error }
 
-func (r *contactRepo) FindByID(id uuid.UUID) (*model.Contact, error) {
+func (r *contactRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Contact, error) {
 	var c model.Contact
-	err := r.db.Where("id = ?", id).First(&c).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&c).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -43,4 +43,9 @@ func (r *contactRepo) ListByCustomerAndRole(customerID uuid.UUID, role string) (
 	var contacts []model.Contact
 	err := r.db.Where("customer_id = ? AND role = ?", customerID, role).Find(&contacts).Error
 	return contacts, err
+}
+
+func (r *contactRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
+	result := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Contact{})
+	return result.RowsAffected, result.Error
 }

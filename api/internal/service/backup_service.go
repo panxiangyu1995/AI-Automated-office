@@ -81,7 +81,7 @@ func (s *BackupService) UpdateConfig(configID, enterpriseID, backupTime, backupD
 		return nil, apperrors.NewValidationError("config_id", "配置ID无效")
 	}
 
-	config, err := s.configRepo.FindByID(cid)
+	config, err := s.configRepo.FindByID(cid, uuid.MustParse(enterpriseID))
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询备份配置失败")
 	}
@@ -117,7 +117,7 @@ func (s *BackupService) DeleteConfig(configID, enterpriseID string) *apperrors.A
 		return apperrors.NewValidationError("config_id", "配置ID无效")
 	}
 
-	config, err := s.configRepo.FindByID(cid)
+	config, err := s.configRepo.FindByID(cid, uuid.MustParse(enterpriseID))
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询备份配置失败")
 	}
@@ -125,19 +125,23 @@ func (s *BackupService) DeleteConfig(configID, enterpriseID string) *apperrors.A
 		return apperrors.ErrNotFound.WithDetail("备份配置不存在")
 	}
 
-	if err := s.configRepo.Delete(cid); err != nil {
+	if err := s.configRepo.Delete(cid, uuid.MustParse(enterpriseID)); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除备份配置失败: " + err.Error())
 	}
 	return nil
 }
 
-func (s *BackupService) GetConfig(configID string) (*model.BackupConfig, *apperrors.AppError) {
+func (s *BackupService) GetConfig(enterpriseID, configID string) (*model.BackupConfig, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(configID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("config_id", "配置ID无效")
 	}
 
-	config, err := s.configRepo.FindByID(cid)
+	config, err := s.configRepo.FindByID(cid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询备份配置失败")
 	}
@@ -228,13 +232,17 @@ func (s *BackupService) TriggerBackup(enterpriseID string) (*model.BackupRecord,
 	return record, nil
 }
 
-func (s *BackupService) Restore(recordID string) *apperrors.AppError {
+func (s *BackupService) Restore(enterpriseID, recordID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	rid, err := uuid.Parse(recordID)
 	if err != nil {
 		return apperrors.NewValidationError("record_id", "记录ID无效")
 	}
 
-	record, err := s.recordRepo.FindByID(rid)
+	record, err := s.recordRepo.FindByID(rid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询备份记录失败")
 	}

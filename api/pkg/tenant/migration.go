@@ -20,7 +20,10 @@ func RegisterMigration(m Migration) {
 }
 
 func RunMigrations(db *gorm.DB, enterpriseID string) error {
-	schema := SchemaName(enterpriseID)
+	schema, err := SchemaName(enterpriseID)
+	if err != nil {
+		return fmt.Errorf("invalid enterprise ID: %w", err)
+	}
 
 	if err := ensureMigrationTable(db, schema); err != nil {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
@@ -35,12 +38,20 @@ func RunMigrations(db *gorm.DB, enterpriseID string) error {
 			continue
 		}
 
+		sql := m.SQL
+		if sql == "" {
+			sql, err = LoadMigrationSQL(m.Version)
+			if err != nil {
+				return fmt.Errorf("migration %s SQL not found: %w", m.Version, err)
+			}
+		}
+
 		tx := db.Exec(fmt.Sprintf("SET search_path TO %s", schema))
 		if tx.Error != nil {
 			return fmt.Errorf("failed to set search_path: %w", tx.Error)
 		}
 
-		if err := tx.Exec(m.SQL).Error; err != nil {
+		if err := tx.Exec(sql).Error; err != nil {
 			return fmt.Errorf("migration %s failed: %w", m.Version, err)
 		}
 
@@ -106,579 +117,65 @@ func stringsTrimPrefix(s, prefix string) string {
 }
 
 func init() {
-	RegisterMigration(Migration{
-		Version:     "001",
-		Description: "Create enterprises table",
-		SQL: `CREATE TABLE IF NOT EXISTS enterprises (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			name VARCHAR(255) NOT NULL,
-			code VARCHAR(100) UNIQUE NOT NULL,
-			contact_email VARCHAR(255),
-			contact_phone VARCHAR(50),
-			address TEXT,
-			status VARCHAR(20) DEFAULT 'active',
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		)`,
-	})
-	RegisterMigration(Migration{
-		Version:     "002",
-		Description: "Create audit_logs table",
-		SQL: `CREATE TABLE IF NOT EXISTS audit_logs (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			user_id UUID NOT NULL,
-			action VARCHAR(50) NOT NULL,
-			resource_type VARCHAR(50) NOT NULL,
-			resource_id VARCHAR(100),
-			details TEXT,
-			ip_address VARCHAR(45),
-			user_agent VARCHAR(500),
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_audit_logs_enterprise ON audit_logs(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
-		CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
-		CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
-		CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(enterprise_id, created_at DESC);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "003",
-		Description: "Create backup_configs table",
-		SQL: `CREATE TABLE IF NOT EXISTS backup_configs (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			backup_time VARCHAR(5) NOT NULL,
-			backup_directory VARCHAR(500) NOT NULL DEFAULT '/var/backups',
-			retention_days INT NOT NULL DEFAULT 30,
-			enabled BOOLEAN NOT NULL DEFAULT true,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_backup_configs_enterprise ON backup_configs(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "004",
-		Description: "Create backup_records table",
-		SQL: `CREATE TABLE IF NOT EXISTS backup_records (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			config_id UUID,
-			status VARCHAR(20) NOT NULL DEFAULT 'pending',
-			file_path VARCHAR(500),
-			file_size BIGINT DEFAULT 0,
-			error_message TEXT,
-			started_at TIMESTAMP WITH TIME ZONE,
-			completed_at TIMESTAMP WITH TIME ZONE,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_backup_records_enterprise ON backup_records(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_backup_records_config ON backup_records(config_id);
-		CREATE INDEX IF NOT EXISTS idx_backup_records_status ON backup_records(status);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "005",
-		Description: "Create api_quotas table",
-		SQL: `CREATE TABLE IF NOT EXISTS api_quotas (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL UNIQUE,
-			daily_limit INT NOT NULL DEFAULT 10000,
-			monthly_limit INT NOT NULL DEFAULT 300000,
-			daily_used INT NOT NULL DEFAULT 0,
-			monthly_used INT NOT NULL DEFAULT 0,
-			daily_reset_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-			monthly_reset_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_api_quotas_enterprise ON api_quotas(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "006",
-		Description: "Create feature_flags table",
-		SQL: `CREATE TABLE IF NOT EXISTS feature_flags (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			feature_key VARCHAR(100) NOT NULL,
-			enabled BOOLEAN NOT NULL DEFAULT true,
-			label VARCHAR(200),
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_feature_flags_enterprise_key ON feature_flags(enterprise_id, feature_key);
-		CREATE INDEX IF NOT EXISTS idx_feature_flags_enterprise ON feature_flags(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "007",
-		Description: "Create rate_limit_configs table",
-		SQL: `CREATE TABLE IF NOT EXISTS rate_limit_configs (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL UNIQUE,
-			enterprise_qps INT NOT NULL DEFAULT 1000,
-			ip_qps INT NOT NULL DEFAULT 100,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_rate_limit_configs_enterprise ON rate_limit_configs(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "008",
-		Description: "Create departments table",
-		SQL: `CREATE TABLE IF NOT EXISTS departments (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			name VARCHAR(255) NOT NULL,
-			parent_id UUID,
-			manager_id UUID,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_departments_enterprise ON departments(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_departments_parent ON departments(parent_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "009",
-		Description: "Create employees table",
-		SQL: `CREATE TABLE IF NOT EXISTS employees (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			department_id UUID NOT NULL,
-			name VARCHAR(100) NOT NULL,
-			email VARCHAR(255),
-			phone VARCHAR(50),
-			position VARCHAR(100),
-			employee_no VARCHAR(100),
-			status VARCHAR(20) NOT NULL DEFAULT 'active',
-			hire_date TIMESTAMP WITH TIME ZONE,
-			resign_date TIMESTAMP WITH TIME ZONE,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_employees_enterprise ON employees(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department_id);
-		CREATE INDEX IF NOT EXISTS idx_employees_status ON employees(status);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "010",
-		Description: "Create positions table",
-		SQL: `CREATE TABLE IF NOT EXISTS positions (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			department_id UUID,
-			name VARCHAR(100) NOT NULL,
-			description TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_positions_enterprise ON positions(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "011",
-		Description: "Create cross_enterprise_permissions table",
-		SQL: `CREATE TABLE IF NOT EXISTS cross_enterprise_permissions (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			user_id UUID NOT NULL,
-			source_enterprise_id UUID NOT NULL,
-			target_enterprise_id UUID NOT NULL,
-			granted_by UUID NOT NULL,
-			permissions TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_cep_user ON cross_enterprise_permissions(user_id);
-		CREATE INDEX IF NOT EXISTS idx_cep_source ON cross_enterprise_permissions(source_enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_cep_target ON cross_enterprise_permissions(target_enterprise_id);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_cep_user_target ON cross_enterprise_permissions(user_id, target_enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "012",
-		Description: "Create employee_permissions table",
-		SQL: `CREATE TABLE IF NOT EXISTS employee_permissions (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			employee_id UUID NOT NULL,
-			permission VARCHAR(100) NOT NULL,
-			granted_by UUID NOT NULL,
-			effect VARCHAR(10) NOT NULL DEFAULT 'allow',
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_emp_perm_employee ON employee_permissions(employee_id);
-		CREATE INDEX IF NOT EXISTS idx_emp_perm_enterprise ON employee_permissions(enterprise_id);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_emp_perm_employee_key ON employee_permissions(employee_id, permission);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "013",
-		Description: "Create customers table",
-		SQL: `CREATE TABLE IF NOT EXISTS customers (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			name VARCHAR(255) NOT NULL,
-			industry VARCHAR(100),
-			unified_social_credit_code VARCHAR(50),
-			address TEXT,
-			notes TEXT,
-			level VARCHAR(30) NOT NULL DEFAULT '普通',
-			status VARCHAR(20) NOT NULL DEFAULT 'active',
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_customers_enterprise ON customers(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name);
-		CREATE INDEX IF NOT EXISTS idx_customers_level ON customers(level);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "014",
-		Description: "Create customer_levels table",
-		SQL: `CREATE TABLE IF NOT EXISTS customer_levels (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			name VARCHAR(50) NOT NULL,
-			description VARCHAR(255),
-			min_amount NUMERIC(15,2) DEFAULT 0,
-			color VARCHAR(20),
-			sort_order INT DEFAULT 0,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_customer_levels_enterprise ON customer_levels(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "015",
-		Description: "Create customer_tags table",
-		SQL: `CREATE TABLE IF NOT EXISTS customer_tags (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			customer_id UUID NOT NULL,
-			tag VARCHAR(50) NOT NULL,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_customer_tags_enterprise ON customer_tags(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_customer_tags_customer ON customer_tags(customer_id);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_customer_tags_customer_tag ON customer_tags(customer_id, tag);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "016",
-		Description: "Create contacts table",
-		SQL: `CREATE TABLE IF NOT EXISTS contacts (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			customer_id UUID NOT NULL,
-			name VARCHAR(100) NOT NULL,
-			position VARCHAR(100),
-			phone VARCHAR(50),
-			email VARCHAR(255),
-			role VARCHAR(50),
-			is_primary BOOLEAN DEFAULT false,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_contacts_enterprise ON contacts(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_contacts_customer ON contacts(customer_id);
-		CREATE INDEX IF NOT EXISTS idx_contacts_role ON contacts(role);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "017",
-		Description: "Create opportunities table",
-		SQL: `CREATE TABLE IF NOT EXISTS opportunities (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			customer_id UUID NOT NULL,
-			name VARCHAR(255) NOT NULL,
-			amount NUMERIC(15,2) DEFAULT 0,
-			status VARCHAR(20) NOT NULL DEFAULT '跟进中',
-			expected_close_at TIMESTAMP WITH TIME ZONE,
-			description TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_opportunities_enterprise ON opportunities(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_opportunities_customer ON opportunities(customer_id);
-		CREATE INDEX IF NOT EXISTS idx_opportunities_status ON opportunities(status);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "018",
-		Description: "Create materials table",
-		SQL: `CREATE TABLE IF NOT EXISTS materials (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			enterprise_id UUID NOT NULL,
-			name VARCHAR(255) NOT NULL,
-			sku_code VARCHAR(100) NOT NULL,
-			material_type VARCHAR(50) NOT NULL,
-			spec TEXT,
-			unit VARCHAR(20) NOT NULL,
-			unit_price NUMERIC(15,2) DEFAULT 0,
-			status VARCHAR(20) NOT NULL DEFAULT 'active',
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			deleted_at TIMESTAMP WITH TIME ZONE
-		);
-		CREATE INDEX IF NOT EXISTS idx_materials_enterprise ON materials(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_materials_sku ON materials(sku_code);
-		CREATE INDEX IF NOT EXISTS idx_materials_type ON materials(material_type);`,
-	})
-	RegisterMigration(Migration{
-		Version: "019", Description: "Create suppliers table",
-		SQL: `CREATE TABLE IF NOT EXISTS suppliers (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			name VARCHAR(255) NOT NULL, contact_name VARCHAR(100), contact_phone VARCHAR(50),
-			contact_email VARCHAR(255), address TEXT, status VARCHAR(20) NOT NULL DEFAULT 'active',
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_suppliers_enterprise ON suppliers(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "020", Description: "Create warehouses table",
-		SQL: `CREATE TABLE IF NOT EXISTS warehouses (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			name VARCHAR(255) NOT NULL, code VARCHAR(100) NOT NULL, address TEXT,
-			status VARCHAR(20) NOT NULL DEFAULT 'active',
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); 		CREATE INDEX IF NOT EXISTS idx_warehouses_enterprise ON warehouses(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "021", Description: "Create warehouse_inventories table",
-		SQL: `CREATE TABLE IF NOT EXISTS warehouse_inventories (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			warehouse_id UUID NOT NULL, material_id UUID NOT NULL,
-			quantity INT NOT NULL DEFAULT 0, safety_stock INT NOT NULL DEFAULT 0, in_transit INT NOT NULL DEFAULT 0,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_wi_enterprise ON warehouse_inventories(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_wi_warehouse ON warehouse_inventories(warehouse_id);
-		CREATE INDEX IF NOT EXISTS idx_wi_material ON warehouse_inventories(material_id);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_wi_wh_mat ON warehouse_inventories(warehouse_id, material_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "022", Description: "Create stock_flows table",
-		SQL: `CREATE TABLE IF NOT EXISTS stock_flows (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			warehouse_id UUID NOT NULL, material_id UUID NOT NULL,
-			flow_type VARCHAR(30) NOT NULL, quantity INT NOT NULL,
-			batch_no VARCHAR(100), before_qty INT, after_qty INT,
-			reference_id UUID, reference_type VARCHAR(50), flow_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_sf_enterprise ON stock_flows(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_sf_warehouse ON stock_flows(warehouse_id);
-		CREATE INDEX IF NOT EXISTS idx_sf_material ON stock_flows(material_id);
-		CREATE INDEX IF NOT EXISTS idx_sf_flow_time ON stock_flows(enterprise_id, flow_time DESC);`,
-	})
-	RegisterMigration(Migration{
-		Version: "023", Description: "Create material_prices table",
-		SQL: `CREATE TABLE IF NOT EXISTS material_prices (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			material_id UUID NOT NULL, level VARCHAR(30) NOT NULL,
-			unit_price NUMERIC(15,2) NOT NULL,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_mp_enterprise ON material_prices(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_mp_material ON material_prices(material_id);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_mp_mat_level ON material_prices(material_id, level);`,
-	})
-	RegisterMigration(Migration{
-		Version: "024", Description: "Create inventory_checks and items tables",
-		SQL: `CREATE TABLE IF NOT EXISTS inventory_checks (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			warehouse_id UUID NOT NULL, check_no VARCHAR(100) NOT NULL,
-			status VARCHAR(20) NOT NULL DEFAULT 'draft', checked_by UUID, checked_at TIMESTAMP WITH TIME ZONE, notes TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_ic_enterprise ON inventory_checks(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_ic_warehouse ON inventory_checks(warehouse_id);
-		CREATE TABLE IF NOT EXISTS inventory_check_items (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), check_id UUID NOT NULL,
-			material_id UUID NOT NULL, expected_qty INT, actual_qty INT, difference INT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS ici_check ON inventory_check_items(check_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "025", Description: "Create purchase_orders + items",
-		SQL: `CREATE TABLE IF NOT EXISTS purchase_orders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, order_no VARCHAR(100) NOT NULL, supplier_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'draft', total_amount NUMERIC(15,2) DEFAULT 0, order_date TIMESTAMP WITH TIME ZONE, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_po_enterprise ON purchase_orders(enterprise_id); CREATE TABLE IF NOT EXISTS purchase_order_items (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), order_id UUID NOT NULL, material_id UUID NOT NULL, quantity INT NOT NULL, unit_price NUMERIC(15,2), received_qty INT DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_poi_order ON purchase_order_items(order_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "026", Description: "Create sales_orders + items",
-		SQL: `CREATE TABLE IF NOT EXISTS sales_orders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, order_no VARCHAR(100) NOT NULL, customer_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'draft', total_amount NUMERIC(15,2) DEFAULT 0, order_date TIMESTAMP WITH TIME ZONE, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_so_enterprise ON sales_orders(enterprise_id); CREATE TABLE IF NOT EXISTS sales_order_items (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), order_id UUID NOT NULL, material_id UUID NOT NULL, quantity INT NOT NULL, unit_price NUMERIC(15,2), shipped_qty INT DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_soi_order ON sales_order_items(order_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "027", Description: "Create transfer_orders + requisitions",
-		SQL: `CREATE TABLE IF NOT EXISTS transfer_orders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, order_no VARCHAR(100) NOT NULL, source_wh_id UUID NOT NULL, target_wh_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'draft', material_id UUID NOT NULL, quantity INT NOT NULL, received_qty INT DEFAULT 0, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_to_enterprise ON transfer_orders(enterprise_id); CREATE TABLE IF NOT EXISTS requisitions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, requisition_no VARCHAR(100) NOT NULL, applicant_id UUID NOT NULL, warehouse_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'pending', material_id UUID NOT NULL, quantity INT NOT NULL, issued_qty INT DEFAULT 0, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_req_enterprise ON requisitions(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "028", Description: "Create contracts table",
-		SQL: `CREATE TABLE IF NOT EXISTS contracts (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			contract_no VARCHAR(100) NOT NULL, customer_id UUID NOT NULL, name VARCHAR(255) NOT NULL,
-			amount NUMERIC(15,2) DEFAULT 0, paid_amount NUMERIC(15,2) DEFAULT 0, status VARCHAR(30) NOT NULL DEFAULT 'draft',
-			signed_at TIMESTAMP WITH TIME ZONE, effective_at TIMESTAMP WITH TIME ZONE, expire_at TIMESTAMP WITH TIME ZONE,
-			content TEXT, notes TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_contracts_enterprise ON contracts(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_contracts_customer ON contracts(customer_id);
-		CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts(status);`,
-	})
-	RegisterMigration(Migration{
-		Version: "029", Description: "Create contract_attachments + service_orders",
-		SQL: `CREATE TABLE IF NOT EXISTS contract_attachments (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			contract_id UUID NOT NULL, file_name VARCHAR(255) NOT NULL, file_type VARCHAR(100),
-			file_size BIGINT, file_url TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_ca_contract ON contract_attachments(contract_id);
-		CREATE TABLE IF NOT EXISTS service_orders (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			order_no VARCHAR(100) NOT NULL, contract_id UUID, customer_id UUID NOT NULL,
-			order_type VARCHAR(30) NOT NULL, status VARCHAR(30) NOT NULL DEFAULT 'pending',
-			description TEXT, amount NUMERIC(15,2) DEFAULT 0, technician_id UUID,
-			signed_at TIMESTAMP WITH TIME ZONE, notes TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_so_enterprise ON service_orders(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_so_customer ON service_orders(customer_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "030", Description: "Create finance tables",
-		SQL: `CREATE TABLE IF NOT EXISTS payment_records (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			transaction_no VARCHAR(100) NOT NULL, customer_id UUID, contract_id UUID,
-			amount NUMERIC(15,2) NOT NULL, payment_method VARCHAR(50), status VARCHAR(20) NOT NULL DEFAULT 'pending',
-			paid_at TIMESTAMP WITH TIME ZONE, notes TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_pr_enterprise ON payment_records(enterprise_id);
-		CREATE INDEX IF NOT EXISTS idx_pr_customer ON payment_records(customer_id);
-		CREATE TABLE IF NOT EXISTS expense_records (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			expense_no VARCHAR(100) NOT NULL, amount NUMERIC(15,2) NOT NULL,
-			category VARCHAR(50), status VARCHAR(20) NOT NULL DEFAULT 'pending',
-			submitted_by UUID, approved_by UUID, description TEXT, expense_at TIMESTAMP WITH TIME ZONE,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_er_enterprise ON expense_records(enterprise_id);
-		CREATE TABLE IF NOT EXISTS invoices (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			invoice_no VARCHAR(100) NOT NULL, customer_id UUID,
-			amount NUMERIC(15,2) NOT NULL, tax_amount NUMERIC(15,2) DEFAULT 0,
-			status VARCHAR(20) NOT NULL DEFAULT 'draft',
-			invoice_date TIMESTAMP WITH TIME ZONE, due_date TIMESTAMP WITH TIME ZONE, notes TEXT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_inv_enterprise ON invoices(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "031", Description: "Create files, messages, knowledge tables",
-		SQL: `CREATE TABLE IF NOT EXISTS file_records (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, file_name VARCHAR(255) NOT NULL, file_path TEXT NOT NULL, file_type VARCHAR(100), file_size BIGINT, version INT DEFAULT 1, category VARCHAR(100), ref_id UUID, ref_type VARCHAR(50), created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_fr_enterprise ON file_records(enterprise_id);
-		CREATE TABLE IF NOT EXISTS messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, sender_id UUID, receiver_id UUID, title VARCHAR(255), content TEXT, msg_type VARCHAR(50) NOT NULL, is_read BOOLEAN DEFAULT false, ref_id UUID, ref_type VARCHAR(50), created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_msg_receiver ON messages(receiver_id); CREATE INDEX IF NOT EXISTS idx_msg_type ON messages(msg_type);
-		CREATE TABLE IF NOT EXISTS kb_categories (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, parent_id UUID, sort_order INT DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_kbc_enterprise ON kb_categories(enterprise_id);
-		CREATE TABLE IF NOT EXISTS knowledge_docs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, title VARCHAR(255) NOT NULL, category_id UUID, content TEXT, summary TEXT, tags VARCHAR(500), status VARCHAR(20) NOT NULL DEFAULT 'draft', created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); 		CREATE INDEX IF NOT EXISTS idx_kd_enterprise ON knowledge_docs(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "032", Description: "Create operations tables",
-		SQL: `CREATE TABLE IF NOT EXISTS subscription_plans (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, description TEXT, price NUMERIC(15,2) NOT NULL, max_users INT DEFAULT 10, max_storage BIGINT DEFAULT 1073741824, features TEXT, status VARCHAR(20) NOT NULL DEFAULT 'active', created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sp_enterprise ON subscription_plans(enterprise_id);
-		CREATE TABLE IF NOT EXISTS enterprise_subscriptions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, plan_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'active', start_at TIMESTAMP WITH TIME ZONE, end_at TIMESTAMP WITH TIME ZONE, auto_renew BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_es_enterprise ON enterprise_subscriptions(enterprise_id);
-		CREATE TABLE IF NOT EXISTS webhooks (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, url TEXT NOT NULL, secret VARCHAR(255), events TEXT, enabled BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_wh_enterprise ON webhooks(enterprise_id);
-		CREATE TABLE IF NOT EXISTS audit_log_entries (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, user_id UUID, action VARCHAR(100) NOT NULL, resource VARCHAR(100), detail TEXT, ip_address VARCHAR(45), created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ale_enterprise ON audit_log_entries(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "033", Description: "Create contract_references table",
-		SQL: `CREATE TABLE IF NOT EXISTS contract_references (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL,
-			contract_id UUID NOT NULL, ref_type VARCHAR(30) NOT NULL,
-			ref_id UUID NOT NULL, ref_no VARCHAR(100),
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE
-		); CREATE INDEX IF NOT EXISTS idx_cr_contract ON contract_references(contract_id);
-		CREATE INDEX IF NOT EXISTS idx_cr_type_ref ON contract_references(ref_type, ref_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "034", Description: "Create skills service_tickets announcements usage_bills service_configs tables",
-		SQL: `CREATE TABLE IF NOT EXISTS skills (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, description TEXT, parameters TEXT, api_endpoint TEXT, module VARCHAR(50), enabled BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sk_enterprise ON skills(enterprise_id);
-		CREATE TABLE IF NOT EXISTS service_tickets (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, customer_id UUID, subject VARCHAR(255) NOT NULL, description TEXT, priority VARCHAR(20) DEFAULT 'medium', status VARCHAR(20) DEFAULT 'open', assigned_to UUID, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_st_enterprise ON service_tickets(enterprise_id);
-		CREATE TABLE IF NOT EXISTS announcements (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, title VARCHAR(255) NOT NULL, content TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ann_enterprise ON announcements(enterprise_id);
-		CREATE TABLE IF NOT EXISTS usage_bills (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, amount NUMERIC(15,2) NOT NULL, description TEXT, status VARCHAR(20) DEFAULT 'pending', created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ub_enterprise ON usage_bills(enterprise_id);
-		CREATE TABLE IF NOT EXISTS service_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, config_key VARCHAR(100) NOT NULL, config_value TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sc_enterprise ON service_configs(enterprise_id);
-		CREATE TABLE IF NOT EXISTS chat_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, user_id UUID, title VARCHAR(255), model VARCHAR(50) DEFAULT 'gpt-4o-mini', context TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_cs_enterprise ON chat_sessions(enterprise_id);
-		CREATE TABLE IF NOT EXISTS chat_messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), session_id UUID NOT NULL, role VARCHAR(20) NOT NULL, content TEXT NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_cm_session ON chat_messages(session_id);`,
-	})
-	RegisterMigration(Migration{
-		Version: "035", Description: "Add paid_amount to contracts",
-		SQL: `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS paid_amount NUMERIC(15,2) DEFAULT 0;`,
-	})
-	RegisterMigration(Migration{
-		Version: "036", Description: "Add role to employees",
-		SQL: `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'employee';`,
-	})
-	RegisterMigration(Migration{
-		Version:     "037",
-		Description: "Add missing columns to messages table",
-		SQL: `ALTER TABLE messages ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'normal';
-		ALTER TABLE messages ADD COLUMN IF NOT EXISTS announcement_id UUID;`,
-	})
-	RegisterMigration(Migration{
-		Version:     "038", Description: "Add missing columns to audit_logs table",
-		SQL: `ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS location VARCHAR(255) DEFAULT '';
-		ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS new_values TEXT;
-		ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS old_values TEXT;
-		ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT '';
-		ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS user_roles TEXT;`,
-	})
-	RegisterMigration(Migration{
-		Version:     "039",
-		Description: "Add missing columns to enterprises table",
-		SQL: `ALTER TABLE enterprises ADD COLUMN IF NOT EXISTS group_id UUID;
-		ALTER TABLE enterprises ADD COLUMN IF NOT EXISTS schema_name VARCHAR(100) DEFAULT '';`,
-	})
-	RegisterMigration(Migration{
-		Version:     "040",
-		Description: "Create missing tenant tables - part 1 (workflow, skills, chat)",
-		SQL: `CREATE TABLE IF NOT EXISTS wf_definitions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(255) NOT NULL, description TEXT, steps TEXT NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'active', created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_wfd_enterprise ON wf_definitions(enterprise_id);
-		CREATE TABLE IF NOT EXISTS wf_instances (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, definition_id UUID NOT NULL, title VARCHAR(255), status VARCHAR(20) NOT NULL DEFAULT 'pending', applicant_id UUID NOT NULL, current_step INT DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_wfi_enterprise ON wf_instances(enterprise_id);
-		CREATE TABLE IF NOT EXISTS wf_approvals (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), instance_id UUID NOT NULL, step_index INT NOT NULL, approver_id UUID NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'pending', comment TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_wfa_instance ON wf_approvals(instance_id);
-		CREATE TABLE IF NOT EXISTS skills (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, description TEXT, parameters TEXT, api_endpoint TEXT, module VARCHAR(50), enabled BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sk_enterprise ON skills(enterprise_id);
-		CREATE TABLE IF NOT EXISTS skill_role_openings (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), skill_id UUID NOT NULL, role VARCHAR(50) NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sro_skill ON skill_role_openings(skill_id);
-		CREATE TABLE IF NOT EXISTS skill_parameters (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), skill_id UUID NOT NULL, name VARCHAR(100) NOT NULL, param_type VARCHAR(50) NOT NULL DEFAULT 'string', required BOOLEAN DEFAULT false, default_value TEXT, description TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sp_skill ON skill_parameters(skill_id);
-		CREATE TABLE IF NOT EXISTS chat_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, user_id UUID, title VARCHAR(255), model VARCHAR(50) DEFAULT 'gpt-4o-mini', context TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_cs_enterprise ON chat_sessions(enterprise_id);
-		CREATE TABLE IF NOT EXISTS chat_messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), session_id UUID NOT NULL, role VARCHAR(20) NOT NULL, content TEXT NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_cm_session ON chat_messages(session_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "041",
-		Description: "Create missing tenant tables - part 2 (service, export, knowledge, finance extras)",
-		SQL: `CREATE TABLE IF NOT EXISTS service_tickets (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, customer_id UUID, subject VARCHAR(255) NOT NULL, description TEXT, priority VARCHAR(20) DEFAULT 'medium', status VARCHAR(20) DEFAULT 'open', assigned_to UUID, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_st_enterprise ON service_tickets(enterprise_id);
-		CREATE TABLE IF NOT EXISTS service_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, config_key VARCHAR(100) NOT NULL, config_value TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_sc_enterprise ON service_configs(enterprise_id);
-		CREATE TABLE IF NOT EXISTS announcements (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, title VARCHAR(255) NOT NULL, content TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ann_enterprise ON announcements(enterprise_id);
-		CREATE TABLE IF NOT EXISTS announcement_read_statuses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), announcement_id UUID NOT NULL, user_id UUID NOT NULL, read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ars_announcement ON announcement_read_statuses(announcement_id); CREATE INDEX IF NOT EXISTS idx_ars_user ON announcement_read_statuses(user_id);
-		CREATE TABLE IF NOT EXISTS export_tasks (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, task_type VARCHAR(50) NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'pending', file_path TEXT, file_size BIGINT, error_message TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_et_enterprise ON export_tasks(enterprise_id);
-		CREATE TABLE IF NOT EXISTS export_histories (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, task_type VARCHAR(50) NOT NULL, file_path TEXT, file_size BIGINT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_eh_enterprise ON export_histories(enterprise_id);
-		CREATE TABLE IF NOT EXISTS payment_requests (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, request_no VARCHAR(100) NOT NULL, amount NUMERIC(15,2) NOT NULL, category VARCHAR(50), status VARCHAR(20) NOT NULL DEFAULT 'pending', applicant_id UUID, approved_by UUID, description TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_prq_enterprise ON payment_requests(enterprise_id);
-		CREATE TABLE IF NOT EXISTS collection_records (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, invoice_id UUID, amount NUMERIC(15,2) NOT NULL, collection_method VARCHAR(50), status VARCHAR(20) NOT NULL DEFAULT 'pending', collected_at TIMESTAMP WITH TIME ZONE, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_cr_enterprise ON collection_records(enterprise_id);
-		CREATE TABLE IF NOT EXISTS payment_plans (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, contract_id UUID NOT NULL, plan_no VARCHAR(100) NOT NULL, amount NUMERIC(15,2) NOT NULL, due_date TIMESTAMP WITH TIME ZONE, status VARCHAR(20) NOT NULL DEFAULT 'pending', paid_amount NUMERIC(15,2) DEFAULT 0, notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_pp_enterprise ON payment_plans(enterprise_id);
-		CREATE TABLE IF NOT EXISTS repair_orders (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, service_order_id UUID, customer_id UUID, description TEXT, status VARCHAR(20) DEFAULT 'pending', assigned_to UUID, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ro_enterprise ON repair_orders(enterprise_id);
-		CREATE TABLE IF NOT EXISTS alert_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, metric VARCHAR(50) NOT NULL, condition VARCHAR(20) NOT NULL, threshold NUMERIC(15,2) NOT NULL, enabled BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_ar_enterprise ON alert_rules(enterprise_id);`,
-	})
-	RegisterMigration(Migration{
-		Version:     "042",
-		Description: "Create missing tenant tables - part 3 (knowledge vector, file metadata, RBAC extras)",
-		SQL: `CREATE TABLE IF NOT EXISTS vector_records (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, doc_id UUID, chunk_index INT, content TEXT, embedding TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_vr_enterprise ON vector_records(enterprise_id);
-		CREATE TABLE IF NOT EXISTS doc_chunks (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), doc_id UUID NOT NULL, chunk_index INT NOT NULL, content TEXT NOT NULL, token_count INT DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_dc_doc ON doc_chunks(doc_id);
-		CREATE TABLE IF NOT EXISTS file_metadata (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, file_name VARCHAR(255) NOT NULL, file_size BIGINT, mime_type VARCHAR(100), checksum VARCHAR(64), storage_path TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_fm_enterprise ON file_metadata(enterprise_id);
-		CREATE TABLE IF NOT EXISTS roles (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(50) NOT NULL, description TEXT, is_system BOOLEAN DEFAULT false, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_roles_enterprise ON roles(enterprise_id);
-		CREATE TABLE IF NOT EXISTS permissions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), code VARCHAR(100) NOT NULL, name VARCHAR(100) NOT NULL, module VARCHAR(50) NOT NULL, description TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE);
-		CREATE TABLE IF NOT EXISTS role_permissions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), role_id UUID NOT NULL, permission_id UUID NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_rp_role ON role_permissions(role_id);
-		CREATE TABLE IF NOT EXISTS employee_permission_abac (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, employee_id UUID NOT NULL, permission_id UUID, resource_type VARCHAR(50), resource_id UUID, effect VARCHAR(10) NOT NULL DEFAULT 'allow', conditions TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_epabac_enterprise ON employee_permission_abac(enterprise_id);
-		CREATE TABLE IF NOT EXISTS permission_attrs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), permission_id UUID NOT NULL, attr_key VARCHAR(100) NOT NULL, attr_value TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_pa_permission ON permission_attrs(permission_id);
-		CREATE TABLE IF NOT EXISTS custom_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, name VARCHAR(100) NOT NULL, description TEXT, rule_type VARCHAR(50) NOT NULL, conditions TEXT NOT NULL, effect TEXT NOT NULL, priority INT DEFAULT 0, enabled BOOLEAN DEFAULT true, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_cr_enterprise ON custom_rules(enterprise_id);
-		CREATE TABLE IF NOT EXISTS field_definitions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, entity_type VARCHAR(50) NOT NULL, field_name VARCHAR(100) NOT NULL, field_type VARCHAR(30) NOT NULL, label VARCHAR(100), required BOOLEAN DEFAULT false, options TEXT, sort_order INT DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_fd_enterprise ON field_definitions(enterprise_id);
-		CREATE TABLE IF NOT EXISTS relation_definitions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), enterprise_id UUID NOT NULL, source_entity VARCHAR(50) NOT NULL, target_entity VARCHAR(50) NOT NULL, relation_type VARCHAR(30) NOT NULL, label VARCHAR(100), created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_rd_enterprise ON relation_definitions(enterprise_id);
-		CREATE TABLE IF NOT EXISTS device_codes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_code VARCHAR(10) NOT NULL, device_code VARCHAR(40) NOT NULL, expires_at TIMESTAMP WITH TIME ZONE NOT NULL, used BOOLEAN DEFAULT false, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), deleted_at TIMESTAMP WITH TIME ZONE); CREATE INDEX IF NOT EXISTS idx_dc_user_code ON device_codes(user_code);`,
-	})
+	registerMigrations()
+}
+
+func registerMigrations() {
+	migrations := []struct {
+		Version     string
+		Description string
+	}{
+		{"001", "Create enterprises table"},
+		{"002", "Create audit_logs table"},
+		{"003", "Create backup_configs table"},
+		{"004", "Create backup_records table"},
+		{"005", "Create api_quotas table"},
+		{"006", "Create feature_flags table"},
+		{"007", "Create rate_limit_configs table"},
+		{"008", "Create departments table"},
+		{"009", "Create employees table"},
+		{"010", "Create positions table"},
+		{"011", "Create cross_enterprise_permissions table"},
+		{"012", "Create employee_permissions table"},
+		{"013", "Create customers table"},
+		{"014", "Create customer_levels table"},
+		{"015", "Create customer_tags table"},
+		{"016", "Create contacts table"},
+		{"017", "Create opportunities table"},
+		{"018", "Create materials table"},
+		{"019", "Create suppliers table"},
+		{"020", "Create warehouses table"},
+		{"021", "Create warehouse_inventories table"},
+		{"022", "Create stock_flows table"},
+		{"023", "Create material_prices table"},
+		{"024", "Create inventory_checks and items tables"},
+		{"025", "Create purchase_orders + items"},
+		{"026", "Create sales_orders + items"},
+		{"027", "Create transfer_orders + requisitions"},
+		{"028", "Create contracts table"},
+		{"029", "Create contract_attachments + service_orders"},
+		{"030", "Create finance tables"},
+		{"031", "Create files, messages, knowledge tables"},
+		{"032", "Create operations tables"},
+		{"033", "Create contract_references table"},
+		{"034", "Create skills service_tickets announcements usage_bills service_configs tables"},
+		{"035", "Add paid_amount to contracts"},
+		{"036", "Add role to employees"},
+		{"037", "Add missing columns to messages table"},
+		{"038", "Add missing columns to audit_logs table"},
+		{"039", "Add missing columns to enterprises table"},
+		{"040", "Create missing tenant tables - part 1 (workflow, skills, chat)"},
+		{"041", "Create missing tenant tables - part 2 (service, export, knowledge, finance extras)"},
+		{"042", "Create missing tenant tables - part 3 (knowledge vector, file metadata, RBAC extras)"},
+		{"043", "Create receivables and payables tables"},
+		{"044", "Create quality inspection tables"},
+		{"045", "Create billing records and payment gateway configs tables, add subscription plan fields"},
+		{"046", "Create industry_templates, enterprise_skill_matrix, claude_md_templates; add knowledge versioning columns"},
+	}
+	for _, m := range migrations {
+		RegisterMigration(Migration{
+			Version:     m.Version,
+			Description: m.Description,
+		})
+	}
 }

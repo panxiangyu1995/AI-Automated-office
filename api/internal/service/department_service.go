@@ -33,7 +33,7 @@ func (s *DepartmentService) Create(enterpriseID, name, parentID string) (*model.
 		if err != nil {
 			return nil, apperrors.NewValidationError("parent_id", "父部门ID无效")
 		}
-		parent, err := s.deptRepo.FindByID(pid)
+		parent, err := s.deptRepo.FindByID(pid, eid)
 		if err != nil {
 			return nil, apperrors.ErrInternal.WithDetail("查询父部门失败")
 		}
@@ -49,13 +49,36 @@ func (s *DepartmentService) Create(enterpriseID, name, parentID string) (*model.
 	return dept, nil
 }
 
-func (s *DepartmentService) SetManager(departmentID, employeeID string) (*model.Department, *apperrors.AppError) {
+func (s *DepartmentService) GetByID(enterpriseID, departmentID string) (*model.Department, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	did, err := uuid.Parse(departmentID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("department_id", "部门ID无效")
+	}
+	dept, err := s.deptRepo.FindByID(did, eid)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询部门失败")
+	}
+	if dept == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("部门不存在")
+	}
+	return dept, nil
+}
+
+func (s *DepartmentService) SetManager(enterpriseID, departmentID, employeeID string) (*model.Department, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	did, err := uuid.Parse(departmentID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("department_id", "部门ID无效")
 	}
 
-	dept, err := s.deptRepo.FindByID(did)
+	dept, err := s.deptRepo.FindByID(did, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询部门失败")
 	}
@@ -79,13 +102,17 @@ func (s *DepartmentService) SetManager(departmentID, employeeID string) (*model.
 	return dept, nil
 }
 
-func (s *DepartmentService) Update(departmentID, name string, managerID string) (*model.Department, *apperrors.AppError) {
+func (s *DepartmentService) Update(enterpriseID, departmentID, name string, managerID string) (*model.Department, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	did, err := uuid.Parse(departmentID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("department_id", "部门ID无效")
 	}
 
-	dept, err := s.deptRepo.FindByID(did)
+	dept, err := s.deptRepo.FindByID(did, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询部门失败")
 	}
@@ -110,13 +137,17 @@ func (s *DepartmentService) Update(departmentID, name string, managerID string) 
 	return dept, nil
 }
 
-func (s *DepartmentService) Delete(departmentID string) *apperrors.AppError {
+func (s *DepartmentService) Delete(enterpriseID, departmentID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	did, err := uuid.Parse(departmentID)
 	if err != nil {
 		return apperrors.NewValidationError("department_id", "部门ID无效")
 	}
 
-	dept, err := s.deptRepo.FindByID(did)
+	dept, err := s.deptRepo.FindByID(did, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询部门失败")
 	}
@@ -132,7 +163,7 @@ func (s *DepartmentService) Delete(departmentID string) *apperrors.AppError {
 		return apperrors.ErrBadRequest.WithDetail("该部门下存在子部门，无法删除")
 	}
 
-	if err := s.deptRepo.Delete(did); err != nil {
+	if err := s.deptRepo.Delete(did, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除部门失败: " + err.Error())
 	}
 	return nil

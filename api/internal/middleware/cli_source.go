@@ -40,12 +40,9 @@ func CLISourceOnly(cfg *config.Config, logger *zap.Logger) gin.HandlerFunc {
 		tsStr := c.GetHeader(HeaderTimestamp)
 
 		if sig == "" || tsStr == "" {
-			logger.Warn("CLI request without HMAC signature (legacy mode)",
-				zap.String("path", c.Request.URL.Path),
-				zap.String("method", c.Request.Method),
-				zap.String("ip", c.ClientIP()),
-			)
-			c.Next()
+			errResp := errors.ErrCliSourceRequired.WithMessage("缺少HMAC签名或时间戳").WithRecoverable(true, "retry_with_signature")
+			response.Error(c, errResp)
+			c.Abort()
 			return
 		}
 

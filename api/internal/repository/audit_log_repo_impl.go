@@ -22,9 +22,9 @@ func (r *auditLogRepo) Create(log *model.AuditLog) error {
 	return r.db.Create(log).Error
 }
 
-func (r *auditLogRepo) FindByID(id uuid.UUID) (*model.AuditLog, error) {
+func (r *auditLogRepo) FindByID(id, enterpriseID uuid.UUID) (*model.AuditLog, error) {
 	var log model.AuditLog
-	err := r.db.Where("id = ?", id).First(&log).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&log).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -94,4 +94,59 @@ func (r *auditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, int64,
 	}
 
 	return logs, total, nil
+}
+
+func (r *auditLogRepo) QueryOperatorActions(page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
+	var total int64
+
+	q := r.db.Model(&model.AuditLog{})
+
+	if action != "" {
+		q = q.Where("action = ?", action)
+	}
+	if userID != "" {
+		uid, err := uuid.Parse(userID)
+		if err == nil {
+			q = q.Where("user_id = ?", uid)
+		}
+	}
+	if startTime != "" {
+		t, err := time.Parse(time.RFC3339, startTime)
+		if err == nil {
+			q = q.Where("created_at >= ?", t)
+		}
+	}
+	if endTime != "" {
+		t, err := time.Parse(time.RFC3339, endTime)
+		if err == nil {
+			q = q.Where("created_at <= ?", t)
+		}
+	}
+
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf("count operator actions: %w", err)
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	offset := (page - 1) * pageSize
+
+	var results []map[string]interface{}
+	if err := q.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&results).Error; err != nil {
+		return nil, 0, fmt.Errorf("list operator actions: %w", err)
+	}
+
+	return results, total, nil
+}
+
+func (r *auditLogRepo) DeleteOldByEnterprise(enterpriseID uuid.UUID, cutoff time.Time) (int64, error) {
+	result := r.db.Where("enterprise_id = ? AND created_at < ?", enterpriseID, cutoff).Delete(&model.AuditLog{})
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return result.RowsAffected, nil
 }

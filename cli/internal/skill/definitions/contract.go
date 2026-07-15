@@ -11,6 +11,12 @@ func initContractSkills() {
 		Category:    "contract",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/contracts",
 		Method:      "POST",
+		OpeningMessage: "欢迎使用合同管理，您可以创建、编辑、审批和管理合同全生命周期。",
+		RoleOpenings: map[string]skill.RoleOpening{
+			"owner":    {OpeningText: "您拥有完整的合同管理权限，可创建、审批和终止合同。", AvailableActions: "create,update,approve,terminate,link_document"},
+			"manager":  {OpeningText: "您可以创建和编辑合同，提交审批。", AvailableActions: "create,update,submit_approval"},
+			"employee": {OpeningText: "您可以查看合同详情和关联单据。", AvailableActions: "get,list,documents"},
+		},
 		Parameters: []skill.ParamDef{
 			{Name: "customer_id", Type: "string", Required: true, Description: "客户ID"},
 			{Name: "name", Type: "string", Required: true, Description: "合同名称"},

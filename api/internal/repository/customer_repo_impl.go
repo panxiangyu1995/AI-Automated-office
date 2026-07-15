@@ -23,13 +23,13 @@ func (r *customerRepo) Update(customer *model.Customer) error {
 	return r.db.Save(customer).Error
 }
 
-func (r *customerRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.Customer{}, "id = ?", id).Error
+func (r *customerRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Customer{}).Error
 }
 
-func (r *customerRepo) FindByID(id uuid.UUID) (*model.Customer, error) {
+func (r *customerRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Customer, error) {
 	var c model.Customer
-	err := r.db.Where("id = ?", id).First(&c).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&c).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -71,4 +71,25 @@ func (r *customerRepo) List(enterpriseID uuid.UUID, page, pageSize int) ([]model
 		return nil, 0, err
 	}
 	return customers, total, nil
+}
+
+func (r *customerRepo) UpdateFields(id, enterpriseID uuid.UUID, fields map[string]interface{}) error {
+	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
+}
+
+func (r *customerRepo) UpdateFieldsByID(id string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Customer{}).Where("id = ?", id).Updates(fields).Error
+}
+
+func (r *customerRepo) RestoreFields(id string, fields map[string]interface{}) error {
+	return r.UpdateFieldsByID(id, fields)
+}
+
+func (r *customerRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
+	result := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Customer{})
+	return result.RowsAffected, result.Error
+}
+
+func (r *customerRepo) UpdateStatus(id, enterpriseID uuid.UUID, status string) error {
+	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("status", status).Error
 }

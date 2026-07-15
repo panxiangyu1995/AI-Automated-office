@@ -8,8 +8,13 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
-type ContractHandler struct{ svc *service.ContractService }
-func NewContractHandler(svc *service.ContractService) *ContractHandler { return &ContractHandler{svc} }
+type ContractHandler struct {
+	svc             *service.ContractService
+	autoArchiveSvc  *service.AutoArchiveService
+}
+func NewContractHandler(svc *service.ContractService, autoArchiveSvc *service.AutoArchiveService) *ContractHandler {
+	return &ContractHandler{svc: svc, autoArchiveSvc: autoArchiveSvc}
+}
 
 type createContractReq struct {
 	CustomerID  string  `json:"customer_id"`
@@ -94,6 +99,10 @@ func (h *ContractHandler) SubmitApproval(c *gin.Context) {
 func (h *ContractHandler) Approve(c *gin.Context) {
 	contract, appErr := h.svc.Approve(c.Param("id"))
 	if appErr != nil { response.Error(c, appErr); return }
+	if h.autoArchiveSvc != nil {
+		eid := c.Param("enterprise_id")
+		go h.autoArchiveSvc.OnBusinessEvent("contract_signed", c.Param("id"), eid)
+	}
 	response.Success(c, contract)
 }
 

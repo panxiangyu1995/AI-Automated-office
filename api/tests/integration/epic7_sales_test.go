@@ -23,7 +23,7 @@ func TestSalesOrder_CRUD(t *testing.T) {
 		t.Errorf("expected 200/201/404, got %d; body: %s", w.Code, w.Body.String())
 	}
 	if w.Code == 404 {
-		t.Skip("sales order endpoint not found")
+		t.Fatalf("feature not implemented: sales order endpoint not found")
 	}
 
 	w2 := client.GET("/api/v1/sales-orders")
@@ -66,7 +66,7 @@ func TestSalesOrder_StateMachine(t *testing.T) {
 		"order_no": "SO-STATE-001", "status": "draft", "total_amount": 10000.0,
 	})
 	if w.Code != 200 && w.Code != 201 {
-		t.Skip("sales order create failed")
+		t.Fatalf("feature not implemented: sales order create failed (got %d)", w.Code)
 	}
 	resp := testutil.ParseResponse(t, w)
 	data := testutil.GetData(t, resp)
@@ -108,7 +108,7 @@ func TestSalesOrder_BindContract(t *testing.T) {
 		"order_no": "SO-BIND-001", "status": "draft", "total_amount": 10000.0,
 	})
 	if w.Code != 200 && w.Code != 201 {
-		t.Skip("sales order create failed")
+		t.Fatalf("feature not implemented: sales order create failed (got %d)", w.Code)
 	}
 	resp := testutil.ParseResponse(t, w)
 	data := testutil.GetData(t, resp)
@@ -187,7 +187,7 @@ func TestSalesOrder_LinkCustomer(t *testing.T) {
 		"name": "SO Customer", "type": "enterprise", "source": "referral",
 	})
 	if custW.Code != 200 && custW.Code != 201 {
-		t.Skip("customer create failed")
+		t.Fatalf("feature not implemented: customer create failed (got %d)", custW.Code)
 	}
 	custResp := testutil.ParseResponse(t, custW)
 	custData := testutil.GetData(t, custResp)
@@ -216,7 +216,7 @@ func TestSalesOrder_Ship(t *testing.T) {
 		"order_no": "SO-SHIP-001", "status": "approved", "total_amount": 12000.0,
 	})
 	if w.Code != 200 && w.Code != 201 {
-		t.Skip("sales order create failed")
+		t.Fatalf("feature not implemented: sales order create failed (got %d)", w.Code)
 	}
 	resp := testutil.ParseResponse(t, w)
 	data := testutil.GetData(t, resp)

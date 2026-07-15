@@ -39,10 +39,12 @@ func (s *MaterialService) Create(enterpriseID, name, skuCode, materialType, spec
 	return m, nil
 }
 
-func (s *MaterialService) Update(matID, name, materialType, spec, unit string, unitPrice float64, status string) (*model.Material, *apperrors.AppError) {
+func (s *MaterialService) Update(enterpriseID, matID, name, materialType, spec, unit string, unitPrice float64, status string) (*model.Material, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效") }
 	mid, err := uuid.Parse(matID)
 	if err != nil { return nil, apperrors.NewValidationError("material_id", "物料ID无效") }
-	m, err := s.matRepo.FindByID(mid)
+	m, err := s.matRepo.FindByID(mid, eid)
 	if err != nil { return nil, apperrors.ErrInternal.WithDetail("查询物料失败") }
 	if m == nil { return nil, apperrors.ErrNotFound.WithDetail("物料不存在") }
 	if name != "" { m.Name = name }
@@ -55,20 +57,24 @@ func (s *MaterialService) Update(matID, name, materialType, spec, unit string, u
 	return m, nil
 }
 
-func (s *MaterialService) Delete(matID string) *apperrors.AppError {
+func (s *MaterialService) Delete(enterpriseID, matID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil { return apperrors.NewValidationError("enterprise_id", "企业ID无效") }
 	mid, err := uuid.Parse(matID)
 	if err != nil { return apperrors.NewValidationError("material_id", "物料ID无效") }
-	m, err := s.matRepo.FindByID(mid)
+	m, err := s.matRepo.FindByID(mid, eid)
 	if err != nil { return apperrors.ErrInternal.WithDetail("查询物料失败") }
 	if m == nil { return apperrors.ErrNotFound.WithDetail("物料不存在") }
-	if err := s.matRepo.Delete(mid); err != nil { return apperrors.ErrInternal.WithDetail("删除物料失败: " + err.Error()) }
+	if err := s.matRepo.Delete(mid, eid); err != nil { return apperrors.ErrInternal.WithDetail("删除物料失败: " + err.Error()) }
 	return nil
 }
 
-func (s *MaterialService) Get(matID string) (*model.Material, *apperrors.AppError) {
+func (s *MaterialService) Get(enterpriseID, matID string) (*model.Material, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效") }
 	mid, err := uuid.Parse(matID)
 	if err != nil { return nil, apperrors.NewValidationError("material_id", "物料ID无效") }
-	m, err := s.matRepo.FindByID(mid)
+	m, err := s.matRepo.FindByID(mid, eid)
 	if err != nil { return nil, apperrors.ErrInternal.WithDetail("查询物料失败") }
 	if m == nil { return nil, apperrors.ErrNotFound.WithDetail("物料不存在") }
 	return m, nil

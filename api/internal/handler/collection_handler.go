@@ -66,7 +66,12 @@ func (h *CollectionHandler) List(c *gin.Context) {
 }
 
 func (h *CollectionHandler) Get(c *gin.Context) {
-	r, appErr := h.svc.Get(c.Param("id"))
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	r, appErr := h.svc.Get(c.Param("id"), eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

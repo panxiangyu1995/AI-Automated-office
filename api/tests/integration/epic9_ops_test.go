@@ -949,12 +949,11 @@ func TestServiceOrder_ConfirmQuote(t *testing.T) {
 		"order_type": "paid", "amount": 5000.0,
 	})
 	if data == nil {
-		t.Skip("service order with customer create failed")
+		t.Fatalf("feature not implemented: service order with customer create failed")
 	}
-	if data == nil { t.Skip("service order with customer create failed") }
 	soID, _ := data["id"].(string)
 	if soID == "" {
-		t.Skip("service order create returned no id")
+		t.Fatalf("feature not implemented: service order create returned no id")
 	}
 
 	confirmW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/service-orders/"+soID+"/confirm-quote", map[string]interface{}{
@@ -978,10 +977,12 @@ func TestServiceOrder_CustomerSign(t *testing.T) {
 	data := createServiceOrderWithCustomer(t, client, fx.EnterpriseID, map[string]interface{}{
 		"order_type": "paid",
 	})
-	if data == nil { t.Skip("service order with customer create failed") }
+	if data == nil {
+		t.Fatalf("feature not implemented: service order with customer create failed")
+	}
 	soID, _ := data["id"].(string)
 	if soID == "" {
-		t.Skip("service order create returned no id")
+		t.Fatalf("feature not implemented: service order create returned no id")
 	}
 
 	signW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/service-orders/"+soID+"/customer-sign", map[string]interface{}{
@@ -1023,10 +1024,12 @@ func TestServiceOrder_QuoteAttachment(t *testing.T) {
 	data := createServiceOrderWithCustomer(t, client, fx.EnterpriseID, map[string]interface{}{
 		"order_type": "paid", "amount": 8000.0,
 	})
-	if data == nil { t.Skip("service order with customer create failed") }
+	if data == nil {
+		t.Fatalf("feature not implemented: service order with customer create failed")
+	}
 	soID, _ := data["id"].(string)
 	if soID == "" {
-		t.Skip("service order create returned no id")
+		t.Fatalf("feature not implemented: service order create returned no id")
 	}
 }
 
@@ -1043,10 +1046,12 @@ func TestServiceOrder_RepairOrder(t *testing.T) {
 	data := createServiceOrderWithCustomer(t, client, fx.EnterpriseID, map[string]interface{}{
 		"order_type": "repair",
 	})
-	if data == nil { t.Skip("service order with customer create failed") }
+	if data == nil {
+		t.Fatalf("feature not implemented: service order with customer create failed")
+	}
 	soID, _ := data["id"].(string)
 	if soID == "" {
-		t.Skip("service order create returned no id")
+		t.Fatalf("feature not implemented: service order create returned no id")
 	}
 }
 
@@ -1088,10 +1093,12 @@ func TestServiceOrder_UploadAttachment(t *testing.T) {
 	data := createServiceOrderWithCustomer(t, client, fx.EnterpriseID, map[string]interface{}{
 		"type": "free",
 	})
-	if data == nil { t.Skip("service order with customer create failed") }
+	if data == nil {
+		t.Fatalf("feature not implemented: service order with customer create failed")
+	}
 	soID, _ := data["id"].(string)
 	if soID == "" {
-		t.Skip("service order create returned no id")
+		t.Fatalf("feature not implemented: service order create returned no id")
 	}
 
 	attachW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/service-orders/"+soID+"/attachments", map[string]interface{}{

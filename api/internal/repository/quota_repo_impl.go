@@ -89,8 +89,8 @@ func (r *featureFlagRepo) Update(flag *model.FeatureFlag) error {
 	return r.db.Save(flag).Error
 }
 
-func (r *featureFlagRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.FeatureFlag{}, "id = ?", id).Error
+func (r *featureFlagRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FeatureFlag{}).Error
 }
 
 func (r *featureFlagRepo) InitDefaults(enterpriseID uuid.UUID) error {

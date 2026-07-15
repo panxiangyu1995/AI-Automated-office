@@ -162,7 +162,7 @@ func (h *AuthHandler) MeProfile(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.employeeService.Get(*user.EmployeeID)
+	emp, appErr := h.employeeService.Get(user.EnterpriseID, *user.EmployeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

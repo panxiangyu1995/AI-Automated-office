@@ -2,10 +2,14 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/auth"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
@@ -16,7 +20,37 @@ const (
 	ContextKeyUserID = "user_id"
 	ContextKeyRole   = "role"
 	ContextKeyEmail  = "email"
+
+	mfaVerifiedKeyPrefix = "mfa:verified:"
+	mfaVerifiedTTL       = 5 * time.Minute
 )
+
+var mfaCache *redis.Cache
+
+func SetMFACache(cache *redis.Cache) {
+	mfaCache = cache
+}
+
+func MarkMFAVerified(ctx context.Context, userID string) error {
+	if mfaCache == nil {
+		return fmt.Errorf("MFA cache not initialized")
+	}
+	return mfaCache.Set(ctx, mfaVerifiedKeyPrefix+userID, "1", mfaVerifiedTTL)
+}
+
+func IsMFAVerified(ctx context.Context, userID string) (bool, error) {
+	if mfaCache == nil {
+		return false, fmt.Errorf("MFA cache not initialized")
+	}
+	return mfaCache.Exists(ctx, mfaVerifiedKeyPrefix+userID)
+}
+
+func ClearMFAVerified(ctx context.Context, userID string) error {
+	if mfaCache == nil {
+		return fmt.Errorf("MFA cache not initialized")
+	}
+	return mfaCache.Delete(ctx, mfaVerifiedKeyPrefix+userID)
+}
 
 func GetUserID(c *gin.Context) string {
 	id, ok := c.Get(ContextKeyUserID)
@@ -84,6 +118,51 @@ func AuthRequired(jwtManager *auth.JWTManager, tokenBlacklist *redis.TokenBlackl
 		c.Set(ContextKeyEmail, claims.Email)
 		c.Set(ContextKeyEnterpriseIDFromToken, claims.EnterpriseID)
 
+		mfaRequired := checkMFARequired(claims.UserID)
+		if mfaRequired {
+			verified, err := IsMFAVerified(c.Request.Context(), claims.UserID)
+			if err != nil {
+				response.Error(c, errors.ErrInternal.WithDetail("MFA验证服务不可用，请稍后重试"))
+				c.Abort()
+				return
+			}
+			if !verified {
+				response.Error(c, &errors.AppError{
+					Code:        "AUTH_MFA_REQUIRED",
+					Message:     "需要MFA验证",
+					Status:      403,
+					Level:       errors.LevelUserAction,
+					Recoverable: true,
+					RecoveryAction: "verify_mfa",
+					RecoveryActionInfo: &errors.RecoveryActionInfo{
+						Type:        "verify_mfa",
+						API:         "POST /api/v1/mfa/verify",
+						Description: "请先完成MFA验证",
+					},
+				})
+				c.Abort()
+				return
+			}
+		}
+
 		c.Next()
 	}
 }
+
+func checkMFARequired(userID string) bool {
+	if tenantDB := getGlobalDB(); tenantDB != nil {
+		var config model.MFAConfig
+		err := tenantDB.Where("user_id = ? AND verified = ?", userID, true).First(&config).Error
+		return err == nil
+	}
+	return false
+}
+
+func getGlobalDB() *gorm.DB {
+	if GlobalAuthDB != nil {
+		return GlobalAuthDB
+	}
+	return nil
+}
+
+var GlobalAuthDB *gorm.DB

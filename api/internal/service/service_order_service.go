@@ -7,15 +7,17 @@ import (
 	"path/filepath"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type ServiceOrderService struct{ db *gorm.DB }
+type ServiceOrderService struct{ repo repository.ServiceOrderRepository }
 
-func NewServiceOrderService(db *gorm.DB) *ServiceOrderService { return &ServiceOrderService{db} }
+func NewServiceOrderService(repo repository.ServiceOrderRepository) *ServiceOrderService {
+	return &ServiceOrderService{repo}
+}
 
 func validServiceTransition(from, to string) bool {
 	next, ok := model.ServiceStatusTransitions[from]
@@ -33,15 +35,16 @@ func (s *ServiceOrderService) Create(eid, customerID, orderType, desc string, co
 		Status: "pending", Description: desc, Amount: amount,
 	}
 	so.EnterpriseID = id
-	if err := s.db.Create(so).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: "+err.Error()) }
+	if err := s.repo.Create(so); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: "+err.Error()) }
 	return so, nil
 }
 
 func (s *ServiceOrderService) ChangeStatus(soID, newStatus string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
-	var so model.ServiceOrder
-	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
+	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
 	if !validServiceTransition(so.Status, newStatus) {
 		return nil, &apperrors.AppError{
 			Code: "SVC_INVALID_STATUS_TRANSITION", Message: "非法状态流转", Status: 400,
@@ -53,50 +56,46 @@ func (s *ServiceOrderService) ChangeStatus(soID, newStatus string) (*model.Servi
 		now := so.UpdatedAt
 		so.SignedAt = &now
 	}
-	if err := s.db.Save(&so).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("更新状态失败: "+err.Error()) }
-	return &so, nil
+	if err := s.repo.Save(so); err != nil { return nil, apperrors.ErrInternal.WithDetail("更新状态失败: "+err.Error()) }
+	return so, nil
 }
 
 func (s *ServiceOrderService) Get(soID string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
-	var so model.ServiceOrder
-	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
-	return &so, nil
+	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
+	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	return so, nil
 }
 
 func (s *ServiceOrderService) Delete(soID string) *apperrors.AppError {
 	id, err := uuid.Parse(soID)
 	if err != nil { return apperrors.NewValidationError("service_order_id", "无效") }
-	var so model.ServiceOrder
-	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return apperrors.ErrNotFound.WithDetail("工单不存在") }
+	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return apperrors.ErrInternal.WithDetail("查询工单失败") }
+	if so == nil { return apperrors.ErrNotFound.WithDetail("工单不存在") }
 	if so.Status != "pending" { return apperrors.ErrBadRequest.WithDetail("仅待处理工单可删除") }
-	if err := s.db.Delete(&so).Error; err != nil { return apperrors.ErrInternal.WithDetail("删除工单失败") }
+	if err := s.repo.Delete(so, so.EnterpriseID); err != nil { return apperrors.ErrInternal.WithDetail("删除工单失败") }
 	return nil
 }
 
 func (s *ServiceOrderService) Quote(soID string, amount float64) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
-	var so model.ServiceOrder
-	if err := s.db.Where("id=?", id).First(&so).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
+	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
 	so.Amount = amount
-	if err := s.db.Save(&so).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("报价失败") }
-	return &so, nil
+	if err := s.repo.Save(so); err != nil { return nil, apperrors.ErrInternal.WithDetail("报价失败") }
+	return so, nil
 }
 
 func (s *ServiceOrderService) List(eid, orderType, status string, p, ps int) ([]model.ServiceOrder, int64, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, 0, apperrors.NewValidationError("enterprise_id", "无效") }
-	var sos []model.ServiceOrder; var total int64
-	q := s.db.Model(&model.ServiceOrder{}).Where("enterprise_id=?", id)
-	if orderType != "" { q = q.Where("order_type=?", orderType) }
-	if status != "" { q = q.Where("status=?", status) }
-	if err := q.Count(&total).Error; err != nil { return nil, 0, apperrors.ErrInternal.WithDetail("查询工单失败: "+err.Error()) }
-	if p < 1 { p = 1 }; if ps < 1 || ps > 100 { ps = 20 }
-	if err := q.Order("created_at DESC").Offset((p-1)*ps).Limit(ps).Find(&sos).Error; err != nil {
-		return nil, 0, apperrors.ErrInternal.WithDetail("查询工单失败: "+err.Error())
-	}
+	sos, total, dbErr := s.repo.List(id, orderType, status, p, ps)
+	if dbErr != nil { return nil, 0, apperrors.ErrInternal.WithDetail("查询工单失败: "+dbErr.Error()) }
 	return sos, total, nil
 }
 
@@ -105,8 +104,11 @@ func (s *ServiceOrderService) Sign(soID string) (*model.ServiceOrder, *apperrors
 	if err != nil {
 		return nil, apperrors.NewValidationError("service_order_id", "无效")
 	}
-	var so model.ServiceOrder
-	if err := s.db.Where("id=?", id).First(&so).Error; err != nil {
+	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
+	}
+	if so == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("工单不存在")
 	}
 	if so.Status != "repairing" {
@@ -115,10 +117,10 @@ func (s *ServiceOrderService) Sign(soID string) (*model.ServiceOrder, *apperrors
 	now := so.UpdatedAt
 	so.Status = "signed"
 	so.SignedAt = &now
-	if err := s.db.Save(&so).Error; err != nil {
+	if err := s.repo.Save(so); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("签字确认失败")
 	}
-	return &so, nil
+	return so, nil
 }
 
 func (s *ServiceOrderService) UploadAttachment(eid, serviceOrderID, originalName, mimeType string, reader io.Reader, size int64) (*model.FileMetadata, *apperrors.AppError) {
@@ -157,7 +159,7 @@ func (s *ServiceOrderService) UploadAttachment(eid, serviceOrderID, originalName
 	}
 	meta.EnterpriseID = id
 
-	if err := s.db.Create(meta).Error; err != nil {
+	if err := s.repo.CreateFileMetadata(meta); err != nil {
 		os.Remove(storagePath)
 		return nil, apperrors.ErrInternal.WithDetail("保存文件元数据失败")
 	}
@@ -166,9 +168,8 @@ func (s *ServiceOrderService) UploadAttachment(eid, serviceOrderID, originalName
 }
 
 func (s *ServiceOrderService) ListAttachments(serviceOrderID string) ([]model.FileMetadata, *apperrors.AppError) {
-	var files []model.FileMetadata
-	if err := s.db.Where("ref_type=? AND ref_id=?", "service_order", serviceOrderID).
-		Order("created_at DESC").Find(&files).Error; err != nil {
+	files, err := s.repo.ListFileMetadata("service_order", serviceOrderID)
+	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询附件失败")
 	}
 	return files, nil

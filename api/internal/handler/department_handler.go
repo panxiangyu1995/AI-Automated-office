@@ -30,6 +30,25 @@ type setManagerRequest struct {
 	EmployeeID string `json:"employee_id"`
 }
 
+func (h *DepartmentHandler) Get(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	departmentID := c.Param("id")
+	if departmentID == "" {
+		response.ValidationError(c, "id", "部门ID不能为空")
+		return
+	}
+	dept, appErr := h.deptService.GetByID(enterpriseID, departmentID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, dept)
+}
+
 func (h *DepartmentHandler) Create(c *gin.Context) {
 	enterpriseID := c.Param("enterprise_id")
 	if enterpriseID == "" {
@@ -53,6 +72,11 @@ func (h *DepartmentHandler) Create(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	departmentID := c.Param("id")
 	if departmentID == "" {
 		response.ValidationError(c, "id", "部门ID不能为空")
@@ -65,7 +89,7 @@ func (h *DepartmentHandler) Update(c *gin.Context) {
 		return
 	}
 
-	dept, appErr := h.deptService.Update(departmentID, req.Name, req.ManagerID)
+	dept, appErr := h.deptService.Update(enterpriseID, departmentID, req.Name, req.ManagerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -75,13 +99,18 @@ func (h *DepartmentHandler) Update(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	departmentID := c.Param("id")
 	if departmentID == "" {
 		response.ValidationError(c, "id", "部门ID不能为空")
 		return
 	}
 
-	appErr := h.deptService.Delete(departmentID)
+	appErr := h.deptService.Delete(enterpriseID, departmentID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -91,6 +120,11 @@ func (h *DepartmentHandler) Delete(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) SetManager(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	departmentID := c.Param("id")
 	if departmentID == "" {
 		response.ValidationError(c, "id", "部门ID不能为空")
@@ -103,7 +137,7 @@ func (h *DepartmentHandler) SetManager(c *gin.Context) {
 		return
 	}
 
-	dept, appErr := h.deptService.SetManager(departmentID, req.EmployeeID)
+	dept, appErr := h.deptService.SetManager(enterpriseID, departmentID, req.EmployeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

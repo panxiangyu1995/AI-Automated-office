@@ -17,6 +17,6 @@ type FeatureFlagRepository interface {
 	Find(enterpriseID uuid.UUID, featureKey string) (*model.FeatureFlag, error)
 	Create(flag *model.FeatureFlag) error
 	Update(flag *model.FeatureFlag) error
-	Delete(id uuid.UUID) error
+	Delete(id, enterpriseID uuid.UUID) error
 	InitDefaults(enterpriseID uuid.UUID) error
 }

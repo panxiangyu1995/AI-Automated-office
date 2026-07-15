@@ -12,11 +12,11 @@ type warehouseRepo struct{ db *gorm.DB }
 func NewWarehouseRepository(db *gorm.DB) WarehouseRepository { return &warehouseRepo{db} }
 func (r *warehouseRepo) Create(w *model.Warehouse) error      { return r.db.Create(w).Error }
 func (r *warehouseRepo) Update(w *model.Warehouse) error      { return r.db.Save(w).Error }
-func (r *warehouseRepo) Delete(id uuid.UUID) error             { return r.db.Delete(&model.Warehouse{}, "id = ?", id).Error }
+func (r *warehouseRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Warehouse{}).Error }
 
-func (r *warehouseRepo) FindByID(id uuid.UUID) (*model.Warehouse, error) {
+func (r *warehouseRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Warehouse, error) {
 	var w model.Warehouse
-	err := r.db.Where("id = ?", id).First(&w).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&w).Error
 	if err == gorm.ErrRecordNotFound { return nil, nil }
 	return &w, err
 }

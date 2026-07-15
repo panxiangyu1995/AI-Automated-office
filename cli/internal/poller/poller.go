@@ -5,36 +5,57 @@ import (
 	"time"
 )
 
-type Poller struct {
-	interval time.Duration
-	callback func() error
-	stopChan chan struct{}
+type AdaptivePoller struct {
+	minInterval     time.Duration
+	maxInterval     time.Duration
+	currentInterval time.Duration
+	callback        func() (int, error)
+	stopChan        chan struct{}
 }
 
-func New(interval time.Duration, callback func() error) *Poller {
-	return &Poller{
-		interval: interval,
-		callback: callback,
-		stopChan: make(chan struct{}),
+func NewAdaptive(minInterval, maxInterval, initialInterval time.Duration, callback func() (int, error)) *AdaptivePoller {
+	return &AdaptivePoller{
+		minInterval:     minInterval,
+		maxInterval:     maxInterval,
+		currentInterval: initialInterval,
+		callback:        callback,
+		stopChan:        make(chan struct{}),
 	}
 }
 
-func (p *Poller) Start() {
-	ticker := time.NewTicker(p.interval)
-	defer ticker.Stop()
+func (p *AdaptivePoller) AdjustInterval(messageCount int) {
+	if messageCount > 0 {
+		p.currentInterval = p.minInterval
+		if p.currentInterval/2 >= p.minInterval {
+			p.currentInterval = p.currentInterval / 2
+		}
+	} else {
+		p.currentInterval = time.Duration(float64(p.currentInterval) * 1.5)
+		if p.currentInterval > p.maxInterval {
+			p.currentInterval = p.maxInterval
+		}
+	}
+}
 
+func (p *AdaptivePoller) Start() {
 	for {
 		select {
-		case <-ticker.C:
-			if err := p.callback(); err != nil {
+		case <-time.After(p.currentInterval):
+			count, err := p.callback()
+			if err != nil {
 				log.Printf("poll error: %v", err)
 			}
+			p.AdjustInterval(count)
 		case <-p.stopChan:
 			return
 		}
 	}
 }
 
-func (p *Poller) Stop() {
+func (p *AdaptivePoller) Stop() {
 	close(p.stopChan)
+}
+
+func (p *AdaptivePoller) CurrentInterval() time.Duration {
+	return p.currentInterval
 }

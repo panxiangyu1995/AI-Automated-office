@@ -106,13 +106,18 @@ func (h *BackupHandler) DeleteConfig(c *gin.Context) {
 }
 
 func (h *BackupHandler) GetConfig(c *gin.Context) {
+	enterpriseID := c.GetString(middleware.ContextKeyEnterpriseID)
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	configID := c.Param("id")
 	if configID == "" {
 		response.ValidationError(c, "id", "配置ID不能为空")
 		return
 	}
 
-	config, appErr := h.backupService.GetConfig(configID)
+	config, appErr := h.backupService.GetConfig(enterpriseID, configID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -177,13 +182,18 @@ func (h *BackupHandler) TriggerBackup(c *gin.Context) {
 }
 
 func (h *BackupHandler) Restore(c *gin.Context) {
+	enterpriseID := c.GetString(middleware.ContextKeyEnterpriseID)
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	recordID := c.Param("record_id")
 	if recordID == "" {
 		response.ValidationError(c, "record_id", "备份记录ID不能为空")
 		return
 	}
 
-	appErr := h.backupService.Restore(recordID)
+	appErr := h.backupService.Restore(enterpriseID, recordID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

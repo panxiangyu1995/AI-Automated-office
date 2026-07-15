@@ -10,12 +10,10 @@ func TestRegisterAndListMigrations(t *testing.T) {
 	RegisterMigration(Migration{
 		Version:     "001",
 		Description: "create enterprises table",
-		SQL:         "CREATE TABLE ...",
 	})
 	RegisterMigration(Migration{
 		Version:     "002",
 		Description: "create departments table",
-		SQL:         "CREATE TABLE ...",
 	})
 
 	if len(tenantMigrations) != 2 {
@@ -47,16 +45,14 @@ func TestStringTrimPrefix_Empty(t *testing.T) {
 }
 
 func TestDefaultMigrationRegistered(t *testing.T) {
-	// init() in migration.go registers at least one migration
 	if len(tenantMigrations) == 0 {
 		t.Error("expected at least one migration registered by init()")
 	}
 }
 
 func TestMigrationVersion(t *testing.T) {
-	// Re-register to have predictable state
 	tenantMigrations = nil
-	RegisterMigration(Migration{Version: "001", Description: "test", SQL: "SELECT 1"})
+	RegisterMigration(Migration{Version: "001", Description: "test"})
 
 	if tenantMigrations[0].Version != "001" {
 		t.Errorf("expected version 001, got %s", tenantMigrations[0].Version)
@@ -66,4 +62,19 @@ func TestMigrationVersion(t *testing.T) {
 	}
 }
 
+func TestLoadMigrationSQL(t *testing.T) {
+	sql, err := LoadMigrationSQL("001")
+	if err != nil {
+		t.Fatalf("failed to load migration 001: %v", err)
+	}
+	if sql == "" {
+		t.Error("expected non-empty SQL for migration 001")
+	}
+}
 
+func TestLoadMigrationSQL_NotFound(t *testing.T) {
+	_, err := LoadMigrationSQL("999")
+	if err == nil {
+		t.Error("expected error for non-existent migration file")
+	}
+}

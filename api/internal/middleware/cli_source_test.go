@@ -51,14 +51,14 @@ func TestCLISourceOnly_MissingSource(t *testing.T) {
 	}
 }
 
-func TestCLISourceOnly_LegacyNoSignature(t *testing.T) {
+func TestCLISourceOnly_MissingSignature(t *testing.T) {
 	r, _ := testCLISetup("secret")
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.Header.Set("X-Request-Source", "ao-cli")
 	r.ServeHTTP(w, req)
-	if w.Code != 200 {
-		t.Errorf("expected 200 (legacy mode), got %d", w.Code)
+	if w.Code != 403 {
+		t.Errorf("expected 403 (signature required), got %d", w.Code)
 	}
 }
 

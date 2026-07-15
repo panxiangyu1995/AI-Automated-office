@@ -8,17 +8,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
 type ContractService struct {
-	db *gorm.DB
+	repo repository.ContractRepository
 }
 
-func NewContractService(db *gorm.DB) *ContractService { return &ContractService{db} }
+func NewContractService(repo repository.ContractRepository) *ContractService { return &ContractService{repo} }
 
 var contractTransitions = map[string][]string{
 	"draft": {"pending_approval"}, "pending_approval": {"active", "draft"},
@@ -41,15 +41,16 @@ func (s *ContractService) Create(eid, customerID, name, content, notes string, a
 		CustomerID: customerID, Name: name, Amount: amount, Status: "draft", Content: content, Notes: notes,
 	}
 	c.EnterpriseID = id
-	if err := s.db.Create(c).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建合同失败: "+err.Error()) }
+	if err := s.repo.Create(c); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建合同失败: "+err.Error()) }
 	return c, nil
 }
 
 func (s *ContractService) PatchFields(cID string, fields map[string]interface{}) (*model.Contract, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
 	if c.Status != "draft" && c.Status != "pending_approval" {
 		return nil, apperrors.ErrBadRequest.WithDetail("仅草稿和审批中的合同可修改")
 	}
@@ -61,40 +62,41 @@ func (s *ContractService) PatchFields(cID string, fields map[string]interface{})
 	if v, ok := fields["notes"]; ok { updates["notes"] = v }
 	if len(updates) == 0 { return nil, apperrors.NewValidationError("fields", "没有可更新的字段") }
 
-	if err := s.db.Model(&c).Updates(updates).Error; err != nil {
-		return nil, apperrors.ErrInternal.WithDetail("更新合同字段失败: "+err.Error())
-	}
-	s.db.Where("id=?", id).First(&c)
-	return &c, nil
+	result, dbErr := s.repo.PatchFields(id, c.EnterpriseID, updates)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("更新合同字段失败: "+dbErr.Error()) }
+	return result, nil
 }
 
 func (s *ContractService) Update(cID, name, content, notes string, amount float64) (*model.Contract, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
 	if c.Status != "draft" { return nil, apperrors.ErrBadRequest.WithDetail("仅草稿状态可编辑") }
 	if name != "" { c.Name = name }; if content != "" { c.Content = content }
 	if notes != "" { c.Notes = notes }; if amount > 0 { c.Amount = amount }
-	if err := s.db.Save(&c).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("更新合同失败: "+err.Error()) }
-	return &c, nil
+	if err := s.repo.Update(c); err != nil { return nil, apperrors.ErrInternal.WithDetail("更新合同失败: "+err.Error()) }
+	return c, nil
 }
 
 func (s *ContractService) Delete(cID string) *apperrors.AppError {
 	id, err := uuid.Parse(cID)
 	if err != nil { return apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return apperrors.ErrNotFound.WithDetail("合同不存在") }
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return apperrors.ErrNotFound.WithDetail("合同不存在") }
 	if c.Status != "draft" { return apperrors.ErrBadRequest.WithDetail("仅草稿状态可删除") }
-	if err := s.db.Delete(&c).Error; err != nil { return apperrors.ErrInternal.WithDetail("删除合同失败: "+err.Error()) }
+	if err := s.repo.Delete(c, c.EnterpriseID); err != nil { return apperrors.ErrInternal.WithDetail("删除合同失败: "+err.Error()) }
 	return nil
 }
 
 func (s *ContractService) ChangeStatus(cID, newStatus string) (*model.Contract, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
 	if !validContractTransition(c.Status, newStatus) {
 		return nil, &apperrors.AppError{
 			Code: "CON_INVALID_STATUS_TRANSITION", Message: "非法状态流转",
@@ -105,8 +107,8 @@ func (s *ContractService) ChangeStatus(cID, newStatus string) (*model.Contract, 
 	c.Status = newStatus
 	if newStatus == "active" { now := time.Now(); c.EffectiveAt = &now }
 	if newStatus == "fulfilled" || newStatus == "terminated" { now := time.Now(); c.ExpireAt = &now }
-	if err := s.db.Save(&c).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("更新状态失败: "+err.Error()) }
-	return &c, nil
+	if err := s.repo.Update(c); err != nil { return nil, apperrors.ErrInternal.WithDetail("更新状态失败: "+err.Error()) }
+	return c, nil
 }
 
 func (s *ContractService) SubmitApproval(cID string) (*model.Contract, *apperrors.AppError) {
@@ -120,8 +122,9 @@ func (s *ContractService) Approve(cID string) (*model.Contract, *apperrors.AppEr
 func (s *ContractService) SaveAttachment(eid, cID, fileName, contentType string, fileSize int64, data io.Reader) (*model.ContractAttachment, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
 
 	uploadDir := fmt.Sprintf("/storage/%s/contracts/%s/attachments", eid, cID)
 	os.MkdirAll(uploadDir, 0755)
@@ -135,20 +138,21 @@ func (s *ContractService) SaveAttachment(eid, cID, fileName, contentType string,
 		ContractID: cID, FileName: fileName,
 		FileType: contentType, FileSize: fileSize, FileURL: filePath,
 	}
-	if err := s.db.Create(att).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("保存附件记录失败") }
+	if err := s.repo.CreateAttachment(att); err != nil { return nil, apperrors.ErrInternal.WithDetail("保存附件记录失败") }
 	return att, nil
 }
 
 func (s *ContractService) LinkDocument(cID, refType, refID, refNo string) (*model.ContractReference, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
 	if refType == "" { return nil, apperrors.NewValidationError("ref_type", "关联类型不能为空") }
 	if refID == "" { return nil, apperrors.NewValidationError("ref_id", "关联ID不能为空") }
 
 	cr := &model.ContractReference{ContractID: cID, RefType: refType, RefID: refID, RefNo: refNo}
-	if err := s.db.Create(cr).Error; err != nil {
+	if err := s.repo.CreateReference(cr); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("关联单据失败: "+err.Error())
 	}
 	return cr, nil
@@ -157,32 +161,24 @@ func (s *ContractService) LinkDocument(cID, refType, refID, refNo string) (*mode
 func (s *ContractService) ListDocuments(cID string) ([]model.ContractReference, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var refs []model.ContractReference
-	if err := s.db.Where("contract_id=?", id).Find(&refs).Error; err != nil {
-		return nil, apperrors.ErrInternal.WithDetail("查询关联单据失败: "+err.Error())
-	}
+	refs, dbErr := s.repo.ListReferences(id)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询关联单据失败: "+dbErr.Error()) }
 	return refs, nil
 }
 
 func (s *ContractService) Get(cID string) (*model.Contract, *apperrors.AppError) {
 	id, err := uuid.Parse(cID)
 	if err != nil { return nil, apperrors.NewValidationError("contract_id", "无效") }
-	var c model.Contract
-	if err := s.db.Where("id=?", id).First(&c).Error; err != nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
-	return &c, nil
+	c, dbErr := s.repo.FindByID(id, uuid.Nil)
+	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
+	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
+	return c, nil
 }
 
 func (s *ContractService) List(eid string, p, ps int, status string) ([]model.Contract, int64, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, 0, apperrors.NewValidationError("enterprise_id", "无效") }
-	var cs []model.Contract; var total int64
-	q := s.db.Model(&model.Contract{}).Where("enterprise_id=?", id)
-	if status != "" { q = q.Where("status=?", status) }
-	if err := q.Count(&total).Error; err != nil { return nil, 0, apperrors.ErrInternal.WithDetail("查询合同列表失败: "+err.Error()) }
-	if p < 1 { p = 1 }
-	if ps < 1 || ps > 100 { ps = 20 }
-	if err := q.Order("created_at DESC").Offset((p-1)*ps).Limit(ps).Find(&cs).Error; err != nil {
-		return nil, 0, apperrors.ErrInternal.WithDetail("查询合同列表失败: "+err.Error())
-	}
+	cs, total, dbErr := s.repo.List(id, status, p, ps)
+	if dbErr != nil { return nil, 0, apperrors.ErrInternal.WithDetail("查询合同列表失败: "+dbErr.Error()) }
 	return cs, total, nil
 }

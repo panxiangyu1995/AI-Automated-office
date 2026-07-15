@@ -84,7 +84,7 @@ func DropTestSchema(t *testing.T, db *gorm.DB, enterpriseID string) {
 
 func ExecInSchema(t *testing.T, db *gorm.DB, enterpriseID string, fn func()) {
 	t.Helper()
-	schema := tenant.SchemaName(enterpriseID)
+	schema, _ := tenant.SchemaName(enterpriseID)
 	db.Exec(fmt.Sprintf("SET search_path TO %s,public", schema))
 	fn()
 	db.Exec("SET search_path TO public")

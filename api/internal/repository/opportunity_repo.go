@@ -9,7 +9,7 @@ import (
 type OpportunityRepository interface {
 	Create(op *model.Opportunity) error
 	Update(op *model.Opportunity) error
-	Delete(id uuid.UUID) error
-	FindByID(id uuid.UUID) (*model.Opportunity, error)
+	Delete(id, enterpriseID uuid.UUID) error
+	FindByID(id, enterpriseID uuid.UUID) (*model.Opportunity, error)
 	ListByCustomer(customerID uuid.UUID) ([]model.Opportunity, int64, error)
 }

@@ -51,13 +51,18 @@ func (h *CrossEnterpriseHandler) Grant(c *gin.Context) {
 }
 
 func (h *CrossEnterpriseHandler) Revoke(c *gin.Context) {
+	enterpriseID := c.GetString(middleware.ContextKeyEnterpriseID)
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	permissionID := c.Param("id")
 	if permissionID == "" {
 		response.ValidationError(c, "id", "权限ID不能为空")
 		return
 	}
 
-	appErr := h.crossService.Revoke(permissionID)
+	appErr := h.crossService.Revoke(enterpriseID, permissionID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

@@ -26,6 +26,23 @@ func TestAppError_WithDetails(t *testing.T) {
 	}
 }
 
+func TestAppError_WithDetailItems(t *testing.T) {
+	items := []ErrorDetail{
+		{Resource: "contract", Action: "create", Reason: "duplicate_name"},
+		{Resource: "contract", Action: "create", Reason: "invalid_amount"},
+	}
+	err := ErrValidation.WithDetailItems(items)
+	if len(err.DetailItems) != 2 {
+		t.Fatalf("expected 2 detail items, got %d", len(err.DetailItems))
+	}
+	if err.DetailItems[0].Resource != "contract" {
+		t.Errorf("expected resource 'contract', got %s", err.DetailItems[0].Resource)
+	}
+	if err.DetailItems[0].Reason != "duplicate_name" {
+		t.Errorf("expected reason 'duplicate_name', got %s", err.DetailItems[0].Reason)
+	}
+}
+
 func TestAppError_WithMessage(t *testing.T) {
 	err := ErrNotFound.WithMessage("custom message")
 	if err.Message != "custom message" {
@@ -34,9 +51,9 @@ func TestAppError_WithMessage(t *testing.T) {
 }
 
 func TestAppError_WithLevel(t *testing.T) {
-	err := NewAppError("TEST_001", "test", 500).WithLevel("critical")
-	if err.Level != "critical" {
-		t.Errorf("expected critical, got %s", err.Level)
+	err := NewAppError("TEST_001", "test", 500).WithLevel(LevelFatal)
+	if err.Level != LevelFatal {
+		t.Errorf("expected %s, got %s", LevelFatal, err.Level)
 	}
 }
 
@@ -47,10 +64,33 @@ func TestAppError_WithRecoverable(t *testing.T) {
 	}
 }
 
+func TestAppError_WithRecoveryActionInfo(t *testing.T) {
+	info := &RecoveryActionInfo{Type: "refresh_token", API: "POST /api/v1/auth/refresh", Description: "刷新令牌"}
+	err := ErrTokenExpired.WithRecoveryActionInfo(info)
+	if err.RecoveryActionInfo == nil {
+		t.Fatal("expected non-nil RecoveryActionInfo")
+	}
+	if err.RecoveryActionInfo.Type != "refresh_token" {
+		t.Errorf("expected type 'refresh_token', got %s", err.RecoveryActionInfo.Type)
+	}
+	if err.RecoveryActionInfo.API != "POST /api/v1/auth/refresh" {
+		t.Errorf("unexpected API: %s", err.RecoveryActionInfo.API)
+	}
+}
+
 func TestAppError_WithRequestID(t *testing.T) {
 	err := ErrInternal.WithRequestID("req-123")
 	if err.RequestID != "req-123" {
 		t.Errorf("expected req-123, got %s", err.RequestID)
+	}
+}
+
+func TestErrorLevels(t *testing.T) {
+	levels := []string{LevelRecoverable, LevelUserAction, LevelDataIssue, LevelSystemError, LevelFatal}
+	for _, l := range levels {
+		if l == "" {
+			t.Errorf("level should not be empty")
+		}
 	}
 }
 
@@ -93,18 +133,46 @@ func TestPredefinedErrors(t *testing.T) {
 	}
 }
 
-func TestPredefinedErrorsHaveLevels(t *testing.T) {
-	if ErrInternal.Level != "error" {
-		t.Errorf("ErrInternal should have level 'error', got %s", ErrInternal.Level)
+func TestNewErrorCodes(t *testing.T) {
+	newErrors := []struct {
+		err    *AppError
+		code   string
+		status int
+	}{
+		{ErrRefreshTokenExpired, "AUTH_REFRESH_TOKEN_EXPIRED", 401},
+		{ErrRoleRequired, "PERM_ROLE_REQUIRED", 403},
+		{ErrContractLocked, "BIZ_CONTRACT_LOCKED", 409},
+		{ErrQuantityInsufficient, "BIZ_QUANTITY_INSUFFICIENT", 409},
+		{ErrWorkflowParallelPending, "BIZ_WORKFLOW_PARALLEL_PENDING", 409},
+		{ErrInspectionRequired, "BIZ_INSPECTION_REQUIRED", 400},
+		{ErrReceivableNotFound, "FIN_RECEIVABLE_NOT_FOUND", 404},
+		{ErrPayableNotFound, "FIN_PAYABLE_NOT_FOUND", 404},
 	}
-	if ErrNotFound.Level != "warn" {
-		t.Errorf("ErrNotFound should have level 'warn', got %s", ErrNotFound.Level)
+	for _, tt := range newErrors {
+		if tt.err.Code != tt.code {
+			t.Errorf("expected code %q, got %q", tt.code, tt.err.Code)
+		}
+		if tt.err.Status != tt.status {
+			t.Errorf("%s: expected status %d, got %d", tt.code, tt.status, tt.err.Status)
+		}
+	}
+}
+
+func TestPredefinedErrorsHaveLevels(t *testing.T) {
+	if ErrInternal.Level != LevelSystemError {
+		t.Errorf("ErrInternal should have level %s, got %s", LevelSystemError, ErrInternal.Level)
+	}
+	if ErrNotFound.Level != LevelDataIssue {
+		t.Errorf("ErrNotFound should have level %s, got %s", LevelDataIssue, ErrNotFound.Level)
 	}
 	if !ErrTokenExpired.Recoverable {
 		t.Error("ErrTokenExpired should be recoverable")
 	}
-	if ErrTokenExpired.RecoveryAction != "refresh_token" {
-		t.Errorf("ErrTokenExpired recovery action should be 'refresh_token', got %s", ErrTokenExpired.RecoveryAction)
+	if ErrTokenExpired.RecoveryActionInfo == nil {
+		t.Error("ErrTokenExpired should have RecoveryActionInfo")
+	}
+	if ErrTokenExpired.RecoveryActionInfo.Type != "refresh_token" {
+		t.Errorf("ErrTokenExpired recovery type should be 'refresh_token', got %s", ErrTokenExpired.RecoveryActionInfo.Type)
 	}
 }
 
@@ -113,8 +181,14 @@ func TestNewValidationError(t *testing.T) {
 	if err.Code != "VAL_INVALID_PARAMS" {
 		t.Errorf("expected VAL_INVALID_PARAMS, got %s", err.Code)
 	}
-	if len(err.Details) != 1 || err.Details[0] != "email: invalid format" {
-		t.Errorf("unexpected details: %v", err.Details)
+	if len(err.DetailItems) != 1 {
+		t.Fatalf("expected 1 detail item, got %d", len(err.DetailItems))
+	}
+	if err.DetailItems[0].Resource != "email" {
+		t.Errorf("expected resource 'email', got %s", err.DetailItems[0].Resource)
+	}
+	if err.DetailItems[0].Reason != "invalid format" {
+		t.Errorf("expected reason 'invalid format', got %s", err.DetailItems[0].Reason)
 	}
 }
 
@@ -124,7 +198,35 @@ func TestNewValidationErrors(t *testing.T) {
 		{"name", "too short"},
 	}
 	err := NewValidationErrors(errs)
-	if len(err.Details) != 2 {
-		t.Errorf("expected 2 details, got %d", len(err.Details))
+	if len(err.DetailItems) != 2 {
+		t.Errorf("expected 2 detail items, got %d", len(err.DetailItems))
+	}
+}
+
+func TestErrorDetailStruct(t *testing.T) {
+	d := ErrorDetail{Resource: "employee", Action: "create", Reason: "email_exists"}
+	if d.Resource != "employee" || d.Action != "create" || d.Reason != "email_exists" {
+		t.Errorf("ErrorDetail fields mismatch: %+v", d)
+	}
+}
+
+func TestRecoveryActionInfoStruct(t *testing.T) {
+	info := RecoveryActionInfo{Type: "login", API: "POST /api/v1/auth/login", Description: "重新登录"}
+	if info.Type != "login" || info.API == "" || info.Description == "" {
+		t.Errorf("RecoveryActionInfo fields mismatch: %+v", info)
+	}
+}
+
+func TestClonePreservesNewFields(t *testing.T) {
+	err := ErrTokenExpired.WithDetailItems([]ErrorDetail{{Resource: "token", Action: "validate", Reason: "expired"}})
+	if len(err.DetailItems) != 1 {
+		t.Fatalf("expected 1 detail item, got %d", len(err.DetailItems))
+	}
+	modified := err.WithMessage("changed")
+	if len(modified.DetailItems) != 1 {
+		t.Errorf("clone should preserve DetailItems, got %d", len(modified.DetailItems))
+	}
+	if modified.Message != "changed" {
+		t.Errorf("expected changed message, got %s", modified.Message)
 	}
 }

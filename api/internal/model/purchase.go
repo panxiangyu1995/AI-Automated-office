@@ -27,12 +27,13 @@ func (PurchaseOrderItem) TableName() string { return "purchase_order_items" }
 
 type SalesOrder struct {
 	TenantModel
-	OrderNo    string     `gorm:"type:varchar(100);not null" json:"order_no"`
-	CustomerID string     `gorm:"type:uuid;not null" json:"customer_id"`
-	Status     string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	TotalAmount float64   `gorm:"type:numeric(15,2);default:0" json:"total_amount"`
-	OrderDate  *time.Time `json:"order_date,omitempty"`
-	Notes      string     `gorm:"type:text" json:"notes,omitempty"`
+	OrderNo     string     `gorm:"type:varchar(100);not null" json:"order_no"`
+	CustomerID  string     `gorm:"type:uuid;not null" json:"customer_id"`
+	Status      string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	TotalAmount float64    `gorm:"type:numeric(15,2);default:0" json:"total_amount"`
+	PaidAmount  float64    `gorm:"type:numeric(15,2);default:0" json:"paid_amount"`
+	OrderDate   *time.Time `json:"order_date,omitempty"`
+	Notes       string     `gorm:"type:text" json:"notes,omitempty"`
 }
 
 func (SalesOrder) TableName() string { return "sales_orders" }

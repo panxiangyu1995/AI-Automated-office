@@ -638,7 +638,7 @@ func TestFile_SoftDelete(t *testing.T) {
 		"Category": "test", "RefID": uuid.New().String(), "RefType": "test",
 	})
 	if createW.Code != 201 {
-		t.Skip("file create failed")
+		t.Fatalf("feature not implemented: file create failed (got %d)", createW.Code)
 	}
 	resp := testutil.ParseResponse(t, createW)
 	data := testutil.GetData(t, resp)
@@ -684,7 +684,7 @@ func TestKnowledge_CRUD(t *testing.T) {
 		"Title": "CRUD Doc", "Content": "Full CRUD test", "Summary": "CRUD", "Tags": "crud",
 	})
 	if createW.Code != 201 {
-		t.Skipf("kb doc create failed: %d", createW.Code)
+		t.Fatalf("feature not implemented: kb doc create failed (got %d)", createW.Code)
 	}
 	resp := testutil.ParseResponse(t, createW)
 	data := testutil.GetData(t, resp)
@@ -752,7 +752,7 @@ func TestKnowledge_Vectorize(t *testing.T) {
 		"Title": "Vectorize Doc", "Content": "Content to vectorize", "Summary": "Vector", "Tags": "vec",
 	})
 	if createW.Code != 201 {
-		t.Skip("kb doc create failed")
+		t.Fatalf("feature not implemented: kb doc create failed (got %d)", createW.Code)
 	}
 	resp := testutil.ParseResponse(t, createW)
 	data := testutil.GetData(t, resp)
@@ -877,7 +877,7 @@ func TestSkill_CRUDOperations(t *testing.T) {
 		"Parameters": `{"id":"string"}`, "APIEndpoint": "/api/v1/test", "Module": "test",
 	})
 	if createW.Code != 201 && createW.Code != 400 {
-		t.Skipf("skill create failed: %d", createW.Code)
+		t.Fatalf("feature not implemented: skill create failed (got %d)", createW.Code)
 	}
 	resp := testutil.ParseResponse(t, createW)
 	data := testutil.GetData(t, resp)

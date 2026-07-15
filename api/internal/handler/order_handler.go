@@ -8,8 +8,14 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
-type OrderHandler struct{ svc *service.OrderService; contractSvc *service.ContractService }
-func NewOrderHandler(svc *service.OrderService, contractSvc *service.ContractService) *OrderHandler { return &OrderHandler{svc, contractSvc} }
+type OrderHandler struct {
+	svc            *service.OrderService
+	contractSvc    *service.ContractService
+	autoArchiveSvc *service.AutoArchiveService
+}
+func NewOrderHandler(svc *service.OrderService, contractSvc *service.ContractService, autoArchiveSvc *service.AutoArchiveService) *OrderHandler {
+	return &OrderHandler{svc, contractSvc, autoArchiveSvc}
+}
 
 type poReq struct {
 	SupplierID string                `json:"supplier_id"`
@@ -49,12 +55,21 @@ func (h *OrderHandler) CreatePurchaseOrder(c *gin.Context) {
 func (h *OrderHandler) ReceivePurchase(c *gin.Context) {
 	poID := c.Param("id")
 	whID := c.Query("warehouse_id")
+	requireInspection := c.Query("require_inspection") == "true"
 	if whID == "" {
-		var body struct{ WarehouseID string `json:"warehouse_id"` }
-		if err := c.ShouldBindJSON(&body); err == nil { whID = body.WarehouseID }
+		var body struct {
+			WarehouseID        string `json:"warehouse_id"`
+			RequireInspection  *bool  `json:"require_inspection"`
+		}
+		if err := c.ShouldBindJSON(&body); err == nil {
+			whID = body.WarehouseID
+			if body.RequireInspection != nil && *body.RequireInspection {
+				requireInspection = true
+			}
+		}
 	}
 	if poID == "" || whID == "" { response.ValidationError(c, "id/warehouse_id", "参数不完整"); return }
-	order, appErr := h.svc.ReceivePurchase(poID, whID)
+	order, appErr := h.svc.ReceivePurchase(poID, whID, requireInspection)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, order)
 }
@@ -78,6 +93,10 @@ func (h *OrderHandler) ShipSalesOrder(c *gin.Context) {
 	if soID == "" || whID == "" { response.ValidationError(c, "id/warehouse_id", "参数不完整"); return }
 	order, appErr := h.svc.ShipSalesOrder(soID, whID)
 	if appErr != nil { response.Error(c, appErr); return }
+	if h.autoArchiveSvc != nil {
+		eid := c.Param("enterprise_id")
+		go h.autoArchiveSvc.OnBusinessEvent("sales_completed", soID, eid)
+	}
 	response.Success(c, order)
 }
 

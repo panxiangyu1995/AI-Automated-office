@@ -30,12 +30,12 @@ func (m *mockEmployeeRepo) Update(emp *model.Employee) error {
 	return nil
 }
 
-func (m *mockEmployeeRepo) Delete(id uuid.UUID) error {
+func (m *mockEmployeeRepo) Delete(id, enterpriseID uuid.UUID) error {
 	delete(m.employees, id.String())
 	return nil
 }
 
-func (m *mockEmployeeRepo) FindByID(id uuid.UUID) (*model.Employee, error) {
+func (m *mockEmployeeRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Employee, error) {
 	e, ok := m.employees[id.String()]
 	if !ok {
 		return nil, nil
@@ -99,6 +99,22 @@ func (m *mockEmployeeRepo) CountByDepartment(deptID uuid.UUID) (int64, error) {
 	return count, nil
 }
 
+func (m *mockEmployeeRepo) FindByIDNoEnterprise(id string) (*model.Employee, error) {
+	e, ok := m.employees[id]
+	if !ok {
+		return nil, nil
+	}
+	return e, nil
+}
+
+func (m *mockEmployeeRepo) UpdateFields(id string, fields map[string]interface{}) error {
+	return nil
+}
+
+func (m *mockEmployeeRepo) RestoreFields(id string, fields map[string]interface{}) error {
+	return nil
+}
+
 func setupEmployeeService() (*EmployeeService, *mockEmployeeRepo, *mockDepartmentRepo) {
 	empRepo := newMockEmployeeRepo()
 	deptRepo := newMockDepartmentRepo()
@@ -152,7 +168,7 @@ func TestEmployeeService_Get_Found(t *testing.T) {
 	did := seedDepartment(svc, deptRepo, eid)
 	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
-	got, err := svc.Get(created.ID.String())
+	got, err := svc.Get(eid, created.ID.String())
 	if err != nil {
 		t.Fatalf("Get failed: %v", err)
 	}
@@ -163,7 +179,7 @@ func TestEmployeeService_Get_Found(t *testing.T) {
 
 func TestEmployeeService_Get_NotFound(t *testing.T) {
 	svc, _, _ := setupEmployeeService()
-	_, err := svc.Get(uuid.New().String())
+	_, err := svc.Get(uuid.New().String(), uuid.New().String())
 	if err == nil {
 		t.Fatal("expected error for nonexistent employee")
 	}
@@ -175,7 +191,7 @@ func TestEmployeeService_Update_Success(t *testing.T) {
 	did := seedDepartment(svc, deptRepo, eid)
 	created, _ := svc.Create(eid, did, "Old", "", "", "", "", "", nil)
 
-	updated, err := svc.Update(created.ID.String(), "New", "new@test.com", "", "", "", "", "")
+	updated, err := svc.Update(eid, created.ID.String(), "New", "new@test.com", "", "", "", "", "")
 	if err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
@@ -193,7 +209,7 @@ func TestEmployeeService_Update_Resign(t *testing.T) {
 	did := seedDepartment(svc, deptRepo, eid)
 	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
-	updated, err := svc.Update(created.ID.String(), "", "", "", "", "", "", "resigned")
+	updated, err := svc.Update(eid, created.ID.String(), "", "", "", "", "", "", "resigned")
 	if err != nil {
 		t.Fatalf("Update to resigned failed: %v", err)
 	}
@@ -211,12 +227,12 @@ func TestEmployeeService_Delete_Resign(t *testing.T) {
 	did := seedDepartment(svc, deptRepo, eid)
 	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
-	err := svc.Delete(created.ID.String())
+	err := svc.Delete(eid, created.ID.String())
 	if err != nil {
 		t.Fatalf("Delete failed: %v", err)
 	}
 
-	emp, _ := svc.Get(created.ID.String())
+	emp, _ := svc.Get(eid, created.ID.String())
 	if emp.Status != "resigned" {
 		t.Errorf("expected status 'resigned' after delete, got %s", emp.Status)
 	}
@@ -252,7 +268,7 @@ func TestEmployeeService_Transfer_Success(t *testing.T) {
 	did2 := seedDepartment(svc, deptRepo, eid)
 	created, _ := svc.Create(eid, did1, "John", "", "", "", "", "", nil)
 
-	transferred, err := svc.Transfer(created.ID.String(), did2)
+	transferred, err := svc.Transfer(eid, created.ID.String(), did2)
 	if err != nil {
 		t.Fatalf("Transfer failed: %v", err)
 	}
@@ -267,7 +283,7 @@ func TestEmployeeService_Transfer_InvalidDept(t *testing.T) {
 	did := seedDepartment(svc, deptRepo, eid)
 	created, _ := svc.Create(eid, did, "John", "", "", "", "", "", nil)
 
-	_, err := svc.Transfer(created.ID.String(), uuid.New().String())
+	_, err := svc.Transfer(eid, created.ID.String(), uuid.New().String())
 	if err == nil {
 		t.Fatal("expected error for nonexistent target department")
 	}

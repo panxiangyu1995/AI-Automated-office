@@ -8,8 +8,13 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
-type KnowledgeHandler struct{ svc *service.KnowledgeService }
-func NewKnowledgeHandler(svc *service.KnowledgeService) *KnowledgeHandler { return &KnowledgeHandler{svc} }
+type KnowledgeHandler struct {
+	svc            *service.KnowledgeService
+	versionSvc     *service.KnowledgeVersionService
+}
+func NewKnowledgeHandler(svc *service.KnowledgeService, versionSvc *service.KnowledgeVersionService) *KnowledgeHandler {
+	return &KnowledgeHandler{svc: svc, versionSvc: versionSvc}
+}
 
 func (h *KnowledgeHandler) UploadFile(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
@@ -75,7 +80,8 @@ func (h *KnowledgeHandler) ListCategories(c *gin.Context) {
 func (h *KnowledgeHandler) SemanticSearch(c *gin.Context) {
 	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	query := c.Query("q"); if query == "" { response.ValidationError(c, "q", "搜索关键词不能为空"); return }
-	results, appErr := h.svc.SemanticSearch(eid, query, 10)
+	mode := c.DefaultQuery("mode", "semantic")
+	results, appErr := h.svc.SemanticSearch(eid, query, mode, 10)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, results)
 }
@@ -92,6 +98,32 @@ func (h *KnowledgeHandler) GetChunks(c *gin.Context) {
 	chunks, appErr := h.svc.GetChunks(docID)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, chunks)
+}
+
+func (h *KnowledgeHandler) ListVersions(c *gin.Context) {
+	docID := c.Param("id"); if docID == "" { response.ValidationError(c, "id", "文档ID不能为空"); return }
+	versions, err := h.versionSvc.ListVersions(docID)
+	if err != nil { response.Error(c, &errors.AppError{Code: "KB_VERSION_ERROR", Message: err.Error(), Status: 500}); return }
+	response.Success(c, versions)
+}
+
+func (h *KnowledgeHandler) GetVersion(c *gin.Context) {
+	docID := c.Param("id"); if docID == "" { response.ValidationError(c, "id", "文档ID不能为空"); return }
+	version, err := strconv.Atoi(c.Param("version"))
+	if err != nil { response.ValidationError(c, "version", "版本号无效"); return }
+	doc, err := h.versionSvc.GetVersion(docID, version)
+	if err != nil { response.Error(c, &errors.AppError{Code: "KB_VERSION_ERROR", Message: err.Error(), Status: 500}); return }
+	response.Success(c, doc)
+}
+
+func (h *KnowledgeHandler) CompareVersions(c *gin.Context) {
+	docID := c.Param("id"); if docID == "" { response.ValidationError(c, "id", "文档ID不能为空"); return }
+	v1, err1 := strconv.Atoi(c.Query("v1"))
+	v2, err2 := strconv.Atoi(c.Query("v2"))
+	if err1 != nil || err2 != nil { response.ValidationError(c, "v1/v2", "版本号无效"); return }
+	result, err := h.versionSvc.CompareVersions(docID, v1, v2)
+	if err != nil { response.Error(c, &errors.AppError{Code: "KB_VERSION_ERROR", Message: err.Error(), Status: 500}); return }
+	response.Success(c, result)
 }
 
 func (h *KnowledgeHandler) listEntity(c *gin.Context, _ string) {

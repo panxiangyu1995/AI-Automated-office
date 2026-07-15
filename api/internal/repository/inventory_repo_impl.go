@@ -27,9 +27,9 @@ func (r *inventoryRepo) Find(whID, matID uuid.UUID) (*model.WarehouseInventory, 
 	return &inv, err
 }
 
-func (r *inventoryRepo) FindByID(id uuid.UUID) (*model.WarehouseInventory, error) {
+func (r *inventoryRepo) FindByID(id, enterpriseID uuid.UUID) (*model.WarehouseInventory, error) {
 	var inv model.WarehouseInventory
-	err := r.db.Where("id=?", id).First(&inv).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&inv).Error
 	if err == gorm.ErrRecordNotFound { return nil, nil }
 	return &inv, err
 }

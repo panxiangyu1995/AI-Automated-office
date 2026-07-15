@@ -21,6 +21,26 @@ func NewWorkflowHandler(wfService *service.WorkflowService) *WorkflowHandler {
 	return &WorkflowHandler{wfService: wfService}
 }
 
+func (h *WorkflowHandler) GetInstance(c *gin.Context) {
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, err := uuid.Parse(entIDStr)
+	if err != nil {
+		response.Error(c, apperrors.ErrTenantRequired)
+		return
+	}
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		response.ValidationError(c, "id", "流程实例ID无效")
+		return
+	}
+	inst, appErr := h.wfService.GetInstance(id, entID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, inst)
+}
+
 func (h *WorkflowHandler) CreateDefinition(c *gin.Context) {
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	if entIDStr == "" {
@@ -75,13 +95,15 @@ func (h *WorkflowHandler) ListDefinitions(c *gin.Context) {
 }
 
 func (h *WorkflowHandler) GetDefinition(c *gin.Context) {
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		response.ValidationError(c, "id", "流程定义ID无效")
 		return
 	}
 
-	def, appErr := h.wfService.GetDefinition(id)
+	def, appErr := h.wfService.GetDefinition(id, entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -138,12 +160,15 @@ func (h *WorkflowHandler) Approve(c *gin.Context) {
 	}
 
 	var req struct {
-		Comment string `json:"comment"`
+		Comment    string `json:"comment"`
+		BranchName string `json:"branch_name"`
 	}
 	c.ShouldBindJSON(&req)
 
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
-	inst, appErr := h.wfService.Approve(id, userIDStr, req.Comment)
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
+	inst, appErr := h.wfService.Approve(id, entID, userIDStr, req.Comment, req.BranchName)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -164,7 +189,9 @@ func (h *WorkflowHandler) Reject(c *gin.Context) {
 	c.ShouldBindJSON(&req)
 
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
-	inst, appErr := h.wfService.Reject(id, userIDStr, req.Comment)
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
+	inst, appErr := h.wfService.Reject(id, entID, userIDStr, req.Comment)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -201,7 +228,9 @@ func (h *WorkflowHandler) Transfer(c *gin.Context) {
 		return
 	}
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
-	if appErr := h.wfService.Transfer(id, userIDStr, req.ToApproverID); appErr != nil {
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
+	if appErr := h.wfService.Transfer(id, entID, userIDStr, req.ToApproverID); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -219,7 +248,9 @@ func (h *WorkflowHandler) Return(c *gin.Context) {
 	}
 	c.ShouldBindJSON(&req)
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
-	if appErr := h.wfService.ReturnToApplicant(id, userIDStr, req.Reason); appErr != nil {
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
+	if appErr := h.wfService.ReturnToApplicant(id, entID, userIDStr, req.Reason); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -232,9 +263,27 @@ func (h *WorkflowHandler) Resubmit(c *gin.Context) {
 		response.ValidationError(c, "id", "流程实例ID无效")
 		return
 	}
-	if appErr := h.wfService.Resubmit(id); appErr != nil {
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
+	if appErr := h.wfService.Resubmit(id, entID); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
 	response.Success(c, nil)
+}
+
+func (h *WorkflowHandler) GetParallelStatus(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		response.ValidationError(c, "id", "流程实例ID无效")
+		return
+	}
+	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
+	entID, _ := uuid.Parse(entIDStr)
+	statuses, appErr := h.wfService.GetParallelStatus(id, entID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, statuses)
 }

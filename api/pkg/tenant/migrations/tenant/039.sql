@@ -1,0 +1,2 @@
+ALTER TABLE enterprises ADD COLUMN IF NOT EXISTS group_id UUID;
+		ALTER TABLE enterprises ADD COLUMN IF NOT EXISTS schema_name VARCHAR(100) DEFAULT '';

@@ -20,18 +20,25 @@ func (WfDefinition) TableName() string { return "wf_definitions" }
 
 type WfInstance struct {
 	TenantModel
-	DefinitionID  uuid.UUID  `gorm:"type:uuid;not null;index" json:"definition_id"`
-	BusinessID    string     `gorm:"type:varchar(100);not null;index" json:"business_id"`
-	BusinessType  string     `gorm:"type:varchar(50);not null" json:"business_type"`
-	Status        string     `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
-	CurrentStep   int        `gorm:"default:0" json:"current_step"`
-	InitiatorID   string     `gorm:"type:uuid;not null" json:"initiator_id"`
-	CompletedAt   *time.Time `json:"completed_at,omitempty"`
-	ReturnReason  string     `gorm:"type:text" json:"return_reason,omitempty"`
-	ReturnedBy    *string    `gorm:"type:uuid" json:"returned_by,omitempty"`
+	DefinitionID   uuid.UUID  `gorm:"type:uuid;not null;index" json:"definition_id"`
+	BusinessID     string     `gorm:"type:varchar(100);not null;index" json:"business_id"`
+	BusinessType   string     `gorm:"type:varchar(50);not null" json:"business_type"`
+	Status         string     `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
+	CurrentStep    int        `gorm:"default:0" json:"current_step"`
+	InitiatorID    string     `gorm:"type:uuid;not null" json:"initiator_id"`
+	CompletedAt    *time.Time `json:"completed_at,omitempty"`
+	ReturnReason   string     `gorm:"type:text" json:"return_reason,omitempty"`
+	ReturnedBy     *string    `gorm:"type:uuid" json:"returned_by,omitempty"`
+	ParallelStatus string     `gorm:"type:jsonb;default:'{}'" json:"parallel_status,omitempty"`
 }
 
 func (WfInstance) TableName() string { return "wf_instances" }
+
+type ParallelBranchStatus struct {
+	BranchName string `json:"branch_name"`
+	ApproverID string `json:"approver_id"`
+	Status     string `json:"status"`
+}
 
 type WfApproval struct {
 	BaseModel

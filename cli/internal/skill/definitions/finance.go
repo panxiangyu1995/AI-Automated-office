@@ -11,6 +11,12 @@ func initFinanceSkills() {
 		Category:    "finance",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/payments",
 		Method:      "POST",
+		OpeningMessage: "欢迎使用财务管理，您可以管理回款、报销、发票等财务业务。",
+		RoleOpenings: map[string]skill.RoleOpening{
+			"owner":    {OpeningText: "您拥有完整的财务管理权限。", AvailableActions: "payment,expense,invoice,approve"},
+			"manager":  {OpeningText: "您可以创建和审批财务记录。", AvailableActions: "payment,expense,approve"},
+			"employee": {OpeningText: "您可以提交报销申请和查看发票。", AvailableActions: "expense_create,invoice_list"},
+		},
 		Parameters: []skill.ParamDef{
 			{Name: "customer_id", Type: "string", Required: true, Description: "客户ID"},
 			{Name: "contract_id", Type: "string", Required: false, Description: "关联合同ID"},

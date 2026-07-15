@@ -8,8 +8,12 @@ type Subject struct {
 }
 
 type Object struct {
-	Resource string `json:"resource"`
-	ID       string `json:"id,omitempty"`
+	Resource   string `json:"resource"`
+	ID         string `json:"id,omitempty"`
+	OwnerID    string `json:"owner_id,omitempty"`
+	CreatedBy  string `json:"created_by,omitempty"`
+	DepartmentID string `json:"department_id,omitempty"`
+	Attributes JSONB  `json:"attributes,omitempty"`
 }
 
 type Env struct {

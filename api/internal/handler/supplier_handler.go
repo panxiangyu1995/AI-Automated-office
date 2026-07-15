@@ -29,20 +29,23 @@ func (h *SupplierHandler) Create(c *gin.Context) {
 }
 
 func (h *SupplierHandler) Update(c *gin.Context) {
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req supReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	item, appErr := h.svc.Update(c.Param("id"), req.Name, req.ContactName, req.ContactPhone, req.ContactEmail, req.Address, c.Query("status"))
+	item, appErr := h.svc.Update(eid, c.Param("id"), req.Name, req.ContactName, req.ContactPhone, req.ContactEmail, req.Address, c.Query("status"))
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, item)
 }
 
 func (h *SupplierHandler) Delete(c *gin.Context) {
-	if appErr := h.svc.Delete(c.Param("id")); appErr != nil { response.Error(c, appErr); return }
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	if appErr := h.svc.Delete(eid, c.Param("id")); appErr != nil { response.Error(c, appErr); return }
 	response.NoContent(c)
 }
 
 func (h *SupplierHandler) Get(c *gin.Context) {
-	item, appErr := h.svc.Get(c.Param("id")); if appErr != nil { response.Error(c, appErr); return }
+	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	item, appErr := h.svc.Get(eid, c.Param("id")); if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, item)
 }
 

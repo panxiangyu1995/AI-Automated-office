@@ -64,7 +64,7 @@ func (s *CustomFieldService) SetCustomFields(enterpriseID, entityType, entityID 
 		}
 	}
 
-	if err := s.fieldRepo.SetCustomFields(nil, entityType, eID, filtered); err != nil {
+	if err := s.fieldRepo.SetCustomFields(nil, entityType, eID, entID, filtered); err != nil {
 		return apperrors.ErrInternal.WithDetail("设置自定义字段值失败")
 	}
 	return nil

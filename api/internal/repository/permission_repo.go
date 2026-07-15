@@ -44,10 +44,10 @@ func (r *permissionRepo) CreatePermission(perm *model.Permission) error {
 
 type RoleRepository interface {
 	ListRoles(enterpriseID uuid.UUID) ([]model.Role, error)
-	FindRoleByID(id uuid.UUID) (*model.Role, error)
+	FindRoleByID(id, enterpriseID uuid.UUID) (*model.Role, error)
 	CreateRole(role *model.Role) error
 	UpdateRole(role *model.Role) error
-	DeleteRole(id uuid.UUID) error
+	DeleteRole(id, enterpriseID uuid.UUID) error
 	GetRolePermissions(roleID uuid.UUID) ([]model.Permission, error)
 	SetRolePermissions(roleID uuid.UUID, permissionIDs []uuid.UUID) error
 }
@@ -66,9 +66,9 @@ func (r *roleRepo) ListRoles(enterpriseID uuid.UUID) ([]model.Role, error) {
 	return roles, err
 }
 
-func (r *roleRepo) FindRoleByID(id uuid.UUID) (*model.Role, error) {
+func (r *roleRepo) FindRoleByID(id, enterpriseID uuid.UUID) (*model.Role, error) {
 	var role model.Role
-	err := r.db.Where("id = ?", id).First(&role).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&role).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -83,11 +83,15 @@ func (r *roleRepo) CreateRole(role *model.Role) error {
 }
 
 func (r *roleRepo) UpdateRole(role *model.Role) error {
-	return r.db.Save(role).Error
+	return r.db.Model(&model.Role{}).Where("id = ? AND enterprise_id = ?", role.ID, role.EnterpriseID).Updates(map[string]interface{}{
+		"name":        role.Name,
+		"description": role.Description,
+		"updated_at":  gorm.Expr("NOW()"),
+	}).Error
 }
 
-func (r *roleRepo) DeleteRole(id uuid.UUID) error {
-	return r.db.Delete(&model.Role{}, "id = ?", id).Error
+func (r *roleRepo) DeleteRole(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Role{}).Error
 }
 
 func (r *roleRepo) GetRolePermissions(roleID uuid.UUID) ([]model.Permission, error) {
@@ -117,7 +121,7 @@ func (r *roleRepo) SetRolePermissions(roleID uuid.UUID, permissionIDs []uuid.UUI
 type EmployeePermissionABACRepository interface {
 	FindByEmployeeID(employeeID uuid.UUID) ([]model.EmployeePermissionABAC, error)
 	Create(empPerm *model.EmployeePermissionABAC) error
-	Delete(id uuid.UUID) error
+	Delete(id, enterpriseID uuid.UUID) error
 }
 
 type employeePermissionABACRepo struct {
@@ -138,14 +142,14 @@ func (r *employeePermissionABACRepo) Create(empPerm *model.EmployeePermissionABA
 	return r.db.Create(empPerm).Error
 }
 
-func (r *employeePermissionABACRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.EmployeePermissionABAC{}, "id = ?", id).Error
+func (r *employeePermissionABACRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.EmployeePermissionABAC{}).Error
 }
 
 type CustomRuleRepository interface {
 	ListByEnterprise(enterpriseID uuid.UUID) ([]model.CustomRule, error)
 	Create(rule *model.CustomRule) error
-	Delete(id uuid.UUID) error
+	Delete(id, enterpriseID uuid.UUID) error
 }
 
 type customRuleRepo struct {
@@ -166,6 +170,6 @@ func (r *customRuleRepo) Create(rule *model.CustomRule) error {
 	return r.db.Create(rule).Error
 }
 
-func (r *customRuleRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.CustomRule{}, "id = ?", id).Error
+func (r *customRuleRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.CustomRule{}).Error
 }

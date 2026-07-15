@@ -4,35 +4,41 @@ import "github.com/google/uuid"
 
 type Skill struct {
 	BaseModel
-	EnterpriseID uuid.UUID `gorm:"type:uuid;not null;index" json:"enterprise_id"`
-	Name         string    `gorm:"type:varchar(100);not null;uniqueIndex" json:"name"`
-	Description  string    `gorm:"type:text" json:"description"`
-	Category     string    `gorm:"type:varchar(50)" json:"category"`
-	APIEndpoint  string    `gorm:"type:varchar(500)" json:"api_endpoint"`
-	Method       string    `gorm:"type:varchar(10);default:'POST'" json:"method"`
-	IsActive     bool      `gorm:"default:true" json:"is_active"`
+	EnterpriseID   uuid.UUID `gorm:"type:uuid;not null;index" json:"enterprise_id"`
+	Name           string    `gorm:"type:varchar(100);not null;uniqueIndex" json:"name"`
+	Description    string    `gorm:"type:text" json:"description"`
+	Category       string    `gorm:"type:varchar(50)" json:"category"`
+	APIEndpoint    string    `gorm:"type:varchar(500)" json:"api_endpoint"`
+	Method         string    `gorm:"type:varchar(10);default:'POST'" json:"method"`
+	IsActive       bool      `gorm:"default:true" json:"is_active"`
+	OpeningMessage string    `gorm:"type:text" json:"opening_message,omitempty"`
 }
 
 func (Skill) TableName() string { return "skills" }
 
 type SkillRoleOpening struct {
 	BaseModel
-	SkillID           uuid.UUID `gorm:"type:uuid;not null;index" json:"skill_id"`
-	Role              string    `gorm:"type:varchar(50);not null" json:"role"`
-	OpeningText       string    `gorm:"type:text" json:"opening_text"`
-	AvailableActions  string    `gorm:"type:text" json:"available_actions"`
+	SkillID          uuid.UUID `gorm:"type:uuid;not null;index" json:"skill_id"`
+	Role             string    `gorm:"type:varchar(50);not null" json:"role"`
+	OpeningText      string    `gorm:"type:text" json:"opening_text"`
+	AvailableActions string    `gorm:"type:text" json:"available_actions"`
+	ActionMenu       string    `gorm:"type:text" json:"action_menu,omitempty"`
 }
 
 func (SkillRoleOpening) TableName() string { return "skill_role_openings" }
 
 type SkillParameter struct {
 	BaseModel
-	SkillID    uuid.UUID `gorm:"type:uuid;not null;index" json:"skill_id"`
-	Name       string    `gorm:"type:varchar(100);not null" json:"name"`
-	Type       string    `gorm:"type:varchar(50)" json:"type"`
-	Required   bool      `gorm:"default:false" json:"required"`
-	DefaultVal string    `gorm:"type:text" json:"default_val,omitempty"`
-	Description string   `gorm:"type:text" json:"description,omitempty"`
+	SkillID             uuid.UUID `gorm:"type:uuid;not null;index" json:"skill_id"`
+	Name                string    `gorm:"type:varchar(100);not null" json:"name"`
+	Type                string    `gorm:"type:varchar(50)" json:"type"`
+	Required            bool      `gorm:"default:false" json:"required"`
+	DefaultVal          string    `gorm:"type:text" json:"default_val,omitempty"`
+	Description         string    `gorm:"type:text" json:"description,omitempty"`
+	Label               string    `gorm:"type:varchar(100)" json:"label,omitempty"`
+	Example             string    `gorm:"type:text" json:"example,omitempty"`
+	Validation           string    `gorm:"type:text" json:"validation,omitempty"`
+	AutoFillFromContext string    `gorm:"type:varchar(100)" json:"auto_fill_from_context,omitempty"`
 }
 
 func (SkillParameter) TableName() string { return "skill_parameters" }

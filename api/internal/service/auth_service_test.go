@@ -67,6 +67,14 @@ func (m *mockUserRepo) UpdateLastLogin(id uuid.UUID) error {
 	return nil
 }
 
+func (m *mockUserRepo) FindByIDString(id string) (*model.User, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, nil
+	}
+	return m.FindByID(uid)
+}
+
 var _ repository.UserRepository = (*mockUserRepo)(nil)
 
 func setupAuthService() (*AuthService, *mockUserRepo) {

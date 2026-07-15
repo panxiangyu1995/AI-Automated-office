@@ -4,24 +4,25 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type ReconciliationService struct{ db *gorm.DB }
+type ReconciliationService struct{ repo repository.ReconciliationRepository }
 
-func NewReconciliationService(db *gorm.DB) *ReconciliationService { return &ReconciliationService{db} }
+func NewReconciliationService(repo repository.ReconciliationRepository) *ReconciliationService {
+	return &ReconciliationService{repo}
+}
 
 type ReconciliationReport struct {
-	CustomerID      string              `json:"customer_id"`
-	OpeningBalance  float64             `json:"opening_balance"`
-	Receivables     []ReceivableDetail  `json:"receivables"`
-	Collections     []CollectionDetail  `json:"collections"`
-	ClosingBalance  float64             `json:"closing_balance"`
-	TotalReceivable float64             `json:"total_receivable"`
-	TotalCollected  float64             `json:"total_collected"`
+	CustomerID      string             `json:"customer_id"`
+	OpeningBalance  float64            `json:"opening_balance"`
+	Receivables     []ReceivableDetail `json:"receivables"`
+	Collections     []CollectionDetail `json:"collections"`
+	ClosingBalance  float64            `json:"closing_balance"`
+	TotalReceivable float64            `json:"total_receivable"`
+	TotalCollected  float64            `json:"total_collected"`
 }
 
 type ReceivableDetail struct {
@@ -33,11 +34,11 @@ type ReceivableDetail struct {
 }
 
 type CollectionDetail struct {
-	ID           string    `json:"id"`
-	Amount       float64   `json:"amount"`
-	Method       string    `json:"method"`
-	CollectedAt  string    `json:"collected_at"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID          string    `json:"id"`
+	Amount      float64   `json:"amount"`
+	Method      string    `json:"method"`
+	CollectedAt string    `json:"collected_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func (s *ReconciliationService) GetReconciliation(eid, customerID, startDate, endDate string) (*ReconciliationReport, *apperrors.AppError) {
@@ -61,27 +62,12 @@ func (s *ReconciliationService) GetReconciliation(eid, customerID, startDate, en
 
 	report := &ReconciliationReport{CustomerID: customerID}
 
-	var opening float64
-	s.db.Model(&model.PaymentRecord{}).
-		Where("enterprise_id=? AND customer_id=? AND created_at < ? AND status != ?",
-			eUUID, cUUID, start, "cancelled").
-		Select("COALESCE(SUM(amount), 0)").Scan(&opening)
-
-	var openingCollected float64
-	s.db.Model(&model.CollectionRecord{}).
-		Where("enterprise_id=? AND customer_id=? AND created_at < ?",
-			eUUID, cUUID, start).
-		Select("COALESCE(SUM(amount), 0)").Scan(&openingCollected)
-
+	opening, _ := s.repo.SumPaymentsBefore(eUUID, cUUID, start)
+	openingCollected, _ := s.repo.SumCollectionsBefore(eUUID, cUUID, start)
 	report.OpeningBalance = opening - openingCollected
 
+	records, _ := s.repo.ListPaymentsInRange(eUUID, cUUID, start, end)
 	var receivables []ReceivableDetail
-	var records []model.PaymentRecord
-	s.db.Model(&model.PaymentRecord{}).
-		Where("enterprise_id=? AND customer_id=? AND created_at >= ? AND created_at <= ?",
-			eUUID, cUUID, start, end).
-		Order("created_at ASC").
-		Find(&records)
 	for _, r := range records {
 		receivables = append(receivables, ReceivableDetail{
 			ID:        r.ID.String(),
@@ -92,13 +78,8 @@ func (s *ReconciliationService) GetReconciliation(eid, customerID, startDate, en
 	}
 	report.Receivables = receivables
 
+	colRecords, _ := s.repo.ListCollectionsInRange(eUUID, cUUID, start, end)
 	var collections []CollectionDetail
-	var colRecords []model.CollectionRecord
-	s.db.Model(&model.CollectionRecord{}).
-		Where("enterprise_id=? AND customer_id=? AND created_at >= ? AND created_at <= ?",
-			eUUID, cUUID, start, end).
-		Order("created_at ASC").
-		Find(&colRecords)
 	for _, c := range colRecords {
 		collections = append(collections, CollectionDetail{
 			ID:          c.ID.String(),

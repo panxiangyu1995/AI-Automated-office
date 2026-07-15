@@ -20,9 +20,10 @@ func (s *SupplierService) Create(eid, name, contact, phone, email, addr string) 
 	return sup, nil
 }
 
-func (s *SupplierService) Update(supID, name, contact, phone, email, addr, status string) (*model.Supplier, *apperrors.AppError) {
+func (s *SupplierService) Update(enterpriseID, supID, name, contact, phone, email, addr, status string) (*model.Supplier, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID); if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效") }
 	id, err := uuid.Parse(supID); if err != nil { return nil, apperrors.NewValidationError("supplier_id", "供应商ID无效") }
-	sup, err := s.repo.FindByID(id); if err != nil { return nil, apperrors.ErrInternal.WithDetail("查询供应商失败") }
+	sup, err := s.repo.FindByID(id, eid); if err != nil { return nil, apperrors.ErrInternal.WithDetail("查询供应商失败") }
 	if sup == nil { return nil, apperrors.ErrNotFound.WithDetail("供应商不存在") }
 	if name != "" { sup.Name = name }; if contact != "" { sup.ContactName = contact }
 	if phone != "" { sup.ContactPhone = phone }; if email != "" { sup.ContactEmail = email }
@@ -31,17 +32,19 @@ func (s *SupplierService) Update(supID, name, contact, phone, email, addr, statu
 	return sup, nil
 }
 
-func (s *SupplierService) Delete(supID string) *apperrors.AppError {
+func (s *SupplierService) Delete(enterpriseID, supID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID); if err != nil { return apperrors.NewValidationError("enterprise_id", "企业ID无效") }
 	id, err := uuid.Parse(supID); if err != nil { return apperrors.NewValidationError("supplier_id", "供应商ID无效") }
-	sup, err := s.repo.FindByID(id); if err != nil { return apperrors.ErrInternal.WithDetail("查询供应商失败") }
+	sup, err := s.repo.FindByID(id, eid); if err != nil { return apperrors.ErrInternal.WithDetail("查询供应商失败") }
 	if sup == nil { return apperrors.ErrNotFound.WithDetail("供应商不存在") }
-	if err := s.repo.Delete(id); err != nil { return apperrors.ErrInternal.WithDetail("删除供应商失败: "+err.Error()) }
+	if err := s.repo.Delete(id, eid); err != nil { return apperrors.ErrInternal.WithDetail("删除供应商失败: "+err.Error()) }
 	return nil
 }
 
-func (s *SupplierService) Get(supID string) (*model.Supplier, *apperrors.AppError) {
+func (s *SupplierService) Get(enterpriseID, supID string) (*model.Supplier, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID); if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效") }
 	id, err := uuid.Parse(supID); if err != nil { return nil, apperrors.NewValidationError("supplier_id", "供应商ID无效") }
-	sup, err := s.repo.FindByID(id); if err != nil { return nil, apperrors.ErrInternal.WithDetail("查询供应商失败") }
+	sup, err := s.repo.FindByID(id, eid); if err != nil { return nil, apperrors.ErrInternal.WithDetail("查询供应商失败") }
 	if sup == nil { return nil, apperrors.ErrNotFound.WithDetail("供应商不存在") }
 	return sup, nil
 }

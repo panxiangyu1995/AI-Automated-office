@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -61,7 +62,7 @@ func Close() error {
 }
 
 func SetSearchPath(db *gorm.DB, schema string) *gorm.DB {
-	return db.Exec(fmt.Sprintf("SET search_path TO %s,public", schema))
+	return db.Exec(fmt.Sprintf("SET search_path TO %s,public", pq.QuoteIdentifier(schema)))
 }
 
 func WithSchema(db *gorm.DB, schema string) *gorm.DB {

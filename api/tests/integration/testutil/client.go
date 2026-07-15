@@ -45,7 +45,8 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	groupHandler := handler.NewGroupHandler(groupService)
 
 	enterpriseRepo := repository.NewEnterpriseRepository(db)
-	enterpriseService := service.NewEnterpriseService(enterpriseRepo, db)
+	schemaManager := repository.NewSchemaManager(db)
+	enterpriseService := service.NewEnterpriseService(enterpriseRepo, schemaManager)
 	enterpriseHandler := handler.NewEnterpriseHandler(enterpriseService)
 
 	deptRepo := repository.NewDepartmentRepository(db)
@@ -76,7 +77,10 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 
 	customerRepo := repository.NewCustomerRepository(db)
 	customerService := service.NewCustomerService(customerRepo)
-	customerHandler := handler.NewCustomerHandler(customerService)
+	contactRepo := repository.NewContactRepository(db)
+	oppRepo := repository.NewOpportunityRepository(db)
+	panoramaService := service.NewCustomerPanoramaService(customerRepo, contactRepo, oppRepo, repository.NewContractRepository(db), repository.NewServiceOrderRepository(db))
+	customerHandler := handler.NewCustomerHandler(customerService, panoramaService)
 
 	customerLevelRepo := repository.NewCustomerLevelRepository(db)
 	customerLevelService := service.NewCustomerLevelService(customerLevelRepo)
@@ -86,11 +90,9 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	customerTagService := service.NewCustomerTagService(customerTagRepo, customerRepo)
 	customerTagHandler := handler.NewCustomerTagHandler(customerTagService)
 
-	contactRepo := repository.NewContactRepository(db)
 	contactService := service.NewContactService(contactRepo, customerRepo)
 	contactHandler := handler.NewContactHandler(contactService)
 
-	oppRepo := repository.NewOpportunityRepository(db)
 	oppService := service.NewOpportunityService(oppRepo, customerRepo)
 	oppHandler := handler.NewOpportunityHandler(oppService)
 
@@ -110,26 +112,36 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	invService := service.NewInventoryService(invRepo, matRepo, whRepo)
 	invHandler := handler.NewInventoryHandler(invService)
 
-	contractSvc := service.NewContractService(db)
-	contractHandler := handler.NewContractHandler(contractSvc)
+	contractRepo := repository.NewContractRepository(db)
+	contractSvc := service.NewContractService(contractRepo)
+	contractHandler := handler.NewContractHandler(contractSvc, nil)
 
-	orderSvc := service.NewOrderService(db, invRepo, matRepo, whRepo, supRepo, customerRepo)
-	orderHandler := handler.NewOrderHandler(orderSvc, contractSvc)
+	qiRepo := repository.NewQualityInspectionRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	orderSvc := service.NewOrderService(orderRepo, invRepo, matRepo, whRepo, supRepo, customerRepo, qiRepo)
+	orderHandler := handler.NewOrderHandler(orderSvc, contractSvc, nil)
 
-	financeSvc := service.NewFinanceService(db)
+	financeRepo := repository.NewFinanceRepository(db)
+	financeSvc := service.NewFinanceService(financeRepo)
 	financeHandler := handler.NewFinanceHandler(financeSvc)
 
-	knowledgeSvc := service.NewKnowledgeService(db)
-	knowledgeHandler := handler.NewKnowledgeHandler(knowledgeSvc)
+	knowledgeRepo := repository.NewKnowledgeRepository(db)
+	knowledgeSvc := service.NewKnowledgeService(knowledgeRepo)
+	knowledgeVersionSvc := service.NewKnowledgeVersionService(knowledgeRepo)
+	knowledgeHandler := handler.NewKnowledgeHandler(knowledgeSvc, knowledgeVersionSvc)
 
-	platformSvc := service.NewPlatformService(db)
-	opsSvc := service.NewOperationsService(db)
+	platformRepo := repository.NewPlatformRepository(db)
+	platformSvc := service.NewPlatformService(platformRepo)
+	opsRepo := repository.NewOperationsRepository(db)
+	opsSvc := service.NewOperationsService(opsRepo)
 	opsHandler := handler.NewOperationsHandler(opsSvc, platformSvc)
 
-	svcOrderSvc := service.NewServiceOrderService(db)
+	serviceOrderRepo := repository.NewServiceOrderRepository(db)
+	svcOrderSvc := service.NewServiceOrderService(serviceOrderRepo)
 	svcOrderHandler := handler.NewServiceOrderHandler(svcOrderSvc)
 
-	aiSvc := service.NewAIService(db)
+	aiRepo := repository.NewAIRepository(db)
+	aiSvc := service.NewAIService(aiRepo)
 	aiHandler := handler.NewAIHandler(aiSvc)
 
 	auditLogRepo := repository.NewAuditLogRepository(db)

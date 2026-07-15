@@ -12,11 +12,11 @@ type supplierRepo struct{ db *gorm.DB }
 func NewSupplierRepository(db *gorm.DB) SupplierRepository { return &supplierRepo{db} }
 func (r *supplierRepo) Create(s *model.Supplier) error     { return r.db.Create(s).Error }
 func (r *supplierRepo) Update(s *model.Supplier) error     { return r.db.Save(s).Error }
-func (r *supplierRepo) Delete(id uuid.UUID) error           { return r.db.Delete(&model.Supplier{}, "id = ?", id).Error }
+func (r *supplierRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Supplier{}).Error }
 
-func (r *supplierRepo) FindByID(id uuid.UUID) (*model.Supplier, error) {
+func (r *supplierRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Supplier, error) {
 	var s model.Supplier
-	err := r.db.Where("id = ?", id).First(&s).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&s).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
@@ -40,4 +40,9 @@ func (r *supplierRepo) ListByEnterprise(eid uuid.UUID, p, ps int) ([]model.Suppl
 		return nil, 0, err
 	}
 	return ss, t, nil
+}
+
+func (r *supplierRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
+	result := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Supplier{})
+	return result.RowsAffected, result.Error
 }

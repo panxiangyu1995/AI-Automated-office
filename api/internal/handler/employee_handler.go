@@ -76,6 +76,11 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 }
 
 func (h *EmployeeHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	employeeID := c.Param("id")
 	if employeeID == "" {
 		response.ValidationError(c, "id", "员工ID不能为空")
@@ -88,7 +93,7 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.empService.Update(employeeID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, req.Status)
+	emp, appErr := h.empService.Update(enterpriseID, employeeID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, req.Status)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -98,13 +103,18 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 }
 
 func (h *EmployeeHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	employeeID := c.Param("id")
 	if employeeID == "" {
 		response.ValidationError(c, "id", "员工ID不能为空")
 		return
 	}
 
-	appErr := h.empService.Delete(employeeID)
+	appErr := h.empService.Delete(enterpriseID, employeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -114,13 +124,18 @@ func (h *EmployeeHandler) Delete(c *gin.Context) {
 }
 
 func (h *EmployeeHandler) Get(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	employeeID := c.Param("id")
 	if employeeID == "" {
 		response.ValidationError(c, "id", "员工ID不能为空")
 		return
 	}
 
-	emp, appErr := h.empService.Get(employeeID)
+	emp, appErr := h.empService.Get(enterpriseID, employeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -202,6 +217,11 @@ func (h *EmployeeHandler) BatchImport(c *gin.Context) {
 }
 
 func (h *EmployeeHandler) Transfer(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	employeeID := c.Param("id")
 	if employeeID == "" {
 		response.ValidationError(c, "id", "员工ID不能为空")
@@ -214,7 +234,7 @@ func (h *EmployeeHandler) Transfer(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.empService.Transfer(employeeID, req.DepartmentID)
+	emp, appErr := h.empService.Transfer(enterpriseID, employeeID, req.DepartmentID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

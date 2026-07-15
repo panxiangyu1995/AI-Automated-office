@@ -30,7 +30,7 @@ func (s *ContactService) Create(enterpriseID, customerID, name, position, phone,
 		return nil, apperrors.NewValidationError("name", "联系人姓名不能为空")
 	}
 
-	customer, _ := s.customerRepo.FindByID(cid)
+	customer, _ := s.customerRepo.FindByID(cid, eid)
 	if customer == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("客户不存在")
 	}
@@ -56,13 +56,17 @@ func (s *ContactService) Create(enterpriseID, customerID, name, position, phone,
 	return contact, nil
 }
 
-func (s *ContactService) Update(contactID, name, position, phone, email, role string, isPrimary bool) (*model.Contact, *apperrors.AppError) {
+func (s *ContactService) Update(enterpriseID, contactID, name, position, phone, email, role string, isPrimary bool) (*model.Contact, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(contactID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("contact_id", "联系人ID无效")
 	}
 
-	contact, err := s.contactRepo.FindByID(cid)
+	contact, err := s.contactRepo.FindByID(cid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询联系人失败")
 	}
@@ -93,22 +97,45 @@ func (s *ContactService) Update(contactID, name, position, phone, email, role st
 	return contact, nil
 }
 
-func (s *ContactService) Delete(contactID string) *apperrors.AppError {
+func (s *ContactService) Delete(enterpriseID, contactID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(contactID)
 	if err != nil {
 		return apperrors.NewValidationError("contact_id", "联系人ID无效")
 	}
-	contact, err := s.contactRepo.FindByID(cid)
+	contact, err := s.contactRepo.FindByID(cid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询联系人失败")
 	}
 	if contact == nil {
 		return apperrors.ErrNotFound.WithDetail("联系人不存在")
 	}
-	if err := s.contactRepo.Delete(cid); err != nil {
+	if err := s.contactRepo.Delete(cid, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除联系人失败: " + err.Error())
 	}
 	return nil
+}
+
+func (s *ContactService) GetByID(enterpriseID, contactID string) (*model.Contact, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	cid, err := uuid.Parse(contactID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("contact_id", "联系人ID无效")
+	}
+	contact, err := s.contactRepo.FindByID(cid, eid)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询联系人失败")
+	}
+	if contact == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("联系人不存在")
+	}
+	return contact, nil
 }
 
 func (s *ContactService) ListByCustomer(customerID, role string) ([]model.Contact, *apperrors.AppError) {

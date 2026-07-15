@@ -27,7 +27,7 @@ func ResolveEnterpriseContext() gin.HandlerFunc {
 		}
 
 		c.Set(ContextKeyEnterpriseID, eid)
-		schema := tenant.SchemaName(eid)
+		schema, _ := tenant.SchemaName(eid)
 		c.Set(ContextKeySchema, schema)
 
 		if tenant.GlobalDB != nil {

@@ -643,7 +643,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		t.Fatalf("purchase order create: %d %s", poW.Code, poW.Body.String())
 	}
 	if poW.Code == 404 {
-		t.Skip("purchase order endpoint not found")
+		t.Fatalf("feature not implemented: purchase order endpoint not found")
 	}
 
 	poResp := testutil.ParseResponse(t, poW)

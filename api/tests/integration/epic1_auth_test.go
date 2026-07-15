@@ -301,7 +301,8 @@ func TestSchemaIsolation_CreateEnterprise(t *testing.T) {
 	}
 	found := false
 	for _, s := range schemas {
-		if s == tenant.SchemaName(schemaName) {
+		sn, _ := tenant.SchemaName(schemaName)
+		if s == sn {
 			found = true
 			break
 		}
@@ -505,7 +506,7 @@ func TestAutoBackup_TriggerAndRestore(t *testing.T) {
 		t.Fatalf("backup config create: %d %s", w.Code, w.Body.String())
 	}
 	if w.Code == 403 {
-		t.Skip("backup feature not enabled")
+		t.Skip("backup feature not enabled for this enterprise - feature flag controlled, cannot create prerequisite")
 	}
 
 	triggerW := client.POST("/api/v1/backup/trigger", nil)

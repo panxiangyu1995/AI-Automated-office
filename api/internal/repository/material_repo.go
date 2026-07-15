@@ -8,7 +8,8 @@ import (
 type MaterialRepository interface {
 	Create(m *model.Material) error
 	Update(m *model.Material) error
-	Delete(id uuid.UUID) error
-	FindByID(id uuid.UUID) (*model.Material, error)
+	Delete(id, enterpriseID uuid.UUID) error
+	FindByID(id, enterpriseID uuid.UUID) (*model.Material, error)
 	ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.Material, int64, error)
+	DeleteByID(id, enterpriseID uuid.UUID) (int64, error)
 }

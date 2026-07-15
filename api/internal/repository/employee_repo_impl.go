@@ -26,13 +26,13 @@ func (r *employeeRepo) Update(employee *model.Employee) error {
 	return r.db.Save(employee).Error
 }
 
-func (r *employeeRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.Employee{}, "id = ?", id).Error
+func (r *employeeRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Employee{}).Error
 }
 
-func (r *employeeRepo) FindByID(id uuid.UUID) (*model.Employee, error) {
+func (r *employeeRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Employee, error) {
 	var emp model.Employee
-	err := r.db.Where("id = ?", id).First(&emp).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&emp).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -118,4 +118,24 @@ func (r *employeeRepo) CountByDepartment(deptID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.Model(&model.Employee{}).Where("department_id = ? AND status = 'active'", deptID).Count(&count).Error
 	return count, err
+}
+
+func (r *employeeRepo) FindByIDNoEnterprise(id string) (*model.Employee, error) {
+	var emp model.Employee
+	err := r.db.Where("id = ?", id).First(&emp).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &emp, nil
+}
+
+func (r *employeeRepo) UpdateFields(id string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Employee{}).Where("id = ?", id).Updates(fields).Error
+}
+
+func (r *employeeRepo) RestoreFields(id string, fields map[string]interface{}) error {
+	return r.UpdateFields(id, fields)
 }

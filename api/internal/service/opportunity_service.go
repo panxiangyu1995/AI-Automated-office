@@ -31,7 +31,7 @@ func (s *OpportunityService) Create(enterpriseID, customerID, name, description 
 	if name == "" {
 		return nil, apperrors.NewValidationError("name", "商机名称不能为空")
 	}
-	cust, _ := s.custRepo.FindByID(cid)
+	cust, _ := s.custRepo.FindByID(cid, eid)
 	if cust == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("客户不存在")
 	}
@@ -51,12 +51,16 @@ func (s *OpportunityService) Create(enterpriseID, customerID, name, description 
 	return op, nil
 }
 
-func (s *OpportunityService) Update(opID, name, status, description string, amount float64, expectedCloseAt *time.Time) (*model.Opportunity, *apperrors.AppError) {
+func (s *OpportunityService) Update(enterpriseID, opID, name, status, description string, amount float64, expectedCloseAt *time.Time) (*model.Opportunity, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	oid, err := uuid.Parse(opID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("opportunity_id", "商机ID无效")
 	}
-	op, err := s.oppRepo.FindByID(oid)
+	op, err := s.oppRepo.FindByID(oid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询商机失败")
 	}
@@ -88,22 +92,45 @@ func (s *OpportunityService) Update(opID, name, status, description string, amou
 	return op, nil
 }
 
-func (s *OpportunityService) Delete(opID string) *apperrors.AppError {
+func (s *OpportunityService) Delete(enterpriseID, opID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	oid, err := uuid.Parse(opID)
 	if err != nil {
 		return apperrors.NewValidationError("opportunity_id", "商机ID无效")
 	}
-	op, err := s.oppRepo.FindByID(oid)
+	op, err := s.oppRepo.FindByID(oid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询商机失败")
 	}
 	if op == nil {
 		return apperrors.ErrNotFound.WithDetail("商机不存在")
 	}
-	if err := s.oppRepo.Delete(oid); err != nil {
+	if err := s.oppRepo.Delete(oid, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除商机失败: " + err.Error())
 	}
 	return nil
+}
+
+func (s *OpportunityService) GetByID(enterpriseID, opID string) (*model.Opportunity, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	oid, err := uuid.Parse(opID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("opportunity_id", "商机ID无效")
+	}
+	op, err := s.oppRepo.FindByID(oid, eid)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询商机失败")
+	}
+	if op == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("商机不存在")
+	}
+	return op, nil
 }
 
 func (s *OpportunityService) ListByCustomer(customerID string) ([]model.Opportunity, int64, *apperrors.AppError) {

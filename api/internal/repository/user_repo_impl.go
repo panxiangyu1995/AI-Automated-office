@@ -78,3 +78,11 @@ func (r *userRepo) List(enterpriseID string, offset, limit int) ([]model.User, i
 func (r *userRepo) UpdateLastLogin(id uuid.UUID) error {
 	return r.db.Model(&model.User{}).Where("id = ?", id).UpdateColumn("last_login_at", gorm.Expr("NOW()")).Error
 }
+
+func (r *userRepo) FindByIDString(id string) (*model.User, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, nil
+	}
+	return r.FindByID(uid)
+}

@@ -34,7 +34,7 @@ func (m *mockBackupConfigRepo) Update(config *model.BackupConfig) error {
 	return nil
 }
 
-func (m *mockBackupConfigRepo) Delete(id uuid.UUID) error {
+func (m *mockBackupConfigRepo) Delete(id, enterpriseID uuid.UUID) error {
 	for i, c := range m.configs {
 		if c.ID == id {
 			m.configs = append(m.configs[:i], m.configs[i+1:]...)
@@ -44,7 +44,7 @@ func (m *mockBackupConfigRepo) Delete(id uuid.UUID) error {
 	return nil
 }
 
-func (m *mockBackupConfigRepo) FindByID(id uuid.UUID) (*model.BackupConfig, error) {
+func (m *mockBackupConfigRepo) FindByID(id, enterpriseID uuid.UUID) (*model.BackupConfig, error) {
 	for _, c := range m.configs {
 		if c.ID == id {
 			return &c, nil
@@ -92,7 +92,7 @@ func (m *mockBackupRecordRepo) Update(record *model.BackupRecord) error {
 	return nil
 }
 
-func (m *mockBackupRecordRepo) FindByID(id uuid.UUID) (*model.BackupRecord, error) {
+func (m *mockBackupRecordRepo) FindByID(id, enterpriseID uuid.UUID) (*model.BackupRecord, error) {
 	for _, r := range m.records {
 		if r.ID == id {
 			return &r, nil
@@ -193,7 +193,7 @@ func TestBackupService_GetConfig_Found(t *testing.T) {
 		BackupTime:  "03:00",
 	})
 
-	got, err := svc.GetConfig(configRepo.configs[0].ID.String())
+	got, err := svc.GetConfig(eid, configRepo.configs[0].ID.String())
 	if err != nil {
 		t.Fatalf("GetConfig failed: %v", err)
 	}
@@ -204,7 +204,7 @@ func TestBackupService_GetConfig_Found(t *testing.T) {
 
 func TestBackupService_GetConfig_NotFound(t *testing.T) {
 	svc, _, _ := setupBackupService()
-	_, err := svc.GetConfig(uuid.New().String())
+	_, err := svc.GetConfig(uuid.New().String(), uuid.New().String())
 	if err == nil {
 		t.Fatal("expected error for nonexistent config")
 	}

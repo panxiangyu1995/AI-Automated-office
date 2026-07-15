@@ -34,6 +34,25 @@ type updateContactRequest struct {
 	IsPrimary bool   `json:"is_primary"`
 }
 
+func (h *ContactHandler) Get(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	contactID := c.Param("id")
+	if contactID == "" {
+		response.ValidationError(c, "id", "联系人ID不能为空")
+		return
+	}
+	contact, appErr := h.contactService.GetByID(enterpriseID, contactID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, contact)
+}
+
 func (h *ContactHandler) Create(c *gin.Context) {
 	enterpriseID := c.Param("enterprise_id")
 	if enterpriseID == "" {
@@ -61,6 +80,11 @@ func (h *ContactHandler) Create(c *gin.Context) {
 }
 
 func (h *ContactHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	contactID := c.Param("id")
 	if contactID == "" {
 		response.ValidationError(c, "id", "联系人ID不能为空")
@@ -73,7 +97,7 @@ func (h *ContactHandler) Update(c *gin.Context) {
 		return
 	}
 
-	contact, appErr := h.contactService.Update(contactID, req.Name, req.Position, req.Phone, req.Email, req.Role, req.IsPrimary)
+	contact, appErr := h.contactService.Update(enterpriseID, contactID, req.Name, req.Position, req.Phone, req.Email, req.Role, req.IsPrimary)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -82,12 +106,17 @@ func (h *ContactHandler) Update(c *gin.Context) {
 }
 
 func (h *ContactHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	contactID := c.Param("id")
 	if contactID == "" {
 		response.ValidationError(c, "id", "联系人ID不能为空")
 		return
 	}
-	appErr := h.contactService.Delete(contactID)
+	appErr := h.contactService.Delete(enterpriseID, contactID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

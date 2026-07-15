@@ -29,12 +29,12 @@ func (m *mockDepartmentRepo) Update(dept *model.Department) error {
 	return nil
 }
 
-func (m *mockDepartmentRepo) Delete(id uuid.UUID) error {
+func (m *mockDepartmentRepo) Delete(id, enterpriseID uuid.UUID) error {
 	delete(m.departments, id.String())
 	return nil
 }
 
-func (m *mockDepartmentRepo) FindByID(id uuid.UUID) (*model.Department, error) {
+func (m *mockDepartmentRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Department, error) {
 	d, ok := m.departments[id.String()]
 	if !ok {
 		return nil, nil
@@ -70,6 +70,14 @@ func (m *mockDepartmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 		}
 	}
 	return count, nil
+}
+
+func (m *mockDepartmentRepo) UpdateFields(id string, fields map[string]interface{}) error {
+	return nil
+}
+
+func (m *mockDepartmentRepo) RestoreFields(id string, fields map[string]interface{}) error {
+	return nil
 }
 
 func setupDepartmentService() (*DepartmentService, *mockDepartmentRepo) {
@@ -129,7 +137,7 @@ func TestDepartmentService_Update_Success(t *testing.T) {
 	eid := uuid.New().String()
 	created, _ := svc.Create(eid, "Old Name", "")
 
-	updated, err := svc.Update(created.ID.String(), "New Name", "")
+	updated, err := svc.Update(eid, created.ID.String(), "New Name", "")
 	if err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
@@ -140,7 +148,7 @@ func TestDepartmentService_Update_Success(t *testing.T) {
 
 func TestDepartmentService_Update_NotFound(t *testing.T) {
 	svc, _ := setupDepartmentService()
-	_, err := svc.Update(uuid.New().String(), "Name", "")
+	_, err := svc.Update(uuid.New().String(), uuid.New().String(), "Name", "")
 	if err == nil {
 		t.Fatal("expected error for nonexistent department")
 	}
@@ -151,7 +159,7 @@ func TestDepartmentService_Delete_Success(t *testing.T) {
 	eid := uuid.New().String()
 	created, _ := svc.Create(eid, "To Delete", "")
 
-	err := svc.Delete(created.ID.String())
+	err := svc.Delete(eid, created.ID.String())
 	if err != nil {
 		t.Fatalf("Delete failed: %v", err)
 	}
@@ -166,7 +174,7 @@ func TestDepartmentService_Delete_WithChildren(t *testing.T) {
 	parent, _ := svc.Create(eid, "Parent", "")
 	svc.Create(eid, "Child", parent.ID.String())
 
-	err := svc.Delete(parent.ID.String())
+	err := svc.Delete(eid, parent.ID.String())
 	if err == nil {
 		t.Fatal("expected error when deleting department with children")
 	}
@@ -174,7 +182,7 @@ func TestDepartmentService_Delete_WithChildren(t *testing.T) {
 
 func TestDepartmentService_Delete_NotFound(t *testing.T) {
 	svc, _ := setupDepartmentService()
-	err := svc.Delete(uuid.New().String())
+	err := svc.Delete(uuid.New().String(), uuid.New().String())
 	if err == nil {
 		t.Fatal("expected error for nonexistent department")
 	}
@@ -232,7 +240,7 @@ func TestDepartmentService_SetManager_Success(t *testing.T) {
 	created, _ := svc.Create(eid, "Engineering", "")
 	empID := uuid.New().String()
 
-	updated, err := svc.SetManager(created.ID.String(), empID)
+	updated, err := svc.SetManager(eid, created.ID.String(), empID)
 	if err != nil {
 		t.Fatalf("SetManager failed: %v", err)
 	}
@@ -248,9 +256,9 @@ func TestDepartmentService_SetManager_Clear(t *testing.T) {
 	svc, _ := setupDepartmentService()
 	eid := uuid.New().String()
 	created, _ := svc.Create(eid, "Engineering", "")
-	svc.SetManager(created.ID.String(), uuid.New().String())
+	svc.SetManager(eid, created.ID.String(), uuid.New().String())
 
-	updated, err := svc.SetManager(created.ID.String(), "")
+	updated, err := svc.SetManager(eid, created.ID.String(), "")
 	if err != nil {
 		t.Fatalf("SetManager failed: %v", err)
 	}
@@ -261,7 +269,7 @@ func TestDepartmentService_SetManager_Clear(t *testing.T) {
 
 func TestDepartmentService_SetManager_NotFound(t *testing.T) {
 	svc, _ := setupDepartmentService()
-	_, err := svc.SetManager(uuid.New().String(), uuid.New().String())
+	_, err := svc.SetManager(uuid.New().String(), uuid.New().String(), uuid.New().String())
 	if err == nil {
 		t.Fatal("expected error for nonexistent department")
 	}

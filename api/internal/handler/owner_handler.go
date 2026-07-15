@@ -78,6 +78,11 @@ func (h *OwnerHandler) CreateAlertRule(c *gin.Context) {
 }
 
 func (h *OwnerHandler) UpdateAlertRule(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req arUpdateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, "body", "格式错误")
@@ -99,7 +104,7 @@ func (h *OwnerHandler) UpdateAlertRule(c *gin.Context) {
 	if req.Enabled != nil {
 		input["enabled"] = *req.Enabled
 	}
-	rule, appErr := h.svc.UpdateAlertRule(c.Param("id"), input)
+	rule, appErr := h.svc.UpdateAlertRule(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

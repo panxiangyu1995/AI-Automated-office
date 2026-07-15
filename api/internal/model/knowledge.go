@@ -59,12 +59,17 @@ func (AnnouncementReadStatus) TableName() string { return "announcement_read_sta
 
 type KnowledgeDoc struct {
 	TenantModel
-	Title      string  `gorm:"type:varchar(255);not null" json:"title"`
-	CategoryID *string `gorm:"type:uuid;index" json:"category_id,omitempty"`
-	Content    string  `gorm:"type:text" json:"content"`
-	Summary    string  `gorm:"type:text" json:"summary,omitempty"`
-	Tags       string  `gorm:"type:varchar(500)" json:"tags,omitempty"`
-	Status     string  `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	Title              string  `gorm:"type:varchar(255);not null" json:"title"`
+	CategoryID         *string `gorm:"type:uuid;index" json:"category_id,omitempty"`
+	Content            string  `gorm:"type:text" json:"content"`
+	Summary            string  `gorm:"type:text" json:"summary,omitempty"`
+	Tags               string  `gorm:"type:varchar(500)" json:"tags,omitempty"`
+	Status             string  `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	Version            int     `gorm:"default:1" json:"version"`
+	ParentVersionID    *string `gorm:"type:uuid" json:"parent_version_id,omitempty"`
+	Visibility         string  `gorm:"type:varchar(20);default:'public'" json:"visibility"`
+	AllowedDepartmentIDs string `gorm:"type:jsonb" json:"allowed_department_ids,omitempty"`
+	CreatorID          string  `gorm:"type:uuid;index" json:"creator_id,omitempty"`
 }
 
 func (KnowledgeDoc) TableName() string { return "knowledge_docs" }

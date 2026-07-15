@@ -47,13 +47,17 @@ func (s *CustomerService) Create(enterpriseID, name, industry, creditCode, addre
 	return customer, nil
 }
 
-func (s *CustomerService) Update(customerID, name, industry, creditCode, address, notes, level string) (*model.Customer, *apperrors.AppError) {
+func (s *CustomerService) Update(enterpriseID, customerID, name, industry, creditCode, address, notes, level string) (*model.Customer, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(customerID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("customer_id", "客户ID无效")
 	}
 
-	customer, err := s.customerRepo.FindByID(cid)
+	customer, err := s.customerRepo.FindByID(cid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询客户失败")
 	}
@@ -86,13 +90,17 @@ func (s *CustomerService) Update(customerID, name, industry, creditCode, address
 	return customer, nil
 }
 
-func (s *CustomerService) Delete(customerID string) *apperrors.AppError {
+func (s *CustomerService) Delete(enterpriseID, customerID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(customerID)
 	if err != nil {
 		return apperrors.NewValidationError("customer_id", "客户ID无效")
 	}
 
-	customer, err := s.customerRepo.FindByID(cid)
+	customer, err := s.customerRepo.FindByID(cid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询客户失败")
 	}
@@ -100,19 +108,23 @@ func (s *CustomerService) Delete(customerID string) *apperrors.AppError {
 		return apperrors.ErrNotFound.WithDetail("客户不存在")
 	}
 
-	if err := s.customerRepo.Delete(cid); err != nil {
+	if err := s.customerRepo.Delete(cid, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除客户失败: " + err.Error())
 	}
 	return nil
 }
 
-func (s *CustomerService) Get(customerID string) (*model.Customer, *apperrors.AppError) {
+func (s *CustomerService) Get(enterpriseID, customerID string) (*model.Customer, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	cid, err := uuid.Parse(customerID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("customer_id", "客户ID无效")
 	}
 
-	customer, err := s.customerRepo.FindByID(cid)
+	customer, err := s.customerRepo.FindByID(cid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询客户失败")
 	}

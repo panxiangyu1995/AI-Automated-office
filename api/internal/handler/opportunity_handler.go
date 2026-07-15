@@ -34,6 +34,25 @@ type updateOppRequest struct {
 	Description     string  `json:"description"`
 }
 
+func (h *OpportunityHandler) Get(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	opID := c.Param("id")
+	if opID == "" {
+		response.ValidationError(c, "id", "商机ID不能为空")
+		return
+	}
+	op, appErr := h.oppService.GetByID(enterpriseID, opID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, op)
+}
+
 func (h *OpportunityHandler) Create(c *gin.Context) {
 	enterpriseID := c.Param("enterprise_id")
 	if enterpriseID == "" {
@@ -64,6 +83,11 @@ func (h *OpportunityHandler) Create(c *gin.Context) {
 }
 
 func (h *OpportunityHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	opID := c.Param("id")
 	if opID == "" {
 		response.ValidationError(c, "id", "商机ID不能为空")
@@ -84,7 +108,7 @@ func (h *OpportunityHandler) Update(c *gin.Context) {
 		}
 	}
 
-	op, appErr := h.oppService.Update(opID, req.Name, req.Status, req.Description, req.Amount, closeAt)
+	op, appErr := h.oppService.Update(enterpriseID, opID, req.Name, req.Status, req.Description, req.Amount, closeAt)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -93,12 +117,17 @@ func (h *OpportunityHandler) Update(c *gin.Context) {
 }
 
 func (h *OpportunityHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	opID := c.Param("id")
 	if opID == "" {
 		response.ValidationError(c, "id", "商机ID不能为空")
 		return
 	}
-	appErr := h.oppService.Delete(opID)
+	appErr := h.oppService.Delete(enterpriseID, opID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

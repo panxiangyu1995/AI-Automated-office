@@ -1,33 +1,41 @@
 package service
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type AIService struct{ db *gorm.DB }
+type AIService struct {
+	repo                repository.AIRepository
+	contextInjectionSvc *ContextInjectionService
+}
 
-func NewAIService(db *gorm.DB) *AIService { return &AIService{db} }
+func NewAIService(repo repository.AIRepository) *AIService { return &AIService{repo: repo} }
+
+func NewAIServiceWithContext(repo repository.AIRepository, contextInjectionSvc *ContextInjectionService) *AIService {
+	return &AIService{repo: repo, contextInjectionSvc: contextInjectionSvc}
+}
 
 func (s *AIService) CreateSession(eid, userID, title, aiModel string) (*model.ChatSession, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	sess := &model.ChatSession{UserID: userID, Title: title, Model: aiModel, Context: "{}"}
 	sess.EnterpriseID = id
-	if err := s.db.Create(sess).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建会话失败: " + err.Error()) }
+	if err := s.repo.CreateSession(sess); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建会话失败: " + err.Error()) }
 	return sess, nil
 }
 
 func (s *AIService) ListSessions(eid, userID string) ([]model.ChatSession, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	var sessions []model.ChatSession
-	q := s.db.Where("enterprise_id=?", id)
-	if userID != "" { q = q.Where("user_id=?", userID) }
-	if err := q.Order("created_at DESC").Find(&sessions).Error; err != nil {
+	sessions, dbErr := s.repo.ListSessions(id, userID)
+	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")
 	}
 	return sessions, nil
@@ -36,17 +44,32 @@ func (s *AIService) ListSessions(eid, userID string) ([]model.ChatSession, *appe
 func (s *AIService) SendMessage(sessionID, role, content string) (*model.ChatMessage, *apperrors.AppError) {
 	sid, err := uuid.Parse(sessionID)
 	if err != nil { return nil, apperrors.NewValidationError("session_id", "无效") }
-	var sess model.ChatSession
-	if err := s.db.Where("id=?", sid).First(&sess).Error; err != nil {
+	sess, dbErr := s.repo.FindSessionByID(sid, uuid.Nil)
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")
+	}
+	if sess == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("会话不存在")
 	}
 
-	msg := &model.ChatMessage{SessionID: sessionID, Role: role, Content: content}
-	if err := s.db.Create(msg).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("发送消息失败") }
+	enrichedContent := content
+	if s.contextInjectionSvc != nil && role == "user" {
+		chunks, _ := s.contextInjectionSvc.InjectContext("general", "", sess.EnterpriseID.String())
+		if len(chunks) > 0 {
+			var contextParts []string
+			for _, chunk := range chunks {
+				contextParts = append(contextParts, chunk.Content)
+			}
+			enrichedContent = fmt.Sprintf("[知识库上下文]\n%s\n\n[用户消息]\n%s", strings.Join(contextParts, "\n---\n"), content)
+		}
+	}
+
+	msg := &model.ChatMessage{SessionID: sessionID, Role: role, Content: enrichedContent}
+	if err := s.repo.CreateMessage(msg); err != nil { return nil, apperrors.ErrInternal.WithDetail("发送消息失败") }
 
 	if role == "user" {
-		aiResponse := &model.ChatMessage{SessionID: sessionID, Role: "assistant", Content: simulateAIResponse(content)}
-		s.db.Create(aiResponse)
+		aiResponse := &model.ChatMessage{SessionID: sessionID, Role: "assistant", Content: simulateAIResponse(enrichedContent)}
+		s.repo.CreateMessage(aiResponse)
 		return aiResponse, nil
 	}
 	return msg, nil
@@ -55,8 +78,8 @@ func (s *AIService) SendMessage(sessionID, role, content string) (*model.ChatMes
 func (s *AIService) GetMessages(sessionID string) ([]model.ChatMessage, *apperrors.AppError) {
 	_, err := uuid.Parse(sessionID)
 	if err != nil { return nil, apperrors.NewValidationError("session_id", "无效") }
-	var msgs []model.ChatMessage
-	if err := s.db.Where("session_id=?", sessionID).Order("created_at ASC").Find(&msgs).Error; err != nil {
+	msgs, dbErr := s.repo.ListMessagesBySession(sessionID)
+	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询消息失败")
 	}
 	return msgs, nil
@@ -65,14 +88,15 @@ func (s *AIService) GetMessages(sessionID string) ([]model.ChatMessage, *apperro
 func (s *AIService) UpdatePreference(eid, userID, key, value string) (*model.ChatSession, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	var sessions []model.ChatSession
-	s.db.Where("enterprise_id=? AND user_id=?", id, userID).Limit(1).Find(&sessions)
-	if len(sessions) == 0 {
+	sess, dbErr := s.repo.FindFirstSessionByUser(id, userID)
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")
+	}
+	if sess == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("无会话可更新偏好")
 	}
-	sess := &sessions[0]
 	sess.Context = `{"` + key + `":"` + value + `"}`
-	s.db.Save(sess)
+	s.repo.SaveSession(sess)
 	return sess, nil
 }
 

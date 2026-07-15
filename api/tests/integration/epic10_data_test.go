@@ -790,7 +790,7 @@ func TestCust_FieldToggle(t *testing.T) {
 		"field_type": "text", "visible": true,
 	})
 	if createW.Code != 200 && createW.Code != 201 {
-		t.Skip("custom field create failed")
+		t.Fatalf("feature not implemented: custom field create failed (got %d)", createW.Code)
 	}
 
 	w := client.GET("/api/v1/custom-fields?entity_type=customer")

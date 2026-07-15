@@ -54,6 +54,11 @@ func (h *PaymentPlanHandler) List(c *gin.Context) {
 }
 
 func (h *PaymentPlanHandler) Update(c *gin.Context) {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req ppUpdateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.ValidationError(c, "body", "格式错误")
@@ -69,7 +74,7 @@ func (h *PaymentPlanHandler) Update(c *gin.Context) {
 	if req.Status != nil {
 		input["status"] = *req.Status
 	}
-	plan, appErr := h.svc.Update(c.Param("id"), input)
+	plan, appErr := h.svc.Update(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -78,7 +83,12 @@ func (h *PaymentPlanHandler) Update(c *gin.Context) {
 }
 
 func (h *PaymentPlanHandler) Delete(c *gin.Context) {
-	if appErr := h.svc.Delete(c.Param("id")); appErr != nil {
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	if appErr := h.svc.Delete(c.Param("id"), eid); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}

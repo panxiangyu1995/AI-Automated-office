@@ -36,8 +36,8 @@ func validateEntityType(entityType string) error {
 type CustomFieldRepository interface {
 	ListFieldsByEntity(enterpriseID uuid.UUID, entityType string) ([]model.FieldDefinition, error)
 	CreateField(field *model.FieldDefinition) error
-	DeleteField(id uuid.UUID) error
-	SetCustomFields(db *gorm.DB, entityType string, entityID uuid.UUID, fields map[string]interface{}) error
+	DeleteField(id, enterpriseID uuid.UUID) error
+	SetCustomFields(db *gorm.DB, entityType string, entityID uuid.UUID, enterpriseID uuid.UUID, fields map[string]interface{}) error
 	GetCustomFields(db *gorm.DB, entityType string, entityID uuid.UUID) (map[string]interface{}, error)
 }
 
@@ -59,18 +59,18 @@ func (r *customFieldRepo) CreateField(field *model.FieldDefinition) error {
 	return r.db.Create(field).Error
 }
 
-func (r *customFieldRepo) DeleteField(id uuid.UUID) error {
-	return r.db.Delete(&model.FieldDefinition{}, "id = ?", id).Error
+func (r *customFieldRepo) DeleteField(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FieldDefinition{}).Error
 }
 
-func (r *customFieldRepo) SetCustomFields(tx *gorm.DB, entityType string, entityID uuid.UUID, fields map[string]interface{}) error {
+func (r *customFieldRepo) SetCustomFields(tx *gorm.DB, entityType string, entityID uuid.UUID, enterpriseID uuid.UUID, fields map[string]interface{}) error {
 	if err := validateEntityType(entityType); err != nil {
 		return err
 	}
 	for key, value := range fields {
-		sql := fmt.Sprintf("UPDATE %s SET custom_fields = COALESCE(custom_fields, '{}'::jsonb) || jsonb_build_object(%s, ?) WHERE id = ?",
+		sql := fmt.Sprintf("UPDATE %s SET custom_fields = COALESCE(custom_fields, '{}'::jsonb) || jsonb_build_object(%s, ?) WHERE id = ? AND enterprise_id = ?",
 			pq.QuoteIdentifier(entityType), pq.QuoteLiteral(key))
-		if err := tx.Exec(sql, value, entityID).Error; err != nil {
+		if err := tx.Exec(sql, value, entityID, enterpriseID).Error; err != nil {
 			return fmt.Errorf("failed to set custom field %s: %w", key, err)
 		}
 	}
@@ -98,7 +98,7 @@ func (r *customFieldRepo) GetCustomFields(tx *gorm.DB, entityType string, entity
 type RelationRepository interface {
 	CreateRelation(rel *model.RelationDefinition) error
 	ListRelations(enterpriseID uuid.UUID, entityType string, entityID uuid.UUID, relationName string) ([]model.RelationDefinition, error)
-	DeleteRelation(id uuid.UUID) error
+	DeleteRelation(id, enterpriseID uuid.UUID) error
 }
 
 type relationRepo struct {
@@ -123,6 +123,6 @@ func (r *relationRepo) ListRelations(enterpriseID uuid.UUID, entityType string, 
 	return rels, err
 }
 
-func (r *relationRepo) DeleteRelation(id uuid.UUID) error {
-	return r.db.Delete(&model.RelationDefinition{}, "id = ?", id).Error
+func (r *relationRepo) DeleteRelation(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.RelationDefinition{}).Error
 }

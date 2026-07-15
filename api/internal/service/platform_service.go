@@ -2,14 +2,14 @@ package service
 
 import (
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type PlatformService struct{ db *gorm.DB }
-func NewPlatformService(db *gorm.DB) *PlatformService { return &PlatformService{db} }
+type PlatformService struct{ repo repository.PlatformRepository }
+func NewPlatformService(repo repository.PlatformRepository) *PlatformService { return &PlatformService{repo} }
 
 func (s *PlatformService) CreateServiceTicket(eid, customerID, subject, desc, priority string) (*model.ServiceTicket, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
@@ -22,15 +22,15 @@ func (s *PlatformService) CreateServiceTicket(eid, customerID, subject, desc, pr
 	}
 	t := &model.ServiceTicket{CustomerID: custID, Subject: subject, Description: desc, Priority: priority, Status: "open"}
 	t.EnterpriseID = id
-	if err := s.db.Create(t).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: " + err.Error()) }
+	if err := s.repo.CreateServiceTicket(t); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: " + err.Error()) }
 	return t, nil
 }
 
 func (s *PlatformService) ListServiceTickets(eid string) ([]model.ServiceTicket, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	var tickets []model.ServiceTicket
-	if err := s.db.Where("enterprise_id=?", id).Order("created_at DESC").Find(&tickets).Error; err != nil {
+	tickets, dbErr := s.repo.ListServiceTickets(id)
+	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
 	}
 	return tickets, nil
@@ -41,15 +41,15 @@ func (s *PlatformService) CreateAnnouncement(eid, title, content string) (*model
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	a := &model.Announcement{Title: title, Content: content}
 	a.EnterpriseID = id
-	if err := s.db.Create(a).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建公告失败") }
+	if err := s.repo.CreateAnnouncement(a); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建公告失败") }
 	return a, nil
 }
 
 func (s *PlatformService) ListAnnouncements(eid string) ([]model.Announcement, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	var anns []model.Announcement
-	if err := s.db.Where("enterprise_id=?", id).Order("created_at DESC").Find(&anns).Error; err != nil {
+	anns, dbErr := s.repo.ListAnnouncements(id)
+	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询公告失败")
 	}
 	return anns, nil
@@ -60,15 +60,15 @@ func (s *PlatformService) CreateUsageBill(eid string, amount float64, desc strin
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	b := &model.UsageBill{Amount: amount, Description: desc, Status: "pending"}
 	b.EnterpriseID = id
-	if err := s.db.Create(b).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建账单失败") }
+	if err := s.repo.CreateUsageBill(b); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建账单失败") }
 	return b, nil
 }
 
 func (s *PlatformService) ListBills(eid string) ([]model.UsageBill, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	var bills []model.UsageBill
-	if err := s.db.Where("enterprise_id=?", id).Order("created_at DESC").Find(&bills).Error; err != nil {
+	bills, dbErr := s.repo.ListBills(id)
+	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询账单失败")
 	}
 	return bills, nil
@@ -88,24 +88,26 @@ func (s *PlatformService) CreateServiceConfig(eid, configKey, configValue string
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
 	sc := &model.ServiceConfig{ConfigKey: configKey, ConfigValue: configValue}
 	sc.EnterpriseID = id
-	if err := s.db.Create(sc).Error; err != nil { return nil, apperrors.ErrInternal.WithDetail("创建配置失败") }
+	if err := s.repo.CreateServiceConfig(sc); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建配置失败") }
 	return sc, nil
 }
 
 func (s *PlatformService) GetServiceConfig(eid, configKey string) (*model.ServiceConfig, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	var sc model.ServiceConfig
-	if err := s.db.Where("enterprise_id=? AND config_key=?", id, configKey).First(&sc).Error; err != nil {
+	sc, dbErr := s.repo.FindServiceConfig(id, configKey)
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询配置失败")
+	}
+	if sc == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("配置不存在")
 	}
-	return &sc, nil
+	return sc, nil
 }
 
 func (s *PlatformService) ExportData(eid, format string) ([]byte, string, *apperrors.AppError) {
-	var employees []model.Employee
 	id, _ := uuid.Parse(eid)
-	s.db.Where("enterprise_id=?", id).Find(&employees)
+	employees, _ := s.repo.ListEmployees(id)
 
 	csv := "ID,Name,Email,Status\n"
 	for _, e := range employees {
@@ -118,14 +120,13 @@ func (s *PlatformService) ImportData(eid string, records []map[string]interface{
 	return len(records), nil
 }
 
-func (s *PlatformService) GetReport(eid, reportType string) (interface{}, *apperrors.AppError) { // nolint:unparam
+func (s *PlatformService) GetReport(eid, reportType string) (interface{}, *apperrors.AppError) {
 	id, _ := uuid.Parse(eid)
 	switch reportType {
 	case "dashboard":
-		var empCount, custCount, contractCount int64
-		s.db.Model(&model.Employee{}).Where("enterprise_id=?", id).Count(&empCount)
-		s.db.Model(&model.Customer{}).Where("enterprise_id=?", id).Count(&custCount)
-		s.db.Model(&model.Contract{}).Where("enterprise_id=?", id).Count(&contractCount)
+		empCount, _ := s.repo.CountEmployees(id)
+		custCount, _ := s.repo.CountCustomers(id)
+		contractCount, _ := s.repo.CountContracts(id)
 		return map[string]interface{}{
 			"employee_count": empCount, "customer_count": custCount,
 			"contract_count": contractCount, "report_type": reportType,

@@ -14,4 +14,5 @@ type UserRepository interface {
 	Delete(id uuid.UUID) error
 	List(enterpriseID string, offset, limit int) ([]model.User, int64, error)
 	UpdateLastLogin(id uuid.UUID) error
+	FindByIDString(id string) (*model.User, error)
 }

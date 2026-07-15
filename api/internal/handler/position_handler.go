@@ -50,6 +50,11 @@ func (h *PositionHandler) Create(c *gin.Context) {
 }
 
 func (h *PositionHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	positionID := c.Param("id")
 	if positionID == "" {
 		response.ValidationError(c, "id", "岗位ID不能为空")
@@ -62,7 +67,7 @@ func (h *PositionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	position, appErr := h.positionService.Update(positionID, req.Name, req.Description)
+	position, appErr := h.positionService.Update(enterpriseID, positionID, req.Name, req.Description)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

@@ -1,20 +1,32 @@
 package middleware
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 )
 
 type AuditMiddleware struct {
 	auditLogService *service.AuditLogService
+	undoService     *service.UndoService
+	undoRepo        repository.UndoRepository
 }
 
 func NewAuditMiddleware(auditLogService *service.AuditLogService) *AuditMiddleware {
 	return &AuditMiddleware{auditLogService: auditLogService}
+}
+
+func NewAuditMiddlewareWithUndo(auditLogService *service.AuditLogService, undoService *service.UndoService, undoRepo repository.UndoRepository) *AuditMiddleware {
+	return &AuditMiddleware{
+		auditLogService: auditLogService,
+		undoService:     undoService,
+		undoRepo:        undoRepo,
+	}
 }
 
 func (m *AuditMiddleware) Record() gin.HandlerFunc {
@@ -22,6 +34,14 @@ func (m *AuditMiddleware) Record() gin.HandlerFunc {
 		if m.auditLogService == nil {
 			c.Next()
 			return
+		}
+
+		var beforeState string
+		if m.undoService != nil && m.undoRepo != nil {
+			method := c.Request.Method
+			if method == "PUT" || method == "PATCH" || method == "DELETE" {
+				beforeState = captureBeforeState(c, m.undoRepo)
+			}
 		}
 
 		c.Next()
@@ -54,7 +74,30 @@ func (m *AuditMiddleware) Record() gin.HandlerFunc {
 			c.ClientIP(),
 			c.Request.UserAgent(),
 		)
+
+		if m.undoService != nil && beforeState != "" && resourceID != "" && (method == "PUT" || method == "PATCH") {
+			m.undoService.RecordOperation(userID, resourceType, resourceID, action, beforeState)
+		}
 	}
+}
+
+func captureBeforeState(c *gin.Context, undoRepo repository.UndoRepository) string {
+	path := c.Request.URL.Path
+	resourceType, resourceID := parseResource(path)
+	if resourceType == "" || resourceID == "" {
+		return ""
+	}
+
+	result, err := undoRepo.FindBeforeState(resourceType, resourceID)
+	if err != nil {
+		return ""
+	}
+
+	data, err := json.Marshal(result)
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }
 
 func parseResource(path string) (resourceType, resourceID string) {

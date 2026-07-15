@@ -9,6 +9,6 @@ import (
 type PositionRepository interface {
 	Create(position *model.Position) error
 	Update(position *model.Position) error
-	FindByID(id uuid.UUID) (*model.Position, error)
+	FindByID(id, enterpriseID uuid.UUID) (*model.Position, error)
 	ListByEnterprise(enterpriseID uuid.UUID) ([]model.Position, error)
 }

@@ -23,9 +23,9 @@ func (r *positionRepo) Update(position *model.Position) error {
 	return r.db.Save(position).Error
 }
 
-func (r *positionRepo) FindByID(id uuid.UUID) (*model.Position, error) {
+func (r *positionRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Position, error) {
 	var p model.Position
-	err := r.db.Where("id = ?", id).First(&p).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&p).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

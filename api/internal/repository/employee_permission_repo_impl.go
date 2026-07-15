@@ -19,12 +19,12 @@ func (r *employeePermissionRepo) Create(perm *model.EmployeePermission) error {
 	return r.db.Create(perm).Error
 }
 
-func (r *employeePermissionRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.EmployeePermission{}, "id = ?", id).Error
+func (r *employeePermissionRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.EmployeePermission{}).Error
 }
 
-func (r *employeePermissionRepo) DeleteByEmployeeAndPermission(employeeID uuid.UUID, permission string) error {
-	return r.db.Where("employee_id = ? AND permission = ?", employeeID, permission).Delete(&model.EmployeePermission{}).Error
+func (r *employeePermissionRepo) DeleteByEmployeeAndPermission(employeeID uuid.UUID, permission string, enterpriseID uuid.UUID) error {
+	return r.db.Where("employee_id = ? AND permission = ? AND enterprise_id = ?", employeeID, permission, enterpriseID).Delete(&model.EmployeePermission{}).Error
 }
 
 func (r *employeePermissionRepo) ListByEmployee(employeeID uuid.UUID) ([]model.EmployeePermission, error) {

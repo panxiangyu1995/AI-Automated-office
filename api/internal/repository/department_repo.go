@@ -9,9 +9,11 @@ import (
 type DepartmentRepository interface {
 	Create(department *model.Department) error
 	Update(department *model.Department) error
-	Delete(id uuid.UUID) error
-	FindByID(id uuid.UUID) (*model.Department, error)
+	Delete(id, enterpriseID uuid.UUID) error
+	FindByID(id, enterpriseID uuid.UUID) (*model.Department, error)
 	ListByEnterprise(enterpriseID uuid.UUID) ([]model.Department, error)
 	CountByParent(parentID uuid.UUID) (int64, error)
 	CountByEnterprise(enterpriseID uuid.UUID) (int64, error)
+	UpdateFields(id string, fields map[string]interface{}) error
+	RestoreFields(id string, fields map[string]interface{}) error
 }

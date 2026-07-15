@@ -78,7 +78,12 @@ func (h *RepairOrderHandler) Update(c *gin.Context) {
 	if req.Notes != nil {
 		input["notes"] = *req.Notes
 	}
-	r, appErr := h.svc.Update(c.Param("id"), input)
+	eid := c.Param("enterprise_id")
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	r, appErr := h.svc.Update(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

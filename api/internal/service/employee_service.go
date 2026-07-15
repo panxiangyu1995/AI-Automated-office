@@ -45,7 +45,7 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 	if err != nil {
 		return nil, apperrors.NewValidationError("department_id", "部门ID无效")
 	}
-	dept, err := s.deptRepo.FindByID(did)
+	dept, err := s.deptRepo.FindByID(did, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询部门失败")
 	}
@@ -131,7 +131,7 @@ func (s *EmployeeService) GetSalesPerformance(enterpriseID, employeeID, startTim
 	results := make([]SalesPerformance, 0, len(employees))
 	for _, emp := range employees {
 		deptName := ""
-		dept, _ := s.deptRepo.FindByID(emp.DepartmentID)
+		dept, _ := s.deptRepo.FindByID(emp.DepartmentID, eid)
 		if dept != nil {
 			deptName = dept.Name
 		}
@@ -212,13 +212,17 @@ func generateTempPassword() string {
 }
 
 
-func (s *EmployeeService) Update(employeeID, name, email, phone, position, employeeNo, role, status string) (*model.Employee, *apperrors.AppError) {
-	eid, err := uuid.Parse(employeeID)
+func (s *EmployeeService) Update(enterpriseID, employeeID, name, email, phone, position, employeeNo, role, status string) (*model.Employee, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	empID, err := uuid.Parse(employeeID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("employee_id", "员工ID无效")
 	}
 
-	emp, err := s.empRepo.FindByID(eid)
+	emp, err := s.empRepo.FindByID(empID, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询员工失败")
 	}
@@ -258,13 +262,17 @@ func (s *EmployeeService) Update(employeeID, name, email, phone, position, emplo
 	return emp, nil
 }
 
-func (s *EmployeeService) Delete(employeeID string) *apperrors.AppError {
-	eid, err := uuid.Parse(employeeID)
+func (s *EmployeeService) Delete(enterpriseID, employeeID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	empID, err := uuid.Parse(employeeID)
 	if err != nil {
 		return apperrors.NewValidationError("employee_id", "员工ID无效")
 	}
 
-	emp, err := s.empRepo.FindByID(eid)
+	emp, err := s.empRepo.FindByID(empID, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询员工失败")
 	}
@@ -281,13 +289,17 @@ func (s *EmployeeService) Delete(employeeID string) *apperrors.AppError {
 	return nil
 }
 
-func (s *EmployeeService) Get(employeeID string) (*model.Employee, *apperrors.AppError) {
-	eid, err := uuid.Parse(employeeID)
+func (s *EmployeeService) Get(enterpriseID, employeeID string) (*model.Employee, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	empID, err := uuid.Parse(employeeID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("employee_id", "员工ID无效")
 	}
 
-	emp, err := s.empRepo.FindByID(eid)
+	emp, err := s.empRepo.FindByID(empID, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询员工失败")
 	}
@@ -312,13 +324,17 @@ func (s *EmployeeService) List(query model.EmployeeQuery) ([]model.Employee, int
 	return employees, total, nil
 }
 
-func (s *EmployeeService) Transfer(employeeID, newDepartmentID string) (*model.Employee, *apperrors.AppError) {
-	eid, err := uuid.Parse(employeeID)
+func (s *EmployeeService) Transfer(enterpriseID, employeeID, newDepartmentID string) (*model.Employee, *apperrors.AppError) {
+	entID, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	empID, err := uuid.Parse(employeeID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("employee_id", "员工ID无效")
 	}
 
-	emp, err := s.empRepo.FindByID(eid)
+	emp, err := s.empRepo.FindByID(empID, entID)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询员工失败")
 	}
@@ -330,7 +346,7 @@ func (s *EmployeeService) Transfer(employeeID, newDepartmentID string) (*model.E
 	if err != nil {
 		return nil, apperrors.NewValidationError("department_id", "新部门ID无效")
 	}
-	dept, err := s.deptRepo.FindByID(did)
+	dept, err := s.deptRepo.FindByID(did, entID)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询新部门失败")
 	}

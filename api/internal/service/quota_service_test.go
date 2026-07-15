@@ -80,7 +80,7 @@ func (m *mockFeatureFlagRepo) Update(flag *model.FeatureFlag) error {
 	return nil
 }
 
-func (m *mockFeatureFlagRepo) Delete(id uuid.UUID) error {
+func (m *mockFeatureFlagRepo) Delete(id, enterpriseID uuid.UUID) error {
 	for k, f := range m.flags {
 		if f.ID == id {
 			delete(m.flags, k)

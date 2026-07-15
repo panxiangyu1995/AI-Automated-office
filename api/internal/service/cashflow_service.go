@@ -4,15 +4,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type CashFlowService struct{ db *gorm.DB }
+type CashFlowService struct{ repo repository.CashFlowRepository }
 
-func NewCashFlowService(db *gorm.DB) *CashFlowService { return &CashFlowService{db} }
+func NewCashFlowService(repo repository.CashFlowRepository) *CashFlowService { return &CashFlowService{repo} }
 
 type CashFlowForecast struct {
 	Periods      []PeriodForecast `json:"periods"`
@@ -22,10 +21,10 @@ type CashFlowForecast struct {
 }
 
 type PeriodForecast struct {
-	Month          string  `json:"month"`
-	ExpectedInflow float64 `json:"expected_inflow"`
+	Month           string  `json:"month"`
+	ExpectedInflow  float64 `json:"expected_inflow"`
 	ExpectedOutflow float64 `json:"expected_outflow"`
-	NetFlow        float64 `json:"net_flow"`
+	NetFlow         float64 `json:"net_flow"`
 }
 
 func (s *CashFlowService) Forecast(eid string, months int) (*CashFlowForecast, *apperrors.AppError) {
@@ -48,25 +47,16 @@ func (s *CashFlowService) Forecast(eid string, months int) (*CashFlowForecast, *
 		monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location()).AddDate(0, i, 0)
 		monthEnd := monthStart.AddDate(0, 1, -1)
 
-		var inflow float64
-		s.db.Model(&model.PaymentPlan{}).
-			Where("enterprise_id=? AND status=? AND plan_date >= ? AND plan_date <= ?",
-				id, model.PaymentPlanStatusPending, monthStart, monthEnd).
-			Select("COALESCE(SUM(amount), 0)").Scan(&inflow)
-
-		var outflow float64
-		s.db.Model(&model.PurchaseOrder{}).
-			Where("enterprise_id=? AND status IN ? AND created_at >= ? AND created_at <= ?",
-				id, []string{"confirmed", "received"}, monthStart, monthEnd).
-			Select("COALESCE(SUM(total_amount), 0)").Scan(&outflow)
+		inflow, _ := s.repo.SumPendingPaymentPlans(id, monthStart, monthEnd)
+		outflow, _ := s.repo.SumConfirmedPurchaseOrders(id, monthStart, monthEnd)
 
 		periodLabel := monthStart.Format("2006-01")
 		netFlow := inflow - outflow
 		periods = append(periods, PeriodForecast{
-			Month:          periodLabel,
-			ExpectedInflow: inflow,
+			Month:           periodLabel,
+			ExpectedInflow:  inflow,
 			ExpectedOutflow: outflow,
-			NetFlow:        netFlow,
+			NetFlow:         netFlow,
 		})
 		totalInflow += inflow
 		totalOutflow += outflow

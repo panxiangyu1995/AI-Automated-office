@@ -1,0 +1,2 @@
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'normal';
+		ALTER TABLE messages ADD COLUMN IF NOT EXISTS announcement_id UUID;

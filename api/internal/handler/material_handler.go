@@ -47,27 +47,33 @@ func (h *MaterialHandler) Create(c *gin.Context) {
 }
 
 func (h *MaterialHandler) Update(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	matID := c.Param("id")
 	if matID == "" { response.ValidationError(c, "id", "物料ID不能为空"); return }
 	var req updateMatRequest
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "请求体格式错误"); return }
-	m, appErr := h.matService.Update(matID, req.Name, req.MaterialType, req.Spec, req.Unit, req.UnitPrice, req.Status)
+	m, appErr := h.matService.Update(enterpriseID, matID, req.Name, req.MaterialType, req.Spec, req.Unit, req.UnitPrice, req.Status)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, m)
 }
 
 func (h *MaterialHandler) Delete(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	matID := c.Param("id")
 	if matID == "" { response.ValidationError(c, "id", "物料ID不能为空"); return }
-	appErr := h.matService.Delete(matID)
+	appErr := h.matService.Delete(enterpriseID, matID)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.NoContent(c)
 }
 
 func (h *MaterialHandler) Get(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	matID := c.Param("id")
 	if matID == "" { response.ValidationError(c, "id", "物料ID不能为空"); return }
-	m, appErr := h.matService.Get(matID)
+	m, appErr := h.matService.Get(enterpriseID, matID)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, m)
 }

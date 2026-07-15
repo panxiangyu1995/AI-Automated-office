@@ -2,25 +2,34 @@ package model
 
 type SubscriptionPlan struct {
 	TenantModel
-	Name        string  `gorm:"type:varchar(100);not null" json:"name"`
-	Description string  `gorm:"type:text" json:"description,omitempty"`
-	Price       float64 `gorm:"type:numeric(15,2);not null" json:"price"`
-	MaxUsers    int     `gorm:"default:10" json:"max_users"`
-	MaxStorage  int64   `gorm:"default:1073741824" json:"max_storage"`
-	Features    string  `gorm:"type:text" json:"features,omitempty"`
-	Status      string  `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	Name         string  `gorm:"type:varchar(100);not null" json:"name"`
+	Description  string  `gorm:"type:text" json:"description,omitempty"`
+	Price        float64 `gorm:"type:numeric(15,2);not null" json:"price"`
+	MaxUsers     int     `gorm:"default:10" json:"max_users"`
+	MaxStorage   int64   `gorm:"default:1073741824" json:"max_storage"`
+	Features     string  `gorm:"type:jsonb" json:"features,omitempty"`
+	Status       string  `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	PlanType     string  `gorm:"type:varchar(20);default:'monthly'" json:"plan_type"`
+	Quotas       string  `gorm:"type:jsonb" json:"quotas,omitempty"`
+	PriceMonthly float64 `gorm:"type:numeric(15,2);default:0" json:"price_monthly"`
+	PriceYearly  float64 `gorm:"type:numeric(15,2);default:0" json:"price_yearly"`
+	TrialDays    int     `gorm:"default:0" json:"trial_days"`
 }
 
 func (SubscriptionPlan) TableName() string { return "subscription_plans" }
 
 type EnterpriseSubscription struct {
 	BaseModel
-	EnterpriseID string  `gorm:"type:uuid;not null;index" json:"enterprise_id"`
-	PlanID       string  `gorm:"type:uuid;not null" json:"plan_id"`
-	Status       string  `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
-	StartAt      *string `gorm:"type:timestamp" json:"start_at,omitempty"`
-	EndAt        *string `gorm:"type:timestamp" json:"end_at,omitempty"`
-	AutoRenew    bool    `gorm:"default:true" json:"auto_renew"`
+	EnterpriseID       string  `gorm:"type:uuid;not null;index" json:"enterprise_id"`
+	PlanID             string  `gorm:"type:uuid;not null" json:"plan_id"`
+	Status             string  `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	StartAt            *string `gorm:"type:timestamp" json:"start_at,omitempty"`
+	EndAt              *string `gorm:"type:timestamp" json:"end_at,omitempty"`
+	AutoRenew          bool    `gorm:"default:true" json:"auto_renew"`
+	CurrentPeriodStart *string `gorm:"type:varchar(30)" json:"current_period_start,omitempty"`
+	CurrentPeriodEnd   *string `gorm:"type:varchar(30)" json:"current_period_end,omitempty"`
+	GracePeriodEnd     *string `gorm:"type:varchar(30)" json:"grace_period_end,omitempty"`
+	BillingCycle       string  `gorm:"type:varchar(20);default:'monthly'" json:"billing_cycle"`
 }
 
 func (EnterpriseSubscription) TableName() string { return "enterprise_subscriptions" }

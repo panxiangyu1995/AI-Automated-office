@@ -8,8 +8,8 @@ import (
 
 type CustomerTagRepository interface {
 	Create(tag *model.CustomerTag) error
-	Delete(id uuid.UUID) error
-	DeleteByCustomerAndTag(customerID uuid.UUID, tag string) error
+	Delete(id, enterpriseID uuid.UUID) error
+	DeleteByCustomerAndTag(customerID uuid.UUID, tag string, enterpriseID uuid.UUID) error
 	ListByCustomer(customerID uuid.UUID) ([]model.CustomerTag, error)
 	ListByEnterprise(enterpriseID uuid.UUID) ([]model.CustomerTag, error)
 }

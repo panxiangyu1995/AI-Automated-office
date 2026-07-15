@@ -83,6 +83,25 @@ func (s *MessageService) Send(enterpriseID string, senderID string, req SendMess
 	return msg, nil
 }
 
+func (s *MessageService) GetByID(enterpriseID, messageID string) (*model.Message, *apperrors.AppError) {
+	entID, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	id, err := uuid.Parse(messageID)
+	if err != nil {
+		return nil, apperrors.NewValidationError("id", "消息ID无效")
+	}
+	msg, err := s.msgRepo.FindByID(id, entID)
+	if err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询消息失败")
+	}
+	if msg == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("消息不存在")
+	}
+	return msg, nil
+}
+
 func (s *MessageService) List(enterpriseID string, receiverID string, page, pageSize int) ([]model.Message, int64, *apperrors.AppError) {
 	entID, err := uuid.Parse(enterpriseID)
 	if err != nil {
@@ -107,12 +126,16 @@ func (s *MessageService) UnreadCount(enterpriseID string, receiverID string) (in
 	return count, nil
 }
 
-func (s *MessageService) MarkRead(messageID string) *apperrors.AppError {
+func (s *MessageService) MarkRead(messageID, enterpriseID string) *apperrors.AppError {
 	id, err := uuid.Parse(messageID)
 	if err != nil {
 		return apperrors.NewValidationError("id", "消息ID无效")
 	}
-	if err := s.msgRepo.MarkRead(id); err != nil {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	if err := s.msgRepo.MarkRead(id, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("标记已读失败")
 	}
 

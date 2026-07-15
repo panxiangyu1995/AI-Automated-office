@@ -35,8 +35,8 @@ services:
 
   api:
     build:
-      context: ../../
-      dockerfile: deploy/docker-compose/Dockerfile.api
+      context: ../../api
+      dockerfile: ../deploy/docker-compose/Dockerfile.api
     container_name: ao-api
     restart: unless-stopped
     ports:

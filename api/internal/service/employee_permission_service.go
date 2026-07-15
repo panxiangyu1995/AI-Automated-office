@@ -39,7 +39,7 @@ func (s *EmployeePermissionService) Set(enterpriseID, employeeID, permission, gr
 		return nil, apperrors.NewValidationError("effect", "effect 必须为 allow 或 deny")
 	}
 
-	s.permRepo.DeleteByEmployeeAndPermission(empID, permission)
+	s.permRepo.DeleteByEmployeeAndPermission(empID, permission, eid)
 
 	perm := &model.EmployeePermission{
 		EmployeeID: empID,
@@ -55,13 +55,17 @@ func (s *EmployeePermissionService) Set(enterpriseID, employeeID, permission, gr
 	return perm, nil
 }
 
-func (s *EmployeePermissionService) Revoke(employeeID, permission string) *apperrors.AppError {
+func (s *EmployeePermissionService) Revoke(enterpriseID, employeeID, permission string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	empID, err := uuid.Parse(employeeID)
 	if err != nil {
 		return apperrors.NewValidationError("employee_id", "员工ID无效")
 	}
 
-	if err := s.permRepo.DeleteByEmployeeAndPermission(empID, permission); err != nil {
+	if err := s.permRepo.DeleteByEmployeeAndPermission(empID, permission, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("撤销权限失败: " + err.Error())
 	}
 	return nil

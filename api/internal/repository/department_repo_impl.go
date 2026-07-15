@@ -23,13 +23,13 @@ func (r *departmentRepo) Update(department *model.Department) error {
 	return r.db.Save(department).Error
 }
 
-func (r *departmentRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.Department{}, "id = ?", id).Error
+func (r *departmentRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Department{}).Error
 }
 
-func (r *departmentRepo) FindByID(id uuid.UUID) (*model.Department, error) {
+func (r *departmentRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Department, error) {
 	var dept model.Department
-	err := r.db.Where("id = ?", id).First(&dept).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&dept).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -55,4 +55,12 @@ func (r *departmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.Model(&model.Department{}).Where("parent_id = ?", parentID).Count(&count).Error
 	return count, err
+}
+
+func (r *departmentRepo) UpdateFields(id string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Department{}).Where("id = ?", id).Updates(fields).Error
+}
+
+func (r *departmentRepo) RestoreFields(id string, fields map[string]interface{}) error {
+	return r.UpdateFields(id, fields)
 }

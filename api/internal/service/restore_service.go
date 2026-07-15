@@ -2,14 +2,14 @@ package service
 
 import (
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type RestoreService struct{ db *gorm.DB }
+type RestoreService struct{ repo repository.RestoreRepository }
 
-func NewRestoreService(db *gorm.DB) *RestoreService { return &RestoreService{db} }
+func NewRestoreService(repo repository.RestoreRepository) *RestoreService { return &RestoreService{repo} }
 
 func (s *RestoreService) Restore(eid, resourceType, id string) *apperrors.AppError {
 	eUUID, err := uuid.Parse(eid)
@@ -21,30 +21,29 @@ func (s *RestoreService) Restore(eid, resourceType, id string) *apperrors.AppErr
 		return apperrors.NewValidationError("id", "无效")
 	}
 
+	var tableName string
 	switch resourceType {
 	case "customers":
-		return s.restoreModel(eUUID, "customers", rID)
+		tableName = "customers"
 	case "contracts":
-		return s.restoreModel(eUUID, "contracts", rID)
+		tableName = "contracts"
 	case "employees":
-		return s.restoreModel(eUUID, "employees", rID)
+		tableName = "employees"
 	case "materials":
-		return s.restoreModel(eUUID, "materials", rID)
+		tableName = "materials"
 	case "suppliers":
-		return s.restoreModel(eUUID, "suppliers", rID)
+		tableName = "suppliers"
 	case "service-orders":
-		return s.restoreModel(eUUID, "service_orders", rID)
+		tableName = "service_orders"
 	default:
 		return apperrors.NewValidationError("resource_type", "不支持的资源类型")
 	}
-}
 
-func (s *RestoreService) restoreModel(eID uuid.UUID, tableName string, id uuid.UUID) *apperrors.AppError {
-	result := s.db.Table(tableName).Where("id = ? AND enterprise_id = ?", id, eID).Update("deleted_at", nil)
-	if result.Error != nil {
+	rowsAffected, dbErr := s.repo.UndeleteByTableAndID(tableName, eUUID, rID)
+	if dbErr != nil {
 		return apperrors.ErrInternal.WithDetail("恢复失败")
 	}
-	if result.RowsAffected == 0 {
+	if rowsAffected == 0 {
 		return apperrors.ErrNotFound.WithDetail("资源不存在或未被删除")
 	}
 	return nil

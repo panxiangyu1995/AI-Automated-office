@@ -17,6 +17,7 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/router"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/crypto"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
@@ -60,6 +61,16 @@ func main() {
 			tenant.InitGlobalDB(initDB)
 			db = initDB
 			defer database.Close()
+
+			if cfg.Crypto.MasterKey != "" {
+				if err := crypto.Init(cfg.Crypto.MasterKey); err != nil {
+					logger.Warn("crypto init failed, encryption disabled", zap.Error(err))
+				} else {
+					logger.Info("crypto initialized successfully")
+				}
+			} else {
+				logger.Warn("crypto master key not configured, encryption disabled")
+			}
 			sqlDB, _ := initDB.DB()
 			if sqlDB != nil {
 				defer sqlDB.Close()
@@ -145,6 +156,17 @@ func main() {
 				&model.PaymentPlan{},
 				&model.RepairOrder{},
 				&model.AlertRule{},
+				&model.Receivable{},
+				&model.Payable{},
+				&model.QualityInspection{},
+				&model.QualityInspectionItem{},
+				&model.BillingRecord{},
+				&model.PaymentGatewayConfig{},
+			&model.MFAConfig{},
+			&model.UndoOperation{},
+			&model.IndustryTemplate{},
+			&model.EnterpriseSkillMatrix{},
+			&model.ClaudeMDTemplate{},
 			); err != nil {
 				logger.Warn("auto-migrate system tables failed", zap.Error(err))
 			}

@@ -23,13 +23,13 @@ func (r *crossEnterpriseRepo) Update(perm *model.CrossEnterprisePermission) erro
 	return r.db.Save(perm).Error
 }
 
-func (r *crossEnterpriseRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.CrossEnterprisePermission{}, "id = ?", id).Error
+func (r *crossEnterpriseRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Where("id = ? AND source_enterprise_id = ?", id, enterpriseID).Delete(&model.CrossEnterprisePermission{}).Error
 }
 
-func (r *crossEnterpriseRepo) FindByID(id uuid.UUID) (*model.CrossEnterprisePermission, error) {
+func (r *crossEnterpriseRepo) FindByID(id, enterpriseID uuid.UUID) (*model.CrossEnterprisePermission, error) {
 	var perm model.CrossEnterprisePermission
-	err := r.db.Where("id = ?", id).First(&perm).Error
+	err := r.db.Where("id = ? AND source_enterprise_id = ?", id, enterpriseID).First(&perm).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

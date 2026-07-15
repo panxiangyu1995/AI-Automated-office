@@ -2,6 +2,7 @@ package service
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -20,7 +21,7 @@ func (m *mockAuditLogRepo) Create(log *model.AuditLog) error {
 	return nil
 }
 
-func (m *mockAuditLogRepo) FindByID(id uuid.UUID) (*model.AuditLog, error) {
+func (m *mockAuditLogRepo) FindByID(id, enterpriseID uuid.UUID) (*model.AuditLog, error) {
 	for _, l := range m.logs {
 		if l.ID == id {
 			return &l, nil
@@ -66,6 +67,21 @@ func (m *mockAuditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, in
 	return filtered[start:end], total, nil
 }
 
+func (m *mockAuditLogRepo) QueryOperatorActions(page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
+	return nil, 0, nil
+}
+
+func (m *mockAuditLogRepo) DeleteOldByEnterprise(enterpriseID uuid.UUID, cutoff time.Time) (int64, error) {
+	var count int64
+	for i, l := range m.logs {
+		if l.EnterpriseID == enterpriseID && l.CreatedAt.Before(cutoff) {
+			count++
+			m.logs = append(m.logs[:i], m.logs[i+1:]...)
+		}
+	}
+	return count, nil
+}
+
 func setupAuditLogService() *AuditLogService {
 	return NewAuditLogService(&mockAuditLogRepo{})
 }
@@ -77,7 +93,7 @@ func setupAuditLogServiceWithRepo() (*AuditLogService, *mockAuditLogRepo) {
 
 func TestAuditLogService_Get_NotFound(t *testing.T) {
 	svc := setupAuditLogService()
-	_, err := svc.Get(uuid.New())
+	_, err := svc.Get(uuid.New(), uuid.New())
 	if err == nil {
 		t.Fatal("expected error for nonexistent audit log")
 	}
@@ -99,7 +115,7 @@ func TestAuditLogService_Get_Found(t *testing.T) {
 		t.Fatalf("expected 1 log, got %d", len(logs))
 	}
 
-	got, err := svc.Get(logs[0].ID)
+	got, err := svc.Get(logs[0].ID, eid)
 	if err != nil {
 		t.Fatalf("Get failed: %v", err)
 	}

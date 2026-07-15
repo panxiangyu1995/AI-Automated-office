@@ -58,13 +58,17 @@ func (s *CrossEnterpriseService) Grant(userID, sourceEnterpriseID, targetEnterpr
 	return perm, nil
 }
 
-func (s *CrossEnterpriseService) Revoke(permissionID string) *apperrors.AppError {
+func (s *CrossEnterpriseService) Revoke(enterpriseID, permissionID string) *apperrors.AppError {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 	pid, err := uuid.Parse(permissionID)
 	if err != nil {
 		return apperrors.NewValidationError("permission_id", "权限ID无效")
 	}
 
-	perm, err := s.crossRepo.FindByID(pid)
+	perm, err := s.crossRepo.FindByID(pid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询权限失败")
 	}
@@ -72,7 +76,7 @@ func (s *CrossEnterpriseService) Revoke(permissionID string) *apperrors.AppError
 		return apperrors.ErrNotFound.WithDetail("权限不存在")
 	}
 
-	if err := s.crossRepo.Delete(pid); err != nil {
+	if err := s.crossRepo.Delete(pid, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("撤销权限失败: " + err.Error())
 	}
 	return nil

@@ -11,11 +11,11 @@ type materialRepo struct{ db *gorm.DB }
 func NewMaterialRepository(db *gorm.DB) MaterialRepository { return &materialRepo{db: db} }
 func (r *materialRepo) Create(m *model.Material) error { return r.db.Create(m).Error }
 func (r *materialRepo) Update(m *model.Material) error { return r.db.Save(m).Error }
-func (r *materialRepo) Delete(id uuid.UUID) error { return r.db.Delete(&model.Material{}, "id = ?", id).Error }
+func (r *materialRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Material{}).Error }
 
-func (r *materialRepo) FindByID(id uuid.UUID) (*model.Material, error) {
+func (r *materialRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Material, error) {
 	var m model.Material
-	err := r.db.Where("id = ?", id).First(&m).Error
+	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&m).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound { return nil, nil }
 		return nil, err
@@ -34,4 +34,9 @@ func (r *materialRepo) ListByEnterprise(enterpriseID uuid.UUID, page, pageSize i
 		return nil, 0, err
 	}
 	return ms, total, nil
+}
+
+func (r *materialRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
+	result := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Material{})
+	return result.RowsAffected, result.Error
 }

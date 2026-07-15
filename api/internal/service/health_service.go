@@ -2,15 +2,14 @@ package service
 
 import (
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type HealthService struct{ db *gorm.DB }
+type HealthService struct{ repo repository.HealthRepository }
 
-func NewHealthService(db *gorm.DB) *HealthService { return &HealthService{db} }
+func NewHealthService(repo repository.HealthRepository) *HealthService { return &HealthService{repo} }
 
 type EnterpriseHealth struct {
 	EnterpriseID string  `json:"enterprise_id"`
@@ -22,9 +21,9 @@ type EnterpriseHealth struct {
 }
 
 type HealthDashboard struct {
-	TotalEnterprises int64               `json:"total_enterprises"`
-	HealthyCount     int64               `json:"healthy_count"`
-	AtRiskCount      int64               `json:"at_risk_count"`
+	TotalEnterprises int64                 `json:"total_enterprises"`
+	HealthyCount     int64                 `json:"healthy_count"`
+	AtRiskCount      int64                 `json:"at_risk_count"`
 	ChurnRiskList    []ChurnRiskEnterprise `json:"churn_risk_list"`
 }
 
@@ -42,15 +41,11 @@ func (s *HealthService) GetEnterpriseHealth(eid string) (*EnterpriseHealth, *app
 
 	health := &EnterpriseHealth{EnterpriseID: eid}
 
-	var employeeCount int64
-	s.db.Model(&model.Employee{}).Where("enterprise_id=? AND status=?", id, "active").
-		Count(&employeeCount)
+	employeeCount, _ := s.repo.CountActiveEmployees(id)
 	health.DailyActive = employeeCount
 
-	var customerCount int64
-	s.db.Model(&model.Customer{}).Where("enterprise_id=?", id).Count(&customerCount)
-	var contractCount int64
-	s.db.Model(&model.Contract{}).Where("enterprise_id=?", id).Count(&contractCount)
+	customerCount, _ := s.repo.CountCustomers(id)
+	contractCount, _ := s.repo.CountContracts(id)
 
 	dataComplete := 100.0
 	if employeeCount == 0 {
@@ -62,8 +57,7 @@ func (s *HealthService) GetEnterpriseHealth(eid string) (*EnterpriseHealth, *app
 	}
 	health.DataComplete = dataComplete
 
-	var newOrders int64
-	s.db.Model(&model.SalesOrder{}).Where("enterprise_id=?", id).Count(&newOrders)
+	newOrders, _ := s.repo.CountSalesOrders(id)
 	if newOrders > 0 {
 		health.GrowthTrend = "growing"
 	} else {
@@ -90,8 +84,7 @@ func (s *HealthService) GetEnterpriseHealth(eid string) (*EnterpriseHealth, *app
 func (s *HealthService) GetDashboard() (*HealthDashboard, *apperrors.AppError) {
 	dashboard := &HealthDashboard{}
 
-	var enterprises []model.Enterprise
-	s.db.Find(&enterprises)
+	enterprises, _ := s.repo.ListAllEnterprises()
 	dashboard.TotalEnterprises = int64(len(enterprises))
 
 	for _, ent := range enterprises {

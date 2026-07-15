@@ -94,7 +94,7 @@ func TestExpense_Approve(t *testing.T) {
 		"amount":       8000,
 	})
 	if w.Code != 201 {
-		t.Skipf("expense creation failed: %d %s", w.Code, w.Body.String())
+		t.Fatalf("feature not implemented: expense creation failed (got %d %s)", w.Code, w.Body.String())
 	}
 	resp := testutil.ParseResponse(t, w)
 	data := testutil.GetData(t, resp)
@@ -346,7 +346,7 @@ func TestInvoice_Manage(t *testing.T) {
 		"customer_id": uuid.New().String(), "amount": 50000, "tax_amount": 3000, "notes": "Manage test",
 	})
 	if createW.Code != 201 {
-		t.Skipf("invoice create failed: %d", createW.Code)
+		t.Fatalf("feature not implemented: invoice create failed (got %d)", createW.Code)
 	}
 	resp := testutil.ParseResponse(t, createW)
 	data := testutil.GetData(t, resp)
@@ -453,7 +453,7 @@ func TestPaymentRequest_UploadAttachment(t *testing.T) {
 		"amount": 10000.0, "payee": "供应商D", "purpose": "测试附件", "status": "draft",
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 404 {
-		t.Skip("payment request create failed")
+		t.Fatalf("feature not implemented: payment request create failed (got %d)", w.Code)
 	}
 }
 

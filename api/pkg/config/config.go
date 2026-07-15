@@ -14,6 +14,7 @@ type Config struct {
 	JWT          JWTConfig          `mapstructure:"jwt"`
 	Log          LogConfig          `mapstructure:"log"`
 	Notification NotificationConfig `mapstructure:"notification"`
+	Crypto       CryptoConfig       `mapstructure:"crypto"`
 }
 
 type ServerConfig struct {
@@ -90,6 +91,10 @@ type EmailConfigN struct {
 	Password string `mapstructure:"password"`
 	From     string `mapstructure:"from"`
 	UseTLS   bool   `mapstructure:"use_tls"`
+}
+
+type CryptoConfig struct {
+	MasterKey string `mapstructure:"master_key"`
 }
 
 func (c *Config) DSN() string {

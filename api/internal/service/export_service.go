@@ -10,22 +10,20 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
-	"gorm.io/gorm"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
-	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 )
 
 type ExportService struct {
-	db        *gorm.DB
 	repo      repository.ExportRepository
 	exportDir string
 }
 
-func NewExportService(db *gorm.DB, repo repository.ExportRepository, exportDir string) *ExportService {
-	return &ExportService{db: db, repo: repo, exportDir: exportDir}
+func NewExportService(repo repository.ExportRepository, exportDir string) *ExportService {
+	return &ExportService{repo: repo, exportDir: exportDir}
 }
 
 type CreateExportRequest struct {
@@ -166,7 +164,7 @@ func (s *ExportService) ExecuteTask(taskID string) error {
 		return err
 	}
 
-	task, err := s.repo.FindTaskByID(tid)
+	task, err := s.repo.FindTaskByID(tid, uuid.Nil)
 	if err != nil || task == nil {
 		return fmt.Errorf("export task not found: %s", taskID)
 	}
@@ -178,7 +176,7 @@ func (s *ExportService) ExecuteTask(taskID string) error {
 	now := time.Now()
 	task.Status = "running"
 	task.StartedAt = &now
-	if err := s.repo.UpdateTask(task); err != nil {
+	if err := s.repo.UpdateTask(task, task.EnterpriseID); err != nil {
 		return fmt.Errorf("update task status to running: %w", err)
 	}
 
@@ -188,7 +186,7 @@ func (s *ExportService) ExecuteTask(taskID string) error {
 		task.ErrorMsg = err.Error()
 		completed := time.Now()
 		task.CompletedAt = &completed
-		if updateErr := s.repo.UpdateTask(task); updateErr != nil {
+		if updateErr := s.repo.UpdateTask(task, task.EnterpriseID); updateErr != nil {
 			return fmt.Errorf("export failed: %v, and update status failed: %w", err, updateErr)
 		}
 		return err
@@ -199,7 +197,7 @@ func (s *ExportService) ExecuteTask(taskID string) error {
 	task.FileSize = result.FileSize
 	completed := time.Now()
 	task.CompletedAt = &completed
-	if err := s.repo.UpdateTask(task); err != nil {
+	if err := s.repo.UpdateTask(task, task.EnterpriseID); err != nil {
 		return fmt.Errorf("update task status to completed: %w", err)
 	}
 
@@ -275,7 +273,7 @@ func (s *ExportService) generateSingleExport(task *model.ExportTask) (*exportRes
 		fields = task.Fields
 	}
 
-	results, err := s.queryEntityData(entityDef.Table, fields, task)
+	results, err := s.repo.QueryTable(entityDef.Table, fields, task.EnterpriseID, task.Filters, task.EntityID)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +295,7 @@ func (s *ExportService) generateCrossEntityExport(task *model.ExportTask) (*expo
 		return nil, fmt.Errorf("unsupported anchor entity: %s", task.EntityType)
 	}
 
-	anchorResults, err := s.queryEntityData(anchorDef.Table, anchorDef.Fields, task)
+	anchorResults, err := s.repo.QueryTable(anchorDef.Table, anchorDef.Fields, task.EnterpriseID, nil, task.EntityID)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +311,7 @@ func (s *ExportService) generateCrossEntityExport(task *model.ExportTask) (*expo
 		if !ok {
 			continue
 		}
-		relResults, err := s.queryRelatedData(relDef.Table, relDef.Fields, task.EnterpriseID, task.EntityType, task.EntityID)
+		relResults, err := s.repo.QueryRelatedTable(relDef.Table, relDef.Fields, task.EnterpriseID, task.EntityType, task.EntityID)
 		if err != nil {
 			continue
 		}
@@ -345,7 +343,7 @@ func (s *ExportService) generateEmployeeDimensionExport(task *model.ExportTask) 
 		if !ok {
 			continue
 		}
-		results, err := s.queryEmployeeDimensionData(dimDef.Table, dimDef.Fields, task.EnterpriseID, task.EntityID)
+		results, err := s.repo.QueryEmployeeDimensionTable(dimDef.Table, dimDef.Fields, task.EnterpriseID)
 		if err != nil {
 			continue
 		}
@@ -362,12 +360,9 @@ func (s *ExportService) generateEmployeeAuditExport(task *model.ExportTask) (*ex
 	}
 
 	fields := []string{"id", "action", "resource_type", "resource_id", "detail", "created_at"}
-	var results []map[string]interface{}
-	if err := s.db.Table("audit_logs").
-		Where("enterprise_id = ? AND user_id = ? AND deleted_at IS NULL", task.EnterpriseID, task.EntityID).
-		Select(strings.Join(fields, ", ")).
-		Find(&results).Error; err != nil {
-		return nil, fmt.Errorf("query audit logs: %w", err)
+	results, err := s.repo.QueryAuditLogs(task.EnterpriseID, task.EntityID, fields)
+	if err != nil {
+		return nil, err
 	}
 
 	sheets := map[string][][]string{
@@ -375,57 +370,6 @@ func (s *ExportService) generateEmployeeAuditExport(task *model.ExportTask) (*ex
 	}
 
 	return s.writeFile(task, sheets)
-}
-
-func (s *ExportService) queryEntityData(table string, fields []string, task *model.ExportTask) ([]map[string]interface{}, error) {
-	var results []map[string]interface{}
-	query := s.db.Table(table).
-		Where("enterprise_id = ? AND deleted_at IS NULL", task.EnterpriseID).
-		Select(strings.Join(fields, ", "))
-
-	if task.EntityID != "" {
-		query = query.Where("id = ?", task.EntityID)
-	}
-
-	for k, v := range task.Filters {
-		query = query.Where(k+" = ?", v)
-	}
-
-	if err := query.Find(&results).Error; err != nil {
-		return nil, fmt.Errorf("query %s: %w", table, err)
-	}
-	return results, nil
-}
-
-func (s *ExportService) queryRelatedData(table string, fields []string, enterpriseID uuid.UUID, anchorType, anchorID string) ([]map[string]interface{}, error) {
-	var results []map[string]interface{}
-	query := s.db.Table(table).
-		Where("enterprise_id = ? AND deleted_at IS NULL", enterpriseID).
-		Select(strings.Join(fields, ", "))
-
-	switch anchorType {
-	case "customer":
-		query = query.Where("customer_id = ?", anchorID)
-	default:
-		query = query.Where("id = ?", anchorID)
-	}
-
-	if err := query.Find(&results).Error; err != nil {
-		return nil, fmt.Errorf("query related %s: %w", table, err)
-	}
-	return results, nil
-}
-
-func (s *ExportService) queryEmployeeDimensionData(table string, fields []string, enterpriseID uuid.UUID, employeeID string) ([]map[string]interface{}, error) {
-	var results []map[string]interface{}
-	query := s.db.Table(table).
-		Where("enterprise_id = ? AND deleted_at IS NULL", enterpriseID).
-		Select(strings.Join(fields, ", "))
-
-	if err := query.Find(&results).Error; err != nil {
-		return nil, fmt.Errorf("query employee dimension %s: %w", table, err)
-	}
-	return results, nil
 }
 
 func (s *ExportService) getRelatedEntities(anchorType string) []string {
