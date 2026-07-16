@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -25,7 +26,7 @@ type ppUpdateReq struct {
 }
 
 func (h *PaymentPlanHandler) CreateBatch(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -54,7 +55,7 @@ func (h *PaymentPlanHandler) List(c *gin.Context) {
 }
 
 func (h *PaymentPlanHandler) Update(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -83,7 +84,7 @@ func (h *PaymentPlanHandler) Update(c *gin.Context) {
 }
 
 func (h *PaymentPlanHandler) Delete(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -96,7 +97,7 @@ func (h *PaymentPlanHandler) Delete(c *gin.Context) {
 }
 
 func (h *PaymentPlanHandler) ListOverdue(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

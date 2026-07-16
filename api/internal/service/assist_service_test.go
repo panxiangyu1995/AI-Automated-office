@@ -113,6 +113,11 @@ func (m *assistMsgRepo) MarkRead(id, enterpriseID uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *assistMsgRepo) BatchMarkAsRead(ids []uuid.UUID, enterpriseID uuid.UUID) (int64, error) {
+	args := m.Called(ids, enterpriseID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *assistMsgRepo) ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.Message, int64, error) {
 	args := m.Called(enterpriseID, page, pageSize)
 	return args.Get(0).([]model.Message), args.Get(1).(int64), args.Error(2)

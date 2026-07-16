@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -8,16 +9,18 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 )
 
 type OrderService struct {
-	orderRepo repository.OrderRepository
-	invRepo   repository.InventoryRepository
-	matRepo   repository.MaterialRepository
-	whRepo    repository.WarehouseRepository
-	supRepo   repository.SupplierRepository
-	custRepo  repository.CustomerRepository
-	qiRepo    repository.QualityInspectionRepository
+	orderRepo    repository.OrderRepository
+	invRepo      repository.InventoryRepository
+	matRepo      repository.MaterialRepository
+	whRepo       repository.WarehouseRepository
+	supRepo      repository.SupplierRepository
+	custRepo     repository.CustomerRepository
+	qiRepo       repository.QualityInspectionRepository
+	lockProvider *rc.LockProvider
 }
 
 var salesOrderTransitions = map[string][]string{
@@ -41,8 +44,8 @@ type OrderItemInput struct {
 	UnitPrice  float64 `json:"unit_price"`
 }
 
-func NewOrderService(orderRepo repository.OrderRepository, invRepo repository.InventoryRepository, matRepo repository.MaterialRepository, whRepo repository.WarehouseRepository, supRepo repository.SupplierRepository, custRepo repository.CustomerRepository, qiRepo repository.QualityInspectionRepository) *OrderService {
-	return &OrderService{orderRepo, invRepo, matRepo, whRepo, supRepo, custRepo, qiRepo}
+func NewOrderService(orderRepo repository.OrderRepository, invRepo repository.InventoryRepository, matRepo repository.MaterialRepository, whRepo repository.WarehouseRepository, supRepo repository.SupplierRepository, custRepo repository.CustomerRepository, qiRepo repository.QualityInspectionRepository, lockProvider *rc.LockProvider) *OrderService {
+	return &OrderService{orderRepo, invRepo, matRepo, whRepo, supRepo, custRepo, qiRepo, lockProvider}
 }
 
 func generateOrderNo(prefix string) string {
@@ -79,8 +82,8 @@ func (s *OrderService) CreatePurchaseOrder(eid, supplierID, notes string, items 
 }
 
 func (s *OrderService) ReceivePurchase(poID, whID string, requireInspection bool) (*model.PurchaseOrder, *apperrors.AppError) {
-	pid, err := uuid.Parse(poID); if err != nil { return nil, apperrors.NewValidationError("po_id", "无效") }
-	po, dbErr := s.orderRepo.FindPurchaseOrderByID(pid, uuid.Nil)
+	_, err := uuid.Parse(poID); if err != nil { return nil, apperrors.NewValidationError("po_id", "无效") }
+	po, dbErr := s.orderRepo.FindPurchaseOrderByIDNoEnterprise(poID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询采购订单失败") }
 	if po == nil { return nil, apperrors.ErrNotFound.WithDetail("采购订单不存在") }
 
@@ -105,9 +108,12 @@ func (s *OrderService) ReceivePurchase(poID, whID string, requireInspection bool
 		qty := item.Quantity - item.ReceivedQty
 		if qty <= 0 { continue }
 		matID, _ := uuid.Parse(item.MaterialID)
-		s.invRepo.Upsert(&model.WarehouseInventory{
-			WarehouseID: uuid.MustParse(whID), MaterialID: matID, Quantity: qty,
-		})
+		whIDparsed := uuid.MustParse(whID)
+		lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whIDparsed.String(), matID.String())
+		if !acquired { return nil, apperrors.ErrBadRequest.WithDetail(fmt.Sprintf("物料 %s 库存操作冲突，请稍后重试", item.MaterialID)) }
+		adjErr := s.invRepo.AdjustQuantity(po.EnterpriseID, whIDparsed, matID, qty)
+		lock.Release(context.Background())
+		if adjErr != nil { return nil, apperrors.ErrInternal.WithDetail("更新库存失败") }
 		s.orderRepo.UpdatePurchaseOrderItemReceivedQty(item.ID, po.EnterpriseID, item.ReceivedQty+qty)
 	}
 
@@ -143,8 +149,8 @@ func (s *OrderService) CreateSalesOrder(eid, customerID, notes string, items []O
 }
 
 func (s *OrderService) ShipSalesOrder(soID, whID string) (*model.SalesOrder, *apperrors.AppError) {
-	sid, err := uuid.Parse(soID); if err != nil { return nil, apperrors.NewValidationError("so_id", "无效") }
-	so, dbErr := s.orderRepo.FindSalesOrderByID(sid, uuid.Nil)
+	_, err := uuid.Parse(soID); if err != nil { return nil, apperrors.NewValidationError("so_id", "无效") }
+	so, dbErr := s.orderRepo.FindSalesOrderByIDNoEnterprise(soID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询销售订单失败") }
 	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("销售订单不存在") }
 
@@ -155,10 +161,11 @@ func (s *OrderService) ShipSalesOrder(soID, whID string) (*model.SalesOrder, *ap
 		if qty <= 0 { continue }
 		whIDparsed := uuid.MustParse(whID)
 		matID := uuid.MustParse(item.MaterialID)
-		inv, _ := s.invRepo.Find(whIDparsed, matID)
-		if inv == nil || inv.Quantity < qty { return nil, apperrors.ErrBadRequest.WithDetail(fmt.Sprintf("物料 %s 库存不足", item.MaterialID)) }
-		inv.Quantity -= qty
-		s.invRepo.Upsert(inv)
+		lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whIDparsed.String(), matID.String())
+		if !acquired { return nil, apperrors.ErrBadRequest.WithDetail(fmt.Sprintf("物料 %s 库存操作冲突，请稍后重试", item.MaterialID)) }
+		adjErr := s.invRepo.AdjustQuantityWithCheck(so.EnterpriseID, whIDparsed, matID, -qty)
+		lock.Release(context.Background())
+		if adjErr != nil { return nil, apperrors.ErrBadRequest.WithDetail(fmt.Sprintf("物料 %s 库存不足", item.MaterialID)) }
 		s.orderRepo.UpdateSalesOrderItemShippedQty(item.ID, so.EnterpriseID, item.ShippedQty+qty)
 	}
 
@@ -177,7 +184,8 @@ func (s *OrderService) CreateTransfer(eid, srcWh, tgtWh, matID string, qty int) 
 
 func (s *OrderService) ExecuteTransfer(toID string) (*model.TransferOrder, *apperrors.AppError) {
 	tid, err := uuid.Parse(toID); if err != nil { return nil, apperrors.NewValidationError("to_id", "无效") }
-	to, dbErr := s.orderRepo.FindTransferOrderByID(tid, uuid.Nil)
+	_ = tid
+	to, dbErr := s.orderRepo.FindTransferOrderByIDNoEnterprise(toID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询调拨单失败") }
 	if to == nil { return nil, apperrors.ErrNotFound.WithDetail("调拨单不存在") }
 
@@ -185,11 +193,22 @@ func (s *OrderService) ExecuteTransfer(toID string) (*model.TransferOrder, *appe
 	tgtWh := uuid.MustParse(to.TargetWhID)
 	matID := uuid.MustParse(to.MaterialID)
 
-	inv, _ := s.invRepo.Find(srcWh, matID)
-	if inv == nil || inv.Quantity < to.Quantity { return nil, apperrors.ErrBadRequest.WithDetail("源仓库库存不足") }
-	inv.Quantity -= to.Quantity
-	s.invRepo.Upsert(inv)
-	s.invRepo.Upsert(&model.WarehouseInventory{WarehouseID: tgtWh, MaterialID: matID, Quantity: to.Quantity})
+	lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), srcWh.String(), matID.String())
+	if !acquired { return nil, apperrors.ErrBadRequest.WithDetail("源仓库库存操作冲突，请稍后重试") }
+	srcErr := s.invRepo.AdjustQuantityWithCheck(to.EnterpriseID, srcWh, matID, -to.Quantity)
+	if srcErr != nil {
+		lock.Release(context.Background())
+		return nil, apperrors.ErrBadRequest.WithDetail("源仓库库存不足")
+	}
+	tgtLock, tgtAcquired := s.lockProvider.AcquireInventoryLock(context.Background(), tgtWh.String(), matID.String())
+	if !tgtAcquired {
+		s.invRepo.AdjustQuantity(to.EnterpriseID, srcWh, matID, to.Quantity)
+		lock.Release(context.Background())
+		return nil, apperrors.ErrBadRequest.WithDetail("目标仓库库存操作冲突，请稍后重试")
+	}
+	s.invRepo.AdjustQuantity(to.EnterpriseID, tgtWh, matID, to.Quantity)
+	tgtLock.Release(context.Background())
+	lock.Release(context.Background())
 
 	to.Status = "completed"
 	to.ReceivedQty = to.Quantity
@@ -207,16 +226,17 @@ func (s *OrderService) CreateRequisition(eid, applicantID, whID, matID string, q
 
 func (s *OrderService) IssueRequisition(reqID string, issuedQty int) (*model.Requisition, *apperrors.AppError) {
 	rid, err := uuid.Parse(reqID); if err != nil { return nil, apperrors.NewValidationError("req_id", "无效") }
-	req, dbErr := s.orderRepo.FindRequisitionByID(rid, uuid.Nil)
+	req, dbErr := s.orderRepo.FindRequisitionByIDNoEnterprise(reqID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询领用申请失败") }
 	if req == nil { return nil, apperrors.ErrNotFound.WithDetail("领用申请不存在") }
 
 	whID := uuid.MustParse(req.WarehouseID)
 	matID := uuid.MustParse(req.MaterialID)
-	inv, _ := s.invRepo.Find(whID, matID)
-	if inv == nil || inv.Quantity < issuedQty { return nil, apperrors.ErrBadRequest.WithDetail("库存不足") }
-	inv.Quantity -= issuedQty
-	s.invRepo.Upsert(inv)
+	lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whID.String(), matID.String())
+	if !acquired { return nil, apperrors.ErrBadRequest.WithDetail("库存操作冲突，请稍后重试") }
+	adjErr := s.invRepo.AdjustQuantityWithCheck(req.EnterpriseID, whID, matID, -issuedQty)
+	lock.Release(context.Background())
+	if adjErr != nil { return nil, apperrors.ErrBadRequest.WithDetail("库存不足") }
 
 	if err := s.orderRepo.UpdateRequisitionFields(rid, req.EnterpriseID, map[string]interface{}{"status": "issued", "issued_qty": issuedQty}); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("更新领用申请失败")
@@ -253,9 +273,9 @@ func (s *OrderService) ListOrders(eid, orderType string, p, ps int) (interface{}
 }
 
 func (s *OrderService) ChangeSalesOrderStatus(soID, newStatus string) (*model.SalesOrder, *apperrors.AppError) {
-	sid, err := uuid.Parse(soID)
+	_, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("so_id", "无效") }
-	so, dbErr := s.orderRepo.FindSalesOrderByID(sid, uuid.Nil)
+	so, dbErr := s.orderRepo.FindSalesOrderByIDNoEnterprise(soID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询销售订单失败") }
 	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("销售订单不存在") }
 	if !validSalesTransition(so.Status, newStatus) {

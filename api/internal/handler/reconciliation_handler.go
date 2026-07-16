@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -15,7 +16,7 @@ func NewReconciliationHandler(svc *service.ReconciliationService) *Reconciliatio
 }
 
 func (h *ReconciliationHandler) GetReconciliation(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

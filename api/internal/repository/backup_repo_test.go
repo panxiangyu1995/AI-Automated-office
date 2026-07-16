@@ -29,6 +29,7 @@ func setupBackupTestDB(t *testing.T) *gorm.DB {
 		enterprise_id TEXT NOT NULL,
 		config_id TEXT, status VARCHAR(20) NOT NULL DEFAULT 'pending',
 		file_path VARCHAR(500), file_size INTEGER,
+		encrypted BOOLEAN NOT NULL DEFAULT 0,
 		error_message TEXT, started_at DATETIME, completed_at DATETIME)`).Error)
 	return db
 }

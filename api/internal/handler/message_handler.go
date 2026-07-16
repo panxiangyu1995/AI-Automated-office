@@ -20,7 +20,7 @@ func NewMessageHandler(msgService *service.MessageService) *MessageHandler {
 }
 
 func (h *MessageHandler) Get(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -39,7 +39,7 @@ func (h *MessageHandler) Get(c *gin.Context) {
 }
 
 func (h *MessageHandler) Send(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -62,7 +62,7 @@ func (h *MessageHandler) Send(c *gin.Context) {
 }
 
 func (h *MessageHandler) List(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -81,7 +81,7 @@ func (h *MessageHandler) List(c *gin.Context) {
 }
 
 func (h *MessageHandler) Unread(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -97,7 +97,7 @@ func (h *MessageHandler) Unread(c *gin.Context) {
 }
 
 func (h *MessageHandler) MarkRead(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -117,8 +117,31 @@ func (h *MessageHandler) MarkRead(c *gin.Context) {
 	response.Success(c, gin.H{"message": "已标记为已读"})
 }
 
+func (h *MessageHandler) BatchMarkRead(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, apperrors.ErrTenantRequired)
+		return
+	}
+
+	var req struct {
+		MessageIDs []string `json:"message_ids" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "message_ids", "消息ID列表不能为空")
+		return
+	}
+
+	count, appErr := h.msgService.BatchMarkRead(req.MessageIDs, eid)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+	response.Success(c, gin.H{"marked_count": count})
+}
+
 func (h *MessageHandler) Poll(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -136,7 +159,7 @@ func (h *MessageHandler) Poll(c *gin.Context) {
 }
 
 func (h *MessageHandler) CreateAnnouncement(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -165,7 +188,7 @@ func (h *MessageHandler) CreateAnnouncement(c *gin.Context) {
 }
 
 func (h *MessageHandler) ListAnnouncements(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return

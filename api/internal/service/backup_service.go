@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/crypto"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
@@ -219,6 +221,19 @@ func (s *BackupService) TriggerBackup(enterpriseID string) (*model.BackupRecord,
 		return nil, apperrors.ErrInternal.WithDetail("备份执行失败: " + record.ErrorMessage)
 	}
 
+	if crypto.Initialized() {
+		encPath := filePath + ".enc"
+		if encErr := crypto.EncryptFile(filePath, encPath); encErr != nil {
+			log.Printf("[backup] encryption failed for %s: %v, keeping plaintext", filePath, encErr)
+		} else {
+			os.Remove(filePath)
+			filePath = encPath
+			record.Encrypted = true
+		}
+	} else {
+		log.Println("[backup] crypto not initialized, backup stored unencrypted")
+	}
+
 	fileInfo, err := os.Stat(filePath)
 	if err == nil {
 		record.FileSize = fileInfo.Size()
@@ -253,6 +268,19 @@ func (s *BackupService) Restore(enterpriseID, recordID string) *apperrors.AppErr
 		return apperrors.ErrBadRequest.WithDetail("该备份记录无法恢复，状态: " + record.Status)
 	}
 
+	backupPath := record.FilePath
+	if record.Encrypted {
+		if !crypto.Initialized() {
+			return apperrors.ErrBadRequest.WithDetail("加密备份无法恢复：加密模块未初始化")
+		}
+		decPath := backupPath + ".dec"
+		if decErr := crypto.DecryptFile(backupPath, decPath); decErr != nil {
+			return apperrors.ErrInternal.WithDetail("备份解密失败: " + decErr.Error())
+		}
+		defer os.Remove(decPath)
+		backupPath = decPath
+	}
+
 	schemaName := fmt.Sprintf("tenant_%s", record.EnterpriseID.String())
 
 	cmd := exec.Command("pg_restore",
@@ -262,7 +290,7 @@ func (s *BackupService) Restore(enterpriseID, recordID string) *apperrors.AppErr
 		"--dbname="+s.dbName,
 		"--schema="+schemaName,
 		"--clean",
-		record.FilePath,
+		backupPath,
 	)
 	cmd.Env = append(os.Environ(), "PGPASSWORD="+s.dbPassword)
 

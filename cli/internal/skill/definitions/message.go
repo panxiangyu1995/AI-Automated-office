@@ -66,6 +66,17 @@ func initMessageSkills() {
 	})
 
 	skill.Register(skill.SkillDefinition{
+		Name:        "message_batch_mark_read",
+		Description: "批量标记消息为已读",
+		Category:    "message",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/messages/read",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "message_ids", Type: "string", Required: true, Description: "消息ID数组(JSON数组格式)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
 		Name:        "announcement_create",
 		Description: "发送全员公告",
 		Category:    "message",

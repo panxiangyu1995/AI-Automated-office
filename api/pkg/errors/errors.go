@@ -239,6 +239,11 @@ var (
 		Code: "BIZ_INSPECTION_REQUIRED", Message: "采购入库需先完成质检", Status: 400,
 		Level: LevelUserAction,
 	}
+	ErrDebugDisabled = &AppError{
+		Code: "SYS_DEBUG_DISABLED", Message: "调试端点未启用", Status: 404,
+		Level: LevelUserAction, Recoverable: false,
+		RecoveryActionInfo: &RecoveryActionInfo{Type: "rebuild", Description: "使用 go build -tags debug 启用调试端点"},
+	}
 	ErrReceivableNotFound = &AppError{
 		Code: "FIN_RECEIVABLE_NOT_FOUND", Message: "应收款记录不存在", Status: 404,
 		Level: LevelDataIssue,

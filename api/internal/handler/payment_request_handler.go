@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -41,7 +42,7 @@ type prRejectReq struct {
 }
 
 func (h *PaymentRequestHandler) Create(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -60,7 +61,7 @@ func (h *PaymentRequestHandler) Create(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) List(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -77,7 +78,7 @@ func (h *PaymentRequestHandler) List(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Get(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -91,7 +92,7 @@ func (h *PaymentRequestHandler) Get(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Update(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -126,7 +127,7 @@ func (h *PaymentRequestHandler) Update(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Delete(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -139,7 +140,7 @@ func (h *PaymentRequestHandler) Delete(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) SubmitForApproval(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -152,7 +153,7 @@ func (h *PaymentRequestHandler) SubmitForApproval(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Approve(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -166,7 +167,7 @@ func (h *PaymentRequestHandler) Approve(c *gin.Context) {
 }
 
 func (h *PaymentRequestHandler) Reject(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

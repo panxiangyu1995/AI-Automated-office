@@ -206,7 +206,7 @@ func TestData10_SubscriptionPlanFullCycle(t *testing.T) {
 	w := client.POST("/api/v1/subscription-plans", map[string]interface{}{
 		"Name":        "Enterprise Plan",
 		"Description": "Full enterprise plan",
-		"Features":    "hrm,crm,ims,contract,sales,service,finance,workflow,kb,backup",
+		"Features":    []string{"hrm", "crm", "ims", "contract", "sales", "service", "finance", "workflow", "kb", "backup"},
 		"Price":       499.0,
 		"MaxUsers":    200,
 		"MaxStorage":  102400,
@@ -785,7 +785,7 @@ func TestCust_FieldToggle(t *testing.T) {
 	client.SetToken(fx.OwnerToken(t))
 	client.SetEnterprise(fx.EnterpriseID)
 
-	createW := client.POST("/api/v1/custom-fields", map[string]interface{}{
+	createW := client.POST("/api/v1/meta/fields", map[string]interface{}{
 		"entity_type": "customer", "field_name": "toggle_field",
 		"field_type": "text", "visible": true,
 	})
@@ -793,7 +793,7 @@ func TestCust_FieldToggle(t *testing.T) {
 		t.Fatalf("feature not implemented: custom field create failed (got %d)", createW.Code)
 	}
 
-	w := client.GET("/api/v1/custom-fields?entity_type=customer")
+	w := client.GET("/api/v1/meta/entities/customer/fields")
 	if w.Code != 200 && w.Code != 404 {
 		t.Errorf("expected 200/404, got %d; body: %s", w.Code, w.Body.String())
 	}

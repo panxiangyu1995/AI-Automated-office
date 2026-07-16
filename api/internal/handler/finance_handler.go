@@ -39,7 +39,7 @@ type invReq struct {
 }
 
 func (h *FinanceHandler) CreatePayment(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req payReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	r, appErr := h.svc.CreatePayment(eid, req.CustomerID, req.ContractID, req.PaymentMethod, req.Notes, req.Amount)
@@ -48,7 +48,7 @@ func (h *FinanceHandler) CreatePayment(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ListPayments(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListPayments(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -56,7 +56,7 @@ func (h *FinanceHandler) ListPayments(c *gin.Context) {
 }
 
 func (h *FinanceHandler) CreateExpense(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req expReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	if req.SubmittedBy == "" {
@@ -68,7 +68,7 @@ func (h *FinanceHandler) CreateExpense(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ApproveExpense(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -79,7 +79,7 @@ func (h *FinanceHandler) ApproveExpense(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ListExpenses(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListExpenses(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -87,7 +87,7 @@ func (h *FinanceHandler) ListExpenses(c *gin.Context) {
 }
 
 func (h *FinanceHandler) CreateInvoice(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req invReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	r, appErr := h.svc.CreateInvoice(eid, req.CustomerID, req.Notes, req.Amount, req.TaxAmount)
@@ -96,7 +96,7 @@ func (h *FinanceHandler) CreateInvoice(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ListInvoices(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListInvoices(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -104,7 +104,7 @@ func (h *FinanceHandler) ListInvoices(c *gin.Context) {
 }
 
 func (h *FinanceHandler) CreateReceivable(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -128,7 +128,7 @@ func (h *FinanceHandler) CreateReceivable(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ListReceivables(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -149,7 +149,7 @@ func (h *FinanceHandler) ListReceivables(c *gin.Context) {
 }
 
 func (h *FinanceHandler) CreatePayable(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -173,7 +173,7 @@ func (h *FinanceHandler) CreatePayable(c *gin.Context) {
 }
 
 func (h *FinanceHandler) ListPayables(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

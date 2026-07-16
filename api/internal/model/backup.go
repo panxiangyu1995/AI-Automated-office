@@ -20,6 +20,7 @@ type BackupRecord struct {
 	Status       string     `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
 	FilePath     string     `gorm:"type:varchar(500)" json:"file_path,omitempty"`
 	FileSize     int64      `json:"file_size,omitempty"`
+	Encrypted    bool       `gorm:"not null;default:false" json:"encrypted"`
 	ErrorMessage string     `gorm:"type:text" json:"error_message,omitempty"`
 	StartedAt    *time.Time `json:"started_at,omitempty"`
 	CompletedAt  *time.Time `json:"completed_at,omitempty"`

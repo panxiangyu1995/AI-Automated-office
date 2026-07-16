@@ -101,3 +101,45 @@ func (h *EnterpriseHandler) List(c *gin.Context) {
 		PageSize:   pageSize,
 	})
 }
+
+func (h *EnterpriseHandler) ChangeStatus(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.ValidationError(c, "enterprise_id", "企业ID不能为空")
+		return
+	}
+
+	var req struct {
+		Status     string `json:"status" binding:"required"`
+		Reason     string `json:"reason"`
+		OperatorID string `json:"operator_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "body", "请求体格式错误")
+		return
+	}
+
+	enterprise, appErr := h.enterpriseService.ChangeStatus(enterpriseID, req.Status, req.Reason, req.OperatorID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+
+	response.Success(c, enterprise)
+}
+
+func (h *EnterpriseHandler) GetStatusLog(c *gin.Context) {
+	enterpriseID := c.Param("enterprise_id")
+	if enterpriseID == "" {
+		response.ValidationError(c, "enterprise_id", "企业ID不能为空")
+		return
+	}
+
+	logs, appErr := h.enterpriseService.GetStatusLog(enterpriseID)
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
+
+	response.Success(c, logs)
+}

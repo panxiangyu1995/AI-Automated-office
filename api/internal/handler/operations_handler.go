@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
@@ -15,9 +17,14 @@ func (h *OperationsHandler) Dashboard(c *gin.Context) { response.Success(c, gin.
 
 func (h *OperationsHandler) CreatePlan(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	var req struct{ Name, Description, Features string; Price float64; MaxUsers int; MaxStorage int64 }
+	var req struct{ Name, Description string; Features interface{}; Price float64; MaxUsers int; MaxStorage int64 }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	p, appErr := h.svc.CreatePlan(eid, req.Name, req.Description, req.Features, req.Price, req.MaxUsers, req.MaxStorage)
+	var featuresStr string
+	if req.Features != nil {
+		b, _ := json.Marshal(req.Features)
+		featuresStr = string(b)
+	}
+	p, appErr := h.svc.CreatePlan(eid, req.Name, req.Description, featuresStr, req.Price, req.MaxUsers, req.MaxStorage)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, p)
 }

@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -20,7 +21,7 @@ type supReq struct {
 }
 
 func (h *SupplierHandler) Create(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req supReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	item, appErr := h.svc.Create(eid, req.Name, req.ContactName, req.ContactPhone, req.ContactEmail, req.Address)
@@ -29,7 +30,7 @@ func (h *SupplierHandler) Create(c *gin.Context) {
 }
 
 func (h *SupplierHandler) Update(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req supReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	item, appErr := h.svc.Update(eid, c.Param("id"), req.Name, req.ContactName, req.ContactPhone, req.ContactEmail, req.Address, c.Query("status"))
@@ -38,19 +39,19 @@ func (h *SupplierHandler) Update(c *gin.Context) {
 }
 
 func (h *SupplierHandler) Delete(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	if appErr := h.svc.Delete(eid, c.Param("id")); appErr != nil { response.Error(c, appErr); return }
 	response.NoContent(c)
 }
 
 func (h *SupplierHandler) Get(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	item, appErr := h.svc.Get(eid, c.Param("id")); if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, item)
 }
 
 func (h *SupplierHandler) List(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.List(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }

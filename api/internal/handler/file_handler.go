@@ -22,7 +22,7 @@ func NewFileHandler(fileService *service.FileService) *FileHandler {
 }
 
 func (h *FileHandler) Upload(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return

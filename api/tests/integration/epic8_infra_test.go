@@ -220,7 +220,7 @@ func TestSubscriptionPlan_CRUD(t *testing.T) {
 		"Price":       99.99,
 		"MaxUsers":    50,
 		"MaxStorage":  10737418240,
-		"Features":    "all",
+		"Features":    []string{"all"},
 	})
 	if w.Code != 201 && w.Code != 400 {
 		t.Errorf("expected 201 or 400, got %d; body: %s", w.Code, w.Body.String())

@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -20,7 +21,7 @@ type setInvReq struct {
 }
 
 func (h *InventoryHandler) Set(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req setInvReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	inv, appErr := h.svc.Set(eid, req.WarehouseID, req.MaterialID, req.Quantity, req.SafetyStock, req.InTransit)
@@ -42,7 +43,7 @@ func (h *InventoryHandler) ByMaterial(c *gin.Context) {
 }
 
 func (h *InventoryHandler) LowStock(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.LowStockAlerts(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }

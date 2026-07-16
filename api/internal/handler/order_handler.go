@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -44,7 +45,7 @@ type reqReq struct {
 }
 
 func (h *OrderHandler) CreatePurchaseOrder(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req poReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	order, appErr := h.svc.CreatePurchaseOrder(eid, req.SupplierID, req.Notes, req.Items)
@@ -75,7 +76,7 @@ func (h *OrderHandler) ReceivePurchase(c *gin.Context) {
 }
 
 func (h *OrderHandler) CreateSalesOrder(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req soReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	order, appErr := h.svc.CreateSalesOrder(eid, req.CustomerID, req.Notes, req.Items)
@@ -94,14 +95,14 @@ func (h *OrderHandler) ShipSalesOrder(c *gin.Context) {
 	order, appErr := h.svc.ShipSalesOrder(soID, whID)
 	if appErr != nil { response.Error(c, appErr); return }
 	if h.autoArchiveSvc != nil {
-		eid := c.Param("enterprise_id")
+		eid := middleware.GetEnterpriseID(c)
 		go h.autoArchiveSvc.OnBusinessEvent("sales_completed", soID, eid)
 	}
 	response.Success(c, order)
 }
 
 func (h *OrderHandler) CreateTransfer(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req transferReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	order, appErr := h.svc.CreateTransfer(eid, req.SourceWhID, req.TargetWhID, req.MaterialID, req.Quantity)
@@ -116,7 +117,7 @@ func (h *OrderHandler) ExecuteTransfer(c *gin.Context) {
 }
 
 func (h *OrderHandler) CreateRequisition(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req reqReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	order, appErr := h.svc.CreateRequisition(eid, req.ApplicantID, req.WarehouseID, req.MaterialID, req.Quantity, req.Notes)
@@ -132,7 +133,7 @@ func (h *OrderHandler) IssueRequisition(c *gin.Context) {
 }
 
 func (h *OrderHandler) ListOrders(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	orders, total, appErr := h.svc.ListOrders(eid, c.Query("type"), p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -146,7 +147,8 @@ func (h *OrderHandler) BindContract(c *gin.Context) {
 	var req struct{ ContractID string `json:"contract_id"` }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	if req.ContractID == "" { response.ValidationError(c, "contract_id", "不能为空"); return }
-	ref, appErr := h.contractSvc.LinkDocument(req.ContractID, "sales_order", soID, "")
+	eid := middleware.GetEnterpriseID(c)
+	ref, appErr := h.contractSvc.LinkDocument(eid, req.ContractID, "sales_order", soID, "")
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, ref)
 }
@@ -168,7 +170,7 @@ func (h *OrderHandler) ChangeSalesOrderStatus(c *gin.Context) {
 }
 
 func (h *OrderHandler) ListStockFlows(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	flows, total, appErr := h.svc.ListStockFlows(eid, c.Query("warehouse_id"), c.Query("material_id"), p, ps)
 	if appErr != nil { response.Error(c, appErr); return }

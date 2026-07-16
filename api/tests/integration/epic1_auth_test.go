@@ -356,7 +356,7 @@ func TestAPIQuota_Exceeded(t *testing.T) {
 		if i >= 5 {
 			if w.Code == 429 {
 				resp := testutil.ParseResponse(t, w)
-				testutil.AssertErrorCode(t, resp, "AUTH_QUOTA_EXCEEDED")
+				testutil.AssertErrorCode(t, resp, "PERM_QUOTA_EXCEEDED")
 				return
 			}
 		}

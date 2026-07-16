@@ -12,6 +12,7 @@ type MessageRepository interface {
 	ListByReceiver(enterpriseID uuid.UUID, receiverID string, page, pageSize int) ([]model.Message, int64, error)
 	CountUnread(enterpriseID uuid.UUID, receiverID string) (int64, error)
 	MarkRead(id, enterpriseID uuid.UUID) error
+	BatchMarkAsRead(ids []uuid.UUID, enterpriseID uuid.UUID) (int64, error)
 	ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.Message, int64, error)
 }
 
@@ -56,6 +57,14 @@ func (r *messageRepo) CountUnread(enterpriseID uuid.UUID, receiverID string) (in
 
 func (r *messageRepo) MarkRead(id, enterpriseID uuid.UUID) error {
 	return r.db.Model(&model.Message{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("is_read", true).Error
+}
+
+func (r *messageRepo) BatchMarkAsRead(ids []uuid.UUID, enterpriseID uuid.UUID) (int64, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	result := r.db.Model(&model.Message{}).Where("id IN ? AND enterprise_id = ? AND is_read = false", ids, enterpriseID).Update("is_read", true)
+	return result.RowsAffected, result.Error
 }
 
 func (r *messageRepo) ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.Message, int64, error) {

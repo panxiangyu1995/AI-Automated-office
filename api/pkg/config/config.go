@@ -63,6 +63,7 @@ func (j *JWTConfig) GetCLIHMACSecret() string {
 }
 
 type LogConfig struct {
+	Dir        string `mapstructure:"dir"`
 	Level      string `mapstructure:"level"`
 	Filename   string `mapstructure:"filename"`
 	MaxSize    int    `mapstructure:"max_size"`

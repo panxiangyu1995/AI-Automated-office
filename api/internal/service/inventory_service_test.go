@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -22,6 +23,33 @@ func (m *mockInvRepoForSvc) Upsert(inv *model.WarehouseInventory) error {
 		inv.ID = uuid.New()
 	}
 	key := inv.WarehouseID.String() + ":" + inv.MaterialID.String()
+	m.inventory[key] = inv
+	return nil
+}
+
+func (m *mockInvRepoForSvc) AdjustQuantity(eid, whID, matID uuid.UUID, delta int) error {
+	key := whID.String() + ":" + matID.String()
+	inv, ok := m.inventory[key]
+	if !ok {
+		inv = &model.WarehouseInventory{WarehouseID: whID, MaterialID: matID, Quantity: 0}
+		inv.ID = uuid.New()
+	}
+	inv.Quantity += delta
+	m.inventory[key] = inv
+	return nil
+}
+
+func (m *mockInvRepoForSvc) AdjustQuantityWithCheck(eid, whID, matID uuid.UUID, delta int) error {
+	key := whID.String() + ":" + matID.String()
+	inv, ok := m.inventory[key]
+	if !ok {
+		inv = &model.WarehouseInventory{WarehouseID: whID, MaterialID: matID, Quantity: 0}
+		inv.ID = uuid.New()
+	}
+	if inv.Quantity+delta < 0 {
+		return fmt.Errorf("insufficient stock")
+	}
+	inv.Quantity += delta
 	m.inventory[key] = inv
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -35,7 +36,7 @@ type updateOppRequest struct {
 }
 
 func (h *OpportunityHandler) Get(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -54,7 +55,7 @@ func (h *OpportunityHandler) Get(c *gin.Context) {
 }
 
 func (h *OpportunityHandler) Create(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -83,7 +84,7 @@ func (h *OpportunityHandler) Create(c *gin.Context) {
 }
 
 func (h *OpportunityHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -117,7 +118,7 @@ func (h *OpportunityHandler) Update(c *gin.Context) {
 }
 
 func (h *OpportunityHandler) Delete(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

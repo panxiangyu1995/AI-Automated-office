@@ -77,6 +77,7 @@ const (
 	PermSystemConfig  Permission = "system:config"
 	PermSystemLogs    Permission = "system:logs"
 	PermSystemBackup  Permission = "system:backup"
+	PermSystemDebug   Permission = "system:debug"
 
 	PermAll Permission = "*"
 )
@@ -106,6 +107,7 @@ var rolePermissions = map[Role]PermissionSet{
 		PermSystemConfig: true,
 		PermSystemLogs:   true,
 		PermSystemBackup: true,
+		PermSystemDebug:  true,
 	},
 	RoleOwner: {
 		PermUserCreate:   true,
@@ -244,6 +246,13 @@ func HasPermission(role Role, perm Permission) bool {
 		if perms[PermAll] {
 			return true
 		}
+		return perms[perm]
+	}
+	return false
+}
+
+func HasExactPermission(role Role, perm Permission) bool {
+	if perms, ok := rolePermissions[role]; ok {
 		return perms[perm]
 	}
 	return false

@@ -146,6 +146,39 @@ func (s *MessageService) MarkRead(messageID, enterpriseID string) *apperrors.App
 	return nil
 }
 
+func (s *MessageService) BatchMarkRead(messageIDs []string, enterpriseID string) (int64, *apperrors.AppError) {
+	eid, err := uuid.Parse(enterpriseID)
+	if err != nil {
+		return 0, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+
+	if len(messageIDs) == 0 {
+		return 0, nil
+	}
+
+	ids := make([]uuid.UUID, 0, len(messageIDs))
+	for _, mid := range messageIDs {
+		id, err := uuid.Parse(mid)
+		if err != nil {
+			return 0, apperrors.NewValidationError("id", "消息ID无效")
+		}
+		ids = append(ids, id)
+	}
+
+	count, err := s.msgRepo.BatchMarkAsRead(ids, eid)
+	if err != nil {
+		return 0, apperrors.ErrInternal.WithDetail("批量标记已读失败")
+	}
+
+	if s.counter != nil && count > 0 {
+		for i := 0; i < int(count); i++ {
+			s.counter.Decr(context.Background(), "", "")
+		}
+	}
+
+	return count, nil
+}
+
 func (s *MessageService) Poll(enterpriseID string, receiverID string, timeout int) ([]model.Message, *apperrors.AppError) {
 	entID, err := uuid.Parse(enterpriseID)
 	if err != nil {

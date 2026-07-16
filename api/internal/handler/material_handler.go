@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -34,7 +35,7 @@ type updateMatRequest struct {
 }
 
 func (h *MaterialHandler) Create(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req createMatRequest
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "请求体格式错误"); return }
@@ -47,7 +48,7 @@ func (h *MaterialHandler) Create(c *gin.Context) {
 }
 
 func (h *MaterialHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	matID := c.Param("id")
 	if matID == "" { response.ValidationError(c, "id", "物料ID不能为空"); return }
@@ -59,7 +60,7 @@ func (h *MaterialHandler) Update(c *gin.Context) {
 }
 
 func (h *MaterialHandler) Delete(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	matID := c.Param("id")
 	if matID == "" { response.ValidationError(c, "id", "物料ID不能为空"); return }
@@ -69,7 +70,7 @@ func (h *MaterialHandler) Delete(c *gin.Context) {
 }
 
 func (h *MaterialHandler) Get(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	matID := c.Param("id")
 	if matID == "" { response.ValidationError(c, "id", "物料ID不能为空"); return }
@@ -79,7 +80,7 @@ func (h *MaterialHandler) Get(c *gin.Context) {
 }
 
 func (h *MaterialHandler) List(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" { response.Error(c, errors.ErrTenantRequired); return }
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))

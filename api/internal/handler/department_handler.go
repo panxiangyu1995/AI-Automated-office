@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -31,7 +32,7 @@ type setManagerRequest struct {
 }
 
 func (h *DepartmentHandler) Get(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -50,7 +51,7 @@ func (h *DepartmentHandler) Get(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) Create(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.ValidationError(c, "enterprise_id", "企业ID不能为空")
 		return
@@ -72,7 +73,7 @@ func (h *DepartmentHandler) Create(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -99,7 +100,7 @@ func (h *DepartmentHandler) Update(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) Delete(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -120,7 +121,7 @@ func (h *DepartmentHandler) Delete(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) SetManager(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -147,7 +148,7 @@ func (h *DepartmentHandler) SetManager(c *gin.Context) {
 }
 
 func (h *DepartmentHandler) GetTree(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

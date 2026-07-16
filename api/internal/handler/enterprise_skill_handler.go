@@ -18,10 +18,7 @@ func NewEnterpriseSkillHandler(skillService *service.EnterpriseSkillService) *En
 }
 
 func (h *EnterpriseSkillHandler) ConfigureSkill(c *gin.Context) {
-	entID := c.Param("enterprise_id")
-	if entID == "" {
-		entID = c.GetString(middleware.ContextKeyEnterpriseID)
-	}
+	entID := middleware.GetEnterpriseID(c)
 	if entID == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -46,10 +43,7 @@ func (h *EnterpriseSkillHandler) ConfigureSkill(c *gin.Context) {
 }
 
 func (h *EnterpriseSkillHandler) ListSkillMatrix(c *gin.Context) {
-	entID := c.Param("enterprise_id")
-	if entID == "" {
-		entID = c.GetString(middleware.ContextKeyEnterpriseID)
-	}
+	entID := middleware.GetEnterpriseID(c)
 	if entID == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return
@@ -64,10 +58,7 @@ func (h *EnterpriseSkillHandler) ListSkillMatrix(c *gin.Context) {
 }
 
 func (h *EnterpriseSkillHandler) UpdateSkill(c *gin.Context) {
-	entID := c.Param("enterprise_id")
-	if entID == "" {
-		entID = c.GetString(middleware.ContextKeyEnterpriseID)
-	}
+	entID := middleware.GetEnterpriseID(c)
 	if entID == "" {
 		response.Error(c, apperrors.ErrTenantRequired)
 		return

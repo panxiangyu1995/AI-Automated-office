@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -28,7 +29,7 @@ type updatePositionRequest struct {
 }
 
 func (h *PositionHandler) Create(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -50,7 +51,7 @@ func (h *PositionHandler) Create(c *gin.Context) {
 }
 
 func (h *PositionHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -77,7 +78,7 @@ func (h *PositionHandler) Update(c *gin.Context) {
 }
 
 func (h *PositionHandler) List(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

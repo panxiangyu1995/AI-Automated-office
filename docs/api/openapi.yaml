@@ -72,47 +72,58 @@ paths:
         '200':
           description: Logged out
 
-  /auth/device/code:
-    post:
-      tags: [Auth]
-      security: []
-      summary: Generate device code
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [client_id]
-              properties:
-                client_id:
-                  type: string
-                scope:
-                  type: string
-      responses:
-        '200':
-          description: Device code generated
+   /auth/device/code:
+     post:
+       tags: [Auth]
+       security: []
+       summary: Generate device code (PKCE supported)
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               type: object
+               required: [client_id]
+               properties:
+                 client_id:
+                   type: string
+                 scope:
+                   type: string
+                 code_challenge:
+                   type: string
+                   description: PKCE code challenge (BASE64URL(SHA256(code_verifier)))
+                 code_challenge_method:
+                   type: string
+                   enum: [S256, plain]
+                   default: S256
+                   description: PKCE challenge method
+       responses:
+         '200':
+           description: Device code generated
 
-  /auth/device/token:
-    post:
-      tags: [Auth]
-      security: []
-      summary: Exchange device token
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [device_code, client_id]
-              properties:
-                device_code:
-                  type: string
-                client_id:
-                  type: string
-      responses:
-        '200':
-          description: Token exchanged
+   /auth/device/token:
+     post:
+       tags: [Auth]
+       security: []
+       summary: Exchange device token (PKCE verification)
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               type: object
+               required: [device_code, client_id]
+               properties:
+                 device_code:
+                   type: string
+                 client_id:
+                   type: string
+                 code_verifier:
+                   type: string
+                   description: PKCE code verifier (required if code_challenge was provided)
+       responses:
+         '200':
+           description: Token exchanged
 
   /permissions:
     get:

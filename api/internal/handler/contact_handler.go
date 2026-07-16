@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -35,7 +36,7 @@ type updateContactRequest struct {
 }
 
 func (h *ContactHandler) Get(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -54,7 +55,7 @@ func (h *ContactHandler) Get(c *gin.Context) {
 }
 
 func (h *ContactHandler) Create(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -80,7 +81,7 @@ func (h *ContactHandler) Create(c *gin.Context) {
 }
 
 func (h *ContactHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -106,7 +107,7 @@ func (h *ContactHandler) Update(c *gin.Context) {
 }
 
 func (h *ContactHandler) Delete(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

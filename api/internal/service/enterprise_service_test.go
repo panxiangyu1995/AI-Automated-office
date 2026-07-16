@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 )
 
 type mockEnterpriseRepo struct {
@@ -66,9 +67,24 @@ func (m *mockEnterpriseRepo) ListByGroup(groupID string) ([]model.Enterprise, er
 
 func setupEnterpriseService() (*EnterpriseService, *mockEnterpriseRepo) {
 	repo := newMockEnterpriseRepo()
-	svc := NewEnterpriseService(repo, nil)
+	svc := NewEnterpriseService(repo, &mockEnterpriseStatusLogRepo{}, nil)
 	return svc, repo
 }
+
+type mockEnterpriseStatusLogRepo struct {
+	logs []model.EnterpriseStatusLog
+}
+
+func (m *mockEnterpriseStatusLogRepo) Create(log *model.EnterpriseStatusLog) error {
+	m.logs = append(m.logs, *log)
+	return nil
+}
+
+func (m *mockEnterpriseStatusLogRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.EnterpriseStatusLog, error) {
+	return m.logs, nil
+}
+
+var _ repository.EnterpriseStatusLogRepository = (*mockEnterpriseStatusLogRepo)(nil)
 
 func TestEnterpriseService_Create_Success(t *testing.T) {
 	svc, repo := setupEnterpriseService()
@@ -177,5 +193,95 @@ func TestEnterpriseService_List(t *testing.T) {
 	}
 	if len(enterprises) != 2 {
 		t.Errorf("expected 2 enterprises, got %d", len(enterprises))
+	}
+}
+
+func TestEnterpriseService_Create_DefaultTrial(t *testing.T) {
+	svc, _ := setupEnterpriseService()
+	gid := uuid.New().String()
+	ent, err := svc.Create(gid, "Trial Ent", "TRIAL001", "", "", "")
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if ent.Status != "trial" {
+		t.Errorf("expected status 'trial', got %s", ent.Status)
+	}
+}
+
+func TestEnterpriseService_ChangeStatus_ValidTransition(t *testing.T) {
+	svc, repo := setupEnterpriseService()
+	gid := uuid.New().String()
+	ent, _ := svc.Create(gid, "Test", "CS001", "", "", "")
+	opID := uuid.New().String()
+
+	updated, err := svc.ChangeStatus(ent.ID.String(), "active", "trial passed", opID)
+	if err != nil {
+		t.Fatalf("ChangeStatus failed: %v", err)
+	}
+	if updated.Status != "active" {
+		t.Errorf("expected status 'active', got %s", updated.Status)
+	}
+	if updated.SubscribedAt == nil {
+		t.Error("expected subscribed_at to be set")
+	}
+
+	saved := repo.enterprises[ent.ID.String()]
+	if saved.Status != "active" {
+		t.Errorf("expected saved status 'active', got %s", saved.Status)
+	}
+}
+
+func TestEnterpriseService_ChangeStatus_InvalidTransition(t *testing.T) {
+	svc, _ := setupEnterpriseService()
+	gid := uuid.New().String()
+	ent, _ := svc.Create(gid, "Test", "CS002", "", "", "")
+	opID := uuid.New().String()
+
+	_, err := svc.ChangeStatus(ent.ID.String(), "frozen", "skip", opID)
+	if err == nil {
+		t.Fatal("expected error for invalid transition trial->frozen")
+	}
+}
+
+func TestEnterpriseService_ChangeStatus_SuspendSetsDate(t *testing.T) {
+	svc, _ := setupEnterpriseService()
+	gid := uuid.New().String()
+	ent, _ := svc.Create(gid, "Test", "CS003", "", "", "")
+	opID := uuid.New().String()
+
+	svc.ChangeStatus(ent.ID.String(), "active", "activated", opID)
+	updated, err := svc.ChangeStatus(ent.ID.String(), "suspended", "overdue", opID)
+	if err != nil {
+		t.Fatalf("ChangeStatus failed: %v", err)
+	}
+	if updated.SuspendedAt == nil {
+		t.Error("expected suspended_at to be set")
+	}
+}
+
+func TestValidEnterpriseTransition(t *testing.T) {
+	tests := []struct {
+		from, to string
+		want     bool
+	}{
+		{"trial", "active", true},
+		{"trial", "expired", true},
+		{"trial", "cancelled", true},
+		{"trial", "suspended", false},
+		{"active", "suspended", true},
+		{"active", "frozen", true},
+		{"active", "expired", true},
+		{"active", "cancelled", true},
+		{"suspended", "active", true},
+		{"suspended", "frozen", true},
+		{"frozen", "active", true},
+		{"frozen", "suspended", false},
+		{"cancelled", "active", false},
+	}
+	for _, tt := range tests {
+		got := model.ValidEnterpriseTransition(tt.from, tt.to)
+		if got != tt.want {
+			t.Errorf("ValidEnterpriseTransition(%s, %s) = %v, want %v", tt.from, tt.to, got, tt.want)
+		}
 	}
 }

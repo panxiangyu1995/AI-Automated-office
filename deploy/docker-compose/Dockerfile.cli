@@ -3,6 +3,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+# Debug build: add -tags debug to enable debug commands
+# RUN CGO_ENABLED=0 GOOS=linux go build -tags debug -o /bin/ao-cli .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/ao-cli .
 
 FROM alpine:3.20

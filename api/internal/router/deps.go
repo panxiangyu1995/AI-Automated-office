@@ -67,6 +67,11 @@ type RouterDeps struct {
 	EnterpriseSkillHandler   *handler.EnterpriseSkillHandler
 	OperatorAuditHandler     *handler.OperatorAuditHandler
 	TemplateRenderHandler    *handler.TemplateRenderHandler
+	OperatorLogHandler       *handler.OperatorLogHandler
+
+	DebugHandler     *handler.DebugHandler
+	DebugLogService  *service.DebugLogService
+	DebugStubService *service.DebugStubService
 
 	AuditMiddleware        *middleware.AuditMiddleware
 	QuotaMiddleware        *middleware.QuotaMiddleware

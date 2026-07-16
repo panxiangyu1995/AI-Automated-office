@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"gorm.io/gorm"
 
@@ -21,6 +23,7 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func main() {
@@ -46,7 +49,7 @@ func main() {
 		log.Println("==========================================================")
 	}
 
-	logger, err := zap.NewProduction()
+	logger, err := buildLogger(cfg)
 	if err != nil {
 		log.Fatalf("failed to create logger: %v", err)
 	}
@@ -217,4 +220,57 @@ func main() {
 	}
 
 	logger.Info("server exited")
+}
+
+func buildLogger(cfg *config.Config) (*zap.Logger, error) {
+	stdoutEncoder := zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
+	stdoutLevel := zapcore.InfoLevel
+	stdoutCore := zapcore.NewCore(stdoutEncoder, zapcore.AddSync(os.Stdout), stdoutLevel)
+
+	logDir := cfg.Log.Dir
+	if logDir == "" {
+		logDir = "./logs"
+	}
+	logFilename := cfg.Log.Filename
+	if logFilename == "" {
+		logFilename = "api.jsonl"
+	}
+
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		return nil, fmt.Errorf("cannot create log directory: %w", err)
+	}
+
+	logPath := filepath.Join(logDir, logFilename)
+	maxSize := cfg.Log.MaxSize
+	if maxSize == 0 {
+		maxSize = 100
+	}
+	maxBackups := cfg.Log.MaxBackups
+	if maxBackups == 0 {
+		maxBackups = 10
+	}
+	maxAge := cfg.Log.MaxAge
+	if maxAge == 0 {
+		maxAge = 30
+	}
+
+	writer := &lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    maxSize,
+		MaxBackups: maxBackups,
+		MaxAge:     maxAge,
+		Compress:   cfg.Log.Compress,
+	}
+
+	fileEncoderConfig := zap.NewProductionEncoderConfig()
+	fileEncoderConfig.TimeKey = "ts"
+	fileEncoderConfig.LevelKey = "level"
+	fileEncoderConfig.NameKey = "logger"
+	fileEncoderConfig.CallerKey = "caller"
+	fileEncoderConfig.MessageKey = "msg"
+	fileEncoder := zapcore.NewJSONEncoder(fileEncoderConfig)
+	fileCore := zapcore.NewCore(fileEncoder, zapcore.AddSync(writer), zapcore.DebugLevel)
+
+	core := zapcore.NewTee(stdoutCore, fileCore)
+	return zap.New(core), nil
 }

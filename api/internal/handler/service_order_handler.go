@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -24,7 +25,7 @@ type soCreateReq struct {
 type svcStatusReq struct{ Status string `json:"status"` }
 
 func (h *ServiceOrderHandler) Create(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req soCreateReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	so, appErr := h.svc.Create(eid, req.CustomerID, req.OrderType, req.Description, req.ContractID, req.Amount)
@@ -33,34 +34,38 @@ func (h *ServiceOrderHandler) Create(c *gin.Context) {
 }
 
 func (h *ServiceOrderHandler) Get(c *gin.Context) {
-	so, appErr := h.svc.Get(c.Param("service_order_id"))
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	so, appErr := h.svc.Get(eid, c.Param("service_order_id"))
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, so)
 }
 
 func (h *ServiceOrderHandler) Delete(c *gin.Context) {
-	if appErr := h.svc.Delete(c.Param("service_order_id")); appErr != nil { response.Error(c, appErr); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	if appErr := h.svc.Delete(eid, c.Param("service_order_id")); appErr != nil { response.Error(c, appErr); return }
 	response.NoContent(c)
 }
 
 func (h *ServiceOrderHandler) ChangeStatus(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req svcStatusReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	so, appErr := h.svc.ChangeStatus(c.Param("service_order_id"), req.Status)
+	so, appErr := h.svc.ChangeStatus(eid, c.Param("service_order_id"), req.Status)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, so)
 }
 
 func (h *ServiceOrderHandler) Quote(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req struct{ Amount float64 `json:"amount"` }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	so, appErr := h.svc.Quote(c.Param("service_order_id"), req.Amount)
+	so, appErr := h.svc.Quote(eid, c.Param("service_order_id"), req.Amount)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, so)
 }
 
 func (h *ServiceOrderHandler) List(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	sos, total, appErr := h.svc.List(eid, c.Query("order_type"), c.Query("status"), p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -68,7 +73,8 @@ func (h *ServiceOrderHandler) List(c *gin.Context) {
 }
 
 func (h *ServiceOrderHandler) Sign(c *gin.Context) {
-	so, appErr := h.svc.Sign(c.Param("service_order_id"))
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	so, appErr := h.svc.Sign(eid, c.Param("service_order_id"))
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -77,7 +83,7 @@ func (h *ServiceOrderHandler) Sign(c *gin.Context) {
 }
 
 func (h *ServiceOrderHandler) UploadAttachment(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

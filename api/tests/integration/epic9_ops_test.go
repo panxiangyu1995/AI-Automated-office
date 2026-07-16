@@ -75,7 +75,7 @@ func TestOps_SubscriptionPlan_CRUD(t *testing.T) {
 	w := client.POST("/api/v1/subscription-plans", map[string]interface{}{
 		"Name":        "Basic Plan",
 		"Description": "Basic subscription plan",
-		"Features":    "hrm,crm",
+		"Features":    []string{"hrm", "crm"},
 		"Price":       99.0,
 		"MaxUsers":    10,
 		"MaxStorage":  1024,
@@ -99,7 +99,7 @@ func TestOps_EnterpriseSubscription_CRUD(t *testing.T) {
 	planW := client.POST("/api/v1/subscription-plans", map[string]interface{}{
 		"Name":        "Pro Plan",
 		"Description": "Pro subscription",
-		"Features":    "hrm,crm,ims",
+		"Features":    []string{"hrm", "crm", "ims"},
 		"Price":       199.0,
 		"MaxUsers":    50,
 		"MaxStorage":  10240,

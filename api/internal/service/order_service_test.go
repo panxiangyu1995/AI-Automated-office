@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -197,6 +198,23 @@ func (m *mockOrderRepo) FindSalesOrderByIDNoEnterprise(id string) (*model.SalesO
 	}
 	return so, nil
 }
+
+func (m *mockOrderRepo) FindPurchaseOrderByIDNoEnterprise(id string) (*model.PurchaseOrder, error) {
+	po, ok := m.purchaseOrders[id]
+	if !ok {
+		return nil, nil
+	}
+	return po, nil
+}
+
+func (m *mockOrderRepo) FindTransferOrderByIDNoEnterprise(id string) (*model.TransferOrder, error) {
+	return nil, nil
+}
+
+func (m *mockOrderRepo) FindRequisitionByIDNoEnterprise(id string) (*model.Requisition, error) {
+	return nil, nil
+}
+
 func (m *mockOrderRepo) UpdatePurchaseOrderStatus(id, enterpriseID uuid.UUID, status string) error {
 	if po, ok := m.purchaseOrders[id.String()]; ok {
 		po.Status = status
@@ -245,6 +263,29 @@ func newMockInvRepoForOrder() *mockInvRepoForOrder {
 
 func (m *mockInvRepoForOrder) Upsert(inv *model.WarehouseInventory) error {
 	key := inv.WarehouseID.String() + ":" + inv.MaterialID.String()
+	m.inventory[key] = inv
+	return nil
+}
+func (m *mockInvRepoForOrder) AdjustQuantity(eid, whID, matID uuid.UUID, delta int) error {
+	key := whID.String() + ":" + matID.String()
+	inv, ok := m.inventory[key]
+	if !ok {
+		inv = &model.WarehouseInventory{WarehouseID: whID, MaterialID: matID, Quantity: 0}
+	}
+	inv.Quantity += delta
+	m.inventory[key] = inv
+	return nil
+}
+func (m *mockInvRepoForOrder) AdjustQuantityWithCheck(eid, whID, matID uuid.UUID, delta int) error {
+	key := whID.String() + ":" + matID.String()
+	inv, ok := m.inventory[key]
+	if !ok {
+		inv = &model.WarehouseInventory{WarehouseID: whID, MaterialID: matID, Quantity: 0}
+	}
+	if inv.Quantity+delta < 0 {
+		return fmt.Errorf("insufficient stock")
+	}
+	inv.Quantity += delta
 	m.inventory[key] = inv
 	return nil
 }
@@ -340,7 +381,7 @@ func TestOrderService_CreatePurchaseOrder(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	supRepo := newMockSupplierRepoForOrder()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, supRepo, &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, supRepo, &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 	supID := uuid.New().String()
@@ -365,7 +406,7 @@ func TestOrderService_CreatePurchaseOrder_SupplierNotFound(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	supRepo := newMockSupplierRepoForOrder()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, supRepo, &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, supRepo, &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 	supID := uuid.New().String()
@@ -384,7 +425,7 @@ func TestOrderService_CreateSalesOrder(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	supRepo := newMockSupplierRepoForOrder()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, supRepo, &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, supRepo, &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 	custID := uuid.New().String()
@@ -405,7 +446,7 @@ func TestOrderService_CreateSalesOrder(t *testing.T) {
 func TestOrderService_CreateTransfer(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 	srcWh := uuid.New().String()
@@ -423,7 +464,7 @@ func TestOrderService_CreateTransfer(t *testing.T) {
 func TestOrderService_CreateRequisition(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 
@@ -438,7 +479,7 @@ func TestOrderService_CreateRequisition(t *testing.T) {
 func TestOrderService_ChangeSalesOrderStatus(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 	custID := uuid.New().String()
@@ -454,7 +495,7 @@ func TestOrderService_ChangeSalesOrderStatus(t *testing.T) {
 func TestOrderService_ChangeSalesOrderStatus_InvalidTransition(t *testing.T) {
 	orderRepo := newMockOrderRepo()
 	invRepo := newMockInvRepoForOrder()
-	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{})
+	svc := NewOrderService(orderRepo, invRepo, &noopMatRepo{}, &noopWhRepo{}, newMockSupplierRepoForOrder(), &noopCustRepo{}, &noopQIRepo{}, nil)
 
 	eid := uuid.New().String()
 	custID := uuid.New().String()

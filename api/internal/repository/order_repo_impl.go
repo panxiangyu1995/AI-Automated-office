@@ -38,6 +38,17 @@ func (r *orderRepo) FindPurchaseOrderByID(id, enterpriseID uuid.UUID) (*model.Pu
 	return &po, nil
 }
 
+func (r *orderRepo) FindPurchaseOrderByIDNoEnterprise(id string) (*model.PurchaseOrder, error) {
+	var po model.PurchaseOrder
+	if err := r.db.Where("id=?", id).First(&po).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &po, nil
+}
+
 func (r *orderRepo) UpdatePurchaseOrder(po *model.PurchaseOrder) error {
 	return r.db.Save(po).Error
 }
@@ -166,6 +177,17 @@ func (r *orderRepo) FindTransferOrderByID(id, enterpriseID uuid.UUID) (*model.Tr
 	return &to, nil
 }
 
+func (r *orderRepo) FindTransferOrderByIDNoEnterprise(id string) (*model.TransferOrder, error) {
+	var to model.TransferOrder
+	if err := r.db.Where("id=?", id).First(&to).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &to, nil
+}
+
 func (r *orderRepo) UpdateTransferOrder(to *model.TransferOrder) error {
 	return r.db.Save(to).Error
 }
@@ -196,6 +218,17 @@ func (r *orderRepo) CreateRequisition(req *model.Requisition) error {
 func (r *orderRepo) FindRequisitionByID(id, enterpriseID uuid.UUID) (*model.Requisition, error) {
 	var req model.Requisition
 	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&req).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &req, nil
+}
+
+func (r *orderRepo) FindRequisitionByIDNoEnterprise(id string) (*model.Requisition, error) {
+	var req model.Requisition
+	if err := r.db.Where("id=?", id).First(&req).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

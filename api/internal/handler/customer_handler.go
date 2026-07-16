@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -38,7 +39,7 @@ type updateCustomerRequest struct {
 }
 
 func (h *CustomerHandler) Create(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -60,7 +61,7 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Update(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -87,7 +88,7 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Delete(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -108,7 +109,7 @@ func (h *CustomerHandler) Delete(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Get(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -129,7 +130,7 @@ func (h *CustomerHandler) Get(c *gin.Context) {
 }
 
 func (h *CustomerHandler) List(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -152,7 +153,7 @@ func (h *CustomerHandler) List(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Panorama(c *gin.Context) {
-	enterpriseID := c.Param("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 	if enterpriseID == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return

@@ -37,6 +37,8 @@ func registerOrgRoutes(protected *gin.RouterGroup, enterprise *gin.RouterGroup, 
 		enterprises.PUT("/:enterprise_id", deps.EnterpriseHandler.Update)
 		enterprises.GET("", deps.EnterpriseHandler.List)
 		enterprises.GET("/:enterprise_id", deps.EnterpriseHandler.Get)
+		enterprises.POST("/:enterprise_id/status", deps.EnterpriseHandler.ChangeStatus)
+		enterprises.GET("/:enterprise_id/status-log", deps.EnterpriseHandler.GetStatusLog)
 	}
 
 	protected.GET("/quota", deps.QuotaHandler.GetQuota)

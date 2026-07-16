@@ -39,10 +39,11 @@ func (s *ServiceOrderService) Create(eid, customerID, orderType, desc string, co
 	return so, nil
 }
 
-func (s *ServiceOrderService) ChangeStatus(soID, newStatus string) (*model.ServiceOrder, *apperrors.AppError) {
+func (s *ServiceOrderService) ChangeStatus(eid, soID, newStatus string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
-	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	entID, _ := uuid.Parse(eid)
+	so, dbErr := s.repo.FindByID(id, entID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
 	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
 	if !validServiceTransition(so.Status, newStatus) {
@@ -60,19 +61,21 @@ func (s *ServiceOrderService) ChangeStatus(soID, newStatus string) (*model.Servi
 	return so, nil
 }
 
-func (s *ServiceOrderService) Get(soID string) (*model.ServiceOrder, *apperrors.AppError) {
+func (s *ServiceOrderService) Get(eid, soID string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
-	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	entID, _ := uuid.Parse(eid)
+	so, dbErr := s.repo.FindByID(id, entID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
 	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
 	return so, nil
 }
 
-func (s *ServiceOrderService) Delete(soID string) *apperrors.AppError {
+func (s *ServiceOrderService) Delete(eid, soID string) *apperrors.AppError {
 	id, err := uuid.Parse(soID)
 	if err != nil { return apperrors.NewValidationError("service_order_id", "无效") }
-	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	entID, _ := uuid.Parse(eid)
+	so, dbErr := s.repo.FindByID(id, entID)
 	if dbErr != nil { return apperrors.ErrInternal.WithDetail("查询工单失败") }
 	if so == nil { return apperrors.ErrNotFound.WithDetail("工单不存在") }
 	if so.Status != "pending" { return apperrors.ErrBadRequest.WithDetail("仅待处理工单可删除") }
@@ -80,10 +83,11 @@ func (s *ServiceOrderService) Delete(soID string) *apperrors.AppError {
 	return nil
 }
 
-func (s *ServiceOrderService) Quote(soID string, amount float64) (*model.ServiceOrder, *apperrors.AppError) {
+func (s *ServiceOrderService) Quote(eid, soID string, amount float64) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
-	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	entID, _ := uuid.Parse(eid)
+	so, dbErr := s.repo.FindByID(id, entID)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
 	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
 	so.Amount = amount
@@ -99,12 +103,13 @@ func (s *ServiceOrderService) List(eid, orderType, status string, p, ps int) ([]
 	return sos, total, nil
 }
 
-func (s *ServiceOrderService) Sign(soID string) (*model.ServiceOrder, *apperrors.AppError) {
+func (s *ServiceOrderService) Sign(eid, soID string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("service_order_id", "无效")
 	}
-	so, dbErr := s.repo.FindByID(id, uuid.Nil)
+	entID, _ := uuid.Parse(eid)
+	so, dbErr := s.repo.FindByID(id, entID)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
 	}

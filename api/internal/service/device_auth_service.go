@@ -2,6 +2,8 @@ package service
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"math/big"
 	"time"
 
@@ -28,8 +30,10 @@ func NewDeviceAuthService(repo repository.DeviceAuthRepository, userRepo reposit
 }
 
 type DeviceCodeRequest struct {
-	ClientID string `json:"client_id"`
-	Scope    string `json:"scope"`
+	ClientID            string `json:"client_id"`
+	Scope               string `json:"scope"`
+	CodeChallenge       string `json:"code_challenge,omitempty"`
+	CodeChallengeMethod string `json:"code_challenge_method,omitempty"`
 }
 
 type DeviceCodeResponse struct {
@@ -59,13 +63,15 @@ func (s *DeviceAuthService) GenerateDeviceCode(req DeviceCodeRequest) (*DeviceCo
 	interval := 5
 
 	dc := &model.DeviceCode{
-		ID:         uuid.New().String(),
-		DeviceCode: deviceCode,
-		UserCode:   userCode,
-		ClientID:   req.ClientID,
-		ExpiresAt:  time.Now().Add(time.Duration(expiresIn) * time.Second),
-		Interval:   interval,
-		Scopes:     req.Scope,
+		ID:                  uuid.New().String(),
+		DeviceCode:          deviceCode,
+		UserCode:            userCode,
+		ClientID:            req.ClientID,
+		CodeChallenge:       req.CodeChallenge,
+		CodeChallengeMethod: req.CodeChallengeMethod,
+		ExpiresAt:           time.Now().Add(time.Duration(expiresIn) * time.Second),
+		Interval:            interval,
+		Scopes:              req.Scope,
 	}
 
 	if err := s.repo.Save(dc); err != nil {
@@ -82,8 +88,9 @@ func (s *DeviceAuthService) GenerateDeviceCode(req DeviceCodeRequest) (*DeviceCo
 }
 
 type DeviceTokenRequest struct {
-	DeviceCode string `json:"device_code"`
-	ClientID   string `json:"client_id"`
+	DeviceCode   string `json:"device_code"`
+	ClientID     string `json:"client_id"`
+	CodeVerifier string `json:"code_verifier,omitempty"`
 }
 
 func (s *DeviceAuthService) ExchangeToken(req DeviceTokenRequest) (*TokenResponse, *apperrors.AppError) {
@@ -120,6 +127,15 @@ func (s *DeviceAuthService) ExchangeToken(req DeviceTokenRequest) (*TokenRespons
 
 	if dc.Exchanged {
 		return nil, apperrors.ErrTokenInvalid.WithDetail("设备码已被使用")
+	}
+
+	if dc.CodeChallenge != "" {
+		if req.CodeVerifier == "" {
+			return nil, apperrors.NewValidationError("code_verifier", "PKCE code_verifier 不能为空")
+		}
+		if !verifyPKCE(req.CodeVerifier, dc.CodeChallenge, dc.CodeChallengeMethod) {
+			return nil, apperrors.ErrTokenInvalid.WithDetail("PKCE 验证失败")
+		}
 	}
 
 	if markErr := s.repo.MarkExchanged(req.DeviceCode); markErr != nil {
@@ -219,4 +235,29 @@ func generateRandomString(length int) (string, error) {
 		result[i] = chars[n.Int64()]
 	}
 	return string(result), nil
+}
+
+func verifyPKCE(verifier, challenge, method string) bool {
+	if method == "" || method == "S256" {
+		h := sha256.Sum256([]byte(verifier))
+		computed := base64.RawURLEncoding.EncodeToString(h[:])
+		return computed == challenge
+	}
+	if method == "plain" {
+		return verifier == challenge
+	}
+	return false
+}
+
+func GenerateCodeVerifier() (string, error) {
+	return generateRandomString(43)
+}
+
+func ComputeCodeChallenge(verifier string) string {
+	h := sha256.Sum256([]byte(verifier))
+	return base64.RawURLEncoding.EncodeToString(h[:])
+}
+
+func IsPKCERequiredForDeviceFlow() bool {
+	return true
 }

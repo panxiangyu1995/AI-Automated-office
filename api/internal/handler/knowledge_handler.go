@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -17,7 +18,7 @@ func NewKnowledgeHandler(svc *service.KnowledgeService, versionSvc *service.Know
 }
 
 func (h *KnowledgeHandler) UploadFile(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	file, header, err := c.Request.FormFile("file")
 	if err != nil { response.ValidationError(c, "file", "请选择文件"); return }
 	defer file.Close()
@@ -27,7 +28,7 @@ func (h *KnowledgeHandler) UploadFile(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) ListFiles(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListFiles(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -35,7 +36,7 @@ func (h *KnowledgeHandler) ListFiles(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) SendMessage(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req struct{ SenderID, ReceiverID, Title, Content, MsgType string }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	m, appErr := h.svc.SendMessage(eid, req.SenderID, req.ReceiverID, req.Title, req.Content, req.MsgType)
@@ -44,7 +45,7 @@ func (h *KnowledgeHandler) SendMessage(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) ListMessages(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListMessages(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
@@ -52,7 +53,7 @@ func (h *KnowledgeHandler) ListMessages(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) CreateDoc(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req struct{ Title, CategoryID, Content, Summary, Tags string }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	d, appErr := h.svc.CreateDoc(eid, req.Title, req.CategoryID, req.Content, req.Summary, req.Tags)
@@ -62,7 +63,7 @@ func (h *KnowledgeHandler) CreateDoc(c *gin.Context) {
 
 func (h *KnowledgeHandler) ListDocs(c *gin.Context) { h.listEntity(c, "knowledge_docs") }
 func (h *KnowledgeHandler) CreateCategory(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req struct{ Name, ParentID string }
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	cat, appErr := h.svc.CreateCategory(eid, req.Name, req.ParentID)
@@ -71,14 +72,14 @@ func (h *KnowledgeHandler) CreateCategory(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) ListCategories(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	cats, appErr := h.svc.ListCategories(eid)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, cats)
 }
 
 func (h *KnowledgeHandler) SemanticSearch(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	query := c.Query("q"); if query == "" { response.ValidationError(c, "q", "搜索关键词不能为空"); return }
 	mode := c.DefaultQuery("mode", "semantic")
 	results, appErr := h.svc.SemanticSearch(eid, query, mode, 10)
@@ -127,7 +128,7 @@ func (h *KnowledgeHandler) CompareVersions(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) listEntity(c *gin.Context, _ string) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svc.ListDocs(eid, p, ps)
 	if appErr != nil { response.Error(c, appErr); return }

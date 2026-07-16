@@ -45,8 +45,9 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	groupHandler := handler.NewGroupHandler(groupService)
 
 	enterpriseRepo := repository.NewEnterpriseRepository(db)
+	enterpriseStatusLogRepo := repository.NewEnterpriseStatusLogRepository(db)
 	schemaManager := repository.NewSchemaManager(db)
-	enterpriseService := service.NewEnterpriseService(enterpriseRepo, schemaManager)
+	enterpriseService := service.NewEnterpriseService(enterpriseRepo, enterpriseStatusLogRepo, schemaManager)
 	enterpriseHandler := handler.NewEnterpriseHandler(enterpriseService)
 
 	deptRepo := repository.NewDepartmentRepository(db)
@@ -118,7 +119,7 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 
 	qiRepo := repository.NewQualityInspectionRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	orderSvc := service.NewOrderService(orderRepo, invRepo, matRepo, whRepo, supRepo, customerRepo, qiRepo)
+	orderSvc := service.NewOrderService(orderRepo, invRepo, matRepo, whRepo, supRepo, customerRepo, qiRepo, nil)
 	orderHandler := handler.NewOrderHandler(orderSvc, contractSvc, nil)
 
 	financeRepo := repository.NewFinanceRepository(db)
@@ -129,6 +130,11 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	knowledgeSvc := service.NewKnowledgeService(knowledgeRepo)
 	knowledgeVersionSvc := service.NewKnowledgeVersionService(knowledgeRepo)
 	knowledgeHandler := handler.NewKnowledgeHandler(knowledgeSvc, knowledgeVersionSvc)
+
+	cfFieldRepo := repository.NewCustomFieldRepository(db)
+	cfRelRepo := repository.NewRelationRepository(db)
+	cfSvc := service.NewCustomFieldService(cfFieldRepo, cfRelRepo)
+	customFieldHandler := handler.NewCustomFieldHandler(cfSvc)
 
 	platformRepo := repository.NewPlatformRepository(db)
 	platformSvc := service.NewPlatformService(platformRepo)
@@ -297,10 +303,10 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 		protected.POST("/ai/sessions/:session_id/messages", aiHandler.SendMessage)
 		protected.GET("/ai/sessions/:session_id/messages", aiHandler.GetMessages)
 		protected.PUT("/ai/preferences", aiHandler.UpdatePreference)
-		protected.GET("/service-orders/:id", svcOrderHandler.Get)
-		protected.PUT("/service-orders/:id", svcOrderHandler.Quote)
-		protected.DELETE("/service-orders/:id", svcOrderHandler.Delete)
-		protected.PATCH("/service-orders/:id/status", svcOrderHandler.ChangeStatus)
+		protected.GET("/service-orders/:service_order_id", svcOrderHandler.Get)
+		protected.PUT("/service-orders/:service_order_id", svcOrderHandler.Quote)
+		protected.DELETE("/service-orders/:service_order_id", svcOrderHandler.Delete)
+		protected.PATCH("/service-orders/:service_order_id/status", svcOrderHandler.ChangeStatus)
 		enterprise.POST("/kb/categories", knowledgeHandler.CreateCategory)
 		enterprise.GET("/kb/categories", knowledgeHandler.ListCategories)
 		enterprise.GET("/kb/semantic-search", knowledgeHandler.SemanticSearch)
@@ -354,6 +360,13 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 		protected.POST("/employees/:id/permissions", empPermHandler.Set)
 		protected.DELETE("/employees/:id/permissions", empPermHandler.Revoke)
 		protected.GET("/employees/:id/permissions", empPermHandler.List)
+
+		meta := protected.Group("/meta")
+		{
+			meta.GET("/entities/:type/fields", customFieldHandler.ListFields)
+			meta.POST("/fields", customFieldHandler.CreateField)
+			meta.PATCH("/:type/:id/custom-fields", customFieldHandler.SetCustomFields)
+		}
 
 		protected.PUT("/departments/:id", deptHandler.Update)
 		protected.PUT("/departments/:id/manager", deptHandler.SetManager)

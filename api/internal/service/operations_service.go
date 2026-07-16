@@ -14,7 +14,11 @@ func NewOperationsService(repo repository.OperationsRepository) *OperationsServi
 func (s *OperationsService) CreatePlan(eid, name, desc, features string, price float64, maxUsers int, maxStorage int64) (*model.SubscriptionPlan, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
-	p := &model.SubscriptionPlan{Name: name, Description: desc, Price: price, MaxUsers: maxUsers, MaxStorage: maxStorage, Features: features, Status: "active"}
+	var featuresJSON model.JSONArray
+	if features != "" {
+		featuresJSON = model.JSONArray(features)
+	}
+	p := &model.SubscriptionPlan{Name: name, Description: desc, Price: price, MaxUsers: maxUsers, MaxStorage: maxStorage, Features: featuresJSON, Status: "active"}
 	p.EnterpriseID = id
 	if err := s.repo.CreatePlan(p); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建套餐失败") }
 	return p, nil

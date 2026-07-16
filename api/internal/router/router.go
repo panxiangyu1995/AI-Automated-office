@@ -33,9 +33,20 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 
 	observability.InitTracing("ai-office-api", "")
 
+	logDir := cfg.Log.Dir
+	if logDir == "" {
+		logDir = "./logs"
+	}
+
+	var deps RouterDeps
+	deps.DebugLogService = service.NewDebugLogService(repository.NewDebugLogRepo(logDir))
+	deps.DebugStubService = service.NewDebugStubService()
+	deps.OperatorLogHandler = handler.NewOperatorLogHandler(deps.DebugLogService)
+
 	r.Use(middleware.RequestID())
 	r.Use(middleware.Recovery(logger))
 	r.Use(middleware.Logger(logger))
+	r.Use(stubMiddleware(&deps))
 	r.Use(middleware.Metrics())
 	r.Use(middleware.Tracing())
 	r.Use(middleware.CORS(cfg.Server.CORSOrigins))
@@ -57,20 +68,30 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 		api.GET("/ready", healthHandler.Ready)
 	}
 
-	var deps RouterDeps
+	registerDebugRoutes(api, &deps)
 	var backupService *service.BackupService
 	var reminderScheduler *scheduler.ReminderScheduler
 	var exportWorker *service.ExportWorker
 
 	var tokenBlacklist *rc.TokenBlacklist
+	var lockProvider *rc.LockProvider
 	if redisClient != nil {
 		tokenBlacklist = rc.NewTokenBlacklist(redisClient)
 		middleware.SetMFACache(rc.NewCache(redisClient))
+		lockProvider = rc.NewLockProvider(redisClient)
 	}
 	deps.TokenBlacklist = tokenBlacklist
 
 	if db != nil {
-		deps = initDeps(db, cfg, jwtManager, tokenBlacklist, redisClient, logger)
+		debugLogSvc := deps.DebugLogService
+		debugStubSvc := deps.DebugStubService
+		operatorLogH := deps.OperatorLogHandler
+
+		deps = initDeps(db, cfg, jwtManager, tokenBlacklist, lockProvider, redisClient, logger)
+
+		deps.DebugLogService = debugLogSvc
+		deps.DebugStubService = debugStubSvc
+		deps.OperatorLogHandler = operatorLogH
 
 		backupService = deps.BackupService
 		exportWorker = deps.ExportWorker
@@ -81,6 +102,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 		protected.Use(
 			middleware.AuthRequired(jwtManager, tokenBlacklist),
 			middleware.ResolveEnterpriseContext(),
+			middleware.EnterpriseStatusMiddleware(),
 			middleware.CLISourceOnly(cfg, logger),
 			deps.AuditMiddleware.Record(),
 			deps.QuotaMiddleware.Check(),
@@ -132,7 +154,7 @@ func Setup(cfg *config.Config, logger *zap.Logger, db *gorm.DB, redisClient *rc.
 	return r
 }
 
-func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, tokenBlacklist *rc.TokenBlacklist, redisClient *rc.Client, logger *zap.Logger) RouterDeps {
+func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, tokenBlacklist *rc.TokenBlacklist, lockProvider *rc.LockProvider, redisClient *rc.Client, logger *zap.Logger) RouterDeps {
 	var deps RouterDeps
 
 	userRepo := repository.NewUserRepository(db)
@@ -142,8 +164,9 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 	deps.GroupHandler = handler.NewGroupHandler(groupService)
 
 	enterpriseRepo := repository.NewEnterpriseRepository(db)
+	enterpriseStatusLogRepo := repository.NewEnterpriseStatusLogRepository(db)
 	schemaManager := repository.NewSchemaManager(db)
-	enterpriseService := service.NewEnterpriseService(enterpriseRepo, schemaManager)
+	enterpriseService := service.NewEnterpriseService(enterpriseRepo, enterpriseStatusLogRepo, schemaManager)
 	deps.EnterpriseHandler = handler.NewEnterpriseHandler(enterpriseService)
 	deptRepo := repository.NewDepartmentRepository(db)
 
@@ -234,7 +257,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 	contractSvc := service.NewContractService(contractRepo)
 
 	orderRepo := repository.NewOrderRepository(db)
-	orderSvc := service.NewOrderService(orderRepo, invRepo, matRepo, whRepo, supRepo, customerRepo, qiRepo)
+	orderSvc := service.NewOrderService(orderRepo, invRepo, matRepo, whRepo, supRepo, customerRepo, qiRepo, lockProvider)
 
 	autoArchiveSvc := service.NewAutoArchiveService(knowledgeSvc, contractRepo, orderRepo, empRepo)
 	deps.AutoArchiveService = autoArchiveSvc
@@ -387,7 +410,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 	deviceAuthService := service.NewDeviceAuthService(deviceAuthRepo, userRepo, jwtManager)
 	deps.DeviceAuthHandler = handler.NewDeviceAuthHandler(deviceAuthService)
 
-	qiService := service.NewQualityInspectionService(qiRepo, invRepo, orderRepo)
+	qiService := service.NewQualityInspectionService(qiRepo, invRepo, orderRepo, lockProvider)
 	deps.QualityInspectionHandler = handler.NewQualityInspectionHandler(qiService)
 
 	billingRepo := repository.NewBillingRepository(db)
@@ -449,6 +472,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 
 	middleware.GlobalAuthDB = db
 	middleware.GlobalTenantDB = db
+	middleware.GlobalEnterpriseDB = db
 
 	return deps
 }

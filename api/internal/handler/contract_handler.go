@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -39,7 +40,7 @@ type updateContractReq struct {
 type statusChangeReq struct{ Status string `json:"status"` }
 
 func (h *ContractHandler) Create(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req createContractReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
 	if req.Name == "" { req.Name = req.Title }
@@ -50,36 +51,41 @@ func (h *ContractHandler) Create(c *gin.Context) {
 }
 
 func (h *ContractHandler) PatchFields(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var fields map[string]interface{}
 	if err := c.ShouldBindJSON(&fields); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	contract, appErr := h.svc.PatchFields(c.Param("id"), fields)
+	contract, appErr := h.svc.PatchFields(eid, c.Param("id"), fields)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, contract)
 }
 
 func (h *ContractHandler) Update(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req updateContractReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	contract, appErr := h.svc.Update(c.Param("id"), req.Name, req.Content, req.Notes, req.Amount)
+	contract, appErr := h.svc.Update(eid, c.Param("id"), req.Name, req.Content, req.Notes, req.Amount)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, contract)
 }
 
 func (h *ContractHandler) Delete(c *gin.Context) {
-	if appErr := h.svc.Delete(c.Param("id")); appErr != nil { response.Error(c, appErr); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	if appErr := h.svc.Delete(eid, c.Param("id")); appErr != nil { response.Error(c, appErr); return }
 	response.NoContent(c)
 }
 
 func (h *ContractHandler) ChangeStatus(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req statusChangeReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	contract, appErr := h.svc.ChangeStatus(c.Param("id"), req.Status)
+	contract, appErr := h.svc.ChangeStatus(eid, c.Param("id"), req.Status)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, contract)
 }
 
 func (h *ContractHandler) Get(c *gin.Context) {
-	contract, appErr := h.svc.Get(c.Param("id"))
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	contract, appErr := h.svc.Get(eid, c.Param("id"))
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, contract)
 }
@@ -91,16 +97,18 @@ type linkDocReq struct {
 }
 
 func (h *ContractHandler) SubmitApproval(c *gin.Context) {
-	contract, appErr := h.svc.SubmitApproval(c.Param("id"))
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	contract, appErr := h.svc.SubmitApproval(eid, c.Param("id"))
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, contract)
 }
 
 func (h *ContractHandler) Approve(c *gin.Context) {
-	contract, appErr := h.svc.Approve(c.Param("id"))
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	contract, appErr := h.svc.Approve(eid, c.Param("id"))
 	if appErr != nil { response.Error(c, appErr); return }
 	if h.autoArchiveSvc != nil {
-		eid := c.Param("enterprise_id")
+		eid := middleware.GetEnterpriseID(c)
 		go h.autoArchiveSvc.OnBusinessEvent("contract_signed", c.Param("id"), eid)
 	}
 	response.Success(c, contract)
@@ -109,7 +117,7 @@ func (h *ContractHandler) Approve(c *gin.Context) {
 func (h *ContractHandler) UploadAttachment(c *gin.Context) {
 	contractID := c.Param("id")
 	if contractID == "" { response.ValidationError(c, "id", "合同ID不能为空"); return }
-	enterpriseID := c.GetString("enterprise_id")
+	enterpriseID := middleware.GetEnterpriseID(c)
 
 	file, header, err := c.Request.FormFile("file")
 	if err != nil { response.ValidationError(c, "file", "请选择文件"); return }
@@ -121,11 +129,12 @@ func (h *ContractHandler) UploadAttachment(c *gin.Context) {
 }
 
 func (h *ContractHandler) LinkDocument(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	contractID := c.Param("id")
 	if contractID == "" { response.ValidationError(c, "id", "合同ID不能为空"); return }
 	var req linkDocReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	ref, appErr := h.svc.LinkDocument(contractID, req.RefType, req.RefID, req.RefNo)
+	ref, appErr := h.svc.LinkDocument(eid, contractID, req.RefType, req.RefID, req.RefNo)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, ref)
 }
@@ -139,7 +148,7 @@ func (h *ContractHandler) ListDocuments(c *gin.Context) {
 }
 
 func (h *ContractHandler) List(c *gin.Context) {
-	eid := c.Param("enterprise_id"); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	contracts, total, appErr := h.svc.List(eid, p, ps, c.Query("status"))
 	if appErr != nil { response.Error(c, appErr); return }

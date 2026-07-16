@@ -12,6 +12,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/config"
 	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/olog"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/poller"
 	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/skill"
 	"github.com/panxiangyu1995/AI-Automated-office/cli/pkg/api_client"
 )
@@ -125,12 +126,20 @@ func describeSkill(name, role string) error {
 	return nil
 }
 
+var preHookEnabled = true
+
 func executeSkill(name, action, paramsJSON string) error {
 	startTime := time.Now()
 
 	cfg, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("not logged in, run 'ao-cli auth login' first: %w", err)
+	}
+
+	if preHookEnabled && name != "message_unread_check" && name != "message_unread" {
+		if err := poller.UnreadCheckOnConversationStart(cfg); err != nil {
+			fmt.Fprintf(os.Stderr, "[Hook] 未读检查失败: %v\n", err)
+		}
 	}
 
 	if cfg.IsTokenExpired() && cfg.RefreshToken != "" {

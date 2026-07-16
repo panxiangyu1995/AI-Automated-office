@@ -179,7 +179,7 @@ func TestContractService_Get(t *testing.T) {
 
 	created, _ := svc.Create(eid, uuid.New().String(), "查询合同", "", "", 5000)
 
-	found, appErr := svc.Get(created.ID.String())
+	found, appErr := svc.Get(eid, created.ID.String())
 	assert.Nil(t, appErr)
 	assert.NotNil(t, found)
 	assert.Equal(t, "查询合同", found.Name)
@@ -192,7 +192,7 @@ func TestContractService_Update_Draft(t *testing.T) {
 
 	created, _ := svc.Create(eid, uuid.New().String(), "草稿合同", "内容", "", 1000)
 
-	updated, appErr := svc.Update(created.ID.String(), "更新合同", "新内容", "备注", 2000)
+	updated, appErr := svc.Update(eid, created.ID.String(), "更新合同", "新内容", "备注", 2000)
 	assert.Nil(t, appErr)
 	assert.NotNil(t, updated)
 	assert.Equal(t, "更新合同", updated.Name)
@@ -208,7 +208,7 @@ func TestContractService_Update_NonDraft_Rejected(t *testing.T) {
 	created.Status = "active"
 	repo.contracts[created.ID.String()] = created
 
-	updated, appErr := svc.Update(created.ID.String(), "尝试更新", "", "", 0)
+	updated, appErr := svc.Update(eid, created.ID.String(), "尝试更新", "", "", 0)
 	assert.Nil(t, updated)
 	assert.NotNil(t, appErr)
 	assert.Equal(t, 400, appErr.Status)
@@ -221,7 +221,7 @@ func TestContractService_ChangeStatus_DraftToPendingApproval(t *testing.T) {
 
 	created, _ := svc.Create(eid, uuid.New().String(), "审批合同", "", "", 5000)
 
-	result, appErr := svc.ChangeStatus(created.ID.String(), "pending_approval")
+	result, appErr := svc.ChangeStatus(eid, created.ID.String(), "pending_approval")
 	assert.Nil(t, appErr)
 	assert.NotNil(t, result)
 	assert.Equal(t, "pending_approval", result.Status)
@@ -236,7 +236,7 @@ func TestContractService_ChangeStatus_PendingToActive(t *testing.T) {
 	created.Status = "pending_approval"
 	repo.contracts[created.ID.String()] = created
 
-	result, appErr := svc.ChangeStatus(created.ID.String(), "active")
+	result, appErr := svc.ChangeStatus(eid, created.ID.String(), "active")
 	assert.Nil(t, appErr)
 	assert.Equal(t, "active", result.Status)
 	assert.NotNil(t, result.EffectiveAt)
@@ -249,7 +249,7 @@ func TestContractService_ChangeStatus_InvalidTransition(t *testing.T) {
 
 	created, _ := svc.Create(eid, uuid.New().String(), "非法转换", "", "", 5000)
 
-	result, appErr := svc.ChangeStatus(created.ID.String(), "active")
+	result, appErr := svc.ChangeStatus(eid, created.ID.String(), "active")
 	assert.Nil(t, result)
 	assert.NotNil(t, appErr)
 	assert.Equal(t, 400, appErr.Status)
@@ -262,7 +262,7 @@ func TestContractService_SubmitApproval(t *testing.T) {
 
 	created, _ := svc.Create(eid, uuid.New().String(), "提交审批", "", "", 5000)
 
-	result, appErr := svc.SubmitApproval(created.ID.String())
+	result, appErr := svc.SubmitApproval(eid, created.ID.String())
 	assert.Nil(t, appErr)
 	assert.Equal(t, "pending_approval", result.Status)
 }
@@ -276,7 +276,7 @@ func TestContractService_Approve(t *testing.T) {
 	created.Status = "pending_approval"
 	repo.contracts[created.ID.String()] = created
 
-	result, appErr := svc.Approve(created.ID.String())
+	result, appErr := svc.Approve(eid, created.ID.String())
 	assert.Nil(t, appErr)
 	assert.Equal(t, "active", result.Status)
 }
@@ -288,7 +288,7 @@ func TestContractService_Delete_Draft(t *testing.T) {
 
 	created, _ := svc.Create(eid, uuid.New().String(), "删除草稿", "", "", 1000)
 
-	appErr := svc.Delete(created.ID.String())
+	appErr := svc.Delete(eid, created.ID.String())
 	assert.Nil(t, appErr)
 }
 
@@ -301,7 +301,7 @@ func TestContractService_Delete_NonDraft_Rejected(t *testing.T) {
 	created.Status = "active"
 	repo.contracts[created.ID.String()] = created
 
-	appErr := svc.Delete(created.ID.String())
+	appErr := svc.Delete(eid, created.ID.String())
 	assert.NotNil(t, appErr)
 	assert.Equal(t, 400, appErr.Status)
 }

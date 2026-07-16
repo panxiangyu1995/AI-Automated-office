@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
@@ -18,6 +20,28 @@ func (r *inventoryRepo) Upsert(inv *model.WarehouseInventory) error {
 		return err
 	}
 	return r.db.Where("warehouse_id=? AND material_id=?", inv.WarehouseID, inv.MaterialID).First(inv).Error
+}
+
+func (r *inventoryRepo) AdjustQuantity(eid, whID, matID uuid.UUID, delta int) error {
+	sql := `INSERT INTO warehouse_inventories (enterprise_id, warehouse_id, material_id, quantity, safety_stock, in_transit, created_at, updated_at)
+		VALUES (?, ?, ?, ?, 0, 0, NOW(), NOW())
+		ON CONFLICT (warehouse_id, material_id) DO UPDATE SET quantity = warehouse_inventories.quantity + EXCLUDED.quantity, updated_at = NOW()`
+	return r.db.Exec(sql, eid, whID, matID, delta).Error
+}
+
+func (r *inventoryRepo) AdjustQuantityWithCheck(eid, whID, matID uuid.UUID, delta int) error {
+	sql := `INSERT INTO warehouse_inventories (enterprise_id, warehouse_id, material_id, quantity, safety_stock, in_transit, created_at, updated_at)
+		VALUES (?, ?, ?, ?, 0, 0, NOW(), NOW())
+		ON CONFLICT (warehouse_id, material_id) DO UPDATE SET quantity = warehouse_inventories.quantity + EXCLUDED.quantity, updated_at = NOW()
+		WHERE (warehouse_inventories.quantity + EXCLUDED.quantity) >= 0`
+	result := r.db.Exec(sql, eid, whID, matID, delta)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("insufficient stock for warehouse %s material %s", whID, matID)
+	}
+	return nil
 }
 
 func (r *inventoryRepo) Find(whID, matID uuid.UUID) (*model.WarehouseInventory, error) {

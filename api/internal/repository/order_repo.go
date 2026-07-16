@@ -11,6 +11,7 @@ type OrderRepository interface {
 	CreatePurchaseOrderItem(item *model.PurchaseOrderItem) error
 	UpdatePurchaseOrderTotalAmount(id, enterpriseID uuid.UUID, total float64) error
 	FindPurchaseOrderByID(id, enterpriseID uuid.UUID) (*model.PurchaseOrder, error)
+	FindPurchaseOrderByIDNoEnterprise(id string) (*model.PurchaseOrder, error)
 	UpdatePurchaseOrder(po *model.PurchaseOrder) error
 	ListPurchaseOrderItems(orderID string) ([]model.PurchaseOrderItem, error)
 	UpdatePurchaseOrderItemReceivedQty(id, enterpriseID uuid.UUID, receivedQty int) error
@@ -30,10 +31,12 @@ type OrderRepository interface {
 	UpdateSalesOrderStatus(id, enterpriseID uuid.UUID, status string) error
 	CreateTransferOrder(to *model.TransferOrder) error
 	FindTransferOrderByID(id, enterpriseID uuid.UUID) (*model.TransferOrder, error)
+	FindTransferOrderByIDNoEnterprise(id string) (*model.TransferOrder, error)
 	UpdateTransferOrder(to *model.TransferOrder) error
 	ListTransferOrders(enterpriseID uuid.UUID, page, pageSize int) ([]model.TransferOrder, int64, error)
 	CreateRequisition(req *model.Requisition) error
 	FindRequisitionByID(id, enterpriseID uuid.UUID) (*model.Requisition, error)
+	FindRequisitionByIDNoEnterprise(id string) (*model.Requisition, error)
 	UpdateRequisitionFields(id, enterpriseID uuid.UUID, fields map[string]interface{}) error
 	ListRequisitions(enterpriseID uuid.UUID, page, pageSize int) ([]model.Requisition, int64, error)
 	ListStockFlows(enterpriseID uuid.UUID, whID, matID string, page, pageSize int) ([]model.StockFlow, int64, error)

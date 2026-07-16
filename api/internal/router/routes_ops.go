@@ -2,6 +2,9 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 )
 
 func registerOpsRoutes(protected *gin.RouterGroup, deps *RouterDeps) {
@@ -20,5 +23,6 @@ func registerOpsRoutes(protected *gin.RouterGroup, deps *RouterDeps) {
 	protected.GET("/operator/enterprises/:id/health", deps.HealthDashboardHandler.GetEnterpriseHealth)
 	protected.GET("/operator/health-dashboard", deps.HealthDashboardHandler.GetDashboard)
 	protected.GET("/operator/audit-logs", deps.OperatorAuditHandler.ListOperatorActions)
+	protected.GET("/operator/logs", middleware.RequireExactPermission(rbac.PermSystemDebug), deps.OperatorLogHandler.QueryLogs)
 	protected.POST("/:type/:id/restore", deps.RestoreHandler.Restore)
 }

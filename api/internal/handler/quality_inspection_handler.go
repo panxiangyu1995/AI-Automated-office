@@ -8,6 +8,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -24,7 +25,7 @@ type createInspectionReq struct {
 }
 
 func (h *QualityInspectionHandler) Create(c *gin.Context) {
-	eid := c.Param("enterprise_id")
+	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
 		response.Error(c, errors.ErrTenantRequired)
 		return
@@ -56,7 +57,7 @@ func (h *QualityInspectionHandler) Create(c *gin.Context) {
 }
 
 func (h *QualityInspectionHandler) Get(c *gin.Context) {
-	entIDStr := c.Param("enterprise_id")
+	entIDStr := middleware.GetEnterpriseID(c)
 	entID, _ := uuid.Parse(entIDStr)
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -111,7 +112,7 @@ type completeInspectionReq struct {
 }
 
 func (h *QualityInspectionHandler) Complete(c *gin.Context) {
-	entIDStr := c.Param("enterprise_id")
+	entIDStr := middleware.GetEnterpriseID(c)
 	entID, _ := uuid.Parse(entIDStr)
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {

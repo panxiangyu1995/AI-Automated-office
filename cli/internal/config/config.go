@@ -18,6 +18,19 @@ type Config struct {
 	EnterpriseID string    `yaml:"enterprise_id"`
 	ExpiresAt    time.Time `yaml:"expires_at"`
 	HMACSecret   string    `yaml:"hmac_secret"`
+	Poll         PollConfig  `yaml:"poll"`
+	Notify       NotifyConfig `yaml:"notify"`
+}
+
+type PollConfig struct {
+	Interval int    `yaml:"interval"`
+	MarkFile string `yaml:"mark_file"`
+}
+
+type NotifyConfig struct {
+	Enable      bool   `yaml:"enable"`
+	OpenclawURL string `yaml:"openclaw_url"`
+	MarkFile    string `yaml:"mark_file"`
 }
 
 func (c *Config) IsTokenExpired() bool {

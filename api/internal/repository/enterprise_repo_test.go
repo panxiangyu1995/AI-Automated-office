@@ -26,7 +26,9 @@ func setupEnterpriseTestDB(t *testing.T) *gorm.DB {
 		group_id TEXT NOT NULL, name VARCHAR(255) NOT NULL,
 		code VARCHAR(100) NOT NULL UNIQUE,
 		contact_email VARCHAR(255), contact_phone VARCHAR(50),
-		address TEXT, status VARCHAR(20) NOT NULL DEFAULT 'active',
+		address TEXT, status VARCHAR(20) NOT NULL DEFAULT 'trial',
+		status_reason TEXT, status_changed_at DATETIME, status_changed_by TEXT,
+		suspended_at DATETIME, frozen_at DATETIME, subscribed_at DATETIME, expires_at DATETIME,
 		schema_name VARCHAR(100))`).Error)
 	return db
 }

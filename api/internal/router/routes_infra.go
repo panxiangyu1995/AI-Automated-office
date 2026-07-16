@@ -20,6 +20,7 @@ func registerInfraRoutes(protected *gin.RouterGroup, enterprise *gin.RouterGroup
 	enterprise.GET("/messages/unread", deps.MsgHandler.Unread)
 	enterprise.GET("/messages/poll", deps.MsgHandler.Poll)
 	enterprise.POST("/messages/:id/read", deps.MsgHandler.MarkRead)
+	enterprise.POST("/messages/read", deps.MsgHandler.BatchMarkRead)
 	enterprise.POST("/announcements", deps.MsgHandler.CreateAnnouncement)
 	enterprise.GET("/announcements", deps.MsgHandler.ListAnnouncements)
 

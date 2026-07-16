@@ -39,7 +39,7 @@ func TestAllSkillsRegistered(t *testing.T) {
 		"service":   9,
 		"sales":     5,
 		"finance":   7,
-		"message":   7,
+		"message":   8,
 		"knowledge": 9,
 		"workflow":  11,
 		"org":       8,

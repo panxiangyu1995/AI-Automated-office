@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -9,16 +10,18 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 )
 
 type QualityInspectionService struct {
-	repo    repository.QualityInspectionRepository
-	invRepo repository.InventoryRepository
-	ordRepo repository.OrderRepository
+	repo        repository.QualityInspectionRepository
+	invRepo     repository.InventoryRepository
+	ordRepo     repository.OrderRepository
+	lockProvider *rc.LockProvider
 }
 
-func NewQualityInspectionService(repo repository.QualityInspectionRepository, invRepo repository.InventoryRepository, ordRepo repository.OrderRepository) *QualityInspectionService {
-	return &QualityInspectionService{repo: repo, invRepo: invRepo, ordRepo: ordRepo}
+func NewQualityInspectionService(repo repository.QualityInspectionRepository, invRepo repository.InventoryRepository, ordRepo repository.OrderRepository, lockProvider *rc.LockProvider) *QualityInspectionService {
+	return &QualityInspectionService{repo: repo, invRepo: invRepo, ordRepo: ordRepo, lockProvider: lockProvider}
 }
 
 func (s *QualityInspectionService) CreateInspection(inspection *model.QualityInspection) *apperrors.AppError {
@@ -112,11 +115,15 @@ func (s *QualityInspectionService) QualifiedAutoReceive(inspectionID, enterprise
 			continue
 		}
 		matID, _ := uuid.Parse(item.MaterialID)
-		inv := &model.WarehouseInventory{Quantity: qty}
-		inv.EnterpriseID = qi.EnterpriseID
-		inv.WarehouseID = whUUID
-		inv.MaterialID = matID
-		s.invRepo.Upsert(inv)
+		lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whUUID.String(), matID.String())
+		if !acquired {
+			return apperrors.ErrBadRequest.WithDetail("库存操作冲突，请稍后重试")
+		}
+		err := s.invRepo.AdjustQuantity(qi.EnterpriseID, whUUID, matID, qty)
+		lock.Release(context.Background())
+		if err != nil {
+			return apperrors.ErrInternal.WithDetail("更新库存失败")
+		}
 		s.ordRepo.IncrementPurchaseOrderItemReceivedQty(item.ID.String(), qty)
 	}
 
