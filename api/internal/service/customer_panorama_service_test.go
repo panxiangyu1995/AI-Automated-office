@@ -56,13 +56,13 @@ func (m *panoramaCustomerRepo) UpdateFields(id, enterpriseID uuid.UUID, fields m
 	return args.Error(0)
 }
 
-func (m *panoramaCustomerRepo) UpdateFieldsByID(id string, fields map[string]interface{}) error {
-	args := m.Called(id, fields)
+func (m *panoramaCustomerRepo) UpdateFieldsByID(id, enterpriseID string, fields map[string]interface{}) error {
+	args := m.Called(id, enterpriseID, fields)
 	return args.Error(0)
 }
 
-func (m *panoramaCustomerRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	args := m.Called(id, fields)
+func (m *panoramaCustomerRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	args := m.Called(id, enterpriseID, fields)
 	return args.Error(0)
 }
 
@@ -208,13 +208,13 @@ func (m *panoramaContractRepo) PatchFields(id, enterpriseID uuid.UUID, fields ma
 	return args.Get(0).(*model.Contract), args.Error(1)
 }
 
-func (m *panoramaContractRepo) UpdateFields(id string, fields map[string]interface{}) error {
-	args := m.Called(id, fields)
+func (m *panoramaContractRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
+	args := m.Called(id, enterpriseID, fields)
 	return args.Error(0)
 }
 
-func (m *panoramaContractRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	args := m.Called(id, fields)
+func (m *panoramaContractRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	args := m.Called(id, enterpriseID, fields)
 	return args.Error(0)
 }
 

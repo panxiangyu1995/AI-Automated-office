@@ -7,11 +7,13 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/generator"
+	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/pathhelper"
 )
 
 func newInitCmd() *cobra.Command {
@@ -36,6 +38,15 @@ func runInit(cmd *cobra.Command, args []string) error {
 }
 
 func runInitFull() error {
+	added, profile, err := pathhelper.EnsurePATH()
+	if err != nil {
+		fmt.Printf("Warning: could not auto-configure PATH: %v\n", err)
+		fmt.Printf("Please manually add %s to your PATH\n", pathhelper.GOPATHBin())
+	} else if added {
+		fmt.Printf("Added %s to PATH in %s (%s)\n", pathhelper.GOPATHBin(), profile.FilePath, profile.Name)
+		fmt.Println("Please run 'source " + profile.FilePath + "' or open a new terminal for this to take effect.")
+	}
+
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Enter API server URL (default: http://localhost:8080): ")
@@ -66,7 +77,18 @@ func runInitFull() error {
 	os.MkdirAll(configDir, 0755)
 
 	configPath := configDir + "/config.yaml"
-	configContent := fmt.Sprintf("server:\n  url: %s\n", serverURL)
+
+	cliPath, _ := os.Executable()
+	if cliPath != "" {
+		cliPath, _ = filepath.Abs(cliPath)
+	}
+
+	var configContent string
+	if cliPath != "" {
+		configContent = fmt.Sprintf("server_url: %s\ncli_path: %s\n", serverURL, cliPath)
+	} else {
+		configContent = fmt.Sprintf("server_url: %s\n", serverURL)
+	}
 	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}

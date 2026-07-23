@@ -1,6 +1,7 @@
 package service
 
 import (
+	"crypto/rand"
 	"time"
 
 	"github.com/google/uuid"
@@ -96,7 +97,10 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 				Role:          "employee",
 				Status:        "active",
 			}
-			s.userRepo.Create(user)
+			if createErr := s.userRepo.Create(user); createErr != nil {
+				s.empRepo.Delete(emp.ID, eid)
+				return nil, apperrors.ErrInternal.WithDetail("创建用户账号失败: " + createErr.Error())
+			}
 		}
 	}
 
@@ -121,7 +125,32 @@ func (s *EmployeeService) GetSalesPerformance(enterpriseID, employeeID, startTim
 
 	query := model.EmployeeQuery{EnterpriseID: enterpriseID}
 	if employeeID != "" {
-		query.DepartmentID = employeeID
+		eid, _ := uuid.Parse(employeeID)
+		if eid != uuid.Nil {
+			employees, _, err := s.empRepo.List(query)
+			if err != nil {
+				return nil, apperrors.ErrInternal.WithDetail("查询员工列表失败: " + err.Error())
+			}
+			for _, emp := range employees {
+				if emp.ID == eid {
+					deptName := ""
+					dept, _ := s.deptRepo.FindByID(emp.DepartmentID, uuid.MustParse(enterpriseID))
+					if dept != nil {
+						deptName = dept.Name
+					}
+					return []SalesPerformance{{
+						EmployeeID:  emp.ID.String(),
+						Name:        emp.Name,
+						Department:  deptName,
+						TotalOrders: 0,
+						TotalAmount: 0,
+						PeriodStart: startTime,
+						PeriodEnd:   endTime,
+					}}, nil
+				}
+			}
+			return nil, apperrors.ErrNotFound.WithDetail("员工不存在")
+		}
 	}
 	employees, _, err := s.empRepo.List(query)
 	if err != nil {
@@ -146,8 +175,6 @@ func (s *EmployeeService) GetSalesPerformance(enterpriseID, employeeID, startTim
 			PeriodEnd:   endTime,
 		})
 	}
-	_ = eid
-
 	return results, nil
 }
 
@@ -204,9 +231,16 @@ func (s *EmployeeService) BatchImport(enterpriseID string, employees []BatchEmpl
 }
 
 func generateTempPassword() string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, 12)
+	if _, err := rand.Read(b); err != nil {
+		for i := range b {
+			b[i] = charset[i%len(charset)]
+		}
+		return string(b)
+	}
 	for i := range b {
-		b[i] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[i%62]
+		b[i] = charset[int(b[i])%len(charset)]
 	}
 	return string(b)
 }

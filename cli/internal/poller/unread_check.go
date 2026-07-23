@@ -80,8 +80,15 @@ func fetchUnreadMessages(cfg *config.Config) ([]UnreadMessage, error) {
 	}
 
 	var messages []UnreadMessage
-	if err := json.Unmarshal(result, &messages); err != nil {
-		return nil, fmt.Errorf("parse messages failed: %w", err)
+	var wrapper struct {
+		Data []UnreadMessage `json:"data"`
+	}
+	if err := json.Unmarshal(result, &wrapper); err != nil {
+		if err2 := json.Unmarshal(result, &messages); err2 != nil {
+			return nil, fmt.Errorf("parse messages failed: %w", err)
+		}
+	} else {
+		messages = wrapper.Data
 	}
 
 	unread := make([]UnreadMessage, 0)

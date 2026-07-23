@@ -58,7 +58,8 @@ func (s *OrderService) CreatePurchaseOrder(eid, supplierID, notes string, items 
 	if _, err := uuid.Parse(supplierID); err != nil {
 		return nil, apperrors.NewValidationError("supplier_id", "供应商ID无效")
 	}
-	sup, _ := s.supRepo.FindByID(uuid.MustParse(supplierID), id)
+	supUUID, _ := uuid.Parse(supplierID)
+	sup, _ := s.supRepo.FindByID(supUUID, id)
 	if sup == nil { return nil, apperrors.ErrNotFound.WithDetail("供应商不存在") }
 
 	for i, item := range items {
@@ -77,7 +78,9 @@ func (s *OrderService) CreatePurchaseOrder(eid, supplierID, notes string, items 
 		total += item.UnitPrice * float64(item.Quantity)
 		if err := s.orderRepo.CreatePurchaseOrderItem(&poItem); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建订单明细失败") }
 	}
-	s.orderRepo.UpdatePurchaseOrderTotalAmount(po.ID, id, total)
+	if err := s.orderRepo.UpdatePurchaseOrderTotalAmount(po.ID, id, total); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("更新采购订单总额失败")
+	}
 	return po, nil
 }
 
@@ -108,7 +111,8 @@ func (s *OrderService) ReceivePurchase(poID, whID string, requireInspection bool
 		qty := item.Quantity - item.ReceivedQty
 		if qty <= 0 { continue }
 		matID, _ := uuid.Parse(item.MaterialID)
-		whIDparsed := uuid.MustParse(whID)
+		whIDparsed, err := uuid.Parse(whID)
+		if err != nil { return nil, apperrors.NewValidationError("warehouse_id", "仓库ID无效") }
 		lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whIDparsed.String(), matID.String())
 		if !acquired { return nil, apperrors.ErrBadRequest.WithDetail(fmt.Sprintf("物料 %s 库存操作冲突，请稍后重试", item.MaterialID)) }
 		adjErr := s.invRepo.AdjustQuantity(po.EnterpriseID, whIDparsed, matID, qty)
@@ -159,8 +163,10 @@ func (s *OrderService) ShipSalesOrder(soID, whID string) (*model.SalesOrder, *ap
 	for _, item := range items {
 		qty := item.Quantity - item.ShippedQty
 		if qty <= 0 { continue }
-		whIDparsed := uuid.MustParse(whID)
-		matID := uuid.MustParse(item.MaterialID)
+		whIDparsed, err := uuid.Parse(whID)
+		if err != nil { return nil, apperrors.NewValidationError("warehouse_id", "仓库ID无效") }
+		matID, err := uuid.Parse(item.MaterialID)
+		if err != nil { return nil, apperrors.NewValidationError("material_id", "物料ID无效") }
 		lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whIDparsed.String(), matID.String())
 		if !acquired { return nil, apperrors.ErrBadRequest.WithDetail(fmt.Sprintf("物料 %s 库存操作冲突，请稍后重试", item.MaterialID)) }
 		adjErr := s.invRepo.AdjustQuantityWithCheck(so.EnterpriseID, whIDparsed, matID, -qty)
@@ -189,9 +195,12 @@ func (s *OrderService) ExecuteTransfer(toID string) (*model.TransferOrder, *appe
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询调拨单失败") }
 	if to == nil { return nil, apperrors.ErrNotFound.WithDetail("调拨单不存在") }
 
-	srcWh := uuid.MustParse(to.SourceWhID)
-	tgtWh := uuid.MustParse(to.TargetWhID)
-	matID := uuid.MustParse(to.MaterialID)
+	srcWh, err := uuid.Parse(to.SourceWhID)
+	if err != nil { return nil, apperrors.NewValidationError("source_wh_id", "源仓库ID无效") }
+	tgtWh, err := uuid.Parse(to.TargetWhID)
+	if err != nil { return nil, apperrors.NewValidationError("target_wh_id", "目标仓库ID无效") }
+	matID, err := uuid.Parse(to.MaterialID)
+	if err != nil { return nil, apperrors.NewValidationError("material_id", "物料ID无效") }
 
 	lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), srcWh.String(), matID.String())
 	if !acquired { return nil, apperrors.ErrBadRequest.WithDetail("源仓库库存操作冲突，请稍后重试") }
@@ -230,8 +239,10 @@ func (s *OrderService) IssueRequisition(reqID string, issuedQty int) (*model.Req
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询领用申请失败") }
 	if req == nil { return nil, apperrors.ErrNotFound.WithDetail("领用申请不存在") }
 
-	whID := uuid.MustParse(req.WarehouseID)
-	matID := uuid.MustParse(req.MaterialID)
+	whID, err := uuid.Parse(req.WarehouseID)
+	if err != nil { return nil, apperrors.NewValidationError("warehouse_id", "仓库ID无效") }
+	matID, err := uuid.Parse(req.MaterialID)
+	if err != nil { return nil, apperrors.NewValidationError("material_id", "物料ID无效") }
 	lock, acquired := s.lockProvider.AcquireInventoryLock(context.Background(), whID.String(), matID.String())
 	if !acquired { return nil, apperrors.ErrBadRequest.WithDetail("库存操作冲突，请稍后重试") }
 	adjErr := s.invRepo.AdjustQuantityWithCheck(req.EnterpriseID, whID, matID, -issuedQty)

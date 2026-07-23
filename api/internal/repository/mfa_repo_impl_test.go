@@ -43,7 +43,7 @@ func TestMFARepo_Create_FindByUserID(t *testing.T) {
 	err := repo.Create(config)
 	assert.NoError(t, err)
 
-	found, err := repo.FindByUserID(userID)
+	found, err := repo.FindByUserID(userID, eid)
 	assert.NoError(t, err)
 	assert.NotNil(t, found)
 	assert.Equal(t, "totp", found.Method)
@@ -55,7 +55,7 @@ func TestMFARepo_FindByUserID_NotFound(t *testing.T) {
 	db := setupMFATestDB(t)
 	repo := NewMFARepository(db)
 
-	found, err := repo.FindByUserID("nonexistent-user")
+	found, err := repo.FindByUserID("nonexistent-user", uuid.New())
 	assert.NoError(t, err)
 	assert.Nil(t, found)
 }
@@ -87,16 +87,16 @@ func TestMFARepo_FindByUserIDAndVerified(t *testing.T) {
 	config2.ID = uuid.New()
 	require.NoError(t, repo.Create(config2))
 
-	verified, err := repo.FindByUserIDAndVerified(userID1, true)
+	verified, err := repo.FindByUserIDAndVerified(userID1, eid, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, verified)
 	assert.Equal(t, "SECRET1", verified.Secret)
 
-	notVerified, err := repo.FindByUserIDAndVerified(userID2, true)
+	notVerified, err := repo.FindByUserIDAndVerified(userID2, eid, true)
 	assert.NoError(t, err)
 	assert.Nil(t, notVerified)
 
-	unverified, err := repo.FindByUserIDAndVerified(userID2, false)
+	unverified, err := repo.FindByUserIDAndVerified(userID2, eid, false)
 	assert.NoError(t, err)
 	assert.NotNil(t, unverified)
 	assert.Equal(t, "SECRET2", unverified.Secret)
@@ -123,7 +123,7 @@ func TestMFARepo_Save(t *testing.T) {
 	err := repo.Save(config)
 	assert.NoError(t, err)
 
-	found, err := repo.FindByUserID(userID)
+	found, err := repo.FindByUserID(userID, eid)
 	assert.NoError(t, err)
 	assert.Equal(t, "UPDATED", found.Secret)
 	assert.True(t, found.Verified)
@@ -144,10 +144,10 @@ func TestMFARepo_UpdateVerified(t *testing.T) {
 	config.ID = uuid.New()
 	require.NoError(t, repo.Create(config))
 
-	err := repo.UpdateVerified(config.ID, true)
+	err := repo.UpdateVerified(config.ID, eid, true)
 	assert.NoError(t, err)
 
-	found, err := repo.FindByUserID(config.UserID)
+	found, err := repo.FindByUserID(config.UserID, eid)
 	assert.NoError(t, err)
 	assert.True(t, found.Verified)
 }
@@ -169,10 +169,10 @@ func TestMFARepo_UpdateBackupCodes(t *testing.T) {
 	require.NoError(t, repo.Create(config))
 
 	newCodes := `["22222222","33333333"]`
-	err := repo.UpdateBackupCodes(config.ID, newCodes)
+	err := repo.UpdateBackupCodes(config.ID, eid, newCodes)
 	assert.NoError(t, err)
 
-	found, err := repo.FindByUserID(config.UserID)
+	found, err := repo.FindByUserID(config.UserID, eid)
 	assert.NoError(t, err)
 	assert.Equal(t, newCodes, found.BackupCodes)
 }
@@ -193,15 +193,15 @@ func TestMFARepo_DeleteByUserID(t *testing.T) {
 	config.ID = uuid.New()
 	require.NoError(t, repo.Create(config))
 
-	rowsAffected, err := repo.DeleteByUserID(userID)
+	rowsAffected, err := repo.DeleteByUserID(userID, eid)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), rowsAffected)
 
-	found, err := repo.FindByUserID(userID)
+	found, err := repo.FindByUserID(userID, eid)
 	assert.NoError(t, err)
 	assert.Nil(t, found)
 
-	rowsAffected, err = repo.DeleteByUserID(userID)
+	rowsAffected, err = repo.DeleteByUserID(userID, eid)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(0), rowsAffected)
 }

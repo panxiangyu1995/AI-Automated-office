@@ -21,7 +21,7 @@ func (s *KnowledgeVersionService) CreateVersion(docID string) (*model.KnowledgeD
 	if err != nil {
 		return nil, apperrors.NewValidationError("doc_id", "无效")
 	}
-	doc, dbErr := s.knowledgeRepo.FindDocByID(id)
+	doc, dbErr := s.knowledgeRepo.FindDocByID(id, uuid.Nil)
 	if dbErr != nil {
 		return nil, dbErr
 	}

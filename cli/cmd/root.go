@@ -42,6 +42,7 @@ func init() {
 	rootCmd.AddCommand(newServiceCmd())
 	rootCmd.AddCommand(newInitCmd())
 	rootCmd.AddCommand(newLogCmd())
+	rootCmd.AddCommand(newWhichCmd())
 	registerDebugCommand(rootCmd)
 }
 

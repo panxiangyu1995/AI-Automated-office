@@ -65,13 +65,13 @@ func (r *orderRepo) UpdatePurchaseOrderItemReceivedQty(id, enterpriseID uuid.UUI
 	return r.db.Model(&model.PurchaseOrderItem{}).Where("id=? AND enterprise_id=?", id, enterpriseID).Update("received_qty", receivedQty).Error
 }
 
-func (r *orderRepo) IncrementPurchaseOrderItemReceivedQty(id string, delta int) error {
-	return r.db.Model(&model.PurchaseOrderItem{}).Where("id = ?", id).
+func (r *orderRepo) IncrementPurchaseOrderItemReceivedQty(id, enterpriseID string, delta int) error {
+	return r.db.Model(&model.PurchaseOrderItem{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).
 		Update("received_qty", gorm.Expr("received_qty + ?", delta)).Error
 }
 
-func (r *orderRepo) UpdatePurchaseOrderStatusByOrderID(orderID string, status string) error {
-	return r.db.Model(&model.PurchaseOrder{}).Where("id = ?", orderID).Update("status", status).Error
+func (r *orderRepo) UpdatePurchaseOrderStatusByOrderID(orderID, enterpriseID string, status string) error {
+	return r.db.Model(&model.PurchaseOrder{}).Where("id = ? AND enterprise_id = ?", orderID, enterpriseID).Update("status", status).Error
 }
 
 func (r *orderRepo) ListPurchaseOrders(enterpriseID uuid.UUID, page, pageSize int) ([]model.PurchaseOrder, int64, error) {

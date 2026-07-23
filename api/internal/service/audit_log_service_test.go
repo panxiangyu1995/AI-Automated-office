@@ -67,7 +67,7 @@ func (m *mockAuditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, in
 	return filtered[start:end], total, nil
 }
 
-func (m *mockAuditLogRepo) QueryOperatorActions(page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
+func (m *mockAuditLogRepo) QueryOperatorActions(enterpriseID uuid.UUID, page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
 	return nil, 0, nil
 }
 

@@ -124,7 +124,7 @@ func (m *mockContractRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error)
 	return 1, nil
 }
 
-func (m *mockContractRepo) UpdateFields(id string, fields map[string]interface{}) error {
+func (m *mockContractRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
 	c, ok := m.contracts[id]
 	if !ok {
 		return nil
@@ -135,8 +135,8 @@ func (m *mockContractRepo) UpdateFields(id string, fields map[string]interface{}
 	return nil
 }
 
-func (m *mockContractRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	return m.UpdateFields(id, fields)
+func (m *mockContractRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return m.UpdateFields(id, enterpriseID, fields)
 }
 
 func (m *mockContractRepo) UpdateStatus(id, enterpriseID uuid.UUID, status string) error {

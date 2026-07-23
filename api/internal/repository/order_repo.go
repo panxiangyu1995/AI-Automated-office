@@ -15,8 +15,8 @@ type OrderRepository interface {
 	UpdatePurchaseOrder(po *model.PurchaseOrder) error
 	ListPurchaseOrderItems(orderID string) ([]model.PurchaseOrderItem, error)
 	UpdatePurchaseOrderItemReceivedQty(id, enterpriseID uuid.UUID, receivedQty int) error
-	IncrementPurchaseOrderItemReceivedQty(id string, delta int) error
-	UpdatePurchaseOrderStatusByOrderID(orderID string, status string) error
+	IncrementPurchaseOrderItemReceivedQty(id, enterpriseID string, delta int) error
+	UpdatePurchaseOrderStatusByOrderID(orderID, enterpriseID string, status string) error
 	ListPurchaseOrders(enterpriseID uuid.UUID, page, pageSize int) ([]model.PurchaseOrder, int64, error)
 	UpdatePurchaseOrderStatus(id, enterpriseID uuid.UUID, status string) error
 	CreateSalesOrder(so *model.SalesOrder) error

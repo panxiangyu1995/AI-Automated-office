@@ -142,43 +142,58 @@ func (c *APIClient) RefreshToken(refreshToken string) (string, string, int, erro
 	return loginResp.Data.AccessToken, loginResp.Data.RefreshToken, loginResp.Data.ExpiresIn, nil
 }
 
-func (c *APIClient) Get(path string) ([]byte, error) {
-	req, err := http.NewRequest("GET", c.baseURL+path, nil)
+func (c *APIClient) SwitchEnterprise(accessToken, enterpriseID string) (string, string, int, error) {
+	body := map[string]string{"enterprise_id": enterpriseID}
+	payload, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return "", "", 0, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	c.setHeaders(req)
+	req, err := http.NewRequest("POST", c.baseURL+"/api/v1/auth/switch-enterprise", bytes.NewReader(payload))
+	if err != nil {
+		return "", "", 0, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("X-Request-Source", "ao-cli")
+	if c.hmacSecret != "" {
+		c.signRequest(req)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return "", "", 0, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
-	return io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", 0, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	var loginResp LoginResponse
+	if err := json.Unmarshal(respBody, &loginResp); err != nil {
+		return "", "", 0, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	if loginResp.Error != nil {
+		return "", "", 0, fmt.Errorf("switch failed: %s - %s", loginResp.Error.Code, loginResp.Error.Message)
+	}
+
+	if loginResp.Data == nil || loginResp.Data.AccessToken == "" {
+		return "", "", 0, fmt.Errorf("switch response missing access token")
+	}
+
+	return loginResp.Data.AccessToken, loginResp.Data.RefreshToken, loginResp.Data.ExpiresIn, nil
+}
+
+func (c *APIClient) Get(path string) ([]byte, error) {
+	return c.request("GET", path, nil)
 }
 
 func (c *APIClient) Post(path string, body interface{}) ([]byte, error) {
-	payload, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", c.baseURL+path, bytes.NewReader(payload))
-	if err != nil {
-		return nil, err
-	}
-
-	c.setHeaders(req)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return io.ReadAll(resp.Body)
+	return c.request("POST", path, body)
 }
 
 func (c *APIClient) request(method, path string, body interface{}) ([]byte, error) {
@@ -209,7 +224,16 @@ func (c *APIClient) request(method, path string, body interface{}) ([]byte, erro
 	}
 	defer resp.Body.Close()
 
-	return io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode >= 400 {
+		return respBody, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	return respBody, nil
 }
 
 func (c *APIClient) Put(path string, body interface{}) ([]byte, error) {
@@ -244,7 +268,11 @@ func (c *APIClient) setHeaders(req *http.Request) {
 func (c *APIClient) signRequest(req *http.Request) {
 	var bodyBytes []byte
 	if req.Body != nil {
-		bodyBytes, _ = io.ReadAll(req.Body)
+		var err error
+		bodyBytes, err = io.ReadAll(req.Body)
+		if err != nil {
+			bodyBytes = nil
+		}
 		req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 	}
 

@@ -61,7 +61,6 @@ var platformRepos = []struct {
 	iface      interface{}
 	methodName string
 }{
-	{"UserRepository", (*UserRepository)(nil), "FindByID"},
 	{"EnterpriseRepository", (*EnterpriseRepository)(nil), "FindByID"},
 	{"GroupRepository", (*GroupRepository)(nil), "FindByID"},
 }

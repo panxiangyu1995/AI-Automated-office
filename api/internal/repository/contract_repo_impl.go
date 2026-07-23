@@ -106,8 +106,8 @@ func (r *contractRepo) ListByCustomer(customerID, enterpriseID uuid.UUID) ([]mod
 	return contracts, nil
 }
 
-func (r *contractRepo) UpdateFields(id string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Contract{}).Where("id = ?", id).Updates(fields).Error
+func (r *contractRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Contract{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
 func (r *contractRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
@@ -119,6 +119,6 @@ func (r *contractRepo) UpdateStatus(id, enterpriseID uuid.UUID, status string) e
 	return r.db.Model(&model.Contract{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("status", status).Error
 }
 
-func (r *contractRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	return r.UpdateFields(id, fields)
+func (r *contractRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.UpdateFields(id, enterpriseID, fields)
 }

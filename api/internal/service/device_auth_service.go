@@ -147,7 +147,7 @@ func (s *DeviceAuthService) ExchangeToken(req DeviceTokenRequest) (*TokenRespons
 		return nil, apperrors.ErrTokenInvalid.WithDetail("关联用户ID无效")
 	}
 
-	user, findErr := s.userRepo.FindByID(userID)
+	user, findErr := s.userRepo.FindByID(userID, uuid.Nil)
 	if findErr != nil || user == nil {
 		return nil, apperrors.ErrUnauthorized.WithDetail("关联用户不存在")
 	}

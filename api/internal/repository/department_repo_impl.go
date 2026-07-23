@@ -57,10 +57,10 @@ func (r *departmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 	return count, err
 }
 
-func (r *departmentRepo) UpdateFields(id string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Department{}).Where("id = ?", id).Updates(fields).Error
+func (r *departmentRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Department{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
-func (r *departmentRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	return r.UpdateFields(id, fields)
+func (r *departmentRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.UpdateFields(id, enterpriseID, fields)
 }

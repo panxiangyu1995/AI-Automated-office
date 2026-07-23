@@ -16,8 +16,8 @@ type ContractRepository interface {
 	Delete(c *model.Contract, enterpriseID uuid.UUID) error
 	DeleteByID(id, enterpriseID uuid.UUID) (int64, error)
 	PatchFields(id, enterpriseID uuid.UUID, fields map[string]interface{}) (*model.Contract, error)
-	UpdateFields(id string, fields map[string]interface{}) error
-	RestoreFields(id string, fields map[string]interface{}) error
+	UpdateFields(id, enterpriseID string, fields map[string]interface{}) error
+	RestoreFields(id, enterpriseID string, fields map[string]interface{}) error
 	UpdateStatus(id, enterpriseID uuid.UUID, status string) error
 	CreateAttachment(att *model.ContractAttachment) error
 	CreateReference(cr *model.ContractReference) error

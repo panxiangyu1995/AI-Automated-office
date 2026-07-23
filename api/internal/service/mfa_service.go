@@ -33,10 +33,27 @@ type MFAEnableResult struct {
 	BackupCodes []string `json:"backup_codes"`
 }
 
+func (s *MFAService) getEnterpriseID(userID string) (uuid.UUID, *apperrors.AppError) {
+	user, findErr := s.userRepo.FindByIDString(userID)
+	if findErr != nil || user == nil {
+		return uuid.Nil, apperrors.ErrNotFound.WithDetail("用户不存在")
+	}
+	eid, err := uuid.Parse(user.EnterpriseID)
+	if err != nil {
+		return uuid.Nil, apperrors.ErrInternal.WithDetail("用户企业ID无效")
+	}
+	return eid, nil
+}
+
 func (s *MFAService) EnableMFA(userID, method string) (*MFAEnableResult, *apperrors.AppError) {
 	_, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("user_id", "用户ID无效")
+	}
+
+	eid, appErr := s.getEnterpriseID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	secret, genErr := generateTOTPSecret()
@@ -51,7 +68,7 @@ func (s *MFAService) EnableMFA(userID, method string) (*MFAEnableResult, *apperr
 
 	backupCodesJSON, _ := json.Marshal(backupCodes)
 
-	existing, findErr := s.mfaRepo.FindByUserID(userID)
+	existing, findErr := s.mfaRepo.FindByUserID(userID, eid)
 	if findErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询MFA配置失败")
 	}
@@ -82,7 +99,6 @@ func (s *MFAService) EnableMFA(userID, method string) (*MFAEnableResult, *apperr
 		Verified:    false,
 		BackupCodes: string(backupCodesJSON),
 	}
-	eid, _ := uuid.Parse(user.EnterpriseID)
 	mfaConfig.EnterpriseID = eid
 
 	if createErr := s.mfaRepo.Create(mfaConfig); createErr != nil {
@@ -101,7 +117,12 @@ func (s *MFAService) VerifyMFA(userID, code string) (bool, *apperrors.AppError) 
 		return false, apperrors.NewValidationError("code", "验证码不能为空")
 	}
 
-	config, findErr := s.mfaRepo.FindByUserID(userID)
+	eid, appErr := s.getEnterpriseID(userID)
+	if appErr != nil {
+		return false, appErr
+	}
+
+	config, findErr := s.mfaRepo.FindByUserID(userID, eid)
 	if findErr != nil {
 		return false, apperrors.ErrInternal.WithDetail("查询MFA配置失败")
 	}
@@ -112,7 +133,7 @@ func (s *MFAService) VerifyMFA(userID, code string) (bool, *apperrors.AppError) 
 	if config.Method == "totp" {
 		if validateTOTP(config.Secret, code) {
 			if !config.Verified {
-				s.mfaRepo.UpdateVerified(config.ID, true)
+				s.mfaRepo.UpdateVerified(config.ID, eid, true)
 			}
 			return true, nil
 		}
@@ -124,7 +145,7 @@ func (s *MFAService) VerifyMFA(userID, code string) (bool, *apperrors.AppError) 
 			if bc == code {
 				backupCodes = append(backupCodes[:i], backupCodes[i+1:]...)
 				updated, _ := json.Marshal(backupCodes)
-				s.mfaRepo.UpdateBackupCodes(config.ID, string(updated))
+				s.mfaRepo.UpdateBackupCodes(config.ID, eid, string(updated))
 				return true, nil
 			}
 		}
@@ -134,7 +155,11 @@ func (s *MFAService) VerifyMFA(userID, code string) (bool, *apperrors.AppError) 
 }
 
 func (s *MFAService) DisableMFA(userID string) *apperrors.AppError {
-	rowsAffected, err := s.mfaRepo.DeleteByUserID(userID)
+	eid, appErr := s.getEnterpriseID(userID)
+	if appErr != nil {
+		return appErr
+	}
+	rowsAffected, err := s.mfaRepo.DeleteByUserID(userID, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("禁用MFA失败")
 	}
@@ -145,7 +170,11 @@ func (s *MFAService) DisableMFA(userID string) *apperrors.AppError {
 }
 
 func (s *MFAService) IsMFAEnabled(userID string) (bool, *apperrors.AppError) {
-	config, err := s.mfaRepo.FindByUserIDAndVerified(userID, true)
+	eid, appErr := s.getEnterpriseID(userID)
+	if appErr != nil {
+		return false, nil
+	}
+	config, err := s.mfaRepo.FindByUserIDAndVerified(userID, eid, true)
 	if err != nil {
 		return false, nil
 	}
@@ -156,7 +185,15 @@ func (s *MFAService) IsMFAEnabled(userID string) (bool, *apperrors.AppError) {
 }
 
 func (s *MFAService) GetMFAStatus(userID string) (map[string]interface{}, *apperrors.AppError) {
-	config, err := s.mfaRepo.FindByUserID(userID)
+	eid, appErr := s.getEnterpriseID(userID)
+	if appErr != nil {
+		return map[string]interface{}{
+			"enabled":  false,
+			"method":   "",
+			"verified": false,
+		}, nil
+	}
+	config, err := s.mfaRepo.FindByUserID(userID, eid)
 	if err != nil || config == nil {
 		return map[string]interface{}{
 			"enabled":  false,

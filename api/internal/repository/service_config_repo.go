@@ -9,5 +9,5 @@ import (
 type ServiceConfigRepository interface {
 	FindByKey(enterpriseID uuid.UUID, key string) (*model.ServiceConfig, error)
 	Create(config *model.ServiceConfig) error
-	UpdateValue(id uuid.UUID, value string) error
+	UpdateValue(id, enterpriseID uuid.UUID, value string) error
 }

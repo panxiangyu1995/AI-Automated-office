@@ -25,7 +25,7 @@ func newMockMFARepo() *mockMFARepo {
 	return &mockMFARepo{configs: make(map[string]*model.MFAConfig)}
 }
 
-func (m *mockMFARepo) FindByUserID(userID string) (*model.MFAConfig, error) {
+func (m *mockMFARepo) FindByUserID(userID string, enterpriseID uuid.UUID) (*model.MFAConfig, error) {
 	c, ok := m.configs[userID]
 	if !ok {
 		return nil, nil
@@ -33,7 +33,7 @@ func (m *mockMFARepo) FindByUserID(userID string) (*model.MFAConfig, error) {
 	return c, nil
 }
 
-func (m *mockMFARepo) FindByUserIDAndVerified(userID string, verified bool) (*model.MFAConfig, error) {
+func (m *mockMFARepo) FindByUserIDAndVerified(userID string, enterpriseID uuid.UUID, verified bool) (*model.MFAConfig, error) {
 	c, ok := m.configs[userID]
 	if !ok {
 		return nil, nil
@@ -57,7 +57,7 @@ func (m *mockMFARepo) Save(config *model.MFAConfig) error {
 	return nil
 }
 
-func (m *mockMFARepo) UpdateVerified(id uuid.UUID, verified bool) error {
+func (m *mockMFARepo) UpdateVerified(id, enterpriseID uuid.UUID, verified bool) error {
 	for _, c := range m.configs {
 		if c.ID == id {
 			c.Verified = verified
@@ -67,7 +67,7 @@ func (m *mockMFARepo) UpdateVerified(id uuid.UUID, verified bool) error {
 	return nil
 }
 
-func (m *mockMFARepo) UpdateBackupCodes(id uuid.UUID, backupCodes string) error {
+func (m *mockMFARepo) UpdateBackupCodes(id, enterpriseID uuid.UUID, backupCodes string) error {
 	for _, c := range m.configs {
 		if c.ID == id {
 			c.BackupCodes = backupCodes
@@ -77,7 +77,7 @@ func (m *mockMFARepo) UpdateBackupCodes(id uuid.UUID, backupCodes string) error 
 	return nil
 }
 
-func (m *mockMFARepo) DeleteByUserID(userID string) (int64, error) {
+func (m *mockMFARepo) DeleteByUserID(userID string, enterpriseID uuid.UUID) (int64, error) {
 	_, ok := m.configs[userID]
 	if !ok {
 		return 0, nil
@@ -98,7 +98,7 @@ func setupMFAService() (*MFAService, *mockMFARepo, *mockUserRepo) {
 func TestMFAService_EnableMFA_NewConfig(t *testing.T) {
 	svc, _, userRepo := setupMFAService()
 	eid := uuid.New().String()
-	userID := uuid.New().String()
+	userID := uuid.New()
 	userRepo.Create(&model.User{
 		EnterpriseID: eid,
 		Email:        "mfa@test.com",
@@ -107,10 +107,14 @@ func TestMFAService_EnableMFA_NewConfig(t *testing.T) {
 		Role:         "employee",
 		Status:       "active",
 	})
-	key := "mfa@test.com:" + eid
-	userRepo.users[key].ID = uuid.MustParse(userID)
+	// Set ID after create to match what tests expect
+	for _, u := range userRepo.users {
+		if u.Email == "mfa@test.com" {
+			u.ID = userID
+		}
+	}
 
-	result, err := svc.EnableMFA(userID, "totp")
+	result, err := svc.EnableMFA(userID.String(), "totp")
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
 	assert.NotEmpty(t, result.Secret)
@@ -137,17 +141,17 @@ func TestMFAService_EnableMFA_UserNotFound(t *testing.T) {
 func TestMFAService_EnableMFA_UpdateExisting(t *testing.T) {
 	svc, mfaRepo, userRepo := setupMFAService()
 	eid := uuid.New()
-	userID := uuid.New().String()
+	userID := uuid.New()
 
 	existing := &model.MFAConfig{
-		UserID:   userID,
+		UserID:   userID.String(),
 		Method:   "totp",
 		Secret:   "OLDSECRET",
 		Verified: true,
 	}
 	existing.EnterpriseID = eid
 	existing.ID = uuid.New()
-	mfaRepo.configs[userID] = existing
+	mfaRepo.configs[userID.String()] = existing
 
 	userRepo.Create(&model.User{
 		EnterpriseID: eid.String(),
@@ -157,12 +161,17 @@ func TestMFAService_EnableMFA_UpdateExisting(t *testing.T) {
 		Role:         "employee",
 		Status:       "active",
 	})
+	for _, u := range userRepo.users {
+		if u.Email == "existing@test.com" {
+			u.ID = userID
+		}
+	}
 
-	result, err := svc.EnableMFA(userID, "totp")
+	result, err := svc.EnableMFA(userID.String(), "totp")
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
 	assert.NotEqual(t, "OLDSECRET", result.Secret)
-	assert.False(t, mfaRepo.configs[userID].Verified)
+	assert.False(t, mfaRepo.configs[userID.String()].Verified)
 }
 
 func TestMFAService_VerifyMFA_EmptyCode(t *testing.T) {
@@ -174,83 +183,124 @@ func TestMFAService_VerifyMFA_EmptyCode(t *testing.T) {
 }
 
 func TestMFAService_VerifyMFA_NotEnabled(t *testing.T) {
-	svc, _, _ := setupMFAService()
+	svc, mfaRepo, userRepo := setupMFAService()
+	userID := uuid.New()
+	eid := uuid.New()
 
-	_, err := svc.VerifyMFA(uuid.New().String(), "123456")
+	userRepo.Create(&model.User{EnterpriseID: eid.String(), Email: "verify@test.com", Name: "V", Role: "employee", Status: "active"})
+	for _, u := range userRepo.users {
+		if u.Email == "verify@test.com" {
+			u.ID = userID
+		}
+	}
+	_ = mfaRepo
+
+	_, err := svc.VerifyMFA(userID.String(), "123456")
 	assert.Error(t, err)
 	assert.Equal(t, "RES_NOT_FOUND", err.Code)
 }
 
 func TestMFAService_DisableMFA_Success(t *testing.T) {
-	svc, mfaRepo, _ := setupMFAService()
-	userID := uuid.New().String()
+	svc, mfaRepo, userRepo := setupMFAService()
+	userID := uuid.New()
 	eid := uuid.New()
 
-	mfaRepo.configs[userID] = &model.MFAConfig{
-		UserID:   userID,
+	mfaRepo.configs[userID.String()] = &model.MFAConfig{
+		UserID:   userID.String(),
 		Method:   "totp",
 		Secret:   "SECRET",
 		Verified: true,
 	}
-	mfaRepo.configs[userID].EnterpriseID = eid
-	mfaRepo.configs[userID].ID = uuid.New()
+	mfaRepo.configs[userID.String()].EnterpriseID = eid
+	mfaRepo.configs[userID.String()].ID = uuid.New()
 
-	err := svc.DisableMFA(userID)
+	userRepo.Create(&model.User{EnterpriseID: eid.String(), Email: "disable@test.com", Name: "D", Role: "employee", Status: "active"})
+	for _, u := range userRepo.users {
+		if u.Email == "disable@test.com" {
+			u.ID = userID
+		}
+	}
+
+	err := svc.DisableMFA(userID.String())
 	assert.Nil(t, err)
-	_, exists := mfaRepo.configs[userID]
+	_, exists := mfaRepo.configs[userID.String()]
 	assert.False(t, exists)
 }
 
 func TestMFAService_DisableMFA_NotEnabled(t *testing.T) {
-	svc, _, _ := setupMFAService()
+	svc, mfaRepo, userRepo := setupMFAService()
+	userID := uuid.New()
+	eid := uuid.New()
 
-	err := svc.DisableMFA(uuid.New().String())
+	userRepo.Create(&model.User{EnterpriseID: eid.String(), Email: "disable2@test.com", Name: "D2", Role: "employee", Status: "active"})
+	for _, u := range userRepo.users {
+		if u.Email == "disable2@test.com" {
+			u.ID = userID
+		}
+	}
+	_ = mfaRepo
+
+	err := svc.DisableMFA(userID.String())
 	assert.Error(t, err)
 	assert.Equal(t, "RES_NOT_FOUND", err.Code)
 }
 
 func TestMFAService_IsMFAEnabled(t *testing.T) {
-	svc, mfaRepo, _ := setupMFAService()
-	userID := uuid.New().String()
+	svc, mfaRepo, userRepo := setupMFAService()
+	userID := uuid.New()
 	eid := uuid.New()
 
-	enabled, err := svc.IsMFAEnabled(userID)
+	userRepo.Create(&model.User{EnterpriseID: eid.String(), Email: "isen@test.com", Name: "I", Role: "employee", Status: "active"})
+	for _, u := range userRepo.users {
+		if u.Email == "isen@test.com" {
+			u.ID = userID
+		}
+	}
+
+	enabled, err := svc.IsMFAEnabled(userID.String())
 	assert.Nil(t, err)
 	assert.False(t, enabled)
 
-	mfaRepo.configs[userID] = &model.MFAConfig{
-		UserID:   userID,
+	mfaRepo.configs[userID.String()] = &model.MFAConfig{
+		UserID:   userID.String(),
 		Method:   "totp",
 		Secret:   "SECRET",
 		Verified: true,
 	}
-	mfaRepo.configs[userID].EnterpriseID = eid
-	mfaRepo.configs[userID].ID = uuid.New()
+	mfaRepo.configs[userID.String()].EnterpriseID = eid
+	mfaRepo.configs[userID.String()].ID = uuid.New()
 
-	enabled, err = svc.IsMFAEnabled(userID)
+	enabled, err = svc.IsMFAEnabled(userID.String())
 	assert.Nil(t, err)
 	assert.True(t, enabled)
 }
 
 func TestMFAService_GetMFAStatus(t *testing.T) {
-	svc, mfaRepo, _ := setupMFAService()
-	userID := uuid.New().String()
+	svc, mfaRepo, userRepo := setupMFAService()
+	userID := uuid.New()
+	eid := uuid.New()
 
-	status, err := svc.GetMFAStatus(userID)
+	userRepo.Create(&model.User{EnterpriseID: eid.String(), Email: "status@test.com", Name: "S", Role: "employee", Status: "active"})
+	for _, u := range userRepo.users {
+		if u.Email == "status@test.com" {
+			u.ID = userID
+		}
+	}
+
+	status, err := svc.GetMFAStatus(userID.String())
 	assert.Nil(t, err)
 	assert.False(t, status["enabled"].(bool))
 
-	eid := uuid.New()
-	mfaRepo.configs[userID] = &model.MFAConfig{
-		UserID:   userID,
+	mfaRepo.configs[userID.String()] = &model.MFAConfig{
+		UserID:   userID.String(),
 		Method:   "totp",
 		Secret:   "SECRET",
 		Verified: true,
 	}
-	mfaRepo.configs[userID].EnterpriseID = eid
-	mfaRepo.configs[userID].ID = uuid.New()
+	mfaRepo.configs[userID.String()].EnterpriseID = eid
+	mfaRepo.configs[userID.String()].ID = uuid.New()
 
-	status, err = svc.GetMFAStatus(userID)
+	status, err = svc.GetMFAStatus(userID.String())
 	assert.Nil(t, err)
 	assert.True(t, status["enabled"].(bool))
 	assert.Equal(t, "totp", status["method"])

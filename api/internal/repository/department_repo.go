@@ -14,6 +14,6 @@ type DepartmentRepository interface {
 	ListByEnterprise(enterpriseID uuid.UUID) ([]model.Department, error)
 	CountByParent(parentID uuid.UUID) (int64, error)
 	CountByEnterprise(enterpriseID uuid.UUID) (int64, error)
-	UpdateFields(id string, fields map[string]interface{}) error
-	RestoreFields(id string, fields map[string]interface{}) error
+	UpdateFields(id, enterpriseID string, fields map[string]interface{}) error
+	RestoreFields(id, enterpriseID string, fields map[string]interface{}) error
 }

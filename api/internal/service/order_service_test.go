@@ -62,10 +62,10 @@ func (m *mockOrderRepo) ListPurchaseOrderItems(orderID string) ([]model.Purchase
 func (m *mockOrderRepo) UpdatePurchaseOrderItemReceivedQty(id, enterpriseID uuid.UUID, receivedQty int) error {
 	return nil
 }
-func (m *mockOrderRepo) IncrementPurchaseOrderItemReceivedQty(id string, delta int) error {
+func (m *mockOrderRepo) IncrementPurchaseOrderItemReceivedQty(id, enterpriseID string, delta int) error {
 	return nil
 }
-func (m *mockOrderRepo) UpdatePurchaseOrderStatusByOrderID(orderID string, status string) error {
+func (m *mockOrderRepo) UpdatePurchaseOrderStatusByOrderID(orderID, enterpriseID string, status string) error {
 	if po, ok := m.purchaseOrders[orderID]; ok {
 		po.Status = status
 	}
@@ -351,10 +351,10 @@ func (m *noopCustRepo) List(enterpriseID uuid.UUID, page, pageSize int) ([]model
 func (m *noopCustRepo) UpdateFields(id, enterpriseID uuid.UUID, fields map[string]interface{}) error {
 	return nil
 }
-func (m *noopCustRepo) UpdateFieldsByID(id string, fields map[string]interface{}) error {
+func (m *noopCustRepo) UpdateFieldsByID(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
-func (m *noopCustRepo) RestoreFields(id string, fields map[string]interface{}) error {
+func (m *noopCustRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 func (m *noopCustRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {

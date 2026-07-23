@@ -107,11 +107,11 @@ func (m *mockEmployeeRepo) FindByIDNoEnterprise(id string) (*model.Employee, err
 	return e, nil
 }
 
-func (m *mockEmployeeRepo) UpdateFields(id string, fields map[string]interface{}) error {
+func (m *mockEmployeeRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 
-func (m *mockEmployeeRepo) RestoreFields(id string, fields map[string]interface{}) error {
+func (m *mockEmployeeRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 

@@ -1,0 +1,48 @@
+GOPATH ?= $(shell go env GOPATH)
+CLI_BIN = ao-cli
+CLI_INSTALL_PATH = $(GOPATH)/bin/$(CLI_BIN)
+VERSION ?= dev
+BUILD_TIME = $(shell date -u +%Y%m%d%H%M%S)
+
+.PHONY: cli api dev test lint clean release release-snapshot help
+
+help:
+	@echo "AI-Automated-office 开发命令"
+	@echo ""
+	@echo "  make cli       编译并安装 ao-cli 到 $(CLI_INSTALL_PATH)"
+	@echo "  make api       编译 API 服务到 api/bin/api"
+	@echo "  make dev       启动开发环境（Docker + API）"
+	@echo "  make test      运行所有测试"
+	@echo "  make lint      代码检查（vet + build）"
+	@echo "  make clean     清理编译产物"
+	@echo "  make release-snapshot  发布预演（不推送）"
+	@echo "  make release   正式发布（Homebrew/Scoop/npm）"
+
+cli:
+	cd cli && go build -ldflags "-X main.version=$(VERSION) -X main.buildTime=$(BUILD_TIME)" -o $(CLI_INSTALL_PATH) .
+
+api:
+	cd api && go build -o bin/api cmd/server/main.go
+
+dev:
+	docker compose -f deploy/docker-compose/docker-compose.yml up -d postgres redis
+	cd api && go run cmd/server/main.go
+
+test:
+	cd api && go test ./...
+	cd cli && go test ./...
+
+lint:
+	cd api && go vet ./... && go build ./...
+	cd cli && go vet ./... && go build ./...
+
+clean:
+	rm -f api/bin/api
+	rm -f cli/bin/$(CLI_BIN)
+	rm -f $(CLI_INSTALL_PATH)
+
+release-snapshot:
+	goreleaser release --snapshot --clean
+
+release:
+	bash scripts/release.sh && goreleaser release --clean

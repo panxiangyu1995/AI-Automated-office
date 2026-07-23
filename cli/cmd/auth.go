@@ -83,6 +83,18 @@ func newAuthCmd() *cobra.Command {
 		},
 	})
 
+	switchCmd := &cobra.Command{
+		Use:   "switch",
+		Short: "切换企业上下文",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			enterpriseID, _ := cmd.Flags().GetString("enterprise-id")
+			return runSwitchEnterprise(enterpriseID)
+		},
+	}
+	switchCmd.Flags().String("enterprise-id", "", "目标企业ID")
+	switchCmd.MarkFlagRequired("enterprise-id")
+	cmd.AddCommand(switchCmd)
+
 	return cmd
 }
 
@@ -176,5 +188,31 @@ func runRefreshToken() error {
 	}
 
 	fmt.Println("令牌刷新成功")
+	return nil
+}
+
+func runSwitchEnterprise(enterpriseID string) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("not logged in: %w", err)
+	}
+
+	client := api_client.NewAPIClient(cfg.ServerURL)
+	client.SetHMACSecret(cfg.HMACSecret)
+	accessToken, refreshToken, expiresIn, err := client.SwitchEnterprise(cfg.Token, enterpriseID)
+	if err != nil {
+		return fmt.Errorf("switch enterprise failed: %w", err)
+	}
+
+	cfg.Token = accessToken
+	cfg.RefreshToken = refreshToken
+	cfg.EnterpriseID = enterpriseID
+	cfg.ExpiresAt = time.Now().Add(time.Duration(expiresIn) * time.Second)
+
+	if err := config.Save(cfg); err != nil {
+		return fmt.Errorf("failed to save config: %w", err)
+	}
+
+	fmt.Printf("已切换到企业: %s\n", enterpriseID)
 	return nil
 }

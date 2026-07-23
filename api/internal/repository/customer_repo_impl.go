@@ -77,12 +77,12 @@ func (r *customerRepo) UpdateFields(id, enterpriseID uuid.UUID, fields map[strin
 	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
-func (r *customerRepo) UpdateFieldsByID(id string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Customer{}).Where("id = ?", id).Updates(fields).Error
+func (r *customerRepo) UpdateFieldsByID(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
-func (r *customerRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	return r.UpdateFieldsByID(id, fields)
+func (r *customerRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.UpdateFieldsByID(id, enterpriseID, fields)
 }
 
 func (r *customerRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {

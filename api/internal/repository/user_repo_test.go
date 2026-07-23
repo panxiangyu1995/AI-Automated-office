@@ -43,7 +43,9 @@ func TestUserRepo_Create_FindByID_Update_Delete(t *testing.T) {
 	err := repo.Create(user)
 	assert.NoError(t, err)
 
-	found, err := repo.FindByID(user.ID)
+	eidUUID := uuid.MustParse(eid)
+
+	found, err := repo.FindByID(user.ID, eidUUID)
 	assert.NoError(t, err)
 	assert.NotNil(t, found)
 	assert.Equal(t, "测试用户", found.Name)
@@ -54,15 +56,15 @@ func TestUserRepo_Create_FindByID_Update_Delete(t *testing.T) {
 	err = repo.Update(found)
 	assert.NoError(t, err)
 
-	updated, err := repo.FindByID(user.ID)
+	updated, err := repo.FindByID(user.ID, eidUUID)
 	assert.NoError(t, err)
 	assert.Equal(t, "更新用户", updated.Name)
 	assert.Equal(t, "admin", updated.Role)
 
-	err = repo.Delete(user.ID)
+	err = repo.Delete(user.ID, eidUUID)
 	assert.NoError(t, err)
 
-	deleted, err := repo.FindByID(user.ID)
+	deleted, err := repo.FindByID(user.ID, eidUUID)
 	assert.NoError(t, err)
 	assert.Nil(t, deleted)
 }
@@ -139,7 +141,7 @@ func TestUserRepo_UpdateLastLogin(t *testing.T) {
 		t.Skipf("UpdateLastLogin uses NOW() which is PostgreSQL-only: %v", err)
 	}
 
-	updated, err := repo.FindByID(user.ID)
+	updated, err := repo.FindByID(user.ID, uuid.MustParse(eid))
 	assert.NoError(t, err)
 	assert.NotNil(t, updated.LastLoginAt)
 }

@@ -171,6 +171,8 @@ func registerMigrations() {
 		{"044", "Create quality inspection tables"},
 		{"045", "Create billing records and payment gateway configs tables, add subscription plan fields"},
 		{"046", "Create industry_templates, enterprise_skill_matrix, claude_md_templates; add knowledge versioning columns"},
+		{"047", "Alter subscription_plans features to jsonb"},
+		{"048", "Add encrypted column to backup_records"},
 	}
 	for _, m := range migrations {
 		RegisterMigration(Migration{

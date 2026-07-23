@@ -10,6 +10,72 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 )
 
+var allowedExportColumns = map[string]map[string]bool{
+	"employees": {
+		"id": true, "enterprise_id": true, "name": true, "email": true, "phone": true,
+		"position": true, "employee_no": true, "role": true, "status": true,
+		"department_id": true, "hire_date": true, "created_at": true, "updated_at": true,
+	},
+	"customers": {
+		"id": true, "enterprise_id": true, "name": true, "contact_person": true,
+		"email": true, "phone": true, "status": true, "created_at": true, "updated_at": true,
+	},
+	"contracts": {
+		"id": true, "enterprise_id": true, "contract_no": true, "name": true,
+		"customer_id": true, "amount": true, "status": true, "start_date": true,
+		"end_date": true, "created_at": true, "updated_at": true,
+	},
+	"purchase_orders": {
+		"id": true, "enterprise_id": true, "order_no": true, "supplier_id": true,
+		"total_amount": true, "status": true, "created_at": true, "updated_at": true,
+	},
+	"sales_orders": {
+		"id": true, "enterprise_id": true, "order_no": true, "customer_id": true,
+		"total_amount": true, "status": true, "created_at": true, "updated_at": true,
+	},
+	"products": {
+		"id": true, "enterprise_id": true, "name": true, "sku": true, "category": true,
+		"price": true, "status": true, "created_at": true, "updated_at": true,
+	},
+	"audit_logs": {
+		"id": true, "enterprise_id": true, "user_id": true, "action": true,
+		"resource_type": true, "resource_id": true, "detail": true,
+		"created_at": true,
+	},
+}
+
+func sanitizeFields(table string, fields []string) []string {
+	allowed, ok := allowedExportColumns[table]
+	if !ok {
+		return []string{"*"}
+	}
+	safe := make([]string, 0, len(fields))
+	for _, f := range fields {
+		f = strings.TrimSpace(f)
+		if allowed[f] {
+			safe = append(safe, f)
+		}
+	}
+	if len(safe) == 0 {
+		safe = []string{"*"}
+	}
+	return safe
+}
+
+func sanitizeFilterKeys(table string, filters map[string]interface{}) map[string]interface{} {
+	allowed, ok := allowedExportColumns[table]
+	if !ok {
+		return map[string]interface{}{"enterprise_id": filters["enterprise_id"]}
+	}
+	safe := make(map[string]interface{}, len(filters))
+	for k, v := range filters {
+		if allowed[k] {
+			safe[k] = v
+		}
+	}
+	return safe
+}
+
 type exportRepo struct {
 	db *gorm.DB
 }
@@ -105,13 +171,15 @@ func (r *exportRepo) ListHistoryByTask(taskID uuid.UUID) ([]model.ExportHistory,
 
 func (r *exportRepo) QueryTable(table string, fields []string, enterpriseID uuid.UUID, filters map[string]interface{}, entityID string) ([]map[string]interface{}, error) {
 	var results []map[string]interface{}
+	safeFields := sanitizeFields(table, fields)
+	safeFilters := sanitizeFilterKeys(table, filters)
 	query := r.db.Table(table).
 		Where("enterprise_id = ? AND deleted_at IS NULL", enterpriseID).
-		Select(strings.Join(fields, ", "))
+		Select(strings.Join(safeFields, ", "))
 	if entityID != "" {
 		query = query.Where("id = ?", entityID)
 	}
-	for k, v := range filters {
+	for k, v := range safeFilters {
 		query = query.Where(k+" = ?", v)
 	}
 	if err := query.Find(&results).Error; err != nil {
@@ -122,9 +190,10 @@ func (r *exportRepo) QueryTable(table string, fields []string, enterpriseID uuid
 
 func (r *exportRepo) QueryRelatedTable(table string, fields []string, enterpriseID uuid.UUID, anchorType, anchorID string) ([]map[string]interface{}, error) {
 	var results []map[string]interface{}
+	safeFields := sanitizeFields(table, fields)
 	query := r.db.Table(table).
 		Where("enterprise_id = ? AND deleted_at IS NULL", enterpriseID).
-		Select(strings.Join(fields, ", "))
+		Select(strings.Join(safeFields, ", "))
 	switch anchorType {
 	case "customer":
 		query = query.Where("customer_id = ?", anchorID)
@@ -139,9 +208,10 @@ func (r *exportRepo) QueryRelatedTable(table string, fields []string, enterprise
 
 func (r *exportRepo) QueryEmployeeDimensionTable(table string, fields []string, enterpriseID uuid.UUID) ([]map[string]interface{}, error) {
 	var results []map[string]interface{}
+	safeFields := sanitizeFields(table, fields)
 	query := r.db.Table(table).
 		Where("enterprise_id = ? AND deleted_at IS NULL", enterpriseID).
-		Select(strings.Join(fields, ", "))
+		Select(strings.Join(safeFields, ", "))
 	if err := query.Find(&results).Error; err != nil {
 		return nil, fmt.Errorf("query employee dimension %s: %w", table, err)
 	}
@@ -150,9 +220,10 @@ func (r *exportRepo) QueryEmployeeDimensionTable(table string, fields []string, 
 
 func (r *exportRepo) QueryAuditLogs(enterpriseID uuid.UUID, userID string, fields []string) ([]map[string]interface{}, error) {
 	var results []map[string]interface{}
+	safeFields := sanitizeFields("audit_logs", fields)
 	if err := r.db.Table("audit_logs").
 		Where("enterprise_id = ? AND user_id = ? AND deleted_at IS NULL", enterpriseID, userID).
-		Select(strings.Join(fields, ", ")).
+		Select(strings.Join(safeFields, ", ")).
 		Find(&results).Error; err != nil {
 		return nil, fmt.Errorf("query audit logs: %w", err)
 	}

@@ -13,11 +13,11 @@ type KnowledgeRepository interface {
 	ListMessages(enterpriseID uuid.UUID, page, pageSize int) ([]model.Message, int64, error)
 	CreateDoc(d *model.KnowledgeDoc) error
 	ListDocs(enterpriseID uuid.UUID, page, pageSize int) ([]model.KnowledgeDoc, int64, error)
-	FindDocByID(id uuid.UUID) (*model.KnowledgeDoc, error)
+	FindDocByID(id, enterpriseID uuid.UUID) (*model.KnowledgeDoc, error)
 	CreateChunk(chunk *model.DocChunk) error
 	ListChunksByDocID(docID uuid.UUID) ([]model.DocChunk, error)
-	SearchChunks(query string, limit int) ([]model.DocChunk, error)
-	FindDocByIDSimple(id uuid.UUID) (*model.KnowledgeDoc, error)
+	SearchChunks(query string, enterpriseID uuid.UUID, limit int) ([]model.DocChunk, error)
+	FindDocByIDSimple(id, enterpriseID uuid.UUID) (*model.KnowledgeDoc, error)
 	CreateCategory(c *model.KBCategory) error
 	ListCategories(enterpriseID uuid.UUID) ([]model.KBCategory, error)
 	ListDocVersions(docID uuid.UUID) ([]model.KnowledgeDoc, error)

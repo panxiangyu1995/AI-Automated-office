@@ -49,8 +49,8 @@ func TestClear(t *testing.T) {
 		t.Fatalf("Clear failed: %v", err)
 	}
 
-	if _, err := Load(); !os.IsNotExist(err) {
-		t.Error("expected not-exist error after clear")
+	if _, err := Load(); err != nil {
+		t.Errorf("expected load to succeed after clear (empty fields), got: %v", err)
 	}
 }
 

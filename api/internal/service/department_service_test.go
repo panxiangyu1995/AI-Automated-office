@@ -72,11 +72,11 @@ func (m *mockDepartmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 	return count, nil
 }
 
-func (m *mockDepartmentRepo) UpdateFields(id string, fields map[string]interface{}) error {
+func (m *mockDepartmentRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 
-func (m *mockDepartmentRepo) RestoreFields(id string, fields map[string]interface{}) error {
+func (m *mockDepartmentRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 

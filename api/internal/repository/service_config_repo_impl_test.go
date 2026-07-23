@@ -99,7 +99,7 @@ func TestServiceConfigRepo_UpdateValue(t *testing.T) {
 	config.ID = uuid.New()
 	require.NoError(t, repo.Create(config))
 
-	err := repo.UpdateValue(config.ID, "500")
+	err := repo.UpdateValue(config.ID, eid, "500")
 	assert.NoError(t, err)
 
 	found, err := repo.FindByKey(eid, "max_users")
@@ -111,6 +111,6 @@ func TestServiceConfigRepo_UpdateValue_NonExistentID(t *testing.T) {
 	db := setupServiceConfigTestDB(t)
 	repo := NewServiceConfigRepository(db)
 
-	err := repo.UpdateValue(uuid.New(), "value")
+	err := repo.UpdateValue(uuid.New(), uuid.New(), "value")
 	assert.NoError(t, err)
 }

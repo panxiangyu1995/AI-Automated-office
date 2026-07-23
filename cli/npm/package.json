@@ -1,0 +1,29 @@
+{
+  "name": "ao-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for AI-Automated-office — Agent-driven enterprise SaaS",
+  "keywords": ["cli", "enterprise", "saas", "agent", "ai-office"],
+  "author": "AI-Automated-office",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/panxiangyu1995/AI-Automated-office"
+  },
+  "bin": {
+    "ao-cli": "./run.js"
+  },
+  "files": [
+    "run.js",
+    "install.js",
+    "platform/"
+  ],
+  "scripts": {
+    "postinstall": "node install.js",
+    "preuninstall": "node uninstall.js"
+  },
+  "os": ["darwin", "linux", "win32"],
+  "cpu": ["x64", "arm64"],
+  "engines": {
+    "node": ">=14"
+  }
+}

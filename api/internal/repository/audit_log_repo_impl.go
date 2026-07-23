@@ -96,10 +96,10 @@ func (r *auditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, int64,
 	return logs, total, nil
 }
 
-func (r *auditLogRepo) QueryOperatorActions(page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
+func (r *auditLogRepo) QueryOperatorActions(enterpriseID uuid.UUID, page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
 	var total int64
 
-	q := r.db.Model(&model.AuditLog{})
+	q := r.db.Model(&model.AuditLog{}).Where("enterprise_id = ?", enterpriseID)
 
 	if action != "" {
 		q = q.Where("action = ?", action)

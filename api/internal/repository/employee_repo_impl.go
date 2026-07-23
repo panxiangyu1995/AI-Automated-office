@@ -132,10 +132,10 @@ func (r *employeeRepo) FindByIDNoEnterprise(id string) (*model.Employee, error) 
 	return &emp, nil
 }
 
-func (r *employeeRepo) UpdateFields(id string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Employee{}).Where("id = ?", id).Updates(fields).Error
+func (r *employeeRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.db.Model(&model.Employee{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
-func (r *employeeRepo) RestoreFields(id string, fields map[string]interface{}) error {
-	return r.UpdateFields(id, fields)
+func (r *employeeRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
+	return r.UpdateFields(id, enterpriseID, fields)
 }

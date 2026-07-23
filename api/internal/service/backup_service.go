@@ -83,7 +83,11 @@ func (s *BackupService) UpdateConfig(configID, enterpriseID, backupTime, backupD
 		return nil, apperrors.NewValidationError("config_id", "配置ID无效")
 	}
 
-	config, err := s.configRepo.FindByID(cid, uuid.MustParse(enterpriseID))
+	eid, parseErr := uuid.Parse(enterpriseID)
+	if parseErr != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
+	config, err := s.configRepo.FindByID(cid, eid)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询备份配置失败")
 	}
@@ -92,11 +96,11 @@ func (s *BackupService) UpdateConfig(configID, enterpriseID, backupTime, backupD
 	}
 
 	if backupTime != "" {
-			if !isValidBackupTime(backupTime) {
-				return nil, apperrors.NewValidationError("backup_time", "备份时间格式应为 HH:MM (00:00-23:59)")
-			}
-			config.BackupTime = backupTime
+		if !isValidBackupTime(backupTime) {
+			return nil, apperrors.NewValidationError("backup_time", "备份时间格式应为 HH:MM (00:00-23:59)")
 		}
+		config.BackupTime = backupTime
+	}
 	if backupDirectory != "" {
 		config.BackupDirectory = backupDirectory
 	}
@@ -105,7 +109,7 @@ func (s *BackupService) UpdateConfig(configID, enterpriseID, backupTime, backupD
 	}
 	config.Enabled = enabled
 
-	config.EnterpriseID = uuid.MustParse(enterpriseID)
+	config.EnterpriseID = eid
 
 	if err := s.configRepo.Update(config); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("更新备份配置失败: " + err.Error())
@@ -118,8 +122,12 @@ func (s *BackupService) DeleteConfig(configID, enterpriseID string) *apperrors.A
 	if err != nil {
 		return apperrors.NewValidationError("config_id", "配置ID无效")
 	}
+	eid, parseErr := uuid.Parse(enterpriseID)
+	if parseErr != nil {
+		return apperrors.NewValidationError("enterprise_id", "企业ID无效")
+	}
 
-	config, err := s.configRepo.FindByID(cid, uuid.MustParse(enterpriseID))
+	config, err := s.configRepo.FindByID(cid, eid)
 	if err != nil {
 		return apperrors.ErrInternal.WithDetail("查询备份配置失败")
 	}
@@ -127,7 +135,7 @@ func (s *BackupService) DeleteConfig(configID, enterpriseID string) *apperrors.A
 		return apperrors.ErrNotFound.WithDetail("备份配置不存在")
 	}
 
-	if err := s.configRepo.Delete(cid, uuid.MustParse(enterpriseID)); err != nil {
+	if err := s.configRepo.Delete(cid, eid); err != nil {
 		return apperrors.ErrInternal.WithDetail("删除备份配置失败: " + err.Error())
 	}
 	return nil
@@ -198,6 +206,13 @@ func (s *BackupService) TriggerBackup(enterpriseID string) (*model.BackupRecord,
 	schemaName := fmt.Sprintf("tenant_%s", enterpriseID)
 	filename := fmt.Sprintf("backup_%s_%s.dump", enterpriseID, now.Format("20060102_150405"))
 	filePath := filepath.Join(s.defaultDir, filename)
+
+	if _, lookErr := exec.LookPath("pg_dump"); lookErr != nil {
+		record.Status = "failed"
+		record.ErrorMessage = "pg_dump not found in PATH. Please install postgresql-client in the API runtime environment."
+		s.recordRepo.Update(record)
+		return nil, apperrors.ErrInternal.WithDetail("备份工具不可用: " + record.ErrorMessage)
+	}
 
 	cmd := exec.Command("pg_dump",
 		"--host="+s.dbHost,
@@ -282,6 +297,10 @@ func (s *BackupService) Restore(enterpriseID, recordID string) *apperrors.AppErr
 	}
 
 	schemaName := fmt.Sprintf("tenant_%s", record.EnterpriseID.String())
+
+	if _, lookErr := exec.LookPath("pg_restore"); lookErr != nil {
+		return apperrors.ErrInternal.WithDetail("pg_restore not found in PATH. Please install postgresql-client in the API runtime environment.")
+	}
 
 	cmd := exec.Command("pg_restore",
 		"--host="+s.dbHost,

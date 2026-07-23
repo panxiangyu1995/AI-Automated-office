@@ -12,7 +12,7 @@ import (
 )
 
 type UndoTargetRepo interface {
-	RestoreFields(id string, fields map[string]interface{}) error
+	RestoreFields(id, enterpriseID string, fields map[string]interface{}) error
 }
 
 type UndoService struct {
@@ -95,7 +95,7 @@ func (s *UndoService) UndoOperation(operationID string) *apperrors.AppError {
 		return apperrors.ErrInvalidStatus.WithDetail("不支持撤销的资源类型: " + op.ResourceType)
 	}
 
-	if updateErr := targetRepo.RestoreFields(op.ResourceID, beforeState); updateErr != nil {
+	if updateErr := targetRepo.RestoreFields(op.ResourceID, op.EnterpriseID.String(), beforeState); updateErr != nil {
 		return apperrors.ErrInternal.WithDetail("撤销操作失败")
 	}
 

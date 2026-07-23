@@ -29,10 +29,12 @@ func (m *mockUserRepo) Create(user *model.User) error {
 	return nil
 }
 
-func (m *mockUserRepo) FindByID(id uuid.UUID) (*model.User, error) {
+func (m *mockUserRepo) FindByID(id, enterpriseID uuid.UUID) (*model.User, error) {
 	for _, u := range m.users {
 		if u.ID == id {
-			return u, nil
+			if enterpriseID == uuid.Nil || u.EnterpriseID == enterpriseID.String() {
+				return u, nil
+			}
 		}
 	}
 	return nil, nil
@@ -55,7 +57,7 @@ func (m *mockUserRepo) Update(user *model.User) error {
 	return nil
 }
 
-func (m *mockUserRepo) Delete(id uuid.UUID) error {
+func (m *mockUserRepo) Delete(id, enterpriseID uuid.UUID) error {
 	return nil
 }
 
@@ -72,7 +74,7 @@ func (m *mockUserRepo) FindByIDString(id string) (*model.User, error) {
 	if err != nil {
 		return nil, nil
 	}
-	return m.FindByID(uid)
+	return m.FindByID(uid, uuid.Nil)
 }
 
 var _ repository.UserRepository = (*mockUserRepo)(nil)

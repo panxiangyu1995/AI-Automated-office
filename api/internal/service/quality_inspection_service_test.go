@@ -156,13 +156,13 @@ func (m *mockOrdRepo) UpdatePurchaseOrderItemReceivedQty(id, enterpriseID uuid.U
 	return args.Error(0)
 }
 
-func (m *mockOrdRepo) IncrementPurchaseOrderItemReceivedQty(id string, delta int) error {
-	args := m.Called(id, delta)
+func (m *mockOrdRepo) IncrementPurchaseOrderItemReceivedQty(id, enterpriseID string, delta int) error {
+	args := m.Called(id, enterpriseID, delta)
 	return args.Error(0)
 }
 
-func (m *mockOrdRepo) UpdatePurchaseOrderStatusByOrderID(orderID string, status string) error {
-	args := m.Called(orderID, status)
+func (m *mockOrdRepo) UpdatePurchaseOrderStatusByOrderID(orderID, enterpriseID string, status string) error {
+	args := m.Called(orderID, enterpriseID, status)
 	return args.Error(0)
 }
 

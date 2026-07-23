@@ -90,7 +90,10 @@ func (h *MFAHandler) Disable(c *gin.Context) {
 		return
 	}
 
-	_ = middleware.ClearMFAVerified(c.Request.Context(), userID)
+	if clearErr := middleware.ClearMFAVerified(c.Request.Context(), userID); clearErr != nil {
+		response.Error(c, apperrors.ErrInternal.WithDetail("MFA缓存清除失败，请重新登录"))
+		return
+	}
 
 	response.Success(c, gin.H{"message": "MFA已禁用"})
 }

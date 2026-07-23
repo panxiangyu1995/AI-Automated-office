@@ -66,11 +66,11 @@ func (m *mockCustomerRepo) UpdateFields(id, enterpriseID uuid.UUID, fields map[s
 	return nil
 }
 
-func (m *mockCustomerRepo) UpdateFieldsByID(id string, fields map[string]interface{}) error {
+func (m *mockCustomerRepo) UpdateFieldsByID(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 
-func (m *mockCustomerRepo) RestoreFields(id string, fields map[string]interface{}) error {
+func (m *mockCustomerRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
 	return nil
 }
 

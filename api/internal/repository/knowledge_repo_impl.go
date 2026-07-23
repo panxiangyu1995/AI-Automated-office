@@ -84,9 +84,9 @@ func (r *knowledgeRepo) ListDocs(enterpriseID uuid.UUID, page, pageSize int) ([]
 	return items, total, nil
 }
 
-func (r *knowledgeRepo) FindDocByID(id uuid.UUID) (*model.KnowledgeDoc, error) {
+func (r *knowledgeRepo) FindDocByID(id, enterpriseID uuid.UUID) (*model.KnowledgeDoc, error) {
 	var doc model.KnowledgeDoc
-	if err := r.db.Where("id=?", id).First(&doc).Error; err != nil {
+	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&doc).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -107,17 +107,18 @@ func (r *knowledgeRepo) ListChunksByDocID(docID uuid.UUID) ([]model.DocChunk, er
 	return chunks, nil
 }
 
-func (r *knowledgeRepo) SearchChunks(query string, limit int) ([]model.DocChunk, error) {
+func (r *knowledgeRepo) SearchChunks(query string, enterpriseID uuid.UUID, limit int) ([]model.DocChunk, error) {
 	var chunks []model.DocChunk
-	if err := r.db.Where("content ILIKE ?", "%"+query+"%").Limit(limit).Find(&chunks).Error; err != nil {
+	subQuery := r.db.Model(&model.KnowledgeDoc{}).Select("id").Where("enterprise_id=?", enterpriseID)
+	if err := r.db.Where("content ILIKE ? AND doc_id IN (?)", "%"+query+"%", subQuery).Limit(limit).Find(&chunks).Error; err != nil {
 		return nil, err
 	}
 	return chunks, nil
 }
 
-func (r *knowledgeRepo) FindDocByIDSimple(id uuid.UUID) (*model.KnowledgeDoc, error) {
+func (r *knowledgeRepo) FindDocByIDSimple(id, enterpriseID uuid.UUID) (*model.KnowledgeDoc, error) {
 	var doc model.KnowledgeDoc
-	if err := r.db.Where("id=?", id).First(&doc).Error; err != nil {
+	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&doc).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

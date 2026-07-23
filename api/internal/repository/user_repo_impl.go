@@ -19,9 +19,13 @@ func (r *userRepo) Create(user *model.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *userRepo) FindByID(id uuid.UUID) (*model.User, error) {
+func (r *userRepo) FindByID(id, enterpriseID uuid.UUID) (*model.User, error) {
 	var user model.User
-	err := r.db.Where("id = ?", id).First(&user).Error
+	query := r.db.Where("id = ?", id)
+	if enterpriseID != uuid.Nil {
+		query = query.Where("enterprise_id = ?", enterpriseID)
+	}
+	err := query.First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -51,8 +55,8 @@ func (r *userRepo) Update(user *model.User) error {
 	return r.db.Save(user).Error
 }
 
-func (r *userRepo) Delete(id uuid.UUID) error {
-	return r.db.Delete(&model.User{}, "id = ?", id).Error
+func (r *userRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.db.Delete(&model.User{}, "id = ? AND enterprise_id = ?", id, enterpriseID).Error
 }
 
 func (r *userRepo) List(enterpriseID string, offset, limit int) ([]model.User, int64, error) {
@@ -76,7 +80,7 @@ func (r *userRepo) List(enterpriseID string, offset, limit int) ([]model.User, i
 }
 
 func (r *userRepo) UpdateLastLogin(id uuid.UUID) error {
-	return r.db.Model(&model.User{}).Where("id = ?", id).UpdateColumn("last_login_at", gorm.Expr("NOW()")).Error
+	return r.db.Model(&model.User{}).Where("id = ?", id).UpdateColumn("last_login_at", gorm.Expr("CURRENT_TIMESTAMP")).Error
 }
 
 func (r *userRepo) FindByIDString(id string) (*model.User, error) {
@@ -84,5 +88,12 @@ func (r *userRepo) FindByIDString(id string) (*model.User, error) {
 	if err != nil {
 		return nil, nil
 	}
-	return r.FindByID(uid)
+	var user model.User
+	if err := r.db.Where("id = ?", uid).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
 }

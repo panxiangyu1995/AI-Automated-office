@@ -135,7 +135,7 @@ func (s *AuthService) Refresh(req RefreshRequest) (*TokenResponse, *apperrors.Ap
 		return nil, apperrors.ErrTokenInvalid.WithDetail("令牌中的用户ID无效")
 	}
 
-	user, err := s.userRepo.FindByID(userID)
+	user, err := s.userRepo.FindByID(userID, uuid.Nil)
 	if err != nil {
 		return nil, apperrors.ErrUnauthorized.WithDetail("用户不存在")
 	}
@@ -181,7 +181,7 @@ func (s *AuthService) CanAccessEnterprise(userID uuid.UUID, currentEnterpriseID,
 		return false, apperrors.ErrInternal.WithDetail("企业仓库未初始化")
 	}
 
-	user, err := s.userRepo.FindByID(userID)
+	user, err := s.userRepo.FindByID(userID, uuid.Nil)
 	if err != nil {
 		return false, apperrors.ErrInternal.WithDetail("查询用户失败")
 	}
@@ -238,7 +238,7 @@ func (s *AuthService) SwitchEnterprise(userID, currentEnterpriseID, targetEnterp
 		return nil, apperrors.ErrPermissionDenied.WithDetail("无权切换至目标企业")
 	}
 
-	user, err := s.userRepo.FindByID(userID)
+	user, err := s.userRepo.FindByID(userID, uuid.Nil)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询用户失败")
 	}
@@ -321,7 +321,7 @@ func (s *AuthService) Register(email, password, name, enterpriseID string) (*mod
 }
 
 func (s *AuthService) GetUser(userID uuid.UUID) (*model.User, *apperrors.AppError) {
-	user, err := s.userRepo.FindByID(userID)
+	user, err := s.userRepo.FindByID(userID, uuid.Nil)
 	if err != nil {
 		return nil, apperrors.ErrNotFound.WithDetail("用户不存在")
 	}

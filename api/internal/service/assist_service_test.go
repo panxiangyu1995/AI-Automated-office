@@ -145,8 +145,8 @@ func (m *assistAuditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, 
 	return args.Get(0).([]model.AuditLog), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *assistAuditLogRepo) QueryOperatorActions(page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
-	args := m.Called(page, pageSize, action, userID, startTime, endTime)
+func (m *assistAuditLogRepo) QueryOperatorActions(enterpriseID uuid.UUID, page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
+	args := m.Called(enterpriseID, page, pageSize, action, userID, startTime, endTime)
 	return args.Get(0).([]map[string]interface{}), args.Get(1).(int64), args.Error(2)
 }
 

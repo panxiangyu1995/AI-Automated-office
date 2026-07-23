@@ -93,7 +93,9 @@ func (s *TemplateService) ApplyTemplate(templateID, enterpriseID string) error {
 					IsActive:    true,
 				}
 				skill.EnterpriseID = eid
-				_ = s.skillRepo.Create(skill)
+				if createErr := s.skillRepo.Create(skill); createErr != nil {
+					return fmt.Errorf("创建Skill %s 失败: %w", name, createErr)
+				}
 			}
 		}
 	}

@@ -124,10 +124,10 @@ func (s *QualityInspectionService) QualifiedAutoReceive(inspectionID, enterprise
 		if err != nil {
 			return apperrors.ErrInternal.WithDetail("更新库存失败")
 		}
-		s.ordRepo.IncrementPurchaseOrderItemReceivedQty(item.ID.String(), qty)
+		s.ordRepo.IncrementPurchaseOrderItemReceivedQty(item.ID.String(), qi.EnterpriseID.String(), qty)
 	}
 
-	s.ordRepo.UpdatePurchaseOrderStatusByOrderID(qi.PurchaseOrderID, "received")
+	s.ordRepo.UpdatePurchaseOrderStatusByOrderID(qi.PurchaseOrderID, qi.EnterpriseID.String(), "received")
 	return nil
 }
 

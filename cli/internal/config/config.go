@@ -10,14 +10,15 @@ import (
 )
 
 type Config struct {
-	ServerURL    string    `yaml:"server_url"`
-	Token        string    `yaml:"-"`
-	RefreshToken string    `yaml:"-"`
-	Email        string    `yaml:"email"`
-	Host         string    `yaml:"host"`
-	EnterpriseID string    `yaml:"enterprise_id"`
-	ExpiresAt    time.Time `yaml:"expires_at"`
-	HMACSecret   string    `yaml:"hmac_secret"`
+	ServerURL    string      `yaml:"server_url"`
+	Token        string      `yaml:"-"`
+	RefreshToken string      `yaml:"-"`
+	Email        string      `yaml:"email"`
+	Host         string      `yaml:"host"`
+	EnterpriseID string      `yaml:"enterprise_id"`
+	ExpiresAt    time.Time   `yaml:"expires_at"`
+	HMACSecret   string      `yaml:"hmac_secret"`
+	CLIPath      string      `yaml:"cli_path"`
 	Poll         PollConfig  `yaml:"poll"`
 	Notify       NotifyConfig `yaml:"notify"`
 }
@@ -92,6 +93,26 @@ func Save(cfg *Config) error {
 		return err
 	}
 
+	existing, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to read existing config: %w", err)
+	}
+
+	var existingCfg Config
+	if err == nil {
+		_ = yaml.Unmarshal(existing, &existingCfg)
+	}
+
+	if cfg.CLIPath == "" {
+		cfg.CLIPath = existingCfg.CLIPath
+	}
+	if cfg.HMACSecret == "" {
+		cfg.HMACSecret = existingCfg.HMACSecret
+	}
+	if cfg.ServerURL == "" {
+		cfg.ServerURL = existingCfg.ServerURL
+	}
+
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
@@ -109,12 +130,22 @@ func Save(cfg *Config) error {
 }
 
 func Clear() error {
-	path, err := configPath()
+	cfg, err := Load()
 	if err != nil {
+		if os.IsNotExist(err) {
+			return clearTokensSecure()
+		}
 		return err
 	}
 
-	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+	cfg.Token = ""
+	cfg.RefreshToken = ""
+	cfg.Email = ""
+	cfg.Host = ""
+	cfg.EnterpriseID = ""
+	cfg.ExpiresAt = time.Time{}
+
+	if err := Save(cfg); err != nil {
 		return err
 	}
 

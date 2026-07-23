@@ -57,7 +57,7 @@ func (s *MaskingService) SetRules(enterpriseID uuid.UUID, rules []masking.Maskin
 		return nil
 	}
 
-	if updateErr := s.serviceConfigRepo.UpdateValue(config.ID, string(data)); updateErr != nil {
+	if updateErr := s.serviceConfigRepo.UpdateValue(config.ID, enterpriseID, string(data)); updateErr != nil {
 		return apperrors.ErrInternal.WithDetail("更新脱敏规则失败")
 	}
 	return nil

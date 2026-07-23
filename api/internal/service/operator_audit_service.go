@@ -1,6 +1,8 @@
 package service
 
 import (
+	"github.com/google/uuid"
+
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 )
 
@@ -20,7 +22,7 @@ func (s *OperatorAuditService) ListOperatorActions(page, pageSize int, action, u
 		pageSize = 20
 	}
 
-	logs, total, err := s.auditLogRepo.QueryOperatorActions(page, pageSize, action, userID, startTime, endTime)
+	logs, total, err := s.auditLogRepo.QueryOperatorActions(uuid.Nil, page, pageSize, action, userID, startTime, endTime)
 	if err != nil {
 		return nil, 0, err
 	}

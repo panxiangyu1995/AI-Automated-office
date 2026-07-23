@@ -1,10 +1,12 @@
 package poller
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
 
 type NotifyConfig struct {
@@ -39,10 +41,17 @@ func SendNotification(title, content string, cfg NotifyConfig) error {
 	return nil
 }
 
+func escapeAppleScript(s string) string {
+	r := strings.NewReplacer(`\`, `\\`, `"`, `\"`, `'`, `\'`)
+	return r.Replace(s)
+}
+
 func sendOSNotification(title, content string) error {
 	switch runtime.GOOS {
 	case "darwin":
-		script := fmt.Sprintf(`display notification "%s" with title "%s"`, content, title)
+		safeTitle := escapeAppleScript(title)
+		safeContent := escapeAppleScript(content)
+		script := fmt.Sprintf(`display notification "%s" with title "%s"`, safeContent, safeTitle)
 		cmd := exec.Command("osascript", "-e", script)
 		return cmd.Run()
 	case "linux":
@@ -56,7 +65,14 @@ func sendOSNotification(title, content string) error {
 	}
 }
 
+func escapeXML(s string) string {
+	r := strings.NewReplacer(`<`, `&lt;`, `>`, `&gt;`, `&`, `&amp;`, `"`, `&quot;`, `'`, `&apos;`)
+	return r.Replace(s)
+}
+
 func sendWindowsToast(title, content string) error {
+	safeTitle := escapeXML(title)
+	safeContent := escapeXML(content)
 	script := fmt.Sprintf(`
 		[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
 		[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
@@ -74,7 +90,7 @@ func sendWindowsToast(title, content string) error {
 		$xml.LoadXml($template)
 		$toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
 		[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("ao-cli").Show($toast)
-	`, title, content)
+	`, safeTitle, safeContent)
 	cmd := exec.Command("powershell", "-Command", script)
 	return cmd.Run()
 }
@@ -85,7 +101,10 @@ func writeMarkFile(markFile, title, content string) error {
 }
 
 func triggerOpenclawHook(url, title, content string) error {
-	payload := fmt.Sprintf(`{"title":"%s","body":"%s"}`, title, content)
-	cmd := exec.Command("curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", payload, url)
+	payload, err := json.Marshal(map[string]string{"title": title, "body": content})
+	if err != nil {
+		return fmt.Errorf("marshal hook payload: %w", err)
+	}
+	cmd := exec.Command("curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", string(payload), url)
 	return cmd.Run()
 }

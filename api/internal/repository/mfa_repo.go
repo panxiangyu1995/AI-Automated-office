@@ -7,11 +7,11 @@ import (
 )
 
 type MFARepository interface {
-	FindByUserID(userID string) (*model.MFAConfig, error)
-	FindByUserIDAndVerified(userID string, verified bool) (*model.MFAConfig, error)
+	FindByUserID(userID string, enterpriseID uuid.UUID) (*model.MFAConfig, error)
+	FindByUserIDAndVerified(userID string, enterpriseID uuid.UUID, verified bool) (*model.MFAConfig, error)
 	Create(config *model.MFAConfig) error
 	Save(config *model.MFAConfig) error
-	UpdateVerified(id uuid.UUID, verified bool) error
-	UpdateBackupCodes(id uuid.UUID, backupCodes string) error
-	DeleteByUserID(userID string) (int64, error)
+	UpdateVerified(id, enterpriseID uuid.UUID, verified bool) error
+	UpdateBackupCodes(id, enterpriseID uuid.UUID, backupCodes string) error
+	DeleteByUserID(userID string, enterpriseID uuid.UUID) (int64, error)
 }

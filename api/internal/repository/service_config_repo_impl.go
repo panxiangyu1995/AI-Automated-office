@@ -30,6 +30,6 @@ func (r *serviceConfigRepo) Create(config *model.ServiceConfig) error {
 	return r.db.Create(config).Error
 }
 
-func (r *serviceConfigRepo) UpdateValue(id uuid.UUID, value string) error {
-	return r.db.Model(&model.ServiceConfig{}).Where("id = ?", id).Update("config_value", value).Error
+func (r *serviceConfigRepo) UpdateValue(id, enterpriseID uuid.UUID, value string) error {
+	return r.db.Model(&model.ServiceConfig{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("config_value", value).Error
 }
