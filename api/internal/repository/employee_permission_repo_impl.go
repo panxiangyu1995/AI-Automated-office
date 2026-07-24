@@ -24,7 +24,7 @@ func (r *employeePermissionRepo) Delete(id, enterpriseID uuid.UUID) error {
 }
 
 func (r *employeePermissionRepo) DeleteByEmployeeAndPermission(employeeID uuid.UUID, permission string, enterpriseID uuid.UUID) error {
-	return r.db.Where("employee_id = ? AND permission = ? AND enterprise_id = ?", employeeID, permission, enterpriseID).Delete(&model.EmployeePermission{}).Error
+	return r.db.Unscoped().Where("employee_id = ? AND permission = ? AND enterprise_id = ?", employeeID, permission, enterpriseID).Delete(&model.EmployeePermission{}).Error
 }
 
 func (r *employeePermissionRepo) ListByEmployee(employeeID uuid.UUID) ([]model.EmployeePermission, error) {

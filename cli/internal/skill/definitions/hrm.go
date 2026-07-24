@@ -119,4 +119,77 @@ func initHRMSkills() {
 			{Name: "end_time", Type: "string", Required: false, Description: "结束时间"},
 		},
 	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "hrm_employee_permission_set",
+		Description: "设置员工精细化权限",
+		Category:    "hrm",
+		APIEndpoint: "/api/v1/employees/{id}/permissions",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "员工ID"},
+			{Name: "permission", Type: "string", Required: true, Description: "权限标识（如 customer:read,contract:write）"},
+			{Name: "effect", Type: "string", Required: true, Description: "效果 (allow/deny)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "hrm_employee_permission_revoke",
+		Description: "撤销员工精细化权限",
+		Category:    "hrm",
+		APIEndpoint: "/api/v1/employees/{id}/permissions?permission={permission}",
+		Method:      "DELETE",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "员工ID"},
+			{Name: "permission", Type: "string", Required: true, Description: "权限标识"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "hrm_employee_permission_list",
+		Description: "查询员工精细化权限列表",
+		Category:    "hrm",
+		APIEndpoint: "/api/v1/employees/{id}/permissions",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "员工ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "hrm_position_create",
+		Description: "创建岗位",
+		Category:    "hrm",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/positions",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "name", Type: "string", Required: true, Description: "岗位名称"},
+			{Name: "description", Type: "string", Required: false, Description: "职责描述"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "hrm_position_list",
+		Description: "查询岗位列表",
+		Category:    "hrm",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/positions",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "page", Type: "int", Required: false, Default: "1", Description: "页码"},
+			{Name: "page_size", Type: "int", Required: false, Default: "20", Description: "每页数量"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "hrm_position_update",
+		Description: "编辑岗位信息",
+		Category:    "hrm",
+		APIEndpoint: "/api/v1/positions/{id}",
+		Method:      "PUT",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "岗位ID"},
+			{Name: "name", Type: "string", Required: false, Description: "岗位名称"},
+			{Name: "description", Type: "string", Required: false, Description: "职责描述"},
+		},
+	})
 }

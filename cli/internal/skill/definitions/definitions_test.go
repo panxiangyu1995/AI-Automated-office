@@ -33,7 +33,7 @@ func TestAllSkillsRegistered(t *testing.T) {
 	expectedCounts := map[string]int{
 		"export":    4,
 		"crm":       20,
-		"hrm":       8,
+		"hrm":       14,
 		"ims":       28,
 		"contract":  12,
 		"service":   9,
@@ -42,7 +42,8 @@ func TestAllSkillsRegistered(t *testing.T) {
 		"message":   8,
 		"knowledge": 9,
 		"workflow":  11,
-		"org":       8,
+		"org":       24,
+		"auth":      1,
 	}
 
 	for cat, expected := range expectedCounts {

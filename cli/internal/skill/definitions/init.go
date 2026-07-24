@@ -13,6 +13,8 @@ func RegisterAll() {
 	initKnowledgeSkills()
 	initWorkflowSkills()
 	initOrgSkills()
+	initAuthSkills()
+	initCrossEnterpriseSkills()
 	initBackupSkills()
 	initQuotaSkills()
 	initFeatureSkills()

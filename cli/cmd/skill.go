@@ -225,7 +225,9 @@ func executeSkill(name, action, paramsJSON string) error {
 		method = "POST"
 	}
 
-	delete(paramsMap, "enterprise_id")
+	if strings.Contains(s.APIEndpoint, "{enterprise_id}") {
+		delete(paramsMap, "enterprise_id")
+	}
 	var params interface{} = paramsMap
 
 	var result []byte
@@ -271,7 +273,11 @@ func executeSkill(name, action, paramsJSON string) error {
 		fmt.Fprintf(os.Stderr, "warning: failed to record operation log: %v\n", logErr)
 	}
 
-	fmt.Println(string(result))
+	if len(result) == 0 && err == nil {
+		fmt.Println(`{"data":{"message":"操作成功","status":"no_content"}}`)
+	} else {
+		fmt.Println(string(result))
+	}
 
 	return err
 }

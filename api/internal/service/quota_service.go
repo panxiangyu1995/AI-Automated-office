@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,6 +10,10 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
+
+func isCachedPlanError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "cached plan must not change result type")
+}
 
 type QuotaService struct {
 	quotaRepo  repository.ApiQuotaRepository
@@ -25,7 +30,12 @@ func NewQuotaService(quotaRepo repository.ApiQuotaRepository, featureRepo reposi
 func (s *QuotaService) CheckAndIncrement(enterpriseID uuid.UUID) *apperrors.AppError {
 	quota, err := s.quotaRepo.FindByEnterprise(enterpriseID)
 	if err != nil {
-		return apperrors.ErrInternal.WithDetail("查询配额失败: " + err.Error())
+		if isCachedPlanError(err) {
+			quota, err = s.quotaRepo.FindByEnterprise(enterpriseID)
+		}
+		if err != nil {
+			return apperrors.ErrInternal.WithDetail("查询配额失败: " + err.Error())
+		}
 	}
 
 	now := time.Now().UTC()
@@ -81,7 +91,12 @@ func (s *QuotaService) resetIfNeeded(quota *model.ApiQuota, now time.Time) {
 func (s *QuotaService) GetQuota(enterpriseID uuid.UUID) (*model.ApiQuota, *apperrors.AppError) {
 	quota, err := s.quotaRepo.FindByEnterprise(enterpriseID)
 	if err != nil {
-		return nil, apperrors.ErrInternal.WithDetail("查询配额失败: " + err.Error())
+		if isCachedPlanError(err) {
+			quota, err = s.quotaRepo.FindByEnterprise(enterpriseID)
+		}
+		if err != nil {
+			return nil, apperrors.ErrInternal.WithDetail("查询配额失败: " + err.Error())
+		}
 	}
 	if quota == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("配额记录不存在")

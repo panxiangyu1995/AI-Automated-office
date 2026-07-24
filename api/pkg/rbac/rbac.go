@@ -172,6 +172,7 @@ var rolePermissions = map[Role]PermissionSet{
 		PermUserList:     true,
 		PermRoleRead:     true,
 		PermRoleList:     true,
+		PermRoleAssign:   true,
 		PermDepartmentCreate: true,
 		PermDepartmentRead:   true,
 		PermDepartmentUpdate: true,
@@ -226,10 +227,18 @@ var rolePermissions = map[Role]PermissionSet{
 	RoleEmployee: {
 		PermUserRead:       true,
 		PermEmployeeRead:   true,
+		PermEmployeeList:   true,
 		PermCustomerRead:   true,
+		PermCustomerList:   true,
 		PermProductRead:    true,
+		PermProductList:    true,
 		PermOrderRead:      true,
 		PermOrderCreate:    true,
+		PermOrderList:      true,
+		PermContractRead:   true,
+		PermContractList:   true,
+		PermDepartmentRead: true,
+		PermDepartmentList: true,
 	},
 }
 

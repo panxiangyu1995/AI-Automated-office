@@ -7,9 +7,11 @@
 | API 地址 | http://localhost:8080 |
 | PostgreSQL | localhost:5432 (ai_office / ai_office_pass / ai_office) |
 | Redis | localhost:6379 |
-| 测试企业 | 模拟测试企业 (ID: b0000000-0000-0000-0000-000000000001) |
+| 测试企业A | 模拟测试企业 (ID: b0000000-0000-0000-0000-000000000001) |
+| 测试企业B | 模拟测试企业B (ID: b0000000-0000-0000-0000-000000000002) |
 | 测试集团 | 模拟测试集团 (ID: a0000000-0000-0000-0000-000000000001) |
-| Tenant Schema | tenant_b0000000_0000_0000_0000_000000000001 |
+| Tenant Schema A | tenant_b0000000_0000_0000_0000_000000000001 |
+| Tenant Schema B | tenant_b0000000_0000_0000_0000_000000000002 |
 | CLI 命令 | `ao-cli skill execute <skill_name> --action <action> --params '<json>'` |
 | HMAC Secret | change-me-in-production (需在 ~/.ai-office-cli/config.yaml 中设置 hmac_secret) |
 | CLI 二进制 | /Users/pxy1995/code/myrepo/AI-Automated-office/cli/bin/ao-cli |
@@ -25,16 +27,28 @@
 | 仓库经理(manager) | warehouse@moni-test.com | warehouse123 | 孙仓管 | 仓储部 | 仓储经理 | 库存管理+物料/供应商读写+订单读写 |
 | 销售经理(manager) | sales@moni-test.com | sales123 | 周销售 | 销售部 | 销售经理 | 客户/合同/订单读写+财务读取 |
 | 普通员工(employee) | employee@moni-test.com | employee123 | 吴员工 | 销售部 | 销售专员 | 客户/物料/订单读取+订单创建 |
+| 跨企业销售(manager) | sales@moni-test.com | sales123 | 周销售 | 销售部 | 销售经理 | 企业A客户/合同读写 + 企业B只读(跨企业权限) |
 
 ## 测试数据概览
 
-### 组织架构
+### 组织架构 - 企业A（模拟测试企业）
 - 总经办（王老板、李管理）
 - 财务部（赵财务）
 - 仓储部（孙仓管）
 - 销售部（周销售、吴员工）
 - 采购部
 - 售后部
+
+### 组织架构 - 企业B（模拟测试企业B）
+- 总经办（王老板）
+- 研发部（钱研发）
+- 市场部（孙市场）
+
+### 跨企业权限
+- 周销售：企业A → 企业B（customer:read, contract:read）
+
+### 精细化权限
+- 吴员工：contract:create=deny, contract:read=allow（只能查看合同，不能创建）
 
 ### 客户
 - 上海科技有限公司（VIP，信息技术）
@@ -197,6 +211,119 @@ cli/bin/ao-cli auth status -s http://localhost:8080
 | 27 | "CLI 支持哪些平台？" | Windows/macOS/Linux | Go 交叉编译支持 |
 | 28 | "启动消息轮询服务" | `ao-cli poll` 开始轮询 | 每60秒检查未读消息 |
 | 29 | "安装 CLI 为后台服务" | `ao-cli service install` 注册开机自启 | service 命令可用 |
+
+---
+
+## Epic 2: 组织架构与多企业管理 - 对话测试用例
+
+> FRs 覆盖: FR-ORG-001~009, FR-ORG-011~013, FR-GROUP-001~008, FR-AUTH-004, FR-AUTH-009
+> 测试数据: test-flie/epic2-test-data.sql
+
+### Story 2.1: 集团管理（创建/编辑/删除）
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 1 | operator | "帮我创建一个集团，名称叫'华南科技集团'" | 调用 `ao-cli skill execute` 创建集团，返回集团ID和名称 | POST /api/v1/groups 成功，返回201 |
+| 2 | operator | "列出所有集团" | 返回集团列表，包含模拟测试集团和新建的华南科技集团 | GET /api/v1/groups 返回≥2条 |
+| 3 | operator | "查看模拟测试集团的详情" | 返回集团ID、名称、联系方式、状态 | GET /api/v1/groups/:id 返回完整信息 |
+| 4 | operator | "把模拟测试集团的联系电话改成13900000001" | 更新集团联系信息 | PUT /api/v1/groups/:id 成功 |
+| 5 | owner | "帮我创建一个集团" | 返回权限拒绝 PERM_DENIED | owner 无 system:config 权限 |
+| 6 | operator | "删除华南科技集团" | 确认后执行删除（集团下无活跃企业时允许） | DELETE /api/v1/groups/:id 成功或返回有企业不可删除 |
+
+### Story 2.2: 企业管理（创建/编辑/查看）
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 7 | operator | "帮我创建一个企业，名称叫'华南科技深圳分公司'，归属模拟测试集团" | 创建企业+自动创建Schema，返回企业ID和初始管理员信息 | POST /api/v1/enterprises 成功，Schema自动创建 |
+| 8 | operator | "列出所有企业" | 返回企业列表，包含模拟测试企业、模拟测试企业B、新企业 | GET /api/v1/enterprises 返回≥3条 |
+| 9 | operator | "查看模拟测试企业的详情" | 返回企业ID、名称、集团、状态、Schema名 | GET /api/v1/enterprises/:id 返回完整信息 |
+| 10 | operator | "把模拟测试企业的联系邮箱改成new@example.com" | 更新企业联系信息 | PUT /api/v1/enterprises/:id 成功 |
+| 11 | admin | "帮我创建一个企业" | 返回权限拒绝 | admin 无 system:config 权限 |
+
+### Story 2.3: 部门管理（创建/编辑/删除/树形结构）
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 12 | admin | "帮我创建一个部门叫'技术部'，上级是总经办" | 创建部门，支持多级树形 | POST /api/v1/enterprises/:eid/departments 成功 |
+| 13 | admin | "查看我们企业的组织架构树" | 返回树形结构（总经办→财务部/仓储部/销售部/技术部...） | GET /api/v1/enterprises/:eid/departments/tree 返回嵌套结构 |
+| 14 | admin | "把技术部改名为'研发技术部'" | 更新部门名称 | PUT /api/v1/departments/:id 成功 |
+| 15 | admin | "删除技术部" | 部门下无员工时允许删除 | DELETE /api/v1/departments/:id 成功或返回有员工不可删除 |
+| 16 | employee | "帮我创建一个部门" | 返回权限拒绝 | employee 无部门管理权限 |
+
+### Story 2.4: 部门经理设置与权限
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 17 | admin | "把赵财务设为财务部的部门经理" | 设置部门经理，赵财务获得Manager角色 | PUT /api/v1/departments/:id/manager 成功 |
+| 18 | manager(赵财务) | "修改财务部的名称" | 允许修改本部门信息 | PUT /api/v1/departments/:id 成功 |
+| 19 | manager(赵财务) | "修改销售部的名称" | 返回权限拒绝，只能管理本部门 | PUT /api/v1/departments/:id 返回403 |
+| 20 | employee | "设置部门经理" | 返回权限拒绝 | employee 无此权限 |
+
+### Story 2.5: 员工档案基础 CRUD
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 21 | admin | "帮我创建一个员工，姓名'郑新人'，邮箱'zheng@test.com'，归属销售部" | 创建员工记录，生成登录凭证，员工必须归属部门 | POST /api/v1/enterprises/:eid/employees 成功 |
+| 22 | admin | "把郑新人的手机号改成13800000099" | 更新员工信息 | PUT /api/v1/employees/:id 成功 |
+| 23 | admin | "删除郑新人" | 软删除（标记离职，保留历史数据） | DELETE /api/v1/employees/:id 成功 |
+| 24 | admin | "创建员工时不指定部门" | 返回参数校验错误 | 员工必须归属部门 |
+| 25 | employee | "帮我创建一个员工" | 返回权限拒绝 | employee 无员工管理权限 |
+
+### Story 2.6: 员工查询（按角色/姓名模糊搜索）
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 26 | admin | "列出所有经理角色的员工" | 返回赵财务、孙仓管、周销售 | GET /api/v1/enterprises/:eid/employees?role=manager |
+| 27 | admin | "搜索姓名包含'王'的员工" | 返回王老板 | GET /api/v1/enterprises/:eid/employees?name=王 |
+| 28 | admin | "查看岗位是'销售专员'的员工" | 返回吴员工 | GET /api/v1/enterprises/:eid/employees?position=销售专员 |
+| 29 | employee | "查看员工列表" | 返回员工列表（employee有读取权限） | GET 成功 |
+
+### Story 2.7: 岗位定义与管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 30 | admin | "创建一个岗位叫'高级工程师'，职责描述'负责核心系统开发'" | 创建岗位定义 | POST /api/v1/enterprises/:eid/positions 成功 |
+| 31 | admin | "列出所有岗位" | 返回总经理/行政总监/财务经理/仓储经理/销售经理/销售专员/高级工程师 | GET /api/v1/enterprises/:eid/positions |
+| 32 | admin | "把高级工程师的描述改成'负责核心系统架构设计与开发'" | 更新岗位信息 | PUT /api/v1/positions/:id 成功 |
+| 33 | employee | "创建岗位" | 返回权限拒绝 | employee 无岗位管理权限 |
+
+### Story 2.8: 老板跨企业视角切换
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 34 | owner | "切换到模拟测试企业B" | 切换企业上下文，返回新Token | POST /api/v1/auth/switch-enterprise 成功 |
+| 35 | owner(切换到B后) | "查看员工列表" | 只返回企业B的员工（王老板/钱研发/孙市场） | 数据属于企业B |
+| 36 | owner(切换到B后) | "切换回模拟测试企业" | 切换回企业A | POST /api/v1/auth/switch-enterprise 成功 |
+| 37 | owner(切换回A后) | "查看员工列表" | 返回企业A的6个员工 | 数据属于企业A |
+| 38 | employee | "切换到模拟测试企业B" | 返回权限拒绝 | employee 无跨企业切换权限 |
+
+### Story 2.9: 跨企业权限管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 39 | owner | "给周销售开通企业B的只读权限" | 创建跨企业权限（customer:read, contract:read） | POST /api/v1/cross-enterprise/permissions 成功 |
+| 40 | owner | "查看周销售的跨企业权限" | 返回企业A→企业B的权限记录 | GET /api/v1/cross-enterprise/permissions?user_id=xxx |
+| 41 | owner | "撤销周销售的企业B访问权限" | 删除跨企业权限记录 | DELETE /api/v1/cross-enterprise/permissions/:id 成功 |
+| 42 | owner | "重新给周销售开通企业B的只读权限"（恢复测试数据） | 重新创建跨企业权限 | POST /api/v1/cross-enterprise/permissions 成功 |
+| 43 | employee | "给同事开通跨企业权限" | 返回权限拒绝 | employee 无此权限 |
+
+### Story 2.10: 精细化权限分配
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 44 | admin | "设置吴员工只能查看合同，不能创建合同" | 设置精细化权限：contract:read=allow, contract:create=deny | POST /api/v1/employees/:id/permissions 成功 |
+| 45 | employee(吴员工) | "帮我创建一个合同" | 返回权限拒绝（精细化权限deny优先） | contract:create 被deny |
+| 46 | employee(吴员工) | "帮我查看合同列表" | 返回合同数据（contract:read=allow） | GET 成功 |
+| 47 | admin | "查看吴员工的精细化权限" | 返回 contract:read=allow, contract:create=deny | GET /api/v1/employees/:id/permissions |
+| 48 | admin | "撤销吴员工的精细化权限" | 清除精细化权限，恢复角色默认权限 | DELETE /api/v1/employees/:id/permissions 成功 |
+
+### Story 2.11: 跨企业经营汇总
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 49 | owner | "查看模拟测试集团的跨企业经营汇总" | 返回集团下所有企业的核心指标（员工数/合同数/应收款等） | GET /api/v1/groups/summary/:id 返回多企业数据 |
+| 50 | owner | "对比企业A和企业B的经营数据" | 返回两个企业的指标对比 | 汇总数据包含企业A和企业B |
+| 51 | employee | "查看集团经营汇总" | 返回权限拒绝 | employee 无此权限 |
 
 ---
 
