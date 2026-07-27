@@ -19,4 +19,5 @@ func RegisterAll() {
 	initQuotaSkills()
 	initFeatureSkills()
 	initAuditSkills()
+	initOperatorSkills()
 }

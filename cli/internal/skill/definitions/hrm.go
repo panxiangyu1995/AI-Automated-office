@@ -98,12 +98,12 @@ func initHRMSkills() {
 
 	skill.Register(skill.SkillDefinition{
 		Name:        "hrm_employee_batch_import",
-		Description: "批量导入员工（支持Excel/CSV）",
+		Description: "批量导入员工",
 		Category:    "hrm",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/employees/batch-import",
 		Method:      "POST",
 		Parameters: []skill.ParamDef{
-			{Name: "file", Type: "file", Required: true, Description: "导入文件（Excel/CSV）"},
+			{Name: "employees", Type: "array", Required: true, Description: "员工数组JSON"},
 		},
 	})
 

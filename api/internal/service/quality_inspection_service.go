@@ -80,7 +80,11 @@ func (s *QualityInspectionService) CompleteInspection(id, enterpriseID uuid.UUID
 	}
 
 	qi.Status = status
-	qi.InspectorID = &inspectorID
+	if inspectorID != "" {
+		qi.InspectorID = &inspectorID
+	} else {
+		qi.InspectorID = nil
+	}
 	now := time.Now()
 	qi.InspectedAt = &now
 

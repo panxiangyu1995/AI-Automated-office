@@ -371,4 +371,88 @@ func initIMSSkills() {
 			{Name: "page_size", Type: "int", Required: false, Default: "20", Description: "每页数量"},
 		},
 	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_sales_order_ship",
+		Description: "销售订单出库发货",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/sales-orders/{id}/ship",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "销售订单ID"},
+			{Name: "warehouse_id", Type: "string", Required: true, Description: "出库仓库ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_sales_order_status_change",
+		Description: "变更销售订单状态",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/sales-orders/{id}/status",
+		Method:      "PATCH",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "销售订单ID"},
+			{Name: "status", Type: "string", Required: true, Description: "新状态(draft/confirmed/shipped/completed/cancelled)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_inspection_create",
+		Description: "创建采购质检任务",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/purchase-orders/{po_id}/inspections",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "enterprise_id", Type: "string", Required: true, Description: "企业ID"},
+			{Name: "po_id", Type: "string", Required: true, Description: "采购订单ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_inspection_list",
+		Description: "查看采购订单的质检列表",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/purchase-orders/{po_id}/inspections",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "enterprise_id", Type: "string", Required: true, Description: "企业ID"},
+			{Name: "po_id", Type: "string", Required: true, Description: "采购订单ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_inspection_add_item",
+		Description: "添加质检检查项",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/inspections/{id}/items",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "质检ID"},
+			{Name: "material_id", Type: "string", Required: true, Description: "物料ID"},
+			{Name: "check_item", Type: "string", Required: true, Description: "检查项名称"},
+			{Name: "standard", Type: "string", Required: false, Description: "检查标准"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_inspection_complete",
+		Description: "完成质检",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/inspections/{id}/complete",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "质检ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "ims_inspection_get",
+		Description: "查看质检详情",
+		Category:    "ims",
+		APIEndpoint: "/api/v1/inspections/{id}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "质检ID"},
+		},
+	})
 }

@@ -131,7 +131,7 @@ func (s *ContractService) SaveAttachment(eid, cID, fileName, contentType string,
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询合同失败") }
 	if c == nil { return nil, apperrors.ErrNotFound.WithDetail("合同不存在") }
 
-	uploadDir := fmt.Sprintf("/storage/%s/contracts/%s/attachments", eid, cID)
+	uploadDir := filepath.Join("storage", eid, "contracts", cID, "attachments")
 	os.MkdirAll(uploadDir, 0755)
 	filePath := filepath.Join(uploadDir, fileName)
 	out, err := os.Create(filePath)

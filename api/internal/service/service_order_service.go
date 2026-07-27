@@ -116,8 +116,8 @@ func (s *ServiceOrderService) Sign(eid, soID string) (*model.ServiceOrder, *appe
 	if so == nil {
 		return nil, apperrors.ErrNotFound.WithDetail("工单不存在")
 	}
-	if so.Status != "repairing" {
-		return nil, apperrors.ErrBadRequest.WithDetail("仅维修中状态的工单可签收")
+	if so.Status != "completed" {
+		return nil, apperrors.ErrBadRequest.WithDetail("仅已完成状态的工单可签字确认")
 	}
 	now := so.UpdatedAt
 	so.Status = "signed"

@@ -120,10 +120,7 @@ func (h *QualityInspectionHandler) Complete(c *gin.Context) {
 		return
 	}
 	var req completeInspectionReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.ValidationError(c, "body", "格式错误")
-		return
-	}
+	_ = c.ShouldBindJSON(&req)
 	qi, appErr := h.svc.CompleteInspection(id, entID, req.InspectorID)
 	if appErr != nil {
 		response.Error(c, appErr)

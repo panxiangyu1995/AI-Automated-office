@@ -51,11 +51,13 @@ func newSkillCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			action, _ := cmd.Flags().GetString("action")
 			params, _ := cmd.Flags().GetString("params")
-			return executeSkill(args[0], action, params)
+			filePath, _ := cmd.Flags().GetString("file")
+			return executeSkill(args[0], action, params, filePath)
 		},
 	}
 	execCmd.Flags().String("action", "", "指定 Skill action")
 	execCmd.Flags().String("params", "", "参数 JSON 字符串")
+	execCmd.Flags().String("file", "", "上传文件路径（用于附件上传类 Skill）")
 
 	cmd.AddCommand(execCmd)
 
@@ -128,7 +130,7 @@ func describeSkill(name, role string) error {
 
 var preHookEnabled = true
 
-func executeSkill(name, action, paramsJSON string) error {
+func executeSkill(name, action, paramsJSON, filePath string) error {
 	startTime := time.Now()
 
 	cfg, err := config.Load()
@@ -195,6 +197,12 @@ func executeSkill(name, action, paramsJSON string) error {
 		if !p.Required {
 			continue
 		}
+		if p.Type == "file" {
+			if filePath == "" {
+				return fmt.Errorf("missing required file parameter: %s (%s) — use --file flag", p.Name, p.Description)
+			}
+			continue
+		}
 		if _, ok := paramsMap[p.Name]; !ok {
 			return fmt.Errorf("missing required parameter: %s (%s)", p.Name, p.Description)
 		}
@@ -228,6 +236,33 @@ func executeSkill(name, action, paramsJSON string) error {
 	if strings.Contains(s.APIEndpoint, "{enterprise_id}") {
 		delete(paramsMap, "enterprise_id")
 	}
+
+	if filePath != "" {
+		result, err := client.UploadFile(endpoint, filePath)
+		durationMs := time.Since(startTime).Milliseconds()
+		entry := olog.Entry{
+			TS:         time.Now().Format(time.RFC3339),
+			Skill:      name,
+			Action:     action,
+			DurationMs: durationMs,
+		}
+		if err != nil {
+			entry.Status = "error"
+			entry.Error = err.Error()
+		} else {
+			entry.Status = "success"
+		}
+		if logErr := olog.Record(entry); logErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to record operation log: %v\n", logErr)
+		}
+		if len(result) == 0 && err == nil {
+			fmt.Println(`{"data":{"message":"操作成功","status":"no_content"}}`)
+		} else {
+			fmt.Println(string(result))
+		}
+		return err
+	}
+
 	var params interface{} = paramsMap
 
 	var result []byte

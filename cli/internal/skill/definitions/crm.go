@@ -157,11 +157,11 @@ func initCRMSkills() {
 		Name:        "crm_customer_tag_remove",
 		Description: "删除客户标签",
 		Category:    "crm",
-		APIEndpoint: "/api/v1/customers/{id}/tags",
+		APIEndpoint: "/api/v1/customers/{id}/tags?tag={tag}",
 		Method:      "DELETE",
 		Parameters: []skill.ParamDef{
-			{Name: "id", Type: "string", Required: true, Description: "标签关联ID"},
-			{Name: "tag", Type: "string", Required: false, Description: "标签名称"},
+			{Name: "id", Type: "string", Required: true, Description: "客户ID"},
+			{Name: "tag", Type: "string", Required: true, Description: "标签名称"},
 		},
 	})
 

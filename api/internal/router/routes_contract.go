@@ -7,27 +7,42 @@ import (
 )
 
 func registerContractRoutes(protected *gin.RouterGroup, enterprise *gin.RouterGroup, deps *RouterDeps) {
-	contractAccess := middleware.RequirePermission(rbac.PermContractRead)
+	contractRead := middleware.RequirePermission(rbac.PermContractRead)
+	contractWrite := middleware.RequirePermission(rbac.PermContractUpdate)
+	contractCreate := middleware.RequirePermission(rbac.PermContractCreate)
+	contractDelete := middleware.RequirePermission(rbac.PermContractDelete)
 
 	c := enterprise.Group("")
-	c.Use(contractAccess)
+	c.Use(contractRead)
 	{
-		c.POST("/contracts", deps.ContractHandler.Create)
 		c.GET("/contracts", deps.ContractHandler.List)
+	}
+	cWrite := enterprise.Group("")
+	cWrite.Use(contractCreate)
+	{
+		cWrite.POST("/contracts", deps.ContractHandler.Create)
 	}
 
 	pc := protected.Group("")
-	pc.Use(contractAccess)
+	pc.Use(contractRead)
 	{
 		pc.GET("/contracts/:id", deps.ContractHandler.Get)
-		pc.PUT("/contracts/:id", deps.ContractHandler.Update)
-		pc.DELETE("/contracts/:id", deps.ContractHandler.Delete)
-		pc.PATCH("/contracts/:id", deps.ContractHandler.PatchFields)
-		pc.PATCH("/contracts/:id/status", deps.ContractHandler.ChangeStatus)
-		pc.POST("/contracts/:id/submit-approval", deps.ContractHandler.SubmitApproval)
-		pc.POST("/contracts/:id/approve", deps.ContractHandler.Approve)
-		pc.POST("/contracts/:id/attachments", deps.ContractHandler.UploadAttachment)
-		pc.POST("/contracts/:id/documents", deps.ContractHandler.LinkDocument)
 		pc.GET("/contracts/:id/documents", deps.ContractHandler.ListDocuments)
+	}
+	pcWrite := protected.Group("")
+	pcWrite.Use(contractWrite)
+	{
+		pcWrite.PUT("/contracts/:id", deps.ContractHandler.Update)
+		pcWrite.PATCH("/contracts/:id", deps.ContractHandler.PatchFields)
+		pcWrite.PATCH("/contracts/:id/status", deps.ContractHandler.ChangeStatus)
+		pcWrite.POST("/contracts/:id/submit-approval", deps.ContractHandler.SubmitApproval)
+		pcWrite.POST("/contracts/:id/approve", deps.ContractHandler.Approve)
+		pcWrite.POST("/contracts/:id/attachments", deps.ContractHandler.UploadAttachment)
+		pcWrite.POST("/contracts/:id/documents", deps.ContractHandler.LinkDocument)
+	}
+	pcDelete := protected.Group("")
+	pcDelete.Use(contractDelete)
+	{
+		pcDelete.DELETE("/contracts/:id", deps.ContractHandler.Delete)
 	}
 }
