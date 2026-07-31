@@ -36,7 +36,7 @@ func initKnowledgeSkills() {
 		Name:        "kb_doc_chunk",
 		Description: "文档分块处理",
 		Category:    "knowledge",
-		APIEndpoint: "/api/v1/kb/docs/{id}/chunk",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/kb/docs/{id}/chunk",
 		Method:      "POST",
 		Parameters: []skill.ParamDef{
 			{Name: "id", Type: "string", Required: true, Description: "文档ID"},
@@ -47,7 +47,7 @@ func initKnowledgeSkills() {
 		Name:        "kb_doc_chunks",
 		Description: "查询文档分块列表",
 		Category:    "knowledge",
-		APIEndpoint: "/api/v1/kb/docs/{id}/chunks",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/kb/docs/{id}/chunks",
 		Method:      "GET",
 		Parameters: []skill.ParamDef{
 			{Name: "id", Type: "string", Required: true, Description: "文档ID"},

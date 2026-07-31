@@ -124,15 +124,20 @@ func (h *MessageHandler) BatchMarkRead(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		MessageIDs []string `json:"message_ids" binding:"required"`
+	var raw struct {
+		MessageIDsRaw []string `json:"message_ids"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&raw); err != nil {
+		response.ValidationError(c, "message_ids", "消息ID列表不能为空")
+		return
+	}
+	ids := raw.MessageIDsRaw
+	if len(ids) == 0 {
 		response.ValidationError(c, "message_ids", "消息ID列表不能为空")
 		return
 	}
 
-	count, appErr := h.msgService.BatchMarkRead(req.MessageIDs, eid)
+	count, appErr := h.msgService.BatchMarkRead(ids, eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

@@ -9,6 +9,14 @@ func initDataExportSkills() {
 		Name:        "data_export_create",
 		Description: "创建数据导出任务（支持单实体/跨实体/员工维度/员工审计/对话式导出）",
 		Category:    "export",
+		APIEndpoint: "/api/v1/data-export",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "export_type", Type: "string", Required: true, Default: "single", Description: "导出类型(single/cross_entity/employee_dimension/employee_audit/conversational)"},
+			{Name: "entity_type", Type: "string", Required: true, Description: "实体类型"},
+			{Name: "entity_id", Type: "string", Required: false, Description: "实体ID"},
+			{Name: "format", Type: "string", Required: false, Default: "xlsx", Description: "导出格式(xlsx/csv)"},
+		},
 		Actions: map[string]skill.ActionDef{
 			"single": {
 				Endpoint: "/api/v1/data-export",

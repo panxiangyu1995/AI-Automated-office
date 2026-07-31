@@ -96,7 +96,7 @@ func (DocChunk) TableName() string { return "doc_chunks" }
 
 type ChatSession struct {
 	TenantModel
-	UserID    string `gorm:"type:uuid;index" json:"user_id"`
+	UserID    string `gorm:"type:text;index" json:"user_id"`
 	Title     string `gorm:"type:varchar(255)" json:"title"`
 	Model     string `gorm:"type:varchar(50);default:'gpt-4o-mini'" json:"model"`
 	Context   string `gorm:"type:text" json:"context,omitempty"`

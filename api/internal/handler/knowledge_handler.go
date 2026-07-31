@@ -88,8 +88,9 @@ func (h *KnowledgeHandler) SemanticSearch(c *gin.Context) {
 }
 
 func (h *KnowledgeHandler) ChunkDocument(c *gin.Context) {
+	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	docID := c.Param("id"); if docID == "" { response.ValidationError(c, "id", "文档ID不能为空"); return }
-	chunks, appErr := h.svc.ChunkDocument(docID)
+	chunks, appErr := h.svc.ChunkDocument(eid, docID)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, chunks)
 }

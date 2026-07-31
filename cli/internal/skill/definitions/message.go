@@ -72,7 +72,7 @@ func initMessageSkills() {
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/messages/read",
 		Method:      "POST",
 		Parameters: []skill.ParamDef{
-			{Name: "message_ids", Type: "string", Required: true, Description: "消息ID数组(JSON数组格式)"},
+			{Name: "message_ids", Type: "array", Required: true, Description: "消息ID数组"},
 		},
 	})
 

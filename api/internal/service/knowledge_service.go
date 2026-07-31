@@ -103,10 +103,11 @@ func (s *KnowledgeService) CreateCategory(eid, name, parentID string) (*model.KB
 	return c, nil
 }
 
-func (s *KnowledgeService) ChunkDocument(docID string) ([]model.DocChunk, *apperrors.AppError) {
+func (s *KnowledgeService) ChunkDocument(enterpriseID, docID string) ([]model.DocChunk, *apperrors.AppError) {
 	id, err := uuid.Parse(docID)
 	if err != nil { return nil, apperrors.NewValidationError("doc_id", "无效") }
-	doc, dbErr := s.repo.FindDocByID(id, uuid.Nil)
+	eid, _ := uuid.Parse(enterpriseID)
+	doc, dbErr := s.repo.FindDocByID(id, eid)
 	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询文档失败") }
 	if doc == nil { return nil, apperrors.ErrNotFound.WithDetail("文档不存在") }
 
