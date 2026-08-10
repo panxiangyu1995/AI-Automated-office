@@ -120,7 +120,7 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 	qiRepo := repository.NewQualityInspectionRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 	orderSvc := service.NewOrderService(orderRepo, invRepo, matRepo, whRepo, supRepo, customerRepo, qiRepo, nil)
-	orderHandler := handler.NewOrderHandler(orderSvc, contractSvc, nil)
+	orderHandler := handler.NewOrderHandler(orderSvc, contractSvc, nil, nil)
 
 	financeRepo := repository.NewFinanceRepository(db)
 	financeSvc := service.NewFinanceService(financeRepo)
@@ -148,7 +148,7 @@ func SetupTestRouter(db *gorm.DB, jwtManager *auth.JWTManager) *gin.Engine {
 
 	aiRepo := repository.NewAIRepository(db)
 	aiSvc := service.NewAIService(aiRepo)
-	aiHandler := handler.NewAIHandler(aiSvc)
+	aiHandler := handler.NewAIHandler(aiSvc, nil)
 
 	auditLogRepo := repository.NewAuditLogRepository(db)
 	auditLogService := service.NewAuditLogService(auditLogRepo)

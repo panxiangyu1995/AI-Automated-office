@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -15,6 +16,14 @@ type EnterpriseSkillHandler struct {
 
 func NewEnterpriseSkillHandler(skillService *service.EnterpriseSkillService) *EnterpriseSkillHandler {
 	return &EnterpriseSkillHandler{skillService: skillService}
+}
+
+// svcFor returns a EnterpriseSkillHandler service bound to the request's tenant database.
+func (h *EnterpriseSkillHandler) svcFor(c *gin.Context) *service.EnterpriseSkillService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewEnterpriseSkillService(repository.NewEnterpriseSkillMatrixRepository(db))
+	}
+	return nil
 }
 
 func (h *EnterpriseSkillHandler) ConfigureSkill(c *gin.Context) {
@@ -35,7 +44,7 @@ func (h *EnterpriseSkillHandler) ConfigureSkill(c *gin.Context) {
 		return
 	}
 
-	if err := h.skillService.ConfigureSkill(entID, req.SkillName, req.IsEnabled, req.CustomOpeningMessage, req.CustomParams); err != nil {
+	if err := h.svcFor(c).ConfigureSkill(entID, req.SkillName, req.IsEnabled, req.CustomOpeningMessage, req.CustomParams); err != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail(err.Error()))
 		return
 	}
@@ -49,7 +58,7 @@ func (h *EnterpriseSkillHandler) ListSkillMatrix(c *gin.Context) {
 		return
 	}
 
-	matrices, err := h.skillService.ListSkillMatrix(entID)
+	matrices, err := h.svcFor(c).ListSkillMatrix(entID)
 	if err != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail(err.Error()))
 		return
@@ -85,7 +94,7 @@ func (h *EnterpriseSkillHandler) UpdateSkill(c *gin.Context) {
 		isEnabled = *req.IsEnabled
 	}
 
-	if err := h.skillService.ConfigureSkill(entID, skillName, isEnabled, req.CustomOpeningMessage, req.CustomParams); err != nil {
+	if err := h.svcFor(c).ConfigureSkill(entID, skillName, isEnabled, req.CustomOpeningMessage, req.CustomParams); err != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail(err.Error()))
 		return
 	}

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -15,21 +16,27 @@ func NewDepartmentRepository(db *gorm.DB) DepartmentRepository {
 	return &departmentRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *departmentRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *departmentRepo) Create(department *model.Department) error {
-	return r.db.Create(department).Error
+	return r.fresh().Create(department).Error
 }
 
 func (r *departmentRepo) Update(department *model.Department) error {
-	return r.db.Save(department).Error
+	return r.fresh().Save(department).Error
 }
 
 func (r *departmentRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Department{}).Error
+	return r.fresh().Model(&model.Department{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *departmentRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Department, error) {
 	var dept model.Department
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&dept).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&dept).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -41,24 +48,24 @@ func (r *departmentRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Department
 
 func (r *departmentRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.Department, error) {
 	var departments []model.Department
-	err := r.db.Where("enterprise_id = ?", enterpriseID).Order("name ASC").Find(&departments).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).Order("name ASC").Find(&departments).Error
 	return departments, err
 }
 
 func (r *departmentRepo) CountByEnterprise(enterpriseID uuid.UUID) (int64, error) {
 	var count int64
-	err := r.db.Model(&model.Department{}).Where("enterprise_id = ?", enterpriseID).Count(&count).Error
+	err := r.fresh().Model(&model.Department{}).Where("enterprise_id = ?", enterpriseID).Count(&count).Error
 	return count, err
 }
 
 func (r *departmentRepo) CountByParent(parentID uuid.UUID) (int64, error) {
 	var count int64
-	err := r.db.Model(&model.Department{}).Where("parent_id = ?", parentID).Count(&count).Error
+	err := r.fresh().Model(&model.Department{}).Where("parent_id = ?", parentID).Count(&count).Error
 	return count, err
 }
 
 func (r *departmentRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Department{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
+	return r.fresh().Model(&model.Department{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
 func (r *departmentRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {

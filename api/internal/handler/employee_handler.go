@@ -9,6 +9,7 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -19,6 +20,18 @@ type EmployeeHandler struct {
 
 func NewEmployeeHandler(empService *service.EmployeeService) *EmployeeHandler {
 	return &EmployeeHandler{empService: empService}
+}
+
+// svcFor returns a EmployeeService bound to the request's tenant database.
+func (h *EmployeeHandler) svcFor(c *gin.Context) *service.EmployeeService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewEmployeeServiceWithUser(
+			repository.NewEmployeeRepository(db),
+			repository.NewDepartmentRepository(db),
+			repository.NewUserRepository(db),
+		)
+	}
+	return h.empService
 }
 
 type createEmployeeRequest struct {
@@ -67,7 +80,7 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		}
 	}
 
-	emp, appErr := h.empService.Create(enterpriseID, req.DepartmentID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, hireDate)
+	emp, appErr := h.svcFor(c).Create(enterpriseID, req.DepartmentID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, hireDate)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -94,7 +107,7 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.empService.Update(enterpriseID, employeeID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, req.Status)
+	emp, appErr := h.svcFor(c).Update(enterpriseID, employeeID, req.Name, req.Email, req.Phone, req.Position, req.EmployeeNo, req.Role, req.Status)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -115,7 +128,7 @@ func (h *EmployeeHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	appErr := h.empService.Delete(enterpriseID, employeeID)
+	appErr := h.svcFor(c).Delete(enterpriseID, employeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -136,7 +149,7 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.empService.Get(enterpriseID, employeeID)
+	emp, appErr := h.svcFor(c).Get(enterpriseID, employeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -165,7 +178,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 		PageSize:     pageSize,
 	}
 
-	employees, total, appErr := h.empService.List(query)
+	employees, total, appErr := h.svcFor(c).List(query)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -189,7 +202,7 @@ func (h *EmployeeHandler) SalesPerformance(c *gin.Context) {
 	startTime := c.Query("start_time")
 	endTime := c.Query("end_time")
 
-	results, appErr := h.empService.GetSalesPerformance(enterpriseID, employeeID, startTime, endTime)
+	results, appErr := h.svcFor(c).GetSalesPerformance(enterpriseID, employeeID, startTime, endTime)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -213,7 +226,7 @@ func (h *EmployeeHandler) BatchImport(c *gin.Context) {
 		return
 	}
 
-	result := h.empService.BatchImport(enterpriseID, req.Employees)
+	result := h.svcFor(c).BatchImport(enterpriseID, req.Employees)
 	response.Success(c, result)
 }
 
@@ -235,7 +248,7 @@ func (h *EmployeeHandler) Transfer(c *gin.Context) {
 		return
 	}
 
-	emp, appErr := h.empService.Transfer(enterpriseID, employeeID, req.DepartmentID)
+	emp, appErr := h.svcFor(c).Transfer(enterpriseID, employeeID, req.DepartmentID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

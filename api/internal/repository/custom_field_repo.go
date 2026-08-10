@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"strings"
 	"fmt"
 
-	"github.com/lib/pq"
-
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -49,28 +49,39 @@ func NewCustomFieldRepository(db *gorm.DB) CustomFieldRepository {
 	return &customFieldRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *customFieldRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *customFieldRepo) ListFieldsByEntity(enterpriseID uuid.UUID, entityType string) ([]model.FieldDefinition, error) {
 	var fields []model.FieldDefinition
-	err := r.db.Where("enterprise_id = ? AND entity_type = ?", enterpriseID, entityType).Order("sort_order ASC").Find(&fields).Error
+	err := r.fresh().Where("enterprise_id = ? AND entity_type = ?", enterpriseID, entityType).Order("sort_order ASC").Find(&fields).Error
 	return fields, err
 }
 
 func (r *customFieldRepo) CreateField(field *model.FieldDefinition) error {
-	return r.db.Create(field).Error
+	return r.fresh().Create(field).Error
 }
 
 func (r *customFieldRepo) DeleteField(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FieldDefinition{}).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FieldDefinition{}).Error
 }
 
 func (r *customFieldRepo) SetCustomFields(tx *gorm.DB, entityType string, entityID uuid.UUID, enterpriseID uuid.UUID, fields map[string]interface{}) error {
 	if err := validateEntityType(entityType); err != nil {
 		return err
 	}
+	db := tx
+	if db == nil {
+		db = r.db
+	}
+	table := qualifiedTable(db, entityType)
 	for key, value := range fields {
 		sql := fmt.Sprintf("UPDATE %s SET custom_fields = COALESCE(custom_fields, '{}'::jsonb) || jsonb_build_object(%s, ?) WHERE id = ? AND enterprise_id = ?",
-			pq.QuoteIdentifier(entityType), pq.QuoteLiteral(key))
-		if err := tx.Exec(sql, value, entityID, enterpriseID).Error; err != nil {
+			table, pqQuoteLiteral(key))
+		if err := db.Exec(sql, value, entityID, enterpriseID).Error; err != nil {
 			return fmt.Errorf("failed to set custom field %s: %w", key, err)
 		}
 	}
@@ -81,10 +92,14 @@ func (r *customFieldRepo) GetCustomFields(tx *gorm.DB, entityType string, entity
 	if err := validateEntityType(entityType); err != nil {
 		return nil, err
 	}
+	db := tx
+	if db == nil {
+		db = r.db
+	}
 	result := make(map[string]interface{})
 	var raw map[string]interface{}
-	query := fmt.Sprintf("SELECT custom_fields FROM %s WHERE id = ?", pq.QuoteIdentifier(entityType))
-	if err := tx.Raw(query, entityID).Scan(&raw).Error; err != nil {
+	query := fmt.Sprintf("SELECT custom_fields FROM %s WHERE id = ?", qualifiedTable(db, entityType))
+	if err := db.Raw(query, entityID).Scan(&raw).Error; err != nil {
 		return nil, err
 	}
 	if raw != nil && raw["custom_fields"] != nil {
@@ -93,6 +108,24 @@ func (r *customFieldRepo) GetCustomFields(tx *gorm.DB, entityType string, entity
 		}
 	}
 	return result, nil
+}
+
+// qualifiedTable returns the entity table name, prefixed with the tenant
+// schema when one is present in the statement context.
+func qualifiedTable(tx *gorm.DB, entityType string) string {
+	schema := tenant.SchemaFromContext(tx.Statement.Context)
+	if schema == "" {
+		return pqQuoteIdentifier(entityType)
+	}
+	return pqQuoteIdentifier(schema) + "." + pqQuoteIdentifier(entityType)
+}
+
+func pqQuoteIdentifier(s string) string {
+	return `"` + s + `"`
+}
+
+func pqQuoteLiteral(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
 }
 
 type RelationRepository interface {
@@ -109,13 +142,19 @@ func NewRelationRepository(db *gorm.DB) RelationRepository {
 	return &relationRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *relationRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *relationRepo) CreateRelation(rel *model.RelationDefinition) error {
-	return r.db.Create(rel).Error
+	return r.fresh().Create(rel).Error
 }
 
 func (r *relationRepo) ListRelations(enterpriseID uuid.UUID, entityType string, entityID uuid.UUID, relationName string) ([]model.RelationDefinition, error) {
 	var rels []model.RelationDefinition
-	q := r.db.Where("enterprise_id = ? AND source_type = ? AND source_id = ?", enterpriseID, entityType, entityID)
+	q := r.fresh().Where("enterprise_id = ? AND source_type = ? AND source_id = ?", enterpriseID, entityType, entityID)
 	if relationName != "" {
 		q = q.Where("name = ?", relationName)
 	}
@@ -124,5 +163,5 @@ func (r *relationRepo) ListRelations(enterpriseID uuid.UUID, entityType string, 
 }
 
 func (r *relationRepo) DeleteRelation(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.RelationDefinition{}).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.RelationDefinition{}).Error
 }

@@ -101,7 +101,8 @@ func TestRequirePermission_OperatorSystemAccess(t *testing.T) {
 	}
 }
 
-func TestRequirePermission_OperatorDeniedForBusiness(t *testing.T) {
+func TestRequirePermission_OperatorAllowedForBusiness(t *testing.T) {
+	// 运营商是全平台管理者，拥有全部业务权限（含 user:create）
 	r := gin.New()
 	r.GET("/test", setRole("operator"), RequirePermission(rbac.PermUserCreate), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"data": "ok"})
@@ -111,8 +112,8 @@ func TestRequirePermission_OperatorDeniedForBusiness(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusForbidden {
-		t.Errorf("expected 403 for operator with user:create, got %d", w.Code)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 for operator with user:create, got %d", w.Code)
 	}
 }
 

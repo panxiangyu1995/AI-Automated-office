@@ -51,13 +51,14 @@ func Tenant() gin.HandlerFunc {
 				c.Set(ContextKeySchema, "")
 			} else {
 				c.Set(ContextKeySchema, schema)
+				c.Request = c.Request.WithContext(tenant.WithSchemaContext(c.Request.Context(), schema))
 			}
 
 			if tenant.GlobalDB != nil {
 				tenantDB := tenant.UseSchema(tenant.GlobalDB, enterpriseID)
 				c.Set(ContextKeyTenantDB, tenantDB)
 				tenant.SetEnterpriseContext(tenantDB, enterpriseID)
-				defer tenant.ResetSearchPath(tenant.GlobalDB)
+				defer tenant.ReleaseConn(tenantDB)
 			}
 		}
 

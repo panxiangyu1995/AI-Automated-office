@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -10,9 +11,15 @@ import (
 type supplierRepo struct{ db *gorm.DB }
 
 func NewSupplierRepository(db *gorm.DB) SupplierRepository { return &supplierRepo{db} }
+
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *supplierRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
 func (r *supplierRepo) Create(s *model.Supplier) error     { return r.db.Create(s).Error }
 func (r *supplierRepo) Update(s *model.Supplier) error     { return r.db.Save(s).Error }
-func (r *supplierRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Supplier{}).Error }
+func (r *supplierRepo) Delete(id, enterpriseID uuid.UUID) error { return r.fresh().Model(&model.Supplier{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error }
 
 func (r *supplierRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Supplier, error) {
 	var s model.Supplier
@@ -43,6 +50,6 @@ func (r *supplierRepo) ListByEnterprise(eid uuid.UUID, p, ps int) ([]model.Suppl
 }
 
 func (r *supplierRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
-	result := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Supplier{})
+	result := r.fresh().Model(&model.Supplier{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now())
 	return result.RowsAffected, result.Error
 }

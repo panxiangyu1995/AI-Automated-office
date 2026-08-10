@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -15,21 +16,27 @@ func NewCustomerRepository(db *gorm.DB) CustomerRepository {
 	return &customerRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *customerRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *customerRepo) Create(customer *model.Customer) error {
-	return r.db.Create(customer).Error
+	return r.fresh().Create(customer).Error
 }
 
 func (r *customerRepo) Update(customer *model.Customer) error {
-	return r.db.Save(customer).Error
+	return r.fresh().Save(customer).Error
 }
 
 func (r *customerRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Customer{}).Error
+	return r.fresh().Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *customerRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Customer, error) {
 	var c model.Customer
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&c).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&c).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -41,7 +48,7 @@ func (r *customerRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Customer, er
 
 func (r *customerRepo) FindByName(enterpriseID uuid.UUID, name string) (*model.Customer, error) {
 	var c model.Customer
-	err := r.db.Where("enterprise_id = ? AND name = ?", enterpriseID, name).First(&c).Error
+	err := r.fresh().Where("enterprise_id = ? AND name = ?", enterpriseID, name).First(&c).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -55,7 +62,7 @@ func (r *customerRepo) List(enterpriseID uuid.UUID, page, pageSize int) ([]model
 	var customers []model.Customer
 	var total int64
 
-	q := r.db.Model(&model.Customer{}).Where("enterprise_id = ?", enterpriseID)
+	q := r.fresh().Model(&model.Customer{}).Where("enterprise_id = ?", enterpriseID)
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
@@ -74,11 +81,11 @@ func (r *customerRepo) List(enterpriseID uuid.UUID, page, pageSize int) ([]model
 }
 
 func (r *customerRepo) UpdateFields(id, enterpriseID uuid.UUID, fields map[string]interface{}) error {
-	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
+	return r.fresh().Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
 func (r *customerRepo) UpdateFieldsByID(id, enterpriseID string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
+	return r.fresh().Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
 func (r *customerRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {
@@ -86,10 +93,10 @@ func (r *customerRepo) RestoreFields(id, enterpriseID string, fields map[string]
 }
 
 func (r *customerRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
-	result := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Customer{})
+	result := r.fresh().Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now())
 	return result.RowsAffected, result.Error
 }
 
 func (r *customerRepo) UpdateStatus(id, enterpriseID uuid.UUID, status string) error {
-	return r.db.Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("status", status).Error
+	return r.fresh().Model(&model.Customer{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("status", status).Error
 }

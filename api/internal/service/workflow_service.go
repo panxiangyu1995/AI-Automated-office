@@ -192,11 +192,17 @@ func (e *WorkflowEngine) AdvanceStep(instanceID, enterpriseID uuid.UUID, action,
 			if evalErr != nil {
 				return nil, apperrors.ErrInternal.WithDetail("条件评估失败: " + evalErr.Error())
 			}
-			nextIdx := e.findStepIndexByName(config, nextStepName)
-			if nextIdx < 0 {
-				return nil, apperrors.ErrInternal.WithDetail("条件指向的步骤不存在: " + nextStepName)
+			if nextStepName == "end" {
+				inst.Status = "approved"
+				now := time.Now()
+				inst.CompletedAt = &now
+			} else {
+				nextIdx := e.findStepIndexByName(config, nextStepName)
+				if nextIdx < 0 {
+					return nil, apperrors.ErrInternal.WithDetail("条件指向的步骤不存在: " + nextStepName)
+				}
+				inst.CurrentStep = nextIdx
 			}
-			inst.CurrentStep = nextIdx
 		default:
 			if inst.CurrentStep+1 >= len(config.Steps) {
 				inst.Status = "approved"

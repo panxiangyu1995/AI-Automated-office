@@ -1,6 +1,8 @@
 package tenant
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"regexp"
@@ -8,9 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
 )
 
 var identifierRe = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
@@ -100,8 +101,52 @@ func UseSchema(db *gorm.DB, enterpriseID string) *gorm.DB {
 		log.Printf("[tenant] UseSchema: %v", err)
 		return db
 	}
-	session := db.Session(&gorm.Session{PrepareStmt: false, NewDB: true})
-	return database.SetSearchPath(session, schema)
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Printf("[tenant] UseSchema: %v", err)
+		return db
+	}
+	// Acquire a dedicated connection and pin the schema on it. All queries
+	// executed through the returned instance reuse this same connection, so
+	// tenant isolation does not depend on pooled-connection search_path
+	// state (which leaks across requests and randomly resolves to other
+	// tenants' schemas).
+	ctx := context.Background()
+	conn, err := sqlDB.Conn(ctx)
+	if err != nil {
+		log.Printf("[tenant] UseSchema: acquire conn: %v", err)
+		return db
+	}
+	if _, err := conn.ExecContext(ctx, fmt.Sprintf("SET search_path TO %s,public", qi(schema))); err != nil {
+		log.Printf("[tenant] UseSchema: SET search_path failed: %v", err)
+	}
+	connDB, err := gorm.Open(postgres.New(postgres.Config{Conn: conn}), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            false,
+	})
+	if err != nil {
+		log.Printf("[tenant] UseSchema: open conn db: %v", err)
+		return db
+	}
+	RegisterSchemaCallbacks(connDB)
+	connDB = connDB.Set("tenant_conn", conn)
+	return connDB
+}
+
+// ReleaseConn restores the search_path of a connection acquired by UseSchema
+// and returns it to the pool. Call via defer on the request path.
+func ReleaseConn(db *gorm.DB) {
+	if db == nil {
+		return
+	}
+	if v, ok := db.Get("tenant_conn"); ok {
+		if conn, ok := v.(*sql.Conn); ok {
+			_, _ = conn.ExecContext(context.Background(), "RESET search_path")
+			_ = conn.Close()
+			return
+		}
+	}
+	ResetSearchPath(db)
 }
 
 func SetEnterpriseContext(db *gorm.DB, enterpriseID string) error {

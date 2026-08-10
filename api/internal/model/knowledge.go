@@ -52,7 +52,7 @@ func (Announcement) TableName() string { return "announcements" }
 type AnnouncementReadStatus struct {
 	BaseModel
 	AnnouncementID uuid.UUID `gorm:"type:uuid;not null;index" json:"announcement_id"`
-	EmployeeID     uuid.UUID `gorm:"type:uuid;not null;index" json:"employee_id"`
+	UserID         uuid.UUID `gorm:"type:uuid;not null;index" json:"user_id"`
 }
 
 func (AnnouncementReadStatus) TableName() string { return "announcement_read_statuses" }
@@ -60,7 +60,7 @@ func (AnnouncementReadStatus) TableName() string { return "announcement_read_sta
 type KnowledgeDoc struct {
 	TenantModel
 	Title              string  `gorm:"type:varchar(255);not null" json:"title"`
-	CategoryID         *string `gorm:"type:uuid;index" json:"category_id,omitempty"`
+	CategoryID         *string `gorm:"type:text;index" json:"category_id,omitempty"`
 	Content            string  `gorm:"type:text" json:"content"`
 	Summary            string  `gorm:"type:text" json:"summary,omitempty"`
 	Tags               string  `gorm:"type:varchar(500)" json:"tags,omitempty"`

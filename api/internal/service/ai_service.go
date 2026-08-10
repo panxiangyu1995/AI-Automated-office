@@ -42,9 +42,19 @@ func (s *AIService) ListSessions(eid, userID string) ([]model.ChatSession, *appe
 }
 
 func (s *AIService) SendMessage(sessionID, role, content string) (*model.ChatMessage, *apperrors.AppError) {
+	return s.SendMessageWithEnterprise(sessionID, role, content, "")
+}
+
+func (s *AIService) SendMessageWithEnterprise(sessionID, role, content, eid string) (*model.ChatMessage, *apperrors.AppError) {
 	sid, err := uuid.Parse(sessionID)
 	if err != nil { return nil, apperrors.NewValidationError("session_id", "无效") }
-	sess, dbErr := s.repo.FindSessionByID(sid, uuid.Nil)
+	enterpriseID := uuid.Nil
+	if eid != "" {
+		if parsed, pErr := uuid.Parse(eid); pErr == nil {
+			enterpriseID = parsed
+		}
+	}
+	sess, dbErr := s.repo.FindSessionByID(sid, enterpriseID)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")
 	}
@@ -93,7 +103,11 @@ func (s *AIService) UpdatePreference(eid, userID, key, value string) (*model.Cha
 		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")
 	}
 	if sess == nil {
-		return nil, apperrors.ErrNotFound.WithDetail("无会话可更新偏好")
+		sess = &model.ChatSession{UserID: userID, Title: "偏好设置", Model: "gpt-4o-mini", Context: "{}"}
+		sess.EnterpriseID = id
+		if createErr := s.repo.CreateSession(sess); createErr != nil {
+			return nil, apperrors.ErrInternal.WithDetail("创建偏好会话失败")
+		}
 	}
 	sess.Context = `{"` + key + `":"` + value + `"}`
 	s.repo.SaveSession(sess)

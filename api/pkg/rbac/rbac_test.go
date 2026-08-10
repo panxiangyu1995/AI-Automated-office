@@ -31,8 +31,14 @@ func TestHasPermission_Operator(t *testing.T) {
 	if !HasPermission(RoleOperator, PermSystemConfig) {
 		t.Error("operator should have system:config")
 	}
-	if HasPermission(RoleOperator, PermUserCreate) {
-		t.Error("operator should NOT have user:create")
+	if !HasPermission(RoleOperator, PermUserCreate) {
+		t.Error("operator should have user:create (全平台管理者)")
+	}
+	if !HasPermission(RoleOperator, PermDepartmentCreate) {
+		t.Error("operator should have department:create (全平台管理者)")
+	}
+	if !HasPermission(RoleOperator, PermEmployeeCreate) {
+		t.Error("operator should have employee:create (全平台管理者)")
 	}
 }
 

@@ -3,7 +3,9 @@ package handler
 import (
 	"strconv"
 	"github.com/gin-gonic/gin"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -13,9 +15,27 @@ type OrderHandler struct {
 	svc            *service.OrderService
 	contractSvc    *service.ContractService
 	autoArchiveSvc *service.AutoArchiveService
+	lockProvider   *rc.LockProvider
 }
-func NewOrderHandler(svc *service.OrderService, contractSvc *service.ContractService, autoArchiveSvc *service.AutoArchiveService) *OrderHandler {
-	return &OrderHandler{svc, contractSvc, autoArchiveSvc}
+func NewOrderHandler(svc *service.OrderService, contractSvc *service.ContractService, autoArchiveSvc *service.AutoArchiveService, lockProvider *rc.LockProvider) *OrderHandler {
+	return &OrderHandler{svc: svc, contractSvc: contractSvc, autoArchiveSvc: autoArchiveSvc, lockProvider: lockProvider}
+}
+
+// svcFor returns an OrderService bound to the request's tenant database.
+func (h *OrderHandler) svcFor(c *gin.Context) *service.OrderService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewOrderService(
+			repository.NewOrderRepository(db),
+			repository.NewInventoryRepository(db),
+			repository.NewMaterialRepository(db),
+			repository.NewWarehouseRepository(db),
+			repository.NewSupplierRepository(db),
+			repository.NewCustomerRepository(db),
+			repository.NewQualityInspectionRepository(db),
+			h.lockProvider,
+		)
+	}
+	return h.svc
 }
 
 type poReq struct {
@@ -48,7 +68,7 @@ func (h *OrderHandler) CreatePurchaseOrder(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req poReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	order, appErr := h.svc.CreatePurchaseOrder(eid, req.SupplierID, req.Notes, req.Items)
+	order, appErr := h.svcFor(c).CreatePurchaseOrder(eid, req.SupplierID, req.Notes, req.Items)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, order)
 }
@@ -70,7 +90,7 @@ func (h *OrderHandler) ReceivePurchase(c *gin.Context) {
 		}
 	}
 	if poID == "" || whID == "" { response.ValidationError(c, "id/warehouse_id", "参数不完整"); return }
-	order, appErr := h.svc.ReceivePurchase(poID, whID, requireInspection)
+	order, appErr := h.svcFor(c).ReceivePurchase(poID, whID, requireInspection)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, order)
 }
@@ -79,7 +99,7 @@ func (h *OrderHandler) CreateSalesOrder(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req soReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	order, appErr := h.svc.CreateSalesOrder(eid, req.CustomerID, req.Notes, req.Items)
+	order, appErr := h.svcFor(c).CreateSalesOrder(eid, req.CustomerID, req.Notes, req.Items)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, order)
 }
@@ -92,7 +112,7 @@ func (h *OrderHandler) ShipSalesOrder(c *gin.Context) {
 		if err := c.ShouldBindJSON(&body); err == nil { whID = body.WarehouseID }
 	}
 	if soID == "" || whID == "" { response.ValidationError(c, "id/warehouse_id", "参数不完整"); return }
-	order, appErr := h.svc.ShipSalesOrder(soID, whID)
+	order, appErr := h.svcFor(c).ShipSalesOrder(soID, whID)
 	if appErr != nil { response.Error(c, appErr); return }
 	if h.autoArchiveSvc != nil {
 		eid := middleware.GetEnterpriseID(c)
@@ -105,13 +125,13 @@ func (h *OrderHandler) CreateTransfer(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req transferReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	order, appErr := h.svc.CreateTransfer(eid, req.SourceWhID, req.TargetWhID, req.MaterialID, req.Quantity)
+	order, appErr := h.svcFor(c).CreateTransfer(eid, req.SourceWhID, req.TargetWhID, req.MaterialID, req.Quantity)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, order)
 }
 
 func (h *OrderHandler) ExecuteTransfer(c *gin.Context) {
-	order, appErr := h.svc.ExecuteTransfer(c.Param("id"))
+	order, appErr := h.svcFor(c).ExecuteTransfer(c.Param("id"))
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, order)
 }
@@ -120,14 +140,14 @@ func (h *OrderHandler) CreateRequisition(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	var req reqReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	order, appErr := h.svc.CreateRequisition(eid, req.ApplicantID, req.WarehouseID, req.MaterialID, req.Quantity, req.Notes)
+	order, appErr := h.svcFor(c).CreateRequisition(eid, req.ApplicantID, req.WarehouseID, req.MaterialID, req.Quantity, req.Notes)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Created(c, order)
 }
 
 func (h *OrderHandler) IssueRequisition(c *gin.Context) {
 	issuedQty, _ := strconv.Atoi(c.DefaultQuery("issued_qty", "0"))
-	order, appErr := h.svc.IssueRequisition(c.Param("id"), issuedQty)
+	order, appErr := h.svcFor(c).IssueRequisition(c.Param("id"), issuedQty)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, order)
 }
@@ -135,7 +155,7 @@ func (h *OrderHandler) IssueRequisition(c *gin.Context) {
 func (h *OrderHandler) ListOrders(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	orders, total, appErr := h.svc.ListOrders(eid, c.Query("type"), p, ps)
+	orders, total, appErr := h.svcFor(c).ListOrders(eid, c.Query("type"), p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.SuccessWithMeta(c, orders, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }
@@ -156,7 +176,7 @@ func (h *OrderHandler) BindContract(c *gin.Context) {
 func (h *OrderHandler) Delivery(c *gin.Context) {
 	whID := c.Query("warehouse_id")
 	if whID == "" { response.ValidationError(c, "warehouse_id", "不能为空"); return }
-	order, appErr := h.svc.ShipSalesOrder(c.Param("id"), whID)
+	order, appErr := h.svcFor(c).ShipSalesOrder(c.Param("id"), whID)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, order)
 }
@@ -164,7 +184,7 @@ func (h *OrderHandler) Delivery(c *gin.Context) {
 func (h *OrderHandler) ChangeSalesOrderStatus(c *gin.Context) {
 	var req soStatusReq
 	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
-	order, appErr := h.svc.ChangeSalesOrderStatus(c.Param("id"), req.Status)
+	order, appErr := h.svcFor(c).ChangeSalesOrderStatus(c.Param("id"), req.Status)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.Success(c, order)
 }
@@ -172,7 +192,7 @@ func (h *OrderHandler) ChangeSalesOrderStatus(c *gin.Context) {
 func (h *OrderHandler) ListStockFlows(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	flows, total, appErr := h.svc.ListStockFlows(eid, c.Query("warehouse_id"), c.Query("material_id"), p, ps)
+	flows, total, appErr := h.svcFor(c).ListStockFlows(eid, c.Query("warehouse_id"), c.Query("material_id"), p, ps)
 	if appErr != nil { response.Error(c, appErr); return }
 	response.SuccessWithMeta(c, flows, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }

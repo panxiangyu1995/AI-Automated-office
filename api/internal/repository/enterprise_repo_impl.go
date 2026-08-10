@@ -15,17 +15,23 @@ func NewEnterpriseRepository(db *gorm.DB) EnterpriseRepository {
 	return &enterpriseRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *enterpriseRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *enterpriseRepo) Create(enterprise *model.Enterprise) error {
-	return r.db.Table("public.enterprises").Create(enterprise).Error
+	return r.fresh().Table("public.enterprises").Create(enterprise).Error
 }
 
 func (r *enterpriseRepo) Update(enterprise *model.Enterprise) error {
-	return r.db.Table("public.enterprises").Save(enterprise).Error
+	return r.fresh().Table("public.enterprises").Save(enterprise).Error
 }
 
 func (r *enterpriseRepo) FindByID(id uuid.UUID) (*model.Enterprise, error) {
 	var ent model.Enterprise
-	err := r.db.Table("public.enterprises").Where("id = ?", id).First(&ent).Error
+	err := r.fresh().Table("public.enterprises").Where("id = ?", id).First(&ent).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -37,7 +43,7 @@ func (r *enterpriseRepo) FindByID(id uuid.UUID) (*model.Enterprise, error) {
 
 func (r *enterpriseRepo) FindByCode(code string) (*model.Enterprise, error) {
 	var ent model.Enterprise
-	err := r.db.Table("public.enterprises").Where("code = ?", code).First(&ent).Error
+	err := r.fresh().Table("public.enterprises").Where("code = ?", code).First(&ent).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -51,7 +57,7 @@ func (r *enterpriseRepo) List(page, pageSize int) ([]model.Enterprise, int64, er
 	var enterprises []model.Enterprise
 	var total int64
 
-	if err := r.db.Table("public.enterprises").Count(&total).Error; err != nil {
+	if err := r.fresh().Table("public.enterprises").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 	if page < 1 {
@@ -62,7 +68,7 @@ func (r *enterpriseRepo) List(page, pageSize int) ([]model.Enterprise, int64, er
 	}
 	offset := (page - 1) * pageSize
 
-	if err := r.db.Table("public.enterprises").Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&enterprises).Error; err != nil {
+	if err := r.fresh().Table("public.enterprises").Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&enterprises).Error; err != nil {
 		return nil, 0, err
 	}
 	return enterprises, total, nil
@@ -70,6 +76,6 @@ func (r *enterpriseRepo) List(page, pageSize int) ([]model.Enterprise, int64, er
 
 func (r *enterpriseRepo) ListByGroup(groupID string) ([]model.Enterprise, error) {
 	var enterprises []model.Enterprise
-	err := r.db.Table("public.enterprises").Where("group_id = ?", groupID).Find(&enterprises).Error
+	err := r.fresh().Table("public.enterprises").Where("group_id = ?", groupID).Find(&enterprises).Error
 	return enterprises, err
 }

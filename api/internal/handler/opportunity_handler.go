@@ -7,6 +7,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -17,6 +18,14 @@ type OpportunityHandler struct {
 
 func NewOpportunityHandler(oppService *service.OpportunityService) *OpportunityHandler {
 	return &OpportunityHandler{oppService: oppService}
+}
+
+// svcFor returns a OpportunityService bound to the request's tenant database.
+func (h *OpportunityHandler) svcFor(c *gin.Context) *service.OpportunityService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewOpportunityService(repository.NewOpportunityRepository(db), repository.NewCustomerRepository(db))
+	}
+	return h.oppService
 }
 
 type createOppRequest struct {
@@ -46,7 +55,7 @@ func (h *OpportunityHandler) Get(c *gin.Context) {
 		response.ValidationError(c, "id", "商机ID不能为空")
 		return
 	}
-	op, appErr := h.oppService.GetByID(enterpriseID, opID)
+	op, appErr := h.svcFor(c).GetByID(enterpriseID, opID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -75,7 +84,7 @@ func (h *OpportunityHandler) Create(c *gin.Context) {
 		}
 	}
 
-	op, appErr := h.oppService.Create(enterpriseID, req.CustomerID, req.Name, req.Description, req.Amount, closeAt)
+	op, appErr := h.svcFor(c).Create(enterpriseID, req.CustomerID, req.Name, req.Description, req.Amount, closeAt)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -109,7 +118,7 @@ func (h *OpportunityHandler) Update(c *gin.Context) {
 		}
 	}
 
-	op, appErr := h.oppService.Update(enterpriseID, opID, req.Name, req.Status, req.Description, req.Amount, closeAt)
+	op, appErr := h.svcFor(c).Update(enterpriseID, opID, req.Name, req.Status, req.Description, req.Amount, closeAt)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -128,7 +137,7 @@ func (h *OpportunityHandler) Delete(c *gin.Context) {
 		response.ValidationError(c, "id", "商机ID不能为空")
 		return
 	}
-	appErr := h.oppService.Delete(enterpriseID, opID)
+	appErr := h.svcFor(c).Delete(enterpriseID, opID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -142,7 +151,7 @@ func (h *OpportunityHandler) ListByCustomer(c *gin.Context) {
 		response.ValidationError(c, "customer_id", "客户ID不能为空")
 		return
 	}
-	ops, _, appErr := h.oppService.ListByCustomer(customerID)
+	ops, _, appErr := h.svcFor(c).ListByCustomer(customerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

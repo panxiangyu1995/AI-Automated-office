@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -15,21 +16,27 @@ func NewBackupConfigRepository(db *gorm.DB) BackupConfigRepository {
 	return &backupConfigRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *backupConfigRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *backupConfigRepo) Create(config *model.BackupConfig) error {
-	return r.db.Create(config).Error
+	return r.fresh().Create(config).Error
 }
 
 func (r *backupConfigRepo) Update(config *model.BackupConfig) error {
-	return r.db.Save(config).Error
+	return r.fresh().Save(config).Error
 }
 
 func (r *backupConfigRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.BackupConfig{}).Error
+	return r.fresh().Model(&model.BackupConfig{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *backupConfigRepo) FindByID(id, enterpriseID uuid.UUID) (*model.BackupConfig, error) {
 	var config model.BackupConfig
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&config).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&config).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -45,13 +52,13 @@ func (r *backupConfigRepo) ListByEnterprise(enterpriseID string) ([]model.Backup
 	if err != nil {
 		return nil, err
 	}
-	err = r.db.Where("enterprise_id = ?", eid).Find(&configs).Error
+	err = r.fresh().Where("enterprise_id = ?", eid).Find(&configs).Error
 	return configs, err
 }
 
 func (r *backupConfigRepo) ListEnabled() ([]model.BackupConfig, error) {
 	var configs []model.BackupConfig
-	err := r.db.Where("enabled = ?", true).Find(&configs).Error
+	err := r.fresh().Where("enabled = ?", true).Find(&configs).Error
 	return configs, err
 }
 
@@ -63,17 +70,23 @@ func NewBackupRecordRepository(db *gorm.DB) BackupRecordRepository {
 	return &backupRecordRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *backupRecordRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *backupRecordRepo) Create(record *model.BackupRecord) error {
-	return r.db.Create(record).Error
+	return r.fresh().Create(record).Error
 }
 
 func (r *backupRecordRepo) Update(record *model.BackupRecord) error {
-	return r.db.Save(record).Error
+	return r.fresh().Save(record).Error
 }
 
 func (r *backupRecordRepo) FindByID(id, enterpriseID uuid.UUID) (*model.BackupRecord, error) {
 	var record model.BackupRecord
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&record).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&record).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -92,7 +105,7 @@ func (r *backupRecordRepo) ListByEnterprise(enterpriseID string, offset, limit i
 		return nil, 0, err
 	}
 
-	query := r.db.Model(&model.BackupRecord{}).Where("enterprise_id = ?", eid)
+	query := r.fresh().Model(&model.BackupRecord{}).Where("enterprise_id = ?", eid)
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

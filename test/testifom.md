@@ -829,6 +829,435 @@ cli/bin/ao-cli auth status -s http://localhost:8080
 
 ---
 
+## Epic 7: 财务管理 + 审批工作流 - 对话测试用例
+
+> FRs 覆盖: FR-FIN-001~021, FR-WF-001~012
+> 测试数据: test-flie/epic7-test-data.sql
+> 完整对话: test-flie/epic7-test-dialogue.md
+> 已知实现差距:
+> - 收款确认(PATCH confirm)端点未实现
+> - 发票状态流转端点未实现(仅CRUD)
+> - 报销仅approve端点，无完整状态机
+> - 财务操作不触发审批工作流
+> - 工作流定义无PUT更新端点
+> - 无催办(urge)和统计(statistics)端点
+
+### 财务测试数据概览
+
+| 类型 | 数量 | 关键数据 |
+|------|------|----------|
+| 收款记录 | 6条 | 4条completed + 2条pending(待确认) |
+| 报销记录 | 6条 | 4条pending + 2条approved |
+| 发票 | 4条 | 2条draft + 2条issued |
+| 应收款 | 4条 | 3条pending + 1条overdue(北京贸易¥40K) |
+| 应付款 | 3条 | 2条pending + 1条paid |
+| 收款确认 | 2条 | 2条completed |
+| 付款申请 | 4条 | 1 approved + 1 pending_approval + 1 draft + 1 rejected |
+| 付款计划 | 7条 | CON-2024-001(2已付+1逾期) + CON-2024-002(2待付) + CON-2024-004(2待付) |
+
+### 工作流测试数据概览
+
+| 类型 | 数量 | 关键数据 |
+|------|------|----------|
+| 审批流程定义 | 4条 | 合同/报销(含条件分支)/付款/采购(含并行审批) |
+| 审批实例 | 9条 | 2 pending报销 + 1 pending付款 + 1 approved付款 + 1 returned合同 + 4合同审批 |
+| 审批记录 | 7条 | 2 approved + 1 returned |
+
+### Story 7.1: 收款记录管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 1 | finance | "帮我查看所有收款记录" | 调用 `finance_payment_list`，返回6条 | total_count=6 |
+| 2 | finance | "查看待确认的收款记录" | 列表中status=pending的记录 | 2条(PAY-2024-003, PAY-2024-004) |
+| 3 | finance | "创建一条收款记录，客户上海科技，金额10万元，银行转账" | 调用 `finance_payment_create` | 响应含 transaction_no, status=pending |
+| 4 | boss | "查看收款记录" | 返回6条，owner有finance:read | total_count=6 |
+| 5 | employee | "查看收款记录" | 返回权限拒绝 PERM_DENIED | employee无finance:read |
+
+### Story 7.2: 报销管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 6 | finance | "查看所有报销记录" | 调用 `finance_expense_list`，返回6条 | total_count=6 |
+| 7 | finance | "查看待审批的报销" | 列表中status=pending | 4条(¥800/¥1200/¥5600/¥8000) |
+| 8 | finance | "创建一条报销，类别差旅费，金额2000元，描述'上海出差打车费'" | 调用 `finance_expense_create` | 响应含 expense_no, status=pending |
+| 9 | finance | "审批通过EXP-2e7d8aab这条报销" | 调用 `finance_expense_approve` | 响应成功 |
+| 10 | boss | "审批通过EXP-2024-003报销" | 调用 `finance_expense_approve` | 响应成功 |
+| 11 | employee | "创建报销" | 返回权限拒绝 PERM_DENIED | employee无finance:write |
+
+### Story 7.3: 发票管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 12 | finance | "查看所有发票" | 调用 `finance_invoice_list`，返回4条 | total_count=4 |
+| 13 | finance | "创建一张发票，客户北京贸易，金额8万元，税额10400元" | 调用 `finance_invoice_create` | 响应含 invoice_no, status=draft |
+| 14 | finance | "查看草稿状态的发票" | 列表中status=draft | 2条 |
+| 15 | employee | "查看发票" | 返回权限拒绝 PERM_DENIED | employee无finance:read |
+
+### Story 7.4: 应收款管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 16 | finance | "查看所有应收款" | 调用 receivables list API，返回4条 | total_count=4 |
+| 17 | finance | "查看逾期的应收款" | 列表中status=overdue | 1条(北京贸易¥40,000) |
+| 18 | finance | "创建一笔应收款，客户深圳创新科技，金额15万元，到期日2024-12-31" | 调用 receivables create API | 响应含 receivable_no |
+| 19 | boss | "查看应收款" | 返回4条 | total_count=4 |
+
+### Story 7.5: 应付款管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 20 | finance | "查看所有应付款" | 调用 payables list API，返回3条 | total_count=3 |
+| 21 | finance | "查看已付款的应付款" | 列表中status=paid | 1条(广州办公用品¥8,900) |
+| 22 | finance | "创建一笔应付款，供应商华东材料供应商，金额5万元，到期日2024-09-30" | 调用 payables create API | 响应含 payable_no |
+
+### Story 7.6: 付款申请
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 23 | finance | "查看所有付款申请" | 调用 payment-requests list API，返回4条 | total_count=4 |
+| 24 | finance | "查看待审批的付款申请" | 列表中status=pending_approval | 1条(PR-2024-002) |
+| 25 | finance | "创建付款申请，金额3万元，类别办公用品，描述'季度办公用品采购'" | 调用 payment-requests create API | 响应含 request_no, status=draft |
+| 26 | finance | "提交PR-2024-003付款申请审批" | 调用 POST /payment-requests/:id/submit | status变pending_approval |
+| 27 | boss | "审批通过PR-2024-002付款申请" | 调用 POST /payment-requests/:id/approve | status变approved |
+| 28 | boss | "驳回PR-2024-003付款申请，理由'金额偏高需核实'" | 调用 POST /payment-requests/:id/reject | status变rejected |
+
+### Story 7.7: 付款计划
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 29 | finance | "查看合同CON-2024-001的付款计划" | 调用 payment-plans list API | 3条(2已付+1逾期) |
+| 30 | finance | "查看逾期的付款计划" | 调用 GET /payment-plans/overdue | 1条(CON-2024-001第三期¥50,000) |
+| 31 | finance | "给合同CON-2024-007创建付款计划，分2期：47500元(2024-10-01)和47500元(2025-01-01)" | 调用 POST /contracts/:id/payment-plans | 创建2条 |
+
+### Story 7.8: 工作流定义
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 32 | finance | "查看所有审批流程定义" | 调用 `workflow_definition_list`，返回4条 | total_count=4 |
+| 33 | finance | "查看报销审批流程的详情" | 调用 `workflow_definition_get` | flow_config含条件分支(amount>5000) |
+| 34 | finance | "创建一个请假审批流程，第一步部门经理审批，第二步总经理审批" | 调用 `workflow_definition_create` | 响应含id, is_active=true |
+| 35 | employee | "创建审批流程" | 返回权限拒绝 PERM_DENIED | employee无workflow:create |
+
+### Story 7.9: 工作流提交与审批
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 36 | finance | "提交一个报销审批，报销ID是EXP-2024-003" | 调用 `workflow_submit` | 响应含instance id, status=pending |
+| 37 | finance | "查看我待审批的工作流" | 调用 `workflow_pending_list` | 返回待审批列表 |
+| 38 | finance | "审批通过报销EXP-2024-003" | 调用 `workflow_approve` | status推进(小额→end) |
+| 39 | boss | "审批通过报销EXP-2024-004(大额¥5600)" | 条件>5000→总经理审批，approve后status=approved | status=approved |
+| 40 | boss | "驳回付款申请PR-2024-002的审批" | 调用 `workflow_reject` | status=rejected |
+
+### Story 7.10: 工作流退回与重提交
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 41 | boss | "退回云服务合同的审批，理由'合同条款需要修改'" | 调用 `workflow_return` | status=returned, return_reason非空 |
+| 42 | sales | "重新提交被退回的合同审批" | 调用 `workflow_resubmit` | status变回pending |
+
+### Story 7.11: 工作流转办
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 43 | finance | "把报销审批转办给王老板" | 调用 `workflow_transfer` | 审批人变更为王老板 |
+
+### Story 7.12: 审批历史
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 44 | finance | "查看付款申请PR-2024-001的审批历史" | 调用 `workflow_history` | 包含2条approved记录 |
+| 45 | finance | "查看被退回合同的审批历史" | 调用 `workflow_history` | 包含returned记录 |
+
+### Story 7.13: Owner财务看板
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 46 | boss | "查看企业财务信号看板" | 调用 `finance_owner_signals` | 返回应收/应付/逾期等信号 |
+| 47 | boss | "查看企业KPI，周期月度" | 调用 `finance_owner_kpi` | 返回月度KPI数据 |
+| 48 | boss | "创建一条预警规则，维度应收款，指标金额，操作符大于，阈值100000" | 调用 `finance_owner_alert_rule_create` | 响应含id, threshold |
+| 49 | boss | "查看所有预警规则" | 调用 `finance_owner_alert_rule_list` | 返回规则列表 |
+| 50 | employee | "查看财务信号看板" | 返回权限拒绝 PERM_DENIED | employee无owner权限 |
+
+### Story 7.14: 现金流预测与对账
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 51 | finance | "查看未来3个月现金流预测" | 调用 GET /cash-flow-forecast | 返回月度预测数据 |
+| 52 | finance | "查看上海科技客户7月份的对账单" | 调用 GET /reconciliation | 返回对账明细 |
+
+### Story 7.15: 收款确认
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 53 | finance | "查看收款记录" | 调用 collection list API | 返回2条 |
+| 54 | finance | "创建收款确认，发票INV-430e8987，金额2万元，银行转账" | 调用 collection create API | 响应含collection_no |
+
+### 权限边界测试
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 55 | employee | "查看收款记录" | PERM_DENIED | employee无finance:read |
+| 56 | employee | "创建报销" | PERM_DENIED | employee无finance:write |
+| 57 | employee | "查看发票" | PERM_DENIED | employee无finance:read |
+| 58 | employee | "提交审批" | PERM_DENIED | employee无workflow:create |
+| 59 | employee | "审批工作流" | PERM_DENIED | employee无workflow:write |
+| 60 | sales | "查看收款记录" | PERM_DENIED | sales(manager)无finance:read |
+| 61 | sales | "查看报销列表" | PERM_DENIED | sales(manager)无finance:read |
+| 62 | finance | "查看审批流程定义" | 返回4条 | finance(manager)有workflow:read |
+| 63 | finance | "提交审批" | 成功 | finance(manager)有workflow:create |
+
+### 实现差距测试（预期可能失败）
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 64 | finance | "确认收款PAY-2024-003" | 无confirm端点，可能返回404 | 需后续实现PATCH /payments/:id/confirm |
+| 65 | finance | "把发票INV-430e8987状态改为issued" | 无状态更新端点，可能返回404 | 需后续实现PATCH /invoices/:id/status |
+| 66 | finance | "更新合同审批流程定义" | 无PUT端点，可能返回404 | 需后续实现PUT /workflow-definitions/:id |
+| 67 | finance | "催办审批" | 无urge端点，可能返回404 | 需后续实现POST /workflows/:id/urge |
+
+---
+
+## Epic 8: 文件/消息/知识库/AI助手 - 对话测试用例
+
+> FRs 覆盖: FR-FILE-001~009, FR-MSG-001~007, FR-KB-001~005, FR-KB2-001~006, FR-SKILL-001~008
+> 测试数据: test-flie/epic8-test-data.sql
+> 完整对话: test-flie/epic8-test-dialogue.md
+> 已知实现差距:
+> - 文件上传仅支持本地存储，无S3/OSS
+> - 文件预览仅Content-Disposition:inline，无格式转换
+> - 文件软删除存在但无独立恢复端点
+> - 知识库语义搜索依赖Qdrant云端，未配置时返回空结果
+> - 知识库文档版本比较(CompareVersions)功能存在但未验证
+> - AI会话发送消息需外部LLM API，未配置时返回错误
+> - AI偏好更新是全局的(非企业/用户级)
+> - 消息轮询(long-poll)默认5秒超时
+> - 公告已读状态表字段名不匹配(Go:employee_id vs DB:user_id)
+
+### 用户ID映射
+
+| 角色 | user_id (public.users) | employee_id (tenant schema) |
+|------|------------------------|---------------------------|
+| boss | b0000000-0000-0000-0000-000000000010 | e0000001-0000-0000-0000-000000000001 |
+| admin | b0000000-0000-0000-0000-000000000011 | e0000001-0000-0000-0000-000000000002 |
+| finance | b0000000-0000-0000-0000-000000000012 | e0000001-0000-0000-0000-000000000003 |
+| warehouse | b0000000-0000-0000-0000-000000000013 | e0000001-0000-0000-0000-000000000004 |
+| sales | b0000000-0000-0000-0000-000000000014 | e0000001-0000-0000-0000-000000000005 |
+| employee | b0000000-0000-0000-0000-000000000015 | e0000001-0000-0000-0000-000000000006 |
+| zheng | b0000000-0000-0000-0000-000000000016 | e0000001-0000-0000-0000-000000000007 |
+| feng | b0000000-0000-0000-0000-000000000017 | e0000001-0000-0000-0000-000000000008 |
+
+### 测试数据概览
+
+| 类型 | 原有 | 新增 | 总计 | 关键数据 |
+|------|------|------|------|----------|
+| 消息 | 9 | 8 | 17 | 2条未读通知+2条紧急+1条审批+2条系统+1条待处理 |
+| 公告 | 1 | 3 | 4 | 全员公告+部门公告+紧急公告 |
+| 知识库分类 | 2 | 3 | 5 | 技术文档+财务制度+销售规范 |
+| 知识库文档 | 9 | 5 | 14 | 员工手册v2+报销制度+合同模板+销售流程+产品FAQ |
+| 文件记录 | 1 | 3 | 4 | 合同扫描件+产品图片+报销凭证 |
+| 文件元数据 | 2 | 2 | 4 | 关联到业务单据的附件 |
+| AI会话 | 4 | 2 | 6 | 带user_id的会话 |
+
+---
+
+## Epic 9: 运营商管理/计费订阅/客户成功/行业模板/自定义字段 - 对话测试用例
+
+> FRs 覆盖: FR-OP-001~007, FR-BILL-001~010, FR-CS-001~005, FR-OPSVC-001~011, FR-CUST-001~006
+> 测试数据: test-flie/epic9-test-data.sql (已执行)
+> 完整对话: test-flie/epic9-test-dialogue.md
+
+### 新增测试企业
+
+| 企业 | ID | 状态 | Schema | 用途 |
+|------|-----|------|--------|------|
+| 模拟测试企业B | f2802128-705b-4201-a261-bfe05ffffb61 | trial(即将过期) | tenant_f2802128_705b_4201_a261_bfe05ffffb61 | 测试订阅/续费/过期 |
+| 测试暂停企业 | c0000000-0000-0000-0000-000000000001 | suspended | tenant_c0000000_0000_0000_0000_000000000001 | 测试暂停/恢复 |
+| 测试冻结企业 | d0000000-0000-0000-0000-000000000001 | frozen | tenant_d0000000_0000_0000_0000_000000000001 | 测试冻结/解冻 |
+
+### Epic 9 测试数据概览
+
+| 类型 | 数量 | 关键数据 |
+|------|------|----------|
+| 订阅计划 | 4 | 基础版¥99 + 专业版¥299 + 企业版¥599 + 旗舰版¥999 |
+| 企业订阅 | 2 | 企业A(企业版active) + 企业B(基础版trial) |
+| 账单记录 | 5 | 2 paid + 1 pending + 1 overdue + 1 refund |
+| Webhook | 3 | 订单同步 + 审批通知(原有1+新增2) |
+| 审计日志 | 5 | CREATE/UPDATE/LOGIN/DELETE/UPDATE |
+| 服务工单 | 5 | 3 open + 1 in_progress + 1原有 |
+| 行业模板 | 3 | 制造业 + 贸易 + IT服务 |
+| ClaudeMD模板 | 2 | 标准企业 + 制造业专用 |
+| 企业Skill矩阵 | 5 | 企业A(hrm/crm/finance enabled) + 企业B(hrm enabled + kb disabled) |
+| 自定义字段 | 5 | customer(industry+source) + contract(payment_terms) + employee(level) + product(shelf_life) |
+| 自定义Skill | 2 | custom_report_generator + data_export_tool |
+| 服务配置 | 3 | max_export_rows + backup_retention_days + sla_response_hours |
+
+---
+
+## Epic 10: 数据智能与私有化部署 - 对话测试用例
+
+> FRs 覆盖: FR-REPORT-001~008, FR-OWNER-001~006, FR-AUDIT-001~006, FR-IMPORT-001~006,
+>          FR-EXPORT-001~010, FR-WEBHOOK-001~006, FR-I18N-001~006, FR-SEC2-001~004,
+>          FR-ASSIST-001~002, FR-ASSIST-004~005, FR-CLI-001~008, FR-DEPLOY-001~008
+> 测试数据: test-flie/epic10-test-data.sql (已执行)
+> 完整对话: test-flie/epic10-test-dialogue.md
+
+### ⚠️ 已知实现差距（测试时需注意）
+
+1. **✅ 多租户回归已修复（2026-08-10）**：所有业务 handler 已改为 `svcFor(c)` 模式
+   （使用 `GetTenantDB(c)` 专用连接，search_path 指向 tenant schema），业务列表查询
+   （合同/客户/员工/消息等）恢复正常。修复涉及约 30 个 handler 文件。
+2. **导出/备份/审计/预警数据表**：导出/备份/预警/审计 API 的 repo 绑定全局 db，
+   数据位于 **public schema**（export_tasks/export_histories/backup_configs/
+   backup_records/alert_rules/audit_logs）。epic10-test-data.sql 已同时写入
+   public 和 tenant schema，保证两种查询路径都有数据。
+3. **Owner 报表（KPI/信号灯）**：已随多租户修复恢复正常——KPI 现返回真实营收
+   （total_revenue=607976），信号灯按真实数据计算。
+4. **备份功能**：需 feature flag `backup` 开启（默认已开启）。
+5. **数据导入**：仅 `POST /api/v1/data-import` 单端点（records + target），无
+   upload/execute 两阶段流程。
+6. **Webhook**：仅 create/list 两个端点，无 update/delete/logs/test。
+7. **AI 助手**：会话/消息 CRUD 可用；发送消息需 LLM API key，未配置时返回错误（预期）。
+
+### 企业A测试数据概览（Epic 10 相关）
+
+| 类型 | 数量 | 关键数据 |
+|------|------|----------|
+| 销售订单 | 19 | 2025年4条(completed) + 2026年15条(confirmed 1/shipped 6/draft 8) |
+| 收款记录 | 14 | 2025年4条 + 2026年8条completed + 2条pending |
+| 合同 | 12 | 2025年2条(fulfilled) + 2026年10条 |
+| 审计日志 | 3386+4 | 补录4条含 old_values/new_values (UPDATE/DELETE/CREATE/LOGIN) |
+| 导出任务 | 4 | single/conversational/employee_dimension(失败)/cross_entity |
+| 备份配置 | 1 | 02:00 每日，保留30天 |
+| 备份记录 | 2 | 1 completed + 1 failed |
+| 预警规则 | 6 | receivable×4 + inventory×1 + 新库存规则 |
+| AI会话 | 3 | 历史会话 |
+
+### 企业B测试数据概览（跨企业汇总）
+
+| 类型 | 数量 | 关键数据 |
+|------|------|----------|
+| 员工 | 3 | 王老板(owner) + 钱研发 + 孙市场 |
+| 客户 | 3 | 杭州智能制造(VIP) + 苏州电子科技(重要) + 南京物流集团(普通) |
+| 合同 | 2 | CON-B-2026-001(active ¥300K) + CON-B-2026-002(pending_approval ¥150K) |
+| 销售订单 | 3 | 2 shipped + 1 confirmed，合计 ¥185,000 |
+| 收款 | 2 | ¥80K + ¥60K，均 completed |
+
+### Story 10.1-10.2: 老板驾驶舱（信号灯/KPI/预警规则）
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 1 | boss | "查看企业财务信号看板" | 调用 `finance_owner_signals` | 返回 销售/财务/库存/人事 4 个信号 |
+| 2 | boss | "查看企业 KPI，周期月度" | 调用 `finance_owner_kpi` | 返回 total_revenue/collection_rate 等 |
+| 3 | boss | "创建一条预警规则，维度应收款，指标金额，操作符大于，阈值100000" | 调用 `finance_owner_alert_rule_create` | 响应含 dimension=receivable, threshold=100000 |
+| 4 | boss | "查看所有预警规则" | 调用 `finance_owner_alert_rule_list` | 返回 6 条（含补录的 inventory 规则） |
+| 5 | boss | "把应收款金额预警阈值改成150000" | 调用 PUT /alert-rules/:id | 响应含 threshold=150000 |
+| 6 | employee | "查看财务信号看板" | 返回权限拒绝 PERM_DENIED | employee 无 owner 权限 |
+
+### Story 10.3-10.4: 通用数据报表
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 7 | admin | "查看企业报表dashboard" | 调用 `GET /reports/dashboard` | 返回 employee_count/customer_count/contract_count |
+| 8 | admin | "查看报表drilldown" | 调用 `GET /reports/drilldown` | 返回 employees_by_department/contracts_by_status |
+| 9 | admin | "查看销售报表" | 调用 `GET /reports/sales` | 未实现分模块报表，返回默认结构 |
+| 10 | admin | "创建自定义报表" | 端点未实现 | 返回 404（需后续实现） |
+
+### Story 10.5-10.6: 审计日志
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 11 | admin | "查看审计日志列表" | 调用 `audit_log_list` | 返回日志列表（含补录的4条） |
+| 12 | admin | "查看 UPDATE 类型的审计日志" | `audit_log_list` + action=UPDATE | 含补录的 `修改合同金额` 记录 |
+| 13 | admin | "查看周销售的审计日志" | `audit_log_list` + user_id=周销售 | 返回该用户操作记录 |
+| 14 | admin | "查看最近3天的审计日志" | `audit_log_list` + start_time/end_time | 返回时间范围内记录 |
+| 15 | admin | "查看审计日志详情" | GET /audit-logs/:id 未实现 | 404（需后续实现） |
+| 16 | boss | "查看审计日志" | 调用 `audit_log_list` | 有权限，返回列表 |
+
+### Story 10.7-10.8: 数据导入导出
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 17 | admin | "创建导出任务，导出所有客户，xlsx格式" | 调用 `data_export_create` | 返回 task id, status=pending |
+| 18 | admin | "查看导出任务列表" | 调用 `data_export_list` | 返回 4 条历史任务（含 completed/failed） |
+| 19 | admin | "查看导出任务详情" | 调用 `data_export_get` + id | 返回任务状态/文件信息 |
+| 20 | admin | "下载导出文件" | 调用 `data_export_download` + id | completed 任务可下载（文件不存在则报错，预期） |
+| 21 | admin | "导出员工周销售的维度数据" | `data_export_create` + employee_dimension | 创建任务 |
+| 22 | admin | "导出客户上海科技的全景关联数据" | `data_export_create` + cross_entity | 创建任务 |
+| 23 | admin | "导入3个客户数据" | 调用 `POST /data-import` | 返回 imported 数量 |
+| 24 | boss | "帮我导出2026年所有合同清单" | agent 解析 → `data_export_create` + contract | 创建任务成功 |
+
+### Story 10.9-10.10: Webhook 管理
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 25 | admin | "创建一个Webhook，名称'订单同步'，地址https://api.example.com/webhooks/orders，订阅order.created" | 调用 `operator_webhook_create` | 响应含 id, name=订单同步 |
+| 26 | admin | "查看Webhook列表" | 调用 `operator_webhook_list` | 返回列表（含已有的订单同步/审批通知） |
+| 27 | admin | "更新Webhook配置" | 无 PATCH 端点 | 404（需后续实现） |
+| 28 | admin | "测试Webhook发送" | 无 test 端点 | 404（需后续实现） |
+
+### Story 10.13: 安全增强（MFA/脱敏/撤销/批量）
+
+> ⚠️ 注: MFA/masking/undo/batch 端点存在但**无 CLI skill 定义**，Agent 无法通过
+> `ao-cli skill execute` 调用（CLI 唯一入口铁律）。以下用例暂不可通过 Agent 对话执行，
+> 需补充 CLI skill 后才能测试。仅记录 API 行为预期。
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 29 | boss | "查看MFA状态" | 无 skill | 不可执行（API: GET /mfa/status） |
+| 30 | boss | "启用MFA" | 无 skill | 不可执行（API: POST /mfa/enable） |
+| 31 | boss | "查看脱敏规则" | 无 skill | 不可执行（API: GET /masking/rules） |
+| 32 | admin | "配置脱敏规则，手机号字段掩码" | 无 skill | 不可执行（API: POST /masking/rules） |
+| 33 | admin | "撤销最近一次操作" | 无 skill | 不可执行（API: POST /undo/:operation_id） |
+| 34 | admin | "批量审批3个报销" | 无 skill | 不可执行（API: POST /batch/approve） |
+| 35 | admin | "批量删除2个客户" | 无 skill | 不可执行（API: POST /batch/delete） |
+| 36 | admin | "批量变更5个订单状态为confirmed" | 无 skill | 不可执行（API: POST /batch/status-change） |
+
+### Story 10.14-10.15: AI 助手
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 37 | admin | "创建一个AI助手会话" | 调用 `ai_session_create` | 返回 session id |
+| 38 | admin | "查看AI会话列表" | 调用 `ai_session_list` | 返回会话列表 |
+| 39 | admin | "向会话发送消息'帮我统计合同数量'" | 调用 `ai_session_send_message` | 无 LLM key 时返回错误（预期） |
+| 40 | admin | "查看会话消息" | 调用 `ai_session_messages` | 返回消息列表 |
+| 41 | admin | "更新AI偏好设置" | 调用 `ai_preference_update` | 返回成功 |
+
+### Story 10.16-10.18: CLI 认证/轮询/操作日志
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 42 | boss | "登录CLI" | `ao-cli auth login` | 登录成功，token 保存到 ~/.ai-office-cli/config.yaml |
+| 43 | boss | "查看CLI认证状态" | `ao-cli auth status` | 返回已登录/邮箱/企业 |
+| 44 | boss | "列出所有可用Skill" | `ao-cli skill list` | 返回 169+ 个 skill |
+| 45 | admin | "查看今天的CLI操作日志" | 读取 ~/.ai-office-cli/logs/YYYY-MM-DD.jsonl | JSONL 格式，每行一条操作记录 |
+| 46 | admin | "列出CLI操作日志" | `ao-cli log list` | 返回日志列表 |
+
+### Story 10.19-10.21: 私有化部署与备份
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 47 | - | "检查服务健康" | `GET /api/v1/health` | 返回 {"status":"ok","database":"connected"} |
+| 48 | admin | "创建备份配置，02:00每日备份，保留30天" | 调用 `backup_config_create` | 返回配置 id |
+| 49 | admin | "查看备份配置列表" | 调用 `backup_config_list` | 返回 1 条配置 |
+| 50 | admin | "查看备份记录" | 调用 `backup_record_list` | 返回 2 条记录（completed+failed） |
+| 51 | admin | "手动触发备份" | 调用 `backup_trigger` | 创建备份任务 |
+| 52 | admin | "更新备份配置为03:00" | 调用 `backup_config_update` | 返回更新后配置 |
+
+### Story 10.22-10.25: 对话式数据导出
+
+| # | 登录角色 | 你对 agent 说 | 预期 agent 行为 | 验证方式 |
+|---|---------|-------------|----------------|---------|
+| 53 | admin | "帮我导出2026年6月所有合同清单" | agent 解析 → `data_export_create` + filters | 创建任务成功 |
+| 54 | admin | "帮我导出客户上海科技的所有往来合同、售后清单和报价单" | agent 解析 → `data_export_create` + cross_entity | 创建任务成功 |
+| 55 | admin | "帮我导出员工周销售的所有业务单据" | agent 解析 → `data_export_create` + employee_dimension | 创建任务成功 |
+| 56 | admin | "帮我导出员工周销售的操作日志" | agent 解析 → `data_export_create` + employee_audit | 创建任务成功 |
+| 57 | admin | "只导出合同的编号、名称和金额" | agent 解析 → `data_export_create` + fields | 任务记录 fields 字段 |
+| 58 | admin | "导出客户清单，CSV格式" | `data_export_create` + format=csv | 创建任务成功 |
+| 59 | employee | "导出所有合同" | 权限校验 | employee 有 contract:read 可导出 |
+| 60 | employee | "导出财务数据" | 权限校验 | 无 finance:read → PERM_DENIED |
+
+---
+
 ## 使用说明
 
 1. 启动服务：确保 Docker 中 PostgreSQL + Redis 运行，API 在 localhost:8080

@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
@@ -19,6 +20,15 @@ func NewSkillHandler(skillService *service.SkillService) *SkillHandler {
 	return &SkillHandler{skillService: skillService}
 }
 
+// svcFor returns a SkillService bound to the request's tenant database.
+// search_path = tenant_schema,public 使查询优先命中企业级 skill，平台级 skill 回退 public。
+func (h *SkillHandler) svcFor(c *gin.Context) *service.SkillService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewSkillService(repository.NewSkillRepository(db))
+	}
+	return h.skillService
+}
+
 func (h *SkillHandler) List(c *gin.Context) {
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, err := uuid.Parse(entIDStr)
@@ -26,7 +36,7 @@ func (h *SkillHandler) List(c *gin.Context) {
 		entID = uuid.Nil
 	}
 
-	skills, appErr := h.skillService.ListSkills(entID)
+	skills, appErr := h.svcFor(c).ListSkills(entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -50,9 +60,9 @@ func (h *SkillHandler) GetDetail(c *gin.Context) {
 	var appErr *apperrors.AppError
 
 	if roleStr != "" {
-		detail, appErr = h.skillService.GetByRole(name, roleStr)
+		detail, appErr = h.svcFor(c).GetByRole(name, roleStr)
 	} else {
-		detail, appErr = h.skillService.GetSkillDetail(name, roleStr)
+		detail, appErr = h.svcFor(c).GetSkillDetail(name, roleStr)
 	}
 
 	if appErr != nil {
@@ -87,7 +97,7 @@ func (h *SkillHandler) Create(c *gin.Context) {
 	}
 	skill.EnterpriseID = entID
 
-	if appErr := h.skillService.CreateSkill(skill); appErr != nil {
+	if appErr := h.svcFor(c).CreateSkill(skill); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}

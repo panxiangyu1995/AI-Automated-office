@@ -15,53 +15,22 @@ func NewCollectionRepository(db *gorm.DB) CollectionRepository {
 	return &collectionRepo{db: db}
 }
 
-func (r *collectionRepo) CreateWithTx(rec *model.CollectionRecord, contractID, salesOrderID *string, receivableID string, amount float64, enterpriseID uuid.UUID) (*model.CollectionRecord, error) {
-	tx := r.db.Begin()
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *collectionRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
 
-	if err := tx.Create(rec).Error; err != nil {
-		tx.Rollback()
+func (r *collectionRepo) CreateWithTx(rec *model.CollectionRecord, invoiceID *string, amount float64, enterpriseID uuid.UUID) (*model.CollectionRecord, error) {
+	if err := r.fresh().Create(rec).Error; err != nil {
 		return nil, err
 	}
-
-	if contractID != nil && *contractID != "" {
-		if err := tx.Model(&model.Contract{}).Where("id=? AND enterprise_id=?", *contractID, enterpriseID).
-			Update("paid_amount", gorm.Expr("paid_amount + ?", amount)).Error; err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-	}
-
-	if salesOrderID != nil && *salesOrderID != "" {
-		if err := tx.Model(&model.SalesOrder{}).Where("id=? AND enterprise_id=?", *salesOrderID, enterpriseID).
-			Update("paid_amount", gorm.Expr("paid_amount + ?", amount)).Error; err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-	}
-
-	if receivableID != "" {
-		if err := tx.Model(&model.Receivable{}).Where("id=? AND enterprise_id=?", receivableID, enterpriseID).
-			Update("paid_amount", gorm.Expr("paid_amount + ?", amount)).Error; err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		var recv model.Receivable
-		if err := tx.Where("id=? AND enterprise_id=?", receivableID, enterpriseID).First(&recv).Error; err == nil {
-			newStatus := "partial"
-			if recv.PaidAmount >= recv.Amount {
-				newStatus = "completed"
-			}
-			tx.Model(&model.Receivable{}).Where("id=? AND enterprise_id=?", receivableID, enterpriseID).Update("status", newStatus)
-		}
-	}
-
-	tx.Commit()
 	return rec, nil
 }
 
 func (r *collectionRepo) FindByID(id, enterpriseID uuid.UUID) (*model.CollectionRecord, error) {
 	var rec model.CollectionRecord
-	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&rec).Error; err != nil {
+	if err := r.fresh().Where("id=? AND enterprise_id=?", id, enterpriseID).First(&rec).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -73,7 +42,7 @@ func (r *collectionRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Collection
 func (r *collectionRepo) List(enterpriseID uuid.UUID, page, pageSize int) ([]model.CollectionRecord, int64, error) {
 	var items []model.CollectionRecord
 	var total int64
-	q := r.db.Model(&model.CollectionRecord{}).Where("enterprise_id=?", enterpriseID)
+	q := r.fresh().Model(&model.CollectionRecord{}).Where("enterprise_id=?", enterpriseID)
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

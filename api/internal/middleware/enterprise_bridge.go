@@ -29,12 +29,13 @@ func ResolveEnterpriseContext() gin.HandlerFunc {
 		c.Set(ContextKeyEnterpriseID, eid)
 		schema, _ := tenant.SchemaName(eid)
 		c.Set(ContextKeySchema, schema)
+		c.Request = c.Request.WithContext(tenant.WithSchemaContext(c.Request.Context(), schema))
 
 		if tenant.GlobalDB != nil {
 			tenantDB := tenant.UseSchema(tenant.GlobalDB, eid)
 			c.Set(ContextKeyTenantDB, tenantDB)
 			tenant.SetEnterpriseContext(tenantDB, eid)
-			defer tenant.ResetSearchPath(tenant.GlobalDB)
+			defer tenant.ReleaseConn(tenantDB)
 		}
 
 		c.Next()

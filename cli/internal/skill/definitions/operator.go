@@ -70,7 +70,7 @@ func initOperatorSkills() {
 		Name:        "operator_audit_logs",
 		Description: "查询审计日志",
 		Category:    "operator",
-		APIEndpoint: "/api/v1/audit-log-entries",
+		APIEndpoint: "/api/v1/audit-logs",
 		Method:      "GET",
 		Parameters:  []skill.ParamDef{},
 	})
@@ -114,6 +114,261 @@ func initOperatorSkills() {
 		APIEndpoint: "/api/v1/billing/revenue-summary",
 		Method:      "GET",
 		Parameters:  []skill.ParamDef{},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_subscription_create",
+		Description: "创建企业订阅",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/billing/subscriptions",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "plan_id", Type: "string", Required: true, Description: "套餐ID"},
+			{Name: "enterprise_id", Type: "string", Required: false, Description: "企业ID(运营商用)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_subscription_list",
+		Description: "查询企业订阅列表",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/enterprise-subscriptions",
+		Method:      "GET",
+		Parameters:  []skill.ParamDef{},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_subscription_upgrade",
+		Description: "升级订阅套餐",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/billing/subscriptions/{subscription_id}/upgrade",
+		Method:      "PUT",
+		Parameters: []skill.ParamDef{
+			{Name: "subscription_id", Type: "string", Required: true, Description: "订阅ID"},
+			{Name: "new_plan_id", Type: "string", Required: true, Description: "目标套餐ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_subscription_downgrade",
+		Description: "降级订阅套餐",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/billing/subscriptions/{subscription_id}/downgrade",
+		Method:      "PUT",
+		Parameters: []skill.ParamDef{
+			{Name: "subscription_id", Type: "string", Required: true, Description: "订阅ID"},
+			{Name: "new_plan_id", Type: "string", Required: true, Description: "目标套餐ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_subscription_renew",
+		Description: "续费订阅",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/billing/subscriptions/{subscription_id}/renew",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "subscription_id", Type: "string", Required: true, Description: "订阅ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_bill_get",
+		Description: "查询账单详情",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/billing/bills/{bill_id}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "bill_id", Type: "string", Required: true, Description: "账单ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "billing_bill_refund",
+		Description: "退款",
+		Category:    "billing",
+		APIEndpoint: "/api/v1/billing/bills/{bill_id}/refund",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "bill_id", Type: "string", Required: true, Description: "账单ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "template_list",
+		Description: "查询行业模板列表",
+		Category:    "template",
+		APIEndpoint: "/api/v1/templates",
+		Method:      "GET",
+		Parameters:  []skill.ParamDef{},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "template_get",
+		Description: "查询行业模板详情",
+		Category:    "template",
+		APIEndpoint: "/api/v1/templates/{id}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "模板ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "template_create",
+		Description: "创建行业模板",
+		Category:    "template",
+		APIEndpoint: "/api/v1/templates",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "name", Type: "string", Required: true, Description: "模板名称"},
+			{Name: "industry", Type: "string", Required: true, Description: "行业标识"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "template_apply",
+		Description: "应用行业模板到企业",
+		Category:    "template",
+		APIEndpoint: "/api/v1/templates/{id}/apply",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "模板ID"},
+			{Name: "enterprise_id", Type: "string", Required: true, Description: "目标企业ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "claude_md_template_list",
+		Description: "查询ClaudeMD模板列表",
+		Category:    "template",
+		APIEndpoint: "/api/v1/templates/claude-md",
+		Method:      "GET",
+		Parameters:  []skill.ParamDef{},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "claude_md_template_create",
+		Description: "创建ClaudeMD模板",
+		Category:    "template",
+		APIEndpoint: "/api/v1/templates/claude-md",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "name", Type: "string", Required: true, Description: "模板名称"},
+			{Name: "content", Type: "string", Required: true, Description: "模板内容"},
+			{Name: "is_default", Type: "boolean", Required: false, Description: "是否默认模板"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "custom_field_list",
+		Description: "查询实体自定义字段",
+		Category:    "custom_field",
+		APIEndpoint: "/api/v1/meta/entities/{entity}/fields",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "entity", Type: "string", Required: true, Description: "实体类型(customer/contract/employee等)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "custom_field_create",
+		Description: "创建自定义字段",
+		Category:    "custom_field",
+		APIEndpoint: "/api/v1/meta/fields",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "entity_type", Type: "string", Required: true, Description: "实体类型(customer/contract/employee等)"},
+			{Name: "field_name", Type: "string", Required: true, Description: "字段名"},
+			{Name: "field_type", Type: "string", Required: true, Description: "字段类型(text/number/date/select等)"},
+			{Name: "label", Type: "string", Required: false, Description: "显示标签"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "custom_field_set",
+		Description: "设置实体自定义字段值",
+		Category:    "custom_field",
+		APIEndpoint: "/api/v1/{entity}/{id}/custom-fields",
+		Method:      "PATCH",
+		Parameters: []skill.ParamDef{
+			{Name: "entity", Type: "string", Required: true, Description: "实体类型"},
+			{Name: "id", Type: "string", Required: true, Description: "实体ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "entity_relation_get",
+		Description: "查询实体关联",
+		Category:    "custom_field",
+		APIEndpoint: "/api/v1/{type}/{id}/relations/{name}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "type", Type: "string", Required: true, Description: "实体类型(contract/customer等)"},
+			{Name: "id", Type: "string", Required: true, Description: "实体ID"},
+			{Name: "name", Type: "string", Required: true, Description: "关联名称(如customer)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "skill_matrix_disable",
+		Description: "禁用企业Skill矩阵中的Skill",
+		Category:    "skill",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/skill-matrix/{skill_name}",
+		Method:      "PUT",
+		Parameters: []skill.ParamDef{
+			{Name: "enterprise_id", Type: "string", Required: true, Description: "企业ID"},
+			{Name: "skill_name", Type: "string", Required: true, Description: "Skill名称"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "notification_sms_send",
+		Description: "发送短信通知",
+		Category:    "notification",
+		APIEndpoint: "/api/v1/notifications/sms/send",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "phone", Type: "string", Required: true, Description: "手机号"},
+			{Name: "template_code", Type: "string", Required: true, Description: "短信模板代码"},
+			{Name: "params", Type: "object", Required: false, Description: "模板参数(key-value)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "notification_email_send",
+		Description: "发送邮件通知",
+		Category:    "notification",
+		APIEndpoint: "/api/v1/notifications/email/send",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "to", Type: "string", Required: true, Description: "收件人邮箱"},
+			{Name: "subject", Type: "string", Required: true, Description: "邮件主题"},
+			{Name: "body", Type: "string", Required: true, Description: "邮件正文"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "service_config_create",
+		Description: "创建服务配置",
+		Category:    "operator",
+		APIEndpoint: "/api/v1/service-config",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "key", Type: "string", Required: true, Description: "配置键"},
+			{Name: "value", Type: "string", Required: true, Description: "配置值"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "service_config_get",
+		Description: "查询服务配置",
+		Category:    "operator",
+		APIEndpoint: "/api/v1/service-config/{key}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "key", Type: "string", Required: true, Description: "配置键"},
+		},
 	})
 
 	skill.Register(skill.SkillDefinition{

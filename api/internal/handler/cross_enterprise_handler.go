@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -15,6 +16,14 @@ type CrossEnterpriseHandler struct {
 
 func NewCrossEnterpriseHandler(crossService *service.CrossEnterpriseService) *CrossEnterpriseHandler {
 	return &CrossEnterpriseHandler{crossService: crossService}
+}
+
+// svcFor returns a CrossEnterpriseService bound to the request's tenant database.
+func (h *CrossEnterpriseHandler) svcFor(c *gin.Context) *service.CrossEnterpriseService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewCrossEnterpriseService(repository.NewCrossEnterpriseRepository(db))
+	}
+	return h.crossService
 }
 
 type grantPermissionRequest struct {
@@ -41,7 +50,7 @@ func (h *CrossEnterpriseHandler) Grant(c *gin.Context) {
 		return
 	}
 
-	perm, appErr := h.crossService.Grant(req.UserID, enterpriseID, req.TargetEnterpriseID, userID, req.Permissions)
+	perm, appErr := h.svcFor(c).Grant(req.UserID, enterpriseID, req.TargetEnterpriseID, userID, req.Permissions)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -62,7 +71,7 @@ func (h *CrossEnterpriseHandler) Revoke(c *gin.Context) {
 		return
 	}
 
-	appErr := h.crossService.Revoke(enterpriseID, permissionID)
+	appErr := h.svcFor(c).Revoke(enterpriseID, permissionID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -78,7 +87,7 @@ func (h *CrossEnterpriseHandler) ListByUser(c *gin.Context) {
 		return
 	}
 
-	perms, appErr := h.crossService.ListByUser(userID)
+	perms, appErr := h.svcFor(c).ListByUser(userID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

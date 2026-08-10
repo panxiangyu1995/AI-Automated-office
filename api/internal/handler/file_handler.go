@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -15,10 +16,19 @@ import (
 
 type FileHandler struct {
 	fileService *service.FileService
+	storageDir  string
 }
 
-func NewFileHandler(fileService *service.FileService) *FileHandler {
-	return &FileHandler{fileService: fileService}
+func NewFileHandler(fileService *service.FileService, storageDir string) *FileHandler {
+	return &FileHandler{fileService: fileService, storageDir: storageDir}
+}
+
+// svcFor returns a FileService bound to the request's tenant database.
+func (h *FileHandler) svcFor(c *gin.Context) *service.FileService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewFileService(repository.NewFileMetadataRepository(db), h.storageDir)
+	}
+	return h.fileService
 }
 
 func (h *FileHandler) Upload(c *gin.Context) {
@@ -39,7 +49,7 @@ func (h *FileHandler) Upload(c *gin.Context) {
 	refType := c.PostForm("ref_type")
 	refID := c.PostForm("ref_id")
 
-	fm, appErr := h.fileService.Upload(eid, header.Filename, header.Header.Get("Content-Type"), userIDStr, refType, refID, header.Size, file)
+	fm, appErr := h.svcFor(c).Upload(eid, header.Filename, header.Header.Get("Content-Type"), userIDStr, refType, refID, header.Size, file)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -54,7 +64,7 @@ func (h *FileHandler) Preview(c *gin.Context) {
 		return
 	}
 
-	fm, appErr := h.fileService.GetByStorageKey(fileKey)
+	fm, appErr := h.svcFor(c).GetByStorageKey(fileKey)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -77,7 +87,7 @@ func (h *FileHandler) Preview(c *gin.Context) {
 
 func (h *FileHandler) View(c *gin.Context) {
 	fileKey := c.Param("file_key")
-	fm, appErr := h.fileService.GetByStorageKey(fileKey)
+	fm, appErr := h.svcFor(c).GetByStorageKey(fileKey)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -89,7 +99,7 @@ func (h *FileHandler) View(c *gin.Context) {
 
 func (h *FileHandler) Download(c *gin.Context) {
 	fileKey := c.Param("file_key")
-	fm, appErr := h.fileService.GetByStorageKey(fileKey)
+	fm, appErr := h.svcFor(c).GetByStorageKey(fileKey)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

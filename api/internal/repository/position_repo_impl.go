@@ -15,17 +15,35 @@ func NewPositionRepository(db *gorm.DB) PositionRepository {
 	return &positionRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *positionRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *positionRepo) Create(position *model.Position) error {
-	return r.db.Create(position).Error
+	return r.fresh().Create(position).Error
 }
 
 func (r *positionRepo) Update(position *model.Position) error {
-	return r.db.Save(position).Error
+	updates := map[string]interface{}{}
+	if position.Name != "" {
+		updates["name"] = position.Name
+	}
+	if position.Description != "" {
+		updates["description"] = position.Description
+	}
+	if len(updates) == 0 {
+		return nil
+	}
+	return r.fresh().Model(&model.Position{}).
+		Where("id = ? AND enterprise_id = ?", position.ID, position.EnterpriseID).
+		Updates(updates).Error
 }
 
 func (r *positionRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Position, error) {
 	var p model.Position
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&p).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&p).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -37,6 +55,6 @@ func (r *positionRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Position, er
 
 func (r *positionRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.Position, error) {
 	var positions []model.Position
-	err := r.db.Where("enterprise_id = ?", enterpriseID).Order("name ASC").Find(&positions).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).Order("name ASC").Find(&positions).Error
 	return positions, err
 }

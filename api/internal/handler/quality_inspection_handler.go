@@ -7,16 +7,34 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
-type QualityInspectionHandler struct{ svc *service.QualityInspectionService }
+type QualityInspectionHandler struct {
+	svc          *service.QualityInspectionService
+	lockProvider *rc.LockProvider
+}
 
-func NewQualityInspectionHandler(svc *service.QualityInspectionService) *QualityInspectionHandler {
-	return &QualityInspectionHandler{svc}
+func NewQualityInspectionHandler(svc *service.QualityInspectionService, lockProvider *rc.LockProvider) *QualityInspectionHandler {
+	return &QualityInspectionHandler{svc: svc, lockProvider: lockProvider}
+}
+
+// svcFor returns a QualityInspectionService bound to the request's tenant database.
+func (h *QualityInspectionHandler) svcFor(c *gin.Context) *service.QualityInspectionService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewQualityInspectionService(
+			repository.NewQualityInspectionRepository(db),
+			repository.NewInventoryRepository(db),
+			repository.NewOrderRepository(db),
+			h.lockProvider,
+		)
+	}
+	return h.svc
 }
 
 type createInspectionReq struct {
@@ -49,7 +67,7 @@ func (h *QualityInspectionHandler) Create(c *gin.Context) {
 		Notes:           req.Notes,
 	}
 	qi.EnterpriseID = entID
-	if appErr := h.svc.CreateInspection(qi); appErr != nil {
+	if appErr := h.svcFor(c).CreateInspection(qi); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -64,7 +82,7 @@ func (h *QualityInspectionHandler) Get(c *gin.Context) {
 		response.ValidationError(c, "id", "无效")
 		return
 	}
-	qi, appErr := h.svc.GetInspection(id, entID)
+	qi, appErr := h.svcFor(c).GetInspection(id, entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -100,7 +118,7 @@ func (h *QualityInspectionHandler) AddItem(c *gin.Context) {
 		Standard:     req.Standard,
 		Result:       "pending",
 	}
-	if appErr := h.svc.AddInspectionItem(item); appErr != nil {
+	if appErr := h.svcFor(c).AddInspectionItem(item); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -121,7 +139,7 @@ func (h *QualityInspectionHandler) Complete(c *gin.Context) {
 	}
 	var req completeInspectionReq
 	_ = c.ShouldBindJSON(&req)
-	qi, appErr := h.svc.CompleteInspection(id, entID, req.InspectorID)
+	qi, appErr := h.svcFor(c).CompleteInspection(id, entID, req.InspectorID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -137,7 +155,7 @@ func (h *QualityInspectionHandler) ListByPurchaseOrder(c *gin.Context) {
 	}
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	qis, total, appErr := h.svc.ListByPurchaseOrder(poID, p, ps)
+	qis, total, appErr := h.svcFor(c).ListByPurchaseOrder(poID, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

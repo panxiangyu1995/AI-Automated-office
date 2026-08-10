@@ -8,6 +8,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -19,6 +20,14 @@ type CustomerHandler struct {
 
 func NewCustomerHandler(customerService *service.CustomerService, panoramaService *service.CustomerPanoramaService) *CustomerHandler {
 	return &CustomerHandler{customerService: customerService, panoramaService: panoramaService}
+}
+
+// svcFor returns a CustomerService bound to the request's tenant database.
+func (h *CustomerHandler) svcFor(c *gin.Context) *service.CustomerService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewCustomerService(repository.NewCustomerRepository(db))
+	}
+	return h.customerService
 }
 
 type createCustomerRequest struct {
@@ -51,7 +60,7 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 		return
 	}
 
-	customer, appErr := h.customerService.Create(enterpriseID, req.Name, req.Industry, req.UnifiedSocialCreditCode, req.Address, req.Notes)
+	customer, appErr := h.svcFor(c).Create(enterpriseID, req.Name, req.Industry, req.UnifiedSocialCreditCode, req.Address, req.Notes)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -78,7 +87,7 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 		return
 	}
 
-	customer, appErr := h.customerService.Update(enterpriseID, customerID, req.Name, req.Industry, req.UnifiedSocialCreditCode, req.Address, req.Notes, req.Level)
+	customer, appErr := h.svcFor(c).Update(enterpriseID, customerID, req.Name, req.Industry, req.UnifiedSocialCreditCode, req.Address, req.Notes, req.Level)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -99,7 +108,7 @@ func (h *CustomerHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	appErr := h.customerService.Delete(enterpriseID, customerID)
+	appErr := h.svcFor(c).Delete(enterpriseID, customerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -120,7 +129,7 @@ func (h *CustomerHandler) Get(c *gin.Context) {
 		return
 	}
 
-	customer, appErr := h.customerService.Get(enterpriseID, customerID)
+	customer, appErr := h.svcFor(c).Get(enterpriseID, customerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -139,7 +148,7 @@ func (h *CustomerHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	customers, total, appErr := h.customerService.List(enterpriseID, page, pageSize)
+	customers, total, appErr := h.svcFor(c).List(enterpriseID, page, pageSize)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

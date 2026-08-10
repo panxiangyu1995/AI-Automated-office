@@ -270,16 +270,9 @@ func TestFinanceService_CreateInvoice(t *testing.T) {
 func TestFinanceService_CreateReceivable(t *testing.T) {
 	repo := newMockFinanceRepo()
 	svc := NewFinanceService(repo)
-	eid := uuid.New()
+	eid := uuid.New().String()
 
-	r := &model.Receivable{
-		CustomerID: uuid.New().String(),
-		Amount:     10000,
-		Status:     "draft",
-	}
-	r.EnterpriseID = eid
-
-	appErr := svc.CreateReceivable(r)
+	r, appErr := svc.CreateReceivable(eid, uuid.New().String(), nil, nil, 10000, nil)
 	assert.Nil(t, appErr)
 	assert.Contains(t, r.ReceivableNo, "RCV-")
 }
@@ -289,9 +282,7 @@ func TestFinanceService_GetReceivable(t *testing.T) {
 	svc := NewFinanceService(repo)
 	eid := uuid.New()
 
-	r := &model.Receivable{CustomerID: uuid.New().String(), Amount: 5000, Status: "draft"}
-	r.EnterpriseID = eid
-	svc.CreateReceivable(r)
+	r, _ := svc.CreateReceivable(eid.String(), uuid.New().String(), nil, nil, 5000, nil)
 
 	found, appErr := svc.GetReceivable(r.ID, eid)
 	assert.Nil(t, appErr)
@@ -312,16 +303,9 @@ func TestFinanceService_GetReceivable_NotFound(t *testing.T) {
 func TestFinanceService_CreatePayable(t *testing.T) {
 	repo := newMockFinanceRepo()
 	svc := NewFinanceService(repo)
-	eid := uuid.New()
+	eid := uuid.New().String()
 
-	p := &model.Payable{
-		SupplierID: uuid.New().String(),
-		Amount:     8000,
-		Status:     "draft",
-	}
-	p.EnterpriseID = eid
-
-	appErr := svc.CreatePayable(p)
+	p, appErr := svc.CreatePayable(eid, uuid.New().String(), nil, 8000, nil)
 	assert.Nil(t, appErr)
 	assert.Contains(t, p.PayableNo, "PAY-AP-")
 }
@@ -331,9 +315,7 @@ func TestFinanceService_GetPayable(t *testing.T) {
 	svc := NewFinanceService(repo)
 	eid := uuid.New()
 
-	p := &model.Payable{SupplierID: uuid.New().String(), Amount: 7000, Status: "draft"}
-	p.EnterpriseID = eid
-	svc.CreatePayable(p)
+	p, _ := svc.CreatePayable(eid.String(), uuid.New().String(), nil, 7000, nil)
 
 	found, appErr := svc.GetPayable(p.ID, eid)
 	assert.Nil(t, appErr)
@@ -355,12 +337,10 @@ func TestFinanceService_CreatePayment_DBError(t *testing.T) {
 func TestFinanceService_CreateReceivable_DBError(t *testing.T) {
 	repo := &mockFinanceRepoWithError{}
 	svc := NewFinanceService(repo)
-	eid := uuid.New()
+	eid := uuid.New().String()
 
-	r := &model.Receivable{CustomerID: uuid.New().String(), Amount: 1000, Status: "draft"}
-	r.EnterpriseID = eid
-
-	appErr := svc.CreateReceivable(r)
+	r, appErr := svc.CreateReceivable(eid, uuid.New().String(), nil, nil, 1000, nil)
+	assert.Nil(t, r)
 	assert.NotNil(t, appErr)
 	assert.Equal(t, 500, appErr.Status)
 }

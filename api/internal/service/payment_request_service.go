@@ -22,19 +22,18 @@ func (s *PaymentRequestService) genNo() string {
 	return fmt.Sprintf("PR-%s", uuid.New().String()[:8])
 }
 
-func (s *PaymentRequestService) Create(eid, customerID string, contractID, salesOrderID *string, amount float64, notes string) (*model.PaymentRequest, *apperrors.AppError) {
+func (s *PaymentRequestService) Create(eid, category string, amount float64, applicantID *string, description string) (*model.PaymentRequest, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "无效")
 	}
 	r := &model.PaymentRequest{
-		RequestNo:    s.genNo(),
-		CustomerID:   customerID,
-		ContractID:   contractID,
-		SalesOrderID: salesOrderID,
-		Amount:       amount,
-		Status:       "draft",
-		Notes:        notes,
+		RequestNo:   s.genNo(),
+		Category:    category,
+		Amount:      amount,
+		Status:      "draft",
+		ApplicantID: applicantID,
+		Description: description,
 	}
 	r.EnterpriseID = id
 	if err := s.repo.Create(r); err != nil {

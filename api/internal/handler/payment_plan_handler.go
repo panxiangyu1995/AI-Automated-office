@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -15,14 +16,23 @@ func NewPaymentPlanHandler(svc *service.PaymentPlanService) *PaymentPlanHandler 
 	return &PaymentPlanHandler{svc}
 }
 
+// svcFor returns a PaymentPlanService bound to the request's tenant database.
+func (h *PaymentPlanHandler) svcFor(c *gin.Context) *service.PaymentPlanService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewPaymentPlanService(repository.NewPaymentPlanRepository(db))
+	}
+	return h.svc
+}
+
 type ppCreateBatchReq struct {
 	Plans []service.PaymentPlanItem `json:"plans" binding:"required"`
 }
 
 type ppUpdateReq struct {
-	PlanDate *string  `json:"plan_date"`
-	Amount   *float64 `json:"amount"`
-	Status   *string  `json:"status"`
+	DueDate *string  `json:"due_date"`
+	Amount  *float64 `json:"amount"`
+	Status  *string  `json:"status"`
+	Notes   *string  `json:"notes"`
 }
 
 func (h *PaymentPlanHandler) CreateBatch(c *gin.Context) {
@@ -37,7 +47,7 @@ func (h *PaymentPlanHandler) CreateBatch(c *gin.Context) {
 		response.ValidationError(c, "body", "格式错误")
 		return
 	}
-	plans, appErr := h.svc.CreateBatch(eid, contractID, req.Plans)
+	plans, appErr := h.svcFor(c).CreateBatch(eid, contractID, req.Plans)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -46,7 +56,7 @@ func (h *PaymentPlanHandler) CreateBatch(c *gin.Context) {
 }
 
 func (h *PaymentPlanHandler) List(c *gin.Context) {
-	plans, appErr := h.svc.List(c.Param("contract_id"))
+	plans, appErr := h.svcFor(c).List(c.Param("contract_id"))
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -66,8 +76,8 @@ func (h *PaymentPlanHandler) Update(c *gin.Context) {
 		return
 	}
 	input := make(map[string]interface{})
-	if req.PlanDate != nil {
-		input["plan_date"] = *req.PlanDate
+	if req.DueDate != nil {
+		input["due_date"] = *req.DueDate
 	}
 	if req.Amount != nil {
 		input["amount"] = *req.Amount
@@ -75,7 +85,10 @@ func (h *PaymentPlanHandler) Update(c *gin.Context) {
 	if req.Status != nil {
 		input["status"] = *req.Status
 	}
-	plan, appErr := h.svc.Update(c.Param("id"), eid, input)
+	if req.Notes != nil {
+		input["notes"] = *req.Notes
+	}
+	plan, appErr := h.svcFor(c).Update(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -89,7 +102,7 @@ func (h *PaymentPlanHandler) Delete(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	if appErr := h.svc.Delete(c.Param("id"), eid); appErr != nil {
+	if appErr := h.svcFor(c).Delete(c.Param("id"), eid); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -102,7 +115,7 @@ func (h *PaymentPlanHandler) ListOverdue(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	plans, appErr := h.svc.ListOverdue(eid)
+	plans, appErr := h.svcFor(c).ListOverdue(eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

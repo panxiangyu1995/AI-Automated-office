@@ -7,6 +7,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -17,20 +18,26 @@ func NewPaymentRequestHandler(svc *service.PaymentRequestService) *PaymentReques
 	return &PaymentRequestHandler{svc}
 }
 
+// svcFor returns a PaymentRequestService bound to the request's tenant database.
+func (h *PaymentRequestHandler) svcFor(c *gin.Context) *service.PaymentRequestService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewPaymentRequestService(repository.NewPaymentRequestRepository(db))
+	}
+	return h.svc
+}
+
 type prCreateReq struct {
-	CustomerID   string  `json:"customer_id" binding:"required"`
-	ContractID   *string `json:"contract_id"`
-	SalesOrderID *string `json:"sales_order_id"`
+	Category     string  `json:"category"`
 	Amount       float64 `json:"amount" binding:"required"`
-	Notes        string  `json:"notes"`
+	ApplicantID  *string `json:"applicant_id"`
+	Description  string  `json:"description"`
 }
 
 type prUpdateReq struct {
-	CustomerID   *string  `json:"customer_id"`
-	ContractID   *string  `json:"contract_id"`
-	SalesOrderID *string  `json:"sales_order_id"`
-	Amount       *float64 `json:"amount"`
-	Notes        *string  `json:"notes"`
+	Category    *string  `json:"category"`
+	Amount      *float64 `json:"amount"`
+	ApplicantID *string  `json:"applicant_id"`
+	Description *string  `json:"description"`
 }
 
 type prApproveReq struct {
@@ -52,7 +59,7 @@ func (h *PaymentRequestHandler) Create(c *gin.Context) {
 		response.ValidationError(c, "body", "格式错误")
 		return
 	}
-	r, appErr := h.svc.Create(eid, req.CustomerID, req.ContractID, req.SalesOrderID, req.Amount, req.Notes)
+	r, appErr := h.svcFor(c).Create(eid, req.Category, req.Amount, req.ApplicantID, req.Description)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -69,7 +76,7 @@ func (h *PaymentRequestHandler) List(c *gin.Context) {
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	status := c.Query("status")
-	items, total, appErr := h.svc.List(eid, p, ps, status)
+	items, total, appErr := h.svcFor(c).List(eid, p, ps, status)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -83,7 +90,7 @@ func (h *PaymentRequestHandler) Get(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	r, appErr := h.svc.Get(c.Param("id"), eid)
+	r, appErr := h.svcFor(c).Get(c.Param("id"), eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -103,22 +110,19 @@ func (h *PaymentRequestHandler) Update(c *gin.Context) {
 		return
 	}
 	input := make(map[string]interface{})
-	if req.CustomerID != nil {
-		input["customer_id"] = *req.CustomerID
-	}
-	if req.ContractID != nil {
-		input["contract_id"] = *req.ContractID
-	}
-	if req.SalesOrderID != nil {
-		input["sales_order_id"] = *req.SalesOrderID
+	if req.Category != nil {
+		input["category"] = *req.Category
 	}
 	if req.Amount != nil {
 		input["amount"] = *req.Amount
 	}
-	if req.Notes != nil {
-		input["notes"] = *req.Notes
+	if req.ApplicantID != nil {
+		input["applicant_id"] = *req.ApplicantID
 	}
-	r, appErr := h.svc.Update(c.Param("id"), eid, input)
+	if req.Description != nil {
+		input["description"] = *req.Description
+	}
+	r, appErr := h.svcFor(c).Update(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -132,7 +136,7 @@ func (h *PaymentRequestHandler) Delete(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	if appErr := h.svc.Delete(c.Param("id"), eid); appErr != nil {
+	if appErr := h.svcFor(c).Delete(c.Param("id"), eid); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -145,7 +149,7 @@ func (h *PaymentRequestHandler) SubmitForApproval(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	if appErr := h.svc.SubmitForApproval(c.Param("id"), eid); appErr != nil {
+	if appErr := h.svcFor(c).SubmitForApproval(c.Param("id"), eid); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -159,7 +163,7 @@ func (h *PaymentRequestHandler) Approve(c *gin.Context) {
 		return
 	}
 	userID := c.GetString("user_id")
-	if appErr := h.svc.Approve(c.Param("id"), eid, userID); appErr != nil {
+	if appErr := h.svcFor(c).Approve(c.Param("id"), eid, userID); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -178,7 +182,7 @@ func (h *PaymentRequestHandler) Reject(c *gin.Context) {
 		return
 	}
 	userID := c.GetString("user_id")
-	if appErr := h.svc.Reject(c.Param("id"), eid, userID, req.Reason); appErr != nil {
+	if appErr := h.svcFor(c).Reject(c.Param("id"), eid, userID, req.Reason); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}

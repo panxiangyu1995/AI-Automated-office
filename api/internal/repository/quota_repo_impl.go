@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -17,9 +18,15 @@ func NewApiQuotaRepository(db *gorm.DB) ApiQuotaRepository {
 	return &apiQuotaRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *apiQuotaRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *apiQuotaRepo) FindByEnterprise(enterpriseID uuid.UUID) (*model.ApiQuota, error) {
 	var quota model.ApiQuota
-	err := r.db.Where("enterprise_id = ?", enterpriseID).First(&quota).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).First(&quota).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -30,29 +37,25 @@ func (r *apiQuotaRepo) FindByEnterprise(enterpriseID uuid.UUID) (*model.ApiQuota
 }
 
 func (r *apiQuotaRepo) Create(quota *model.ApiQuota) error {
-	return r.db.Create(quota).Error
+	return r.fresh().Create(quota).Error
 }
 
 func (r *apiQuotaRepo) Update(quota *model.ApiQuota) error {
-	return r.db.Save(quota).Error
+	return r.fresh().Model(&model.ApiQuota{}).
+		Where("id = ?", quota.ID).
+		Updates(map[string]interface{}{
+			"daily_limit":      quota.DailyLimit,
+			"monthly_limit":    quota.MonthlyLimit,
+			"daily_used":       quota.DailyUsed,
+			"monthly_used":     quota.MonthlyUsed,
+			"daily_reset_at":   quota.DailyResetAt,
+			"monthly_reset_at": quota.MonthlyResetAt,
+			"updated_at":       time.Now(),
+		}).Error
 }
 
 func (r *apiQuotaRepo) Upsert(quota *model.ApiQuota) error {
-	sql := `INSERT INTO api_quotas (enterprise_id, daily_limit, monthly_limit, daily_used, monthly_used, daily_reset_at, monthly_reset_at, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-		ON CONFLICT (enterprise_id) DO UPDATE SET
-			daily_used = EXCLUDED.daily_used,
-			monthly_used = EXCLUDED.monthly_used,
-			daily_reset_at = EXCLUDED.daily_reset_at,
-			monthly_reset_at = EXCLUDED.monthly_reset_at,
-			daily_limit = EXCLUDED.daily_limit,
-			monthly_limit = EXCLUDED.monthly_limit,
-			updated_at = NOW()`
-	return r.db.Exec(sql,
-		quota.EnterpriseID, quota.DailyLimit, quota.MonthlyLimit,
-		quota.DailyUsed, quota.MonthlyUsed,
-		quota.DailyResetAt, quota.MonthlyResetAt,
-	).Error
+	return r.fresh().Where("enterprise_id = ?", quota.EnterpriseID).FirstOrCreate(quota).Error
 }
 
 type featureFlagRepo struct {
@@ -63,15 +66,21 @@ func NewFeatureFlagRepository(db *gorm.DB) FeatureFlagRepository {
 	return &featureFlagRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *featureFlagRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *featureFlagRepo) FindByEnterprise(enterpriseID uuid.UUID) ([]model.FeatureFlag, error) {
 	var flags []model.FeatureFlag
-	err := r.db.Where("enterprise_id = ?", enterpriseID).Find(&flags).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).Find(&flags).Error
 	return flags, err
 }
 
 func (r *featureFlagRepo) Find(enterpriseID uuid.UUID, featureKey string) (*model.FeatureFlag, error) {
 	var flag model.FeatureFlag
-	err := r.db.Where("enterprise_id = ? AND feature_key = ?", enterpriseID, featureKey).First(&flag).Error
+	err := r.fresh().Where("enterprise_id = ? AND feature_key = ?", enterpriseID, featureKey).First(&flag).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -82,15 +91,21 @@ func (r *featureFlagRepo) Find(enterpriseID uuid.UUID, featureKey string) (*mode
 }
 
 func (r *featureFlagRepo) Create(flag *model.FeatureFlag) error {
-	return r.db.Create(flag).Error
+	return r.fresh().Create(flag).Error
 }
 
 func (r *featureFlagRepo) Update(flag *model.FeatureFlag) error {
-	return r.db.Save(flag).Error
+	return r.fresh().Model(&model.FeatureFlag{}).
+		Where("id = ?", flag.ID).
+		Updates(map[string]interface{}{
+			"enabled":    flag.Enabled,
+			"label":      flag.Label,
+			"updated_at": time.Now(),
+		}).Error
 }
 
 func (r *featureFlagRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FeatureFlag{}).Error
+	return r.fresh().Model(&model.FeatureFlag{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *featureFlagRepo) InitDefaults(enterpriseID uuid.UUID) error {
@@ -101,7 +116,7 @@ func (r *featureFlagRepo) InitDefaults(enterpriseID uuid.UUID) error {
 			Label:      fmt.Sprintf("%s module", key),
 		}
 		flag.EnterpriseID = enterpriseID
-		if err := r.db.Create(flag).Error; err != nil {
+		if err := r.fresh().Create(flag).Error; err != nil {
 			if !isDuplicateError(err) {
 				return err
 			}
@@ -114,10 +129,10 @@ func (r *featureFlagRepo) List() ([]model.FeatureFlag, int64, error) {
 	var flags []model.FeatureFlag
 	var total int64
 
-	if err := r.db.Model(&model.FeatureFlag{}).Count(&total).Error; err != nil {
+	if err := r.fresh().Model(&model.FeatureFlag{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := r.db.Find(&flags).Error; err != nil {
+	if err := r.fresh().Find(&flags).Error; err != nil {
 		return nil, 0, err
 	}
 	return flags, total, nil

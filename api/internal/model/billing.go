@@ -7,7 +7,7 @@ import (
 )
 
 type BillingRecord struct {
-	TenantModel
+	BaseModel
 	EnterpriseID   uuid.UUID  `gorm:"type:uuid;not null;index" json:"enterprise_id"`
 	SubscriptionID uuid.UUID  `gorm:"type:uuid;not null;index" json:"subscription_id"`
 	Amount         float64    `gorm:"type:numeric(15,2);not null" json:"amount"`

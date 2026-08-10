@@ -18,13 +18,19 @@ func NewAuditLogRepository(db *gorm.DB) AuditLogRepository {
 	return &auditLogRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *auditLogRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *auditLogRepo) Create(log *model.AuditLog) error {
-	return r.db.Create(log).Error
+	return r.fresh().Create(log).Error
 }
 
 func (r *auditLogRepo) FindByID(id, enterpriseID uuid.UUID) (*model.AuditLog, error) {
 	var log model.AuditLog
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&log).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&log).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -38,7 +44,7 @@ func (r *auditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, int64,
 	var logs []model.AuditLog
 	var total int64
 
-	q := r.db.Model(&model.AuditLog{})
+	q := r.fresh().Model(&model.AuditLog{})
 
 	if query.EnterpriseID != "" {
 		eid, err := uuid.Parse(query.EnterpriseID)
@@ -99,7 +105,7 @@ func (r *auditLogRepo) List(query model.AuditLogQuery) ([]model.AuditLog, int64,
 func (r *auditLogRepo) QueryOperatorActions(enterpriseID uuid.UUID, page, pageSize int, action, userID, startTime, endTime string) ([]map[string]interface{}, int64, error) {
 	var total int64
 
-	q := r.db.Model(&model.AuditLog{}).Where("enterprise_id = ?", enterpriseID)
+	q := r.fresh().Model(&model.AuditLog{}).Where("enterprise_id = ?", enterpriseID)
 
 	if action != "" {
 		q = q.Where("action = ?", action)
@@ -144,7 +150,7 @@ func (r *auditLogRepo) QueryOperatorActions(enterpriseID uuid.UUID, page, pageSi
 }
 
 func (r *auditLogRepo) DeleteOldByEnterprise(enterpriseID uuid.UUID, cutoff time.Time) (int64, error) {
-	result := r.db.Where("enterprise_id = ? AND created_at < ?", enterpriseID, cutoff).Delete(&model.AuditLog{})
+	result := r.fresh().Model(&model.AuditLog{}).Where("enterprise_id = ? AND created_at < ?", enterpriseID, cutoff).UpdateColumn("deleted_at", time.Now())
 	if result.Error != nil {
 		return 0, result.Error
 	}

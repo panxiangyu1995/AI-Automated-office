@@ -20,15 +20,21 @@ func NewPermissionRepository(db *gorm.DB) PermissionRepository {
 	return &permissionRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *permissionRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *permissionRepo) ListPermissions() ([]model.Permission, error) {
 	var perms []model.Permission
-	err := r.db.Find(&perms).Error
+	err := r.fresh().Find(&perms).Error
 	return perms, err
 }
 
 func (r *permissionRepo) FindPermissionByCode(code string) (*model.Permission, error) {
 	var perm model.Permission
-	err := r.db.Where("code = ?", code).First(&perm).Error
+	err := r.fresh().Where("code = ?", code).First(&perm).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -39,7 +45,7 @@ func (r *permissionRepo) FindPermissionByCode(code string) (*model.Permission, e
 }
 
 func (r *permissionRepo) CreatePermission(perm *model.Permission) error {
-	return r.db.Create(perm).Error
+	return r.fresh().Create(perm).Error
 }
 
 type RoleRepository interface {
@@ -60,15 +66,21 @@ func NewRoleRepository(db *gorm.DB) RoleRepository {
 	return &roleRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *roleRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *roleRepo) ListRoles(enterpriseID uuid.UUID) ([]model.Role, error) {
 	var roles []model.Role
-	err := r.db.Where("enterprise_id = ?", enterpriseID).Find(&roles).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).Find(&roles).Error
 	return roles, err
 }
 
 func (r *roleRepo) FindRoleByID(id, enterpriseID uuid.UUID) (*model.Role, error) {
 	var role model.Role
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&role).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&role).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -79,11 +91,11 @@ func (r *roleRepo) FindRoleByID(id, enterpriseID uuid.UUID) (*model.Role, error)
 }
 
 func (r *roleRepo) CreateRole(role *model.Role) error {
-	return r.db.Create(role).Error
+	return r.fresh().Create(role).Error
 }
 
 func (r *roleRepo) UpdateRole(role *model.Role) error {
-	return r.db.Model(&model.Role{}).Where("id = ? AND enterprise_id = ?", role.ID, role.EnterpriseID).Updates(map[string]interface{}{
+	return r.fresh().Model(&model.Role{}).Where("id = ? AND enterprise_id = ?", role.ID, role.EnterpriseID).Updates(map[string]interface{}{
 		"name":        role.Name,
 		"description": role.Description,
 		"updated_at":  gorm.Expr("NOW()"),
@@ -91,12 +103,12 @@ func (r *roleRepo) UpdateRole(role *model.Role) error {
 }
 
 func (r *roleRepo) DeleteRole(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Role{}).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Role{}).Error
 }
 
 func (r *roleRepo) GetRolePermissions(roleID uuid.UUID) ([]model.Permission, error) {
 	var perms []model.Permission
-	err := r.db.Table("permissions").
+	err := r.fresh().Table("permissions").
 		Joins("JOIN role_permissions ON role_permissions.permission_id = permissions.id").
 		Where("role_permissions.role_id = ?", roleID).
 		Find(&perms).Error
@@ -104,7 +116,7 @@ func (r *roleRepo) GetRolePermissions(roleID uuid.UUID) ([]model.Permission, err
 }
 
 func (r *roleRepo) SetRolePermissions(roleID uuid.UUID, permissionIDs []uuid.UUID) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	return r.fresh().Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("role_id = ?", roleID).Delete(&model.RolePermission{}).Error; err != nil {
 			return err
 		}
@@ -132,18 +144,24 @@ func NewEmployeePermissionABACRepository(db *gorm.DB) EmployeePermissionABACRepo
 	return &employeePermissionABACRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *employeePermissionABACRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *employeePermissionABACRepo) FindByEmployeeID(employeeID uuid.UUID) ([]model.EmployeePermissionABAC, error) {
 	var perms []model.EmployeePermissionABAC
-	err := r.db.Where("employee_id = ?", employeeID).Find(&perms).Error
+	err := r.fresh().Where("employee_id = ?", employeeID).Find(&perms).Error
 	return perms, err
 }
 
 func (r *employeePermissionABACRepo) Create(empPerm *model.EmployeePermissionABAC) error {
-	return r.db.Create(empPerm).Error
+	return r.fresh().Create(empPerm).Error
 }
 
 func (r *employeePermissionABACRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.EmployeePermissionABAC{}).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.EmployeePermissionABAC{}).Error
 }
 
 type CustomRuleRepository interface {
@@ -160,16 +178,22 @@ func NewCustomRuleRepository(db *gorm.DB) CustomRuleRepository {
 	return &customRuleRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *customRuleRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *customRuleRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.CustomRule, error) {
 	var rules []model.CustomRule
-	err := r.db.Where("enterprise_id = ? AND is_active = ?", enterpriseID, true).Find(&rules).Error
+	err := r.fresh().Where("enterprise_id = ? AND is_active = ?", enterpriseID, true).Find(&rules).Error
 	return rules, err
 }
 
 func (r *customRuleRepo) Create(rule *model.CustomRule) error {
-	return r.db.Create(rule).Error
+	return r.fresh().Create(rule).Error
 }
 
 func (r *customRuleRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.CustomRule{}).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.CustomRule{}).Error
 }

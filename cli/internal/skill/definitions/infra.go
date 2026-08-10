@@ -154,3 +154,74 @@ func initAuditSkills() {
 		},
 	})
 }
+
+func initAssistSkills() {
+	skill.Register(skill.SkillDefinition{
+		Name:        "assist_todo_aggregation",
+		Description: "查看待办事项聚合",
+		Category:    "assist",
+		APIEndpoint: "/api/v1/assist/todo-aggregation",
+		Method:      "GET",
+		Parameters:  []skill.ParamDef{},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "assist_process_guide",
+		Description: "查询业务流程指引",
+		Category:    "assist",
+		APIEndpoint: "/api/v1/assist/process-guide",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "process_type", Type: "string", Required: true, Description: "流程类型 (expense/contract/leave等)"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "assist_work_report",
+		Description: "生成工作报告",
+		Category:    "assist",
+		APIEndpoint: "/api/v1/assist/work-report",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "start_date", Type: "string", Required: false, Description: "开始日期 (YYYY-MM-DD)"},
+			{Name: "end_date", Type: "string", Required: false, Description: "结束日期 (YYYY-MM-DD)"},
+		},
+	})
+}
+
+func initSkillManagementSkills() {
+	skill.Register(skill.SkillDefinition{
+		Name:        "skill_list",
+		Description: "查看所有可用Skill",
+		Category:    "skill",
+		APIEndpoint: "/api/v1/skills",
+		Method:      "GET",
+		Parameters:  []skill.ParamDef{},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "skill_get",
+		Description: "查看Skill详情",
+		Category:    "skill",
+		APIEndpoint: "/api/v1/skills/{name}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "name", Type: "string", Required: true, Description: "Skill名称"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "skill_create",
+		Description: "创建自定义Skill",
+		Category:    "skill",
+		APIEndpoint: "/api/v1/skills",
+		Method:      "POST",
+		Parameters: []skill.ParamDef{
+			{Name: "name", Type: "string", Required: true, Description: "Skill名称"},
+			{Name: "description", Type: "string", Required: true, Description: "Skill描述"},
+			{Name: "api_endpoint", Type: "string", Required: true, Description: "API端点"},
+			{Name: "method", Type: "string", Required: false, Default: "POST", Description: "HTTP方法"},
+			{Name: "parameters", Type: "string", Required: false, Description: "参数定义JSON"},
+		},
+	})
+}

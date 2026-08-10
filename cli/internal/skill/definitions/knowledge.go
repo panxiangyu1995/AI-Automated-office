@@ -108,4 +108,40 @@ func initKnowledgeSkills() {
 			{Name: "page_size", Type: "int", Required: false, Default: "20", Description: "每页数量"},
 		},
 	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "kb_doc_versions",
+		Description: "查询文档版本历史",
+		Category:    "knowledge",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/kb/docs/{id}/versions",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "文档ID"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "kb_doc_version_get",
+		Description: "获取文档指定版本",
+		Category:    "knowledge",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/kb/docs/{id}/versions/{version}",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "文档ID"},
+			{Name: "version", Type: "int", Required: true, Description: "版本号"},
+		},
+	})
+
+	skill.Register(skill.SkillDefinition{
+		Name:        "kb_doc_compare_versions",
+		Description: "比较文档两个版本",
+		Category:    "knowledge",
+		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/kb/docs/{id}/compare",
+		Method:      "GET",
+		Parameters: []skill.ParamDef{
+			{Name: "id", Type: "string", Required: true, Description: "文档ID"},
+			{Name: "v1", Type: "int", Required: true, Description: "版本1"},
+			{Name: "v2", Type: "int", Required: true, Description: "版本2"},
+		},
+	})
 }

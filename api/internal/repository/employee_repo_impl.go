@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"fmt"
 	"strings"
 
@@ -18,21 +19,27 @@ func NewEmployeeRepository(db *gorm.DB) EmployeeRepository {
 	return &employeeRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *employeeRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *employeeRepo) Create(employee *model.Employee) error {
-	return r.db.Create(employee).Error
+	return r.fresh().Create(employee).Error
 }
 
 func (r *employeeRepo) Update(employee *model.Employee) error {
-	return r.db.Save(employee).Error
+	return r.fresh().Save(employee).Error
 }
 
 func (r *employeeRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Employee{}).Error
+	return r.fresh().Model(&model.Employee{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *employeeRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Employee, error) {
 	var emp model.Employee
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&emp).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&emp).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -44,7 +51,7 @@ func (r *employeeRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Employee, er
 
 func (r *employeeRepo) FindByEmail(email string, enterpriseID uuid.UUID) (*model.Employee, error) {
 	var emp model.Employee
-	err := r.db.Where("email = ? AND enterprise_id = ?", email, enterpriseID).First(&emp).Error
+	err := r.fresh().Where("email = ? AND enterprise_id = ?", email, enterpriseID).First(&emp).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -58,7 +65,7 @@ func (r *employeeRepo) List(query model.EmployeeQuery) ([]model.Employee, int64,
 	var employees []model.Employee
 	var total int64
 
-	q := r.db.Model(&model.Employee{})
+	q := r.fresh().Model(&model.Employee{})
 
 	if query.EnterpriseID != "" {
 		eid, err := uuid.Parse(query.EnterpriseID)
@@ -104,25 +111,25 @@ func (r *employeeRepo) List(query model.EmployeeQuery) ([]model.Employee, int64,
 
 func (r *employeeRepo) CountByEnterprise(enterpriseID uuid.UUID) (int64, error) {
 	var count int64
-	err := r.db.Model(&model.Employee{}).Where("enterprise_id = ?", enterpriseID).Count(&count).Error
+	err := r.fresh().Model(&model.Employee{}).Where("enterprise_id = ?", enterpriseID).Count(&count).Error
 	return count, err
 }
 
 func (r *employeeRepo) CountActiveByEnterprise(enterpriseID uuid.UUID) (int64, error) {
 	var count int64
-	err := r.db.Model(&model.Employee{}).Where("enterprise_id = ? AND status = 'active'", enterpriseID).Count(&count).Error
+	err := r.fresh().Model(&model.Employee{}).Where("enterprise_id = ? AND status = 'active'", enterpriseID).Count(&count).Error
 	return count, err
 }
 
 func (r *employeeRepo) CountByDepartment(deptID uuid.UUID) (int64, error) {
 	var count int64
-	err := r.db.Model(&model.Employee{}).Where("department_id = ? AND status = 'active'", deptID).Count(&count).Error
+	err := r.fresh().Model(&model.Employee{}).Where("department_id = ? AND status = 'active'", deptID).Count(&count).Error
 	return count, err
 }
 
 func (r *employeeRepo) FindByIDNoEnterprise(id string) (*model.Employee, error) {
 	var emp model.Employee
-	err := r.db.Where("id = ?", id).First(&emp).Error
+	err := r.fresh().Where("id = ?", id).First(&emp).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -133,7 +140,7 @@ func (r *employeeRepo) FindByIDNoEnterprise(id string) (*model.Employee, error) 
 }
 
 func (r *employeeRepo) UpdateFields(id, enterpriseID string, fields map[string]interface{}) error {
-	return r.db.Model(&model.Employee{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
+	return r.fresh().Model(&model.Employee{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Updates(fields).Error
 }
 
 func (r *employeeRepo) RestoreFields(id, enterpriseID string, fields map[string]interface{}) error {

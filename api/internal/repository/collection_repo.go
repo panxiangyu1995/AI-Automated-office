@@ -7,7 +7,7 @@ import (
 )
 
 type CollectionRepository interface {
-	CreateWithTx(r *model.CollectionRecord, contractID, salesOrderID *string, receivableID string, amount float64, enterpriseID uuid.UUID) (*model.CollectionRecord, error)
+	CreateWithTx(r *model.CollectionRecord, invoiceID *string, amount float64, enterpriseID uuid.UUID) (*model.CollectionRecord, error)
 	FindByID(id, enterpriseID uuid.UUID) (*model.CollectionRecord, error)
 	List(enterpriseID uuid.UUID, page, pageSize int) ([]model.CollectionRecord, int64, error)
 }

@@ -265,7 +265,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 	deps.ContextInjectionService = contextInjectionSvc
 
 	deps.ContractHandler = handler.NewContractHandler(contractSvc, autoArchiveSvc)
-	deps.OrderHandler = handler.NewOrderHandler(orderSvc, contractSvc, autoArchiveSvc)
+	deps.OrderHandler = handler.NewOrderHandler(orderSvc, contractSvc, autoArchiveSvc, lockProvider)
 
 	financeRepo := repository.NewFinanceRepository(db)
 	financeSvc := service.NewFinanceService(financeRepo)
@@ -325,7 +325,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 
 	fileRepo := repository.NewFileMetadataRepository(db)
 	fileService := service.NewFileService(fileRepo, cfg.Server.BackupDir)
-	deps.FileHandler = handler.NewFileHandler(fileService)
+	deps.FileHandler = handler.NewFileHandler(fileService, cfg.Server.BackupDir)
 
 	skillRepo := repository.NewSkillRepository(db)
 	skillService := service.NewSkillService(skillRepo)
@@ -373,7 +373,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 
 	aiRepo := repository.NewAIRepository(db)
 	aiSvc := service.NewAIServiceWithContext(aiRepo, contextInjectionSvc)
-	deps.AIHandler = handler.NewAIHandler(aiSvc)
+	deps.AIHandler = handler.NewAIHandler(aiSvc, contextInjectionSvc)
 
 	auditLogRepo := repository.NewAuditLogRepository(db)
 	auditLogService := service.NewAuditLogService(auditLogRepo)
@@ -411,7 +411,7 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 	deps.DeviceAuthHandler = handler.NewDeviceAuthHandler(deviceAuthService)
 
 	qiService := service.NewQualityInspectionService(qiRepo, invRepo, orderRepo, lockProvider)
-	deps.QualityInspectionHandler = handler.NewQualityInspectionHandler(qiService)
+	deps.QualityInspectionHandler = handler.NewQualityInspectionHandler(qiService, lockProvider)
 
 	billingRepo := repository.NewBillingRepository(db)
 	billingSvc := service.NewBillingService(billingRepo)

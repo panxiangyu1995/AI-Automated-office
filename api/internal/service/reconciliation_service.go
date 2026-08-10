@@ -81,11 +81,15 @@ func (s *ReconciliationService) GetReconciliation(eid, customerID, startDate, en
 	colRecords, _ := s.repo.ListCollectionsInRange(eUUID, cUUID, start, end)
 	var collections []CollectionDetail
 	for _, c := range colRecords {
+		var collectedAtStr string
+		if c.CollectedAt != nil {
+			collectedAtStr = c.CollectedAt.Format("2006-01-02")
+		}
 		collections = append(collections, CollectionDetail{
 			ID:          c.ID.String(),
 			Amount:      c.Amount,
-			Method:      c.Method,
-			CollectedAt: c.CollectedAt,
+			Method:      c.CollectionMethod,
+			CollectedAt: collectedAtStr,
 			CreatedAt:   c.CreatedAt,
 		})
 	}

@@ -21,13 +21,19 @@ func NewIndustryTemplateRepository(db *gorm.DB) IndustryTemplateRepository {
 	return &industryTemplateRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *industryTemplateRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *industryTemplateRepo) Create(tpl *model.IndustryTemplate) error {
-	return r.db.Create(tpl).Error
+	return r.fresh().Create(tpl).Error
 }
 
 func (r *industryTemplateRepo) FindByID(id uuid.UUID) (*model.IndustryTemplate, error) {
 	var tpl model.IndustryTemplate
-	err := r.db.Where("id = ?", id).First(&tpl).Error
+	err := r.fresh().Where("id = ?", id).First(&tpl).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -41,7 +47,7 @@ func (r *industryTemplateRepo) List(page, pageSize int) ([]model.IndustryTemplat
 	var tpls []model.IndustryTemplate
 	var total int64
 
-	q := r.db.Model(&model.IndustryTemplate{})
+	q := r.fresh().Model(&model.IndustryTemplate{})
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

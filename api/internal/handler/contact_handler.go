@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -15,6 +16,14 @@ type ContactHandler struct {
 
 func NewContactHandler(contactService *service.ContactService) *ContactHandler {
 	return &ContactHandler{contactService: contactService}
+}
+
+// svcFor returns a ContactService bound to the request's tenant database.
+func (h *ContactHandler) svcFor(c *gin.Context) *service.ContactService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewContactService(repository.NewContactRepository(db), repository.NewCustomerRepository(db))
+	}
+	return h.contactService
 }
 
 type createContactRequest struct {
@@ -46,7 +55,7 @@ func (h *ContactHandler) Get(c *gin.Context) {
 		response.ValidationError(c, "id", "联系人ID不能为空")
 		return
 	}
-	contact, appErr := h.contactService.GetByID(enterpriseID, contactID)
+	contact, appErr := h.svcFor(c).GetByID(enterpriseID, contactID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -72,7 +81,7 @@ func (h *ContactHandler) Create(c *gin.Context) {
 		return
 	}
 
-	contact, appErr := h.contactService.Create(enterpriseID, customerID, req.Name, req.Position, req.Phone, req.Email, req.Role, req.IsPrimary, false)
+	contact, appErr := h.svcFor(c).Create(enterpriseID, customerID, req.Name, req.Position, req.Phone, req.Email, req.Role, req.IsPrimary, false)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -98,7 +107,7 @@ func (h *ContactHandler) Update(c *gin.Context) {
 		return
 	}
 
-	contact, appErr := h.contactService.Update(enterpriseID, contactID, req.Name, req.Position, req.Phone, req.Email, req.Role, req.IsPrimary)
+	contact, appErr := h.svcFor(c).Update(enterpriseID, contactID, req.Name, req.Position, req.Phone, req.Email, req.Role, req.IsPrimary)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -117,7 +126,7 @@ func (h *ContactHandler) Delete(c *gin.Context) {
 		response.ValidationError(c, "id", "联系人ID不能为空")
 		return
 	}
-	appErr := h.contactService.Delete(enterpriseID, contactID)
+	appErr := h.svcFor(c).Delete(enterpriseID, contactID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -133,7 +142,7 @@ func (h *ContactHandler) ListByCustomer(c *gin.Context) {
 	}
 	role := c.Query("role")
 
-	contacts, appErr := h.contactService.ListByCustomer(customerID, role)
+	contacts, appErr := h.svcFor(c).ListByCustomer(customerID, role)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

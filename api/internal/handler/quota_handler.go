@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -16,6 +17,14 @@ type QuotaHandler struct {
 
 func NewQuotaHandler(quotaService *service.QuotaService) *QuotaHandler {
 	return &QuotaHandler{quotaService: quotaService}
+}
+
+// svcFor returns a QuotaService bound to the request's tenant database.
+func (h *QuotaHandler) svcFor(c *gin.Context) *service.QuotaService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewQuotaService(repository.NewApiQuotaRepository(db), repository.NewFeatureFlagRepository(db))
+	}
+	return h.quotaService
 }
 
 type updateQuotaRequest struct {
@@ -36,7 +45,7 @@ func (h *QuotaHandler) GetQuota(c *gin.Context) {
 		return
 	}
 
-	quota, appErr := h.quotaService.GetQuota(eid)
+	quota, appErr := h.svcFor(c).GetQuota(eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -64,7 +73,7 @@ func (h *QuotaHandler) UpdateQuota(c *gin.Context) {
 		return
 	}
 
-	quota, appErr := h.quotaService.UpdateQuota(eid, req.DailyLimit, req.MonthlyLimit)
+	quota, appErr := h.svcFor(c).UpdateQuota(eid, req.DailyLimit, req.MonthlyLimit)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -86,7 +95,7 @@ func (h *QuotaHandler) ListFeatures(c *gin.Context) {
 		return
 	}
 
-	flags, appErr := h.quotaService.GetFeatureFlags(eid)
+	flags, appErr := h.svcFor(c).GetFeatureFlags(eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -118,7 +127,7 @@ func (h *QuotaHandler) UpdateFeature(c *gin.Context) {
 		return
 	}
 
-	flag, appErr := h.quotaService.UpdateFeatureFlag(enterpriseID, featureKey, req.Enabled)
+	flag, appErr := h.svcFor(c).UpdateFeatureFlag(enterpriseID, featureKey, req.Enabled)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,8 +20,9 @@ func NewPaymentPlanService(repo repository.PaymentPlanRepository) *PaymentPlanSe
 }
 
 type PaymentPlanItem struct {
-	PlanDate string  `json:"plan_date"`
-	Amount   float64 `json:"amount"`
+	DueDate string  `json:"due_date"`
+	Amount  float64 `json:"amount"`
+	Notes   string  `json:"notes,omitempty"`
 }
 
 func (s *PaymentPlanService) CreateBatch(eid, contractID string, items []PaymentPlanItem) ([]model.PaymentPlan, *apperrors.AppError) {
@@ -30,16 +32,22 @@ func (s *PaymentPlanService) CreateBatch(eid, contractID string, items []Payment
 	}
 
 	var plans []model.PaymentPlan
-	for _, item := range items {
-		planDate, parseErr := time.Parse("2006-01-02", item.PlanDate)
-		if parseErr != nil {
-			return nil, apperrors.NewValidationError("plan_date", "日期格式无效，需要 YYYY-MM-DD")
+	for i, item := range items {
+		var dueDate *time.Time
+		if item.DueDate != "" {
+			t, parseErr := time.Parse("2006-01-02", item.DueDate)
+			if parseErr != nil {
+				return nil, apperrors.NewValidationError("due_date", "日期格式无效，需要 YYYY-MM-DD")
+			}
+			dueDate = &t
 		}
 		plans = append(plans, model.PaymentPlan{
 			ContractID: contractID,
-			PlanDate:   planDate,
+			PlanNo:     fmt.Sprintf("PP-%s-%03d", uuid.New().String()[:8], i+1),
+			DueDate:    dueDate,
 			Amount:     item.Amount,
 			Status:     model.PaymentPlanStatusPending,
+			Notes:      item.Notes,
 		})
 	}
 
@@ -124,7 +132,7 @@ func (s *PaymentPlanService) CheckAndRemindOverdue() {
 
 	for _, plan := range plans {
 		sevenDaysAgo := now.AddDate(0, 0, -7)
-		if plan.PlanDate.Before(sevenDaysAgo) {
+		if plan.DueDate != nil && plan.DueDate.Before(sevenDaysAgo) {
 			s.repo.UpdatePlanFields(plan.ID, plan.EnterpriseID, map[string]interface{}{
 				"status":        model.PaymentPlanStatusOverdue,
 				"reminder_sent": true,

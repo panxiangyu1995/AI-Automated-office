@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -18,6 +19,18 @@ type AssistHandler struct {
 
 func NewAssistHandler(assistService *service.AssistService) *AssistHandler {
 	return &AssistHandler{assistService: assistService}
+}
+
+// svcFor returns a AssistService bound to the request's tenant database.
+func (h *AssistHandler) svcFor(c *gin.Context) *service.AssistService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewAssistService(
+			repository.NewWorkflowRepository(db),
+			repository.NewMessageRepository(db),
+			repository.NewAuditLogRepository(db),
+		)
+	}
+	return h.assistService
 }
 
 func (h *AssistHandler) TodoAggregation(c *gin.Context) {
@@ -34,7 +47,7 @@ func (h *AssistHandler) TodoAggregation(c *gin.Context) {
 		return
 	}
 
-	todo, svcErr := h.assistService.GetTodoAggregation(entID, userID)
+	todo, svcErr := h.svcFor(c).GetTodoAggregation(entID, userID)
 	if svcErr != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail("查询待办聚合失败"))
 		return
@@ -49,7 +62,7 @@ func (h *AssistHandler) ProcessGuide(c *gin.Context) {
 		return
 	}
 
-	guide, svcErr := h.assistService.GetProcessGuide(processType)
+	guide, svcErr := h.svcFor(c).GetProcessGuide(processType)
 	if svcErr != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail("查询流程指南失败"))
 		return
@@ -90,7 +103,7 @@ func (h *AssistHandler) WorkReport(c *gin.Context) {
 	}
 	endDate = endDate.Add(24*time.Hour - time.Second)
 
-	report, svcErr := h.assistService.GenerateWorkReport(entID, userID, startDate, endDate)
+	report, svcErr := h.svcFor(c).GenerateWorkReport(entID, userID, startDate, endDate)
 	if svcErr != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail("生成工作报告失败"))
 		return

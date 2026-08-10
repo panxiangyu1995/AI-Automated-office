@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -13,6 +14,14 @@ type ReconciliationHandler struct{ svc *service.ReconciliationService }
 
 func NewReconciliationHandler(svc *service.ReconciliationService) *ReconciliationHandler {
 	return &ReconciliationHandler{svc}
+}
+
+// svcFor returns a ReconciliationService bound to the request's tenant database.
+func (h *ReconciliationHandler) svcFor(c *gin.Context) *service.ReconciliationService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewReconciliationService(repository.NewReconciliationRepository(db))
+	}
+	return h.svc
 }
 
 func (h *ReconciliationHandler) GetReconciliation(c *gin.Context) {
@@ -28,7 +37,7 @@ func (h *ReconciliationHandler) GetReconciliation(c *gin.Context) {
 		response.ValidationError(c, "query", "customer_id, start_date, end_date 均为必填")
 		return
 	}
-	report, appErr := h.svc.GetReconciliation(eid, customerID, startDate, endDate)
+	report, appErr := h.svcFor(c).GetReconciliation(eid, customerID, startDate, endDate)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

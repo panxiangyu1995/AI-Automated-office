@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
@@ -19,6 +20,16 @@ type BillingHandler struct {
 
 func NewBillingHandler(svc *service.BillingService) *BillingHandler {
 	return &BillingHandler{svc: svc}
+}
+
+// svcFor returns a BillingService bound to the request's tenant database so
+// that all repository queries execute on the dedicated tenant connection
+// with the correct search_path.
+func (h *BillingHandler) svcFor(c *gin.Context) *service.BillingService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewBillingService(repository.NewBillingRepository(db))
+	}
+	return h.svc
 }
 
 func (h *BillingHandler) CreatePlan(c *gin.Context) {
@@ -38,7 +49,7 @@ func (h *BillingHandler) CreatePlan(c *gin.Context) {
 		return
 	}
 	plan.EnterpriseID = entID
-	if appErr := h.svc.CreatePlan(&plan); appErr != nil {
+	if appErr := h.svcFor(c).CreatePlan(&plan); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -58,7 +69,7 @@ func (h *BillingHandler) ListPlans(c *gin.Context) {
 	}
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	items, total, appErr := h.svc.ListPlans(entID, p, ps)
+	items, total, appErr := h.svcFor(c).ListPlans(entID, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -90,7 +101,7 @@ func (h *BillingHandler) Subscribe(c *gin.Context) {
 		response.ValidationError(c, "plan_id", "无效")
 		return
 	}
-	sub, appErr := h.svc.Subscribe(entID, planID, req.BillingCycle)
+	sub, appErr := h.svcFor(c).Subscribe(entID, planID, req.BillingCycle)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -116,7 +127,7 @@ func (h *BillingHandler) UpgradePlan(c *gin.Context) {
 		response.ValidationError(c, "new_plan_id", "无效")
 		return
 	}
-	record, appErr := h.svc.UpgradePlan(subID, newPlanID)
+	record, appErr := h.svcFor(c).UpgradePlan(subID, newPlanID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -142,7 +153,7 @@ func (h *BillingHandler) DowngradePlan(c *gin.Context) {
 		response.ValidationError(c, "new_plan_id", "无效")
 		return
 	}
-	record, appErr := h.svc.DowngradePlan(subID, newPlanID)
+	record, appErr := h.svcFor(c).DowngradePlan(subID, newPlanID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -156,7 +167,7 @@ func (h *BillingHandler) RenewSubscription(c *gin.Context) {
 		response.ValidationError(c, "id", "无效")
 		return
 	}
-	sub, appErr := h.svc.RenewSubscription(subID)
+	sub, appErr := h.svcFor(c).RenewSubscription(subID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -177,7 +188,7 @@ func (h *BillingHandler) ListBills(c *gin.Context) {
 	}
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	items, total, appErr := h.svc.ListBills(entID, p, ps)
+	items, total, appErr := h.svcFor(c).ListBills(entID, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -191,7 +202,7 @@ func (h *BillingHandler) GetBill(c *gin.Context) {
 		response.ValidationError(c, "id", "无效")
 		return
 	}
-	record, appErr := h.svc.GetBill(billID)
+	record, appErr := h.svcFor(c).GetBill(billID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -205,7 +216,7 @@ func (h *BillingHandler) Refund(c *gin.Context) {
 		response.ValidationError(c, "id", "无效")
 		return
 	}
-	record, appErr := h.svc.Refund(billID)
+	record, appErr := h.svcFor(c).Refund(billID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -225,7 +236,7 @@ func (h *BillingHandler) GetRevenueSummary(c *gin.Context) {
 		return
 	}
 	period := c.DefaultQuery("period", "monthly")
-	summary, appErr := h.svc.GetRevenueSummary(entID, period)
+	summary, appErr := h.svcFor(c).GetRevenueSummary(entID, period)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

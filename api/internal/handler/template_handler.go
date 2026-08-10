@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
@@ -20,6 +21,14 @@ type TemplateHandler struct {
 
 func NewTemplateHandler(templateService *service.TemplateService, renderService *service.TemplateRenderService) *TemplateHandler {
 	return &TemplateHandler{templateService: templateService, renderService: renderService}
+}
+
+// svcFor returns a TemplateHandler service bound to the request's tenant database.
+func (h *TemplateHandler) svcFor(c *gin.Context) *service.TemplateService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewTemplateService(repository.NewIndustryTemplateRepository(db), repository.NewSkillRepository(db))
+	}
+	return nil
 }
 
 func (h *TemplateHandler) Create(c *gin.Context) {
@@ -47,7 +56,7 @@ func (h *TemplateHandler) Create(c *gin.Context) {
 		PresetRoles:     req.PresetRoles,
 	}
 
-	if err := h.templateService.CreateTemplate(tpl); err != nil {
+	if err := h.svcFor(c).CreateTemplate(tpl); err != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail(err.Error()))
 		return
 	}
@@ -58,7 +67,7 @@ func (h *TemplateHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	tpls, total, err := h.templateService.ListTemplates(page, pageSize)
+	tpls, total, err := h.svcFor(c).ListTemplates(page, pageSize)
 	if err != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail(err.Error()))
 		return
@@ -78,7 +87,7 @@ func (h *TemplateHandler) Get(c *gin.Context) {
 		return
 	}
 
-	tpl, err := h.templateService.GetTemplate(tid)
+	tpl, err := h.svcFor(c).GetTemplate(tid)
 	if err != nil {
 		response.Error(c, apperrors.ErrNotFound.WithDetail(err.Error()))
 		return
@@ -100,7 +109,7 @@ func (h *TemplateHandler) Apply(c *gin.Context) {
 		entID = req.EnterpriseID
 	}
 
-	if err := h.templateService.ApplyTemplate(id, entID); err != nil {
+	if err := h.svcFor(c).ApplyTemplate(id, entID); err != nil {
 		response.Error(c, apperrors.ErrInternal.WithDetail(err.Error()))
 		return
 	}
@@ -120,7 +129,7 @@ func (h *TemplateHandler) CreateFromEnterprise(c *gin.Context) {
 		entID = req.EnterpriseID
 	}
 
-	tpl, appErr := h.templateService.CreateFromEnterprise(entID)
+	tpl, appErr := h.svcFor(c).CreateFromEnterprise(entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

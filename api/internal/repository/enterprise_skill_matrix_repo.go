@@ -21,19 +21,25 @@ func NewEnterpriseSkillMatrixRepository(db *gorm.DB) EnterpriseSkillMatrixReposi
 	return &enterpriseSkillMatrixRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *enterpriseSkillMatrixRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *enterpriseSkillMatrixRepo) Upsert(matrix *model.EnterpriseSkillMatrix) error {
 	var existing model.EnterpriseSkillMatrix
-	err := r.db.Where("enterprise_id = ? AND skill_name = ?", matrix.EnterpriseID, matrix.SkillName).First(&existing).Error
+	err := r.fresh().Where("enterprise_id = ? AND skill_name = ?", matrix.EnterpriseID, matrix.SkillName).First(&existing).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return r.db.Create(matrix).Error
+			return r.fresh().Create(matrix).Error
 		}
 		return err
 	}
 	existing.IsEnabled = matrix.IsEnabled
 	existing.CustomOpeningMessage = matrix.CustomOpeningMessage
 	existing.CustomParams = matrix.CustomParams
-	return r.db.Where("id = ? AND enterprise_id = ?", existing.ID, existing.EnterpriseID).Updates(map[string]interface{}{
+	return r.fresh().Where("id = ? AND enterprise_id = ?", existing.ID, existing.EnterpriseID).Updates(map[string]interface{}{
 		"is_enabled":            existing.IsEnabled,
 		"custom_opening_message": existing.CustomOpeningMessage,
 		"custom_params":         existing.CustomParams,
@@ -42,7 +48,7 @@ func (r *enterpriseSkillMatrixRepo) Upsert(matrix *model.EnterpriseSkillMatrix) 
 
 func (r *enterpriseSkillMatrixRepo) FindByEnterpriseAndSkill(enterpriseID uuid.UUID, skillName string) (*model.EnterpriseSkillMatrix, error) {
 	var m model.EnterpriseSkillMatrix
-	err := r.db.Where("enterprise_id = ? AND skill_name = ?", enterpriseID, skillName).First(&m).Error
+	err := r.fresh().Where("enterprise_id = ? AND skill_name = ?", enterpriseID, skillName).First(&m).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -54,6 +60,6 @@ func (r *enterpriseSkillMatrixRepo) FindByEnterpriseAndSkill(enterpriseID uuid.U
 
 func (r *enterpriseSkillMatrixRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.EnterpriseSkillMatrix, error) {
 	var matrices []model.EnterpriseSkillMatrix
-	err := r.db.Where("enterprise_id = ?", enterpriseID).Find(&matrices).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).Find(&matrices).Error
 	return matrices, err
 }

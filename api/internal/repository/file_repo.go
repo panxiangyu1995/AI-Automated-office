@@ -21,13 +21,19 @@ func NewFileMetadataRepository(db *gorm.DB) FileMetadataRepository {
 	return &fileMetadataRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *fileMetadataRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *fileMetadataRepo) Create(fm *model.FileMetadata) error {
-	return r.db.Create(fm).Error
+	return r.fresh().Create(fm).Error
 }
 
 func (r *fileMetadataRepo) FindByStorageKey(key string) (*model.FileMetadata, error) {
 	var fm model.FileMetadata
-	err := r.db.Where("storage_key = ?", key).First(&fm).Error
+	err := r.fresh().Where("storage_key = ?", key).First(&fm).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -39,7 +45,7 @@ func (r *fileMetadataRepo) FindByStorageKey(key string) (*model.FileMetadata, er
 
 func (r *fileMetadataRepo) FindByID(id, enterpriseID uuid.UUID) (*model.FileMetadata, error) {
 	var fm model.FileMetadata
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&fm).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&fm).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -50,5 +56,5 @@ func (r *fileMetadataRepo) FindByID(id, enterpriseID uuid.UUID) (*model.FileMeta
 }
 
 func (r *fileMetadataRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FileMetadata{}).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.FileMetadata{}).Error
 }

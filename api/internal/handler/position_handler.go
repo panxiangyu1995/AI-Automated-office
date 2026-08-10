@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -15,6 +16,14 @@ type PositionHandler struct {
 
 func NewPositionHandler(positionService *service.PositionService) *PositionHandler {
 	return &PositionHandler{positionService: positionService}
+}
+
+// svcFor returns a PositionService bound to the request's tenant database.
+func (h *PositionHandler) svcFor(c *gin.Context) *service.PositionService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewPositionService(repository.NewPositionRepository(db))
+	}
+	return h.positionService
 }
 
 type createPositionRequest struct {
@@ -41,7 +50,7 @@ func (h *PositionHandler) Create(c *gin.Context) {
 		return
 	}
 
-	position, appErr := h.positionService.Create(enterpriseID, req.DepartmentID, req.Name, req.Description)
+	position, appErr := h.svcFor(c).Create(enterpriseID, req.DepartmentID, req.Name, req.Description)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -68,7 +77,7 @@ func (h *PositionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	position, appErr := h.positionService.Update(enterpriseID, positionID, req.Name, req.Description)
+	position, appErr := h.svcFor(c).Update(enterpriseID, positionID, req.Name, req.Description)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -84,7 +93,7 @@ func (h *PositionHandler) List(c *gin.Context) {
 		return
 	}
 
-	positions, appErr := h.positionService.List(enterpriseID)
+	positions, appErr := h.svcFor(c).List(enterpriseID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

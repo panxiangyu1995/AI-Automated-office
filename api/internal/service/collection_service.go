@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -18,26 +19,31 @@ func NewCollectionService(repo repository.CollectionRepository) *CollectionServi
 	return &CollectionService{repo}
 }
 
-func (s *CollectionService) Create(eid, customerID, receivableID string, contractID, salesOrderID *string, amount float64, method, collectedAt, notes string) (*model.CollectionRecord, *apperrors.AppError) {
+func (s *CollectionService) Create(eid string, invoiceID *string, amount float64, collectionMethod, collectedAt, notes string) (*model.CollectionRecord, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "无效")
 	}
 
+	var collectedAtTime *time.Time
+	if collectedAt != "" {
+		t, parseErr := time.Parse("2006-01-02", collectedAt)
+		if parseErr == nil {
+			collectedAtTime = &t
+		}
+	}
+
 	r := &model.CollectionRecord{
-		CustomerID:   customerID,
-		ReceivableID: receivableID,
-		ContractID:   contractID,
-		SalesOrderID: salesOrderID,
-		Amount:       amount,
-		Method:       method,
-		CollectedAt:  collectedAt,
-		Notes:        notes,
+		InvoiceID:        invoiceID,
+		Amount:           amount,
+		CollectionMethod: collectionMethod,
+		CollectedAt:      collectedAtTime,
+		Notes:            notes,
 	}
 	r.EnterpriseID = id
 	r.CollectionNo = fmt.Sprintf("COL-%s", uuid.New().String()[:8])
 
-	result, dbErr := s.repo.CreateWithTx(r, contractID, salesOrderID, receivableID, amount, id)
+	result, dbErr := s.repo.CreateWithTx(r, invoiceID, amount, id)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("创建回款记录失败")
 	}

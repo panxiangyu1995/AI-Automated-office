@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -19,6 +20,18 @@ func NewMessageHandler(msgService *service.MessageService) *MessageHandler {
 	return &MessageHandler{msgService: msgService}
 }
 
+// svcFor returns a MessageService bound to the request's tenant database.
+func (h *MessageHandler) svcFor(c *gin.Context) *service.MessageService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewMessageService(
+			repository.NewMessageRepository(db),
+			repository.NewAnnouncementRepository(db),
+			nil,
+		)
+	}
+	return h.msgService
+}
+
 func (h *MessageHandler) Get(c *gin.Context) {
 	eid := middleware.GetEnterpriseID(c)
 	if eid == "" {
@@ -30,7 +43,7 @@ func (h *MessageHandler) Get(c *gin.Context) {
 		response.ValidationError(c, "id", "消息ID不能为空")
 		return
 	}
-	msg, appErr := h.msgService.GetByID(eid, msgID)
+	msg, appErr := h.svcFor(c).GetByID(eid, msgID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -53,7 +66,7 @@ func (h *MessageHandler) Send(c *gin.Context) {
 		return
 	}
 
-	msg, appErr := h.msgService.Send(eid, userIDStr, req)
+	msg, appErr := h.svcFor(c).Send(eid, userIDStr, req)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -72,7 +85,7 @@ func (h *MessageHandler) List(c *gin.Context) {
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	msgs, total, appErr := h.msgService.List(eid, userIDStr, p, ps)
+	msgs, total, appErr := h.svcFor(c).List(eid, userIDStr, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -88,7 +101,7 @@ func (h *MessageHandler) Unread(c *gin.Context) {
 	}
 
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
-	count, appErr := h.msgService.UnreadCount(eid, userIDStr)
+	count, appErr := h.svcFor(c).UnreadCount(eid, userIDStr)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -109,7 +122,7 @@ func (h *MessageHandler) MarkRead(c *gin.Context) {
 		return
 	}
 
-	appErr := h.msgService.MarkRead(msgID, eid)
+	appErr := h.svcFor(c).MarkRead(msgID, eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -137,7 +150,7 @@ func (h *MessageHandler) BatchMarkRead(c *gin.Context) {
 		return
 	}
 
-	count, appErr := h.msgService.BatchMarkRead(ids, eid)
+	count, appErr := h.svcFor(c).BatchMarkRead(ids, eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -155,7 +168,7 @@ func (h *MessageHandler) Poll(c *gin.Context) {
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
 	timeout, _ := strconv.Atoi(c.DefaultQuery("timeout", "5"))
 
-	msgs, appErr := h.msgService.Poll(eid, userIDStr, timeout)
+	msgs, appErr := h.svcFor(c).Poll(eid, userIDStr, timeout)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -184,7 +197,7 @@ func (h *MessageHandler) CreateAnnouncement(c *gin.Context) {
 		return
 	}
 
-	ann, appErr := h.msgService.CreateAnnouncement(eid, userIDStr, req.Title, req.Content, req.Priority, req.TargetType, req.TargetID)
+	ann, appErr := h.svcFor(c).CreateAnnouncement(eid, userIDStr, req.Title, req.Content, req.Priority, req.TargetType, req.TargetID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -202,7 +215,7 @@ func (h *MessageHandler) ListAnnouncements(c *gin.Context) {
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	anns, total, appErr := h.msgService.ListAnnouncements(eid, p, ps)
+	anns, total, appErr := h.svcFor(c).ListAnnouncements(eid, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

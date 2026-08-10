@@ -15,8 +15,14 @@ func NewRepairOrderRepository(db *gorm.DB) RepairOrderRepository {
 	return &repairOrderRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *repairOrderRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *repairOrderRepo) BeginTx() interface{} {
-	return r.db.Begin()
+	return r.fresh().Begin()
 }
 
 func (r *repairOrderRepo) CommitTx(tx interface{}) {
@@ -37,7 +43,7 @@ func (r *repairOrderRepo) UpdateServiceOrderStatus(tx interface{}, serviceOrderI
 
 func (r *repairOrderRepo) FindByID(id, enterpriseID uuid.UUID) (*model.RepairOrder, error) {
 	var order model.RepairOrder
-	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&order).Error; err != nil {
+	if err := r.fresh().Where("id=? AND enterprise_id=?", id, enterpriseID).First(&order).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -48,19 +54,19 @@ func (r *repairOrderRepo) FindByID(id, enterpriseID uuid.UUID) (*model.RepairOrd
 
 func (r *repairOrderRepo) Update(id, enterpriseID uuid.UUID, input map[string]interface{}) (*model.RepairOrder, error) {
 	var order model.RepairOrder
-	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&order).Error; err != nil {
+	if err := r.fresh().Where("id=? AND enterprise_id=?", id, enterpriseID).First(&order).Error; err != nil {
 		return nil, err
 	}
-	if err := r.db.Model(&order).Updates(input).Error; err != nil {
+	if err := r.fresh().Model(&order).Updates(input).Error; err != nil {
 		return nil, err
 	}
-	r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&order)
+	r.fresh().Where("id=? AND enterprise_id=?", id, enterpriseID).First(&order)
 	return &order, nil
 }
 
 func (r *repairOrderRepo) FindByServiceOrderID(serviceOrderID string) (*model.RepairOrder, error) {
 	var order model.RepairOrder
-	if err := r.db.Where("service_order_id=?", serviceOrderID).First(&order).Error; err != nil {
+	if err := r.fresh().Where("service_order_id=?", serviceOrderID).First(&order).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

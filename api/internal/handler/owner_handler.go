@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -13,6 +14,14 @@ type OwnerHandler struct{ svc *service.OwnerService }
 
 func NewOwnerHandler(svc *service.OwnerService) *OwnerHandler {
 	return &OwnerHandler{svc}
+}
+
+// svcFor returns a OwnerService bound to the request's tenant database.
+func (h *OwnerHandler) svcFor(c *gin.Context) *service.OwnerService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewOwnerService(repository.NewOwnerRepository(db))
+	}
+	return h.svc
 }
 
 type arCreateReq struct {
@@ -36,7 +45,7 @@ func (h *OwnerHandler) Signals(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	report, appErr := h.svc.GetSignals(eid)
+	report, appErr := h.svcFor(c).GetSignals(eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -51,7 +60,7 @@ func (h *OwnerHandler) KPI(c *gin.Context) {
 		return
 	}
 	period := c.DefaultQuery("period", "month")
-	report, appErr := h.svc.GetKPI(eid, period)
+	report, appErr := h.svcFor(c).GetKPI(eid, period)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -70,7 +79,7 @@ func (h *OwnerHandler) CreateAlertRule(c *gin.Context) {
 		response.ValidationError(c, "body", "格式错误")
 		return
 	}
-	rule, appErr := h.svc.CreateAlertRule(eid, req.Dimension, req.Metric, req.Operator, req.Threshold)
+	rule, appErr := h.svcFor(c).CreateAlertRule(eid, req.Dimension, req.Metric, req.Operator, req.Threshold)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -105,7 +114,7 @@ func (h *OwnerHandler) UpdateAlertRule(c *gin.Context) {
 	if req.Enabled != nil {
 		input["enabled"] = *req.Enabled
 	}
-	rule, appErr := h.svc.UpdateAlertRule(c.Param("id"), eid, input)
+	rule, appErr := h.svcFor(c).UpdateAlertRule(c.Param("id"), eid, input)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -119,7 +128,7 @@ func (h *OwnerHandler) ListAlertRules(c *gin.Context) {
 		response.Error(c, errors.ErrTenantRequired)
 		return
 	}
-	rules, appErr := h.svc.ListAlertRules(eid)
+	rules, appErr := h.svcFor(c).ListAlertRules(eid)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

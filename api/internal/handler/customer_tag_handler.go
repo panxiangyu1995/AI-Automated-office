@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -15,6 +16,14 @@ type CustomerTagHandler struct {
 
 func NewCustomerTagHandler(tagService *service.CustomerTagService) *CustomerTagHandler {
 	return &CustomerTagHandler{tagService: tagService}
+}
+
+// svcFor returns a CustomerTagService bound to the request's tenant database.
+func (h *CustomerTagHandler) svcFor(c *gin.Context) *service.CustomerTagService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewCustomerTagService(repository.NewCustomerTagRepository(db), repository.NewCustomerRepository(db))
+	}
+	return h.tagService
 }
 
 type addTagRequest struct {
@@ -39,7 +48,7 @@ func (h *CustomerTagHandler) AddTag(c *gin.Context) {
 		return
 	}
 
-	tag, appErr := h.tagService.AddTag(enterpriseID, customerID, req.Tag)
+	tag, appErr := h.svcFor(c).AddTag(enterpriseID, customerID, req.Tag)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -65,7 +74,7 @@ func (h *CustomerTagHandler) RemoveTag(c *gin.Context) {
 		return
 	}
 
-	appErr := h.tagService.RemoveTag(enterpriseID, customerID, tag)
+	appErr := h.svcFor(c).RemoveTag(enterpriseID, customerID, tag)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -81,7 +90,7 @@ func (h *CustomerTagHandler) ListByCustomer(c *gin.Context) {
 		return
 	}
 
-	tags, appErr := h.tagService.ListByCustomer(customerID)
+	tags, appErr := h.svcFor(c).ListByCustomer(customerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -97,7 +106,7 @@ func (h *CustomerTagHandler) ListByEnterprise(c *gin.Context) {
 		return
 	}
 
-	tags, appErr := h.tagService.ListByEnterprise(enterpriseID)
+	tags, appErr := h.svcFor(c).ListByEnterprise(enterpriseID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

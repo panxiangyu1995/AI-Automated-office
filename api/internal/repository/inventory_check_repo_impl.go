@@ -15,13 +15,19 @@ func NewInventoryCheckRepository(db *gorm.DB) InventoryCheckRepository {
 	return &inventoryCheckRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *inventoryCheckRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *inventoryCheckRepo) Create(check *model.InventoryCheck) error {
-	return r.db.Create(check).Error
+	return r.fresh().Create(check).Error
 }
 
 func (r *inventoryCheckRepo) FindByID(id uuid.UUID) (*model.InventoryCheck, error) {
 	var check model.InventoryCheck
-	if err := r.db.Where("id = ?", id).First(&check).Error; err != nil {
+	if err := r.fresh().Where("id = ?", id).First(&check).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -31,13 +37,13 @@ func (r *inventoryCheckRepo) FindByID(id uuid.UUID) (*model.InventoryCheck, erro
 }
 
 func (r *inventoryCheckRepo) Update(check *model.InventoryCheck) error {
-	return r.db.Save(check).Error
+	return r.fresh().Save(check).Error
 }
 
 func (r *inventoryCheckRepo) ListByEnterprise(enterpriseID uuid.UUID, page, pageSize int) ([]model.InventoryCheck, int64, error) {
 	var checks []model.InventoryCheck
 	var total int64
-	q := r.db.Model(&model.InventoryCheck{}).Where("enterprise_id = ?", enterpriseID)
+	q := r.fresh().Model(&model.InventoryCheck{}).Where("enterprise_id = ?", enterpriseID)
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

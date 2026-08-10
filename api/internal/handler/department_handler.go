@@ -5,6 +5,7 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
@@ -15,6 +16,14 @@ type DepartmentHandler struct {
 
 func NewDepartmentHandler(deptService *service.DepartmentService) *DepartmentHandler {
 	return &DepartmentHandler{deptService: deptService}
+}
+
+// svcFor returns a DepartmentService bound to the request's tenant database.
+func (h *DepartmentHandler) svcFor(c *gin.Context) *service.DepartmentService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewDepartmentService(repository.NewDepartmentRepository(db))
+	}
+	return h.deptService
 }
 
 type createDepartmentRequest struct {
@@ -42,7 +51,7 @@ func (h *DepartmentHandler) Get(c *gin.Context) {
 		response.ValidationError(c, "id", "部门ID不能为空")
 		return
 	}
-	dept, appErr := h.deptService.GetByID(enterpriseID, departmentID)
+	dept, appErr := h.svcFor(c).GetByID(enterpriseID, departmentID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -63,7 +72,7 @@ func (h *DepartmentHandler) Create(c *gin.Context) {
 		return
 	}
 
-	dept, appErr := h.deptService.Create(enterpriseID, req.Name, req.ParentID)
+	dept, appErr := h.svcFor(c).Create(enterpriseID, req.Name, req.ParentID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -90,7 +99,7 @@ func (h *DepartmentHandler) Update(c *gin.Context) {
 		return
 	}
 
-	dept, appErr := h.deptService.Update(enterpriseID, departmentID, req.Name, req.ManagerID)
+	dept, appErr := h.svcFor(c).Update(enterpriseID, departmentID, req.Name, req.ManagerID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -111,7 +120,7 @@ func (h *DepartmentHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	appErr := h.deptService.Delete(enterpriseID, departmentID)
+	appErr := h.svcFor(c).Delete(enterpriseID, departmentID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -138,7 +147,7 @@ func (h *DepartmentHandler) SetManager(c *gin.Context) {
 		return
 	}
 
-	dept, appErr := h.deptService.SetManager(enterpriseID, departmentID, req.EmployeeID)
+	dept, appErr := h.svcFor(c).SetManager(enterpriseID, departmentID, req.EmployeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -154,7 +163,7 @@ func (h *DepartmentHandler) GetTree(c *gin.Context) {
 		return
 	}
 
-	tree, appErr := h.deptService.GetTree(enterpriseID)
+	tree, appErr := h.svcFor(c).GetTree(enterpriseID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

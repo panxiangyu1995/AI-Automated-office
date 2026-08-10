@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -10,9 +11,15 @@ import (
 type warehouseRepo struct{ db *gorm.DB }
 
 func NewWarehouseRepository(db *gorm.DB) WarehouseRepository { return &warehouseRepo{db} }
+
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *warehouseRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
 func (r *warehouseRepo) Create(w *model.Warehouse) error      { return r.db.Create(w).Error }
 func (r *warehouseRepo) Update(w *model.Warehouse) error      { return r.db.Save(w).Error }
-func (r *warehouseRepo) Delete(id, enterpriseID uuid.UUID) error { return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.Warehouse{}).Error }
+func (r *warehouseRepo) Delete(id, enterpriseID uuid.UUID) error { return r.fresh().Model(&model.Warehouse{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error }
 
 func (r *warehouseRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Warehouse, error) {
 	var w model.Warehouse

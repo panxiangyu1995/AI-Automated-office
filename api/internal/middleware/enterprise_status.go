@@ -32,28 +32,38 @@ func EnterpriseStatusMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		switch enterprise.Status {
-		case "active", "trial":
+	switch enterprise.Status {
+	case "active", "trial":
+		c.Next()
+		return
+	case "suspended":
+		path := c.Request.URL.Path
+		if isAllowedWhenSuspended(path) {
 			c.Next()
 			return
-		case "suspended":
-			path := c.Request.URL.Path
-			if isAllowedWhenSuspended(path) {
-				c.Next()
-				return
-			}
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"error":             "ENTERPRISE_SUSPENDED",
-				"error_description": "企业服务已暂停，仅可访问认证和状态相关接口",
-			})
+		}
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"error":             "ENTERPRISE_SUSPENDED",
+			"error_description": "企业服务已暂停，仅可访问认证和状态相关接口",
+		})
+		return
+	case "frozen":
+		path := c.Request.URL.Path
+		if isAllowedWhenSuspended(path) {
+			c.Next()
 			return
-		case "frozen":
+		}
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error":             "ENTERPRISE_FROZEN",
 				"error_description": "企业服务已冻结，所有API访问已禁止",
 			})
 			return
-		case "expired":
+	case "expired":
+		path := c.Request.URL.Path
+		if isAllowedWhenSuspended(path) {
+			c.Next()
+			return
+		}
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error":             "ENTERPRISE_EXPIRED",
 				"error_description": "企业订阅已过期，请续费",
@@ -84,6 +94,7 @@ func isAllowedWhenSuspended(path string) bool {
 	}
 	allowedSuffixes := []string{
 		"/status-log",
+		"/status",
 	}
 	for _, suffix := range allowedSuffixes {
 		if len(path) >= len(suffix) && path[len(path)-len(suffix):] == suffix {

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
@@ -21,6 +22,14 @@ func NewWorkflowHandler(wfService *service.WorkflowService) *WorkflowHandler {
 	return &WorkflowHandler{wfService: wfService}
 }
 
+// svcFor returns a WorkflowService bound to the request's tenant database.
+func (h *WorkflowHandler) svcFor(c *gin.Context) *service.WorkflowService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewWorkflowService(repository.NewWorkflowRepository(db))
+	}
+	return h.wfService
+}
+
 func (h *WorkflowHandler) GetInstance(c *gin.Context) {
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, err := uuid.Parse(entIDStr)
@@ -33,7 +42,7 @@ func (h *WorkflowHandler) GetInstance(c *gin.Context) {
 		response.ValidationError(c, "id", "流程实例ID无效")
 		return
 	}
-	inst, appErr := h.wfService.GetInstance(id, entID)
+	inst, appErr := h.svcFor(c).GetInstance(id, entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -68,7 +77,7 @@ func (h *WorkflowHandler) CreateDefinition(c *gin.Context) {
 	}
 	def.EnterpriseID = entID
 
-	if appErr := h.wfService.CreateDefinition(def); appErr != nil {
+	if appErr := h.svcFor(c).CreateDefinition(def); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -86,7 +95,7 @@ func (h *WorkflowHandler) ListDefinitions(c *gin.Context) {
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	defs, total, appErr := h.wfService.ListDefinitions(entID, p, ps)
+	defs, total, appErr := h.svcFor(c).ListDefinitions(entID, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -103,7 +112,7 @@ func (h *WorkflowHandler) GetDefinition(c *gin.Context) {
 		return
 	}
 
-	def, appErr := h.wfService.GetDefinition(id, entID)
+	def, appErr := h.svcFor(c).GetDefinition(id, entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -128,7 +137,7 @@ func (h *WorkflowHandler) SubmitWorkflow(c *gin.Context) {
 	defID, _ := uuid.Parse(req.DefinitionID)
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
 
-	inst, appErr := h.wfService.SubmitWorkflow(defID, entID, req.BusinessID, req.BusinessType, userIDStr)
+	inst, appErr := h.svcFor(c).SubmitWorkflow(defID, entID, req.BusinessID, req.BusinessType, userIDStr)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -144,7 +153,7 @@ func (h *WorkflowHandler) ListPending(c *gin.Context) {
 	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	insts, total, appErr := h.wfService.ListPending(entID, userIDStr, p, ps)
+	insts, total, appErr := h.svcFor(c).ListPending(entID, userIDStr, p, ps)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -168,7 +177,7 @@ func (h *WorkflowHandler) Approve(c *gin.Context) {
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, _ := uuid.Parse(entIDStr)
-	inst, appErr := h.wfService.Approve(id, entID, userIDStr, req.Comment, req.BranchName)
+	inst, appErr := h.svcFor(c).Approve(id, entID, userIDStr, req.Comment, req.BranchName)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -191,7 +200,7 @@ func (h *WorkflowHandler) Reject(c *gin.Context) {
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, _ := uuid.Parse(entIDStr)
-	inst, appErr := h.wfService.Reject(id, entID, userIDStr, req.Comment)
+	inst, appErr := h.svcFor(c).Reject(id, entID, userIDStr, req.Comment)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -206,7 +215,7 @@ func (h *WorkflowHandler) History(c *gin.Context) {
 		return
 	}
 
-	approvals, appErr := h.wfService.GetHistory(id)
+	approvals, appErr := h.svcFor(c).GetHistory(id)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -230,7 +239,7 @@ func (h *WorkflowHandler) Transfer(c *gin.Context) {
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, _ := uuid.Parse(entIDStr)
-	if appErr := h.wfService.Transfer(id, entID, userIDStr, req.ToApproverID); appErr != nil {
+	if appErr := h.svcFor(c).Transfer(id, entID, userIDStr, req.ToApproverID); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -250,7 +259,7 @@ func (h *WorkflowHandler) Return(c *gin.Context) {
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, _ := uuid.Parse(entIDStr)
-	if appErr := h.wfService.ReturnToApplicant(id, entID, userIDStr, req.Reason); appErr != nil {
+	if appErr := h.svcFor(c).ReturnToApplicant(id, entID, userIDStr, req.Reason); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -265,7 +274,7 @@ func (h *WorkflowHandler) Resubmit(c *gin.Context) {
 	}
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, _ := uuid.Parse(entIDStr)
-	if appErr := h.wfService.Resubmit(id, entID); appErr != nil {
+	if appErr := h.svcFor(c).Resubmit(id, entID); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}
@@ -280,7 +289,7 @@ func (h *WorkflowHandler) GetParallelStatus(c *gin.Context) {
 	}
 	entIDStr := c.GetString(middleware.ContextKeyEnterpriseID)
 	entID, _ := uuid.Parse(entIDStr)
-	statuses, appErr := h.wfService.GetParallelStatus(id, entID)
+	statuses, appErr := h.svcFor(c).GetParallelStatus(id, entID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

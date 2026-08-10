@@ -449,7 +449,8 @@ func TestConditionRoute_AmountLTE10000(t *testing.T) {
 	if appErr != nil {
 		t.Fatalf("condition approve error: %v", appErr)
 	}
-	if inst.CurrentStep != 3 {
-		t.Errorf("amount <= 10000 should route to end (step 3), got step %d", inst.CurrentStep)
+	// "end" 表示流程直接结束（无需人工审批 end 步骤）
+	if inst.Status != "approved" {
+		t.Errorf("amount <= 10000 should end the workflow (approved), got status %s", inst.Status)
 	}
 }

@@ -15,9 +15,15 @@ func NewServiceConfigRepository(db *gorm.DB) ServiceConfigRepository {
 	return &serviceConfigRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *serviceConfigRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *serviceConfigRepo) FindByKey(enterpriseID uuid.UUID, key string) (*model.ServiceConfig, error) {
 	var config model.ServiceConfig
-	if err := r.db.Where("enterprise_id = ? AND config_key = ?", enterpriseID, key).First(&config).Error; err != nil {
+	if err := r.fresh().Where("enterprise_id = ? AND config_key = ?", enterpriseID, key).First(&config).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -27,9 +33,9 @@ func (r *serviceConfigRepo) FindByKey(enterpriseID uuid.UUID, key string) (*mode
 }
 
 func (r *serviceConfigRepo) Create(config *model.ServiceConfig) error {
-	return r.db.Create(config).Error
+	return r.fresh().Create(config).Error
 }
 
 func (r *serviceConfigRepo) UpdateValue(id, enterpriseID uuid.UUID, value string) error {
-	return r.db.Model(&model.ServiceConfig{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("config_value", value).Error
+	return r.fresh().Model(&model.ServiceConfig{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).Update("config_value", value).Error
 }

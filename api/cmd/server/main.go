@@ -62,6 +62,7 @@ func main() {
 			logger.Warn("database init failed, running without database", zap.Error(err))
 		} else {
 			tenant.InitGlobalDB(initDB)
+			tenant.RegisterSchemaCallbacks(initDB)
 			db = initDB
 			defer database.Close()
 
@@ -78,7 +79,9 @@ func main() {
 			if sqlDB != nil {
 				defer sqlDB.Close()
 			}
-			if err := initDB.AutoMigrate(
+			if os.Getenv("AO_SKIP_MIGRATE") == "1" {
+				logger.Info("auto-migrate skipped (AO_SKIP_MIGRATE=1)")
+			} else if err := initDB.AutoMigrate(
 				&model.Group{},
 				&model.Enterprise{},
 				&model.User{},

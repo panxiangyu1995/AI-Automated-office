@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
@@ -17,6 +18,14 @@ type CustomFieldHandler struct {
 
 func NewCustomFieldHandler(cfService *service.CustomFieldService) *CustomFieldHandler {
 	return &CustomFieldHandler{cfService: cfService}
+}
+
+// svcFor returns a CustomFieldHandler service bound to the request's tenant database.
+func (h *CustomFieldHandler) svcFor(c *gin.Context) *service.CustomFieldService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewCustomFieldService(repository.NewCustomFieldRepository(db), repository.NewRelationRepository(db))
+	}
+	return nil
 }
 
 func (h *CustomFieldHandler) ListFields(c *gin.Context) {
@@ -33,7 +42,7 @@ func (h *CustomFieldHandler) ListFields(c *gin.Context) {
 		return
 	}
 
-	fields, appErr := h.cfService.ListFields(entID, entityType)
+	fields, appErr := h.svcFor(c).ListFields(entID, entityType)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -52,7 +61,7 @@ func (h *CustomFieldHandler) SetCustomFields(c *gin.Context) {
 		return
 	}
 
-	appErr := h.cfService.SetCustomFields(entIDStr, entityType, entityID, fields)
+	appErr := h.svcFor(c).SetCustomFields(entIDStr, entityType, entityID, fields)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -67,7 +76,7 @@ func (h *CustomFieldHandler) GetRelations(c *gin.Context) {
 	entityID := c.Param("id")
 	relationName := c.Param("name")
 
-	rels, appErr := h.cfService.GetRelations(entID, entityType, entityID, relationName)
+	rels, appErr := h.svcFor(c).GetRelations(entID, entityType, entityID, relationName)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -102,7 +111,7 @@ func (h *CustomFieldHandler) CreateField(c *gin.Context) {
 	}
 	field.EnterpriseID = entID
 
-	if appErr := h.cfService.CreateField(field); appErr != nil {
+	if appErr := h.svcFor(c).CreateField(field); appErr != nil {
 		response.Error(c, appErr)
 		return
 	}

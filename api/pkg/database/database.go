@@ -17,7 +17,7 @@ var DB *gorm.DB
 
 func Init(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s default_query_exec_mode=describe_exec",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 	)
 

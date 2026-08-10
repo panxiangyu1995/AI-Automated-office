@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
@@ -15,6 +16,14 @@ type EmployeePermissionHandler struct {
 
 func NewEmployeePermissionHandler(permService *service.EmployeePermissionService) *EmployeePermissionHandler {
 	return &EmployeePermissionHandler{permService: permService}
+}
+
+// svcFor returns a EmployeePermissionService bound to the request's tenant database.
+func (h *EmployeePermissionHandler) svcFor(c *gin.Context) *service.EmployeePermissionService {
+	if db := middleware.GetTenantDB(c); db != nil {
+		return service.NewEmployeePermissionService(repository.NewEmployeePermissionRepository(db))
+	}
+	return h.permService
 }
 
 type setPermissionRequest struct {
@@ -45,7 +54,7 @@ func (h *EmployeePermissionHandler) Set(c *gin.Context) {
 		return
 	}
 
-	perm, appErr := h.permService.Set(enterpriseID, employeeID, req.Permission, userID, req.Effect)
+	perm, appErr := h.svcFor(c).Set(enterpriseID, employeeID, req.Permission, userID, req.Effect)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -71,7 +80,7 @@ func (h *EmployeePermissionHandler) Revoke(c *gin.Context) {
 		return
 	}
 
-	appErr := h.permService.Revoke(enterpriseID, employeeID, permission)
+	appErr := h.svcFor(c).Revoke(enterpriseID, employeeID, permission)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return
@@ -87,7 +96,7 @@ func (h *EmployeePermissionHandler) List(c *gin.Context) {
 		return
 	}
 
-	perms, appErr := h.permService.ListByEmployee(employeeID)
+	perms, appErr := h.svcFor(c).ListByEmployee(employeeID)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -13,6 +14,12 @@ type crossEnterpriseRepo struct {
 
 func NewCrossEnterpriseRepository(db *gorm.DB) CrossEnterpriseRepository {
 	return &crossEnterpriseRepo{db: db}
+}
+
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *crossEnterpriseRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
 }
 
 func (r *crossEnterpriseRepo) publicDB() *gorm.DB {
@@ -28,7 +35,7 @@ func (r *crossEnterpriseRepo) Update(perm *model.CrossEnterprisePermission) erro
 }
 
 func (r *crossEnterpriseRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.publicDB().Where("id = ? AND source_enterprise_id = ?", id, enterpriseID).Delete(&model.CrossEnterprisePermission{}).Error
+	return r.publicDB().Model(&model.CrossEnterprisePermission{}).Where("id = ? AND source_enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *crossEnterpriseRepo) FindByID(id, enterpriseID uuid.UUID) (*model.CrossEnterprisePermission, error) {

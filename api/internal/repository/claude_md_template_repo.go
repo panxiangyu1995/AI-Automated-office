@@ -20,19 +20,25 @@ func NewClaudeMDTemplateRepository(db *gorm.DB) ClaudeMDTemplateRepository {
 	return &claudeMDTemplateRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *claudeMDTemplateRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *claudeMDTemplateRepo) Create(tpl *model.ClaudeMDTemplate) error {
-	return r.db.Create(tpl).Error
+	return r.fresh().Create(tpl).Error
 }
 
 func (r *claudeMDTemplateRepo) List() ([]model.ClaudeMDTemplate, error) {
 	var tpls []model.ClaudeMDTemplate
-	err := r.db.Find(&tpls).Error
+	err := r.fresh().Find(&tpls).Error
 	return tpls, err
 }
 
 func (r *claudeMDTemplateRepo) FindByID(id string) (*model.ClaudeMDTemplate, error) {
 	var tpl model.ClaudeMDTemplate
-	err := r.db.Where("id = ?", id).First(&tpl).Error
+	err := r.fresh().Where("id = ?", id).First(&tpl).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

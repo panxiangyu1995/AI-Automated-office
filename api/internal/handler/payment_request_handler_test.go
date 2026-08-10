@@ -77,7 +77,7 @@ func setupPRRouter(h *PaymentRequestHandler) *gin.Engine {
 func TestPaymentRequestHandler_Create_Success(t *testing.T) {
 	h := &PaymentRequestHandler{}
 	r := setupPRRouter(h)
-	body, _ := json.Marshal(prCreateReq{CustomerID: "abc", Amount: 1000})
+	body, _ := json.Marshal(prCreateReq{Category: "office", Amount: 1000})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/enterprises/ent-1/payment-requests", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -92,7 +92,7 @@ func TestPaymentRequestHandler_Create_MissingEnterprise(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	r.POST("/enterprises/:enterprise_id/payment-requests", h.Create)
-	body, _ := json.Marshal(prCreateReq{CustomerID: "abc", Amount: 1000})
+	body, _ := json.Marshal(prCreateReq{Category: "office", Amount: 1000})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/enterprises//payment-requests", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")

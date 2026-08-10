@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -103,12 +104,21 @@ func (s *FinanceService) ListInvoices(eid string, p, ps int) ([]model.Invoice, i
 	return items, total, nil
 }
 
-func (s *FinanceService) CreateReceivable(r *model.Receivable) *apperrors.AppError {
-	r.ReceivableNo = s.genNo("RCV")
-	if err := s.repo.CreateReceivable(r); err != nil {
-		return apperrors.ErrInternal.WithDetail("创建应收款失败")
+func (s *FinanceService) CreateReceivable(eid, customerID string, salesOrderID, contractID *string, amount float64, dueDate *string) (*model.Receivable, *apperrors.AppError) {
+	id, err := uuid.Parse(eid)
+	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	r := &model.Receivable{ReceivableNo: s.genNo("RCV"), CustomerID: customerID, SalesOrderID: salesOrderID, ContractID: contractID, Amount: amount, Status: "draft"}
+	r.EnterpriseID = id
+	if dueDate != nil && *dueDate != "" {
+		t, parseErr := parseTime(*dueDate)
+		if parseErr == nil {
+			r.DueDate = &t
+		}
 	}
-	return nil
+	if err := s.repo.CreateReceivable(r); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建应收款失败")
+	}
+	return r, nil
 }
 
 func (s *FinanceService) GetReceivable(id, enterpriseID uuid.UUID) (*model.Receivable, *apperrors.AppError) {
@@ -124,12 +134,21 @@ func (s *FinanceService) ListReceivables(enterpriseID uuid.UUID, page, pageSize 
 	return items, total, nil
 }
 
-func (s *FinanceService) CreatePayable(p *model.Payable) *apperrors.AppError {
-	p.PayableNo = s.genNo("PAY-AP")
-	if err := s.repo.CreatePayable(p); err != nil {
-		return apperrors.ErrInternal.WithDetail("创建应付款失败")
+func (s *FinanceService) CreatePayable(eid, supplierID string, purchaseOrderID *string, amount float64, dueDate *string) (*model.Payable, *apperrors.AppError) {
+	id, err := uuid.Parse(eid)
+	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	p := &model.Payable{PayableNo: s.genNo("PAY-AP"), SupplierID: supplierID, PurchaseOrderID: purchaseOrderID, Amount: amount, Status: "draft"}
+	p.EnterpriseID = id
+	if dueDate != nil && *dueDate != "" {
+		t, parseErr := parseTime(*dueDate)
+		if parseErr == nil {
+			p.DueDate = &t
+		}
 	}
-	return nil
+	if err := s.repo.CreatePayable(p); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建应付款失败")
+	}
+	return p, nil
 }
 
 func (s *FinanceService) GetPayable(id, enterpriseID uuid.UUID) (*model.Payable, *apperrors.AppError) {
@@ -150,4 +169,8 @@ func strPtr(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func parseTime(s string) (time.Time, error) {
+	return time.Parse("2006-01-02", s)
 }

@@ -19,6 +19,8 @@ func assertStatus(t *testing.T, w *httptest.ResponseRecorder, expected int, msg 
 	}
 }
 
+func strPtr(s string) *string { return &s }
+
 func TestPaymentRequestHandler_Validation(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -26,7 +28,7 @@ func TestPaymentRequestHandler_Validation(t *testing.T) {
 		h := &PaymentRequestHandler{}
 		r := gin.New()
 		r.POST("/enterprises/:enterprise_id/payment-requests", h.Create)
-		body, _ := json.Marshal(prCreateReq{CustomerID: "abc", Amount: 1000})
+		body, _ := json.Marshal(prCreateReq{Category: "office", Amount: 1000})
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("POST", "/enterprises//payment-requests", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
@@ -51,7 +53,7 @@ func TestPaymentRequestHandler_Validation(t *testing.T) {
 		h := &PaymentRequestHandler{}
 		r := gin.New()
 		r.POST("/enterprises/:enterprise_id/payment-requests", h.Create)
-		body, _ := json.Marshal(prCreateReq{CustomerID: "uuid-1", Amount: 1000, Notes: "test"})
+		body, _ := json.Marshal(prCreateReq{Category: "office", Amount: 1000, Description: "test"})
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("POST", "/enterprises/ent-1/payment-requests", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
@@ -75,7 +77,7 @@ func TestCollectionHandler_Validation(t *testing.T) {
 		h := &CollectionHandler{}
 		r := gin.New()
 		r.POST("/enterprises/:enterprise_id/collections", h.Create)
-		body, _ := json.Marshal(colCreateReq{CustomerID: "abc", ReceivableID: "def", Amount: 500})
+		body, _ := json.Marshal(colCreateReq{InvoiceID: strPtr("abc"), Amount: 500})
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("POST", "/enterprises//collections", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
@@ -87,10 +89,9 @@ func TestCollectionHandler_Validation(t *testing.T) {
 		r := gin.New()
 		r.POST("/enterprises/:enterprise_id/collections", h.Create)
 		body, _ := json.Marshal(colCreateReq{
-			CustomerID:   "uuid-1",
-			ReceivableID: "uuid-2",
-			Amount:       500,
-			Method:       "bank_transfer",
+			InvoiceID:        strPtr("uuid-1"),
+			Amount:           500,
+			CollectionMethod: "bank_transfer",
 		})
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("POST", "/enterprises/ent-1/collections", bytes.NewReader(body))
@@ -128,8 +129,8 @@ func TestPaymentPlanHandler_Validation(t *testing.T) {
 		r.POST("/enterprises/:enterprise_id/contracts/:contract_id/payment-plans", h.CreateBatch)
 		body, _ := json.Marshal(ppCreateBatchReq{
 			Plans: []service.PaymentPlanItem{
-				{PlanDate: "2026-08-01", Amount: 5000},
-				{PlanDate: "2026-09-01", Amount: 5000},
+				{DueDate: "2026-08-01", Amount: 5000},
+				{DueDate: "2026-09-01", Amount: 5000},
 			},
 		})
 		w := httptest.NewRecorder()

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -15,21 +16,27 @@ func NewCustomerLevelRepository(db *gorm.DB) CustomerLevelRepository {
 	return &customerLevelRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *customerLevelRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *customerLevelRepo) Create(level *model.CustomerLevel) error {
-	return r.db.Create(level).Error
+	return r.fresh().Create(level).Error
 }
 
 func (r *customerLevelRepo) Update(level *model.CustomerLevel) error {
-	return r.db.Save(level).Error
+	return r.fresh().Save(level).Error
 }
 
 func (r *customerLevelRepo) Delete(id, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).Delete(&model.CustomerLevel{}).Error
+	return r.fresh().Model(&model.CustomerLevel{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }
 
 func (r *customerLevelRepo) FindByID(id, enterpriseID uuid.UUID) (*model.CustomerLevel, error) {
 	var l model.CustomerLevel
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&l).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&l).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -41,6 +48,6 @@ func (r *customerLevelRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Custome
 
 func (r *customerLevelRepo) ListByEnterprise(enterpriseID uuid.UUID) ([]model.CustomerLevel, error) {
 	var levels []model.CustomerLevel
-	err := r.db.Where("enterprise_id = ?", enterpriseID).Order("sort_order ASC, name ASC").Find(&levels).Error
+	err := r.fresh().Where("enterprise_id = ?", enterpriseID).Order("sort_order ASC, name ASC").Find(&levels).Error
 	return levels, err
 }

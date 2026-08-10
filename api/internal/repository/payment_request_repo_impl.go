@@ -15,13 +15,19 @@ func NewPaymentRequestRepository(db *gorm.DB) PaymentRequestRepository {
 	return &paymentRequestRepo{db: db}
 }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *paymentRequestRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *paymentRequestRepo) Create(rec *model.PaymentRequest) error {
-	return r.db.Create(rec).Error
+	return r.fresh().Create(rec).Error
 }
 
 func (r *paymentRequestRepo) FindByID(id, enterpriseID uuid.UUID) (*model.PaymentRequest, error) {
 	var rec model.PaymentRequest
-	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&rec).Error; err != nil {
+	if err := r.fresh().Where("id=? AND enterprise_id=?", id, enterpriseID).First(&rec).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -33,7 +39,7 @@ func (r *paymentRequestRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Paymen
 func (r *paymentRequestRepo) List(enterpriseID uuid.UUID, status string, page, pageSize int) ([]model.PaymentRequest, int64, error) {
 	var items []model.PaymentRequest
 	var total int64
-	q := r.db.Model(&model.PaymentRequest{}).Where("enterprise_id=?", enterpriseID)
+	q := r.fresh().Model(&model.PaymentRequest{}).Where("enterprise_id=?", enterpriseID)
 	if status != "" {
 		q = q.Where("status=?", status)
 	}
@@ -53,20 +59,20 @@ func (r *paymentRequestRepo) List(enterpriseID uuid.UUID, status string, page, p
 }
 
 func (r *paymentRequestRepo) UpdateFields(id, enterpriseID uuid.UUID, fields map[string]interface{}) (*model.PaymentRequest, error) {
-	if err := r.db.Model(&model.PaymentRequest{}).Where("id=? AND enterprise_id=?", id, enterpriseID).Updates(fields).Error; err != nil {
+	if err := r.fresh().Model(&model.PaymentRequest{}).Where("id=? AND enterprise_id=?", id, enterpriseID).Updates(fields).Error; err != nil {
 		return nil, err
 	}
 	var rec model.PaymentRequest
-	if err := r.db.Where("id=? AND enterprise_id=?", id, enterpriseID).First(&rec).Error; err != nil {
+	if err := r.fresh().Where("id=? AND enterprise_id=?", id, enterpriseID).First(&rec).Error; err != nil {
 		return nil, err
 	}
 	return &rec, nil
 }
 
 func (r *paymentRequestRepo) Delete(rec *model.PaymentRequest, enterpriseID uuid.UUID) error {
-	return r.db.Where("id = ? AND enterprise_id = ?", rec.ID, enterpriseID).Delete(rec).Error
+	return r.fresh().Where("id = ? AND enterprise_id = ?", rec.ID, enterpriseID).Delete(rec).Error
 }
 
 func (r *paymentRequestRepo) Save(rec *model.PaymentRequest) error {
-	return r.db.Save(rec).Error
+	return r.fresh().Save(rec).Error
 }
