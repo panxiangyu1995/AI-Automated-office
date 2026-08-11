@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Automated-office 安装向导</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <div class="step-indicator">
+            <div class="step active" data-step="0">许可协议</div>
+            <div class="step" data-step="1">安装位置</div>
+            <div class="step" data-step="2">服务器配置</div>
+            <div class="step" data-step="3">选项</div>
+            <div class="step" data-step="4">安装</div>
+            <div class="step" data-step="5">完成</div>
+        </div>
+
+        <div class="content">
+            <div id="step-0" class="step-content active">
+                <h2>许可证协议</h2>
+                <div class="license-text">
+                    <pre>AGPL-3.0 License
+
+Copyright (c) 2026 AI-Automated-office
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.</pre>
+                </div>
+                <label class="checkbox">
+                    <input type="checkbox" id="accept-license">
+                    我接受协议条款
+                </label>
+            </div>
+
+            <div id="step-1" class="step-content">
+                <h2>安装位置</h2>
+                <p>选择安装目录（用户级，无需管理员权限）</p>
+                <div class="path-selector">
+                    <input type="text" id="install-path" readonly
+                           value="C:\Users\Public\AI-Automated-office">
+                    <button onclick="browseFolder()">浏览...</button>
+                </div>
+                <div class="component-select">
+                    <h3>选择要安装的组件</h3>
+                    <label class="checkbox">
+                        <input type="checkbox" id="install-cli" checked disabled>
+                        ao-cli（必需）
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="install-skills" checked>
+                        AI-Automated-office 技能包（推荐）
+                    </label>
+                </div>
+            </div>
+
+            <div id="step-2" class="step-content">
+                <h2>服务器配置</h2>
+                <p>输入你的企业 API 服务器地址</p>
+                <div class="server-config">
+                    <label>API 服务器地址</label>
+                    <input type="text" id="server-url" placeholder="https://office.example.com">
+                    <button onclick="testConnection()">测试连接</button>
+                    <div id="connection-status" class="status"></div>
+                </div>
+                <div id="detected-agents" class="detected-agents">
+                    <h3>检测到的 AI 助手</h3>
+                    <div id="agent-list"></div>
+                </div>
+            </div>
+
+            <div id="step-3" class="step-content">
+                <h2>安装选项</h2>
+                <label class="checkbox">
+                    <input type="checkbox" id="add-to-path" checked>
+                    添加到系统 PATH（推荐）
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="create-desktop-shortcut">
+                    创建桌面快捷方式
+                </label>
+            </div>
+
+            <div id="step-4" class="step-content">
+                <h2>正在安装...</h2>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <div id="install-status" class="install-status">准备安装...</div>
+            </div>
+
+            <div id="step-5" class="step-content">
+                <h2>安装完成</h2>
+                <div class="success-message">
+                    <div class="check-icon">✓</div>
+                    <p>AI-Automated-office 安装成功！</p>
+                </div>
+                <div class="next-steps">
+                    <h3>下一步</h3>
+                    <p>打开你的 AI 助手（如 Claude Code、OpenCode）即可开始使用。</p>
+                    <p>首次使用时，AI 助手将自动发现并使用已安装的技能。</p>
+                </div>
+                <button onclick="finish()" class="btn-primary">完成</button>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button id="btn-back" onclick="prevStep()" disabled>上一步</button>
+            <button id="btn-next" onclick="nextStep()" disabled>下一步</button>
+        </div>
+    </div>
+    <script src="install.js"></script>
+</body>
+</html>

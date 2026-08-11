@@ -1,0 +1,21 @@
+{
+  "name": "ao-setup",
+  "version": "1.0.0",
+  "outputfilename": "ao-setup",
+  "frontend:install": "echo 'no frontend install needed'",
+  "frontend:build": "echo 'no frontend build needed'",
+  "wailsjsdir": "./frontend",
+  "outputType": "desktop",
+  "author": {
+    "name": "AI-Automated-office",
+    "email": "info@ai-office.com"
+  },
+  "windows": {
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "installerIcon": "resources/icon.ico",
+      "headerIcon": "resources/icon.ico"
+    }
+  }
+}

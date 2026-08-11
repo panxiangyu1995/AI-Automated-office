@@ -40,6 +40,26 @@ builds:
     ldflags:
       - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
 
+  - id: installer
+    dir: ./cli/installer
+    main: ./main.go
+    binary: ao-setup
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
+    hooks:
+      post: |
+        mkdir -p dist/installer/{{ .Os }}_{{ .Arch }}
+        cp dist/{{ .Os }}_{{ .Arch }}/ao-setup dist/installer/{{ .Os }}_{{ .Arch }}/
+
 archives:
   - id: cli-archive
     ids:
@@ -68,6 +88,19 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+
+  - id: installer-archive
+    ids:
+      - installer
+    format: zip
+    name_template: >-
+      {{ .ProjectName }}-setup_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - dist/skills/*.skill
 
 checksum:
   name_template: checksums.txt
@@ -182,4 +215,5 @@ changelog:
 release:
   extra_files:
     - glob: ./cli/npm/*
+    - glob: ./dist/skills/*.skill
 

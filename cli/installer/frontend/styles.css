@@ -1,0 +1,346 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#app {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    width: 600px;
+    max-width: 95vw;
+    overflow: hidden;
+}
+
+.step-indicator {
+    display: flex;
+    background: #f5f5f7;
+    padding: 16px 24px;
+    gap: 8px;
+}
+
+.step {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 12px;
+    color: #86868b;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.step.active {
+    background: #0071e3;
+    color: white;
+    font-weight: 600;
+}
+
+.step.completed {
+    background: #34c759;
+    color: white;
+}
+
+.content {
+    padding: 32px 24px;
+    min-height: 360px;
+}
+
+.step-content {
+    display: none;
+}
+
+.step-content.active {
+    display: block;
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+    color: #1d1d1f;
+}
+
+p {
+    font-size: 14px;
+    color: #515154;
+    margin-bottom: 12px;
+}
+
+.license-text {
+    background: #f5f5f7;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.license-text pre {
+    font-size: 12px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 8px 0;
+}
+
+.checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.path-selector {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.path-selector input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f5f5f7;
+}
+
+.path-selector button {
+    padding: 10px 16px;
+    background: #f5f5f7;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.path-selector button:hover {
+    background: #e5e5e7;
+}
+
+.component-select {
+    margin-top: 16px;
+}
+
+.server-config {
+    margin: 16px 0;
+}
+
+.server-config label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.server-config input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.server-config input:focus {
+    outline: none;
+    border-color: #0071e3;
+}
+
+.server-config button {
+    padding: 8px 16px;
+    background: #0071e3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.server-config button:hover {
+    background: #0077ed;
+}
+
+.status {
+    font-size: 13px;
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.status.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.detected-agents {
+    margin-top: 16px;
+}
+
+#agent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.agent-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #f5f5f7;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.agent-item .check {
+    color: #34c759;
+    font-weight: bold;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e5e5e7;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 24px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #0071e3;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.install-status {
+    text-align: center;
+    font-size: 14px;
+    color: #515154;
+}
+
+.success-message {
+    text-align: center;
+    padding: 24px 0;
+}
+
+.check-icon {
+    width: 64px;
+    height: 64px;
+    background: #34c759;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+}
+
+.next-steps {
+    background: #f5f5f7;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.next-steps h3 {
+    margin-top: 0;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: #0071e3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.btn-primary:hover {
+    background: #0077ed;
+}
+
+.btn-primary:disabled {
+    background: #d2d2d7;
+    cursor: not-allowed;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #f5f5f7;
+    border-top: 1px solid #d2d2d7;
+}
+
+.navigation button {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#btn-back {
+    background: white;
+    border: 1px solid #d2d2d7;
+    color: #1d1d1f;
+}
+
+#btn-back:hover:not(:disabled) {
+    background: #f5f5f7;
+}
+
+#btn-back:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#btn-next {
+    background: #0071e3;
+    border: none;
+    color: white;
+}
+
+#btn-next:hover:not(:disabled) {
+    background: #0077ed;
+}
+
+#btn-next:disabled {
+    background: #d2d2d7;
+    cursor: not-allowed;
+}

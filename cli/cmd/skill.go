@@ -3,8 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -60,6 +62,31 @@ func newSkillCmd() *cobra.Command {
 	execCmd.Flags().String("file", "", "上传文件路径（用于附件上传类 Skill）")
 
 	cmd.AddCommand(execCmd)
+
+	linkCmd := &cobra.Command{
+		Use:   "link",
+		Short: "将 ~/.ao-cli/skills 中的技能部署到已检测的 AI 助手",
+		RunE:  runSkillLink,
+	}
+	linkCmd.PersistentPreRunE = nil
+	cmd.AddCommand(linkCmd)
+
+	unlinkCmd := &cobra.Command{
+		Use:   "unlink [skill-name]",
+		Short: "从 AI 助手目录移除已部署的技能",
+		Args:  cobra.ExactArgs(1),
+		RunE:  runSkillUnlink,
+	}
+	unlinkCmd.PersistentPreRunE = nil
+	cmd.AddCommand(unlinkCmd)
+
+	updateCmd := &cobra.Command{
+		Use:   "update",
+		Short: "从服务器更新技能包",
+		RunE:  runSkillUpdate,
+	}
+	updateCmd.PersistentPreRunE = nil
+	cmd.AddCommand(updateCmd)
 
 	return cmd
 }
@@ -323,4 +350,152 @@ func buildQueryString(params map[string]interface{}) string {
 		vals.Set(k, fmt.Sprintf("%v", v))
 	}
 	return vals.Encode()
+}
+
+func runSkillLink(cmd *cobra.Command, args []string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("cannot determine home directory: %w", err)
+	}
+
+	aoCliSkillsDir := filepath.Join(home, ".ao-cli", "skills")
+	if _, err := os.Stat(aoCliSkillsDir); os.IsNotExist(err) {
+		return fmt.Errorf("no skills found at %s — run installation first", aoCliSkillsDir)
+	}
+
+	entries, err := os.ReadDir(aoCliSkillsDir)
+	if err != nil {
+		return fmt.Errorf("failed to read skills directory: %w", err)
+	}
+
+	var skillNames []string
+	for _, e := range entries {
+		if !e.IsDir() && filepath.Ext(e.Name()) == ".skill" {
+			skillNames = append(skillNames, e.Name())
+		}
+	}
+
+	if len(skillNames) == 0 {
+		fmt.Println("未找到任何 .skill 文件在 ~/.ao-cli/skills/")
+		return nil
+	}
+
+	deployed := 0
+	for _, skillName := range skillNames {
+		src := filepath.Join(aoCliSkillsDir, skillName)
+		if err := deploySkillToAgents(src, home); err != nil {
+			fmt.Fprintf(os.Stderr, "  ! %s: %v\n", skillName, err)
+		} else {
+			fmt.Printf("  ✓ %s deployed to %d agent(s)\n", skillName, countAgents(home))
+			deployed++
+		}
+	}
+
+	if deployed > 0 {
+		fmt.Printf("\n成功部署 %d 个技能到 AI 助手。\n", deployed)
+		fmt.Println("重新启动 AI 助手即可使用。")
+	} else {
+		fmt.Println("\n未部署任何技能（可能已存在或无权限）")
+	}
+
+	return nil
+}
+
+func runSkillUnlink(cmd *cobra.Command, args []string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("cannot determine home directory: %w", err)
+	}
+
+	skillName := args[0]
+	removed := 0
+
+	for _, agent := range knownAgents() {
+		targetDir := filepath.Join(home, agent.Dir, agent.Skills)
+		targetSkill := filepath.Join(targetDir, skillName)
+		if _, err := os.Stat(targetSkill); err == nil {
+			if err := os.Remove(targetSkill); err != nil {
+				fmt.Fprintf(os.Stderr, "  ! %s/%s: %v\n", agent.Name, skillName, err)
+			} else {
+				fmt.Printf("  ✓ 从 %s 移除 %s\n", agent.Name, skillName)
+				removed++
+			}
+		}
+	}
+
+	if removed > 0 {
+		fmt.Printf("\n成功移除 %d 处技能。\n", removed)
+	} else {
+		fmt.Println("\n未找到该技能（可能未部署）")
+	}
+
+	return nil
+}
+
+func runSkillUpdate(cmd *cobra.Command, args []string) error {
+	fmt.Println("从服务器更新技能包...")
+	fmt.Println("功能开发中（待 Phase 4 实现）")
+	return nil
+}
+
+type agentInfo struct {
+	Name   string
+	Dir    string
+	Skills string
+}
+
+var knownAgentsList = []agentInfo{
+	{Name: "OpenCode", Dir: ".config/opencode", Skills: "skills"},
+	{Name: "Claude Code", Dir: ".claude", Skills: "skills"},
+	{Name: "Codex", Dir: ".codex", Skills: "skills"},
+}
+
+func knownAgents() []agentInfo {
+	var result []agentInfo
+	home, _ := os.UserHomeDir()
+	for _, a := range knownAgentsList {
+		skillsPath := filepath.Join(home, a.Dir, a.Skills)
+		if _, err := os.Stat(skillsPath); err == nil {
+			result = append(result, a)
+		}
+	}
+	return result
+}
+
+func countAgents(home string) int {
+	count := 0
+	for _, a := range knownAgentsList {
+		skillsPath := filepath.Join(home, a.Dir, a.Skills)
+		if _, err := os.Stat(skillsPath); err == nil {
+			count++
+		}
+	}
+	return count
+}
+
+func deploySkillToAgents(skillPath, home string) error {
+	deployed := 0
+	for _, agent := range knownAgentsList {
+		targetDir := filepath.Join(home, agent.Dir, agent.Skills)
+		if err := os.MkdirAll(targetDir, 0755); err != nil {
+			continue
+		}
+		srcFile, err := os.Open(skillPath)
+		if err != nil {
+			continue
+		}
+		dstFile, err := os.Create(filepath.Join(targetDir, filepath.Base(skillPath)))
+		if err != nil {
+			srcFile.Close()
+			continue
+		}
+		io.Copy(dstFile, srcFile)
+		srcFile.Close()
+		dstFile.Close()
+		deployed++
+	}
+	if deployed == 0 {
+		return fmt.Errorf("no writable agent directories found")
+	}
+	return nil
 }

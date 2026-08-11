@@ -4,7 +4,7 @@ CLI_INSTALL_PATH = $(GOPATH)/bin/$(CLI_BIN)
 VERSION ?= dev
 BUILD_TIME = $(shell date -u +%Y%m%d%H%M%S)
 
-.PHONY: cli api dev test lint clean release release-snapshot help
+.PHONY: cli api dev test lint clean release release-snapshot help package-skills installer installer-build ao-pack
 
 help:
 	@echo "AI-Automated-office 开发命令"
@@ -15,6 +15,8 @@ help:
 	@echo "  make test      运行所有测试"
 	@echo "  make lint      代码检查（vet + build）"
 	@echo "  make clean     清理编译产物"
+	@echo "  make package-skills    打包 Skills 为 .skill 文件"
+	@echo "  make installer         构建 ao-setup 安装程序"
 	@echo "  make release-snapshot  发布预演（不推送）"
 	@echo "  make release   正式发布（Homebrew/Scoop/npm）"
 
@@ -40,6 +42,26 @@ clean:
 	rm -f api/bin/api
 	rm -f cli/bin/$(CLI_BIN)
 	rm -f $(CLI_INSTALL_PATH)
+	rm -rf dist/skills
+	rm -rf dist/installer
+
+package-skills:
+	@mkdir -p dist/skills
+	@SKILL_CREATOR=.opencode/skills/skill-creator && \
+	PYTHONPATH=$$SKILL_CREATOR python3 $$SKILL_CREATOR/scripts/package_skill.py \
+		.opencode/skills/ai-office-api dist/skills/ && \
+	echo "Packaged: ai-office-api.skill"
+
+installer-build:
+	cd cli/installer && go build -ldflags "-X main.version=$(VERSION)" -o ../../dist/installer/{{.Os}}_{{.Arch}}/ao-setup .
+
+installer: package-skills
+	@mkdir -p dist/installer
+	@echo "Building installer for $(VERSION)..."
+	cd cli/installer && go build -ldflags "-X main.version=$(VERSION) -X main.buildTime=$(BUILD_TIME)" -o ../../dist/installer/ao-setup .
+
+ao-pack:
+	@echo "ao-pack tool: 企业定制安装包生成（Phase 4）"
 
 release-snapshot:
 	goreleaser release --snapshot --clean
