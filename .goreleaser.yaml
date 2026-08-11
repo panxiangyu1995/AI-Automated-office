@@ -105,60 +105,7 @@ archives:
 checksum:
   name_template: checksums.txt
 
-dockers:
-  - id: api-amd64
-    ids:
-      - api
-    use: buildx
-    goos: linux
-    goarch: amd64
-    build_flag_templates:
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.description=Agent-driven enterprise SaaS API
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.source={{ .GitURL }}
-      - --label=org.opencontainers.image.revision={{ .Commit }}
-      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
-    dockerfile: deploy/docker-compose/Dockerfile.api
-    extra_files:
-      - api/config/config.yaml
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
-      - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
 
-  - id: cli-amd64
-    ids:
-      - cli
-    use: buildx
-    goos: linux
-    goarch: amd64
-    build_flag_templates:
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.title=ao-cli
-      - --label=org.opencontainers.image.description=CLI tool for AI-Automated-office
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.source={{ .GitURL }}
-      - --label=org.opencontainers.image.revision={{ .Commit }}
-      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
-    dockerfile: deploy/docker-compose/Dockerfile.cli
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
-      - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
-
-docker_manifests:
-  - name_template: "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}"
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
-  - name_template: "ghcr.io/panxiangyu1995/ao-api:latest"
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
-  - name_template: "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}"
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
-  - name_template: "ghcr.io/panxiangyu1995/ao-cli:latest"
-    image_templates:
-      - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
 
 brews:
   - name: ao-cli

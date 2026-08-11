@@ -1,6 +1,8 @@
 api/bin/
 api/logs/
 cli/bin/
+cli/installer/dist/
+dist/
 *.exe
 *.test
 *.out
