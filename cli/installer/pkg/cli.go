@@ -17,19 +17,35 @@ var (
 )
 
 func GetAOCLIDir() string {
-	return filepath.Join(GetUserHome(), AOCLIDirName)
+	home := GetUserHome()
+	if home == "" {
+		return ""
+	}
+	return filepath.Join(home, AOCLIDirName)
 }
 
 func GetAOCLIBinDir() string {
-	return filepath.Join(GetAOCLIDir(), BinDirName)
+	dir := GetAOCLIDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, BinDirName)
 }
 
 func GetAOCLISkillsDir() string {
-	return filepath.Join(GetAOCLIDir(), SkillsDirName)
+	dir := GetAOCLIDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, SkillsDirName)
 }
 
 func GetAOCLIConfigDir() string {
-	return filepath.Join(GetAOCLIDir(), ConfigDirName)
+	dir := GetAOCLIDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, ConfigDirName)
 }
 
 func GetAOCLIExeName() string {
@@ -40,7 +56,11 @@ func GetAOCLIExeName() string {
 }
 
 func GetAOCLIExePath() string {
-	return filepath.Join(GetAOCLIBinDir(), GetAOCLIExeName())
+	dir := GetAOCLIBinDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, GetAOCLIExeName())
 }
 
 func copyFile(src, dst string) error {

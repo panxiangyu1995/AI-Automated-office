@@ -404,6 +404,9 @@ func runSkillUnlink(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("cannot determine home directory: %w", err)
 	}
 
+	if len(args) < 1 {
+		return fmt.Errorf("skill-name 参数必填")
+	}
 	skillName := args[0]
 	removed := 0
 

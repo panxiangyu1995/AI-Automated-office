@@ -69,13 +69,11 @@ func extractSkillTo(archivePath, targetDir string) error {
 		if f.FileInfo().IsDir() {
 			continue
 		}
-		// 防 Zip Slip：拒绝解压到目标目录之外的路径
-		name := filepath.Clean(f.Name)
-		if name == ".." || strings.HasPrefix(name, ".."+string(filepath.Separator)) {
-			return fmt.Errorf("拒绝不安全的压缩包路径: %s", f.Name)
+		if err := validateSafePath(f.Name); err != nil {
+			return err
 		}
 
-		outPath := filepath.Join(targetDir, name)
+		outPath := filepath.Join(targetDir, filepath.Clean(f.Name))
 		if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
 			return err
 		}
@@ -102,6 +100,36 @@ func extractSkillTo(archivePath, targetDir string) error {
 		}
 		if rcErr != nil && !errors.Is(rcErr, io.EOF) {
 			return rcErr
+		}
+	}
+	return nil
+}
+
+// validateSafePath 防 Zip Slip：
+//   - 拒绝绝对路径
+//   - 拒绝任何 .. 上跳（统一处理 / 与 \，避免跨平台绕过）
+func validateSafePath(name string) error {
+	// 统一分隔符：filepath.ToSlash 在非 Windows 平台不处理反斜杠，需手动替换
+	cleaned := strings.ReplaceAll(name, "\\", "/")
+
+	// 绝对路径（POSIX 或 Windows 盘符）
+	if strings.HasPrefix(cleaned, "/") || (len(cleaned) >= 2 && cleaned[1] == ':') {
+		return fmt.Errorf("拒绝不安全的压缩包绝对路径: %s", name)
+	}
+
+	// 逐段检查 .. 上跳
+	depth := 0
+	for _, part := range strings.Split(cleaned, "/") {
+		switch part {
+		case "..":
+			depth--
+			if depth < 0 {
+				return fmt.Errorf("拒绝不安全的压缩包路径: %s", name)
+			}
+		case "", ".":
+			// 忽略空段与当前目录
+		default:
+			depth++
 		}
 	}
 	return nil

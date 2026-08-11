@@ -7,13 +7,8 @@ import (
 	"path/filepath"
 )
 
-type OpenCodeConfig struct {
-	Skills struct {
-		Paths []string `json:"paths,omitempty"`
-		URLs  []string `json:"urls,omitempty"`
-	} `json:"skills,omitempty"`
-}
-
+// WriteOpenCodeConfig 将 ao-cli skills 路径注册到 opencode.json，
+// 保留配置中所有既有字段。
 func WriteOpenCodeConfig(skillsPath string) error {
 	configPath := GetOpenCodeConfigPath()
 	if configPath == "" {
@@ -24,23 +19,35 @@ func WriteOpenCodeConfig(skillsPath string) error {
 		return fmt.Errorf("failed to create config dir: %w", err)
 	}
 
-	var cfg OpenCodeConfig
+	// 使用 map 保留未知字段，避免结构体 Unmarshal 丢弃
+	var cfg map[string]interface{}
 	if data, err := os.ReadFile(configPath); err == nil {
 		if err := json.Unmarshal(data, &cfg); err != nil {
 			return fmt.Errorf("opencode.json 解析失败，拒绝覆盖: %w", err)
 		}
 	}
+	if cfg == nil {
+		cfg = map[string]interface{}{}
+	}
+
+	skills, _ := cfg["skills"].(map[string]interface{})
+	if skills == nil {
+		skills = map[string]interface{}{}
+	}
+	paths, _ := skills["paths"].([]interface{})
 
 	hasPath := false
-	for _, p := range cfg.Skills.Paths {
-		if p == skillsPath {
+	for _, p := range paths {
+		if s, ok := p.(string); ok && s == skillsPath {
 			hasPath = true
 			break
 		}
 	}
 	if !hasPath {
-		cfg.Skills.Paths = append(cfg.Skills.Paths, skillsPath)
+		paths = append(paths, skillsPath)
 	}
+	skills["paths"] = paths
+	cfg["skills"] = skills
 
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {

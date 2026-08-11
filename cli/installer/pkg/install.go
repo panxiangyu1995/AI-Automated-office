@@ -153,6 +153,10 @@ func installSkillPackage(opts InstallOptions) error {
 			return nil
 		}
 	}
+	// 显式提供的源同样遵循"缺失即跳过"语义
+	if info, err := os.Stat(src); err != nil || info.IsDir() {
+		return nil
+	}
 	dst := filepath.Join(opts.InstallPath, "skills", SkillPackageName)
 	if err := copyFile(src, dst); err != nil {
 		return fmt.Errorf("复制技能包失败: %w", err)

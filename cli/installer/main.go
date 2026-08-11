@@ -80,7 +80,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			switch m.step {
-			case 1, 2:
+			case 0, 1, 2:
 				m.step++
 			case 3:
 				m.step++
@@ -278,8 +278,9 @@ func (m model) View() string {
 	return s.String()
 }
 
-func RunInstaller(ctx context.Context) error {
-	p := tea.NewProgram(initialModel(), tea.WithContext(ctx))
+// RunInstaller 启动 TUI 安装向导。opts 可注入输入流/日志等（测试用）。
+func RunInstaller(ctx context.Context, opts ...tea.ProgramOption) error {
+	p := tea.NewProgram(initialModel(), opts...)
 	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("installer failed: %w", err)
 	}
