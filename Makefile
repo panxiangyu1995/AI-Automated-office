@@ -5,7 +5,6 @@ VERSION ?= dev
 BUILD_TIME = $(shell date -u +%Y%m%d%H%M%S)
 
 .PHONY: cli api dev test lint clean release release-snapshot help package-skills installer installer-build ao-pack
-
 help:
 	@echo "AI-Automated-office 开发命令"
 	@echo ""
@@ -53,18 +52,21 @@ package-skills:
 	echo "Packaged: ai-office-api.skill"
 
 installer-build:
-	cd cli/installer && go build -ldflags "-X main.version=$(VERSION)" -o ../../dist/installer/{{.Os}}_{{.Arch}}/ao-setup .
+	cd cli/installer && go build -ldflags "-X main.version=$(VERSION)" -o ../../dist/installer/ao-setup .
 
 installer: package-skills
 	@mkdir -p dist/installer
 	@echo "Building installer for $(VERSION)..."
 	cd cli/installer && go build -ldflags "-X main.version=$(VERSION) -X main.buildTime=$(BUILD_TIME)" -o ../../dist/installer/ao-setup .
+	@echo "提示: 完整安装包请使用 goreleaser（zip 内含 ao-setup + ao-cli + skills）"
 
 ao-pack:
 	@echo "ao-pack tool: 企业定制安装包生成（Phase 4）"
 
-release-snapshot:
-	goreleaser release --snapshot --clean
+release-snapshot: package-skills
+	@echo "本地验证（跳过 Docker，需 buildx 才出镜像）"
+	goreleaser release --snapshot --clean --skip docker
 
-release:
+release: package-skills
+	@echo "正式发布（需 buildx 组件，建议在 CI 执行）"
 	bash scripts/release.sh && goreleaser release --clean

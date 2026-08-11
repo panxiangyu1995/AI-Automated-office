@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,6 +13,7 @@ var (
 	BinDirName    = "bin"
 	SkillsDirName = "skills"
 	ConfigDirName = "config"
+	SkillPackageName = "ai-office-api.skill"
 )
 
 func GetAOCLIDir() string {
@@ -41,24 +43,6 @@ func GetAOCLIExePath() string {
 	return filepath.Join(GetAOCLIBinDir(), GetAOCLIExeName())
 }
 
-func InstallCLI(srcPath string) error {
-	binDir := GetAOCLIBinDir()
-	if err := EnsureDir(binDir); err != nil {
-		return fmt.Errorf("failed to create bin dir: %w", err)
-	}
-
-	dstPath := filepath.Join(binDir, GetAOCLIExeName())
-	if err := copyFile(srcPath, dstPath); err != nil {
-		return fmt.Errorf("failed to copy cli: %w", err)
-	}
-
-	if err := os.Chmod(dstPath, 0755); err != nil {
-		return fmt.Errorf("failed to set executable: %w", err)
-	}
-
-	return nil
-}
-
 func copyFile(src, dst string) error {
 	srcFile, err := os.Open(src)
 	if err != nil {
@@ -72,28 +56,34 @@ func copyFile(src, dst string) error {
 	}
 	defer dstFile.Close()
 
-	buf := make([]byte, 32*1024)
-	for {
-		n, err := srcFile.Read(buf)
-		if n > 0 {
-			if _, werr := dstFile.Write(buf[:n]); werr != nil {
-				return werr
-			}
-		}
-		if err != nil {
-			if err.Error() == "EOF" {
-				break
-			}
-			return err
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return err
+	}
+	return dstFile.Sync()
+}
+
+func InstallCLI(srcPath string) error {
+	binDir := GetAOCLIBinDir()
+	if err := EnsureDir(binDir); err != nil {
+		return fmt.Errorf("failed to create bin dir: %w", err)
+	}
+
+	dstPath := filepath.Join(binDir, GetAOCLIExeName())
+	if err := copyFile(srcPath, dstPath); err != nil {
+		return fmt.Errorf("failed to copy cli: %w", err)
+	}
+
+	if runtime.GOOS != "windows" {
+		if err := os.Chmod(dstPath, 0755); err != nil {
+			return fmt.Errorf("failed to set executable: %w", err)
 		}
 	}
 	return nil
 }
 
 func VerifyCLI() error {
-	exePath := GetAOCLIExePath()
-	if _, err := os.Stat(exePath); err != nil {
-		return fmt.Errorf("cli not found at %s: %w", exePath, err)
+	if err := VerifyInstall(GetAOCLIDir()); err != nil {
+		return err
 	}
 	return nil
 }

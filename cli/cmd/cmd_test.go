@@ -39,8 +39,8 @@ func TestSkillCmd_Subcommands(t *testing.T) {
 	if skillCmd == nil {
 		t.Fatal("skill command should not be nil")
 	}
-	if len(skillCmd.Commands()) != 3 {
-		t.Errorf("expected 3 skill subcommands (list, describe, execute), got %d", len(skillCmd.Commands()))
+	if len(skillCmd.Commands()) != 6 {
+		t.Errorf("expected 6 skill subcommands (list, describe, execute, link, unlink, update), got %d", len(skillCmd.Commands()))
 	}
 }
 

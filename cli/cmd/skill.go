@@ -68,7 +68,6 @@ func newSkillCmd() *cobra.Command {
 		Short: "将 ~/.ao-cli/skills 中的技能部署到已检测的 AI 助手",
 		RunE:  runSkillLink,
 	}
-	linkCmd.PersistentPreRunE = nil
 	cmd.AddCommand(linkCmd)
 
 	unlinkCmd := &cobra.Command{
@@ -77,7 +76,6 @@ func newSkillCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE:  runSkillUnlink,
 	}
-	unlinkCmd.PersistentPreRunE = nil
 	cmd.AddCommand(unlinkCmd)
 
 	updateCmd := &cobra.Command{
@@ -85,7 +83,6 @@ func newSkillCmd() *cobra.Command {
 		Short: "从服务器更新技能包",
 		RunE:  runSkillUpdate,
 	}
-	updateCmd.PersistentPreRunE = nil
 	cmd.AddCommand(updateCmd)
 
 	return cmd
@@ -489,9 +486,15 @@ func deploySkillToAgents(skillPath, home string) error {
 			srcFile.Close()
 			continue
 		}
-		io.Copy(dstFile, srcFile)
+		if _, err := io.Copy(dstFile, srcFile); err != nil {
+			srcFile.Close()
+			dstFile.Close()
+			continue
+		}
 		srcFile.Close()
-		dstFile.Close()
+		if err := dstFile.Close(); err != nil {
+			continue
+		}
 		deployed++
 	}
 	if deployed == 0 {

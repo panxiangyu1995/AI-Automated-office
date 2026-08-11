@@ -1,8 +1,6 @@
 package pkg
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -16,8 +14,11 @@ type OpenCodeConfig struct {
 	} `json:"skills,omitempty"`
 }
 
-func WriteOpenCodeConfig(serverURL string) error {
+func WriteOpenCodeConfig(skillsPath string) error {
 	configPath := GetOpenCodeConfigPath()
+	if configPath == "" {
+		return fmt.Errorf("cannot determine home directory")
+	}
 	dir := filepath.Dir(configPath)
 	if err := EnsureDir(dir); err != nil {
 		return fmt.Errorf("failed to create config dir: %w", err)
@@ -25,23 +26,20 @@ func WriteOpenCodeConfig(serverURL string) error {
 
 	var cfg OpenCodeConfig
 	if data, err := os.ReadFile(configPath); err == nil {
-		json.Unmarshal(data, &cfg)
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return fmt.Errorf("opencode.json 解析失败，拒绝覆盖: %w", err)
+		}
 	}
 
-	if cfg.Skills.Paths == nil {
-		cfg.Skills.Paths = []string{}
-	}
-
-	aoCliSkillsPath := GetAOCLISkillsDir()
 	hasPath := false
 	for _, p := range cfg.Skills.Paths {
-		if p == aoCliSkillsPath || p == "~/.ao-cli/skills" {
+		if p == skillsPath {
 			hasPath = true
 			break
 		}
 	}
 	if !hasPath {
-		cfg.Skills.Paths = append(cfg.Skills.Paths, aoCliSkillsPath)
+		cfg.Skills.Paths = append(cfg.Skills.Paths, skillsPath)
 	}
 
 	data, err := json.MarshalIndent(cfg, "", "  ")
@@ -52,33 +50,23 @@ func WriteOpenCodeConfig(serverURL string) error {
 	return os.WriteFile(configPath, data, 0644)
 }
 
+// WriteServerConfig 写入 ao-cli 实际读取的配置
+// (CLI 读取 ~/.ai-office-cli/config.yaml，字段 server_url)。
 func WriteServerConfig(serverURL string) error {
 	home := GetUserHome()
 	if home == "" {
 		return fmt.Errorf("cannot determine home directory")
 	}
 
-	configDir := filepath.Join(home, AOCLIDirName, ConfigDirName)
-	if err := EnsureDir(configDir); err != nil {
-		return err
+	configDir := filepath.Join(home, ".ai-office-cli")
+	if err := os.MkdirAll(configDir, 0700); err != nil {
+		return fmt.Errorf("failed to create config dir: %w", err)
 	}
 
-	cfg := map[string]interface{}{
-		"server_url": serverURL,
-		"client_id":  generateClientID(),
+	content := fmt.Sprintf("server_url: %s\n", serverURL)
+	configFile := filepath.Join(configDir, "config.yaml")
+	if err := os.WriteFile(configFile, []byte(content), 0600); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
 	}
-
-	data, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal config: %w", err)
-	}
-
-	configFile := filepath.Join(configDir, "config.json")
-	return os.WriteFile(configFile, data, 0644)
-}
-
-func generateClientID() string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	return hex.EncodeToString(b)
+	return nil
 }

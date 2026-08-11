@@ -6,6 +6,7 @@ before:
   hooks:
     - go mod tidy -C api
     - go mod tidy -C cli
+    - "sh -c 'mkdir -p .build/skills && PYTHONPATH=.opencode/skills/skill-creator python3 .opencode/skills/skill-creator/scripts/package_skill.py .opencode/skills/ai-office-api .build/skills/'"
 
 builds:
   - id: api
@@ -55,10 +56,6 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .Date }}
-    hooks:
-      post: |
-        mkdir -p dist/installer/{{ .Os }}_{{ .Arch }}
-        cp dist/{{ .Os }}_{{ .Arch }}/ao-setup dist/installer/{{ .Os }}_{{ .Arch }}/
 
 archives:
   - id: cli-archive
@@ -100,12 +97,66 @@ archives:
       {{- else if eq .Arch "arm64" }}aarch64
       {{- else }}{{ .Arch }}{{ end }}
     files:
-      - dist/skills/*.skill
+      - src: .build/skills/*.skill
+        strip_parent: true
+      - src: dist/cli_{{ .Os }}_{{ .Arch }}*/ao-cli*
+        strip_parent: true
 
 checksum:
   name_template: checksums.txt
 
+dockers:
+  - id: api-amd64
+    ids:
+      - api
+    use: docker
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=Agent-driven enterprise SaaS API
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
+    dockerfile: deploy/docker-compose/Dockerfile.api
+    extra_files:
+      - api/config/config.yaml
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
+      - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
 
+  - id: cli-amd64
+    ids:
+      - cli
+    use: docker
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - --label=org.opencontainers.image.title=ao-cli
+      - --label=org.opencontainers.image.description=CLI tool for AI-Automated-office
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.licenses=AGPL-3.0-or-later
+    dockerfile: deploy/docker-compose/Dockerfile.cli
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
+      - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
+
+docker_manifests:
+  - name_template: "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:{{ .Version }}-amd64"
+  - name_template: "ghcr.io/panxiangyu1995/ao-api:latest"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-api:latest-amd64"
+  - name_template: "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:{{ .Version }}-amd64"
+  - name_template: "ghcr.io/panxiangyu1995/ao-cli:latest"
+    image_templates:
+      - "ghcr.io/panxiangyu1995/ao-cli:latest-amd64"
 
 brews:
   - name: ao-cli
@@ -162,5 +213,5 @@ changelog:
 release:
   extra_files:
     - glob: ./cli/npm/*
-    - glob: ./dist/skills/*.skill
+    - glob: ./.build/skills/*.skill
 

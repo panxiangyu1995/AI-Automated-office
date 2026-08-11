@@ -1,7 +1,7 @@
 api/bin/
 api/logs/
 cli/bin/
-cli/installer/dist/
+.build/
 dist/
 *.exe
 *.test
@@ -29,3 +29,4 @@ AGENTS.md
 happy
 .plan
 test-flie
+.build/

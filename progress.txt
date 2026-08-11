@@ -2120,3 +2120,33 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - goreleaser 安装暂缓 (网络超时)，.goreleaser.yaml 配置已就绪
 - Skills: 实际只有 ai-office-api (含全部 169 个 API 端点)，其他目录是项目内部 skills
 - 待网络恢复后: `brew install goreleaser` + `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+
+## 2026-08-11 - 审查修复：installer P0/P1 全部修复 + 单元测试
+
+### 铁律合规检查：
+- PRD 合规：FR-267~FR-273 (CLI/Agent 部署安装)
+- 架构合规：安装程序写入 CLI 实际读取的配置（~/.ai-office-cli/config.yaml），符合 CLI 唯一入口铁律
+- 测试规范合规：新增 6 个测试文件覆盖安装引擎核心逻辑
+
+### What was done (审查修复):
+1. **P0: installCLI 复制自身** → pkg/install.go 安装引擎，findCLISource 查找 ao-cli 源（同目录→父目录→PATH），不再复制 installer 自身
+2. **P0: runInstall 值接收者副本修改** → 消息驱动（installStart/installMsg channel），进度条/完成界面正常
+3. **P0: 配置路径不匹配** → WriteServerConfig 写 ~/.ai-office-cli/config.yaml + server_url 字段（与 CLI 一致）
+4. **P1: Docker 删除回归** → 恢复 dockers+docker_manifests（use: docker），本地 snapshot 用 --skip docker（本机无 buildx）
+5. **P1: skills 打包** → before hook 输出到 .build/skills（sh -c 包裹解决 goreleaser argv 拆分），archive strip_parent，zip 含 ao-setup+ao-cli+skill
+6. **P1: zip 修复** → zip.NewReader 传正确 size、Zip Slip 防护、errors.Is(io.EOF)
+7. **P1: PATH** → zsh/bash/profile 检测 + Windows 幂等
+8. **P1: Makefile** → installer-build 修复、release-snapshot/release 依赖 package-skills
+9. **P2: TUI** → q 键只在完成界面退出、step3 选项 ↑↓/空格、清理死代码/wails.json
+10. **回归修复** → cmd_test.go TestSkillCmd_Subcommands 更新为 6 个子命令
+
+### Testing:
+- go vet + go build: cli + installer ✅
+- go test ./cli/...: 全部通过（TestAllSkillsRegistered 为预先存在失败，与本次无关）✅
+- go test ./cli/installer/pkg/: 12 个测试全部 PASS ✅
+- goreleaser snapshot --skip docker: 成功，installer zip 含 3 文件（ao-setup 3.1M + ao-cli 9M + ai-office-api.skill 14.7K）✅
+
+### Notes:
+- 本机无 buildx（GitHub 不可达），正式 release 需在 CI（有 buildx）执行
+- .goreleaser.yaml before hook 必须用 sh -c 包裹复合命令（goreleaser 按 argv 拆分）
+- skills 打包输出到 .build/（gitignored），避免触发 goreleaser dist 非空检查
