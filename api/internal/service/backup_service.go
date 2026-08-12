@@ -17,14 +17,14 @@ import (
 )
 
 type BackupService struct {
-	configRepo  repository.BackupConfigRepository
-	recordRepo  repository.BackupRecordRepository
-	dbHost      string
-	dbPort      string
-	dbUser      string
-	dbPassword  string
-	dbName      string
-	defaultDir  string
+	configRepo repository.BackupConfigRepository
+	recordRepo repository.BackupRecordRepository
+	dbHost     string
+	dbPort     string
+	dbUser     string
+	dbPassword string
+	dbName     string
+	defaultDir string
 }
 
 func NewBackupService(

@@ -47,7 +47,7 @@ func initOrgSkills() {
 		Category:    "org",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/departments/tree",
 		Method:      "GET",
-		Parameters: []skill.ParamDef{},
+		Parameters:  []skill.ParamDef{},
 	})
 
 	skill.Register(skill.SkillDefinition{

@@ -314,10 +314,10 @@ func executeSkill(name, action, paramsJSON, filePath string) error {
 	durationMs := time.Since(startTime).Milliseconds()
 
 	entry := olog.Entry{
-		TS:          time.Now().Format(time.RFC3339),
-		Skill:       name,
-		Action:      action,
-		DurationMs:  durationMs,
+		TS:         time.Now().Format(time.RFC3339),
+		Skill:      name,
+		Action:     action,
+		DurationMs: durationMs,
 	}
 	if params != nil {
 		entry.ParamsSummary = params

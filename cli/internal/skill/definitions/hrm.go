@@ -6,11 +6,11 @@ import (
 
 func initHRMSkills() {
 	skill.Register(skill.SkillDefinition{
-		Name:        "hrm_employee_create",
-		Description: "创建员工档案（入职）",
-		Category:    "hrm",
-		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/employees",
-		Method:      "POST",
+		Name:           "hrm_employee_create",
+		Description:    "创建员工档案（入职）",
+		Category:       "hrm",
+		APIEndpoint:    "/api/v1/enterprises/{enterprise_id}/employees",
+		Method:         "POST",
 		OpeningMessage: "欢迎使用HRM员工管理，您可以管理员工档案、调岗、批量导入等操作。",
 		RoleOpenings: map[string]skill.RoleOpening{
 			"owner":    {OpeningText: "您拥有完整的HRM管理权限，可管理所有员工的入职、编辑、调岗和离职。", AvailableActions: "create,update,delete,transfer,batch_import"},

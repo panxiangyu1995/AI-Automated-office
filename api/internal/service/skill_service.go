@@ -45,9 +45,9 @@ func (s *SkillService) GetSkillDetail(name string, role string) (*SkillDetailRes
 	}
 
 	return &SkillDetailResponse{
-		Skill:        skill,
-		RoleOpening:  roleOpening,
-		Parameters:   params,
+		Skill:       skill,
+		RoleOpening: roleOpening,
+		Parameters:  params,
 	}, nil
 }
 
@@ -74,9 +74,9 @@ func (s *SkillService) GetByRole(skillName, role string) (*SkillDetailResponse, 
 	}
 
 	return &SkillDetailResponse{
-		Skill:        skill,
-		RoleOpening:  roleOpening,
-		Parameters:   params,
+		Skill:       skill,
+		RoleOpening: roleOpening,
+		Parameters:  params,
 	}, nil
 }
 

@@ -6,11 +6,11 @@ import (
 
 func initFinanceSkills() {
 	skill.Register(skill.SkillDefinition{
-		Name:        "finance_payment_create",
-		Description: "创建回款记录",
-		Category:    "finance",
-		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/payments",
-		Method:      "POST",
+		Name:           "finance_payment_create",
+		Description:    "创建回款记录",
+		Category:       "finance",
+		APIEndpoint:    "/api/v1/enterprises/{enterprise_id}/payments",
+		Method:         "POST",
 		OpeningMessage: "欢迎使用财务管理，您可以管理回款、报销、发票等财务业务。",
 		RoleOpenings: map[string]skill.RoleOpening{
 			"owner":    {OpeningText: "您拥有完整的财务管理权限。", AvailableActions: "payment,expense,invoice,approve"},

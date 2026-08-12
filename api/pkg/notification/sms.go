@@ -44,7 +44,7 @@ func (c *AliyunSMSClient) Send(phone, templateCode string, templateParams map[st
 		"SignatureVersion": "1.0",
 		"TemplateCode":     templateCode,
 		"Timestamp":        time.Now().UTC().Format("2006-01-02T15:04:05Z"),
-		"Version":         "2017-05-25",
+		"Version":          "2017-05-25",
 	}
 
 	if len(templateParams) > 0 {

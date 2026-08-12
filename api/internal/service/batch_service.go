@@ -13,9 +13,9 @@ type BatchStatusChanger interface {
 }
 
 type BatchService struct {
-	workflowSvc    *WorkflowService
-	deleteRepos    map[string]BatchTargetDeleter
-	statusRepos    map[string]BatchStatusChanger
+	workflowSvc *WorkflowService
+	deleteRepos map[string]BatchTargetDeleter
+	statusRepos map[string]BatchStatusChanger
 }
 
 func NewBatchService(

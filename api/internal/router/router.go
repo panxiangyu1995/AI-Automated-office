@@ -18,9 +18,9 @@ import (
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/notification"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/observability"
-	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/ratelimit"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -438,11 +438,11 @@ func initDeps(db *gorm.DB, cfg *config.Config, jwtManager *auth.JWTManager, toke
 	deps.UndoHandler = handler.NewUndoHandler(undoService)
 
 	deleteRepos := map[string]service.BatchTargetDeleter{
-		"customers":  customerRepo,
-		"suppliers":  supRepo,
-		"contacts":   contactRepo,
-		"contracts":  contractRepo,
-		"materials":  matRepo,
+		"customers": customerRepo,
+		"suppliers": supRepo,
+		"contacts":  contactRepo,
+		"contracts": contractRepo,
+		"materials": matRepo,
 	}
 	statusRepos := map[string]service.BatchStatusChanger{
 		"customers":       customerRepo,

@@ -3,9 +3,9 @@ package integration
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
-	"github.com/google/uuid"
 )
 
 func TestHealthEndpoint(t *testing.T) {
@@ -197,10 +197,10 @@ func TestAuditLog_RecordedOnCreate(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	client.POST("/api/v1/groups", map[string]string{
-		"name":        "Audit Test Group",
-		"code":        "AUDIT-" + uuid.New().String()[:8],
-		"owner_email": "audit-owner@test.com",
-		"owner_name":   "Audit Owner",
+		"name":           "Audit Test Group",
+		"code":           "AUDIT-" + uuid.New().String()[:8],
+		"owner_email":    "audit-owner@test.com",
+		"owner_name":     "Audit Owner",
 		"owner_password": "test123",
 	})
 

@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func createTestMaterial(t *testing.T, client *testutil.TestClient, enterpriseID string) map[string]interface{} {
@@ -450,9 +450,9 @@ func TestInventoryCheck_Create(t *testing.T) {
 	whID, _ := wh["id"].(string)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/inventory-checks", map[string]interface{}{
-		"warehouse_id":  whID,
-		"check_type":    "full",
-		"status":        "draft",
+		"warehouse_id": whID,
+		"check_type":   "full",
+		"status":       "draft",
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 404 {
 		t.Errorf("expected 200/201/404, got %d; body: %s", w.Code, w.Body.String())

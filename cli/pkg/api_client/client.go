@@ -51,7 +51,7 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Data *LoginData `json:"data,omitempty"`
+	Data  *LoginData `json:"data,omitempty"`
 	Error *struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`

@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func TestGroupCRUD_Create(t *testing.T) {
@@ -21,7 +21,7 @@ func TestGroupCRUD_Create(t *testing.T) {
 		"code":           "NEW-" + uuid.New().String()[:8],
 		"contact_email":  "newgroup@test.com",
 		"owner_email":    "owner-new@test.com",
-		"owner_name":      "New Owner",
+		"owner_name":     "New Owner",
 		"owner_password": "test123",
 	})
 	testutil.AssertStatus(t, w, 201)
@@ -66,7 +66,7 @@ func TestGroupCRUD_Delete_HasNoEnterprise(t *testing.T) {
 		"name":           "Deletable Group",
 		"code":           "DEL-" + uuid.New().String()[:8],
 		"owner_email":    "del-owner@test.com",
-		"owner_name":      "Del Owner",
+		"owner_name":     "Del Owner",
 		"owner_password": "test123",
 	})
 	resp := testutil.ParseResponse(t, w)
@@ -331,10 +331,10 @@ func TestCrossEnterprise_GrantPermission(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/cross-enterprise/permissions", map[string]string{
-		"user_id":               fx.Owner.ID.String(),
-		"source_enterprise_id":  fx.EnterpriseID,
-		"target_enterprise_id":  fx2.EnterpriseID,
-		"permissions":           "read",
+		"user_id":              fx.Owner.ID.String(),
+		"source_enterprise_id": fx.EnterpriseID,
+		"target_enterprise_id": fx2.EnterpriseID,
+		"permissions":          "read",
 	})
 	testutil.AssertStatus(t, w, 201)
 }
@@ -575,9 +575,9 @@ func TestCrossEnterprise_AdminAssignScope(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/cross-enterprise/permissions", map[string]interface{}{
-		"user_id":             fx.Owner.ID.String(),
+		"user_id":              fx.Owner.ID.String(),
 		"target_enterprise_id": fx2.EnterpriseID,
-		"scope":               "read_only",
+		"scope":                "read_only",
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 403 && w.Code != 404 {
 		t.Errorf("expected 200/201/403/404, got %d; body: %s", w.Code, w.Body.String())

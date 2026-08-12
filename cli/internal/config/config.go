@@ -10,16 +10,16 @@ import (
 )
 
 type Config struct {
-	ServerURL    string      `yaml:"server_url"`
-	Token        string      `yaml:"-"`
-	RefreshToken string      `yaml:"-"`
-	Email        string      `yaml:"email"`
-	Host         string      `yaml:"host"`
-	EnterpriseID string      `yaml:"enterprise_id"`
-	ExpiresAt    time.Time   `yaml:"expires_at"`
-	HMACSecret   string      `yaml:"hmac_secret"`
-	CLIPath      string      `yaml:"cli_path"`
-	Poll         PollConfig  `yaml:"poll"`
+	ServerURL    string       `yaml:"server_url"`
+	Token        string       `yaml:"-"`
+	RefreshToken string       `yaml:"-"`
+	Email        string       `yaml:"email"`
+	Host         string       `yaml:"host"`
+	EnterpriseID string       `yaml:"enterprise_id"`
+	ExpiresAt    time.Time    `yaml:"expires_at"`
+	HMACSecret   string       `yaml:"hmac_secret"`
+	CLIPath      string       `yaml:"cli_path"`
+	Poll         PollConfig   `yaml:"poll"`
 	Notify       NotifyConfig `yaml:"notify"`
 }
 

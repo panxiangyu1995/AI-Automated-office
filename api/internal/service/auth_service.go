@@ -15,11 +15,11 @@ import (
 )
 
 type AuthService struct {
-	userRepo             repository.UserRepository
-	enterpriseRepo       repository.EnterpriseRepository
-	crossEnterpriseRepo  repository.CrossEnterpriseRepository
-	jwtManager           *auth.JWTManager
-	tokenBlacklist       *redis.TokenBlacklist
+	userRepo            repository.UserRepository
+	enterpriseRepo      repository.EnterpriseRepository
+	crossEnterpriseRepo repository.CrossEnterpriseRepository
+	jwtManager          *auth.JWTManager
+	tokenBlacklist      *redis.TokenBlacklist
 }
 
 type LoginRequest struct {

@@ -12,10 +12,10 @@ type AuditLog struct {
 	IPAddress    string    `gorm:"type:varchar(45)" json:"ip_address,omitempty"`
 	UserAgent    string    `gorm:"type:varchar(500)" json:"user_agent,omitempty"`
 	UserRoles    string    `gorm:"type:text" json:"user_roles,omitempty"`
-	OldValues   string    `gorm:"type:text" json:"old_values,omitempty"`
-	NewValues   string    `gorm:"type:text" json:"new_values,omitempty"`
+	OldValues    string    `gorm:"type:text" json:"old_values,omitempty"`
+	NewValues    string    `gorm:"type:text" json:"new_values,omitempty"`
 	Location     string    `gorm:"type:varchar(200)" json:"location,omitempty"`
-	Status      string    `gorm:"type:varchar(20)" json:"status,omitempty"`
+	Status       string    `gorm:"type:varchar(20)" json:"status,omitempty"`
 }
 
 func (AuditLog) TableName() string {

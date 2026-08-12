@@ -5,8 +5,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
 const ContextKeyEnterpriseIDFromToken = "enterprise_id_from_token"

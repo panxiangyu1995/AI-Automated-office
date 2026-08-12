@@ -41,18 +41,18 @@ func (j *JSONArray) UnmarshalJSON(data []byte) error {
 
 type SubscriptionPlan struct {
 	TenantModel
-	Name         string     `gorm:"type:varchar(100);not null" json:"name"`
-	Description  string     `gorm:"type:text" json:"description,omitempty"`
-	Price        float64    `gorm:"type:numeric(15,2);not null" json:"price"`
-	MaxUsers     int        `gorm:"default:10" json:"max_users"`
-	MaxStorage   int64      `gorm:"default:1073741824" json:"max_storage"`
-	Features     JSONArray  `gorm:"type:jsonb" json:"features,omitempty"`
-	Status       string     `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
-	PlanType     string     `gorm:"type:varchar(20);default:'monthly'" json:"plan_type"`
-	Quotas       JSONArray  `gorm:"type:jsonb" json:"quotas,omitempty"`
-	PriceMonthly float64    `gorm:"type:numeric(15,2);default:0" json:"price_monthly"`
-	PriceYearly  float64    `gorm:"type:numeric(15,2);default:0" json:"price_yearly"`
-	TrialDays    int        `gorm:"default:0" json:"trial_days"`
+	Name         string    `gorm:"type:varchar(100);not null" json:"name"`
+	Description  string    `gorm:"type:text" json:"description,omitempty"`
+	Price        float64   `gorm:"type:numeric(15,2);not null" json:"price"`
+	MaxUsers     int       `gorm:"default:10" json:"max_users"`
+	MaxStorage   int64     `gorm:"default:1073741824" json:"max_storage"`
+	Features     JSONArray `gorm:"type:jsonb" json:"features,omitempty"`
+	Status       string    `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	PlanType     string    `gorm:"type:varchar(20);default:'monthly'" json:"plan_type"`
+	Quotas       JSONArray `gorm:"type:jsonb" json:"quotas,omitempty"`
+	PriceMonthly float64   `gorm:"type:numeric(15,2);default:0" json:"price_monthly"`
+	PriceYearly  float64   `gorm:"type:numeric(15,2);default:0" json:"price_yearly"`
+	TrialDays    int       `gorm:"default:0" json:"trial_days"`
 }
 
 func (SubscriptionPlan) TableName() string { return "subscription_plans" }
@@ -127,5 +127,3 @@ type ServiceConfig struct {
 }
 
 func (ServiceConfig) TableName() string { return "service_configs" }
-
-

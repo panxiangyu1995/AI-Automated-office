@@ -236,8 +236,8 @@ func newMockSupplierRepoForOrder() *mockSupplierRepoForOrder {
 	return &mockSupplierRepoForOrder{suppliers: make(map[string]*model.Supplier)}
 }
 
-func (m *mockSupplierRepoForOrder) Create(s *model.Supplier) error { return nil }
-func (m *mockSupplierRepoForOrder) Update(s *model.Supplier) error { return nil }
+func (m *mockSupplierRepoForOrder) Create(s *model.Supplier) error          { return nil }
+func (m *mockSupplierRepoForOrder) Update(s *model.Supplier) error          { return nil }
 func (m *mockSupplierRepoForOrder) Delete(id, enterpriseID uuid.UUID) error { return nil }
 func (m *mockSupplierRepoForOrder) FindByID(id, enterpriseID uuid.UUID) (*model.Supplier, error) {
 	s, ok := m.suppliers[id.String()]
@@ -315,9 +315,9 @@ type noopWhRepo struct{}
 type noopCustRepo struct{}
 type noopQIRepo struct{}
 
-func (m *noopMatRepo) Create(mat *model.Material) error                     { return nil }
-func (m *noopMatRepo) Update(mat *model.Material) error                     { return nil }
-func (m *noopMatRepo) Delete(id, enterpriseID uuid.UUID) error                   { return nil }
+func (m *noopMatRepo) Create(mat *model.Material) error        { return nil }
+func (m *noopMatRepo) Update(mat *model.Material) error        { return nil }
+func (m *noopMatRepo) Delete(id, enterpriseID uuid.UUID) error { return nil }
 func (m *noopMatRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Material, error) {
 	return nil, nil
 }
@@ -327,18 +327,18 @@ func (m *noopMatRepo) ListByEnterprise(enterpriseID uuid.UUID, page, pageSize in
 func (m *noopMatRepo) DeleteByID(id, enterpriseID uuid.UUID) (int64, error) {
 	return 0, nil
 }
-func (m *noopWhRepo) Create(w *model.Warehouse) error                     { return nil }
-func (m *noopWhRepo) Update(w *model.Warehouse) error                     { return nil }
-func (m *noopWhRepo) Delete(id, enterpriseID uuid.UUID) error                   { return nil }
+func (m *noopWhRepo) Create(w *model.Warehouse) error         { return nil }
+func (m *noopWhRepo) Update(w *model.Warehouse) error         { return nil }
+func (m *noopWhRepo) Delete(id, enterpriseID uuid.UUID) error { return nil }
 func (m *noopWhRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Warehouse, error) {
 	return nil, nil
 }
 func (m *noopWhRepo) ListByEnterprise(eid uuid.UUID, p, ps int) ([]model.Warehouse, int64, error) {
 	return nil, 0, nil
 }
-func (m *noopCustRepo) Create(c *model.Customer) error                     { return nil }
-func (m *noopCustRepo) Update(c *model.Customer) error                     { return nil }
-func (m *noopCustRepo) Delete(id, enterpriseID uuid.UUID) error                   { return nil }
+func (m *noopCustRepo) Create(c *model.Customer) error          { return nil }
+func (m *noopCustRepo) Update(c *model.Customer) error          { return nil }
+func (m *noopCustRepo) Delete(id, enterpriseID uuid.UUID) error { return nil }
 func (m *noopCustRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Customer, error) {
 	return nil, nil
 }
@@ -371,8 +371,8 @@ func (m *noopQIRepo) ListByPurchaseOrder(purchaseOrderID uuid.UUID, page, pageSi
 	return nil, 0, nil
 }
 func (m *noopQIRepo) UpdateStatus(id, enterpriseID uuid.UUID, status string) error { return nil }
-func (m *noopQIRepo) Update(inspection *model.QualityInspection) error { return nil }
-func (m *noopQIRepo) CreateItem(item *model.QualityInspectionItem) error { return nil }
+func (m *noopQIRepo) Update(inspection *model.QualityInspection) error             { return nil }
+func (m *noopQIRepo) CreateItem(item *model.QualityInspectionItem) error           { return nil }
 func (m *noopQIRepo) ListItems(inspectionID uuid.UUID) ([]model.QualityInspectionItem, error) {
 	return nil, nil
 }

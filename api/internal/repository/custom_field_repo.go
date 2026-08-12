@@ -1,12 +1,12 @@
 package repository
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 

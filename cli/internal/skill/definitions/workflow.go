@@ -6,11 +6,11 @@ import (
 
 func initWorkflowSkills() {
 	skill.Register(skill.SkillDefinition{
-		Name:        "workflow_definition_create",
-		Description: "创建审批工作流定义",
-		Category:    "workflow",
-		APIEndpoint: "/api/v1/workflow-definitions",
-		Method:      "POST",
+		Name:           "workflow_definition_create",
+		Description:    "创建审批工作流定义",
+		Category:       "workflow",
+		APIEndpoint:    "/api/v1/workflow-definitions",
+		Method:         "POST",
 		OpeningMessage: "欢迎使用审批工作流管理，您可以定义和执行审批流程。",
 		RoleOpenings: map[string]skill.RoleOpening{
 			"owner":    {OpeningText: "您可以创建工作流定义、提交和审批所有流程。", AvailableActions: "create,submit,approve,reject,transfer"},

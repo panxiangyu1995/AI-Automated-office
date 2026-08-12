@@ -45,11 +45,11 @@ func (s *CrossEnterpriseService) Grant(userID, sourceEnterpriseID, targetEnterpr
 	}
 
 	perm := &model.CrossEnterprisePermission{
-		UserID:            uid,
+		UserID:             uid,
 		SourceEnterpriseID: srcEID,
 		TargetEnterpriseID: tgtEID,
-		GrantedBy:         gb,
-		Permissions:       permissions,
+		GrantedBy:          gb,
+		Permissions:        permissions,
 	}
 
 	if err := s.crossRepo.Create(perm); err != nil {

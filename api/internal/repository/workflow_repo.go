@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"gorm.io/gorm"
 )
 
@@ -64,13 +64,13 @@ func (r *workflowRepo) ListDefinitions(enterpriseID uuid.UUID, page, pageSize in
 
 func (r *workflowRepo) UpdateDefinition(def *model.WfDefinition) error {
 	return r.fresh().Model(&model.WfDefinition{}).Where("id = ? AND enterprise_id = ?", def.ID, def.EnterpriseID).Updates(map[string]interface{}{
-		"name":         def.Name,
-		"description":  def.Description,
-		"flow_config":  def.FlowConfig,
-		"version":      def.Version,
-		"is_active":    def.IsActive,
-		"category":     def.Category,
-		"updated_at":   gorm.Expr("NOW()"),
+		"name":        def.Name,
+		"description": def.Description,
+		"flow_config": def.FlowConfig,
+		"version":     def.Version,
+		"is_active":   def.IsActive,
+		"category":    def.Category,
+		"updated_at":  gorm.Expr("NOW()"),
 	}).Error
 }
 

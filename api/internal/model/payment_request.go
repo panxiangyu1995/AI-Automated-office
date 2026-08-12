@@ -15,8 +15,8 @@ type PaymentRequest struct {
 func (PaymentRequest) TableName() string { return "payment_requests" }
 
 var PaymentRequestStatusLabels = map[string]string{
-	"draft":             "草稿",
-	"pending_approval":  "审批中",
-	"approved":          "已批准",
-	"rejected":          "已驳回",
+	"draft":            "草稿",
+	"pending_approval": "审批中",
+	"approved":         "已批准",
+	"rejected":         "已驳回",
 }

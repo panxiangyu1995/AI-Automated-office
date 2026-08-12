@@ -120,12 +120,12 @@ func runLogin(serverURL string) error {
 
 	cfg := &config.Config{
 		ServerURL:    serverURL,
-		Token:         accessToken,
+		Token:        accessToken,
 		RefreshToken: refreshToken,
-		Email:         email,
-		Host:          u.Host,
+		Email:        email,
+		Host:         u.Host,
 		EnterpriseID: extractEnterpriseID(accessToken),
-		ExpiresAt:     time.Now().Add(time.Duration(expiresIn) * time.Second),
+		ExpiresAt:    time.Now().Add(time.Duration(expiresIn) * time.Second),
 	}
 
 	if err := config.Save(cfg); err != nil {

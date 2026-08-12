@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"time"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 )
@@ -24,7 +24,9 @@ func (r *opportunityRepo) fresh() *gorm.DB {
 
 func (r *opportunityRepo) Create(op *model.Opportunity) error { return r.fresh().Create(op).Error }
 func (r *opportunityRepo) Update(op *model.Opportunity) error { return r.fresh().Save(op).Error }
-func (r *opportunityRepo) Delete(id, enterpriseID uuid.UUID) error { return r.fresh().Model(&model.Opportunity{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error }
+func (r *opportunityRepo) Delete(id, enterpriseID uuid.UUID) error {
+	return r.fresh().Model(&model.Opportunity{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
+}
 
 func (r *opportunityRepo) FindByID(id, enterpriseID uuid.UUID) (*model.Opportunity, error) {
 	var op model.Opportunity

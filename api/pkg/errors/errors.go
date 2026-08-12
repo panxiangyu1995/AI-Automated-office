@@ -26,18 +26,18 @@ type RecoveryActionInfo struct {
 }
 
 type AppError struct {
-	Code                string               `json:"code"`
-	Message             string               `json:"message"`
-	Detail              string               `json:"detail,omitempty"`
-	Details             []string             `json:"details,omitempty"`
-	DetailItems         []ErrorDetail        `json:"detail_items,omitempty"`
-	Status              int                  `json:"status,omitempty"`
-	Level               string               `json:"level,omitempty"`
-	Recoverable         bool                 `json:"recoverable,omitempty"`
-	RecoveryAction      string               `json:"recovery_action,omitempty"`
-	RecoveryActionInfo  *RecoveryActionInfo  `json:"recovery_action_info,omitempty"`
-	RequestID           string               `json:"request_id,omitempty"`
-	Timestamp           time.Time            `json:"timestamp,omitempty"`
+	Code               string              `json:"code"`
+	Message            string              `json:"message"`
+	Detail             string              `json:"detail,omitempty"`
+	Details            []string            `json:"details,omitempty"`
+	DetailItems        []ErrorDetail       `json:"detail_items,omitempty"`
+	Status             int                 `json:"status,omitempty"`
+	Level              string              `json:"level,omitempty"`
+	Recoverable        bool                `json:"recoverable,omitempty"`
+	RecoveryAction     string              `json:"recovery_action,omitempty"`
+	RecoveryActionInfo *RecoveryActionInfo `json:"recovery_action_info,omitempty"`
+	RequestID          string              `json:"request_id,omitempty"`
+	Timestamp          time.Time           `json:"timestamp,omitempty"`
 }
 
 func (e *AppError) Error() string {

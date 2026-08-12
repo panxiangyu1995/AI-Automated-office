@@ -11,9 +11,9 @@ type windowEntry struct {
 }
 
 type RateLimiter struct {
-	mu       sync.RWMutex
-	windows  map[string]*windowEntry
-	limits   map[string]int
+	mu      sync.RWMutex
+	windows map[string]*windowEntry
+	limits  map[string]int
 }
 
 func NewRateLimiter() *RateLimiter {

@@ -11,7 +11,9 @@ import (
 
 type CashFlowService struct{ repo repository.CashFlowRepository }
 
-func NewCashFlowService(repo repository.CashFlowRepository) *CashFlowService { return &CashFlowService{repo} }
+func NewCashFlowService(repo repository.CashFlowRepository) *CashFlowService {
+	return &CashFlowService{repo}
+}
 
 type CashFlowForecast struct {
 	Periods      []PeriodForecast `json:"periods"`

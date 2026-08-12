@@ -16,12 +16,12 @@ type billingRepo struct {
 func NewBillingRepository(db *gorm.DB) BillingRepository {
 	return &billingRepo{db: db}
 }
+
 // fresh returns a fresh session so that no WHERE/ORDER clauses leak between
 // calls on the shared repository instance.
 func (r *billingRepo) fresh() *gorm.DB {
 	return r.db.Session(&gorm.Session{NewDB: true})
 }
-
 
 func (r *billingRepo) CreatePlan(plan *model.SubscriptionPlan) error {
 	return r.fresh().Create(plan).Error
@@ -76,15 +76,15 @@ func (r *billingRepo) SaveSubscription(sub *model.EnterpriseSubscription) error 
 	return r.fresh().Model(&model.EnterpriseSubscription{}).
 		Where("id = ?", sub.ID).
 		Updates(map[string]interface{}{
-			"status":                sub.Status,
-			"start_at":              sub.StartAt,
-			"end_at":                sub.EndAt,
-			"auto_renew":            sub.AutoRenew,
-			"current_period_start":  sub.CurrentPeriodStart,
-			"current_period_end":    sub.CurrentPeriodEnd,
-			"grace_period_end":      sub.GracePeriodEnd,
-			"billing_cycle":         sub.BillingCycle,
-			"updated_at":            time.Now(),
+			"status":               sub.Status,
+			"start_at":             sub.StartAt,
+			"end_at":               sub.EndAt,
+			"auto_renew":           sub.AutoRenew,
+			"current_period_start": sub.CurrentPeriodStart,
+			"current_period_end":   sub.CurrentPeriodEnd,
+			"grace_period_end":     sub.GracePeriodEnd,
+			"billing_cycle":        sub.BillingCycle,
+			"updated_at":           time.Now(),
 		}).Error
 }
 
@@ -115,14 +115,14 @@ func (r *billingRepo) SaveBillingRecord(record *model.BillingRecord) error {
 	return r.fresh().Model(&model.BillingRecord{}).
 		Where("id = ?", record.ID).
 		Updates(map[string]interface{}{
-			"amount":        record.Amount,
-			"type":          record.Type,
-			"status":        record.Status,
-			"period_start":  record.PeriodStart,
-			"period_end":    record.PeriodEnd,
-			"due_date":      record.DueDate,
-			"paid_at":       record.PaidAt,
-			"updated_at":    time.Now(),
+			"amount":       record.Amount,
+			"type":         record.Type,
+			"status":       record.Status,
+			"period_start": record.PeriodStart,
+			"period_end":   record.PeriodEnd,
+			"due_date":     record.DueDate,
+			"paid_at":      record.PaidAt,
+			"updated_at":   time.Now(),
 		}).Error
 }
 

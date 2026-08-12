@@ -19,10 +19,10 @@ type ServiceOrder struct {
 func (ServiceOrder) TableName() string { return "service_orders" }
 
 var ServiceStatusTransitions = map[string][]string{
-	"pending": {"in_progress", "cancelled"},
-	"in_progress": {"waiting_approval", "completed"},
+	"pending":          {"in_progress", "cancelled"},
+	"in_progress":      {"waiting_approval", "completed"},
 	"waiting_approval": {"in_progress", "approved"},
-	"approved": {"in_progress", "completed"},
-	"completed": {"signed"},
-	"signed": {}, "cancelled": {},
+	"approved":         {"in_progress", "completed"},
+	"completed":        {"signed"},
+	"signed":           {}, "cancelled": {},
 }

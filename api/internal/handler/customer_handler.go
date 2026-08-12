@@ -6,16 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
 type CustomerHandler struct {
-	customerService        *service.CustomerService
-	panoramaService        *service.CustomerPanoramaService
+	customerService *service.CustomerService
+	panoramaService *service.CustomerPanoramaService
 }
 
 func NewCustomerHandler(customerService *service.CustomerService, panoramaService *service.CustomerPanoramaService) *CustomerHandler {
@@ -31,20 +31,20 @@ func (h *CustomerHandler) svcFor(c *gin.Context) *service.CustomerService {
 }
 
 type createCustomerRequest struct {
-	Name                   string `json:"name"`
-	Industry               string `json:"industry"`
+	Name                    string `json:"name"`
+	Industry                string `json:"industry"`
 	UnifiedSocialCreditCode string `json:"unified_social_credit_code"`
-	Address                string `json:"address"`
-	Notes                  string `json:"notes"`
+	Address                 string `json:"address"`
+	Notes                   string `json:"notes"`
 }
 
 type updateCustomerRequest struct {
-	Name                   string `json:"name"`
-	Industry               string `json:"industry"`
+	Name                    string `json:"name"`
+	Industry                string `json:"industry"`
 	UnifiedSocialCreditCode string `json:"unified_social_credit_code"`
-	Address                string `json:"address"`
-	Notes                  string `json:"notes"`
-	Level                  string `json:"level"`
+	Address                 string `json:"address"`
+	Notes                   string `json:"notes"`
+	Level                   string `json:"level"`
 }
 
 func (h *CustomerHandler) Create(c *gin.Context) {

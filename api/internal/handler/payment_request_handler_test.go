@@ -14,19 +14,19 @@ import (
 )
 
 type mockPaymentRequestService struct {
-	createResult      interface{}
-	createErr         *apperrors.AppError
-	listItems         interface{}
-	listTotal         int64
-	listErr           *apperrors.AppError
-	getResult         interface{}
-	getErr            *apperrors.AppError
-	updateResult      interface{}
-	updateErr         *apperrors.AppError
-	deleteErr         *apperrors.AppError
-	submitErr         *apperrors.AppError
-	approveErr        *apperrors.AppError
-	rejectErr         *apperrors.AppError
+	createResult interface{}
+	createErr    *apperrors.AppError
+	listItems    interface{}
+	listTotal    int64
+	listErr      *apperrors.AppError
+	getResult    interface{}
+	getErr       *apperrors.AppError
+	updateResult interface{}
+	updateErr    *apperrors.AppError
+	deleteErr    *apperrors.AppError
+	submitErr    *apperrors.AppError
+	approveErr   *apperrors.AppError
+	rejectErr    *apperrors.AppError
 }
 
 func (m *mockPaymentRequestService) Create(eid, customerID string, contractID, salesOrderID *string, amount float64, notes string) (interface{}, *apperrors.AppError) {
@@ -42,9 +42,15 @@ func (m *mockPaymentRequestService) Get(id string) (interface{}, *apperrors.AppE
 func (m *mockPaymentRequestService) List(eid string, page, pageSize int, status string) (interface{}, int64, *apperrors.AppError) {
 	return m.listItems, m.listTotal, m.listErr
 }
-func (m *mockPaymentRequestService) SubmitForApproval(id string) *apperrors.AppError { return m.submitErr }
-func (m *mockPaymentRequestService) Approve(id, approverID string) *apperrors.AppError { return m.approveErr }
-func (m *mockPaymentRequestService) Reject(id, approverID, reason string) *apperrors.AppError { return m.rejectErr }
+func (m *mockPaymentRequestService) SubmitForApproval(id string) *apperrors.AppError {
+	return m.submitErr
+}
+func (m *mockPaymentRequestService) Approve(id, approverID string) *apperrors.AppError {
+	return m.approveErr
+}
+func (m *mockPaymentRequestService) Reject(id, approverID, reason string) *apperrors.AppError {
+	return m.rejectErr
+}
 
 type testPRHandler struct {
 	*PaymentRequestHandler

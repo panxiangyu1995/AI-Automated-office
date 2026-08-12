@@ -16,7 +16,7 @@ func isCachedPlanError(err error) bool {
 }
 
 type QuotaService struct {
-	quotaRepo  repository.ApiQuotaRepository
+	quotaRepo   repository.ApiQuotaRepository
 	featureRepo repository.FeatureFlagRepository
 }
 

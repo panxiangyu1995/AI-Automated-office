@@ -80,11 +80,11 @@ func getExportEntity(entityType string) (ExportEntityDef, bool) {
 }
 
 var validExportTypes = map[string]bool{
-	"single":              true,
-	"cross_entity":        true,
-	"employee_dimension":  true,
-	"employee_audit":      true,
-	"conversational":      true,
+	"single":             true,
+	"cross_entity":       true,
+	"employee_dimension": true,
+	"employee_audit":     true,
+	"conversational":     true,
 }
 
 var exportEntityPermissions = map[string]string{

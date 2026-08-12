@@ -24,13 +24,13 @@ func NewGroupService(groupRepo repository.GroupRepository, userRepo repository.U
 }
 
 type CreateGroupRequest struct {
-	Name         string `json:"name"`
-	Code         string `json:"code"`
-	ContactEmail string `json:"contact_email"`
-	ContactPhone string `json:"contact_phone"`
-	Address      string `json:"address"`
-	OwnerEmail   string `json:"owner_email"`
-	OwnerName    string `json:"owner_name"`
+	Name          string `json:"name"`
+	Code          string `json:"code"`
+	ContactEmail  string `json:"contact_email"`
+	ContactPhone  string `json:"contact_phone"`
+	Address       string `json:"address"`
+	OwnerEmail    string `json:"owner_email"`
+	OwnerName     string `json:"owner_name"`
 	OwnerPassword string `json:"owner_password"`
 }
 

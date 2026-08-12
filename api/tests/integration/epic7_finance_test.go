@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func TestPayment_Create(t *testing.T) {
@@ -179,10 +179,10 @@ func TestReceivable_Create(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/receivables", map[string]interface{}{
-		"customer_id":  uuid.New().String(),
-		"amount":       30000.0,
-		"due_date":     "2026-08-01",
-		"status":       "pending",
+		"customer_id": uuid.New().String(),
+		"amount":      30000.0,
+		"due_date":    "2026-08-01",
+		"status":      "pending",
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 404 {
 		t.Errorf("expected 200/201/404, got %d; body: %s", w.Code, w.Body.String())

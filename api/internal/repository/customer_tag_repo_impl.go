@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"time"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"time"
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 )

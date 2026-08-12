@@ -17,10 +17,10 @@ import (
 )
 
 type AuthHandler struct {
-	authService      AuthServiceInterface
-	employeeService  *service.EmployeeService
-	tokenBlacklist   *redis.TokenBlacklist
-	jwtManager       *auth.JWTManager
+	authService     AuthServiceInterface
+	employeeService *service.EmployeeService
+	tokenBlacklist  *redis.TokenBlacklist
+	jwtManager      *auth.JWTManager
 }
 
 type AuthServiceInterface interface {
@@ -45,8 +45,8 @@ func NewAuthHandlerFull(authService AuthServiceInterface, employeeService *servi
 	return &AuthHandler{
 		authService:     authService,
 		employeeService: employeeService,
-		tokenBlacklist:   tokenBlacklist,
-		jwtManager:       jwtManager,
+		tokenBlacklist:  tokenBlacklist,
+		jwtManager:      jwtManager,
 	}
 }
 

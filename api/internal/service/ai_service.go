@@ -24,16 +24,22 @@ func NewAIServiceWithContext(repo repository.AIRepository, contextInjectionSvc *
 
 func (s *AIService) CreateSession(eid, userID, title, aiModel string) (*model.ChatSession, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	sess := &model.ChatSession{UserID: userID, Title: title, Model: aiModel, Context: "{}"}
 	sess.EnterpriseID = id
-	if err := s.repo.CreateSession(sess); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建会话失败: " + err.Error()) }
+	if err := s.repo.CreateSession(sess); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建会话失败: " + err.Error())
+	}
 	return sess, nil
 }
 
 func (s *AIService) ListSessions(eid, userID string) ([]model.ChatSession, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	sessions, dbErr := s.repo.ListSessions(id, userID)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")
@@ -47,7 +53,9 @@ func (s *AIService) SendMessage(sessionID, role, content string) (*model.ChatMes
 
 func (s *AIService) SendMessageWithEnterprise(sessionID, role, content, eid string) (*model.ChatMessage, *apperrors.AppError) {
 	sid, err := uuid.Parse(sessionID)
-	if err != nil { return nil, apperrors.NewValidationError("session_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("session_id", "无效")
+	}
 	enterpriseID := uuid.Nil
 	if eid != "" {
 		if parsed, pErr := uuid.Parse(eid); pErr == nil {
@@ -75,7 +83,9 @@ func (s *AIService) SendMessageWithEnterprise(sessionID, role, content, eid stri
 	}
 
 	msg := &model.ChatMessage{SessionID: sessionID, Role: role, Content: enrichedContent}
-	if err := s.repo.CreateMessage(msg); err != nil { return nil, apperrors.ErrInternal.WithDetail("发送消息失败") }
+	if err := s.repo.CreateMessage(msg); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("发送消息失败")
+	}
 
 	if role == "user" {
 		aiResponse := &model.ChatMessage{SessionID: sessionID, Role: "assistant", Content: simulateAIResponse(enrichedContent)}
@@ -87,7 +97,9 @@ func (s *AIService) SendMessageWithEnterprise(sessionID, role, content, eid stri
 
 func (s *AIService) GetMessages(sessionID string) ([]model.ChatMessage, *apperrors.AppError) {
 	_, err := uuid.Parse(sessionID)
-	if err != nil { return nil, apperrors.NewValidationError("session_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("session_id", "无效")
+	}
 	msgs, dbErr := s.repo.ListMessagesBySession(sessionID)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询消息失败")
@@ -97,7 +109,9 @@ func (s *AIService) GetMessages(sessionID string) ([]model.ChatMessage, *apperro
 
 func (s *AIService) UpdatePreference(eid, userID, key, value string) (*model.ChatSession, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	sess, dbErr := s.repo.FindFirstSessionByUser(id, userID)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询会话失败")

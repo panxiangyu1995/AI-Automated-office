@@ -9,7 +9,7 @@ import (
 )
 
 type MarkReadResult struct {
-	Message   string `json:"message"`
+	Message     string `json:"message"`
 	MarkedCount int    `json:"marked_count,omitempty"`
 }
 

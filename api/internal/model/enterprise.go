@@ -61,13 +61,13 @@ func (Enterprise) TableName() string {
 }
 
 type EnterpriseStatusLog struct {
-	ID             uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	EnterpriseID   uuid.UUID  `gorm:"type:uuid;not null;index" json:"enterprise_id"`
-	OperatorID     uuid.UUID  `gorm:"type:uuid;not null" json:"operator_id"`
-	FromStatus     string     `gorm:"type:varchar(20)" json:"from_status,omitempty"`
-	ToStatus       string     `gorm:"type:varchar(20);not null" json:"to_status"`
-	Reason         string     `gorm:"type:text" json:"reason,omitempty"`
-	CreatedAt      time.Time  `gorm:"autoCreateTime" json:"created_at"`
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	EnterpriseID uuid.UUID `gorm:"type:uuid;not null;index" json:"enterprise_id"`
+	OperatorID   uuid.UUID `gorm:"type:uuid;not null" json:"operator_id"`
+	FromStatus   string    `gorm:"type:varchar(20)" json:"from_status,omitempty"`
+	ToStatus     string    `gorm:"type:varchar(20);not null" json:"to_status"`
+	Reason       string    `gorm:"type:text" json:"reason,omitempty"`
+	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
 
 func (EnterpriseStatusLog) TableName() string {

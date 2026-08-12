@@ -8,19 +8,19 @@ import (
 )
 
 type EnterpriseSummary struct {
-	EnterpriseID   string `json:"enterprise_id"`
-	EnterpriseName string `json:"enterprise_name"`
-	DepartmentCount int64 `json:"department_count"`
-	EmployeeCount   int64 `json:"employee_count"`
-	ActiveEmployees int64 `json:"active_employees"`
+	EnterpriseID    string `json:"enterprise_id"`
+	EnterpriseName  string `json:"enterprise_name"`
+	DepartmentCount int64  `json:"department_count"`
+	EmployeeCount   int64  `json:"employee_count"`
+	ActiveEmployees int64  `json:"active_employees"`
 }
 
 type GroupSummary struct {
-	GroupID      string               `json:"group_id"`
-	EnterpriseCount int               `json:"enterprise_count"`
-	Enterprises  []EnterpriseSummary  `json:"enterprises"`
-	TotalEmployees int64              `json:"total_employees"`
-	TotalActive   int64               `json:"total_active"`
+	GroupID         string              `json:"group_id"`
+	EnterpriseCount int                 `json:"enterprise_count"`
+	Enterprises     []EnterpriseSummary `json:"enterprises"`
+	TotalEmployees  int64               `json:"total_employees"`
+	TotalActive     int64               `json:"total_active"`
 }
 
 type SummaryService struct {
@@ -49,9 +49,9 @@ func (s *SummaryService) GetGroupSummary(groupID string) (*GroupSummary, *apperr
 	}
 
 	summary := &GroupSummary{
-		GroupID:      gid.String(),
+		GroupID:         gid.String(),
 		EnterpriseCount: len(enterprises),
-		Enterprises:  make([]EnterpriseSummary, 0, len(enterprises)),
+		Enterprises:     make([]EnterpriseSummary, 0, len(enterprises)),
 	}
 
 	for _, ent := range enterprises {

@@ -296,10 +296,10 @@ func TestResolveFieldValue_ObjectAttributes(t *testing.T) {
 	ctx := &model.PermissionContext{
 		Subject: &model.Subject{UserID: "u1"},
 		Object: &model.Object{
-			Resource:    "contract",
-			OwnerID:     "owner-1",
+			Resource:     "contract",
+			OwnerID:      "owner-1",
 			DepartmentID: "dept-1",
-			Attributes:  model.JSONB{"amount": float64(5000), "status": "active"},
+			Attributes:   model.JSONB{"amount": float64(5000), "status": "active"},
 		},
 	}
 	tests := []struct {

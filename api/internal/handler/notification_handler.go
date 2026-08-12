@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/notification"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/notification"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 

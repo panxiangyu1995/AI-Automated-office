@@ -31,13 +31,13 @@ func (s *CustomerService) Create(enterpriseID, name, industry, creditCode, addre
 	}
 
 	customer := &model.Customer{
-		Name:                   name,
-		Industry:               industry,
+		Name:                    name,
+		Industry:                industry,
 		UnifiedSocialCreditCode: creditCode,
-		Address:                address,
-		Notes:                  notes,
-		Level:                  "普通",
-		Status:                 "active",
+		Address:                 address,
+		Notes:                   notes,
+		Level:                   "普通",
+		Status:                  "active",
 	}
 	customer.EnterpriseID = eid
 

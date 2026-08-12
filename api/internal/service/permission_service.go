@@ -5,16 +5,16 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/rbac"
 )
 
 type PermissionService struct {
-	permRepo     repository.PermissionRepository
-	roleRepo     repository.RoleRepository
-	empPermRepo  repository.EmployeePermissionABACRepository
+	permRepo       repository.PermissionRepository
+	roleRepo       repository.RoleRepository
+	empPermRepo    repository.EmployeePermissionABACRepository
 	customRuleRepo repository.CustomRuleRepository
-	facade       *rbac.PermissionFacade
+	facade         *rbac.PermissionFacade
 }
 
 func NewPermissionService(
@@ -88,16 +88,16 @@ func (s *PermissionService) GetEffectivePermissions(employeeID uuid.UUID, role s
 	}
 
 	return &EffectivePermissionsResponse{
-		RolePermissions:       rolePerms,
-		CustomPermissions:     empPerms,
-		TotalPermissionCount:  len(rolePerms) + len(empPerms),
+		RolePermissions:      rolePerms,
+		CustomPermissions:    empPerms,
+		TotalPermissionCount: len(rolePerms) + len(empPerms),
 	}, nil
 }
 
 type EffectivePermissionsResponse struct {
-	RolePermissions      []rbac.Permission               `json:"role_permissions"`
-	CustomPermissions    []model.EmployeePermissionABAC  `json:"custom_permissions"`
-	TotalPermissionCount int                             `json:"total_permission_count"`
+	RolePermissions      []rbac.Permission              `json:"role_permissions"`
+	CustomPermissions    []model.EmployeePermissionABAC `json:"custom_permissions"`
+	TotalPermissionCount int                            `json:"total_permission_count"`
 }
 
 func (s *PermissionService) CheckPermission(ctx *model.PermissionContext) (*model.Decision, *apperrors.AppError) {

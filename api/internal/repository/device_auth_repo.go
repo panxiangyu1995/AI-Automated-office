@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"gorm.io/gorm"
 )
 

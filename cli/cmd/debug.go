@@ -337,5 +337,3 @@ func seedLogs(level string, count int, path string) error {
 	fmt.Println(string(result))
 	return nil
 }
-
-

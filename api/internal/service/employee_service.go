@@ -89,13 +89,13 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 			eidStr := enterpriseID
 			empIDStr := emp.ID.String()
 			user := &model.User{
-				EnterpriseID:  eidStr,
-				EmployeeID:    &empIDStr,
-				Email:         email,
-				PasswordHash:  passwordHash,
-				Name:          name,
-				Role:          "employee",
-				Status:        "active",
+				EnterpriseID: eidStr,
+				EmployeeID:   &empIDStr,
+				Email:        email,
+				PasswordHash: passwordHash,
+				Name:         name,
+				Role:         "employee",
+				Status:       "active",
 			}
 			if createErr := s.userRepo.Create(user); createErr != nil {
 				s.empRepo.Delete(emp.ID, eid)
@@ -108,13 +108,13 @@ func (s *EmployeeService) Create(enterpriseID, departmentID, name, email, phone,
 }
 
 type SalesPerformance struct {
-	EmployeeID   string  `json:"employee_id"`
-	Name         string  `json:"name"`
-	Department   string  `json:"department"`
-	TotalOrders  int     `json:"total_orders"`
-	TotalAmount  float64 `json:"total_amount"`
-	PeriodStart  string  `json:"period_start"`
-	PeriodEnd    string  `json:"period_end"`
+	EmployeeID  string  `json:"employee_id"`
+	Name        string  `json:"name"`
+	Department  string  `json:"department"`
+	TotalOrders int     `json:"total_orders"`
+	TotalAmount float64 `json:"total_amount"`
+	PeriodStart string  `json:"period_start"`
+	PeriodEnd   string  `json:"period_end"`
 }
 
 func (s *EmployeeService) GetSalesPerformance(enterpriseID, employeeID, startTime, endTime string) ([]SalesPerformance, *apperrors.AppError) {
@@ -179,16 +179,16 @@ func (s *EmployeeService) GetSalesPerformance(enterpriseID, employeeID, startTim
 }
 
 type BatchImportResult struct {
-	Total   int                     `json:"total"`
-	Created int                     `json:"created"`
-	Failed  int                     `json:"failed"`
-	Errors  []BatchImportError     `json:"errors,omitempty"`
+	Total   int                `json:"total"`
+	Created int                `json:"created"`
+	Failed  int                `json:"failed"`
+	Errors  []BatchImportError `json:"errors,omitempty"`
 }
 
 type BatchImportError struct {
-	Index   int    `json:"index"`
-	Name    string `json:"name"`
-	Reason  string `json:"reason"`
+	Index  int    `json:"index"`
+	Name   string `json:"name"`
+	Reason string `json:"reason"`
 }
 
 type BatchEmployee struct {
@@ -244,7 +244,6 @@ func generateTempPassword() string {
 	}
 	return string(b)
 }
-
 
 func (s *EmployeeService) Update(enterpriseID, employeeID, name, email, phone, position, employeeNo, role, status string) (*model.Employee, *apperrors.AppError) {
 	eid, err := uuid.Parse(enterpriseID)

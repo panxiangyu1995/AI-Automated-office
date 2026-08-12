@@ -17,15 +17,15 @@ type Claims struct {
 }
 
 type JWTManager struct {
-	secret         []byte
-	accessTTL     time.Duration
-	refreshTTL    time.Duration
-	issuer        string
+	secret     []byte
+	accessTTL  time.Duration
+	refreshTTL time.Duration
+	issuer     string
 }
 
 func NewJWTManager(secret string, accessTTL, refreshTTL int, issuer string) *JWTManager {
 	return &JWTManager{
-		secret:      []byte(secret),
+		secret:     []byte(secret),
 		accessTTL:  time.Duration(accessTTL) * time.Second,
 		refreshTTL: time.Duration(refreshTTL) * time.Second,
 		issuer:     issuer,

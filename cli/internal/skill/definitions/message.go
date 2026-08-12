@@ -40,7 +40,7 @@ func initMessageSkills() {
 		Category:    "message",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/messages/unread",
 		Method:      "GET",
-		Parameters: []skill.ParamDef{},
+		Parameters:  []skill.ParamDef{},
 	})
 
 	skill.Register(skill.SkillDefinition{

@@ -128,11 +128,11 @@ func AuthRequired(jwtManager *auth.JWTManager, tokenBlacklist *redis.TokenBlackl
 			}
 			if !verified {
 				response.Error(c, &errors.AppError{
-					Code:        "AUTH_MFA_REQUIRED",
-					Message:     "需要MFA验证",
-					Status:      403,
-					Level:       errors.LevelUserAction,
-					Recoverable: true,
+					Code:           "AUTH_MFA_REQUIRED",
+					Message:        "需要MFA验证",
+					Status:         403,
+					Level:          errors.LevelUserAction,
+					Recoverable:    true,
 					RecoveryAction: "verify_mfa",
 					RecoveryActionInfo: &errors.RecoveryActionInfo{
 						Type:        "verify_mfa",

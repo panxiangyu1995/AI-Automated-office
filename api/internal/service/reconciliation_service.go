@@ -9,7 +9,9 @@ import (
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type ReconciliationService struct{ repo repository.ReconciliationRepository }
+type ReconciliationService struct {
+	repo repository.ReconciliationRepository
+}
 
 func NewReconciliationService(repo repository.ReconciliationRepository) *ReconciliationService {
 	return &ReconciliationService{repo}

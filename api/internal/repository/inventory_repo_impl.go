@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"gorm.io/gorm"
 )
 
 type inventoryRepo struct{ db *gorm.DB }
@@ -47,23 +47,35 @@ func (r *inventoryRepo) AdjustQuantityWithCheck(eid, whID, matID uuid.UUID, delt
 func (r *inventoryRepo) Find(whID, matID uuid.UUID) (*model.WarehouseInventory, error) {
 	var inv model.WarehouseInventory
 	err := r.db.Where("warehouse_id=? AND material_id=?", whID, matID).First(&inv).Error
-	if err == gorm.ErrRecordNotFound { return nil, nil }
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
 	return &inv, err
 }
 
 func (r *inventoryRepo) FindByID(id, enterpriseID uuid.UUID) (*model.WarehouseInventory, error) {
 	var inv model.WarehouseInventory
 	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&inv).Error
-	if err == gorm.ErrRecordNotFound { return nil, nil }
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
 	return &inv, err
 }
 
 func (r *inventoryRepo) ListByWarehouse(whID uuid.UUID, p, ps int) ([]model.WarehouseInventory, int64, error) {
-	var invs []model.WarehouseInventory; var t int64
+	var invs []model.WarehouseInventory
+	var t int64
 	q := r.db.Model(&model.WarehouseInventory{}).Where("warehouse_id=?", whID)
-	if err := q.Count(&t).Error; err != nil { return nil,0,err }
-	if p<1 { p=1 }; if ps<1||ps>100 { ps=20 }
-	return invs, t, q.Order("created_at DESC").Offset((p-1)*ps).Limit(ps).Find(&invs).Error
+	if err := q.Count(&t).Error; err != nil {
+		return nil, 0, err
+	}
+	if p < 1 {
+		p = 1
+	}
+	if ps < 1 || ps > 100 {
+		ps = 20
+	}
+	return invs, t, q.Order("created_at DESC").Offset((p - 1) * ps).Limit(ps).Find(&invs).Error
 }
 
 func (r *inventoryRepo) ListByMaterial(matID uuid.UUID) ([]model.WarehouseInventory, error) {
@@ -72,9 +84,17 @@ func (r *inventoryRepo) ListByMaterial(matID uuid.UUID) ([]model.WarehouseInvent
 }
 
 func (r *inventoryRepo) ListLowStock(eid uuid.UUID, p, ps int) ([]model.WarehouseInventory, int64, error) {
-	var invs []model.WarehouseInventory; var t int64
+	var invs []model.WarehouseInventory
+	var t int64
 	q := r.db.Model(&model.WarehouseInventory{}).Where("enterprise_id=? AND quantity < safety_stock", eid)
-	if err := q.Count(&t).Error; err != nil { return nil,0,err }
-	if p<1 { p=1 }; if ps<1||ps>100 { ps=20 }
-	return invs, t, q.Order("(safety_stock - quantity) DESC").Offset((p-1)*ps).Limit(ps).Find(&invs).Error
+	if err := q.Count(&t).Error; err != nil {
+		return nil, 0, err
+	}
+	if p < 1 {
+		p = 1
+	}
+	if ps < 1 || ps > 100 {
+		ps = 20
+	}
+	return invs, t, q.Order("(safety_stock - quantity) DESC").Offset((p - 1) * ps).Limit(ps).Find(&invs).Error
 }

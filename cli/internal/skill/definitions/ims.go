@@ -6,11 +6,11 @@ import (
 
 func initIMSSkills() {
 	skill.Register(skill.SkillDefinition{
-		Name:        "ims_material_create",
-		Description: "创建物料（SKU）",
-		Category:    "ims",
-		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/materials",
-		Method:      "POST",
+		Name:           "ims_material_create",
+		Description:    "创建物料（SKU）",
+		Category:       "ims",
+		APIEndpoint:    "/api/v1/enterprises/{enterprise_id}/materials",
+		Method:         "POST",
 		OpeningMessage: "欢迎使用进销存管理，您可以管理物料、仓库、库存、采购和销售订单。",
 		RoleOpenings: map[string]skill.RoleOpening{
 			"owner":    {OpeningText: "您拥有完整的进销存管理权限。", AvailableActions: "material,warehouse,inventory,purchase,sales,transfer"},

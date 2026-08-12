@@ -8,9 +8,9 @@ type SensitiveOpPolicy struct {
 
 var sensitiveOpPolicies = map[string]SensitiveOpPolicy{
 	"contract_amount_change": {RequireReapproval: true, MaxAmountNoVerify: 0},
-	"payment_approval":      {RequireDualVerify: true, MaxAmountNoVerify: 10000},
-	"contract_terminate":    {RequireDualVerify: true, MaxAmountNoVerify: 0},
-	"employee_role_change":  {RequireReapproval: true, MaxAmountNoVerify: 0},
+	"payment_approval":       {RequireDualVerify: true, MaxAmountNoVerify: 10000},
+	"contract_terminate":     {RequireDualVerify: true, MaxAmountNoVerify: 0},
+	"employee_role_change":   {RequireReapproval: true, MaxAmountNoVerify: 0},
 }
 
 func GetSensitiveOpPolicy(op string) (SensitiveOpPolicy, bool) {

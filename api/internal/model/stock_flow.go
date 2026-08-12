@@ -29,23 +29,23 @@ func (MaterialPrice) TableName() string { return "material_prices" }
 
 type InventoryCheck struct {
 	TenantModel
-	WarehouseID string `gorm:"type:uuid;not null;index" json:"warehouse_id"`
-	CheckNo     string `gorm:"type:varchar(100);not null" json:"check_no"`
-	Status      string `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	CheckedBy   *string `gorm:"type:uuid" json:"checked_by,omitempty"`
+	WarehouseID string     `gorm:"type:uuid;not null;index" json:"warehouse_id"`
+	CheckNo     string     `gorm:"type:varchar(100);not null" json:"check_no"`
+	Status      string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	CheckedBy   *string    `gorm:"type:uuid" json:"checked_by,omitempty"`
 	CheckedAt   *time.Time `json:"checked_at,omitempty"`
-	Notes       string `gorm:"type:text" json:"notes,omitempty"`
+	Notes       string     `gorm:"type:text" json:"notes,omitempty"`
 }
 
 func (InventoryCheck) TableName() string { return "inventory_checks" }
 
 type InventoryCheckItem struct {
 	BaseModel
-	CheckID      string `gorm:"type:uuid;not null;index" json:"check_id"`
-	MaterialID   string `gorm:"type:uuid;not null" json:"material_id"`
-	ExpectedQty  int    `json:"expected_qty"`
-	ActualQty    int    `json:"actual_qty"`
-	Difference   int    `json:"difference"`
+	CheckID     string `gorm:"type:uuid;not null;index" json:"check_id"`
+	MaterialID  string `gorm:"type:uuid;not null" json:"material_id"`
+	ExpectedQty int    `json:"expected_qty"`
+	ActualQty   int    `json:"actual_qty"`
+	Difference  int    `json:"difference"`
 }
 
 func (InventoryCheckItem) TableName() string { return "inventory_check_items" }

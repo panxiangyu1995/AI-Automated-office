@@ -7,8 +7,8 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/masking"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/masking"
 )
 
 type MaskingService struct {

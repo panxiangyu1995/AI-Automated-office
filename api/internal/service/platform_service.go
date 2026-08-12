@@ -9,26 +9,37 @@ import (
 )
 
 type PlatformService struct{ repo repository.PlatformRepository }
-func NewPlatformService(repo repository.PlatformRepository) *PlatformService { return &PlatformService{repo} }
+
+func NewPlatformService(repo repository.PlatformRepository) *PlatformService {
+	return &PlatformService{repo}
+}
 
 func (s *PlatformService) CreateServiceTicket(eid, customerID, subject, desc, priority string) (*model.ServiceTicket, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	var custID *string
 	if customerID != "" {
 		_, pErr := uuid.Parse(customerID)
-		if pErr != nil { return nil, apperrors.NewValidationError("customer_id", "无效UUID") }
+		if pErr != nil {
+			return nil, apperrors.NewValidationError("customer_id", "无效UUID")
+		}
 		custID = &customerID
 	}
 	t := &model.ServiceTicket{CustomerID: custID, Subject: subject, Description: desc, Priority: priority, Status: "open"}
 	t.EnterpriseID = id
-	if err := s.repo.CreateServiceTicket(t); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: " + err.Error()) }
+	if err := s.repo.CreateServiceTicket(t); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建工单失败: " + err.Error())
+	}
 	return t, nil
 }
 
 func (s *PlatformService) ListServiceTickets(eid string) ([]model.ServiceTicket, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	tickets, dbErr := s.repo.ListServiceTickets(id)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
@@ -38,16 +49,22 @@ func (s *PlatformService) ListServiceTickets(eid string) ([]model.ServiceTicket,
 
 func (s *PlatformService) CreateAnnouncement(eid, title, content string) (*model.Announcement, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	a := &model.Announcement{Title: title, Content: content}
 	a.EnterpriseID = id
-	if err := s.repo.CreateAnnouncement(a); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建公告失败") }
+	if err := s.repo.CreateAnnouncement(a); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建公告失败")
+	}
 	return a, nil
 }
 
 func (s *PlatformService) ListAnnouncements(eid string) ([]model.Announcement, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	anns, dbErr := s.repo.ListAnnouncements(id)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询公告失败")
@@ -57,16 +74,22 @@ func (s *PlatformService) ListAnnouncements(eid string) ([]model.Announcement, *
 
 func (s *PlatformService) CreateUsageBill(eid string, amount float64, desc string) (*model.UsageBill, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	b := &model.UsageBill{Amount: amount, Description: desc, Status: "pending"}
 	b.EnterpriseID = id
-	if err := s.repo.CreateUsageBill(b); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建账单失败") }
+	if err := s.repo.CreateUsageBill(b); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建账单失败")
+	}
 	return b, nil
 }
 
 func (s *PlatformService) ListBills(eid string) ([]model.UsageBill, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	bills, dbErr := s.repo.ListBills(id)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询账单失败")
@@ -85,16 +108,22 @@ func (s *PlatformService) GetSLAMetrics(eid string) (map[string]interface{}, *ap
 
 func (s *PlatformService) CreateServiceConfig(eid, configKey, configValue string) (*model.ServiceConfig, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	sc := &model.ServiceConfig{ConfigKey: configKey, ConfigValue: configValue}
 	sc.EnterpriseID = id
-	if err := s.repo.CreateServiceConfig(sc); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建配置失败") }
+	if err := s.repo.CreateServiceConfig(sc); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建配置失败")
+	}
 	return sc, nil
 }
 
 func (s *PlatformService) GetServiceConfig(eid, configKey string) (*model.ServiceConfig, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	sc, dbErr := s.repo.FindServiceConfig(id, configKey)
 	if dbErr != nil {
 		return nil, apperrors.ErrInternal.WithDetail("查询配置失败")

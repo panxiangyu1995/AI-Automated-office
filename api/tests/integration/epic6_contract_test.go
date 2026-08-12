@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func createTestContract(t *testing.T, client *testutil.TestClient, enterpriseID string) map[string]interface{} {

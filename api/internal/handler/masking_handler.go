@@ -6,8 +6,8 @@ import (
 
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
-	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/masking"
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/masking"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 

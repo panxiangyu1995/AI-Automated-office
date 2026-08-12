@@ -32,38 +32,38 @@ func EnterpriseStatusMiddleware() gin.HandlerFunc {
 			return
 		}
 
-	switch enterprise.Status {
-	case "active", "trial":
-		c.Next()
-		return
-	case "suspended":
-		path := c.Request.URL.Path
-		if isAllowedWhenSuspended(path) {
+		switch enterprise.Status {
+		case "active", "trial":
 			c.Next()
 			return
-		}
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"error":             "ENTERPRISE_SUSPENDED",
-			"error_description": "企业服务已暂停，仅可访问认证和状态相关接口",
-		})
-		return
-	case "frozen":
-		path := c.Request.URL.Path
-		if isAllowedWhenSuspended(path) {
-			c.Next()
+		case "suspended":
+			path := c.Request.URL.Path
+			if isAllowedWhenSuspended(path) {
+				c.Next()
+				return
+			}
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error":             "ENTERPRISE_SUSPENDED",
+				"error_description": "企业服务已暂停，仅可访问认证和状态相关接口",
+			})
 			return
-		}
+		case "frozen":
+			path := c.Request.URL.Path
+			if isAllowedWhenSuspended(path) {
+				c.Next()
+				return
+			}
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error":             "ENTERPRISE_FROZEN",
 				"error_description": "企业服务已冻结，所有API访问已禁止",
 			})
 			return
-	case "expired":
-		path := c.Request.URL.Path
-		if isAllowedWhenSuspended(path) {
-			c.Next()
-			return
-		}
+		case "expired":
+			path := c.Request.URL.Path
+			if isAllowedWhenSuspended(path) {
+				c.Next()
+				return
+			}
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error":             "ENTERPRISE_EXPIRED",
 				"error_description": "企业订阅已过期，请续费",

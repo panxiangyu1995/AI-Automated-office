@@ -949,8 +949,8 @@ func TestImport_DedupMerge(t *testing.T) {
 
 	w := client.POST("/api/v1/import", map[string]interface{}{
 		"entity_type": "customer", "format": "csv",
-		"data":        "name,type\nDupTest,enterprise\nDupTest,enterprise",
-		"dedup":       true, "merge_strategy": "latest",
+		"data":  "name,type\nDupTest,enterprise\nDupTest,enterprise",
+		"dedup": true, "merge_strategy": "latest",
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 404 {
 		t.Errorf("expected 200/201/404, got %d; body: %s", w.Code, w.Body.String())

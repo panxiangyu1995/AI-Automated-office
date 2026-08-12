@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func TestFile_Upload(t *testing.T) {
@@ -908,7 +908,7 @@ func TestSkill_FieldDescription(t *testing.T) {
 
 	w := client.POST("/api/v1/skills", map[string]interface{}{
 		"Name": "field_desc_skill", "Description": "Field description test",
-		"Parameters": `{"enterprise_id":{"type":"string","description":"企业ID","required":true}}`,
+		"Parameters":  `{"enterprise_id":{"type":"string","description":"企业ID","required":true}}`,
 		"APIEndpoint": "/api/v1/test", "Module": "test",
 	})
 	if w.Code != 201 && w.Code != 400 {

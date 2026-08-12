@@ -16,8 +16,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/router"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/router"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/config"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/crypto"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
@@ -53,7 +53,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create logger: %v", err)
 	}
-		defer logger.Sync()
+	defer logger.Sync()
 
 	var db *gorm.DB
 	if cfg.Database.Host != "" {
@@ -168,11 +168,11 @@ func main() {
 				&model.QualityInspectionItem{},
 				&model.BillingRecord{},
 				&model.PaymentGatewayConfig{},
-			&model.MFAConfig{},
-			&model.UndoOperation{},
-			&model.IndustryTemplate{},
-			&model.EnterpriseSkillMatrix{},
-			&model.ClaudeMDTemplate{},
+				&model.MFAConfig{},
+				&model.UndoOperation{},
+				&model.IndustryTemplate{},
+				&model.EnterpriseSkillMatrix{},
+				&model.ClaudeMDTemplate{},
 			); err != nil {
 				logger.Warn("auto-migrate system tables failed", zap.Error(err))
 			}

@@ -14,9 +14,9 @@ import (
 )
 
 type mockBillingRepo struct {
-	plans        map[string]*model.SubscriptionPlan
-	subscriptions map[string]*model.EnterpriseSubscription
-	records      map[string]*model.BillingRecord
+	plans          map[string]*model.SubscriptionPlan
+	subscriptions  map[string]*model.EnterpriseSubscription
+	records        map[string]*model.BillingRecord
 	gatewayConfigs map[string]*model.PaymentGatewayConfig
 }
 
@@ -528,7 +528,7 @@ func TestProcessGracePeriod_ExpiredSubscription(t *testing.T) {
 	graceEnd := time.Now().AddDate(0, 0, 5).Format(time.RFC3339)
 
 	sub := model.EnterpriseSubscription{
-		BaseModel:       model.BaseModel{ID: uuid.New()},
+		BaseModel:        model.BaseModel{ID: uuid.New()},
 		EnterpriseID:     uuid.New().String(),
 		PlanID:           uuid.New().String(),
 		Status:           "active",
@@ -545,7 +545,7 @@ func TestProcessGracePeriod_GracePeriodExpired(t *testing.T) {
 	pastGrace := time.Now().AddDate(0, 0, -3).Format(time.RFC3339)
 
 	sub := model.EnterpriseSubscription{
-		BaseModel:       model.BaseModel{ID: uuid.New()},
+		BaseModel:        model.BaseModel{ID: uuid.New()},
 		EnterpriseID:     uuid.New().String(),
 		PlanID:           uuid.New().String(),
 		Status:           "past_due",

@@ -3,17 +3,17 @@ package integration
 import (
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func createTestCustomer(t *testing.T, client *testutil.TestClient, enterpriseID string) map[string]interface{} {
 	t.Helper()
 	w := client.POST("/api/v1/enterprises/"+enterpriseID+"/customers", map[string]string{
-		"name":      "Test Customer " + uuid.New().String()[:8],
-		"industry":  "Technology",
-		"address":   "123 Test St",
-		"notes":     "Test customer for integration",
+		"name":     "Test Customer " + uuid.New().String()[:8],
+		"industry": "Technology",
+		"address":  "123 Test St",
+		"notes":    "Test customer for integration",
 	})
 	if w.Code != 201 {
 		t.Fatalf("failed to create test customer: status %d body %s", w.Code, w.Body.String())
@@ -39,7 +39,7 @@ func TestCustomer_CRUD(t *testing.T) {
 	testutil.AssertStatus(t, w, 200)
 
 	w2 := client.PUT("/api/v1/customers/"+custID, map[string]string{
-		"name":    "Updated Customer",
+		"name":     "Updated Customer",
 		"industry": "Finance",
 	})
 	testutil.AssertStatus(t, w2, 200)
@@ -84,7 +84,7 @@ func TestCustomer_Fields(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/customers", map[string]string{
-		"name":                      "Field Test Customer",
+		"name":                       "Field Test Customer",
 		"industry":                   "Manufacturing",
 		"unified_social_credit_code": "91110000MA01XXXXXX",
 		"address":                    "456 Industry Ave",
@@ -238,11 +238,11 @@ func TestOpportunity_CRUD(t *testing.T) {
 	custID, _ := cust["id"].(string)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/opportunities", map[string]interface{}{
-		"customer_id":      custID,
-		"name":             "New Deal",
-		"amount":           50000,
+		"customer_id":       custID,
+		"name":              "New Deal",
+		"amount":            50000,
 		"expected_close_at": "2026-12-31",
-		"description":      "Big deal opportunity",
+		"description":       "Big deal opportunity",
 	})
 	testutil.AssertStatus(t, w, 201)
 }
@@ -278,10 +278,10 @@ func TestContact_Fields(t *testing.T) {
 	custID, _ := cust["id"].(string)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/customers/"+custID+"/contacts", map[string]interface{}{
-		"name":  "John Contact",
-		"email": "john@test.com",
-		"phone": "13800000000",
-		"role":  "decision_maker",
+		"name":       "John Contact",
+		"email":      "john@test.com",
+		"phone":      "13800000000",
+		"role":       "decision_maker",
 		"is_primary": true,
 	})
 	testutil.AssertStatus(t, w, 201)

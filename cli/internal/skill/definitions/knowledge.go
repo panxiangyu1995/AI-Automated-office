@@ -83,7 +83,7 @@ func initKnowledgeSkills() {
 		Category:    "knowledge",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/kb/categories",
 		Method:      "GET",
-		Parameters: []skill.ParamDef{},
+		Parameters:  []skill.ParamDef{},
 	})
 
 	skill.Register(skill.SkillDefinition{

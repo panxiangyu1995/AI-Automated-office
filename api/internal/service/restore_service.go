@@ -9,7 +9,9 @@ import (
 
 type RestoreService struct{ repo repository.RestoreRepository }
 
-func NewRestoreService(repo repository.RestoreRepository) *RestoreService { return &RestoreService{repo} }
+func NewRestoreService(repo repository.RestoreRepository) *RestoreService {
+	return &RestoreService{repo}
+}
 
 func (s *RestoreService) Restore(eid, resourceType, id string) *apperrors.AppError {
 	eUUID, err := uuid.Parse(eid)

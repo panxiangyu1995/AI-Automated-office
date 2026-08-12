@@ -27,9 +27,9 @@ func (h *CrossEnterpriseHandler) svcFor(c *gin.Context) *service.CrossEnterprise
 }
 
 type grantPermissionRequest struct {
-	UserID         string `json:"user_id"`
+	UserID             string `json:"user_id"`
 	TargetEnterpriseID string `json:"target_enterprise_id"`
-	Permissions    string `json:"permissions"`
+	Permissions        string `json:"permissions"`
 }
 
 func (h *CrossEnterpriseHandler) Grant(c *gin.Context) {

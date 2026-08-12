@@ -14,9 +14,9 @@ import (
 )
 
 type QualityInspectionService struct {
-	repo        repository.QualityInspectionRepository
-	invRepo     repository.InventoryRepository
-	ordRepo     repository.OrderRepository
+	repo         repository.QualityInspectionRepository
+	invRepo      repository.InventoryRepository
+	ordRepo      repository.OrderRepository
 	lockProvider *rc.LockProvider
 }
 

@@ -6,11 +6,11 @@ import (
 
 func initCRMSkills() {
 	skill.Register(skill.SkillDefinition{
-		Name:        "crm_customer_create",
-		Description: "创建客户档案",
-		Category:    "crm",
-		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/customers",
-		Method:      "POST",
+		Name:           "crm_customer_create",
+		Description:    "创建客户档案",
+		Category:       "crm",
+		APIEndpoint:    "/api/v1/enterprises/{enterprise_id}/customers",
+		Method:         "POST",
 		OpeningMessage: "欢迎使用CRM客户管理，您可以管理客户档案、联系人、商机和标签。",
 		RoleOpenings: map[string]skill.RoleOpening{
 			"owner":    {OpeningText: "您拥有完整的CRM管理权限，可管理所有客户、联系人和商机。", AvailableActions: "create,update,delete,tag,opportunity"},
@@ -100,7 +100,7 @@ func initCRMSkills() {
 		Category:    "crm",
 		APIEndpoint: "/api/v1/enterprises/{enterprise_id}/customer-levels",
 		Method:      "GET",
-		Parameters: []skill.ParamDef{},
+		Parameters:  []skill.ParamDef{},
 	})
 
 	skill.Register(skill.SkillDefinition{

@@ -4,28 +4,28 @@ import "time"
 
 type PaymentRecord struct {
 	TenantModel
-	TransactionNo string    `gorm:"type:varchar(100);not null" json:"transaction_no"`
-	CustomerID    *string   `gorm:"type:uuid;index" json:"customer_id,omitempty"`
-	ContractID    *string   `gorm:"type:uuid;index" json:"contract_id,omitempty"`
-	Amount        float64   `gorm:"type:numeric(15,2);not null" json:"amount"`
-	PaymentMethod string    `gorm:"type:varchar(50)" json:"payment_method"`
-	Status        string    `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
+	TransactionNo string     `gorm:"type:varchar(100);not null" json:"transaction_no"`
+	CustomerID    *string    `gorm:"type:uuid;index" json:"customer_id,omitempty"`
+	ContractID    *string    `gorm:"type:uuid;index" json:"contract_id,omitempty"`
+	Amount        float64    `gorm:"type:numeric(15,2);not null" json:"amount"`
+	PaymentMethod string     `gorm:"type:varchar(50)" json:"payment_method"`
+	Status        string     `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
 	PaidAt        *time.Time `json:"paid_at,omitempty"`
-	Notes         string    `gorm:"type:text" json:"notes,omitempty"`
+	Notes         string     `gorm:"type:text" json:"notes,omitempty"`
 }
 
 func (PaymentRecord) TableName() string { return "payment_records" }
 
 type ExpenseRecord struct {
 	TenantModel
-	ExpenseNo  string    `gorm:"type:varchar(100);not null" json:"expense_no"`
-	Amount     float64   `gorm:"type:numeric(15,2);not null" json:"amount"`
-	Category   string    `gorm:"type:varchar(50)" json:"category"`
-	Status     string    `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
-	SubmittedBy *string  `gorm:"type:uuid" json:"submitted_by"`
-	ApprovedBy  *string  `gorm:"type:uuid" json:"approved_by,omitempty"`
-	Description string   `gorm:"type:text" json:"description,omitempty"`
-	ExpenseAt  *time.Time `json:"expense_at,omitempty"`
+	ExpenseNo   string     `gorm:"type:varchar(100);not null" json:"expense_no"`
+	Amount      float64    `gorm:"type:numeric(15,2);not null" json:"amount"`
+	Category    string     `gorm:"type:varchar(50)" json:"category"`
+	Status      string     `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
+	SubmittedBy *string    `gorm:"type:uuid" json:"submitted_by"`
+	ApprovedBy  *string    `gorm:"type:uuid" json:"approved_by,omitempty"`
+	Description string     `gorm:"type:text" json:"description,omitempty"`
+	ExpenseAt   *time.Time `json:"expense_at,omitempty"`
 }
 
 func (ExpenseRecord) TableName() string { return "expense_records" }

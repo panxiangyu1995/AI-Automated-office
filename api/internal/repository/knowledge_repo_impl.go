@@ -184,8 +184,12 @@ func (r *knowledgeRepo) KeywordSearch(enterpriseID uuid.UUID, query string, page
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if page < 1 { page = 1 }
-	if pageSize < 1 || pageSize > 100 { pageSize = 20 }
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
 	if err := q.Order("created_at DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&items).Error; err != nil {
 		return nil, 0, err
 	}
@@ -200,8 +204,12 @@ func (r *knowledgeRepo) ListDocsByVisibility(enterpriseID uuid.UUID, userID stri
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if page < 1 { page = 1 }
-	if pageSize < 1 || pageSize > 100 { pageSize = 20 }
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
 	if err := q.Order("created_at DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&items).Error; err != nil {
 		return nil, 0, err
 	}

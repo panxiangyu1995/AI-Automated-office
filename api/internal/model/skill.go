@@ -37,7 +37,7 @@ type SkillParameter struct {
 	Description         string    `gorm:"type:text" json:"description,omitempty"`
 	Label               string    `gorm:"type:varchar(100)" json:"label,omitempty"`
 	Example             string    `gorm:"type:text" json:"example,omitempty"`
-	Validation           string    `gorm:"type:text" json:"validation,omitempty"`
+	Validation          string    `gorm:"type:text" json:"validation,omitempty"`
 	AutoFillFromContext string    `gorm:"type:varchar(100)" json:"auto_fill_from_context,omitempty"`
 }
 

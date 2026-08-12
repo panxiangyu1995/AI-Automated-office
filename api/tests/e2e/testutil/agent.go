@@ -27,7 +27,7 @@ func NewE2EClient(t *testing.T, router *gin.Engine, db *gorm.DB) *E2EClient {
 	return &E2EClient{t: t, router: router, db: db}
 }
 
-func (c *E2EClient) SetToken(token string)  { c.token = token }
+func (c *E2EClient) SetToken(token string)   { c.token = token }
 func (c *E2EClient) SetEnterprise(id string) { c.enterpriseID = id }
 
 func (c *E2EClient) doRequest(method, path string, body interface{}) *httptest.ResponseRecorder {
@@ -150,19 +150,19 @@ func skillToEndpoint(skillName, enterpriseID string) string {
 		"hrm_employee_list":    "/api/v1/enterprises/" + enterpriseID + "/employees",
 		"hrm_department_tree":  "/api/v1/enterprises/" + enterpriseID + "/departments/tree",
 		"crm_customer_list":    "/api/v1/enterprises/" + enterpriseID + "/customers",
-		"ims_material_list":   "/api/v1/enterprises/" + enterpriseID + "/materials",
-		"ims_inventory_list":  "/api/v1/enterprises/" + enterpriseID + "/inventory",
-		"contract_list":       "/api/v1/contracts",
+		"ims_material_list":    "/api/v1/enterprises/" + enterpriseID + "/materials",
+		"ims_inventory_list":   "/api/v1/enterprises/" + enterpriseID + "/inventory",
+		"contract_list":        "/api/v1/contracts",
 		"finance_payment_list": "/api/v1/enterprises/" + enterpriseID + "/payments",
 		"finance_expense_list": "/api/v1/enterprises/" + enterpriseID + "/expenses",
 		"finance_invoice_list": "/api/v1/enterprises/" + enterpriseID + "/invoices",
-		"kb_doc_list":         "/api/v1/enterprises/" + enterpriseID + "/kb/docs",
-		"skill_list":          "/api/v1/skills",
-		"dashboard":           "/api/v1/dashboard",
-		"message_list":        "/api/v1/enterprises/" + enterpriseID + "/messages",
-		"audit_log_list":      "/api/v1/audit-logs",
-		"report_sales":        "/api/v1/reports/sales",
-		"report_finance":      "/api/v1/reports/finance",
+		"kb_doc_list":          "/api/v1/enterprises/" + enterpriseID + "/kb/docs",
+		"skill_list":           "/api/v1/skills",
+		"dashboard":            "/api/v1/dashboard",
+		"message_list":         "/api/v1/enterprises/" + enterpriseID + "/messages",
+		"audit_log_list":       "/api/v1/audit-logs",
+		"report_sales":         "/api/v1/reports/sales",
+		"report_finance":       "/api/v1/reports/finance",
 		"service_order_list":   "/api/v1/enterprises/" + enterpriseID + "/service-orders",
 		"sales_order_list":     "/api/v1/enterprises/" + enterpriseID + "/sales-orders",
 	}

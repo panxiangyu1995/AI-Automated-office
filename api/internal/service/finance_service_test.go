@@ -157,33 +157,45 @@ func (m *mockFinanceRepo) ListPayables(enterpriseID uuid.UUID, page, pageSize in
 
 type mockFinanceRepoWithError struct{}
 
-func (m *mockFinanceRepoWithError) CreatePayment(r *model.PaymentRecord) error        { return errors.New("db error") }
+func (m *mockFinanceRepoWithError) CreatePayment(r *model.PaymentRecord) error {
+	return errors.New("db error")
+}
 func (m *mockFinanceRepoWithError) FindPaymentByID(id, enterpriseID uuid.UUID) (*model.PaymentRecord, error) {
 	return nil, nil
 }
 func (m *mockFinanceRepoWithError) ListPayments(enterpriseID uuid.UUID, page, pageSize int) ([]model.PaymentRecord, int64, error) {
 	return nil, 0, errors.New("db error")
 }
-func (m *mockFinanceRepoWithError) CreateExpense(r *model.ExpenseRecord) error         { return errors.New("db error") }
+func (m *mockFinanceRepoWithError) CreateExpense(r *model.ExpenseRecord) error {
+	return errors.New("db error")
+}
 func (m *mockFinanceRepoWithError) FindExpenseByID(id, enterpriseID uuid.UUID) (*model.ExpenseRecord, error) {
 	return nil, nil
 }
-func (m *mockFinanceRepoWithError) UpdateExpense(r *model.ExpenseRecord) error         { return errors.New("db error") }
+func (m *mockFinanceRepoWithError) UpdateExpense(r *model.ExpenseRecord) error {
+	return errors.New("db error")
+}
 func (m *mockFinanceRepoWithError) ListExpenses(enterpriseID uuid.UUID, page, pageSize int) ([]model.ExpenseRecord, int64, error) {
 	return nil, 0, errors.New("db error")
 }
-func (m *mockFinanceRepoWithError) CreateInvoice(r *model.Invoice) error               { return errors.New("db error") }
+func (m *mockFinanceRepoWithError) CreateInvoice(r *model.Invoice) error {
+	return errors.New("db error")
+}
 func (m *mockFinanceRepoWithError) ListInvoices(enterpriseID uuid.UUID, page, pageSize int) ([]model.Invoice, int64, error) {
 	return nil, 0, errors.New("db error")
 }
-func (m *mockFinanceRepoWithError) CreateReceivable(r *model.Receivable) error         { return errors.New("db error") }
+func (m *mockFinanceRepoWithError) CreateReceivable(r *model.Receivable) error {
+	return errors.New("db error")
+}
 func (m *mockFinanceRepoWithError) FindReceivableByID(id, enterpriseID uuid.UUID) (*model.Receivable, error) {
 	return nil, nil
 }
 func (m *mockFinanceRepoWithError) ListReceivables(enterpriseID uuid.UUID, page, pageSize int) ([]model.Receivable, int64, error) {
 	return nil, 0, errors.New("db error")
 }
-func (m *mockFinanceRepoWithError) CreatePayable(p *model.Payable) error               { return errors.New("db error") }
+func (m *mockFinanceRepoWithError) CreatePayable(p *model.Payable) error {
+	return errors.New("db error")
+}
 func (m *mockFinanceRepoWithError) FindPayableByID(id, enterpriseID uuid.UUID) (*model.Payable, error) {
 	return nil, nil
 }

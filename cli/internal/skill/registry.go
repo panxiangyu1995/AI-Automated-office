@@ -17,19 +17,19 @@ type ActionDef struct {
 }
 
 type RoleOpening struct {
-	OpeningText     string `json:"opening_text"`
+	OpeningText      string `json:"opening_text"`
 	AvailableActions string `json:"available_actions,omitempty"`
 }
 
 type SkillDefinition struct {
-	Name           string               `json:"name"`
-	Description    string               `json:"description"`
-	Category       string               `json:"category"`
-	APIEndpoint    string               `json:"api_endpoint,omitempty"`
-	Method         string               `json:"method,omitempty"`
-	Parameters     []ParamDef            `json:"parameters,omitempty"`
-	Actions        map[string]ActionDef `json:"actions,omitempty"`
-	OpeningMessage string               `json:"opening_message,omitempty"`
+	Name           string                 `json:"name"`
+	Description    string                 `json:"description"`
+	Category       string                 `json:"category"`
+	APIEndpoint    string                 `json:"api_endpoint,omitempty"`
+	Method         string                 `json:"method,omitempty"`
+	Parameters     []ParamDef             `json:"parameters,omitempty"`
+	Actions        map[string]ActionDef   `json:"actions,omitempty"`
+	OpeningMessage string                 `json:"opening_message,omitempty"`
 	RoleOpenings   map[string]RoleOpening `json:"role_openings,omitempty"`
 }
 

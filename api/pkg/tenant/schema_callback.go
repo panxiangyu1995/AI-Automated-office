@@ -17,17 +17,17 @@ const ContextKeySchemaName = "tenant_schema_name"
 // service tickets, industry templates, ClaudeMD templates, skill matrix),
 // so queries against them always resolve to public.
 var publicTables = map[string]bool{
-	"industry_templates":      true,
-	"claude_md_templates":     true,
-	"enterprise_skill_matrix": true,
-	"subscription_plans":      true,
+	"industry_templates":       true,
+	"claude_md_templates":      true,
+	"enterprise_skill_matrix":  true,
+	"subscription_plans":       true,
 	"enterprise_subscriptions": true,
-	"billing_records":         true,
-	"usage_bills":             true,
-	"webhooks":                true,
-	"service_tickets":         true,
-	"service_configs":         true,
-	"audit_log_entries":       true,
+	"billing_records":          true,
+	"usage_bills":              true,
+	"webhooks":                 true,
+	"service_tickets":          true,
+	"service_configs":          true,
+	"audit_log_entries":        true,
 }
 
 // RegisterSchemaCallbacks installs GORM callbacks that rewrite the table name

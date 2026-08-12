@@ -13,9 +13,9 @@ import (
 )
 
 type MessageService struct {
-	msgRepo  repository.MessageRepository
-	annRepo  repository.AnnouncementRepository
-	counter  *redis.UnreadCounter
+	msgRepo repository.MessageRepository
+	annRepo repository.AnnouncementRepository
+	counter *redis.UnreadCounter
 }
 
 func NewMessageService(msgRepo repository.MessageRepository, annRepo repository.AnnouncementRepository, counter *redis.UnreadCounter) *MessageService {

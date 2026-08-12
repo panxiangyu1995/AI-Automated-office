@@ -40,9 +40,9 @@ func (r *enterpriseSkillMatrixRepo) Upsert(matrix *model.EnterpriseSkillMatrix) 
 	existing.CustomOpeningMessage = matrix.CustomOpeningMessage
 	existing.CustomParams = matrix.CustomParams
 	return r.fresh().Where("id = ? AND enterprise_id = ?", existing.ID, existing.EnterpriseID).Updates(map[string]interface{}{
-		"is_enabled":            existing.IsEnabled,
+		"is_enabled":             existing.IsEnabled,
 		"custom_opening_message": existing.CustomOpeningMessage,
-		"custom_params":         existing.CustomParams,
+		"custom_params":          existing.CustomParams,
 	}).Error
 }
 

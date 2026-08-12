@@ -14,6 +14,7 @@ import (
 )
 
 type FinanceHandler struct{ svc *service.FinanceService }
+
 func NewFinanceHandler(svc *service.FinanceService) *FinanceHandler { return &FinanceHandler{svc} }
 
 // svcFor returns a FinanceService bound to the request's tenant database.
@@ -32,18 +33,18 @@ type payReq struct {
 	Amount        float64 `json:"amount"`
 }
 type expReq struct {
-	Category     string  `json:"category"`
-	Description  string  `json:"description"`
-	SubmittedBy  string  `json:"submitted_by"`
-	Amount       float64 `json:"amount"`
-	InvoiceType  string  `json:"invoice_type"`
+	Category    string  `json:"category"`
+	Description string  `json:"description"`
+	SubmittedBy string  `json:"submitted_by"`
+	Amount      float64 `json:"amount"`
+	InvoiceType string  `json:"invoice_type"`
 }
 type recvReq struct {
-	CustomerID    string  `json:"customer_id" binding:"required"`
-	SalesOrderID  *string `json:"sales_order_id"`
-	ContractID    *string `json:"contract_id"`
-	Amount        float64 `json:"amount" binding:"required"`
-	DueDate       *string `json:"due_date"`
+	CustomerID   string  `json:"customer_id" binding:"required"`
+	SalesOrderID *string `json:"sales_order_id"`
+	ContractID   *string `json:"contract_id"`
+	Amount       float64 `json:"amount" binding:"required"`
+	DueDate      *string `json:"due_date"`
 }
 type payblReq struct {
 	SupplierID      string  `json:"supplier_id" binding:"required"`
@@ -60,31 +61,59 @@ type invReq struct {
 }
 
 func (h *FinanceHandler) CreatePayment(c *gin.Context) {
-	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req payReq
-	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "body", "格式错误")
+		return
+	}
 	r, appErr := h.svcFor(c).CreatePayment(eid, req.CustomerID, req.ContractID, req.PaymentMethod, req.Notes, req.Amount)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.Created(c, r)
 }
 
 func (h *FinanceHandler) ListPayments(c *gin.Context) {
-	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svcFor(c).ListPayments(eid, p, ps)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }
 
 func (h *FinanceHandler) CreateExpense(c *gin.Context) {
-	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req expReq
-	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "body", "格式错误")
+		return
+	}
 	if req.SubmittedBy == "" {
 		req.SubmittedBy = middleware.GetUserID(c)
 	}
 	r, appErr := h.svcFor(c).CreateExpense(eid, req.Category, req.Description, req.SubmittedBy, req.Amount)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.Created(c, r)
 }
 
@@ -95,32 +124,61 @@ func (h *FinanceHandler) ApproveExpense(c *gin.Context) {
 		return
 	}
 	r, appErr := h.svcFor(c).ApproveExpense(c.Param("id"), eid)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.Success(c, r)
 }
 
 func (h *FinanceHandler) ListExpenses(c *gin.Context) {
-	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svcFor(c).ListExpenses(eid, p, ps)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }
 
 func (h *FinanceHandler) CreateInvoice(c *gin.Context) {
-	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
 	var req invReq
-	if err := c.ShouldBindJSON(&req); err != nil { response.ValidationError(c, "body", "格式错误"); return }
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, "body", "格式错误")
+		return
+	}
 	r, appErr := h.svcFor(c).CreateInvoice(eid, req.CustomerID, req.Notes, req.Amount, req.TaxAmount)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.Created(c, r)
 }
 
 func (h *FinanceHandler) ListInvoices(c *gin.Context) {
-	eid := middleware.GetEnterpriseID(c); if eid == "" { response.Error(c, errors.ErrTenantRequired); return }
-	p, _ := strconv.Atoi(c.DefaultQuery("page", "1")); ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	eid := middleware.GetEnterpriseID(c)
+	if eid == "" {
+		response.Error(c, errors.ErrTenantRequired)
+		return
+	}
+	p, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	ps, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	items, total, appErr := h.svcFor(c).ListInvoices(eid, p, ps)
-	if appErr != nil { response.Error(c, appErr); return }
+	if appErr != nil {
+		response.Error(c, appErr)
+		return
+	}
 	response.SuccessWithMeta(c, items, &response.MetaInfo{TotalCount: total, Page: p, PageSize: ps})
 }
 

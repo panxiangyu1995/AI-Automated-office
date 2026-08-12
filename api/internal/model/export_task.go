@@ -44,20 +44,20 @@ func (m *JSONMap) Scan(val interface{}) error {
 
 type ExportTask struct {
 	BaseModel
-	EnterpriseID uuid.UUID `gorm:"type:uuid;not null;index" json:"enterprise_id"`
-	RequestedBy  uuid.UUID `gorm:"type:uuid;not null" json:"requested_by"`
-	ExportType   string    `gorm:"type:varchar(50);not null" json:"export_type"`
-	EntityType   string    `gorm:"type:varchar(50);not null" json:"entity_type"`
-	EntityID     string    `gorm:"type:varchar(100)" json:"entity_id,omitempty"`
-	Format       string    `gorm:"type:varchar(10);not null;default:'xlsx'" json:"format"`
-	Status       string    `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
+	EnterpriseID uuid.UUID   `gorm:"type:uuid;not null;index" json:"enterprise_id"`
+	RequestedBy  uuid.UUID   `gorm:"type:uuid;not null" json:"requested_by"`
+	ExportType   string      `gorm:"type:varchar(50);not null" json:"export_type"`
+	EntityType   string      `gorm:"type:varchar(50);not null" json:"entity_type"`
+	EntityID     string      `gorm:"type:varchar(100)" json:"entity_id,omitempty"`
+	Format       string      `gorm:"type:varchar(10);not null;default:'xlsx'" json:"format"`
+	Status       string      `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
 	Fields       StringSlice `gorm:"type:jsonb" json:"fields,omitempty"`
 	Filters      JSONMap     `gorm:"type:jsonb" json:"filters,omitempty"`
-	FileKey      string    `gorm:"type:varchar(255)" json:"file_key,omitempty"`
-	FileSize     int64     `json:"file_size,omitempty"`
-	ErrorMsg     string    `gorm:"type:text" json:"error_msg,omitempty"`
-	StartedAt    *time.Time `json:"started_at,omitempty"`
-	CompletedAt  *time.Time `json:"completed_at,omitempty"`
+	FileKey      string      `gorm:"type:varchar(255)" json:"file_key,omitempty"`
+	FileSize     int64       `json:"file_size,omitempty"`
+	ErrorMsg     string      `gorm:"type:text" json:"error_msg,omitempty"`
+	StartedAt    *time.Time  `json:"started_at,omitempty"`
+	CompletedAt  *time.Time  `json:"completed_at,omitempty"`
 }
 
 func (ExportTask) TableName() string { return "export_tasks" }

@@ -73,19 +73,19 @@ type RouterDeps struct {
 	DebugLogService  *service.DebugLogService
 	DebugStubService *service.DebugStubService
 
-	AuditMiddleware        *middleware.AuditMiddleware
-	QuotaMiddleware        *middleware.QuotaMiddleware
-	FeatureFlagMiddleware  *middleware.FeatureFlagMiddleware
-	RateLimitMiddleware    *middleware.RateLimitMiddleware
+	AuditMiddleware       *middleware.AuditMiddleware
+	QuotaMiddleware       *middleware.QuotaMiddleware
+	FeatureFlagMiddleware *middleware.FeatureFlagMiddleware
+	RateLimitMiddleware   *middleware.RateLimitMiddleware
 
-	CrossEnterpriseRepo    repository.CrossEnterpriseRepository
+	CrossEnterpriseRepo repository.CrossEnterpriseRepository
 
-	BackupService          *service.BackupService
-	ReminderPaymentPlanSvc *service.PaymentPlanService
-	BillingService         *service.BillingService
-	ExportWorker           *service.ExportWorker
-	UndoService            *service.UndoService
-	AutoArchiveService     *service.AutoArchiveService
+	BackupService           *service.BackupService
+	ReminderPaymentPlanSvc  *service.PaymentPlanService
+	BillingService          *service.BillingService
+	ExportWorker            *service.ExportWorker
+	UndoService             *service.UndoService
+	AutoArchiveService      *service.AutoArchiveService
 	ContextInjectionService *service.ContextInjectionService
-	TokenBlacklist         *rc.TokenBlacklist
+	TokenBlacklist          *rc.TokenBlacklist
 }

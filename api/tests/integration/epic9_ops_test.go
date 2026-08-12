@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 	"github.com/google/uuid"
+	"github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
 )
 
 func createServiceOrderWithCustomer(t *testing.T, client *testutil.TestClient, enterpriseID string, overrides map[string]interface{}) map[string]interface{} {
@@ -110,9 +110,9 @@ func TestOps_EnterpriseSubscription_CRUD(t *testing.T) {
 	planID, _ := planData["id"].(string)
 
 	w := client.POST("/api/v1/enterprise-subscriptions", map[string]interface{}{
-		"PlanID":   planID,
-		"StartAt":  "2026-07-01T00:00:00Z",
-		"EndAt":    "2027-07-01T00:00:00Z",
+		"PlanID":    planID,
+		"StartAt":   "2026-07-01T00:00:00Z",
+		"EndAt":     "2027-07-01T00:00:00Z",
 		"AutoRenew": true,
 	})
 	testutil.AssertStatus(t, w, 201)
@@ -433,10 +433,10 @@ func TestOps_Backup_CRUD(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/backup/configs", map[string]interface{}{
-		"backup_time": "02:00",
+		"backup_time":      "02:00",
 		"backup_directory": "/backups",
-		"retention_days": 30,
-		"enabled":     true,
+		"retention_days":   30,
+		"enabled":          true,
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 403 && w.Code != 400 {
 		t.Errorf("expected 200/201/403/400, got %d; body: %s", w.Code, w.Body.String())

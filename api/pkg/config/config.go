@@ -48,11 +48,11 @@ type RedisConfig struct {
 }
 
 type JWTConfig struct {
-	Secret           string `mapstructure:"secret"`
-	AccessTokenTTL   int    `mapstructure:"access_token_ttl"`
-	RefreshTokenTTL  int    `mapstructure:"refresh_token_ttl"`
-	Issuer           string `mapstructure:"issuer"`
-	CLIHMACSecret    string `mapstructure:"cli_hmac_secret"`
+	Secret          string `mapstructure:"secret"`
+	AccessTokenTTL  int    `mapstructure:"access_token_ttl"`
+	RefreshTokenTTL int    `mapstructure:"refresh_token_ttl"`
+	Issuer          string `mapstructure:"issuer"`
+	CLIHMACSecret   string `mapstructure:"cli_hmac_secret"`
 }
 
 func (j *JWTConfig) GetCLIHMACSecret() string {
@@ -73,7 +73,7 @@ type LogConfig struct {
 }
 
 type NotificationConfig struct {
-	SMS   SMSConfig   `mapstructure:"sms"`
+	SMS   SMSConfig    `mapstructure:"sms"`
 	Email EmailConfigN `mapstructure:"email"`
 }
 

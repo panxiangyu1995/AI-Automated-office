@@ -11,8 +11,8 @@ import (
 )
 
 type OpportunityService struct {
-	oppRepo    repository.OpportunityRepository
-	custRepo   repository.CustomerRepository
+	oppRepo  repository.OpportunityRepository
+	custRepo repository.CustomerRepository
 }
 
 func NewOpportunityService(oppRepo repository.OpportunityRepository, custRepo repository.CustomerRepository) *OpportunityService {

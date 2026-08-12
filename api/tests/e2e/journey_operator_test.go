@@ -3,9 +3,9 @@ package e2e
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	e2etestutil "github.com/panxiangyu1995/AI-Automated-office/api/tests/e2e/testutil"
 	inttestutil "github.com/panxiangyu1995/AI-Automated-office/api/tests/integration/testutil"
-	"github.com/google/uuid"
 )
 
 func TestJourney_OperatorInitPlatform(t *testing.T) {

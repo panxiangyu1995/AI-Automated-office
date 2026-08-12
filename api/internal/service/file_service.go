@@ -16,7 +16,7 @@ import (
 )
 
 type FileService struct {
-	repo      repository.FileMetadataRepository
+	repo       repository.FileMetadataRepository
 	storageDir string
 }
 

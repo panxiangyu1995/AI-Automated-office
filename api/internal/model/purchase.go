@@ -4,23 +4,23 @@ import "time"
 
 type PurchaseOrder struct {
 	TenantModel
-	OrderNo    string     `gorm:"type:varchar(100);not null" json:"order_no"`
-	SupplierID string     `gorm:"type:uuid;not null" json:"supplier_id"`
-	Status     string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	TotalAmount float64   `gorm:"type:numeric(15,2);default:0" json:"total_amount"`
-	OrderDate  *time.Time `json:"order_date,omitempty"`
-	Notes      string     `gorm:"type:text" json:"notes,omitempty"`
+	OrderNo     string     `gorm:"type:varchar(100);not null" json:"order_no"`
+	SupplierID  string     `gorm:"type:uuid;not null" json:"supplier_id"`
+	Status      string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	TotalAmount float64    `gorm:"type:numeric(15,2);default:0" json:"total_amount"`
+	OrderDate   *time.Time `json:"order_date,omitempty"`
+	Notes       string     `gorm:"type:text" json:"notes,omitempty"`
 }
 
 func (PurchaseOrder) TableName() string { return "purchase_orders" }
 
 type PurchaseOrderItem struct {
 	BaseModel
-	OrderID    string  `gorm:"type:uuid;not null;index" json:"order_id"`
-	MaterialID string  `gorm:"type:uuid;not null" json:"material_id"`
-	Quantity   int     `gorm:"not null" json:"quantity"`
-	UnitPrice  float64 `gorm:"type:numeric(15,2)" json:"unit_price"`
-	ReceivedQty int    `gorm:"default:0" json:"received_qty"`
+	OrderID     string  `gorm:"type:uuid;not null;index" json:"order_id"`
+	MaterialID  string  `gorm:"type:uuid;not null" json:"material_id"`
+	Quantity    int     `gorm:"not null" json:"quantity"`
+	UnitPrice   float64 `gorm:"type:numeric(15,2)" json:"unit_price"`
+	ReceivedQty int     `gorm:"default:0" json:"received_qty"`
 }
 
 func (PurchaseOrderItem) TableName() string { return "purchase_order_items" }
@@ -51,14 +51,14 @@ func (SalesOrderItem) TableName() string { return "sales_order_items" }
 
 type TransferOrder struct {
 	TenantModel
-	OrderNo        string `gorm:"type:varchar(100);not null" json:"order_no"`
-	SourceWhID     string `gorm:"type:uuid;not null" json:"source_warehouse_id"`
-	TargetWhID     string `gorm:"type:uuid;not null" json:"target_warehouse_id"`
-	Status         string `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
-	MaterialID     string `gorm:"type:uuid;not null" json:"material_id"`
-	Quantity       int    `gorm:"not null" json:"quantity"`
-	ReceivedQty    int    `gorm:"default:0" json:"received_qty"`
-	Notes          string `gorm:"type:text" json:"notes,omitempty"`
+	OrderNo     string `gorm:"type:varchar(100);not null" json:"order_no"`
+	SourceWhID  string `gorm:"type:uuid;not null" json:"source_warehouse_id"`
+	TargetWhID  string `gorm:"type:uuid;not null" json:"target_warehouse_id"`
+	Status      string `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
+	MaterialID  string `gorm:"type:uuid;not null" json:"material_id"`
+	Quantity    int    `gorm:"not null" json:"quantity"`
+	ReceivedQty int    `gorm:"default:0" json:"received_qty"`
+	Notes       string `gorm:"type:text" json:"notes,omitempty"`
 }
 
 func (TransferOrder) TableName() string { return "transfer_orders" }

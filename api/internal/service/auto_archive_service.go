@@ -9,10 +9,10 @@ import (
 )
 
 type AutoArchiveService struct {
-	knowledgeSvc  *KnowledgeService
-	contractRepo  repository.ContractRepository
-	orderRepo     repository.OrderRepository
-	employeeRepo  repository.EmployeeRepository
+	knowledgeSvc *KnowledgeService
+	contractRepo repository.ContractRepository
+	orderRepo    repository.OrderRepository
+	employeeRepo repository.EmployeeRepository
 }
 
 func NewAutoArchiveService(

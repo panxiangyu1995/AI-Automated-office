@@ -6,12 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
-	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
+	rc "github.com/panxiangyu1995/AI-Automated-office/api/pkg/redis"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 

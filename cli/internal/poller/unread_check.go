@@ -20,8 +20,8 @@ type UnreadMessage struct {
 }
 
 type UnreadCheckResult struct {
-	HasUnread   bool           `json:"has_unread"`
-	UnreadCount int            `json:"unread_count"`
+	HasUnread   bool            `json:"has_unread"`
+	UnreadCount int             `json:"unread_count"`
 	Messages    []UnreadMessage `json:"messages"`
 }
 

@@ -13,7 +13,9 @@ import (
 	apperrors "github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 )
 
-type ServiceOrderService struct{ repo repository.ServiceOrderRepository }
+type ServiceOrderService struct {
+	repo repository.ServiceOrderRepository
+}
 
 func NewServiceOrderService(repo repository.ServiceOrderRepository) *ServiceOrderService {
 	return &ServiceOrderService{repo}
@@ -21,31 +23,47 @@ func NewServiceOrderService(repo repository.ServiceOrderRepository) *ServiceOrde
 
 func validServiceTransition(from, to string) bool {
 	next, ok := model.ServiceStatusTransitions[from]
-	if !ok { return false }
-	for _, s := range next { if s == to { return true } }
+	if !ok {
+		return false
+	}
+	for _, s := range next {
+		if s == to {
+			return true
+		}
+	}
 	return false
 }
 
 func (s *ServiceOrderService) Create(eid, customerID, orderType, desc string, contractID string, amount float64) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	so := &model.ServiceOrder{
-		OrderNo: fmt.Sprintf("SO-%s", uuid.New().String()[:8]),
+		OrderNo:    fmt.Sprintf("SO-%s", uuid.New().String()[:8]),
 		CustomerID: customerID, ContractID: strPtr(contractID), OrderType: orderType,
 		Status: "pending", Description: desc, Amount: amount,
 	}
 	so.EnterpriseID = id
-	if err := s.repo.Create(so); err != nil { return nil, apperrors.ErrInternal.WithDetail("创建工单失败: "+err.Error()) }
+	if err := s.repo.Create(so); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("创建工单失败: " + err.Error())
+	}
 	return so, nil
 }
 
 func (s *ServiceOrderService) ChangeStatus(eid, soID, newStatus string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
-	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("service_order_id", "无效")
+	}
 	entID, _ := uuid.Parse(eid)
 	so, dbErr := s.repo.FindByID(id, entID)
-	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
-	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
+	}
+	if so == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("工单不存在")
+	}
 	if !validServiceTransition(so.Status, newStatus) {
 		return nil, &apperrors.AppError{
 			Code: "SVC_INVALID_STATUS_TRANSITION", Message: "非法状态流转", Status: 400,
@@ -57,49 +75,79 @@ func (s *ServiceOrderService) ChangeStatus(eid, soID, newStatus string) (*model.
 		now := so.UpdatedAt
 		so.SignedAt = &now
 	}
-	if err := s.repo.Save(so); err != nil { return nil, apperrors.ErrInternal.WithDetail("更新状态失败: "+err.Error()) }
+	if err := s.repo.Save(so); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("更新状态失败: " + err.Error())
+	}
 	return so, nil
 }
 
 func (s *ServiceOrderService) Get(eid, soID string) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
-	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("service_order_id", "无效")
+	}
 	entID, _ := uuid.Parse(eid)
 	so, dbErr := s.repo.FindByID(id, entID)
-	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
-	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
+	}
+	if so == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("工单不存在")
+	}
 	return so, nil
 }
 
 func (s *ServiceOrderService) Delete(eid, soID string) *apperrors.AppError {
 	id, err := uuid.Parse(soID)
-	if err != nil { return apperrors.NewValidationError("service_order_id", "无效") }
+	if err != nil {
+		return apperrors.NewValidationError("service_order_id", "无效")
+	}
 	entID, _ := uuid.Parse(eid)
 	so, dbErr := s.repo.FindByID(id, entID)
-	if dbErr != nil { return apperrors.ErrInternal.WithDetail("查询工单失败") }
-	if so == nil { return apperrors.ErrNotFound.WithDetail("工单不存在") }
-	if so.Status != "pending" { return apperrors.ErrBadRequest.WithDetail("仅待处理工单可删除") }
-	if err := s.repo.Delete(so, so.EnterpriseID); err != nil { return apperrors.ErrInternal.WithDetail("删除工单失败") }
+	if dbErr != nil {
+		return apperrors.ErrInternal.WithDetail("查询工单失败")
+	}
+	if so == nil {
+		return apperrors.ErrNotFound.WithDetail("工单不存在")
+	}
+	if so.Status != "pending" {
+		return apperrors.ErrBadRequest.WithDetail("仅待处理工单可删除")
+	}
+	if err := s.repo.Delete(so, so.EnterpriseID); err != nil {
+		return apperrors.ErrInternal.WithDetail("删除工单失败")
+	}
 	return nil
 }
 
 func (s *ServiceOrderService) Quote(eid, soID string, amount float64) (*model.ServiceOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(soID)
-	if err != nil { return nil, apperrors.NewValidationError("service_order_id", "无效") }
+	if err != nil {
+		return nil, apperrors.NewValidationError("service_order_id", "无效")
+	}
 	entID, _ := uuid.Parse(eid)
 	so, dbErr := s.repo.FindByID(id, entID)
-	if dbErr != nil { return nil, apperrors.ErrInternal.WithDetail("查询工单失败") }
-	if so == nil { return nil, apperrors.ErrNotFound.WithDetail("工单不存在") }
+	if dbErr != nil {
+		return nil, apperrors.ErrInternal.WithDetail("查询工单失败")
+	}
+	if so == nil {
+		return nil, apperrors.ErrNotFound.WithDetail("工单不存在")
+	}
 	so.Amount = amount
-	if err := s.repo.Save(so); err != nil { return nil, apperrors.ErrInternal.WithDetail("报价失败") }
+	if err := s.repo.Save(so); err != nil {
+		return nil, apperrors.ErrInternal.WithDetail("报价失败")
+	}
 	return so, nil
 }
 
 func (s *ServiceOrderService) List(eid, orderType, status string, p, ps int) ([]model.ServiceOrder, int64, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
-	if err != nil { return nil, 0, apperrors.NewValidationError("enterprise_id", "无效") }
+	if err != nil {
+		return nil, 0, apperrors.NewValidationError("enterprise_id", "无效")
+	}
 	sos, total, dbErr := s.repo.List(id, orderType, status, p, ps)
-	if dbErr != nil { return nil, 0, apperrors.ErrInternal.WithDetail("查询工单失败: "+dbErr.Error()) }
+	if dbErr != nil {
+		return nil, 0, apperrors.ErrInternal.WithDetail("查询工单失败: " + dbErr.Error())
+	}
 	return sos, total, nil
 }
 

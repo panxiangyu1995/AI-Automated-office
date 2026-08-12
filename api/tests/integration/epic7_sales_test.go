@@ -41,9 +41,9 @@ func TestSalesOrder_Fields(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/sales-orders", map[string]interface{}{
-		"order_no":     "SO-FIELDS-001",
-		"status":       "draft",
-		"total_amount": 5000.0,
+		"order_no":      "SO-FIELDS-001",
+		"status":        "draft",
+		"total_amount":  5000.0,
 		"delivery_date": "2026-09-01",
 		"payment_terms": "net30",
 	})

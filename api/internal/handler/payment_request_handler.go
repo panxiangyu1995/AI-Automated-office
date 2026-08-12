@@ -5,14 +5,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/middleware"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/repository"
+	"github.com/panxiangyu1995/AI-Automated-office/api/internal/service"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/errors"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/response"
 )
 
-type PaymentRequestHandler struct{ svc *service.PaymentRequestService }
+type PaymentRequestHandler struct {
+	svc *service.PaymentRequestService
+}
 
 func NewPaymentRequestHandler(svc *service.PaymentRequestService) *PaymentRequestHandler {
 	return &PaymentRequestHandler{svc}
@@ -27,10 +29,10 @@ func (h *PaymentRequestHandler) svcFor(c *gin.Context) *service.PaymentRequestSe
 }
 
 type prCreateReq struct {
-	Category     string  `json:"category"`
-	Amount       float64 `json:"amount" binding:"required"`
-	ApplicantID  *string `json:"applicant_id"`
-	Description  string  `json:"description"`
+	Category    string  `json:"category"`
+	Amount      float64 `json:"amount" binding:"required"`
+	ApplicantID *string `json:"applicant_id"`
+	Description string  `json:"description"`
 }
 
 type prUpdateReq struct {
