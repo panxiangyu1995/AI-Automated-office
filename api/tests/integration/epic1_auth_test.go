@@ -438,12 +438,17 @@ func TestSwitchEnterprise(t *testing.T) {
 	fx2 := testutil.CreateFullOrgChain(t, db)
 	defer fx2.Cleanup(t, db)
 
+	// owner can only switch to an enterprise in the same group: reuse the
+	// same group as fx so the switch is permitted by CanAccessEnterprise.
+	ent2 := testutil.CreateTestEnterprise(t, db, fx.Group.ID.String())
+	defer testutil.DropTestSchema(t, db, ent2.ID.String())
+
 	client := testutil.NewTestClient(t, router, db)
 	client.SetToken(fx.OwnerToken(t))
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/auth/switch-enterprise", map[string]string{
-		"enterprise_id": fx2.EnterpriseID,
+		"enterprise_id": ent2.ID.String(),
 	})
 	if w.Code != 200 && w.Code != 404 {
 		t.Errorf("expected 200 or 404, got %d; body: %s", w.Code, w.Body.String())

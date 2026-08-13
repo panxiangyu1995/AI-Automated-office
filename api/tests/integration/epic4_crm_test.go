@@ -316,7 +316,7 @@ func TestCustomer_RelatedContracts(t *testing.T) {
 		t.Logf("contract create: %d %s", w.Code, w.Body.String())
 	}
 
-	w = client.GET("/api/v1/contracts")
+	w = client.GET("/api/v1/enterprises/" + fx.EnterpriseID + "/contracts")
 	testutil.AssertStatus(t, w, 200)
 }
 

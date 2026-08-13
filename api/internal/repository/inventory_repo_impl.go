@@ -12,6 +12,12 @@ type inventoryRepo struct{ db *gorm.DB }
 
 func NewInventoryRepository(db *gorm.DB) InventoryRepository { return &inventoryRepo{db} }
 
+// fresh returns a fresh session so that no WHERE/ORDER clauses leak between
+// calls on the shared repository instance.
+func (r *inventoryRepo) fresh() *gorm.DB {
+	return r.db.Session(&gorm.Session{NewDB: true})
+}
+
 func (r *inventoryRepo) Upsert(inv *model.WarehouseInventory) error {
 	sql := `INSERT INTO warehouse_inventories (enterprise_id, warehouse_id, material_id, quantity, safety_stock, in_transit, created_at, updated_at)
 		VALUES (?,?,?,?,?,?, NOW(), NOW())
@@ -46,7 +52,7 @@ func (r *inventoryRepo) AdjustQuantityWithCheck(eid, whID, matID uuid.UUID, delt
 
 func (r *inventoryRepo) Find(whID, matID uuid.UUID) (*model.WarehouseInventory, error) {
 	var inv model.WarehouseInventory
-	err := r.db.Where("warehouse_id=? AND material_id=?", whID, matID).First(&inv).Error
+	err := r.fresh().Where("warehouse_id=? AND material_id=?", whID, matID).First(&inv).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
@@ -55,7 +61,7 @@ func (r *inventoryRepo) Find(whID, matID uuid.UUID) (*model.WarehouseInventory, 
 
 func (r *inventoryRepo) FindByID(id, enterpriseID uuid.UUID) (*model.WarehouseInventory, error) {
 	var inv model.WarehouseInventory
-	err := r.db.Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&inv).Error
+	err := r.fresh().Where("id = ? AND enterprise_id = ?", id, enterpriseID).First(&inv).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
@@ -65,7 +71,7 @@ func (r *inventoryRepo) FindByID(id, enterpriseID uuid.UUID) (*model.WarehouseIn
 func (r *inventoryRepo) ListByWarehouse(whID uuid.UUID, p, ps int) ([]model.WarehouseInventory, int64, error) {
 	var invs []model.WarehouseInventory
 	var t int64
-	q := r.db.Model(&model.WarehouseInventory{}).Where("warehouse_id=?", whID)
+	q := r.fresh().Model(&model.WarehouseInventory{}).Where("warehouse_id=?", whID)
 	if err := q.Count(&t).Error; err != nil {
 		return nil, 0, err
 	}
@@ -80,13 +86,13 @@ func (r *inventoryRepo) ListByWarehouse(whID uuid.UUID, p, ps int) ([]model.Ware
 
 func (r *inventoryRepo) ListByMaterial(matID uuid.UUID) ([]model.WarehouseInventory, error) {
 	var invs []model.WarehouseInventory
-	return invs, r.db.Where("material_id=?", matID).Find(&invs).Error
+	return invs, r.fresh().Where("material_id=?", matID).Find(&invs).Error
 }
 
 func (r *inventoryRepo) ListLowStock(eid uuid.UUID, p, ps int) ([]model.WarehouseInventory, int64, error) {
 	var invs []model.WarehouseInventory
 	var t int64
-	q := r.db.Model(&model.WarehouseInventory{}).Where("enterprise_id=? AND quantity < safety_stock", eid)
+	q := r.fresh().Model(&model.WarehouseInventory{}).Where("enterprise_id=? AND quantity < safety_stock", eid)
 	if err := q.Count(&t).Error; err != nil {
 		return nil, 0, err
 	}

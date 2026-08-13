@@ -46,9 +46,12 @@ type poReq struct {
 }
 
 type soReq struct {
-	CustomerID string                   `json:"customer_id"`
-	Notes      string                   `json:"notes"`
-	Items      []service.OrderItemInput `json:"items"`
+	CustomerID  string                   `json:"customer_id"`
+	Notes       string                   `json:"notes"`
+	OrderNo     string                   `json:"order_no"`
+	Status      string                   `json:"status"`
+	TotalAmount float64                  `json:"total_amount"`
+	Items       []service.OrderItemInput `json:"items"`
 }
 
 type transferReq struct {
@@ -123,7 +126,7 @@ func (h *OrderHandler) CreateSalesOrder(c *gin.Context) {
 		response.ValidationError(c, "body", "格式错误")
 		return
 	}
-	order, appErr := h.svcFor(c).CreateSalesOrder(eid, req.CustomerID, req.Notes, req.Items)
+	order, appErr := h.svcFor(c).CreateSalesOrder(eid, req.CustomerID, req.Notes, req.OrderNo, req.Status, req.TotalAmount, req.Items)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

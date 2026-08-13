@@ -669,8 +669,12 @@ func TestRequisition_Issue(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/requisitions", map[string]interface{}{
-		"type":   "issue",
-		"status": "draft",
+		"type":         "issue",
+		"status":       "draft",
+		"applicant_id": fx.Operator.ID.String(),
+		"warehouse_id": fx.EnterpriseID,
+		"material_id":  fx.EnterpriseID,
+		"quantity":     10,
 	})
 	if w.Code != 200 && w.Code != 201 && w.Code != 404 {
 		t.Errorf("expected 200/201/404, got %d; body: %s", w.Code, w.Body.String())

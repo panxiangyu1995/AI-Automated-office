@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
+	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/database"
 	"github.com/panxiangyu1995/AI-Automated-office/api/pkg/tenant"
 )
 
@@ -20,7 +20,25 @@ func DSN() string {
 	if dsn := os.Getenv("AO_TEST_DB_DSN"); dsn != "" {
 		return dsn
 	}
+	if os.Getenv("AO_DATABASE_HOST") != "" {
+		return fmt.Sprintf(
+			"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+			os.Getenv("AO_DATABASE_HOST"),
+			envOr("AO_DATABASE_PORT", "5432"),
+			envOr("AO_DATABASE_USER", "ai_office"),
+			os.Getenv("AO_DATABASE_PASSWORD"),
+			envOr("AO_DATABASE_DBNAME", "ai_office"),
+			envOr("AO_DATABASE_SSLMODE", "disable"),
+		)
+	}
 	return "host=localhost port=5432 user=ai_office password=ai_office_pass dbname=ai_office sslmode=disable"
+}
+
+func envOr(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return def
 }
 
 var testDB *gorm.DB
@@ -45,15 +63,15 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("failed to get sql.DB: %v", err)
 	}
-	sqlDB.SetMaxIdleConns(2)
-	sqlDB.SetMaxOpenConns(2)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(20)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	if err := sqlDB.Ping(); err != nil {
 		t.Fatalf("failed to ping test database: %v", err)
 	}
 
-	if err := db.AutoMigrate(&model.Group{}, &model.Enterprise{}, &model.User{}); err != nil {
+	if err := database.AutoMigrateSystem(db); err != nil {
 		t.Fatalf("failed to auto-migrate system tables: %v", err)
 	}
 

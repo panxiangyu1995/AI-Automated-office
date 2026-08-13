@@ -435,7 +435,7 @@ func TestOrderService_CreateSalesOrder(t *testing.T) {
 		{MaterialID: uuid.New().String(), Quantity: 3, UnitPrice: 150},
 	}
 
-	so, appErr := svc.CreateSalesOrder(eid, custID, "备注", items)
+	so, appErr := svc.CreateSalesOrder(eid, custID, "备注", "", "", 0, items)
 	assert.Nil(t, appErr)
 	assert.NotNil(t, so)
 	assert.Contains(t, so.OrderNo, "SO-")
@@ -485,7 +485,7 @@ func TestOrderService_ChangeSalesOrderStatus(t *testing.T) {
 	custID := uuid.New().String()
 	items := []OrderItemInput{{MaterialID: uuid.New().String(), Quantity: 1, UnitPrice: 100}}
 
-	so, _ := svc.CreateSalesOrder(eid, custID, "", items)
+	so, _ := svc.CreateSalesOrder(eid, custID, "", "", "", 0, items)
 
 	result, appErr := svc.ChangeSalesOrderStatus(so.ID.String(), "confirmed")
 	assert.Nil(t, appErr)
@@ -501,7 +501,7 @@ func TestOrderService_ChangeSalesOrderStatus_InvalidTransition(t *testing.T) {
 	custID := uuid.New().String()
 	items := []OrderItemInput{{MaterialID: uuid.New().String(), Quantity: 1, UnitPrice: 100}}
 
-	so, _ := svc.CreateSalesOrder(eid, custID, "", items)
+	so, _ := svc.CreateSalesOrder(eid, custID, "", "", "", 0, items)
 
 	result, appErr := svc.ChangeSalesOrderStatus(so.ID.String(), "completed")
 	assert.Nil(t, result)

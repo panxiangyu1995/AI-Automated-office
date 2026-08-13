@@ -17,8 +17,8 @@ func NewSupplierRepository(db *gorm.DB) SupplierRepository { return &supplierRep
 func (r *supplierRepo) fresh() *gorm.DB {
 	return r.db.Session(&gorm.Session{NewDB: true})
 }
-func (r *supplierRepo) Create(s *model.Supplier) error { return r.db.Create(s).Error }
-func (r *supplierRepo) Update(s *model.Supplier) error { return r.db.Save(s).Error }
+func (r *supplierRepo) Create(s *model.Supplier) error { return r.fresh().Create(s).Error }
+func (r *supplierRepo) Update(s *model.Supplier) error { return r.fresh().Save(s).Error }
 func (r *supplierRepo) Delete(id, enterpriseID uuid.UUID) error {
 	return r.fresh().Model(&model.Supplier{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }

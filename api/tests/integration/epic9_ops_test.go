@@ -110,10 +110,10 @@ func TestOps_EnterpriseSubscription_CRUD(t *testing.T) {
 	planID, _ := planData["id"].(string)
 
 	w := client.POST("/api/v1/enterprise-subscriptions", map[string]interface{}{
-		"PlanID":    planID,
-		"StartAt":   "2026-07-01T00:00:00Z",
-		"EndAt":     "2027-07-01T00:00:00Z",
-		"AutoRenew": true,
+		"plan_id":    planID,
+		"start_at":   "2026-07-01T00:00:00Z",
+		"end_at":     "2027-07-01T00:00:00Z",
+		"auto_renew": true,
 	})
 	testutil.AssertStatus(t, w, 201)
 

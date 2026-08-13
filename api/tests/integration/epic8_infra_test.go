@@ -58,8 +58,8 @@ func TestMessage_SendReceive(t *testing.T) {
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/messages", map[string]interface{}{
 		"SenderID":   fx.Owner.ID.String(),
 		"ReceiverID": fx.EmployeeUser.ID.String(),
-		"Title":      "Test Message",
-		"Content":    "This is a test message",
+		"title":      "Test Message",
+		"content":    "This is a test message",
 		"MsgType":    "notification",
 	})
 	if w.Code != 201 && w.Code != 500 {
@@ -92,10 +92,10 @@ func TestKnowledge_UploadDoc(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	w := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/kb/docs", map[string]interface{}{
-		"Title":      "Test Knowledge Doc",
-		"Content":    "This is a knowledge base document",
-		"Summary":    "Test summary",
-		"Tags":       "test,knowledge",
+		"title":      "Test Knowledge Doc",
+		"content":    "This is a knowledge base document",
+		"summary":    "Test summary",
+		"tags":       "test,knowledge",
 		"CategoryID": "",
 	})
 	if w.Code != 201 && w.Code != 500 {
@@ -270,7 +270,7 @@ func TestAI_Session(t *testing.T) {
 
 	w := client.POST("/api/v1/ai/sessions", map[string]interface{}{
 		"UserID": fx.Owner.ID.String(),
-		"Title":  "Test AI Session",
+		"title":  "Test AI Session",
 		"Model":  "gpt-4",
 	})
 	if w.Code != 201 && w.Code != 400 {
@@ -634,8 +634,10 @@ func TestFile_SoftDelete(t *testing.T) {
 	client.SetToken(fx.OwnerToken(t))
 	client.SetEnterprise(fx.EnterpriseID)
 
-	createW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/files", map[string]interface{}{
-		"Category": "test", "RefID": uuid.New().String(), "RefType": "test",
+	createW := client.UploadFile("/api/v1/enterprises/"+fx.EnterpriseID+"/files", "test.txt", map[string]string{
+		"category": "test",
+		"ref_id":   uuid.New().String(),
+		"ref_type": "test",
 	})
 	if createW.Code != 201 {
 		t.Fatalf("feature not implemented: file create failed (got %d)", createW.Code)
@@ -681,7 +683,7 @@ func TestKnowledge_CRUD(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	createW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/kb/docs", map[string]interface{}{
-		"Title": "CRUD Doc", "Content": "Full CRUD test", "Summary": "CRUD", "Tags": "crud",
+		"title": "CRUD Doc", "content": "Full CRUD test", "summary": "CRUD", "tags": "crud",
 	})
 	if createW.Code != 201 {
 		t.Fatalf("feature not implemented: kb doc create failed (got %d)", createW.Code)
@@ -696,7 +698,7 @@ func TestKnowledge_CRUD(t *testing.T) {
 	}
 
 	updateW := client.PUT("/api/v1/enterprises/"+fx.EnterpriseID+"/kb/docs/"+docID, map[string]interface{}{
-		"Title": "Updated CRUD Doc", "Content": "Updated content",
+		"title": "Updated CRUD Doc", "content": "Updated content",
 	})
 	if updateW.Code != 200 && updateW.Code != 404 {
 		t.Errorf("expected 200/404, got %d; body: %s", updateW.Code, updateW.Body.String())
@@ -726,10 +728,10 @@ func TestKnowledge_EnterpriseIsolation(t *testing.T) {
 	client2.SetEnterprise(fx2.EnterpriseID)
 
 	client1.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/kb/docs", map[string]interface{}{
-		"Title": "Ent1 Doc", "Content": "Private to Ent1", "Summary": "Isolated", "Tags": "ent1",
+		"title": "Ent1 Doc", "content": "Private to Ent1", "summary": "Isolated", "tags": "ent1",
 	})
 	client2.POST("/api/v1/enterprises/"+fx2.EnterpriseID+"/kb/docs", map[string]interface{}{
-		"Title": "Ent2 Doc", "Content": "Private to Ent2", "Summary": "Isolated", "Tags": "ent2",
+		"title": "Ent2 Doc", "content": "Private to Ent2", "summary": "Isolated", "tags": "ent2",
 	})
 
 	w1 := client1.GET("/api/v1/enterprises/" + fx.EnterpriseID + "/kb/docs")
@@ -749,7 +751,7 @@ func TestKnowledge_Vectorize(t *testing.T) {
 	client.SetEnterprise(fx.EnterpriseID)
 
 	createW := client.POST("/api/v1/enterprises/"+fx.EnterpriseID+"/kb/docs", map[string]interface{}{
-		"Title": "Vectorize Doc", "Content": "Content to vectorize", "Summary": "Vector", "Tags": "vec",
+		"title": "Vectorize Doc", "content": "Content to vectorize", "summary": "Vector", "tags": "vec",
 	})
 	if createW.Code != 201 {
 		t.Fatalf("feature not implemented: kb doc create failed (got %d)", createW.Code)

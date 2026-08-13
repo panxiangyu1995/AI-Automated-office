@@ -8,15 +8,25 @@ on:
 
 env:
   GO_VERSION: "1.23"
+  AO_BCRYPT_COST: "4"
+  AO_DATABASE_HOST: localhost
+  AO_DATABASE_PORT: "5432"
+  AO_DATABASE_USER: ai_office
+  AO_DATABASE_PASSWORD: ai_office_pass
+  AO_DATABASE_DBNAME: ai_office_test
+  AO_DATABASE_SSLMODE: disable
+  AO_REDIS_HOST: localhost
+  AO_REDIS_PORT: "6379"
+  AO_JWT_SECRET: test-secret-key
 
 jobs:
   lint:
     name: Lint & Vet
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: |
@@ -51,8 +61,8 @@ jobs:
             exit 1
           fi
 
-  test:
-    name: Test
+  unit-test:
+    name: Unit Tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -78,9 +88,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: |
@@ -89,30 +99,61 @@ jobs:
 
       - name: API - Unit Tests
         working-directory: api
-        env:
-          AO_DATABASE_HOST: localhost
-          AO_DATABASE_PORT: 5432
-          AO_DATABASE_USER: ai_office
-          AO_DATABASE_PASSWORD: ai_office_pass
-          AO_DATABASE_DBNAME: ai_office_test
-          AO_DATABASE_SSLMODE: disable
-          AO_REDIS_HOST: localhost
-          AO_REDIS_PORT: 6379
-          AO_JWT_SECRET: test-secret-key
-        run: go test -race -coverprofile=coverage.out ./...
+        run: go test -race -coverprofile=coverage.out ./internal/... ./pkg/... ./cmd/...
 
       - name: CLI - Unit Tests
         working-directory: cli
         run: go test -race ./...
 
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [lint, unit-test]
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ai_office
+          POSTGRES_PASSWORD: ai_office_pass
+          POSTGRES_DB: ai_office_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            api/go.sum
+            cli/go.sum
+
+      - name: API - Integration & E2E Tests
+        working-directory: api
+        run: go test -timeout 45m ./tests/...
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [lint, unit-test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: |

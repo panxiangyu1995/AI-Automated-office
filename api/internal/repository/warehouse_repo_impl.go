@@ -17,8 +17,8 @@ func NewWarehouseRepository(db *gorm.DB) WarehouseRepository { return &warehouse
 func (r *warehouseRepo) fresh() *gorm.DB {
 	return r.db.Session(&gorm.Session{NewDB: true})
 }
-func (r *warehouseRepo) Create(w *model.Warehouse) error { return r.db.Create(w).Error }
-func (r *warehouseRepo) Update(w *model.Warehouse) error { return r.db.Save(w).Error }
+func (r *warehouseRepo) Create(w *model.Warehouse) error { return r.fresh().Create(w).Error }
+func (r *warehouseRepo) Update(w *model.Warehouse) error { return r.fresh().Save(w).Error }
 func (r *warehouseRepo) Delete(id, enterpriseID uuid.UUID) error {
 	return r.fresh().Model(&model.Warehouse{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }

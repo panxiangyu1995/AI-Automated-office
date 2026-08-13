@@ -29,40 +29,74 @@ func RunMigrations(db *gorm.DB, enterpriseID string) error {
 		return fmt.Errorf("failed to ensure migration table: %w", err)
 	}
 
+	applied, err := appliedVersions(db, schema)
+	if err != nil {
+		return err
+	}
+
+	var pending []Migration
 	for _, m := range tenantMigrations {
-		applied, err := isMigrationApplied(db, schema, m.Version)
-		if err != nil {
-			return err
-		}
-		if applied {
+		if applied[m.Version] {
 			continue
 		}
-
-		sql := m.SQL
-		if sql == "" {
-			sql, err = LoadMigrationSQL(m.Version)
+		if m.SQL == "" {
+			sql, err := LoadMigrationSQL(m.Version)
 			if err != nil {
 				return fmt.Errorf("migration %s SQL not found: %w", m.Version, err)
 			}
+			m.SQL = sql
 		}
+		pending = append(pending, m)
+	}
 
-		tx := db.Exec(fmt.Sprintf("SET search_path TO %s", schema))
-		if tx.Error != nil {
-			return fmt.Errorf("failed to set search_path: %w", tx.Error)
+	if len(pending) == 0 {
+		return nil
+	}
+
+	// Execute all pending migrations in a single transaction so every DDL
+	// runs on the same connection with search_path pinned to the tenant
+	// schema (pooled connections would otherwise resolve the unqualified
+	// table names to the public schema). SET LOCAL scopes search_path to
+	// the transaction, so the pooled connection is not polluted for later
+	// queries, and one commit covers all DDLs instead of one per migration.
+	txErr := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(fmt.Sprintf("SET LOCAL search_path TO %s,public", schema)).Error; err != nil {
+			return fmt.Errorf("failed to set search_path: %w", err)
 		}
-
-		if err := tx.Exec(sql).Error; err != nil {
-			return fmt.Errorf("migration %s failed: %w", m.Version, err)
+		for _, m := range pending {
+			if err := tx.Exec(m.SQL).Error; err != nil {
+				return fmt.Errorf("migration %s failed: %w", m.Version, err)
+			}
+			if err := tx.Exec(
+				fmt.Sprintf("INSERT INTO %s._migrations (version, description) VALUES (?, ?)", schema),
+				m.Version, m.Description,
+			).Error; err != nil {
+				return fmt.Errorf("failed to record migration %s: %w", m.Version, err)
+			}
+			log.Printf("[tenant] migration %s applied to %s", m.Version, schema)
 		}
-
-		if err := recordMigration(db, schema, m.Version, m.Description); err != nil {
-			return fmt.Errorf("failed to record migration %s: %w", m.Version, err)
-		}
-
-		log.Printf("[tenant] migration %s applied to %s", m.Version, schema)
+		return nil
+	})
+	if txErr != nil {
+		return txErr
 	}
 
 	return nil
+}
+
+func appliedVersions(db *gorm.DB, schema string) (map[string]bool, error) {
+	var versions []string
+	err := db.Raw(
+		fmt.Sprintf("SELECT version FROM %s._migrations", schema),
+	).Scan(&versions).Error
+	if err != nil {
+		return nil, err
+	}
+	applied := make(map[string]bool, len(versions))
+	for _, v := range versions {
+		applied[v] = true
+	}
+	return applied, nil
 }
 
 func RunAllMigrations(db *gorm.DB) error {
@@ -88,25 +122,6 @@ func ensureMigrationTable(db *gorm.DB, schema string) error {
 		applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 	)`, schema)
 	return db.Exec(sql).Error
-}
-
-func isMigrationApplied(db *gorm.DB, schema, version string) (bool, error) {
-	var count int64
-	err := db.Raw(
-		fmt.Sprintf("SELECT COUNT(*) FROM %s._migrations WHERE version = ?", schema),
-		version,
-	).Scan(&count).Error
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
-}
-
-func recordMigration(db *gorm.DB, schema, version, description string) error {
-	return db.Exec(
-		fmt.Sprintf("INSERT INTO %s._migrations (version, description) VALUES (?, ?)", schema),
-		version, description,
-	).Error
 }
 
 func stringsTrimPrefix(s, prefix string) string {
@@ -173,6 +188,7 @@ func registerMigrations() {
 		{"046", "Create industry_templates, enterprise_skill_matrix, claude_md_templates; add knowledge versioning columns"},
 		{"047", "Alter subscription_plans features to jsonb"},
 		{"048", "Add encrypted column to backup_records"},
+		{"049", "Align skills table columns with model"},
 	}
 	for _, m := range migrations {
 		RegisterMigration(Migration{

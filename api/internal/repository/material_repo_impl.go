@@ -16,8 +16,8 @@ func NewMaterialRepository(db *gorm.DB) MaterialRepository { return &materialRep
 func (r *materialRepo) fresh() *gorm.DB {
 	return r.db.Session(&gorm.Session{NewDB: true})
 }
-func (r *materialRepo) Create(m *model.Material) error { return r.db.Create(m).Error }
-func (r *materialRepo) Update(m *model.Material) error { return r.db.Save(m).Error }
+func (r *materialRepo) Create(m *model.Material) error { return r.fresh().Create(m).Error }
+func (r *materialRepo) Update(m *model.Material) error { return r.fresh().Save(m).Error }
 func (r *materialRepo) Delete(id, enterpriseID uuid.UUID) error {
 	return r.fresh().Model(&model.Material{}).Where("id = ? AND enterprise_id = ?", id, enterpriseID).UpdateColumn("deleted_at", time.Now()).Error
 }

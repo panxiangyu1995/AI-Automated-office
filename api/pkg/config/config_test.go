@@ -7,6 +7,17 @@ import (
 )
 
 func TestLoad(t *testing.T) {
+	for _, key := range []string{
+		"AO_SERVER_HOST", "AO_SERVER_PORT", "AO_SERVER_MODE",
+		"AO_DATABASE_HOST", "AO_DATABASE_PORT", "AO_DATABASE_USER",
+		"AO_DATABASE_PASSWORD", "AO_DATABASE_DBNAME", "AO_DATABASE_SSLMODE",
+		"AO_REDIS_HOST", "AO_REDIS_PORT",
+		"AO_JWT_SECRET", "AO_JWT_ACCESS_TOKEN_TTL", "AO_JWT_REFRESH_TOKEN_TTL",
+		"AO_LOG_LEVEL",
+	} {
+		t.Setenv(key, "")
+	}
+
 	tmpDir := t.TempDir()
 	cfgPath := filepath.Join(tmpDir, "config.yaml")
 

@@ -15,7 +15,7 @@ func TestJourney_EmployeeDaily(t *testing.T) {
 
 	client := e2etestutil.NewE2EClient(t, router, db)
 	agent := e2etestutil.NewAgentSimulator(t, client, "employee", fx)
-	agent.LoginAsEmployee()
+	agent.LoginAsManager()
 
 	w := client.GET("/api/v1/enterprises/" + fx.EnterpriseID + "/employees")
 	if w.Code != 200 {

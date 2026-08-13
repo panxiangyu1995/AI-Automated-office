@@ -37,13 +37,13 @@ func makeZipEntries(t *testing.T, names []string) string {
 
 func TestExtractZipSlipVariants(t *testing.T) {
 	cases := []string{
-		"../evil.txt",                // 简单上跳
-		"../../../../tmp/evil.txt",   // 多次上跳
-		"a/../../evil.txt",           // 嵌套上跳
-		"..\\evil.txt",               // Windows 分隔符
-		"a\\..\\..\\evil.txt",        // Windows 嵌套
-		"/etc/passwd",                // 绝对路径
-		"sub/../../../evil",          // 深层上跳
+		"../evil.txt",              // 简单上跳
+		"../../../../tmp/evil.txt", // 多次上跳
+		"a/../../evil.txt",         // 嵌套上跳
+		"..\\evil.txt",             // Windows 分隔符
+		"a\\..\\..\\evil.txt",      // Windows 嵌套
+		"/etc/passwd",              // 绝对路径
+		"sub/../../../evil",        // 深层上跳
 	}
 	for _, name := range cases {
 		t.Run(strings.ReplaceAll(name, "/", "_"), func(t *testing.T) {

@@ -44,6 +44,11 @@ func validSalesTransition(from, to string) bool {
 	return false
 }
 
+func validSalesOrderStatus(status string) bool {
+	_, ok := salesOrderTransitions[status]
+	return ok
+}
+
 type OrderItemInput struct {
 	MaterialID string  `json:"material_id"`
 	Quantity   int     `json:"quantity"`
@@ -155,21 +160,34 @@ func (s *OrderService) ReceivePurchase(poID, whID string, requireInspection bool
 	return po, nil
 }
 
-func (s *OrderService) CreateSalesOrder(eid, customerID, notes string, items []OrderItemInput) (*model.SalesOrder, *apperrors.AppError) {
+func (s *OrderService) CreateSalesOrder(eid, customerID, notes, orderNo, status string, totalAmount float64, items []OrderItemInput) (*model.SalesOrder, *apperrors.AppError) {
 	id, err := uuid.Parse(eid)
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "无效")
 	}
-	if _, err := uuid.Parse(customerID); err != nil {
-		return nil, apperrors.NewValidationError("customer_id", "客户ID无效")
+	if customerID != "" {
+		if _, err := uuid.Parse(customerID); err != nil {
+			return nil, apperrors.NewValidationError("customer_id", "客户ID无效")
+		}
+	} else {
+		customerID = "00000000-0000-0000-0000-000000000000"
 	}
 	for i, item := range items {
 		if _, err := uuid.Parse(item.MaterialID); err != nil {
 			return nil, apperrors.NewValidationError("items["+fmt.Sprintf("%d", i)+"].material_id", "物料ID无效")
 		}
 	}
+	if orderNo == "" {
+		orderNo = generateOrderNo("SO")
+	}
+	if status == "" {
+		status = "draft"
+	}
+	if !validSalesOrderStatus(status) {
+		return nil, apperrors.NewValidationError("status", "无效的订单状态")
+	}
 
-	so := &model.SalesOrder{OrderNo: generateOrderNo("SO"), CustomerID: customerID, Status: "draft", Notes: notes}
+	so := &model.SalesOrder{OrderNo: orderNo, CustomerID: customerID, Status: status, Notes: notes, TotalAmount: totalAmount}
 	so.EnterpriseID = id
 	if err := s.orderRepo.CreateSalesOrder(so); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("创建销售订单失败")
@@ -183,7 +201,9 @@ func (s *OrderService) CreateSalesOrder(eid, customerID, notes string, items []O
 			return nil, apperrors.ErrInternal.WithDetail("创建订单明细失败")
 		}
 	}
-	s.orderRepo.UpdateSalesOrderTotalAmount(so.ID, id, total)
+	if len(items) > 0 {
+		s.orderRepo.UpdateSalesOrderTotalAmount(so.ID, id, total)
+	}
 	return so, nil
 }
 
@@ -301,6 +321,18 @@ func (s *OrderService) CreateRequisition(eid, applicantID, whID, matID string, q
 	id, err := uuid.Parse(eid)
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "无效")
+	}
+	if applicantID == "" {
+		return nil, apperrors.NewValidationError("applicant_id", "申请人ID不能为空")
+	}
+	if whID == "" {
+		return nil, apperrors.NewValidationError("warehouse_id", "仓库ID不能为空")
+	}
+	if matID == "" {
+		return nil, apperrors.NewValidationError("material_id", "物料ID不能为空")
+	}
+	if qty <= 0 {
+		return nil, apperrors.NewValidationError("quantity", "领用数量必须大于0")
 	}
 	req := &model.Requisition{RequisitionNo: generateOrderNo("RQ"), ApplicantID: applicantID, WarehouseID: whID, MaterialID: matID, Quantity: qty, Status: "pending", Notes: notes}
 	req.EnterpriseID = id

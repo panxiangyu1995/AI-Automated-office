@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	AOCLIDirName  = ".ao-cli"
-	BinDirName    = "bin"
-	SkillsDirName = "skills"
-	ConfigDirName = "config"
+	AOCLIDirName     = ".ao-cli"
+	BinDirName       = "bin"
+	SkillsDirName    = "skills"
+	ConfigDirName    = "config"
 	SkillPackageName = "ai-office-api.skill"
 )
 

@@ -35,7 +35,7 @@ func makeZip(t *testing.T, entries map[string]string) string {
 func TestExtractSkillTo(t *testing.T) {
 	dir := t.TempDir()
 	archive := makeZip(t, map[string]string{
-		"SKILL.md":     "# skill",
+		"SKILL.md":        "# skill",
 		"references/a.md": "ref",
 	})
 

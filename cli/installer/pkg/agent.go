@@ -7,17 +7,17 @@ import (
 )
 
 const (
-	OpenCodeConfigDir     = ".config/opencode"
-	OpenCodeSkillsDir     = "skills"
-	OpenCodeConfigFile    = "opencode.json"
-	ClaudeExternalDir     = ".claude"
-	AgentsExternalDir     = ".agents"
+	OpenCodeConfigDir  = ".config/opencode"
+	OpenCodeSkillsDir  = "skills"
+	OpenCodeConfigFile = "opencode.json"
+	ClaudeExternalDir  = ".claude"
+	AgentsExternalDir  = ".agents"
 )
 
 type AgentInfo struct {
-	Name    string
-	Dir     string
-	Skills  string
+	Name   string
+	Dir    string
+	Skills string
 }
 
 var KnownAgents = []AgentInfo{

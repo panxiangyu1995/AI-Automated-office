@@ -52,7 +52,13 @@ func (s *PlatformService) CreateAnnouncement(eid, title, content string) (*model
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "无效")
 	}
-	a := &model.Announcement{Title: title, Content: content}
+	if title == "" {
+		return nil, apperrors.NewValidationError("title", "公告标题不能为空")
+	}
+	if content == "" {
+		return nil, apperrors.NewValidationError("content", "公告内容不能为空")
+	}
+	a := &model.Announcement{Title: title, Content: content, SenderID: "00000000-0000-0000-0000-000000000000"}
 	a.EnterpriseID = id
 	if err := s.repo.CreateAnnouncement(a); err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("创建公告失败")

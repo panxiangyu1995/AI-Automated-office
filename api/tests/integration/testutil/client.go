@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -445,6 +446,44 @@ func (c *TestClient) GET(path string) *httptest.ResponseRecorder {
 
 func (c *TestClient) POST(path string, body interface{}) *httptest.ResponseRecorder {
 	return c.doRequest(http.MethodPost, path, body)
+}
+
+// UploadFile performs a multipart/form-data request with a synthetic file.
+func (c *TestClient) UploadFile(path, filename string, fields map[string]string) *httptest.ResponseRecorder {
+	c.t.Helper()
+	if c.db != nil {
+		c.db.Exec("SET search_path TO public")
+	}
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		c.t.Fatalf("failed to create form file: %v", err)
+	}
+	if _, err := part.Write([]byte("test file content")); err != nil {
+		c.t.Fatalf("failed to write file content: %v", err)
+	}
+	for k, v := range fields {
+		if err := writer.WriteField(k, v); err != nil {
+			c.t.Fatalf("failed to write field %s: %v", k, err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		c.t.Fatalf("failed to close multipart writer: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, path, &buf)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
+	if c.enterpriseID != "" {
+		req.Header.Set("X-Enterprise-ID", c.enterpriseID)
+	}
+
+	w := httptest.NewRecorder()
+	c.router.ServeHTTP(w, req)
+	return w
 }
 
 func (c *TestClient) PUT(path string, body interface{}) *httptest.ResponseRecorder {

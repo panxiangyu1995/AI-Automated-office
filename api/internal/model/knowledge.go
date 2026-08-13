@@ -68,8 +68,8 @@ type KnowledgeDoc struct {
 	Version              int     `gorm:"default:1" json:"version"`
 	ParentVersionID      *string `gorm:"type:uuid" json:"parent_version_id,omitempty"`
 	Visibility           string  `gorm:"type:varchar(20);default:'public'" json:"visibility"`
-	AllowedDepartmentIDs string  `gorm:"type:jsonb" json:"allowed_department_ids,omitempty"`
-	CreatorID            string  `gorm:"type:uuid;index" json:"creator_id,omitempty"`
+	AllowedDepartmentIDs *string `gorm:"type:jsonb" json:"allowed_department_ids,omitempty"`
+	CreatorID            *string `gorm:"type:uuid;index" json:"creator_id,omitempty"`
 }
 
 func (KnowledgeDoc) TableName() string { return "knowledge_docs" }

@@ -220,7 +220,7 @@ func TestData10_SubscriptionPlanFullCycle(t *testing.T) {
 	testutil.AssertStatus(t, w, 200)
 
 	w = client.POST("/api/v1/enterprise-subscriptions", map[string]interface{}{
-		"PlanID": planID,
+		"plan_id": planID,
 	})
 	testutil.AssertStatus(t, w, 201)
 
