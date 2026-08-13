@@ -2300,3 +2300,40 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 ### Notes:
 - 验收脚本中 2 个断言 bug 已修复（浏览器 normalize 颜色格式带空格）
 - 该本地化规则同样适用于对话中的 markdown 表格（SKILL.md 已注明）
+
+## [2026-08-13] - Task: OpenCode Desktop 集成实施（ao-cli + Skills 打包，FR-DESKTOP-001~007）
+
+### 铁律合规检查：
+- PRD 合规：FR-DESKTOP-001（预装 CLI+Skill）、002（按平台编译）、003（部署到 Skill 读取目录）、004（登录引导）、005（LLM 预置）、006（CLI 唯一入口）、007（JSON/Markdown/HTML 渲染）
+- 架构合规：最小 Fork 原则（只改 packages/desktop + workflow，不动 core）；Skill 预装而非集成；CLI 唯一入口不变
+- 关键修正：架构文档 `~/.agents/skills/` 假设与 opencode core 实际扫描机制（`~/.config/opencode/skills/`）冲突 → 方案按实际机制定稿并同步修正文档
+
+### 决策（总架构师授权，记录于 .plan/2026-08-13/）：
+D1 范围=Phase1+2+3（打包+CI+登录引导）；D2 Skill 源=完整目录；D3 部署到 ~/.config/opencode/skills（+opencode.json skills.paths 双保险）；D4 在 submodule dev 分支实施；D5 CI checkout AI-Automated-office 固定 tag；D6 TS 移植部署模块；D7 ao-cli 放 ~/.ai-office/bin；D8 登录引导 Renderer UI
+
+### What was done（opencode submodule，commit 待推送）:
+1. scripts/copy-ai-office-assets.ts：prebuild 钩子复制 Skills（AI_OFFICE_ROOT 定位源）
+2. electron-builder.config.ts：extraResources 增加 ao-cli-* + skills/
+3. src/main/ai-office.ts：部署模块（deployAOCLI→~/.ai-office/bin、deploySkills→~/.config/opencode/skills 覆盖语义、registerSkillsInOpenCodeConfig 合并保留用户字段、runAOCLI spawn 支持 stdin）+ 7 单元测试
+4. onboarding.ts：首启部署挂载 + setupAIOffice（直接写 ~/.ai-office-cli/config.yaml，不走交互式 init）/aocliLogin/aocliAuthStatus
+5. ipc.ts + preload + types：setup-ai-office / aocli-login / aocli-auth-status 三组 IPC
+6. renderer/onboarding.tsx：3 步登录引导 UI（服务器地址→邮箱密码→完成）
+7. release-desktop.yml：build-ai-office-assets job（Go 交叉编译 6 平台 ao-cli + 复制 skills）→ build-electron 注入
+8. .gitignore：resources/skills/ + ao-cli-* 构建产物排除
+
+### 主仓库改动：
+- .opencode/skills/ai-office-api/SKILL.md：CLI fallback 增加 $HOME/.ai-office/bin/ao-cli + plugins 同步
+- architecture.md + docs/desktop.md：`~/.agents/skills/` → `~/.config/opencode/skills/`（5 处）
+- .plan/2026-08-13/opencode-desktop集成方案-ao-cli与skills打包.md：完整方案+决策记录
+
+### Testing:
+- ai-office.test.ts 7/7 PASS（路径/递归复制/覆盖更新/配置合并去重/拒绝覆盖损坏配置）
+- desktop 全量可运行测试 40/40 PASS（1 fail 为 Electron 二进制下载网络问题，与改动无关）
+- typecheck（tsgo -b）通过
+- E2E 部署模拟（临时 HOME）：ao-cli 部署+skills 部署+opencode.json 注册+真实 API 登录+skill execute 业务调用 ✅
+- 本地构建 ao-cli 验证（darwin-arm64）✅
+
+### Notes:
+- ao-cli 无 --version flag，用 --help 验证可执行性
+- 业务调用需 ~/.ai-office-cli/config.yaml 含 hmac_secret（服务器端共享密钥，生产部署下发）
+- submodule 推送待用户确认（panxiangyu1995/opencode dev 分支）

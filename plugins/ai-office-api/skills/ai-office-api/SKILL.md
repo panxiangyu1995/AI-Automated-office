@@ -23,7 +23,7 @@ CLI 必须在系统中已安装，用户已执行 `ao-cli init` 配置 API 地�
 ```bash
 AO_CLI=$(grep cli_path ~/.ai-office-cli/config.yaml | awk '{print $2}')
 if [ -z "$AO_CLI" ] || [ ! -x "$AO_CLI" ]; then
-  for p in /opt/homebrew/bin/ao-cli /usr/local/bin/ao-cli "$HOME/go/bin/ao-cli" "$HOME/.npm-global/bin/ao-cli"; do
+  for p in /opt/homebrew/bin/ao-cli /usr/local/bin/ao-cli "$HOME/go/bin/ao-cli" "$HOME/.npm-global/bin/ao-cli" "$HOME/.ai-office/bin/ao-cli"; do
     if [ -x "$p" ]; then AO_CLI="$p"; break; fi
   done
 fi

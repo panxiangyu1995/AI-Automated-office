@@ -31,7 +31,7 @@ AI Office Desktop 是基于 [OpenCode](https://github.com/anomalyco/opencode)（
 │  │                    预装资源 (extraResources)                  │  │
 │  │  ┌─────────────────┐  ┌──────────────────────────────────┐  │  │
 │  │  │ ao-cli 二进制   │  │ 业务 Skill (SKILL.md)          │  │  │
-│  │  │ (按平台编译)    │  │ (~/.agents/skills/)           │  │  │
+│  │  │ (按平台编译)    │  │ (~/.config/opencode/skills/)           │  │  │
 │  │  └─────────────────┘  └──────────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
@@ -103,17 +103,17 @@ AI Office Desktop 是基于 [OpenCode](https://github.com/anomalyco/opencode)（
 ### 4.1 OpenCode Skill 发现机制（原生，不修改）
 
 1. `~/.claude/skills/**/SKILL.md`
-2. `~/.agents/skills/**/SKILL.md`
+2. `~/.config/opencode/skills/**/SKILL.md` — opencode 全局配置目录（core 实际扫描机制）
 3. opencode 配置目录下的 `{skill,skills}/**/SKILL.md`
 4. `opencode.json` 中 `skills.paths` 指定的目录
 5. `skills.urls` 远程 Skill 拉取
 
 ### 4.2 预装策略
 
-安装时将 Skill 文件部署到 `~/.agents/skills/`：
+安装时将 Skill 文件部署到 `~/.config/opencode/skills/`（opencode core 原生扫描目录）：
 
 ```
-~/.agents/skills/
+~/.config/opencode/skills/
 ├── contract/SKILL.md          # 合同管理
 ├── crm/SKILL.md               # 客户管理
 ├── hrm/SKILL.md               # 人事管理
@@ -199,7 +199,7 @@ ao-cli skill execute contract_list --params '{"page":1,"page_size":20}'
 ### 5.3 安装时操作
 
 1. 将 ao-cli 二进制复制到应用资源目录
-2. 将 Skill 文件部署到 `~/.agents/skills/`
+2. 将 Skill 文件部署到 `~/.config/opencode/skills/`（opencode core 原生扫描目录）
 3. 将 ao-cli 所在目录添加到用户 PATH
 4. 首次启动时执行 Onboarding 引导流程
 
