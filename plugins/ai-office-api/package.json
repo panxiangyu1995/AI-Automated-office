@@ -1,7 +1,7 @@
 {
   "name": "@ai-office/claude-plugin",
   "version": "1.0.0",
-  "description": "AI-Automated-office 企业云服务 Claude Code Plugin。169 个 REST API 端点，覆盖全部业务模块。",
+  "description": "AI-Automated-office 企业云服务 Claude Code Plugin。通过 ao-cli skill execute 驱动 169 个业务端点，覆盖全部业务模块，支持 HTML 报告生成。",
   "main": ".claude-plugin/plugin.json",
   "keywords": [
     "claude-code",

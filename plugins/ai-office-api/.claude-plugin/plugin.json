@@ -1,6 +1,6 @@
 {
   "name": "ai-office-api",
-  "description": "AI-Automated-office 企业云服务 API 技能。169 个 REST API 端点，覆盖组织架构、HRM、CRM、进销存、合同、销售、售后、财务、知识库、消息、AI 对话等全部业务模块。让 Agent 通过自然语言驱动企业经营管理。",
+  "description": "AI-Automated-office 企业云服务 API 技能。通过 ao-cli skill execute 驱动 169 个业务端点，覆盖组织架构、HRM、CRM、进销存、合同、销售、售后、财务、知识库、消息、AI 对话等全部业务模块，支持 HTML 报告生成。让 Agent 通过自然语言驱动企业经营管理。",
   "version": "1.0.0",
   "author": {
     "name": "AI-Automated-office Team"

@@ -19,6 +19,7 @@ _bmad
 .opencode
 .report
 skills
+!plugins/ai-office-api/skills/
 scripts
 openspec
 task.json

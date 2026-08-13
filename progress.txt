@@ -2204,3 +2204,40 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 - 迁移 049 是增量 SQL 文件（与 001-048 同机制），服务端/测试自动应用
 - integration 测试在 CI 需要 ~15-20 分钟（AO_BCRYPT_COST=4 是提速关键）
 - 历史遗留：PRD 部分端点（如 sales order approve/pending-approval）未实现，测试已改用已实现端点验证
+
+## [2026-08-13] - Task: HTML 报告生成能力（skill 配置检查 + 模拟测试验收）
+
+### 铁律合规检查：
+- PRD 合规：FR-REPORT-001~008（报表数据 API）、PRD 核心原则"数据即服务：Agent 调用 API 获取数据后，可生成 HTML/文档进行可视化展示"
+- 架构合规：ADR-021 明确 API 只做数据聚合、HTML 渲染是 Agent 责任；本任务补充 Agent 侧 HTML 生成指导，不改变 API 边界
+
+### What was done:
+1. **HTML 生成 skill 配置检查结论**：`ai-office-api` skill 原本**没有** HTML 报告生成指导（此前仅返回 JSON/markdown）。已补齐：
+   - `.opencode/skills/ai-office-api/SKILL.md`：新增「HTML 报告生成（数据可视化）」章节（何时生成/流程/输出目录 test-flie/命名规范/技术要求/报告类型与 API 映射/示例）
+   - `.opencode/skills/ai-office-api/references/html-templates.md`：新建模板规范（通用骨架/KPI卡片/信号面板/表格/Canvas柱状图/时间线/空状态/经营驾驶舱完整示例/生成检查清单）
+   - `plugins/ai-office-api/skills/ai-office-api/SKILL.md` + `references/html-templates.md`：同步（git 跟踪的正式发布包）
+   - skill frontmatter 增加 Write(*.html*)/Read(*.html*) 工具授权
+
+2. **测试中发现并修复的环境问题**：CLI 请求 403 `AUTH_CLI_SOURCE_REQUIRED`——根因是 `~/.ai-office-cli/config.yaml` 的 `hmac_secret` 为空（`ao-cli init`/`auth login` 不写该字段）。已按 `test/testifom.md` 文档配置 `hmac_secret: "change-me-in-production"` 修复。注：该字段是部署密钥，服务器端应配置独立 `cli_hmac_secret`（避免回退 jwt.secret 泄露 JWT 签名密钥）——遗留优化点。
+
+3. **模拟测试/验收方法**（可复用）：
+   - `test-flie/html-report-regression.sh`：回归脚本，模拟 Agent 完整行为——认证检查 → ao-cli skill execute 获取 8 类数据 → Python 从 JSON 生成 3 种 HTML 报告 → 输出到 test-flie/
+   - Playwright 浏览器渲染验收：file:// 打开 HTML，断言文本内容/UTF-8/无 JS 错误/无横向溢出/最小字号 ≥12px/元素数量
+   - 测试数据：通过 ao-cli 创建 3 员工 + 3 客户 + 4 物料（数据驱动的真实渲染）
+
+### Testing:
+- 回归脚本 3 次运行全部成功（认证/数据获取/HTML 生成）
+- Playwright 验收：6 个 HTML 报告（3 手动 + 3 脚本生成）全部 PASS——中文 UTF-8 正常、无 JS 错误、无横向溢出、布局元素可见、关键业务数据完整
+- go vet/build 未改动 Go 代码，无影响
+
+### Notes:
+- **治理发现**：`.gitignore` 排除了 `.opencode`、`.agents`、`task.json`、`AGENTS.md`、`CLAUDE.md`（本地工作文件设计）；`progress.txt` 被强制跟踪。若希望 skill/任务文件纳入版本控制，需用户决策（不建议擅自修改 .gitignore）
+- **遗留优化**：`plugins/ai-office-api` 版本仍使用 curl 模式（违反 CLI 唯一入口铁律），本次仅同步 HTML 章节，未重写其认证架构；建议后续将 plugins 版本与 .opencode 版本统一为 ao-cli 模式
+
+### Follow-up (2026-08-13) - 按用户决策统一 plugins 版本
+- 决策 1：不调整 .gitignore，`.opencode`/`.agents` 为本地工作文件，`plugins/` 为唯一版本控制载体
+- 决策 2：统一 `plugins/ai-office-api` 为 ao-cli 模式：
+  - SKILL.md 与 `.opencode` 权威版本完全一致（diff 验证通过）：ao-cli skill execute 模式 + HTML 报告生成章节 + allowed-tools 授权
+  - references/ 含 html-templates.md（11.5KB 模板规范）
+  - package.json / plugin.json 描述更新为 ao-cli 模式 + HTML 报告生成，JSON 合法性验证通过
+- 验证：diff -rq 两目录零差异；curl 仅出现在"禁止使用"声明中
