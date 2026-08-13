@@ -312,6 +312,73 @@ mkdir -p test-flie
 
 **交互实现规范见 [references/html-templates.md](references/html-templates.md) 的「交互组件库」。**
 
+### 字段展示本地化（必须执行）
+
+**原则：使用者是业务人员（老板/经理/员工），不是开发者。API 返回的枚举值是机器值（英文），HTML 展示时必须转换为用户能理解的中文。** 对话中的 markdown 表格同理。
+
+**展示值分类规则：**
+
+| 字段类别 | 处理方式 | 示例 |
+|---------|---------|------|
+| 业务枚举（状态/角色/等级/优先级） | **必须中文映射**（见下方映射表） | `active` → 在职；`admin` → 管理员 |
+| 业务编码（SKU/工号/合同编号/单号） | 保留原样（数据标识） | `SKU-PC-LAPTOP`、`EMP001` |
+| 联系数据（邮箱/电话/地址/网址） | 保留原样 | `zhangsan@test.com` |
+| 日期时间 | 统一 `YYYY-MM-DD HH:mm:ss` | `2026-08-13 15:10:00` |
+| 金额 | `¥` + 千分位，保留 2 位小数 | `¥5,999.00` |
+| 布尔值 | `是` / `否` | `true` → 是 |
+| 业界通用缩写（VIP/SKU/KPI/SLA/CRM） | 保留 | `VIP` 客户 |
+| 未收录枚举 | 保留原值（兜底，不臆造翻译） | `archived` |
+
+**枚举值中文映射表（完整，必须照此转换）：**
+
+| 枚举字段 | 英文值 | 中文显示 |
+|---------|--------|---------|
+| 角色 `role` | owner | 老板 |
+| | admin | 管理员 |
+| | manager | 经理 |
+| | employee | 员工 |
+| 通用状态 `status` | active | 生效中（员工=在职/物料=在用/合同=履约中，按上下文） |
+| | inactive | 停用 |
+| | pending | 待处理 |
+| | pending_approval | 待审批 |
+| | draft | 草稿 |
+| | confirmed | 已确认 |
+| | shipped | 已发货 |
+| | fulfilled | 已完结 |
+| | completed | 已完成 |
+| | approved | 已批准 |
+| | rejected | 已拒绝 |
+| | cancelled | 已取消 |
+| | expired | 已过期 |
+| | issued | 已开票 |
+| | received | 已收货 |
+| | refunded | 已退款 |
+| | returned | 已退货 |
+| | paid | 已付款 |
+| | overdue / past_due | 已逾期 |
+| | open | 待处理 |
+| | running | 进行中 |
+| | frozen | 已冻结 |
+| | resigned | 已离职 |
+| | cleared | 已结清 |
+| | success | 成功 |
+| | error / failed | 失败 |
+| | enabled | 已启用 |
+| | disabled | 已禁用 |
+| 优先级 `priority` | normal | 普通 |
+| | low | 低 |
+| | high | 高 |
+| | urgent / critical | 紧急 |
+| 信号状态 `signal.status` | red | 差/红色告警（配合 badge-red） |
+| | yellow | 警告/黄色预警（配合 badge-yellow） |
+| | green | 健康（配合 badge-green） |
+
+**执行规则：**
+1. 生成 HTML 前，遍历 JSON 中每个字段，凡命中映射表的枚举值**必须**转换为中文
+2. 转换后的值用于展示；筛选/排序逻辑基于**中文值**运行（badge 文字即筛选键）
+3. 状态色 badge 仍按原始枚举值映射颜色（`red`→红色、`green`→绿色），**文字**用中文
+4. 检查清单项：「无英文枚举值残留」必查
+
 ### HTML 技术要求
 
 - **单文件**：所有 CSS/JS 内联，不依赖外部资源（便于分享和打开）

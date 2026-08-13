@@ -2269,3 +2269,34 @@ TypeScript 编译错误（~40个）全部修复，使用类型断言替代手动
 ### Notes:
 - 测试残留 dashboard 旧文件（20260809-20260812）保留在 test-flie/ 演示清理状态，可手动清理
 - 验收脚本：/tmp/aoo-html-test/acceptance_html_v2.mjs（临时，未入库）
+
+## [2026-08-13] - Task: 字段展示本地化（HTML/对话展示层中文化）
+
+### 铁律合规检查：
+- PRD 合规："数据即服务"（API 返回机器值，Agent 负责展示层本地化——与 ADR-021 边界一致，不改 API）
+- 架构合规：不改 API/CLI 代码，纯展示层映射规则
+
+### 问题：
+- 员工列表角色字段显示英文（admin/manager/employee），业务使用者不理解
+- 引申：所有枚举字段（状态/角色/等级/优先级）在 HTML 中的显示语言问题
+
+### 方案（字段展示本地化，写入 SKILL.md + html-templates.md）：
+1. **展示值分类规则**：业务枚举→必须中文映射；业务编码（SKU/工号/单号）→保留原样；联系数据（邮箱/电话）→保留；日期→YYYY-MM-DD；金额→¥千分位；布尔→是/否；通用缩写（VIP/SKU/KPI）→保留；未收录枚举→保留原值兜底
+2. **枚举值中文映射表**（完整 30+ 值）：role(owner→老板/admin→管理员/manager→经理/employee→员工)、status(active→生效中/pending→待处理/draft→草稿/confirmed→已确认/shipped→已发货/fulfilled→已完结/approved→已批准/rejected→已拒绝/cancelled→已取消/expired→已过期/issued→已开票/received→已收货/refunded→已退款/returned→已退货/paid→已付款/overdue→已逾期/resigned→已离职等)、priority(normal→普通/urgent→紧急)、signal(red→差/yellow→警告/green→健康)
+3. **badge 颜色规则**：颜色按原始枚举映射（red→红背景），文字用中文；筛选按钮从中文值自动生成
+4. 检查清单新增「无英文枚举残留」必查项
+
+### 实施：
+- SKILL.md 新增「字段展示本地化（必须执行）」章节（映射表+分类规则+执行规则）
+- html-templates.md 新增 §0 字段展示本地化章节 + 员工模板示例角色改中文 + 检查清单
+- 回归脚本：ROLE_CN/STATUS_CN/PRIORITY_CN/SIGNAL_CN 映射表，角色/信号面板中文化；修复信号面板背景色硬编码 bug（green 信号也显示红背景 → 按 status 映射背景色）
+
+### Testing（最严格验收）：
+- 本地化专项验收 12/12 PASS：4 报告无英文枚举残留（黑名单 30+ 词）、业务编码保留（EMP001/SKU）、角色中文（管理员/经理/员工）、筛选按钮中文值（全部,员工,经理,管理员）、信号面板中英文+背景色按状态（green 信号绿背景/red 红背景）
+- 交互验收回归 41/41 PASS（无回归）
+- 回归脚本复用 4/4 PASS
+- .opencode 与 plugins diff 零差异
+
+### Notes:
+- 验收脚本中 2 个断言 bug 已修复（浏览器 normalize 颜色格式带空格）
+- 该本地化规则同样适用于对话中的 markdown 表格（SKILL.md 已注明）

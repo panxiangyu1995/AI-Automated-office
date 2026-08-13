@@ -4,7 +4,70 @@ Agent 生成业务数据 HTML 报告时的模板参考。所有模板为**单文
 
 ---
 
-## 0. 报告文件命名（复用/清理基础）
+## 0. 字段展示本地化（先读！）
+
+**原则：展示给业务人员看，枚举值必须转中文。** 生成报告时，API 返回的每个字段值按下表处理：
+
+| 字段类别 | 处理方式 | 示例 |
+|---------|---------|------|
+| 业务枚举 | **必须中文映射**（见下表） | `active` → 在职 |
+| 业务编码（SKU/工号/单号） | 保留原样 | `SKU-PC-LAPTOP` |
+| 联系数据（邮箱/电话/地址） | 保留原样 | `zhangsan@test.com` |
+| 日期时间 | `YYYY-MM-DD HH:mm:ss` | `2026-08-13 15:10:00` |
+| 金额 | `¥` + 千分位 | `¥5,999.00` |
+| 布尔值 | 是 / 否 | `true` → 是 |
+| 通用缩写（VIP/SKU/KPI/SLA） | 保留 | `VIP` |
+| 未收录枚举 | 保留原值（兜底） | `archived` |
+
+### 枚举值中文映射表（生成时必须转换）
+
+| 枚举字段 | 英文值 | 中文显示 |
+|---------|--------|---------|
+| 角色 `role` | owner | 老板 |
+| | admin | 管理员 |
+| | manager | 经理 |
+| | employee | 员工 |
+| 通用状态 `status` | active | 生效中（员工→在职/物料→在用/合同→履约中） |
+| | inactive | 停用 |
+| | pending | 待处理 |
+| | pending_approval | 待审批 |
+| | draft | 草稿 |
+| | confirmed | 已确认 |
+| | shipped | 已发货 |
+| | fulfilled | 已完结 |
+| | completed | 已完成 |
+| | approved | 已批准 |
+| | rejected | 已拒绝 |
+| | cancelled | 已取消 |
+| | expired | 已过期 |
+| | issued | 已开票 |
+| | received | 已收货 |
+| | refunded | 已退款 |
+| | returned | 已退货 |
+| | paid | 已付款 |
+| | overdue / past_due | 已逾期 |
+| | open | 待处理 |
+| | running | 进行中 |
+| | frozen | 已冻结 |
+| | resigned | 已离职 |
+| | cleared | 已结清 |
+| | success | 成功 |
+| | error / failed | 失败 |
+| | enabled | 已启用 |
+| | disabled | 已禁用 |
+| 优先级 `priority` | normal | 普通 |
+| | low | 低 |
+| | high | 高 |
+| | urgent / critical | 紧急 |
+| 信号状态 `signal.status` | red | 差（badge-red） |
+| | yellow | 警告（badge-yellow） |
+| | green | 健康（badge-green） |
+
+**注意**：badge 颜色按原始枚举映射（`red`→红色背景），**文字内容用中文**。筛选按钮从**中文值**自动生成。
+
+---
+
+## 0.1 报告文件命名（复用/清理基础）
 
 ```
 {报告类型}_{维度标识}_{YYYYMMDD}.html
@@ -659,10 +722,10 @@ Agent 生成业务数据 HTML 报告时的模板参考。所有模板为**单文
         </tr>
       </thead>
       <tbody>
-        <!-- 每行：数据行（含状态/角色 badge） -->
+        <!-- 每行：数据行（枚举值必须用中文，badge 颜色按原始枚举映射） -->
         <tr>
           <td>EMP001</td><td>张三</td><td>技术总监</td>
-          <td><span class="badge badge-blue">admin</span></td>
+          <td><span class="badge badge-blue">管理员</span></td>
           <td>zhangsan@test.com</td><td>2025-03-01</td>
           <td><span class="badge badge-green">在职</span></td>
         </tr>
@@ -794,4 +857,5 @@ Agent 生成业务数据 HTML 报告时的模板参考。所有模板为**单文
 - [ ] 生成前已执行复用检查（`ls test-flie/ | grep "{类型}_{维度}_{今天}"`）
 - [ ] 生成后已执行清理（每类型保留最近 5 份）
 - [ ] **交互组件已集成**：搜索框 + 表头排序 + 状态筛选 + 行数统计 + CSV 导出 + 回顶（列表类必含）
+- [ ] **字段本地化**：所有枚举值已转中文（页面无 `admin`/`pending`/`active` 等英文残留）；badge 颜色仍按原始枚举映射
 - [ ] 已在回复中告知用户完整文件路径
