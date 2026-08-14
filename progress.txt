@@ -2337,3 +2337,15 @@ D1 范围=Phase1+2+3（打包+CI+登录引导）；D2 Skill 源=完整目录；D
 - ao-cli 无 --version flag，用 --help 验证可执行性
 - 业务调用需 ~/.ai-office-cli/config.yaml 含 hmac_secret（服务器端共享密钥，生产部署下发）
 - submodule 推送待用户确认（panxiangyu1995/opencode dev 分支）
+
+### Follow-up (2026-08-13) - 代码审查修复（P0×2 + P1×5）
+- P0-1 CI tag 必挂：release-desktop.yml 改用独立输入 ai_office_ref（默认 main）；主仓库 release.yml dispatch 传 github.ref_name
+- P0-2 登录判定脆弱：runAOCLI 返回 exitCode（不再吞 code），aocliLogin/aocliAuthStatus 用 exit code 判定；错误信息截取 Error: 行
+- P1-3 YAML 注入：validateServerURL 校验 ^https?://\S+$（拒绝换行/空白/非 http）
+- P1-4 连接验证缺失：checkServerReachable 调 /api/v1/health（8s 超时），setupAIOffice 不可达即抛中文错误
+- P1-5 错误误导：renderer 错误透传 e.message；finishFirstLaunchOnboarding 部署失败包中文包装
+- P1-6 无超时：runAOCLI spawn detached 进程组 + timeout 30s SIGKILL 整组（防子进程残留）
+- P1-7 构建阻塞：copy-ai-office-assets.ts 找不到源 warn+skip；目标已存在跳过（CI 注入幂等）
+- P2-12 清理 serverSync 未使用变量
+- 测试：14 项（新增 runAOCLI exit code/超时、URL 校验、health 检查）；关键发现 bun test 同文件并发 + electron import 挂起 → validateServerURL/checkServerReachable 移至 ai-office.ts（无 electron 依赖）；runAOCLI 测试用独立 CLI 路径
+- 验证：52 单元测试通过 + typecheck + E2E 修复验证 6/6（注入拒绝/health 双态/login exit code 语义）

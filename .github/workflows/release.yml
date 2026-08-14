@@ -64,7 +64,8 @@ jobs:
               ref: 'dev',
               inputs: {
                 version: '${{ steps.version.outputs.version }}',
-                channel: 'prod'
+                channel: 'prod',
+                ai_office_ref: '${{ github.ref_name }}'
               }
             })
 
