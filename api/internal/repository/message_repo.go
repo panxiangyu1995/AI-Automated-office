@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/panxiangyu1995/AI-Automated-office/api/internal/model"
 	"gorm.io/gorm"
@@ -10,6 +12,7 @@ type MessageRepository interface {
 	Create(msg *model.Message) error
 	FindByID(id, enterpriseID uuid.UUID) (*model.Message, error)
 	ListByReceiver(enterpriseID uuid.UUID, receiverID string, page, pageSize int) ([]model.Message, int64, error)
+	ListUnreadByReceiver(enterpriseID uuid.UUID, receiverID string, since time.Time, limit int) ([]model.Message, error)
 	CountUnread(enterpriseID uuid.UUID, receiverID string) (int64, error)
 	MarkRead(id, enterpriseID uuid.UUID) error
 	BatchMarkAsRead(ids []uuid.UUID, enterpriseID uuid.UUID) (int64, error)
@@ -59,6 +62,16 @@ func (r *messageRepo) CountUnread(enterpriseID uuid.UUID, receiverID string) (in
 	var count int64
 	err := r.fresh().Model(&model.Message{}).Where("enterprise_id = ? AND receiver_id = ? AND is_read = false", enterpriseID, receiverID).Count(&count).Error
 	return count, err
+}
+
+func (r *messageRepo) ListUnreadByReceiver(enterpriseID uuid.UUID, receiverID string, since time.Time, limit int) ([]model.Message, error) {
+	query := r.fresh().Where("enterprise_id = ? AND receiver_id = ? AND is_read = false", enterpriseID, receiverID)
+	if !since.IsZero() {
+		query = query.Where("created_at > ?", since)
+	}
+	var msgs []model.Message
+	err := query.Order("created_at ASC").Limit(limit).Find(&msgs).Error
+	return msgs, err
 }
 
 func (r *messageRepo) MarkRead(id, enterpriseID uuid.UUID) error {

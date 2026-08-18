@@ -9,8 +9,8 @@ func TestRootCmd_Help(t *testing.T) {
 	if rootCmd == nil {
 		t.Fatal("rootCmd should not be nil")
 	}
-	if len(rootCmd.Commands()) != 7 {
-		t.Errorf("expected 7 subcommands (auth, poll, skill, service, init, log, which), got %d", len(rootCmd.Commands()))
+	if len(rootCmd.Commands()) != 8 {
+		t.Errorf("expected 8 subcommands (auth, poll, message, skill, service, init, log, which), got %d", len(rootCmd.Commands()))
 	}
 }
 
@@ -29,8 +29,8 @@ func TestPollCmd_Subcommands(t *testing.T) {
 	if pollCmd == nil {
 		t.Fatal("poll command should not be nil")
 	}
-	if len(pollCmd.Commands()) != 1 {
-		t.Errorf("expected 1 poll subcommand (start), got %d", len(pollCmd.Commands()))
+	if len(pollCmd.Commands()) != 2 {
+		t.Errorf("expected 2 poll subcommands (start, stop), got %d", len(pollCmd.Commands()))
 	}
 }
 

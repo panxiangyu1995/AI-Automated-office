@@ -38,6 +38,7 @@ func init() {
 
 	rootCmd.AddCommand(newAuthCmd())
 	rootCmd.AddCommand(newPollCmd())
+	rootCmd.AddCommand(newMessageCmd())
 	rootCmd.AddCommand(newSkillCmd())
 	rootCmd.AddCommand(newServiceCmd())
 	rootCmd.AddCommand(newInitCmd())

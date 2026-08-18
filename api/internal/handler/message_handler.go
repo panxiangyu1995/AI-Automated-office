@@ -166,9 +166,10 @@ func (h *MessageHandler) Poll(c *gin.Context) {
 	}
 
 	userIDStr := c.GetString(middleware.ContextKeyUserID)
-	timeout, _ := strconv.Atoi(c.DefaultQuery("timeout", "5"))
+	since := c.Query("since")
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
 
-	msgs, appErr := h.svcFor(c).Poll(eid, userIDStr, timeout)
+	msgs, appErr := h.svcFor(c).Poll(eid, userIDStr, since, limit)
 	if appErr != nil {
 		response.Error(c, appErr)
 		return

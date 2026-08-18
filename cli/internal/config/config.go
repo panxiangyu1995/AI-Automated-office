@@ -24,8 +24,9 @@ type Config struct {
 }
 
 type PollConfig struct {
-	Interval int    `yaml:"interval"`
-	MarkFile string `yaml:"mark_file"`
+	Interval   int    `yaml:"interval"`
+	MarkFile   string `yaml:"mark_file"`
+	CursorFile string `yaml:"cursor_file"`
 }
 
 type NotifyConfig struct {

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -179,20 +180,28 @@ func (s *MessageService) BatchMarkRead(messageIDs []string, enterpriseID string)
 	return count, nil
 }
 
-func (s *MessageService) Poll(enterpriseID string, receiverID string, timeout int) ([]model.Message, *apperrors.AppError) {
+func (s *MessageService) Poll(enterpriseID string, receiverID string, since string, limit int) ([]model.Message, *apperrors.AppError) {
 	entID, err := uuid.Parse(enterpriseID)
 	if err != nil {
 		return nil, apperrors.NewValidationError("enterprise_id", "企业ID无效")
 	}
 
-	if timeout <= 0 {
-		timeout = 5
-	}
-	if timeout > 30 {
-		timeout = 30
+	var sinceTime time.Time
+	if since != "" {
+		sinceTime, err = time.Parse(time.RFC3339Nano, since)
+		if err != nil {
+			return nil, apperrors.NewValidationError("since", "since 时间格式无效（需 RFC3339）")
+		}
 	}
 
-	msgs, _, err := s.msgRepo.ListByReceiver(entID, receiverID, 1, 50)
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	msgs, err := s.msgRepo.ListUnreadByReceiver(entID, receiverID, sinceTime, limit)
 	if err != nil {
 		return nil, apperrors.ErrInternal.WithDetail("轮询消息失败")
 	}

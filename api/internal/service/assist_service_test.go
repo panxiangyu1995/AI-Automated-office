@@ -103,6 +103,14 @@ func (m *assistMsgRepo) ListByReceiver(enterpriseID uuid.UUID, receiverID string
 	return args.Get(0).([]model.Message), args.Get(1).(int64), args.Error(2)
 }
 
+func (m *assistMsgRepo) ListUnreadByReceiver(enterpriseID uuid.UUID, receiverID string, since time.Time, limit int) ([]model.Message, error) {
+	args := m.Called(enterpriseID, receiverID, since, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]model.Message), args.Error(1)
+}
+
 func (m *assistMsgRepo) CountUnread(enterpriseID uuid.UUID, receiverID string) (int64, error) {
 	args := m.Called(enterpriseID, receiverID)
 	return args.Get(0).(int64), args.Error(1)

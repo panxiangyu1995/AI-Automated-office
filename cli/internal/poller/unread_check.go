@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/panxiangyu1995/AI-Automated-office/cli/internal/config"
@@ -25,45 +27,66 @@ type UnreadCheckResult struct {
 	Messages    []UnreadMessage `json:"messages"`
 }
 
+// UnreadCheckOnConversationStart 是 skill 执行前置 hook：检查并送达新未读消息。
+// 与 poll 守护共用 CheckAndNotify，从而保证双通道去重一致。
 func UnreadCheckOnConversationStart(cfg *config.Config) error {
-	messages, err := fetchUnreadMessages(cfg)
-	if err != nil {
-		return fmt.Errorf("fetch unread messages failed: %w", err)
-	}
-
-	if len(messages) == 0 {
-		return nil
-	}
-
-	notifyCfg := NotifyConfig{
-		Enable:      true,
-		OpenclawURL: "",
-		MarkFile:    "",
-	}
-
-	summary := ""
-	for i, msg := range messages {
-		if i >= 3 {
-			break
-		}
-		if i > 0 {
-			summary += ", "
-		}
-		summary += msg.Title
-	}
-	if len(messages) > 3 {
-		summary += fmt.Sprintf(" 等%d条", len(messages))
-	}
-
-	title := fmt.Sprintf("您有 %d 条未读消息", len(messages))
-	if err := SendNotification(title, summary, notifyCfg); err != nil {
-		return fmt.Errorf("send notification failed: %w", err)
-	}
-
-	return nil
+	_, err := CheckAndNotify(cfg, CursorPath(cfg))
+	return err
 }
 
-func fetchUnreadMessages(cfg *config.Config) ([]UnreadMessage, error) {
+// CursorPath 返回未读去重游标文件路径（可经配置覆盖）。
+func CursorPath(cfg *config.Config) string {
+	return defaultCursorPath(cfg)
+}
+
+// CheckAndNotify 拉取自 since 之后的未读消息：
+//   - 无新消息返回 0；
+//   - 有新消息时无条件打印到 stdout，并按 cfg.Notify.Enable 决定是否发送 OS 通知；
+//   - 送达后推进本地游标（去重），返回本次新消息条数。
+func CheckAndNotify(cfg *config.Config, cursorPath string) (int, error) {
+	since, err := loadCursor(cursorPath)
+	if err != nil {
+		return 0, fmt.Errorf("load cursor failed: %w", err)
+	}
+
+	msgs, latest, err := FetchNewUnread(cfg, since)
+	if err != nil {
+		return 0, fmt.Errorf("fetch unread messages failed: %w", err)
+	}
+
+	if len(msgs) == 0 {
+		return 0, nil
+	}
+
+	fmt.Printf("\n您有 %d 条新消息：\n", len(msgs))
+	for _, m := range msgs {
+		fmt.Printf("  - [%s] %s\n", m.MsgType, m.Title)
+	}
+	fmt.Println("提示：处理后可用 ao-cli message mark-read --id <消息ID> 标记已读。")
+
+	if cfg.Notify.Enable {
+		title := fmt.Sprintf("您有 %d 条新消息", len(msgs))
+		content := messageSummary(msgs)
+		if err := SendNotification(title, content, notifyConfigFrom(cfg)); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: send notification failed: %v\n", err)
+		}
+	}
+
+	if err := saveCursor(cursorPath, latest); err != nil {
+		return len(msgs), nil
+	}
+	return len(msgs), nil
+}
+
+// FetchNewUnread 调用 /messages/poll?since=...&limit=100 获取增量未读消息，
+// 返回消息列表与最新一条的 created_at（用于推进游标）。
+func FetchNewUnread(cfg *config.Config, since time.Time) ([]UnreadMessage, time.Time, error) {
+	var err error
+	cfg, err = RefreshTokenIfNeeded(cfg)
+	if err != nil {
+		return nil, time.Time{}, err
+	}
+
 	client := api_client.NewAPIClient(cfg.ServerURL)
 	client.SetToken(cfg.Token)
 	if cfg.EnterpriseID != "" {
@@ -73,33 +96,90 @@ func fetchUnreadMessages(cfg *config.Config) ([]UnreadMessage, error) {
 		client.SetHMACSecret(cfg.HMACSecret)
 	}
 
-	endpoint := fmt.Sprintf("/api/v1/enterprises/%s/messages?page=1&page_size=50", cfg.EnterpriseID)
-	result, err := client.Get(endpoint)
-	if err != nil {
-		return nil, err
+	endpoint := fmt.Sprintf("/api/v1/enterprises/%s/messages/poll?limit=100", cfg.EnterpriseID)
+	if !since.IsZero() {
+		endpoint += "&since=" + since.UTC().Format(time.RFC3339Nano)
 	}
 
-	var messages []UnreadMessage
+	result, err := client.Get(endpoint)
+	if err != nil {
+		return nil, time.Time{}, err
+	}
+
 	var wrapper struct {
 		Data []UnreadMessage `json:"data"`
 	}
 	if err := json.Unmarshal(result, &wrapper); err != nil {
-		if err2 := json.Unmarshal(result, &messages); err2 != nil {
-			return nil, fmt.Errorf("parse messages failed: %w", err)
-		}
-	} else {
-		messages = wrapper.Data
+		return nil, time.Time{}, fmt.Errorf("parse poll response failed: %w", err)
 	}
 
-	unread := make([]UnreadMessage, 0)
-	for _, msg := range messages {
-		if msg.MsgType == "announcement" || msg.MsgType == "notification" || msg.MsgType == "reminder" {
-			continue
+	var latest time.Time
+	for _, m := range wrapper.Data {
+		if t, perr := time.Parse(time.RFC3339Nano, m.CreatedAt); perr == nil && t.After(latest) {
+			latest = t
 		}
-		unread = append(unread, msg)
 	}
+	return wrapper.Data, latest, nil
+}
 
-	return unread, nil
+func defaultCursorPath(cfg *config.Config) string {
+	if cfg != nil && cfg.Poll.CursorFile != "" {
+		return cfg.Poll.CursorFile
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "messages.cursor"
+	}
+	return filepath.Join(home, ".ai-office-cli", "messages.cursor")
+}
+
+func loadCursor(path string) (time.Time, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return time.Time{}, nil
+		}
+		return time.Time{}, err
+	}
+	t, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(data)))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parse cursor: %w", err)
+	}
+	return t, nil
+}
+
+func saveCursor(path string, t time.Time) error {
+	if t.IsZero() {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+		return err
+	}
+	return os.WriteFile(path, []byte(t.UTC().Format(time.RFC3339Nano)), 0600)
+}
+
+func messageSummary(msgs []UnreadMessage) string {
+	var parts []string
+	for i, m := range msgs {
+		if i >= 3 {
+			break
+		}
+		parts = append(parts, m.Title)
+	}
+	summary := strings.Join(parts, ", ")
+	if len(msgs) > 3 {
+		summary += fmt.Sprintf(" 等%d条", len(msgs))
+	}
+	return summary
+}
+
+func notifyConfigFrom(cfg *config.Config) NotifyConfig {
+	nc := NotifyConfig{
+		Enable:      cfg.Notify.Enable,
+		OpenclawURL: cfg.Notify.OpenclawURL,
+		MarkFile:    cfg.Notify.MarkFile,
+	}
+	return nc
 }
 
 func BatchMarkAsRead(cfg *config.Config, messageIDs []string) error {
