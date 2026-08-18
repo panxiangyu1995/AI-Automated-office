@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -71,6 +72,11 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to ping test database: %v", err)
 	}
 
+	// 被强杀（timeout）的测试进程不会执行 defer 清理，会残留 tenant_% schema。
+	// 残留 schema 使 gorm AutoMigrate 的 information_schema 自省查询跨全库扫描而极慢。
+	// 每次测试会话开始前清理残留，避免累积导致迁移"挂起"。
+	DropLeftoverTenantSchemas(t, db)
+
 	if err := database.AutoMigrateSystem(db); err != nil {
 		t.Fatalf("failed to auto-migrate system tables: %v", err)
 	}
@@ -106,4 +112,26 @@ func ExecInSchema(t *testing.T, db *gorm.DB, enterpriseID string, fn func()) {
 	db.Exec(fmt.Sprintf("SET search_path TO %s,public", schema))
 	fn()
 	db.Exec("SET search_path TO public")
+}
+
+// DropLeftoverTenantSchemas 删除数据库中残留的 tenant_% schema。
+// 这些 schema 来自被强杀的测试进程（timeout 时 defer 清理不执行），
+// 累积后会让 gorm AutoMigrate 的 information_schema 目录自省查询变得病态缓慢。
+func DropLeftoverTenantSchemas(t *testing.T, db *gorm.DB) {
+	t.Helper()
+	var names []string
+	if err := db.Raw(`SELECT nspname FROM pg_namespace WHERE nspname LIKE 'tenant\_%'`).Scan(&names).Error; err != nil {
+		log.Printf("warning: query leftover tenant schemas failed: %v", err)
+		return
+	}
+	if len(names) == 0 {
+		return
+	}
+	for _, n := range names {
+		ident := `"` + strings.ReplaceAll(n, `"`, `""`) + `"`
+		if err := db.Exec(fmt.Sprintf("DROP SCHEMA %s CASCADE", ident)).Error; err != nil {
+			log.Printf("warning: drop leftover tenant schema %s failed: %v", n, err)
+		}
+	}
+	log.Printf("cleaned %d leftover tenant schema(s)", len(names))
 }

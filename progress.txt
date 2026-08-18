@@ -2377,3 +2377,28 @@ D1 范围=Phase1+2+3（打包+CI+登录引导）；D2 Skill 源=完整目录；D
 
 ### Notes:
 - D1/D2：仓库无"活动"消息 API contract 文档（openapi.yaml 未含 messages 路径）；.plan/2026-07-13/ 为历史快照且端点口径已一致，故无可同步的活文档。
+
+## 2026-08-18 Follow-up - 修复既有阻塞：集成/E2E 测试 AutoMigrate"挂起"
+
+### 铁律合规检查：
+- 测试规范：E2E 真实 API、不 Mock 自有接口；本修复为测试 harness 清扫残留 schema，不改变被测行为与测试断言
+- 说明：该阻塞为既有基础设施问题，非消息改动引入；修复使 integration/e2e 门禁可完整运行
+
+### 根因（确定性确认）：
+- 数据库累积了 209 个 `tenant_<uuid>` 孤儿 schema（每个含 ~91 张表，共约 1.9 万张表）。
+- 来源：测试进程被 timeout 强杀时 defer 清理（DropTestSchema）不执行 → 每次泄漏一个 tenant schema。
+- gorm AutoMigrate 的 information_schema 目录自省查询会**跨全库所有 schema** 扫描 → 随 schema 累积病态变慢（曾 >320s 仍不完），表现为"挂起"，且与本次消息改动无关（对所有用例、含 TestMessage_SendReceive 均复现）。
+
+### What was done:
+- 环境清理：删除 209 个残留 tenant_% schema（DB 回到仅 public）。
+- 复发预防：`tests/integration/testutil/setup.go` 新增 `DropLeftoverTenantSchemas`，在 SetupTestDB 首次执行 AutoMigrate 前自动删除残留 tenant_% schema，封堵"超时被杀→泄漏→DB 膨胀→更易超时"循环。
+
+### Testing（回归确认，阻塞完全修复）：
+- TestMessage_* 全 8 项 PASS（含曾稳定挂起的 TestMessage_SendReceive 现 8.5s、TestMessage_Polling/MarkRead/LocalCache/SkillTrigger）
+- 完整 integration 套件：**370 PASS / 0 FAIL / 0 SKIP**（完整跑完）
+- 完整 e2e 套件：**PASS**（90s）
+- 修复前 AutoMigrate 单用例 >320s 挂起；修复后 5-9s 通过
+
+### Notes:
+- 若非测试环境，建议为生产库建立定期孤儿 schema 清理；本修复面向测试 harness。
+- 后续执行 integration/e2e 门禁已无障碍。
