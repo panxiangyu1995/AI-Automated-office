@@ -2421,3 +2421,55 @@ D1 范围=Phase1+2+3（打包+CI+登录引导）；D2 Skill 源=完整目录；D
 
 ### Notes:
 - P2 backlog：Windows poll stop(SIGINT 跨进程不支持)、双重 start pid 覆盖、MarkRead 无 receiver 校验、集成测试增强（since/limit 真实断言、MarkRead 用 POST 断言）、skill 参考文档补 poll/read 端点
+
+## [2026-08-19] - Task: CLI 系统通知「完善 + 验证」（notify 自检命令 / 单元测试 / 依赖探测 / 配置开关）
+
+### 铁律合规检查：
+- PRD 合规：无新增业务功能，属消息送达 NFR 完善（对齐 Journey 7「CLI 轮询→通知 Agent→告知用户」）
+- 架构合规：KISS/DIP 最小改动（注入点 osNotifyFunc）；context7 借鉴 beeep/go-toast 最佳实践（B4 Linux 多路降级、B5 错误可诊断性）；darwin/windows/default 行为零变化
+- 文档：.plan/2026-08-19/ 三个文档（research-findings / innovation-solutions / implementation-plan）
+
+### What was done:
+- notification.go：抽出 osNotifyCommand 纯函数 + linuxNotifyFallbacks（notify-send→kdialog 降级链，B4）+ runNotifyCommand 携带命令名与退出码错误（B5）+ osNotifyFunc 注入点；移除孤儿函数 sendWindowsToast
+- deps.go（新建）：CheckNotifyDeps() 平台命令探测（Linux 双命令任一可用，含安装指引）
+- notify.go（新建）：ao-cli notify test / enable / disable；test 不经后端、不依赖登录，强制发测试弹窗并输出平台诊断
+- root.go：注册 notify 命令（子命令数 8→9，同步更新 cmd_test.go）
+- poll.go：poll start 启动时依赖探测（enable=true 缺失告警）与 enable=false 提示
+- notification_test.go（新建）：6 个用例（转义/四分支命令/Linux 候选/开关短路/MarkFile）全绿
+
+### Testing:
+- go vet ./... / go build ./... / go test ./...（cli）全绿（含新增 6 用例）
+- 实测：notify test（macOS 弹窗 exit 0）、notify enable 写入 config.yaml、poll start 启动提示（enable=false 提示分支验证通过后恢复 enable=true）
+
+### 端到端验证发现的后端 BUG（未修复，已记录待人工决策）:
+- **GORM 时间精度截断**：消息 created_at 微秒精度（06:58:52.682928），API `ListUnreadByReceiver` 的 `created_at > since` 绑定 time.Time 时被 GORM/pgx 截断为毫秒（'2026-08-19 06:58:52.682'），导致同一条消息被无限重复返回 → CLI 游标去重失效 → 重复弹窗
+- 证据链：repo 直测带微秒 since 返回 0（正确）vs GORM 实际 SQL `created_at > '...52.682'`（毫秒截断）vs psql 模拟毫秒截断返回 1
+- 影响：所有走 since 增量轮询的消息在创建后 1ms 精度差内都会被重复投递，直到被标记已读
+- 建议修复方向（待确认）：service.Poll 解析 since 后取整/或 repo 改为 `created_at >= since` + CLI 游标取最新消息时间并去重；或 GORM 绑定强制微秒精度
+- 另：端到端验证期间消息已通过 API 创建（id 974987dd-49a1-44e4-862c-4a27d5acbf2f，未读），如需清理可标记已读
+
+### Notes:
+- 未提交 commit（等用户确认：本次 CLI 改动 + 后端 bug 处理方式）
+- task.json 未改动（相关任务 id=77/115 已 passes:true）
+
+## [2026-08-19] - Task: [修复] 后端 GORM 时间精度截断缺陷（端到端验证暴露）
+
+### 铁律合规检查：
+- PRD 合规：FR-MSG-002/003/005（消息轮询去重正确性）
+- 架构合规：DIP/最小改动（repo 层 1 行变更）；测试规范：真实 DB 集成测试（不 Mock 自有 API）
+
+### What was done:
+- 根因：pgx v5.10.0 编码 time.Time 参数截断到毫秒 → `created_at > since` 基准变小 → 微秒精度消息无限重复返回 → CLI 游标去重失效
+- 修复：message_repo.go ListUnreadByReceiver 改为微秒字符串传参（`since.UTC().Format("2006-01-02 15:04:05.000000-07:00")`）
+- 新增集成测试 message_poll_since_test.go（since=createdAt→0，since-1µs→1）
+- 环境修正：API 进程重启为最新代码（原为 8月10日旧二进制）；CLI 重新编译安装（原为 8月6日旧版，无 notify/hook）
+
+### Testing:
+- go vet / go build（api+cli）全绿；cli go test ./... 全绿；集成测试 TestMessage_* + TestCustomer_PanoramaView + 新精度测试全部通过
+- 端到端：游标重置→新消息送达 1 次→二次轮询 0 次（修复前重复弹窗）；游标微秒精度推进验证
+- 清理：测试消息标记已读；残留 tenant schema 已手动清理（超时进程遗留）
+
+### Notes:
+- 全量集成测试曾超时（601s）：残留 tenant schema 拖慢 AutoMigrate（已知问题，setup.go 有 DropLeftoverTenantSchemas 兜底，但本次手动清理）
+- audit_log/reconciliation/cashflow/billing 的 `>=` 查询同样存在精度截断（影响可容忍），backlog 记录
+- commit: 见本次提交记录

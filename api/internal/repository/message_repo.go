@@ -67,7 +67,7 @@ func (r *messageRepo) CountUnread(enterpriseID uuid.UUID, receiverID string) (in
 func (r *messageRepo) ListUnreadByReceiver(enterpriseID uuid.UUID, receiverID string, since time.Time, limit int) ([]model.Message, error) {
 	query := r.fresh().Where("enterprise_id = ? AND receiver_id = ? AND is_read = false", enterpriseID, receiverID)
 	if !since.IsZero() {
-		query = query.Where("created_at > ?", since)
+		query = query.Where("created_at > ?", since.UTC().Format("2006-01-02 15:04:05.000000-07:00"))
 	}
 	var msgs []model.Message
 	err := query.Order("created_at ASC").Limit(limit).Find(&msgs).Error

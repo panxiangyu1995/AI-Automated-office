@@ -2,6 +2,7 @@ package poller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,12 +16,15 @@ type NotifyConfig struct {
 	MarkFile    string `mapstructure:"mark_file"`
 }
 
+// osNotifyFunc 是 OS 通知发送函数的注入点，单元测试可替换为 stub。
+var osNotifyFunc = sendOSNotification
+
 func SendNotification(title, content string, cfg NotifyConfig) error {
 	if !cfg.Enable {
 		return nil
 	}
 
-	if err := sendOSNotification(title, content); err != nil {
+	if err := osNotifyFunc(title, content); err != nil {
 		return fmt.Errorf("send notification failed: %w", err)
 	}
 
@@ -46,34 +50,20 @@ func escapeAppleScript(s string) string {
 	return r.Replace(s)
 }
 
-func sendOSNotification(title, content string) error {
-	switch runtime.GOOS {
+// osNotifyCommand 返回指定平台发送 OS 通知的主命令（纯函数，供表驱动测试）。
+func osNotifyCommand(goos, title, content string) (cmdName string, args []string, err error) {
+	switch goos {
 	case "darwin":
 		safeTitle := escapeAppleScript(title)
 		safeContent := escapeAppleScript(content)
 		script := fmt.Sprintf(`display notification "%s" with title "%s"`, safeContent, safeTitle)
-		cmd := exec.Command("osascript", "-e", script)
-		return cmd.Run()
+		return "osascript", []string{"-e", script}, nil
 	case "linux":
-		cmd := exec.Command("notify-send", title, content)
-		return cmd.Run()
+		return "notify-send", []string{title, content}, nil
 	case "windows":
-		return sendWindowsToast(title, content)
-	default:
-		fmt.Printf("[Notification] %s: %s\n", title, content)
-		return nil
-	}
-}
-
-func escapeXML(s string) string {
-	r := strings.NewReplacer(`<`, `&lt;`, `>`, `&gt;`, `&`, `&amp;`, `"`, `&quot;`, `'`, `&apos;`)
-	return r.Replace(s)
-}
-
-func sendWindowsToast(title, content string) error {
-	safeTitle := escapeXML(title)
-	safeContent := escapeXML(content)
-	script := fmt.Sprintf(`
+		safeTitle := escapeXML(title)
+		safeContent := escapeXML(content)
+		script := fmt.Sprintf(`
 		[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
 		[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 		$template = @"
@@ -91,8 +81,58 @@ func sendWindowsToast(title, content string) error {
 		$toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
 		[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("ao-cli").Show($toast)
 	`, safeTitle, safeContent)
-	cmd := exec.Command("powershell", "-Command", script)
-	return cmd.Run()
+		return "powershell", []string{"-Command", script}, nil
+	default:
+		return "", nil, fmt.Errorf("unsupported OS: %s", goos)
+	}
+}
+
+// linuxNotifyFallbacks 返回 Linux 平台的通知候选命令列表（B4：多路降级）。
+func linuxNotifyFallbacks(title, content string) [][]string {
+	return [][]string{
+		{"notify-send", title, content},
+		{"kdialog", "--title", title, "--passivepopup", content, "5"},
+	}
+}
+
+func sendOSNotification(title, content string) error {
+	cmdName, args, err := osNotifyCommand(runtime.GOOS, title, content)
+	if err != nil {
+		fmt.Printf("[Notification] %s: %s\n", title, content)
+		return nil
+	}
+
+	if cmdName == "notify-send" {
+		var errs []error
+		for _, candidate := range linuxNotifyFallbacks(title, content) {
+			if err := runNotifyCommand(candidate[0], candidate[1:]); err != nil {
+				errs = append(errs, err)
+				continue
+			}
+			return nil
+		}
+		return errors.Join(errs...)
+	}
+
+	return runNotifyCommand(cmdName, args)
+}
+
+// runNotifyCommand 执行通知命令；失败时返回携带命令名与退出码的错误（B5）。
+func runNotifyCommand(cmdName string, args []string) error {
+	cmd := exec.Command(cmdName, args...)
+	if err := cmd.Run(); err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return fmt.Errorf("%s failed (exit %d): %w", cmdName, exitErr.ExitCode(), err)
+		}
+		return fmt.Errorf("%s failed: %w", cmdName, err)
+	}
+	return nil
+}
+
+func escapeXML(s string) string {
+	r := strings.NewReplacer(`<`, `&lt;`, `>`, `&gt;`, `&`, `&amp;`, `"`, `&quot;`, `'`, `&apos;`)
+	return r.Replace(s)
 }
 
 func writeMarkFile(markFile, title, content string) error {

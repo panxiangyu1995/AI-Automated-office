@@ -9,8 +9,8 @@ func TestRootCmd_Help(t *testing.T) {
 	if rootCmd == nil {
 		t.Fatal("rootCmd should not be nil")
 	}
-	if len(rootCmd.Commands()) != 8 {
-		t.Errorf("expected 8 subcommands (auth, poll, message, skill, service, init, log, which), got %d", len(rootCmd.Commands()))
+	if len(rootCmd.Commands()) != 9 {
+		t.Errorf("expected 9 subcommands (auth, poll, notify, message, skill, service, init, log, which), got %d", len(rootCmd.Commands()))
 	}
 }
 

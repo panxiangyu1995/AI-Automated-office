@@ -57,6 +57,17 @@ func newPollCmd() *cobra.Command {
 				fmt.Fprintf(os.Stderr, "warning: write pid file failed: %v\n", err)
 			}
 
+			if cfg.Notify.Enable {
+				missing, hint, err := poller.CheckNotifyDeps()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "warning: 通知依赖检查失败: %v\n", err)
+				} else if len(missing) > 0 {
+					fmt.Fprintf(os.Stderr, "warning: 系统通知依赖缺失: %v\n安装指引: %s\n", missing, hint)
+				}
+			} else {
+				fmt.Println("提示: 系统通知未开启，运行 ao-cli notify enable 开启桌面弹窗")
+			}
+
 			fmt.Printf("消息轮询已启动 (间隔 %s, 自适应 %s~%s)\n", initial, minInterval, maxInterval)
 			fmt.Println("按 Ctrl+C 或运行 ao-cli poll stop 停止")
 
