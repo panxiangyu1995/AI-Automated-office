@@ -103,18 +103,23 @@ func sendOSNotification(title, content string) error {
 	}
 
 	if cmdName == "notify-send" {
-		var errs []error
-		for _, candidate := range linuxNotifyFallbacks(title, content) {
-			if err := runNotifyCommand(candidate[0], candidate[1:]); err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			return nil
-		}
-		return errors.Join(errs...)
+		return sendLinuxNotification(title, content)
 	}
 
 	return runNotifyCommand(cmdName, args)
+}
+
+// sendLinuxNotification 按 notify-send → kdialog 顺序尝试发送（B4 降级链）。
+func sendLinuxNotification(title, content string) error {
+	var errs []error
+	for _, candidate := range linuxNotifyFallbacks(title, content) {
+		if err := runNotifyCommand(candidate[0], candidate[1:]); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		return nil
+	}
+	return errors.Join(errs...)
 }
 
 // runNotifyCommand 执行通知命令；失败时返回携带命令名与退出码的错误（B5）。

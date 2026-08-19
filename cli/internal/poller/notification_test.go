@@ -134,3 +134,138 @@ func TestSendNotification_EnabledWithMarkFile(t *testing.T) {
 		t.Fatalf("unexpected mark file content: %q", string(data))
 	}
 }
+
+// --- 模拟验收：Linux / Windows 弹窗执行链（fake 命令 + PATH 注入） ---
+
+// writeFakeCmd 创建可执行 fake 命令：把收到的 argv 追加到 $FAKE_LOG，按 FAKE_EXIT 退出。
+func writeFakeCmd(t *testing.T, dir, name string) {
+	t.Helper()
+	bin := filepath.Join(dir, "bin")
+	if err := os.MkdirAll(bin, 0755); err != nil {
+		t.Fatal(err)
+	}
+	script := `#!/bin/sh
+echo "$@" >> "$FAKE_LOG"
+[ "$FAKE_FAIL_ON" = "$(basename "$0")" ] && exit 1
+exit 0
+`
+	path := filepath.Join(bin, name)
+	if err := os.WriteFile(path, []byte(script), 0755); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func setupFakePath(t *testing.T, dir, logFile string) {
+	t.Helper()
+	t.Setenv("FAKE_LOG", logFile)
+	t.Setenv("PATH", filepath.Join(dir, "bin")+string(os.PathListSeparator)+os.Getenv("PATH"))
+}
+
+func TestSimulateLinux_NotifySendAvailable(t *testing.T) {
+	dir := t.TempDir()
+	logFile := filepath.Join(dir, "log")
+	writeFakeCmd(t, dir, "notify-send")
+	setupFakePath(t, dir, logFile)
+
+	if err := sendLinuxNotification("标题", "内容"); err != nil {
+		t.Fatalf("sendLinuxNotification: %v", err)
+	}
+	data, err := os.ReadFile(logFile)
+	if err != nil {
+		t.Fatalf("read log: %v", err)
+	}
+	if string(data) != "标题 内容\n" {
+		t.Fatalf("notify-send should receive title+content, got %q", string(data))
+	}
+}
+
+func TestSimulateLinux_FallbackToKdialog(t *testing.T) {
+	dir := t.TempDir()
+	logFile := filepath.Join(dir, "log")
+	writeFakeCmd(t, dir, "kdialog")
+	setupFakePath(t, dir, logFile)
+
+	if err := sendLinuxNotification("标题", "内容"); err != nil {
+		t.Fatalf("sendLinuxNotification: %v", err)
+	}
+	data, err := os.ReadFile(logFile)
+	if err != nil {
+		t.Fatalf("read log: %v", err)
+	}
+	if string(data) != "--title 标题 --passivepopup 内容 5\n" {
+		t.Fatalf("kdialog should receive fallback args, got %q", string(data))
+	}
+}
+
+func TestSimulateLinux_BothMissing_AggregatedError(t *testing.T) {
+	dir := t.TempDir()
+	setupFakePath(t, dir, filepath.Join(dir, "log"))
+
+	err := sendLinuxNotification("标题", "内容")
+	if err == nil {
+		t.Fatal("expected aggregated error when both commands missing")
+	}
+	if !strings.Contains(err.Error(), "notify-send") || !strings.Contains(err.Error(), "kdialog") {
+		t.Fatalf("error should name both failed commands, got: %v", err)
+	}
+}
+
+func TestSimulateLinux_NotifySendFails_FallsBack(t *testing.T) {
+	dir := t.TempDir()
+	logFile := filepath.Join(dir, "log")
+	writeFakeCmd(t, dir, "notify-send")
+	writeFakeCmd(t, dir, "kdialog")
+	setupFakePath(t, dir, logFile)
+	t.Setenv("FAKE_FAIL_ON", "notify-send")
+
+	if err := sendLinuxNotification("标题", "内容"); err != nil {
+		t.Fatalf("sendLinuxNotification should recover via kdialog: %v", err)
+	}
+	data, err := os.ReadFile(logFile)
+	if err != nil {
+		t.Fatalf("read log: %v", err)
+	}
+	if string(data) != "标题 内容\n--title 标题 --passivepopup 内容 5\n" {
+		t.Fatalf("expected notify-send attempt then kdialog fallback, got %q", string(data))
+	}
+}
+
+func TestSimulateWindows_PowerShellToast(t *testing.T) {
+	dir := t.TempDir()
+	logFile := filepath.Join(dir, "log")
+	writeFakeCmd(t, dir, "powershell")
+	setupFakePath(t, dir, logFile)
+
+	name, args, err := osNotifyCommand("windows", "标题", "内容")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := runNotifyCommand(name, args); err != nil {
+		t.Fatalf("runNotifyCommand: %v", err)
+	}
+	data, err := os.ReadFile(logFile)
+	if err != nil {
+		t.Fatalf("read log: %v", err)
+	}
+	got := string(data)
+	if !strings.Contains(got, "-Command") || !strings.Contains(got, "ToastNotificationManager") {
+		t.Fatalf("powershell should receive toast script, got %q", got)
+	}
+}
+
+func TestSimulateWindows_PowerShellMissing_Error(t *testing.T) {
+	dir := t.TempDir()
+	setupFakePath(t, dir, filepath.Join(dir, "log"))
+
+	name, args, err := osNotifyCommand("windows", "标题", "内容")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = runNotifyCommand(name, args)
+	if err == nil {
+		t.Fatal("expected error when powershell missing")
+	}
+	if !strings.Contains(err.Error(), "powershell") {
+		t.Fatalf("error should name the missing command, got: %v", err)
+	}
+}
