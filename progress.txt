@@ -2473,3 +2473,26 @@ D1 范围=Phase1+2+3（打包+CI+登录引导）；D2 Skill 源=完整目录；D
 - 全量集成测试曾超时（601s）：残留 tenant schema 拖慢 AutoMigrate（已知问题，setup.go 有 DropLeftoverTenantSchemas 兜底，但本次手动清理）
 - audit_log/reconciliation/cashflow/billing 的 `>=` 查询同样存在精度截断（影响可容忍），backlog 记录
 - commit: 见本次提交记录
+
+## [2026-08-19] - Task: [验收] Linux/Windows 弹窗模拟验收（macOS 无真实环境）
+
+### 铁律合规检查：
+- PRD 合规：消息送达 NFR（跨平台通知链路验收）
+- 架构合规：KISS——纯提取 sendLinuxNotification（行为零变化），测试用 fake 命令 + PATH 注入模拟目标平台
+
+### What was done:
+- 提取 cli/internal/poller/notification.go sendLinuxNotification（notify-send→kdialog 降级链，原内联于 sendOSNotification）
+- notification_test.go 追加 6 个模拟验收用例（fake 可执行脚本记录 argv 到 FAKE_LOG，按 FAKE_FAIL_ON 控制失败命令）
+
+### Testing:
+- Linux 场景 A：notify-send 可用 → 收到 "标题 内容" ✓
+- Linux 场景 B：仅 kdialog → 降级参数 --title/--passivepopup/5 ✓
+- Linux 场景 C：双缺失 → 聚合错误含两命令名 ✓
+- Linux 场景 D：notify-send 失败(exit1) → 自动降级 kdialog 成功 ✓
+- Windows 场景 E：powershell 可用 → 收到 -Command + ToastNotificationManager 脚本 ✓
+- Windows 场景 F：powershell 缺失 → 错误含命令名 ✓
+- 全量回归：go vet / go build / go test ./...（cli）全绿（33 用例）
+
+### Notes:
+- 修复测试自身 bug：fake 命令原用 FAKE_EXIT 全局退出码，会同时让降级命令失败；改为 FAKE_FAIL_ON 按命令名控制
+- commit: 488dfb8
