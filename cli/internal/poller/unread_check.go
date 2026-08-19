@@ -73,7 +73,7 @@ func CheckAndNotify(cfg *config.Config, cursorPath string) (int, error) {
 	}
 
 	if err := saveCursor(cursorPath, latest); err != nil {
-		return len(msgs), nil
+		fmt.Fprintf(os.Stderr, "warning: save cursor failed: %v\n", err)
 	}
 	return len(msgs), nil
 }
@@ -114,10 +114,19 @@ func FetchNewUnread(cfg *config.Config, since time.Time) ([]UnreadMessage, time.
 	}
 
 	var latest time.Time
+	parseFailed := false
 	for _, m := range wrapper.Data {
-		if t, perr := time.Parse(time.RFC3339Nano, m.CreatedAt); perr == nil && t.After(latest) {
+		t, perr := time.Parse(time.RFC3339Nano, m.CreatedAt)
+		if perr != nil {
+			parseFailed = true
+			continue
+		}
+		if t.After(latest) {
 			latest = t
 		}
+	}
+	if parseFailed {
+		return nil, time.Time{}, fmt.Errorf("poll response contains message without valid created_at (RFC3339Nano); cursor cannot advance safely")
 	}
 	return wrapper.Data, latest, nil
 }

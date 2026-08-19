@@ -2402,3 +2402,22 @@ D1 范围=Phase1+2+3（打包+CI+登录引导）；D2 Skill 源=完整目录；D
 ### Notes:
 - 若非测试环境，建议为生产库建立定期孤儿 schema 清理；本修复面向测试 harness。
 - 后续执行 integration/e2e 门禁已无障碍。
+
+## [2026-08-18] - Task: [REVIEW] 消息轮询链路代码审查 + P1 修复
+
+### 铁律合规检查：
+- PRD 合规：FR-MSG-002/003/005（审查确认）；修复对齐 NFR-PERF-005 间隔下限 10s
+- 架构合规：RD-1~RD-4 四维度审查，结论 [WARN] 准予合入
+
+### What was done:
+- 全面代码审查（commit 919af09 + 92ebb44），发现 P1×2 / P2×6 / P3×6，详见审查报告
+- P1-1 修复：CheckAndNotify 中 saveCursor 失败不再静默丢弃（改 stderr 告警），并消除双分支冗余
+- P1-2 修复：FetchNewUnread 任一 created_at 解析失败 → 显式错误（游标无法安全推进时不再静默无限重投）
+- 轮询间隔下限 5s→10s，对齐 PRD「可配置 10-300」
+- 新增 4 个 httptest 契约测试：无 since/有 since(RFC3339Nano UTC)/空数据/非法 created_at + X-Request-Source 校验
+
+### Testing:
+- go vet ./... 通过；go build 通过；cli go test ./... 全绿（poller 9 项含新增 4 项 PASS）
+
+### Notes:
+- P2 backlog：Windows poll stop(SIGINT 跨进程不支持)、双重 start pid 覆盖、MarkRead 无 receiver 校验、集成测试增强（since/limit 真实断言、MarkRead 用 POST 断言）、skill 参考文档补 poll/read 端点

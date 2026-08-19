@@ -35,7 +35,7 @@ func newPollCmd() *cobra.Command {
 				return fmt.Errorf("not logged in, run 'ao-cli auth login' first: %w", err)
 			}
 
-			minInterval := 5 * time.Second
+			minInterval := 10 * time.Second
 			maxInterval := 300 * time.Second
 
 			interval, _ := cmd.Flags().GetInt("interval")

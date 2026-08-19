@@ -1,6 +1,9 @@
 package poller
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -89,5 +92,95 @@ func TestMessageSummary_MoreThanThreeTruncates(t *testing.T) {
 	got := messageSummary(msgs)
 	if !strings.HasSuffix(got, " 等4条") {
 		t.Fatalf("expected truncation suffix, got: %s", got)
+	}
+}
+
+func testPollConfig(serverURL string) *config.Config {
+	return &config.Config{
+		ServerURL:    serverURL,
+		Token:        "test-token",
+		RefreshToken: "test-refresh",
+		ExpiresAt:    time.Now().Add(time.Hour),
+		EnterpriseID: "ent-1",
+	}
+}
+
+func TestFetchNewUnread_NoSince(t *testing.T) {
+	var gotSince, gotSource string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotSince = r.URL.Query().Get("since")
+		gotSource = r.Header.Get("X-Request-Source")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"data":[{"id":"1","title":"t1","created_at":"2026-08-18T10:00:00.123456Z"}]}`)
+	}))
+	defer server.Close()
+
+	msgs, latest, err := FetchNewUnread(testPollConfig(server.URL), time.Time{})
+	if err != nil {
+		t.Fatalf("FetchNewUnread: %v", err)
+	}
+	if gotSince != "" {
+		t.Fatalf("expected no since param, got %s", gotSince)
+	}
+	if gotSource != "ao-cli" {
+		t.Fatalf("expected X-Request-Source ao-cli, got %s", gotSource)
+	}
+	if len(msgs) != 1 || msgs[0].ID != "1" {
+		t.Fatalf("unexpected messages: %+v", msgs)
+	}
+	want := time.Date(2026, 8, 18, 10, 0, 0, 123456000, time.UTC)
+	if !latest.Equal(want) {
+		t.Fatalf("latest mismatch: want %v, got %v", want, latest)
+	}
+}
+
+func TestFetchNewUnread_WithSince(t *testing.T) {
+	since := time.Date(2026, 8, 18, 9, 0, 0, 0, time.UTC)
+	var gotSince string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotSince = r.URL.Query().Get("since")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"data":[]}`)
+	}))
+	defer server.Close()
+
+	_, _, err := FetchNewUnread(testPollConfig(server.URL), since)
+	if err != nil {
+		t.Fatalf("FetchNewUnread: %v", err)
+	}
+	if gotSince != "2026-08-18T09:00:00Z" {
+		t.Fatalf("expected RFC3339Nano UTC since param, got %s", gotSince)
+	}
+}
+
+func TestFetchNewUnread_EmptyData(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"data":[]}`)
+	}))
+	defer server.Close()
+
+	msgs, latest, err := FetchNewUnread(testPollConfig(server.URL), time.Time{})
+	if err != nil {
+		t.Fatalf("FetchNewUnread: %v", err)
+	}
+	if len(msgs) != 0 || !latest.IsZero() {
+		t.Fatalf("expected empty result, got msgs=%v latest=%v", msgs, latest)
+	}
+}
+
+func TestFetchNewUnread_InvalidCreatedAtFails(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"data":[{"id":"1","title":"t1","created_at":"not-a-time"}]}`)
+	}))
+	defer server.Close()
+
+	_, _, err := FetchNewUnread(testPollConfig(server.URL), time.Time{})
+	if err == nil {
+		t.Fatal("expected error for invalid created_at")
+	}
+	if !strings.Contains(err.Error(), "created_at") {
+		t.Fatalf("expected error mentioning created_at, got: %v", err)
 	}
 }
